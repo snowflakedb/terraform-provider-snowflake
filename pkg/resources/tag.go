@@ -411,7 +411,6 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	// Validations.
 	experimentEnabled := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments)
 	noAllowedValues := d.Get("no_allowed_values").(bool)
 	if noAllowedValues && !experimentEnabled {
@@ -432,13 +431,13 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 		switch {
 		case len(newOrdered) > 0:
-			// Target: ordered values — SET atomically replaces in the specified order.
+			// Target: ordered values - SET atomically replaces in the specified order.
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newOrdered))); err != nil {
 				return diag.FromErr(err)
 			}
 
 		case len(newUnordered) > 0:
-			// Target: unordered values — SET atomically replaces.
+			// Target: unordered values - SET atomically replaces.
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newUnordered))); err != nil {
 				return diag.FromErr(err)
 			}
@@ -456,7 +455,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 					return diag.FromErr(err)
 				}
 			} else {
-				// No previous values — use ADD temp + DROP temp to enter blocking state.
+				// No previous values - use ADD temp + DROP temp to enter blocking state.
 				if err := errors.Join(
 					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})),
 					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})),
@@ -466,7 +465,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 
 		default:
-			// No allowed values field is set — values were removed from config.
+			// No allowed values field is set - values were removed from config.
 			if experimentEnabled {
 				// UNSET makes the tag accept any value (null state).
 				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {

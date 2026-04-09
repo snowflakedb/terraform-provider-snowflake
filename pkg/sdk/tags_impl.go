@@ -248,9 +248,9 @@ func (r *TagPropagateRequest) toTagPropagate() *TagPropagate {
 }
 
 func createAllowedValues(values []string) *AllowedValues {
-	items := make([]AllowedValue, 0, len(values))
+	items := make([]StringAllowEmpty, 0, len(values))
 	for _, value := range values {
-		items = append(items, AllowedValue{
+		items = append(items, StringAllowEmpty{
 			Value: value,
 		})
 	}

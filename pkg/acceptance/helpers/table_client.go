@@ -146,6 +146,20 @@ func (c *TableClient) GetTableColumnsFor(t *testing.T, tableId sdk.SchemaObjectI
 	return columns
 }
 
+func (c *TableClient) CreateAsSelectFrom(t *testing.T, sourceTableId sdk.SchemaObjectIdentifier) (*sdk.Table, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("CREATE TABLE %s AS SELECT * FROM %s", id.FullyQualifiedName(), sourceTableId.FullyQualifiedName()))
+	require.NoError(t, err)
+
+	table, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return table, c.DropFunc(t, id)
+}
+
 func (c *TableClient) InsertInt(t *testing.T, tableId sdk.SchemaObjectIdentifier) {
 	t.Helper()
 	ctx := context.Background()

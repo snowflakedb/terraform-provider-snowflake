@@ -1340,14 +1340,10 @@ func TestInt_TagsPropagation(t *testing.T) {
 		}))
 		require.NoError(t, err)
 
-		ctasTableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		_, err = client.ExecForTests(ctx, fmt.Sprintf("CREATE TABLE %s AS SELECT * FROM %s", ctasTableId.FullyQualifiedName(), table.ID().FullyQualifiedName()))
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			_, _ = client.ExecForTests(context.Background(), fmt.Sprintf("DROP TABLE IF EXISTS %s", ctasTableId.FullyQualifiedName()))
-		})
+		ctasTable, ctasTableCleanup := testClientHelper().Table.CreateAsSelectFrom(t, table.ID())
+		t.Cleanup(ctasTableCleanup)
 
-		assertTagSet(t, tag.ID(), ctasTableId, sdk.ObjectTypeTable, "data_movement_value")
+		assertTagSet(t, tag.ID(), ctasTable.ID(), sdk.ObjectTypeTable, "data_movement_value")
 	})
 
 	t.Run("conflict: default resolution produces CONFLICT string", func(t *testing.T) {

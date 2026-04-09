@@ -54,11 +54,7 @@ type createTagOptions struct {
 }
 
 type AllowedValues struct {
-	Values []AllowedValue `ddl:"list,comma"`
-}
-
-type AllowedValue struct {
-	Value string `ddl:"keyword,single_quotes"`
+	Values []StringAllowEmpty `ddl:"list,comma"`
 }
 
 type TagPropagation string
