@@ -6,6 +6,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var ImageRepositoryEncryptionTypeDef = g.NewEnum("ImageRepositoryEncryptionType", "ImageRepositoryEncryptionTypes", "SNOWFLAKE_FULL", "SNOWFLAKE_SSE")
+
 var imageRepositoriesDef = g.NewInterface(
 	"ImageRepositories",
 	"ImageRepository",
@@ -87,4 +89,4 @@ var imageRepositoriesDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-)
+).WithEnums(ImageRepositoryEncryptionTypeDef)
