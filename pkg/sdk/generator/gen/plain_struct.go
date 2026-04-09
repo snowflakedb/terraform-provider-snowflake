@@ -71,6 +71,10 @@ func (v *plainStruct) AccountObjectIdentifier() *plainStruct {
 	return v.Field("Id", "AccountObjectIdentifier")
 }
 
+func (v *plainStruct) SchemaObjectIdentifier() *plainStruct {
+	return v.Field("Id", "SchemaObjectIdentifier")
+}
+
 func (v *plainStruct) IntoField() *Field {
 	f := NewField(v.name, v.name, nil, nil)
 	for _, field := range v.fields {

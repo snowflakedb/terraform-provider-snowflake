@@ -67,7 +67,7 @@ var sessionPoliciesDef = g.NewInterface(
 					OptionalSQL("BLOCKED_SECONDARY_ROLES").
 					OptionalSQL("COMMENT").
 					WithValidation(g.AtLeastOneValueSet, "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"),
-				g.KeywordOptions().SQL("UNSET"),
+				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "SetTags", "UnsetTags", "Unset"),
@@ -131,4 +131,13 @@ var sessionPoliciesDef = g.NewInterface(
 			SQL("SESSION POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		g.PlainStruct("SessionPolicyDetails").
+			SchemaObjectIdentifier().
+			Text("Owner").
+			Text("OwnerRoleType").
+			Text("Comment").
+			Number("SessionIdleTimeoutMins").
+			Number("SessionUiIdleTimeoutMins").
+			StringList("AllowedSecondaryRoles").
+			StringList("BlockedSecondaryRoles"),
 	)

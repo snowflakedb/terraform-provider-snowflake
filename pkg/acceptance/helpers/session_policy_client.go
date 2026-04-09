@@ -52,3 +52,9 @@ func (c *SessionPolicyClient) DropSessionPolicyFunc(t *testing.T, id sdk.SchemaO
 		require.NoError(t, err)
 	}
 }
+
+func (c *SessionPolicyClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.SessionPolicyDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeDetails(ctx, id)
+}

@@ -433,10 +433,3 @@ func parseCommaSeparatedEnumMap(property CatalogIntegrationProperty) []string {
 	s = strings.TrimSuffix(s, "}")
 	return ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
 }
-
-func emptyIfNull(s string) string {
-	if s == "null" {
-		return ""
-	}
-	return s
-}
