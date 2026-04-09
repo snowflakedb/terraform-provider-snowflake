@@ -8,6 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// allEnumConversionTests keeps all enums which conversion needs to be tested
+// Currently, it's populated from the list inside Test_AllEnumConversions.
+// Ultimately, it will be populated also through init method in the object's test file from each enum existing in the definition.
+var allEnumConversionTests []enumTestProvider
+
 type enumTestProvider interface {
 	RunTest(t *testing.T)
 }
@@ -52,12 +57,15 @@ func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 }
 
 func Test_AllEnumConversions(t *testing.T) {
-	all := []enumTestProvider{
+	additional := []enumTestProvider{
 		typedEnumTestProvider[NetworkRuleMode]{"NetworkRuleMode", AllNetworkRuleModes, ToNetworkRuleMode},
-		typedEnumTestProvider[ProgrammaticAccessTokenStatus]{"ProgrammaticAccessTokenStatus", AllProgrammaticAccessTokenStatuses, ToProgrammaticAccessTokenStatus},
 	}
 
-	for _, tp := range all {
+	require.Greater(t, len(allEnumConversionTests), 0)
+
+	allEnumConversionTests = append(allEnumConversionTests, additional...)
+
+	for _, tp := range allEnumConversionTests {
 		tp.RunTest(t)
 	}
 }
