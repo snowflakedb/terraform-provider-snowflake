@@ -106,6 +106,11 @@ func (w *WarehouseAdaptiveResourceAssert) HasStatementTimeoutInSecondsString(exp
 	return w
 }
 
+func (w *WarehouseAdaptiveResourceAssert) HasWarehouseTypeString(expected string) *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("warehouse_type", expected))
+	return w
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -145,6 +150,11 @@ func (w *WarehouseAdaptiveResourceAssert) HasNoStatementTimeoutInSeconds() *Ware
 	return w
 }
 
+func (w *WarehouseAdaptiveResourceAssert) HasNoWarehouseType() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("warehouse_type"))
+	return w
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -176,6 +186,11 @@ func (w *WarehouseAdaptiveResourceAssert) HasStatementQueuedTimeoutInSecondsEmpt
 
 func (w *WarehouseAdaptiveResourceAssert) HasStatementTimeoutInSecondsEmpty() *WarehouseAdaptiveResourceAssert {
 	w.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", ""))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasWarehouseTypeEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("warehouse_type", ""))
 	return w
 }
 
@@ -215,5 +230,10 @@ func (w *WarehouseAdaptiveResourceAssert) HasStatementQueuedTimeoutInSecondsNotE
 
 func (w *WarehouseAdaptiveResourceAssert) HasStatementTimeoutInSecondsNotEmpty() *WarehouseAdaptiveResourceAssert {
 	w.AddAssertion(assert.ValuePresent("statement_timeout_in_seconds"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasWarehouseTypeNotEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValuePresent("warehouse_type"))
 	return w
 }

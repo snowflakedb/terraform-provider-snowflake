@@ -3185,3 +3185,46 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 		},
 	})
 }
+
+func TestAcc_Warehouse_ExternalTypeChange(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	warehouseModel := model.Warehouse("test", id.Name()).
+		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
+	ref := warehouseModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, warehouseModel),
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, ref).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasType(sdk.WarehouseTypeStandard),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Warehouse.UpdateWarehouseType(t, id, sdk.WarehouseTypeAdaptive)
+				},
+				Config: accconfig.FromModels(t, warehouseModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, ref).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasType(sdk.WarehouseTypeStandard),
+				),
+			},
+		},
+	})
+}
