@@ -30,7 +30,9 @@ func main() {
 		WithGenerationPart("impl", filenameForPart("impl"), []*template.Template{genhelpers.PreambleTemplate, gen.ImplementationTemplate}).
 		WithGenerationPart("unit_tests", testFilenameForPart(""), []*template.Template{genhelpers.PreambleTemplate, gen.UnitTestsTemplate}).
 		WithGenerationPart("validations", filenameForPart("validations"), []*template.Template{genhelpers.PreambleTemplate, gen.ValidationsTemplate}).
-		WithGenerationPart("enums", filenameForPart("enums"), []*template.Template{genhelpers.PreambleTemplate, gen.EnumTemplate}).
+		WithConditionalGenerationPart("enums", filenameForPart("enums"), []*template.Template{genhelpers.PreambleTemplate, gen.EnumTemplate}, func(i *gen.Interface) bool {
+			return len(i.Enums) > 0
+		}).
 		WithDescription("Generate SDK objects based on the SQL definitions provided.").
 		WithMakefileCommandPart("sdk").
 		RunAndHandleOsReturn()
