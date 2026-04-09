@@ -4,6 +4,7 @@ package example
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -20,24 +21,24 @@ type ShowPairedStructExampleOptions struct {
 }
 
 type pairedStructExampleRow struct {
-	ObjectName                string                   `db:"object_name"`
-	BothNonNullableStrings    string                   `db:"both_non_nullable_strings"`
-	StorageTypeDb             string                   `db:"type"`
-	BothNullableStrings       *string                  `db:"both_nullable_strings"`
-	OrganizationName          string                   `db:"organization_name"`
-	IsPrimary                 bool                     `db:"is_primary"`
-	IsDefault                 *bool                    `db:"is_default"`
-	Enabled                   bool                     `db:"enabled"`
-	NextValue                 int                      `db:"next_value"`
-	Port                      *int                     `db:"port"`
-	RetryLimit                int                      `db:"retry_limit"`
-	CreatedOn                 time.Time                `db:"created_on"`
-	UpdatedAt                 *time.Time               `db:"updated_at"`
-	Primary                   ExternalObjectIdentifier `db:"primary"`
-	FailoverAllowedToAccounts []AccountIdentifier      `db:"failover_allowed_to_accounts"`
-	Tags                      []string                 `db:"tags"`
-	AccountId                 AccountObjectIdentifier  `db:"account_id"`
-	SecondAccountId           AccountObjectIdentifier  `db:"second_account_id"`
+	ObjectName                string         `db:"object_name"`
+	BothNonNullableStrings    string         `db:"both_non_nullable_strings"`
+	StorageTypeDb             string         `db:"type"`
+	BothNullableStrings       sql.NullString `db:"both_nullable_strings"`
+	OrganizationName          sql.NullString `db:"organization_name"`
+	IsPrimary                 bool           `db:"is_primary"`
+	IsDefault                 sql.NullBool   `db:"is_default"`
+	Enabled                   sql.NullBool   `db:"enabled"`
+	NextValue                 int            `db:"next_value"`
+	Port                      sql.NullInt64  `db:"port"`
+	RetryLimit                sql.NullInt64  `db:"retry_limit"`
+	CreatedOn                 time.Time      `db:"created_on"`
+	UpdatedAt                 sql.NullTime   `db:"updated_at"`
+	Primary                   string         `db:"primary"`
+	FailoverAllowedToAccounts string         `db:"failover_allowed_to_accounts"`
+	Tags                      string         `db:"tags"`
+	AccountId                 string         `db:"account_id"`
+	SecondAccountId           string         `db:"second_account_id"`
 }
 
 type PairedStructExample struct {
@@ -73,24 +74,24 @@ type DescribePairedStructExampleOptions struct {
 }
 
 type pairedStructExampleDetailRow struct {
-	ObjectName                string                   `db:"object_name"`
-	BothNonNullableStrings    string                   `db:"both_non_nullable_strings"`
-	StorageTypeDb             string                   `db:"type"`
-	BothNullableStrings       *string                  `db:"both_nullable_strings"`
-	OrganizationName          string                   `db:"organization_name"`
-	IsPrimary                 bool                     `db:"is_primary"`
-	IsDefault                 *bool                    `db:"is_default"`
-	Enabled                   bool                     `db:"enabled"`
-	NextValue                 int                      `db:"next_value"`
-	Port                      *int                     `db:"port"`
-	RetryLimit                int                      `db:"retry_limit"`
-	CreatedOn                 time.Time                `db:"created_on"`
-	UpdatedAt                 *time.Time               `db:"updated_at"`
-	Primary                   ExternalObjectIdentifier `db:"primary"`
-	FailoverAllowedToAccounts []AccountIdentifier      `db:"failover_allowed_to_accounts"`
-	Tags                      []string                 `db:"tags"`
-	AccountId                 AccountObjectIdentifier  `db:"account_id"`
-	SecondAccountId           AccountObjectIdentifier  `db:"second_account_id"`
+	ObjectName                string         `db:"object_name"`
+	BothNonNullableStrings    string         `db:"both_non_nullable_strings"`
+	StorageTypeDb             string         `db:"type"`
+	BothNullableStrings       sql.NullString `db:"both_nullable_strings"`
+	OrganizationName          sql.NullString `db:"organization_name"`
+	IsPrimary                 bool           `db:"is_primary"`
+	IsDefault                 sql.NullBool   `db:"is_default"`
+	Enabled                   sql.NullBool   `db:"enabled"`
+	NextValue                 int            `db:"next_value"`
+	Port                      sql.NullInt64  `db:"port"`
+	RetryLimit                sql.NullInt64  `db:"retry_limit"`
+	CreatedOn                 time.Time      `db:"created_on"`
+	UpdatedAt                 sql.NullTime   `db:"updated_at"`
+	Primary                   string         `db:"primary"`
+	FailoverAllowedToAccounts string         `db:"failover_allowed_to_accounts"`
+	Tags                      string         `db:"tags"`
+	AccountId                 string         `db:"account_id"`
+	SecondAccountId           string         `db:"second_account_id"`
 }
 
 type PairedStructExampleDetail struct {
