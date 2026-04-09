@@ -7,6 +7,7 @@
 - [snowflake_api_integration](./docs/resources/api_integration)
 - [snowflake_authentication_policy](./docs/resources/authentication_policy)
 - [snowflake_catalog_integration_aws_glue](./docs/resources/catalog_integration_aws_glue)
+- [snowflake_catalog_integration_iceberg_rest](./docs/resources/catalog_integration_iceberg_rest)
 - [snowflake_catalog_integration_object_storage](./docs/resources/catalog_integration_object_storage)
 - [snowflake_catalog_integration_open_catalog](./docs/resources/catalog_integration_open_catalog)
 - [snowflake_cortex_search_service](./docs/resources/cortex_search_service)
@@ -57,3 +58,4 @@
 - [snowflake_user_authentication_policy_attachment](./docs/resources/user_authentication_policy_attachment)
 - [snowflake_user_password_policy_attachment](./docs/resources/user_password_policy_attachment)
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
+- [snowflake_warehouse_adaptive](./docs/resources/warehouse_adaptive)

@@ -14,6 +14,7 @@ type (
 	CatalogIntegrationCatalogSourceType                                 string
 	CatalogIntegrationRestAuthenticationType                            string
 	CatalogIntegrationTableFormat                                       string
+	ClientPolicyDriverType                                              string
 	ClientTypesOption                                                   string
 	ComputePoolInstanceFamily                                           string
 	CsvCompression                                                      string

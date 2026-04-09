@@ -52,6 +52,8 @@ func (a *AuthenticationPolicyResourceAssert) HasAuthenticationMethods(expected .
 	return a
 }
 
+// typed assert for "client_policy" (type: Set, subtype: Map) is not currently supported
+
 func (a *AuthenticationPolicyResourceAssert) HasClientTypes(expected ...string) *AuthenticationPolicyResourceAssert {
 	a.SetContainsExactlyStringValues("client_types", expected...)
 	return a
@@ -162,6 +164,11 @@ func (a *AuthenticationPolicyResourceAssert) HasNoMfaEnrollment() *Authenticatio
 
 func (a *AuthenticationPolicyResourceAssert) HasAuthenticationMethodsEmpty() *AuthenticationPolicyResourceAssert {
 	a.AddAssertion(assert.ValueSet("authentication_methods.#", "0"))
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasClientPolicyEmpty() *AuthenticationPolicyResourceAssert {
+	a.AddAssertion(assert.ValueSet("client_policy.#", "0"))
 	return a
 }
 

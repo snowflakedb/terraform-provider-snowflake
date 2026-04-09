@@ -1483,3 +1483,66 @@ func TestAcc_View_Issue3676_fix(t *testing.T) {
 		},
 	})
 }
+
+// This test proves the fix for SNOW-3308280: panic when consumeToken reaches end of input (off-by-one in bounds check).
+// The error happened when the last column had a masking policy and no trailing options (USING clause), so the parser hits end-of-input while probing optional tokens.
+func TestAcc_View_MaskingPolicyWithoutUsingClausePanicFix(t *testing.T) {
+	// Use the identity masking policy to avoid the USING clause.
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
+	t.Cleanup(maskingPolicyCleanup)
+
+	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest("COL1", sdk.DataTypeVARCHAR),
+		*sdk.NewTableColumnRequest("COL2", sdk.DataTypeVARCHAR),
+	})
+	t.Cleanup(tableCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := fmt.Sprintf("SELECT COL1, COL2 FROM %s", table.ID().FullyQualifiedName())
+	viewModel := model.ViewWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(),
+		statement).
+		WithColumnValue(config.TupleVariable(
+			config.ObjectVariable(map[string]config.Variable{
+				"column_name": config.StringVariable("COL1"),
+			}),
+			config.ObjectVariable(map[string]config.Variable{
+				"column_name": config.StringVariable("COL2"),
+				"masking_policy": config.ObjectVariable(map[string]config.Variable{
+					"policy_name": config.StringVariable(maskingPolicy.ID().FullyQualifiedName()),
+				}),
+			}),
+		))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.View),
+		Steps: []resource.TestStep{
+			// v2.14.1: provider panics during Read after Create
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				Config:            accconfig.FromModels(t, viewModel),
+				ExpectError:       regexp.MustCompile(`index out of range`),
+			},
+			// It is fixed on the latest version of the provider.
+			// The view was created by step 1 but not saved to state.
+			// PreConfig drops the orphaned view so the apply can recreate it cleanly.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				PreConfig:                testClient().View.DropViewFunc(t, id),
+				Config:                   accconfig.FromModels(t, viewModel),
+				Check: assertThat(t, resourceassert.ViewResource(t, viewModel.ResourceReference()).
+					HasNameString(id.Name()).
+					HasDatabaseString(id.DatabaseName()).
+					HasSchemaString(id.SchemaName()).
+					HasStatementString(statement).
+					HasColumns([]sdk.ViewColumn{
+						{Name: "COL1"},
+						{Name: "COL2", MaskingPolicy: &sdk.ViewColumnMaskingPolicy{MaskingPolicy: maskingPolicy.ID()}},
+					}),
+				),
+			},
+		},
+	})
+}

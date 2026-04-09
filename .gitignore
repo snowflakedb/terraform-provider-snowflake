@@ -33,3 +33,5 @@ test.env
 
 # Test sensitive values
 *.tfvars
+
+tmp/

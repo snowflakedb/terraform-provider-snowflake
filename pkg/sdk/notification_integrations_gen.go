@@ -30,11 +30,18 @@ type CreateNotificationIntegrationOptions struct {
 	AutomatedDataLoadsParams *AutomatedDataLoadsParams `ddl:"keyword"`
 	PushNotificationParams   *PushNotificationParams   `ddl:"keyword"`
 	EmailParams              *EmailParams              `ddl:"keyword"`
+	WebhookParams            *WebhookParams            `ddl:"keyword"`
 	Comment                  *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type NotificationIntegrationAllowedRecipient struct {
 	Email string `ddl:"keyword,single_quotes"`
+}
+
+type WebhookHeader struct {
+	Header string `ddl:"keyword,single_quotes"`
+	equals bool   `ddl:"static" sql:"="`
+	Value  string `ddl:"keyword,single_quotes"`
 }
 
 type AutomatedDataLoadsParams struct {
@@ -84,23 +91,33 @@ type EmailParams struct {
 	AllowedRecipients []NotificationIntegrationAllowedRecipient `ddl:"parameter,parentheses" sql:"ALLOWED_RECIPIENTS"`
 }
 
+type WebhookParams struct {
+	webhookType         bool                    `ddl:"static" sql:"TYPE = WEBHOOK"`
+	WebhookUrl          string                  `ddl:"parameter,single_quotes" sql:"WEBHOOK_URL"`
+	WebhookSecret       *SchemaObjectIdentifier `ddl:"identifier,equals" sql:"WEBHOOK_SECRET"`
+	WebhookBodyTemplate *string                 `ddl:"parameter,single_quotes" sql:"WEBHOOK_BODY_TEMPLATE"`
+	WebhookHeaders      []WebhookHeader         `ddl:"parameter,parentheses" sql:"WEBHOOK_HEADERS"`
+}
+
 // AlterNotificationIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-notification-integration.
 type AlterNotificationIntegrationOptions struct {
-	alter                   bool                                     `ddl:"static" sql:"ALTER"`
-	notificationIntegration bool                                     `ddl:"static" sql:"NOTIFICATION INTEGRATION"`
-	IfExists                *bool                                    `ddl:"keyword" sql:"IF EXISTS"`
-	name                    AccountObjectIdentifier                  `ddl:"identifier"`
-	Set                     *NotificationIntegrationSet              `ddl:"keyword" sql:"SET"`
-	UnsetEmailParams        *NotificationIntegrationUnsetEmailParams `ddl:"list,no_parentheses" sql:"UNSET"`
-	SetTags                 []TagAssociation                         `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags               []ObjectIdentifier                       `ddl:"keyword" sql:"UNSET TAG"`
+	alter                   bool                                       `ddl:"static" sql:"ALTER"`
+	notificationIntegration bool                                       `ddl:"static" sql:"NOTIFICATION INTEGRATION"`
+	IfExists                *bool                                      `ddl:"keyword" sql:"IF EXISTS"`
+	name                    AccountObjectIdentifier                    `ddl:"identifier"`
+	Set                     *NotificationIntegrationSet                `ddl:"keyword" sql:"SET"`
+	UnsetEmailParams        *NotificationIntegrationUnsetEmailParams   `ddl:"list,no_parentheses" sql:"UNSET"`
+	UnsetWebhookParams      *NotificationIntegrationUnsetWebhookParams `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTags                 []TagAssociation                           `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags               []ObjectIdentifier                         `ddl:"keyword" sql:"UNSET TAG"`
 }
 
 type NotificationIntegrationSet struct {
-	Enabled        *bool           `ddl:"parameter" sql:"ENABLED"`
-	SetPushParams  *SetPushParams  `ddl:"keyword"`
-	SetEmailParams *SetEmailParams `ddl:"keyword"`
-	Comment        *string         `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Enabled          *bool             `ddl:"parameter" sql:"ENABLED"`
+	SetPushParams    *SetPushParams    `ddl:"keyword"`
+	SetEmailParams   *SetEmailParams   `ddl:"keyword"`
+	SetWebhookParams *SetWebhookParams `ddl:"keyword"`
+	Comment          *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type SetPushParams struct {
@@ -127,9 +144,23 @@ type SetEmailParams struct {
 	AllowedRecipients []NotificationIntegrationAllowedRecipient `ddl:"parameter,parentheses" sql:"ALLOWED_RECIPIENTS"`
 }
 
+type SetWebhookParams struct {
+	WebhookUrl          *string                 `ddl:"parameter,single_quotes" sql:"WEBHOOK_URL"`
+	WebhookSecret       *SchemaObjectIdentifier `ddl:"identifier,equals" sql:"WEBHOOK_SECRET"`
+	WebhookBodyTemplate *string                 `ddl:"parameter,single_quotes" sql:"WEBHOOK_BODY_TEMPLATE"`
+	WebhookHeaders      []WebhookHeader         `ddl:"parameter,parentheses" sql:"WEBHOOK_HEADERS"`
+}
+
 type NotificationIntegrationUnsetEmailParams struct {
 	AllowedRecipients *bool `ddl:"keyword" sql:"ALLOWED_RECIPIENTS"`
 	Comment           *bool `ddl:"keyword" sql:"COMMENT"`
+}
+
+type NotificationIntegrationUnsetWebhookParams struct {
+	WebhookSecret       *bool `ddl:"keyword" sql:"WEBHOOK_SECRET"`
+	WebhookBodyTemplate *bool `ddl:"keyword" sql:"WEBHOOK_BODY_TEMPLATE"`
+	WebhookHeaders      *bool `ddl:"keyword" sql:"WEBHOOK_HEADERS"`
+	Comment             *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropNotificationIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-integration.

@@ -21,6 +21,8 @@ const (
 	CatalogIntegrationAwsGlueResource             feature = "snowflake_catalog_integration_aws_glue_resource"
 	CatalogIntegrationObjectStorageResource       feature = "snowflake_catalog_integration_object_storage_resource"
 	CatalogIntegrationOpenCatalogResource         feature = "snowflake_catalog_integration_open_catalog_resource"
+	CatalogIntegrationIcebergRestResource         feature = "snowflake_catalog_integration_iceberg_rest_resource"
+	CatalogIntegrationsDatasource                 feature = "snowflake_catalog_integrations_datasource"
 	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
@@ -110,6 +112,7 @@ const (
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
 	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
+	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
 )
 
 var allPreviewFeatures = []feature{
@@ -123,6 +126,8 @@ var allPreviewFeatures = []feature{
 	CatalogIntegrationAwsGlueResource,
 	CatalogIntegrationObjectStorageResource,
 	CatalogIntegrationOpenCatalogResource,
+	CatalogIntegrationIcebergRestResource,
+	CatalogIntegrationsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -200,6 +205,7 @@ var allPreviewFeatures = []feature{
 	UserAuthenticationPolicyAttachmentResource,
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+	WarehouseAdaptiveResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 

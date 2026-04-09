@@ -106,12 +106,53 @@ var AllClientTypes = []ClientTypesOption{
 	ClientTypesSnowflakeCli,
 }
 
+type ClientPolicyDriverType string
+
+const (
+	ClientPolicyDriverTypeJdbcDriver                 ClientPolicyDriverType = "JDBC_DRIVER"
+	ClientPolicyDriverTypeOdbcDriver                 ClientPolicyDriverType = "ODBC_DRIVER"
+	ClientPolicyDriverTypePythonDriver               ClientPolicyDriverType = "PYTHON_DRIVER"
+	ClientPolicyDriverTypeJavascriptDriver           ClientPolicyDriverType = "JAVASCRIPT_DRIVER"
+	ClientPolicyDriverTypeCDriver                    ClientPolicyDriverType = "C_DRIVER"
+	ClientPolicyDriverTypeGoDriver                   ClientPolicyDriverType = "GO_DRIVER"
+	ClientPolicyDriverTypePhpDriver                  ClientPolicyDriverType = "PHP_DRIVER"
+	ClientPolicyDriverTypeDotnetDriver               ClientPolicyDriverType = "DOTNET_DRIVER"
+	ClientPolicyDriverTypeSqlApi                     ClientPolicyDriverType = "SQL_API"
+	ClientPolicyDriverTypeSnowpipeStreamingClientSdk ClientPolicyDriverType = "SNOWPIPE_STREAMING_CLIENT_SDK"
+	ClientPolicyDriverTypePyCore                     ClientPolicyDriverType = "PY_CORE"
+	ClientPolicyDriverTypeSprocPython                ClientPolicyDriverType = "SPROC_PYTHON"
+	ClientPolicyDriverTypePythonSnowpark             ClientPolicyDriverType = "PYTHON_SNOWPARK"
+	ClientPolicyDriverTypeSqlAlchemy                 ClientPolicyDriverType = "SQL_ALCHEMY"
+	ClientPolicyDriverTypeSnowpark                   ClientPolicyDriverType = "SNOWPARK"
+	ClientPolicyDriverTypeSnowflakeClient            ClientPolicyDriverType = "SNOWFLAKE_CLIENT"
+)
+
+var AllClientPolicyDriverTypes = []ClientPolicyDriverType{
+	ClientPolicyDriverTypeJdbcDriver,
+	ClientPolicyDriverTypeOdbcDriver,
+	ClientPolicyDriverTypePythonDriver,
+	ClientPolicyDriverTypeJavascriptDriver,
+	ClientPolicyDriverTypeCDriver,
+	ClientPolicyDriverTypeGoDriver,
+	ClientPolicyDriverTypePhpDriver,
+	ClientPolicyDriverTypeDotnetDriver,
+	ClientPolicyDriverTypeSqlApi,
+	ClientPolicyDriverTypeSnowpipeStreamingClientSdk,
+	ClientPolicyDriverTypePyCore,
+	ClientPolicyDriverTypeSprocPython,
+	ClientPolicyDriverTypePythonSnowpark,
+	ClientPolicyDriverTypeSqlAlchemy,
+	ClientPolicyDriverTypeSnowpark,
+	ClientPolicyDriverTypeSnowflakeClient,
+}
+
 type MfaPolicyAllowedMethodsOption string
 
 const (
 	MfaPolicyAllowedMethodAll     MfaPolicyAllowedMethodsOption = "ALL"
 	MfaPolicyAllowedMethodPassKey MfaPolicyAllowedMethodsOption = "PASSKEY"
 	MfaPolicyAllowedMethodTotp    MfaPolicyAllowedMethodsOption = "TOTP"
+	MfaPolicyAllowedMethodOtp     MfaPolicyAllowedMethodsOption = "OTP"
 	MfaPolicyAllowedMethodDuo     MfaPolicyAllowedMethodsOption = "DUO"
 )
 
@@ -119,6 +160,7 @@ var AllMfaPolicyOptions = []MfaPolicyAllowedMethodsOption{
 	MfaPolicyAllowedMethodAll,
 	MfaPolicyAllowedMethodPassKey,
 	MfaPolicyAllowedMethodTotp,
+	MfaPolicyAllowedMethodOtp,
 	MfaPolicyAllowedMethodDuo,
 }
 
@@ -212,6 +254,14 @@ func ToClientTypesOption(s string) (ClientTypesOption, error) {
 		return "", fmt.Errorf("invalid client type: %s", s)
 	}
 	return ClientTypesOption(s), nil
+}
+
+func ToClientPolicyDriverType(s string) (ClientPolicyDriverType, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllClientPolicyDriverTypes, ClientPolicyDriverType(s)) {
+		return "", fmt.Errorf("invalid client policy driver type: %s", s)
+	}
+	return ClientPolicyDriverType(s), nil
 }
 
 func ToAllowedProviderOption(s string) (AllowedProviderOption, error) {

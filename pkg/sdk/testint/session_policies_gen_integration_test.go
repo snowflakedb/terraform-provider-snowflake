@@ -3,10 +3,13 @@
 package testint
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,26 +28,13 @@ func TestInt_SessionPolicies(t *testing.T) {
 		assert.Equal(t, "ACCOUNTADMIN", sessionPolicy.Owner)
 		assert.Equal(t, expectedComment, sessionPolicy.Comment)
 		assert.Equal(t, "SESSION_POLICY", sessionPolicy.Kind)
-		assert.Equal(t, "", sessionPolicy.Options)
 		assert.Equal(t, "ROLE", sessionPolicy.OwnerRoleType)
-	}
-
-	assertSessionPolicyDescription := func(
-		t *testing.T,
-		sessionPolicyDescription *sdk.SessionPolicyDescription,
-		id sdk.SchemaObjectIdentifier,
-	) {
-		t.Helper()
-		assert.NotEmpty(t, sessionPolicyDescription.CreatedOn)
-		assert.Equal(t, id.Name(), sessionPolicyDescription.Name)
-		assert.Equal(t, 240, sessionPolicyDescription.SessionIdleTimeoutMins)
-		assert.Equal(t, 240, sessionPolicyDescription.SessionUIIdleTimeoutMins)
-		assert.Equal(t, "", sessionPolicyDescription.Comment)
+		assert.Equal(t, "", sessionPolicy.Options)
 	}
 
 	cleanupSessionPolicyProvider := func(id sdk.SchemaObjectIdentifier) func() {
 		return func() {
-			err := client.SessionPolicies.Drop(ctx, sdk.NewDropSessionPolicyRequest(id))
+			err := client.SessionPolicies.Drop(ctx, sdk.NewDropSessionPolicyRequest(id).WithIfExists(true))
 			require.NoError(t, err)
 		}
 	}
@@ -67,9 +57,22 @@ func TestInt_SessionPolicies(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
 
+		role1, role1Cleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(role1Cleanup)
+
+		role2, role2Cleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(role2Cleanup)
+
+		role3, role3Cleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(role3Cleanup)
+
 		request := sdk.NewCreateSessionPolicyRequest(id).
 			WithSessionIdleTimeoutMins(5).
 			WithSessionUiIdleTimeoutMins(34).
+			WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().
+				WithRoles([]sdk.AccountObjectIdentifier{role1.ID(), role2.ID()})).
+			WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().
+				WithRoles([]sdk.AccountObjectIdentifier{role3.ID()})).
 			WithComment(comment).
 			WithIfNotExists(true)
 
@@ -81,6 +84,14 @@ func TestInt_SessionPolicies(t *testing.T) {
 
 		require.NoError(t, err)
 		assertSessionPolicy(t, sessionPolicy, id, comment)
+		assertThatObject(t, objectassert.SessionPolicyDetails(t, id).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComment(comment).
+			HasSessionIdleTimeoutMins(5).
+			HasSessionUiIdleTimeoutMins(34).
+			HasAllowedSecondaryRolesUnordered(role1.Name, role2.Name).
+			HasBlockedSecondaryRoles(role3.Name))
 	})
 
 	t.Run("create session_policy: no optionals", func(t *testing.T) {
@@ -96,15 +107,20 @@ func TestInt_SessionPolicies(t *testing.T) {
 
 		require.NoError(t, err)
 		assertSessionPolicy(t, sessionPolicy, id, "")
+		assertThatObject(t, objectassert.SessionPolicyDetails(t, id).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComment("").
+			HasSessionIdleTimeoutMins(240).
+			HasSessionUiIdleTimeoutMins(1080).
+			HasAllowedSecondaryRolesUnordered("ALL").
+			HasBlockedSecondaryRoles())
 	})
 
 	t.Run("drop session_policy: existing", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		id := createSessionPolicy(t).ID()
 
-		err := client.SessionPolicies.Create(ctx, sdk.NewCreateSessionPolicyRequest(id))
-		require.NoError(t, err)
-
-		err = client.SessionPolicies.Drop(ctx, sdk.NewDropSessionPolicyRequest(id))
+		err := client.SessionPolicies.Drop(ctx, sdk.NewDropSessionPolicyRequest(id))
 		require.NoError(t, err)
 
 		_, err = client.SessionPolicies.ShowByID(ctx, id)
@@ -117,29 +133,41 @@ func TestInt_SessionPolicies(t *testing.T) {
 	})
 
 	t.Run("alter session_policy: set value and unset value", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		id := createSessionPolicy(t).ID()
 
-		err := client.SessionPolicies.Create(ctx, sdk.NewCreateSessionPolicyRequest(id))
+		alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithSet(*sdk.NewSessionPolicySetRequest().
+			WithSessionIdleTimeoutMins(60).
+			WithSessionUiIdleTimeoutMins(60).
+			WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithNone(true)).
+			WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithAll(true)).
+			WithComment("new comment"),
+		)
+		err := client.SessionPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
-		t.Cleanup(cleanupSessionPolicyProvider(id))
 
-		alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithSet(*sdk.NewSessionPolicySetRequest().WithComment("new comment"))
+		assertThatObject(t, objectassert.SessionPolicyDetails(t, id).
+			HasComment("new comment").
+			HasSessionIdleTimeoutMins(60).
+			HasSessionUiIdleTimeoutMins(60).
+			HasAllowedSecondaryRolesUnordered().
+			HasBlockedSecondaryRoles("ALL"))
+
+		alterRequest = sdk.NewAlterSessionPolicyRequest(id).WithUnset(*sdk.NewSessionPolicyUnsetRequest().
+			WithSessionIdleTimeoutMins(true).
+			WithSessionUiIdleTimeoutMins(true).
+			WithAllowedSecondaryRoles(true).
+			WithBlockedSecondaryRoles(true).
+			WithComment(true),
+		)
 		err = client.SessionPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
-		alteredSessionPolicy, err := client.SessionPolicies.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assert.Equal(t, "new comment", alteredSessionPolicy.Comment)
-
-		alterRequest = sdk.NewAlterSessionPolicyRequest(id).WithUnset(*sdk.NewSessionPolicyUnsetRequest().WithComment(true))
-		err = client.SessionPolicies.Alter(ctx, alterRequest)
-		require.NoError(t, err)
-
-		alteredSessionPolicy, err = client.SessionPolicies.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assert.Equal(t, "", alteredSessionPolicy.Comment)
+		assertThatObject(t, objectassert.SessionPolicyDetails(t, id).
+			HasComment("").
+			HasSessionIdleTimeoutMins(240).
+			HasSessionUiIdleTimeoutMins(1080).
+			HasAllowedSecondaryRolesUnordered("ALL").
+			HasBlockedSecondaryRoles())
 	})
 
 	t.Run("alter session_policy: rename", func(t *testing.T) {
@@ -168,30 +196,113 @@ func TestInt_SessionPolicies(t *testing.T) {
 		assertSessionPolicy(t, sessionPolicy, newId, "")
 	})
 
-	t.Run("show session_policy: default", func(t *testing.T) {
-		sessionPolicy1 := createSessionPolicy(t)
-		sessionPolicy2 := createSessionPolicy(t)
+	t.Run("show session policies", func(t *testing.T) {
+		db, dbCleanup := testClientHelper().Database.CreateDatabase(t)
+		t.Cleanup(dbCleanup)
 
-		showRequest := sdk.NewShowSessionPolicyRequest()
-		returnedSessionPolicies, err := client.SessionPolicies.Show(ctx, showRequest)
-		require.NoError(t, err)
+		user, userCleanup := testClientHelper().User.CreateUser(t)
+		t.Cleanup(userCleanup)
 
-		assert.LessOrEqual(t, 2, len(returnedSessionPolicies))
-		assert.Contains(t, returnedSessionPolicies, *sessionPolicy1)
-		assert.Contains(t, returnedSessionPolicies, *sessionPolicy2)
+		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("test_session_policyzzz")
+		id2 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("test_session_policy_2_")
+		id3 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("test_session_policy_3_")
+		id4 := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(sdk.NewDatabaseObjectIdentifier(db.Name, "PUBLIC"))
+		ids := []sdk.SchemaObjectIdentifier{id1, id2, id3, id4}
+		for _, id := range ids {
+			_, sessionPolicyCleanup := testClientHelper().SessionPolicy.CreateSessionPolicyWithOptions(t, id, sdk.NewCreateSessionPolicyRequest(id))
+			t.Cleanup(sessionPolicyCleanup)
+		}
+
+		testClientHelper().User.Alter(t, user.ID(), &sdk.AlterUserOptions{Set: &sdk.UserSet{SessionPolicy: sdk.Pointer(id1)}})
+		userSessionPolicyAttachmentCleanup := func() {
+			testClientHelper().User.Alter(t, user.ID(), &sdk.AlterUserOptions{Unset: &sdk.UserUnset{SessionPolicy: sdk.Bool(true)}})
+		}
+		t.Cleanup(userSessionPolicyAttachmentCleanup)
+
+		t.Run("like", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().
+				WithLike(sdk.Like{Pattern: sdk.String("test_session_policy_2_%")}).
+				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+			require.NoError(t, err)
+			assert.Len(t, sessionPolicies, 1)
+		})
+
+		t.Run("starts_with", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().
+				WithStartsWith("test_session_policy_").
+				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+			require.NoError(t, err)
+			assert.Len(t, sessionPolicies, 2)
+		})
+
+		t.Run("in_account", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
+			require.NoError(t, err)
+			assert.GreaterOrEqual(t, len(sessionPolicies), 4)
+		})
+
+		t.Run("in_database", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Database: id1.DatabaseId()}}))
+			require.NoError(t, err)
+			assert.Len(t, sessionPolicies, 3)
+		})
+
+		t.Run("in_schema", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+			require.NoError(t, err)
+			assert.Len(t, sessionPolicies, 3)
+		})
+
+		t.Run("on_account", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithOn(sdk.On{Account: sdk.Pointer(true)}))
+			require.NoError(t, err)
+			assert.Len(t, sessionPolicies, 0)
+		})
+
+		t.Run("on_user", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithOn(sdk.On{User: user.ID()}))
+			require.NoError(t, err)
+			assert.Len(t, sessionPolicies, 1)
+		})
+
+		t.Run("limit", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().
+				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}).
+				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+			require.NoError(t, err)
+			assert.Len(t, sessionPolicies, 1)
+		})
+
+		t.Run("limit from", func(t *testing.T) {
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().
+				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1), From: sdk.String("test_session_policy_")}).
+				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+			require.NoError(t, err)
+			require.Len(t, sessionPolicies, 1)
+			require.True(t, strings.HasPrefix(sessionPolicies[0].Name, "test_session_policy_2"))
+		})
 	})
 
-	// TODO(SNOW-1348362): Unskip this test.
 	t.Run("describe session_policy", func(t *testing.T) {
-		// In 2025_04 BCR, the format of the DESC has been changed from row-oriented to column-oriented.
-		// It means that the values are returned as a list of properties with additional default values, description, etc.
-		// The SDK currently expects the old row-oriented format. It should be adjusted to the new format, and this test should be unskipped.
-		t.Skip("Skipping session_policy describe test due to changes in the output format")
 		sessionPolicy := createSessionPolicy(t)
 
-		returnedSessionPolicy, err := client.SessionPolicies.Describe(ctx, sessionPolicy.ID())
+		details, err := client.SessionPolicies.DescribeDetails(ctx, sessionPolicy.ID())
 		require.NoError(t, err)
 
-		assertSessionPolicyDescription(t, returnedSessionPolicy, sessionPolicy.ID())
+		assertThatObject(t, objectassert.SessionPolicyDetailsFromObject(t, details).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComment("").
+			HasSessionIdleTimeoutMins(240).
+			HasSessionUiIdleTimeoutMins(1080).
+			HasAllowedSecondaryRolesUnordered("ALL").
+			HasBlockedSecondaryRoles())
+	})
+
+	t.Run("describe session policy: non-existing", func(t *testing.T) {
+		id := NonExistingSchemaObjectIdentifier
+
+		_, err := client.SessionPolicies.Describe(ctx, id)
+		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }

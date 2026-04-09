@@ -90,6 +90,12 @@ func (v *tags) Unset(ctx context.Context, request *UnsetTagRequest) error {
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *tags) UnsetSafely(ctx context.Context, request *UnsetTagRequest) error {
+	return SafeUnsetTag(func() error {
+		return v.Unset(ctx, request.WithIfExists(true))
+	})
+}
+
 func (v *tags) SetOnCurrentAccount(ctx context.Context, request *SetTagOnCurrentAccountRequest) error {
 	return v.client.Accounts.Alter(ctx, &AlterAccountOptions{
 		SetTag: request.SetTags,

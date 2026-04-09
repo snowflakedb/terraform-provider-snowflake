@@ -16,6 +16,7 @@ type Roles interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Role, error)
 	Grant(ctx context.Context, req *GrantRoleRequest) error
 	Revoke(ctx context.Context, req *RevokeRoleRequest) error
+	RevokeSafely(ctx context.Context, req *RevokeRoleRequest) error
 	Use(ctx context.Context, req *UseRoleRequest) error
 	UseSecondary(ctx context.Context, req *UseSecondaryRolesRequest) error
 }

@@ -9,6 +9,11 @@ import (
 var NotificationIntegrationAllowedRecipientDef = g.NewQueryStruct("NotificationIntegrationAllowedRecipient").
 	Text("Email", g.KeywordOptions().SingleQuotes().Required())
 
+var NotificationIntegrationWebhookHeaderDef = g.NewQueryStruct("WebhookHeader").
+	Text("Header", g.KeywordOptions().SingleQuotes().Required()).
+	PredefinedQueryStructField("equals", "bool", g.StaticOptions().SQL("=")).
+	Text("Value", g.KeywordOptions().SingleQuotes().Required())
+
 // TODO [SNOW-1016561]: all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
 var notificationIntegrationsDef = g.NewInterface(
 	"NotificationIntegrations",
@@ -84,11 +89,22 @@ var notificationIntegrationsDef = g.NewInterface(
 					ListAssignment("ALLOWED_RECIPIENTS", "NotificationIntegrationAllowedRecipient", g.ParameterOptions().Parentheses()),
 				g.KeywordOptions(),
 			).
+			OptionalQueryStructField(
+				"WebhookParams",
+				g.NewQueryStruct("WebhookParams").
+					SQLWithCustomFieldName("webhookType", "TYPE = WEBHOOK").
+					TextAssignment("WEBHOOK_URL", g.ParameterOptions().SingleQuotes().Required()).
+					OptionalIdentifier("WebhookSecret", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WEBHOOK_SECRET")).
+					OptionalTextAssignment("WEBHOOK_BODY_TEMPLATE", g.ParameterOptions().SingleQuotes()).
+					ListQueryStructField("WebhookHeaders", NotificationIntegrationWebhookHeaderDef, g.ParameterOptions().SQL("WEBHOOK_HEADERS").Parentheses()),
+				g.KeywordOptions(),
+			).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
-			WithValidation(g.ExactlyOneValueSet, "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams"),
+			WithValidation(g.ExactlyOneValueSet, "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"),
 		NotificationIntegrationAllowedRecipientDef,
+		NotificationIntegrationWebhookHeaderDef,
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-notification-integration",
@@ -134,9 +150,18 @@ var notificationIntegrationsDef = g.NewInterface(
 							WithValidation(g.ValidateValueSet, "AllowedRecipients"),
 						g.KeywordOptions(),
 					).
+					OptionalQueryStructField(
+						"SetWebhookParams",
+						g.NewQueryStruct("SetWebhookParams").
+							OptionalTextAssignment("WEBHOOK_URL", g.ParameterOptions().SingleQuotes()).
+							OptionalIdentifier("WebhookSecret", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WEBHOOK_SECRET")).
+							OptionalTextAssignment("WEBHOOK_BODY_TEMPLATE", g.ParameterOptions().SingleQuotes()).
+							ListQueryStructField("WebhookHeaders", NotificationIntegrationWebhookHeaderDef, g.ParameterOptions().SQL("WEBHOOK_HEADERS").Parentheses()),
+						g.KeywordOptions(),
+					).
 					OptionalComment().
-					WithValidation(g.ConflictingFields, "SetPushParams", "SetEmailParams").
-					WithValidation(g.AtLeastOneValueSet, "Enabled", "SetPushParams", "SetEmailParams", "Comment"),
+					WithValidation(g.ConflictingFields, "SetPushParams", "SetEmailParams", "SetWebhookParams").
+					WithValidation(g.AtLeastOneValueSet, "Enabled", "SetPushParams", "SetEmailParams", "SetWebhookParams", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).
 			// UNSET is supported only for the email notifications
@@ -148,10 +173,20 @@ var notificationIntegrationsDef = g.NewInterface(
 					WithValidation(g.AtLeastOneValueSet, "AllowedRecipients", "Comment"),
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
+			OptionalQueryStructField(
+				"UnsetWebhookParams",
+				g.NewQueryStruct("NotificationIntegrationUnsetWebhookParams").
+					OptionalSQL("WEBHOOK_SECRET").
+					OptionalSQL("WEBHOOK_BODY_TEMPLATE").
+					OptionalSQL("WEBHOOK_HEADERS").
+					OptionalSQL("COMMENT").
+					WithValidation(g.AtLeastOneValueSet, "WebhookSecret", "WebhookBodyTemplate", "WebhookHeaders", "Comment"),
+				g.ListOptions().NoParentheses().SQL("UNSET"),
+			).
 			OptionalSetTags().
 			OptionalUnsetTags().
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ExactlyOneValueSet, "Set", "UnsetEmailParams", "SetTags", "UnsetTags"),
+			WithValidation(g.ExactlyOneValueSet, "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-integration",

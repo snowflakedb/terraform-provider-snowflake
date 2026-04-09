@@ -62,6 +62,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CatalogIntegrationOpenCatalog().Schema,
 	},
 	{
+		name:   "CatalogIntegrationIcebergRest",
+		schema: resources.CatalogIntegrationIcebergRest().Schema,
+	},
+	{
 		name:   "ComputePool",
 		schema: resources.ComputePool().Schema,
 	},
@@ -324,6 +328,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "Warehouse",
 		schema: resources.Warehouse().Schema,
+	},
+	{
+		name:   "WarehouseAdaptive",
+		schema: resources.WarehouseAdaptive().Schema,
 	},
 	{
 		name:   "GrantPrivilegesToAccountRole",

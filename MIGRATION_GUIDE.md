@@ -73,6 +73,62 @@ A new `propagate` field has been added to the `show_output` attribute on both th
 
 No configuration changes are required. If you reference `show_output` in your configuration, the new field will be available automatically.
 
+### *(new feature)* Adaptive warehouses support
+
+#### New adaptive warehouse resource
+
+We have added a new preview resource for managing adaptive warehouses [snowflake_warehouse_adaptive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive).
+
+Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning.
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_warehouse_adaptive_resource` to the `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Support for future grants on `IMAGE REPOSITORIES`
+
+Both, `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources,
+now support the `IMAGE REPOSITORY` for future grants (in `on_schema_object.future.object_type_plural`).
+
+No changes to existing configurations are required.
+
+#### Adaptive warehouse columns in `snowflake_warehouses` data source
+
+The `show_output` field in the `snowflake_warehouses` data source now includes two additional computed attributes that surface adaptive warehouse details:
+
+- `max_query_performance_level` — the initial compute capacity level of an adaptive warehouse
+- `query_throughput_multiplier` — the query throughput multiplier of an adaptive warehouse
+
+These fields are populated only when the warehouse type is `ADAPTIVE`; for standard and Snowpark-Optimized warehouses they remain empty. No configuration changes are required.
+
+### *(new feature)* GRANTS_SAFE_DESTROY experiment
+
+A new `GRANTS_SAFE_DESTROY` experiment has been added. When enabled, resource destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists, instead of failing with `does not exist or not authorized`.
+
+This is useful when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`.
+
+To enable, add `GRANTS_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["GRANTS_SAFE_DESTROY"]
+}
+```
+
+### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
+
+#### Resource `snowflake_authentication_policy`
+- New optional block **`client_policy`**.
+- New field **`pat_policy.require_role_restriction_for_service_users`**.
+- New **`OTP`** option added to `mfa_policy.allowed_methods`.
+- New field **`client_policy`** added to **`describe_output`**.
+
+#### Data source `snowflake_authentication_policies`
+- New field **`client_policy`** added to **`describe_output`**.
+
+For more details about added features head over to the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy) or [Terraform Registry documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy).
+
+No changes are required to existing configurations unless you want to adopt any of the newly introduced features.
+
 ### *(new feature)* snowflake_account_parameter: adding missing parameters
 
 The `snowflake_account_parameter` resource now supports the following additional parameters:
@@ -98,18 +154,28 @@ The `snowflake_account_parameter` resource now supports the following additional
 
 No changes are required for existing configurations.
 
-### *(new feature)* New catalog integration resources
+### *(new feature)* New catalog integration resources and data source
+
+#### Resources
 
 We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
 - [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
 - [snowflake_catalog_integration_open_catalog](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
+- [snowflake_catalog_integration_iceberg_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
 
 These features will be marked as stable in future releases. To use them, add
 - `snowflake_catalog_integration_aws_glue_resource`,
-- `snowflake_catalog_integration_object_storage_resource`, or
-- `snowflake_catalog_integration_open_catalog_resource`
+- `snowflake_catalog_integration_object_storage_resource`,
+- `snowflake_catalog_integration_open_catalog_resource`, or
+- `snowflake_catalog_integration_iceberg_rest_resource`
 to the `preview_features_enabled` field in the provider configuration.
+
+#### Data source
+
+We have added a new preview data source for catalog integrations: [snowflake_catalog_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/catalog_integrations).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_catalog_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
 
 ### *(bug fix)* snowflake_account: fix nil pointer dereference panics
 
@@ -235,7 +301,7 @@ This has been fixed: grant resources can now be used with the `AGENT` and `MCP S
 
 No changes in the configuration are required.
 
-Reference: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524)
+References: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524), [#4593](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4593).
 
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 
@@ -286,6 +352,39 @@ by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabl
 
 No changes in configuration are required.
 Without the flag enabled, the behavior remains the same as in previous versions.
+
+### *(new feature)* snowflake_grant_ownership: support for DBT PROJECT object type
+
+The `snowflake_grant_ownership` resource now supports granting ownership on `DBT PROJECT` objects. This includes single object grants, bulk grants (`ALL DBT PROJECTS IN ...`), and future grants (`FUTURE DBT PROJECTS IN ...`). For more details, see [Access control for dbt projects on Snowflake](https://docs.snowflake.com/en/user-guide/data-engineering/dbt-projects-on-snowflake-access-control).
+
+No changes in configuration are required.
+
+### *(bugfix)* Fixed panic in `snowflake_view` when the last column has a masking policy without a `using` clause
+
+The `snowflake_view` resource could panic with `index out of range` during plan, apply, or refresh when the last column definition included a `masking_policy` block without a `using` argument. The error could be as follows:
+```
+panic: runtime error: index out of range [276] with length 276
+
+goroutine 149 [running]:
+github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake.(*ViewSelectStatementExtractor).consumeToken(0x1400077c818, {0x103fb7629, 0x11})
+	github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake/parser.go:242 +0x150
+...
+```
+
+This was caused by a missing early-exit check in the internal SQL parser used to extract the view's `SELECT` statement after consuming the masking policy identifier.
+
+No changes in configuration are required. If this error happened during object creation, the state of this resource may be empty. In this case, just reimport the object.
+
+### *(bug fix)* Fixed `describe_output` permadiff on stage resources
+
+The `describe_output` computed attribute on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, `snowflake_stage_internal`) was incorrectly tracking `file_format` as a trigger for recomputation. The provider normalizes selected file format subfields (e.g. resolves identifier quoting), but it's not applied in the recomputation logic, which could lead to permadiffs.
+
+Now, changes on `file_format` do not trigger marking `describe_output` as computed in all stage resources.
+
+No changes in configuration are required.
+
+Reference: [#4514](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4514)
+
 ## v2.14.0 ➞ v2.14.1
 
 ### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change

@@ -415,12 +415,12 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 
 		integration, id, _ := createExternalOauth(t, func(r *sdk.CreateExternalOauthSecurityIntegrationRequest) {
 			r.WithExternalOauthAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
-				WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "http://example.com"}})
+				WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example.com"}})
 		})
 		details, err := client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "EXTERNAL_OAUTH_JWS_KEYS_URL", Type: "Object", Value: "http://example.com", Default: ""})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "EXTERNAL_OAUTH_JWS_KEYS_URL", Type: "Object", Value: "https://example.com", Default: ""})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "EXTERNAL_OAUTH_ALLOWED_ROLES_LIST", Type: "List", Value: role1.Name, Default: "[]"})
 
 		assertSecurityIntegration(t, integration, id, "EXTERNAL_OAUTH - CUSTOM", false, "")
@@ -1099,10 +1099,10 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 
 	t.Run("Show ExternalOauth", func(t *testing.T) {
 		si1, id1, _ := createExternalOauth(t, func(r *sdk.CreateExternalOauthSecurityIntegrationRequest) {
-			r.WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "http://example.com"}})
+			r.WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example.com"}})
 		})
 		si2, _, _ := createExternalOauth(t, func(r *sdk.CreateExternalOauthSecurityIntegrationRequest) {
-			r.WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "http://example2.com"}})
+			r.WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example2.com"}})
 		})
 
 		returnedIntegrations, err := client.SecurityIntegrations.Show(ctx, sdk.NewShowSecurityIntegrationRequest().WithLike(sdk.Like{

@@ -118,22 +118,22 @@ func (w *WarehouseAssert) HasNoQueryAccelerationMaxScaleFactor() *WarehouseAsser
 	return w
 }
 
-func (w *WarehouseAssert) HasNoMaxStatementSize() *WarehouseAssert {
+func (w *WarehouseAssert) HasNoMaxQueryPerformanceLevel() *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.MaxStatementSize != nil {
-			return fmt.Errorf("expected max statement size to be empty; got: %s", *o.MaxStatementSize)
+		if o.MaxQueryPerformanceLevel != nil {
+			return fmt.Errorf("expected max query performance level to be empty; got: %s", *o.MaxQueryPerformanceLevel)
 		}
 		return nil
 	})
 	return w
 }
 
-func (w *WarehouseAssert) HasNoMaxBurstRateCredits() *WarehouseAssert {
+func (w *WarehouseAssert) HasNoQueryThroughputMultiplier() *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.MaxBurstRateCredits != nil {
-			return fmt.Errorf("expected max burst rate credits to be empty; got: %d", *o.MaxBurstRateCredits)
+		if o.QueryThroughputMultiplier != nil {
+			return fmt.Errorf("expected query throughput multiplier to be empty; got: %d", *o.QueryThroughputMultiplier)
 		}
 		return nil
 	})
