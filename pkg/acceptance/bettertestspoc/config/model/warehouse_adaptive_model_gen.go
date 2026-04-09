@@ -18,6 +18,7 @@ type WarehouseAdaptiveModel struct {
 	QueryThroughputMultiplier       tfconfig.Variable `json:"query_throughput_multiplier,omitempty"`
 	StatementQueuedTimeoutInSeconds tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
 	StatementTimeoutInSeconds       tfconfig.Variable `json:"statement_timeout_in_seconds,omitempty"`
+	WarehouseType                   tfconfig.Variable `json:"warehouse_type,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -109,6 +110,11 @@ func (w *WarehouseAdaptiveModel) WithStatementTimeoutInSeconds(statementTimeoutI
 	return w
 }
 
+func (w *WarehouseAdaptiveModel) WithWarehouseType(warehouseType string) *WarehouseAdaptiveModel {
+	w.WarehouseType = tfconfig.StringVariable(warehouseType)
+	return w
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -145,5 +151,10 @@ func (w *WarehouseAdaptiveModel) WithStatementQueuedTimeoutInSecondsValue(value 
 
 func (w *WarehouseAdaptiveModel) WithStatementTimeoutInSecondsValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
 	w.StatementTimeoutInSeconds = value
+	return w
+}
+
+func (w *WarehouseAdaptiveModel) WithWarehouseTypeValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
+	w.WarehouseType = value
 	return w
 }
