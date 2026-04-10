@@ -61,7 +61,7 @@ func Test_AllEnumConversions(t *testing.T) {
 		typedEnumTestProvider[NetworkRuleMode]{"NetworkRuleMode", AllNetworkRuleModes, ToNetworkRuleMode},
 	}
 
-	require.Greater(t, len(allEnumConversionTests), 0)
+	require.Positive(t, len(allEnumConversionTests))
 
 	allEnumConversionTests = append(allEnumConversionTests, additional...)
 
