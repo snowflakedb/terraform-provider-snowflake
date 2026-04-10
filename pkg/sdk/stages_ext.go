@@ -3,7 +3,6 @@ package sdk
 import (
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -115,7 +114,7 @@ type StageDirectoryTable struct {
 	Enable                       bool
 	AutoRefresh                  bool
 	DirectoryNotificationChannel *string
-	LastRefreshedOn              *time.Time
+	LastRefreshedOn              *string
 }
 
 // StageDetails represents the parsed result of DESCRIBE STAGE
@@ -152,11 +151,7 @@ type StageCredentials struct {
 func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 	details := &StageDetails{}
 
-	directoryTable, err := parseDirectoryTable(properties)
-	if err != nil {
-		return nil, err
-	}
-	details.DirectoryTable = directoryTable
+	details.DirectoryTable = parseDirectoryTable(properties)
 	details.PrivateLink = parsePrivateLink(properties)
 	details.Location = parseStageLocationDetails(properties)
 	details.Credentials = parseStageCredentials(properties)
@@ -416,7 +411,7 @@ func parseXmlFileFormat(properties []StageProperty) *FileFormatXml {
 	return xml
 }
 
-func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {
+func parseDirectoryTable(properties []StageProperty) *StageDirectoryTable {
 	dt := &StageDirectoryTable{}
 	filtered := collections.Filter(properties, func(prop StageProperty) bool {
 		return prop.Parent == "DIRECTORY"
@@ -431,16 +426,12 @@ func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, erro
 			dt.DirectoryNotificationChannel = &prop.Value
 		case "LAST_REFRESHED_ON":
 			if prop.Value != "" {
-				t, err := time.Parse("2006-01-02 15:04:05.000 -0700", prop.Value)
-				if err != nil {
-					return nil, err
-				}
-				dt.LastRefreshedOn = &t
+				dt.LastRefreshedOn = &prop.Value
 			}
 		}
 	}
 
-	return dt, nil
+	return dt
 }
 
 func parsePrivateLink(properties []StageProperty) *StagePrivateLink {

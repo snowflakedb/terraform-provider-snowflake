@@ -28,6 +28,55 @@ func ImportedGrantPrivilegesToShareResource(t *testing.T, id string) *GrantPrivi
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (g *GrantPrivilegesToShareResourceAssert) HasOnAllTablesInSchema(expected string) *GrantPrivilegesToShareResourceAssert {
+	g.StringValueSet("on_all_tables_in_schema", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToShareResourceAssert) HasOnDatabase(expected string) *GrantPrivilegesToShareResourceAssert {
+	g.StringValueSet("on_database", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToShareResourceAssert) HasOnFunction(expected string) *GrantPrivilegesToShareResourceAssert {
+	g.StringValueSet("on_function", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToShareResourceAssert) HasOnSchema(expected string) *GrantPrivilegesToShareResourceAssert {
+	g.StringValueSet("on_schema", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToShareResourceAssert) HasOnTable(expected string) *GrantPrivilegesToShareResourceAssert {
+	g.StringValueSet("on_table", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToShareResourceAssert) HasOnTag(expected string) *GrantPrivilegesToShareResourceAssert {
+	g.StringValueSet("on_tag", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToShareResourceAssert) HasOnView(expected string) *GrantPrivilegesToShareResourceAssert {
+	g.StringValueSet("on_view", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToShareResourceAssert) HasPrivileges(expected ...string) *GrantPrivilegesToShareResourceAssert {
+	g.SetContainsExactlyStringValues("privileges", expected...)
+	return g
+}
+
+func (g *GrantPrivilegesToShareResourceAssert) HasToShare(expected string) *GrantPrivilegesToShareResourceAssert {
+	g.StringValueSet("to_share", expected)
+	return g
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -64,11 +113,6 @@ func (g *GrantPrivilegesToShareResourceAssert) HasOnTagString(expected string) *
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnViewString(expected string) *GrantPrivilegesToShareResourceAssert {
 	g.AddAssertion(assert.ValueSet("on_view", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToShareResourceAssert) HasPrivilegesString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("privileges", expected))
 	return g
 }
 

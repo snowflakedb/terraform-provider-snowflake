@@ -330,6 +330,7 @@ func TestInt_RowAccessPoliciesDescribe(t *testing.T) {
 			*sdk.NewCreateRowAccessPolicyArgsRequest("W", testdatatypes.DataTypeArray),
 			*sdk.NewCreateRowAccessPolicyArgsRequest("X", testdatatypes.DataTypeGeography),
 			*sdk.NewCreateRowAccessPolicyArgsRequest("Y", testdatatypes.DataTypeGeometry),
+			*sdk.NewCreateRowAccessPolicyArgsRequest("AA", testdatatypes.DataTypeDecfloat),
 			// TODO(SNOW-1596962): Fully support VECTOR data type sdk.ParseFunctionArgumentsFromString could be a base for another function that takes argument names into consideration.
 			// *sdk.NewCreateRowAccessPolicyArgsRequest("Z", "VECTOR(INT, 16)"),
 		}

@@ -28,6 +28,50 @@ func ImportedSecretWithClientCredentialsResource(t *testing.T, id string) *Secre
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SecretWithClientCredentialsResourceAssert) HasDatabase(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasSchema(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasName(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasApiAuthentication(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.StringValueSet("api_authentication", expected)
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasComment(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasFullyQualifiedName(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasOauthScopes(expected ...string) *SecretWithClientCredentialsResourceAssert {
+	s.SetContainsExactlyStringValues("oauth_scopes", expected...)
+	return s
+}
+
+func (s *SecretWithClientCredentialsResourceAssert) HasSecretType(expected string) *SecretWithClientCredentialsResourceAssert {
+	s.StringValueSet("secret_type", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -59,11 +103,6 @@ func (s *SecretWithClientCredentialsResourceAssert) HasCommentString(expected st
 
 func (s *SecretWithClientCredentialsResourceAssert) HasFullyQualifiedNameString(expected string) *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return s
-}
-
-func (s *SecretWithClientCredentialsResourceAssert) HasOauthScopesString(expected string) *SecretWithClientCredentialsResourceAssert {
-	s.AddAssertion(assert.ValueSet("oauth_scopes", expected))
 	return s
 }
 

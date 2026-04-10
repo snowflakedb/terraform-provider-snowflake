@@ -93,8 +93,8 @@ func (s *StageShowOutputAssert) HasType(expected sdk.StageType) *StageShowOutput
 	return s
 }
 
-func (s *StageShowOutputAssert) HasCloud(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("cloud", expected))
+func (s *StageShowOutputAssert) HasCloud(expected sdk.StageCloud) *StageShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("cloud", expected))
 	return s
 }
 
@@ -178,7 +178,7 @@ func (s *StageShowOutputAssert) HasNoType() *StageShowOutputAssert {
 }
 
 func (s *StageShowOutputAssert) HasNoCloud() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("cloud"))
+	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("cloud"))
 	return s
 }
 

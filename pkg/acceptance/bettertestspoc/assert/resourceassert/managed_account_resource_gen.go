@@ -28,6 +28,65 @@ func ImportedManagedAccountResource(t *testing.T, id string) *ManagedAccountReso
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (m *ManagedAccountResourceAssert) HasName(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("name", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasAdminName(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("admin_name", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasAdminPassword(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("admin_password", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasCloud(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("cloud", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasComment(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("comment", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasCreatedOn(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("created_on", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasFullyQualifiedName(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("fully_qualified_name", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasLocator(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("locator", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasRegion(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("region", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasType(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("type", expected)
+	return m
+}
+
+func (m *ManagedAccountResourceAssert) HasUrl(expected string) *ManagedAccountResourceAssert {
+	m.StringValueSet("url", expected)
+	return m
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

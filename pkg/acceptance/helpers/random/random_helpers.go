@@ -109,6 +109,10 @@ func NumericN(num int) string {
 	return gofakeit.Password(false, false, true, false, false, num)
 }
 
+func IntRange(min, max int) int {
+	return gofakeit.IntRange(min, max)
+}
+
 // It must be either 128 bits, 192 bits, or 256 bits long
 func AwsCseMasterKey() string {
 	return AlphaN(256 / 8)

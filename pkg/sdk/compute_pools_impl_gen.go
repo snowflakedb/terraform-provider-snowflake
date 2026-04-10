@@ -12,8 +12,10 @@ import (
 
 var _ ComputePools = (*computePools)(nil)
 
-var _ convertibleRow[ComputePool] = new(computePoolsRow)
-var _ convertibleRow[ComputePoolDetails] = new(computePoolDescRow)
+var (
+	_ convertibleRow[ComputePool]        = new(computePoolsRow)
+	_ convertibleRow[ComputePoolDetails] = new(computePoolDescRow)
+)
 
 type computePools struct {
 	client *Client

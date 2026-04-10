@@ -2,9 +2,7 @@
 
 package sdk
 
-var (
-	_ optionsProvider[GetForEntityDataMetricFunctionReferenceOptions] = new(GetForEntityDataMetricFunctionReferenceRequest)
-)
+var _ optionsProvider[GetForEntityDataMetricFunctionReferenceOptions] = new(GetForEntityDataMetricFunctionReferenceRequest)
 
 type GetForEntityDataMetricFunctionReferenceRequest struct {
 	parameters *dataMetricFunctionReferenceParametersRequest // required

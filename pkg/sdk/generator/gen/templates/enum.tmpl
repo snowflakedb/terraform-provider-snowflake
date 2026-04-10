@@ -1,0 +1,32 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
+
+import (
+	"fmt"
+	"slices"
+	"strings"
+)
+
+{{ range .Enums }}
+type {{ .Name }} string
+
+const (
+	{{ $enumTypeName := .Name }}
+	{{- range .ValueRepresentations }}
+	{{ .Name }} {{ $enumTypeName }} = "{{ .Value }}"
+	{{- end }}
+)
+
+var All{{ .NamePlural }} = []{{ .Name }}{
+	{{- range .ValueRepresentations }}
+	{{ .Name }},
+	{{- end }}
+}
+
+func To{{ .Name }}(s string) ({{ .Name }}, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(All{{ .NamePlural }}, {{ .Name }}(s)) {
+		return "", fmt.Errorf("invalid {{ .Name }}: %s", s)
+	}
+	return {{ .Name }}(s), nil
+}
+{{ end }}

@@ -12,8 +12,10 @@ import (
 
 var _ RowAccessPolicies = (*rowAccessPolicies)(nil)
 
-var _ convertibleRow[RowAccessPolicy] = new(rowAccessPolicyDBRow)
-var _ convertibleRow[RowAccessPolicyDescription] = new(describeRowAccessPolicyDBRow)
+var (
+	_ convertibleRow[RowAccessPolicy]            = new(rowAccessPolicyDBRow)
+	_ convertibleRow[RowAccessPolicyDescription] = new(describeRowAccessPolicyDBRow)
+)
 
 type rowAccessPolicies struct {
 	client *Client

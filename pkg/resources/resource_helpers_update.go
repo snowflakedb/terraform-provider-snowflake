@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -217,6 +218,23 @@ func attributeMappedValueUpdate[T, R any](d *schema.ResourceData, key string, se
 				return err
 			}
 			*setField = sdk.Pointer(mappedValue)
+		} else {
+			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
+	if d.HasChange(key) {
+		v := d.Get(key)
+		mappedValue, err := collections.MapErr(v.(*schema.Set).List(), mapper)
+		if err != nil {
+			return err
+		}
+
+		if len(mappedValue) > 0 {
+			*setField = mappedValue
 		} else {
 			*unsetField = sdk.Bool(true)
 		}

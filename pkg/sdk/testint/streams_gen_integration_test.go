@@ -152,8 +152,8 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeStage).
 			HasMode(sdk.StreamModeDefault).
-			HasStageName(stage.ID().Name()).
-			HasBaseTablesPartiallyQualified(stage.ID().Name()),
+			HasTableId(stage.ID()).
+			HasBaseTables(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())),
 		)
 	})
 

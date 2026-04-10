@@ -28,6 +28,75 @@ func ImportedViewResource(t *testing.T, id string) *ViewResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (v *ViewResourceAssert) HasDatabase(expected string) *ViewResourceAssert {
+	v.StringValueSet("database", expected)
+	return v
+}
+
+func (v *ViewResourceAssert) HasSchema(expected string) *ViewResourceAssert {
+	v.StringValueSet("schema", expected)
+	return v
+}
+
+func (v *ViewResourceAssert) HasName(expected string) *ViewResourceAssert {
+	v.StringValueSet("name", expected)
+	return v
+}
+
+// typed assert for "aggregation_policy" (type: List, subtype: Map) is not currently supported
+
+func (v *ViewResourceAssert) HasChangeTracking(expected string) *ViewResourceAssert {
+	v.StringValueSet("change_tracking", expected)
+	return v
+}
+
+// typed assert for "column" (type: List, subtype: Map) is not currently supported
+
+func (v *ViewResourceAssert) HasComment(expected string) *ViewResourceAssert {
+	v.StringValueSet("comment", expected)
+	return v
+}
+
+func (v *ViewResourceAssert) HasCopyGrants(expected bool) *ViewResourceAssert {
+	v.BoolValueSet("copy_grants", expected)
+	return v
+}
+
+// typed assert for "data_metric_function" (type: Set, subtype: Map) is not currently supported
+
+// typed assert for "data_metric_schedule" (type: List, subtype: Map) is not currently supported
+
+func (v *ViewResourceAssert) HasFullyQualifiedName(expected string) *ViewResourceAssert {
+	v.StringValueSet("fully_qualified_name", expected)
+	return v
+}
+
+func (v *ViewResourceAssert) HasIsRecursive(expected string) *ViewResourceAssert {
+	v.StringValueSet("is_recursive", expected)
+	return v
+}
+
+func (v *ViewResourceAssert) HasIsSecure(expected string) *ViewResourceAssert {
+	v.StringValueSet("is_secure", expected)
+	return v
+}
+
+func (v *ViewResourceAssert) HasIsTemporary(expected string) *ViewResourceAssert {
+	v.StringValueSet("is_temporary", expected)
+	return v
+}
+
+// typed assert for "row_access_policy" (type: List, subtype: Map) is not currently supported
+
+func (v *ViewResourceAssert) HasStatement(expected string) *ViewResourceAssert {
+	v.StringValueSet("statement", expected)
+	return v
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,18 +116,8 @@ func (v *ViewResourceAssert) HasNameString(expected string) *ViewResourceAssert 
 	return v
 }
 
-func (v *ViewResourceAssert) HasAggregationPolicyString(expected string) *ViewResourceAssert {
-	v.AddAssertion(assert.ValueSet("aggregation_policy", expected))
-	return v
-}
-
 func (v *ViewResourceAssert) HasChangeTrackingString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("change_tracking", expected))
-	return v
-}
-
-func (v *ViewResourceAssert) HasColumnString(expected string) *ViewResourceAssert {
-	v.AddAssertion(assert.ValueSet("column", expected))
 	return v
 }
 
@@ -69,16 +128,6 @@ func (v *ViewResourceAssert) HasCommentString(expected string) *ViewResourceAsse
 
 func (v *ViewResourceAssert) HasCopyGrantsString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("copy_grants", expected))
-	return v
-}
-
-func (v *ViewResourceAssert) HasDataMetricFunctionString(expected string) *ViewResourceAssert {
-	v.AddAssertion(assert.ValueSet("data_metric_function", expected))
-	return v
-}
-
-func (v *ViewResourceAssert) HasDataMetricScheduleString(expected string) *ViewResourceAssert {
-	v.AddAssertion(assert.ValueSet("data_metric_schedule", expected))
 	return v
 }
 
@@ -99,11 +148,6 @@ func (v *ViewResourceAssert) HasIsSecureString(expected string) *ViewResourceAss
 
 func (v *ViewResourceAssert) HasIsTemporaryString(expected string) *ViewResourceAssert {
 	v.AddAssertion(assert.ValueSet("is_temporary", expected))
-	return v
-}
-
-func (v *ViewResourceAssert) HasRowAccessPolicyString(expected string) *ViewResourceAssert {
-	v.AddAssertion(assert.ValueSet("row_access_policy", expected))
 	return v
 }
 

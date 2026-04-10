@@ -28,6 +28,105 @@ func ImportedWarehouseResource(t *testing.T, id string) *WarehouseResourceAssert
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (w *WarehouseResourceAssert) HasName(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("name", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasAutoResume(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("auto_resume", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasAutoSuspend(expected int) *WarehouseResourceAssert {
+	w.IntValueSet("auto_suspend", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasComment(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("comment", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasEnableQueryAcceleration(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("enable_query_acceleration", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasFullyQualifiedName(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("fully_qualified_name", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasGeneration(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("generation", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasInitiallySuspended(expected bool) *WarehouseResourceAssert {
+	w.BoolValueSet("initially_suspended", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasMaxClusterCount(expected int) *WarehouseResourceAssert {
+	w.IntValueSet("max_cluster_count", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasMaxConcurrencyLevel(expected int) *WarehouseResourceAssert {
+	w.IntValueSet("max_concurrency_level", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasMinClusterCount(expected int) *WarehouseResourceAssert {
+	w.IntValueSet("min_cluster_count", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactor(expected int) *WarehouseResourceAssert {
+	w.IntValueSet("query_acceleration_max_scale_factor", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasResourceConstraint(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("resource_constraint", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasResourceMonitor(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("resource_monitor", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasScalingPolicy(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("scaling_policy", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasStatementQueuedTimeoutInSeconds(expected int) *WarehouseResourceAssert {
+	w.IntValueSet("statement_queued_timeout_in_seconds", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasStatementTimeoutInSeconds(expected int) *WarehouseResourceAssert {
+	w.IntValueSet("statement_timeout_in_seconds", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasWarehouseSize(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("warehouse_size", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasWarehouseType(expected string) *WarehouseResourceAssert {
+	w.StringValueSet("warehouse_type", expected)
+	return w
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

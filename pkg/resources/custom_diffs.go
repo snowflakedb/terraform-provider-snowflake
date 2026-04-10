@@ -116,6 +116,7 @@ func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
 // ComputedIfAnyAttributeChanged marks the given fields as computed if any of the listed fields changes.
 // It takes field-level diffSuppress into consideration based on the schema passed.
 // If the field is not found in the given schema, it continues without error. Only top level schema fields should be used.
+// If the field is a nested field, it may cause diffs eagerly. This happens because diff.HasChange returns true, even if a nested field diff is suppressed.
 func ComputedIfAnyAttributeChanged(resourceSchema map[string]*schema.Schema, key string, changedAttributeKeys ...string) schema.CustomizeDiffFunc {
 	return customdiff.ComputedIf(key, func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) bool {
 		var result bool
@@ -281,6 +282,27 @@ func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) sc
 // RecreateWhenStageCloudChangedExternally recreates a stage when argument stageCloud is different than in the state.
 func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.CustomizeDiffFunc {
 	return RecreateWhenResourceTypeChangedExternally("cloud", stageCloud, sdk.ToStageCloud)
+}
+
+// HandleWarehouseExternalTypeChange detects when the warehouse type has been changed externally
+// and plans an update to restore it to warehouseType (without forcing recreation).
+func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		if n := diff.Get("warehouse_type"); n != nil {
+			gotTypeRaw := n.(string)
+			if gotTypeRaw == "" {
+				return nil
+			}
+			gotType, err := sdk.ToWarehouseType(gotTypeRaw)
+			if err != nil {
+				return fmt.Errorf("unknown warehouse type: %w", err)
+			}
+			if gotType != warehouseType {
+				return diff.SetNew("warehouse_type", string(warehouseType))
+			}
+		}
+		return nil
+	}
 }
 
 // RecreateWhenResourceTypeChangedExternally recreates a resource when argument wantType is different than the value in typeField.

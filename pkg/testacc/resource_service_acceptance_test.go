@@ -248,7 +248,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString(r.BooleanTrue).
 						HasMinInstancesString("2").
 						HasMinReadyInstancesString("2").
@@ -330,7 +330,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString("true").
 						HasMinInstancesString("2").
 						HasMinReadyInstancesString("2").
@@ -1183,7 +1183,7 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString(r.BooleanTrue).
 						HasMinInstancesString("1").
 						HasMinReadyInstancesString("1").
@@ -1257,7 +1257,13 @@ func TestAcc_Service_complete(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"from_specification"},
+				ImportStateVerifyIgnore: []string{"from_specification", "show_output.0.current_instances", "show_output.0.target_instances", "describe_output.0.current_instances", "describe_output.0.target_instances"},
+				ImportStateCheck: assertThatImport(t,
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
+				),
 			},
 		},
 	})

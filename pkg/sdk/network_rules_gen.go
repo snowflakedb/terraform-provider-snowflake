@@ -73,17 +73,16 @@ type ShowNetworkRuleOptions struct {
 }
 
 type ShowNetworkRulesRow struct {
-	CreatedOn    time.Time `db:"created_on"`
-	Name         string    `db:"name"`
-	DatabaseName string    `db:"database_name"`
-	SchemaName   string    `db:"schema_name"`
-	Owner        string    `db:"owner"`
-	Comment      string    `db:"comment"`
-	Type         string    `db:"type"`
-	Mode         string    `db:"mode"`
-	// adjusted manually
-	EntriesInValueList int    `db:"entries_in_valuelist"`
-	OwnerRoleType      string `db:"owner_role_type"`
+	CreatedOn          time.Time `db:"created_on"`
+	Name               string    `db:"name"`
+	DatabaseName       string    `db:"database_name"`
+	SchemaName         string    `db:"schema_name"`
+	Owner              string    `db:"owner"`
+	Comment            string    `db:"comment"`
+	Type               string    `db:"type"`
+	Mode               string    `db:"mode"`
+	EntriesInValuelist int       `db:"entries_in_valuelist"`
+	OwnerRoleType      string    `db:"owner_role_type"`
 }
 
 type NetworkRule struct {

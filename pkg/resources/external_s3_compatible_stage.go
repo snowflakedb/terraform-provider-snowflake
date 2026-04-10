@@ -9,10 +9,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -97,15 +99,17 @@ var externalS3CompatStageSchema = func() map[string]*schema.Schema {
 
 func ExternalS3CompatibleStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingCreateWrapper(resources.ExternalS3CompatibleStage, CreateExternalS3CompatStage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingReadWrapper(resources.ExternalS3CompatibleStage, ReadExternalS3CompatStageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingUpdateWrapper(resources.ExternalS3CompatibleStage, UpdateExternalS3CompatStage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalS3CompatStageResource, resources.ExternalS3CompatibleStage),
+		SchemaVersion: 1,
+
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingCreateWrapper(resources.ExternalS3CompatibleStage, CreateExternalS3CompatStage)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingReadWrapper(resources.ExternalS3CompatibleStage, ReadExternalS3CompatStageFunc(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingUpdateWrapper(resources.ExternalS3CompatibleStage, UpdateExternalS3CompatStage)),
+		DeleteContext: DeleteStage(previewfeatures.ExternalS3CompatibleStageResource, resources.ExternalS3CompatibleStage),
 		Description:   "Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3CompatibleStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, ShowOutputAttributeName, "name", "comment", "url", "endpoint"),
-			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "file_format"),
+			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
@@ -123,16 +127,26 @@ func ExternalS3CompatibleStage() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.ExternalS3CompatibleStage, ImportExternalS3CompatStage),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_ExternalS3CompatibleStageStateUpgrader,
+			},
+		},
 	}
 }
 
 func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
 		return nil, err
 	}
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
+
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
 		return nil, err
 	}
 	stage, err := client.Stages.ShowByIDSafely(ctx, id)
@@ -140,34 +154,26 @@ func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 		return nil, err
 	}
 
-	stageDetails, err := client.Stages.Describe(ctx, id)
+	stageProperties, err := client.Stages.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	details, err := sdk.ParseStageDetails(stageDetails)
+	details, err := sdk.ParseStageDetails(stageProperties)
 	if err != nil {
 		return nil, err
 	}
-	if details.DirectoryTable != nil {
-		if err := d.Set("directory", []map[string]any{
-			{
-				"enable":       details.DirectoryTable.Enable,
-				"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-			},
-		}); err != nil {
-			return nil, err
-		}
+
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+
+	if err := importStageCommonFields(d, details, setDefaults); err != nil {
+		return nil, err
 	}
+
 	if err := d.Set("url", stage.Url); err != nil {
 		return nil, err
 	}
 	if stage.Endpoint != nil {
 		if err := d.Set("endpoint", *stage.Endpoint); err != nil {
-			return nil, err
-		}
-	}
-	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
-		if err := d.Set("file_format", fileFormat); err != nil {
 			return nil, err
 		}
 	}
@@ -248,20 +254,8 @@ func ReadExternalS3CompatStageFunc(withExternalChangesMarking bool) schema.ReadC
 		}
 
 		if withExternalChangesMarking {
-			directoryTable := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": details.DirectoryTable.AutoRefresh,
-				},
-			}
-			directoryTableToSet := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-				},
-			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+				directoryTableOutputMapping(*details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)
 			}

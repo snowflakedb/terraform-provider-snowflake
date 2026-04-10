@@ -2,9 +2,7 @@
 
 package sdk
 
-var (
-	_ optionsProvider[DummyOperationFileFormatOptions] = new(DummyOperationFileFormatRequest)
-)
+var _ optionsProvider[DummyOperationFileFormatOptions] = new(DummyOperationFileFormatRequest)
 
 type DummyOperationFileFormatRequest struct {
 	FileFormat *FileFormatOptionsRequest

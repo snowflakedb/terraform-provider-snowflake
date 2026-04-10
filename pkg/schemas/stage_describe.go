@@ -86,6 +86,10 @@ var stageDescribeSchema = map[string]*schema.Schema{
 					Type:     schema.TypeBool,
 					Computed: true,
 				},
+				"last_refreshed_on": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
 			},
 		},
 		Computed: true,
@@ -439,8 +443,9 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 	if properties.DirectoryTable != nil {
 		schema["directory_table"] = []map[string]any{
 			{
-				"enable":       properties.DirectoryTable.Enable,
-				"auto_refresh": properties.DirectoryTable.AutoRefresh,
+				"enable":            properties.DirectoryTable.Enable,
+				"auto_refresh":      properties.DirectoryTable.AutoRefresh,
+				"last_refreshed_on": properties.DirectoryTable.LastRefreshedOn,
 			},
 		}
 	}

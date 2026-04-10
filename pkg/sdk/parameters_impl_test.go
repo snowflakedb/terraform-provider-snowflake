@@ -32,6 +32,7 @@ func TestSessionParameters_setParam(t *testing.T) {
 		{parameter: SessionParameterCsvTimestampFormat, value: "some", expectedValue: "some", accessor: func(sp *SessionParameters) any { return *sp.CsvTimestampFormat }},
 		{parameter: SessionParameterDateInputFormat, value: "some", expectedValue: "some", accessor: func(sp *SessionParameters) any { return *sp.DateInputFormat }},
 		{parameter: SessionParameterDateOutputFormat, value: "some", expectedValue: "some", accessor: func(sp *SessionParameters) any { return *sp.DateOutputFormat }},
+		{parameter: SessionParameterEnableGetDdlUseDataTypeAlias, value: "true", expectedValue: true, accessor: func(sp *SessionParameters) any { return *sp.EnableGetDdlUseDataTypeAlias }},
 		{parameter: SessionParameterEnableUnloadPhysicalTypeOptimization, value: "true", expectedValue: true, accessor: func(sp *SessionParameters) any { return *sp.EnableUnloadPhysicalTypeOptimization }},
 		{parameter: SessionParameterErrorOnNondeterministicMerge, value: "true", expectedValue: true, accessor: func(sp *SessionParameters) any { return *sp.ErrorOnNondeterministicMerge }},
 		{parameter: SessionParameterErrorOnNondeterministicUpdate, value: "true", expectedValue: true, accessor: func(sp *SessionParameters) any { return *sp.ErrorOnNondeterministicUpdate }},

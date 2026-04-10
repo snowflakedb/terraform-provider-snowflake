@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	gofumptformat "mvdan.cc/gofumpt/format"
 )
 
 var (
@@ -63,6 +65,11 @@ func WriteCodeToFile(buffer *bytes.Buffer, fileName string) error {
 	}
 
 	src, err = format.Source(src)
+	if err != nil {
+		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
+	}
+
+	src, err = gofumptformat.Source(src, gofumptformat.Options{})
 	if err != nil {
 		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
 	}

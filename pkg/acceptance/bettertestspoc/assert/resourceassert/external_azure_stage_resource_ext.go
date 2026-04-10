@@ -59,11 +59,6 @@ func (e *ExternalAzureStageResourceAssert) HasCloudEnum(expected sdk.StageCloud)
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasFileFormatEmpty() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
-	return e
-}
-
 func (e *ExternalAzureStageResourceAssert) HasFileFormatFormatName(expected string) *ExternalAzureStageResourceAssert {
 	for _, a := range stageHasFileFormatFormatName(expected) {
 		e.AddAssertion(a)

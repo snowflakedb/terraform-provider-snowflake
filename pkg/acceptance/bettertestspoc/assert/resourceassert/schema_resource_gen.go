@@ -28,6 +28,125 @@ func ImportedSchemaResource(t *testing.T, id string) *SchemaResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SchemaResourceAssert) HasDatabase(expected string) *SchemaResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasName(expected string) *SchemaResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasCatalog(expected string) *SchemaResourceAssert {
+	s.StringValueSet("catalog", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasComment(expected string) *SchemaResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasDataRetentionTimeInDays(expected int) *SchemaResourceAssert {
+	s.IntValueSet("data_retention_time_in_days", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasDefaultDdlCollation(expected string) *SchemaResourceAssert {
+	s.StringValueSet("default_ddl_collation", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasEnableConsoleOutput(expected bool) *SchemaResourceAssert {
+	s.BoolValueSet("enable_console_output", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasExternalVolume(expected string) *SchemaResourceAssert {
+	s.StringValueSet("external_volume", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasFullyQualifiedName(expected string) *SchemaResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasIsTransient(expected string) *SchemaResourceAssert {
+	s.StringValueSet("is_transient", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasLogLevel(expected string) *SchemaResourceAssert {
+	s.StringValueSet("log_level", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *SchemaResourceAssert {
+	s.IntValueSet("max_data_extension_time_in_days", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasPipeExecutionPaused(expected bool) *SchemaResourceAssert {
+	s.BoolValueSet("pipe_execution_paused", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *SchemaResourceAssert {
+	s.BoolValueSet("quoted_identifiers_ignore_case", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasReplaceInvalidCharacters(expected bool) *SchemaResourceAssert {
+	s.BoolValueSet("replace_invalid_characters", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasStorageSerializationPolicy(expected string) *SchemaResourceAssert {
+	s.StringValueSet("storage_serialization_policy", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasSuspendTaskAfterNumFailures(expected int) *SchemaResourceAssert {
+	s.IntValueSet("suspend_task_after_num_failures", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasTaskAutoRetryAttempts(expected int) *SchemaResourceAssert {
+	s.IntValueSet("task_auto_retry_attempts", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasTraceLevel(expected string) *SchemaResourceAssert {
+	s.StringValueSet("trace_level", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskManagedInitialWarehouseSize(expected string) *SchemaResourceAssert {
+	s.StringValueSet("user_task_managed_initial_warehouse_size", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *SchemaResourceAssert {
+	s.IntValueSet("user_task_minimum_trigger_interval_in_seconds", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasUserTaskTimeoutMs(expected int) *SchemaResourceAssert {
+	s.IntValueSet("user_task_timeout_ms", expected)
+	return s
+}
+
+func (s *SchemaResourceAssert) HasWithManagedAccess(expected string) *SchemaResourceAssert {
+	s.StringValueSet("with_managed_access", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

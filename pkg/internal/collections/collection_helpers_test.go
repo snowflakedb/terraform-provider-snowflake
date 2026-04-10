@@ -183,3 +183,47 @@ func Test_GroupByProperty(t *testing.T) {
 		assert.Contains(t, groups["A_1"], items[4])
 	})
 }
+
+func Test_CommonPrefixLastIndex(t *testing.T) {
+	testCases := []struct {
+		name     string
+		a        []int
+		b        []int
+		expected int
+	}{
+		{name: "nil slices", a: nil, b: nil, expected: -1},
+		{name: "first nil second non-empty", a: nil, b: []int{1}, expected: -1},
+		{name: "two empty lists", a: []int{}, b: []int{}, expected: -1},
+		{name: "first list empty", a: []int{}, b: []int{1}, expected: -1},
+		{name: "second list empty", a: []int{1}, b: []int{}, expected: -1},
+		{name: "no common prefix - length 1", a: []int{1}, b: []int{2}, expected: -1},
+		{name: "no common prefix - length 2", a: []int{1, 2}, b: []int{3, 4}, expected: -1},
+		{name: "identical lists - length 1", a: []int{1}, b: []int{1}, expected: 0},
+		{name: "identical lists - length 2", a: []int{1, 2}, b: []int{1, 2}, expected: 1},
+		{name: "common prefix up to index 1 out of 3", a: []int{1, 2, 3}, b: []int{1, 2, 4}, expected: 1},
+		{name: "common prefix up to index 2 out of 4", a: []int{1, 2, 3, 4}, b: []int{1, 2, 3, 5}, expected: 2},
+		{name: "common prefix up to index 1 out of 4", a: []int{1, 2, 3, 4}, b: []int{1, 2, 5, 4}, expected: 1},
+		{name: "different lengths - matching up to last index of shorter list", a: []int{1, 2, 3}, b: []int{1, 2}, expected: 1},
+		{name: "different lengths - matching up to index 2 out of longer list", a: []int{1, 2, 3, 4, 5, 6}, b: []int{1, 2, 3, 7, 8}, expected: 2},
+	}
+
+	intEqual := func(a, b int) bool { return a == b }
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, CommonPrefixLastIndex(tc.a, tc.b, intEqual))
+		})
+	}
+
+	t.Run("custom comparator - compare by struct field", func(t *testing.T) {
+		type item struct {
+			key   string
+			value int
+		}
+		cmpByKey := func(a, b item) bool { return a.key == b.key }
+
+		a := []item{{key: "a", value: 1}, {key: "b", value: 2}, {key: "c", value: 3}}
+		b := []item{{key: "a", value: 99}, {key: "b", value: 88}, {key: "d", value: 3}}
+
+		require.Equal(t, 1, CommonPrefixLastIndex(a, b, cmpByKey))
+	})
+}

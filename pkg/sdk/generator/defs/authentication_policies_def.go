@@ -21,14 +21,20 @@ var (
 	AuthenticationPolicyPatPolicyDef         = g.NewQueryStruct("AuthenticationPolicyPatPolicy").
 							OptionalNumberAssignment("DEFAULT_EXPIRY_IN_DAYS", g.ParameterOptions().NoQuotes()).
 							OptionalNumberAssignment("MAX_EXPIRY_IN_DAYS", g.ParameterOptions().NoQuotes()).
+							OptionalBooleanAssignment("REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS", g.ParameterOptions()).
 							OptionalAssignment(
 			"NETWORK_POLICY_EVALUATION",
 			g.KindOfT[sdkcommons.NetworkPolicyEvaluationOption](),
 			g.ParameterOptions().NoQuotes(),
 		).
-		WithValidation(g.AtLeastOneValueSet, "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation")
+		WithValidation(g.AtLeastOneValueSet, "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation")
 	AuthenticationPolicyAllowedProviderListItemDef = g.NewQueryStruct("AuthenticationPolicyAllowedProviderListItem").PredefinedQueryStructField("Provider", g.KindOfT[sdkcommons.AllowedProviderOption](), g.KeywordOptions().SingleQuotes().Required())
-	AuthenticationPolicyWorkloadIdentityPolicyDef  = g.NewQueryStruct("AuthenticationPolicyWorkloadIdentityPolicy").
+	AuthenticationPolicyClientPolicyEntryDef       = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntry").
+							PredefinedQueryStructField("ClientType", g.KindOfT[sdkcommons.ClientPolicyDriverType](), g.KeywordOptions().NoQuotes().Required()).
+							OptionalQueryStructField("Params", AuthenticationPolicyClientPolicyEntryParamsDef, g.ListOptions().SQL("=").Parentheses().Required())
+	AuthenticationPolicyClientPolicyEntryParamsDef = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntryParams").
+							OptionalTextAssignment("MINIMUM_VERSION", g.ParameterOptions().SingleQuotes())
+	AuthenticationPolicyWorkloadIdentityPolicyDef = g.NewQueryStruct("AuthenticationPolicyWorkloadIdentityPolicy").
 							ListAssignment("ALLOWED_PROVIDERS", "AuthenticationPolicyAllowedProviderListItem", g.ParameterOptions().Parentheses()).
 							ListAssignment("ALLOWED_AWS_ACCOUNTS", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
 							ListAssignment("ALLOWED_AZURE_ISSUERS", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
@@ -53,6 +59,7 @@ var authenticationPoliciesDef = g.NewInterface(
 			PredefinedQueryStructField("MfaEnrollment", g.KindOfTPointer[sdkcommons.MfaEnrollmentOption](), g.ParameterOptions().SQL("MFA_ENROLLMENT")).
 			OptionalQueryStructField("MfaPolicy", AuthenticationPolicyMfaPolicyDef, g.ListOptions().SQL("MFA_POLICY =").Parentheses().NoComma()).
 			ListAssignment("CLIENT_TYPES", "ClientTypes", g.ParameterOptions().Parentheses()).
+			ListAssignment("CLIENT_POLICY", "AuthenticationPolicyClientPolicyEntry", g.ParameterOptions().Parentheses()).
 			OptionalQueryStructField("SecurityIntegrations", SecurityIntegrationsOptionDef, g.ParameterOptions().SQL("SECURITY_INTEGRATIONS")).
 			OptionalQueryStructField("PatPolicy", AuthenticationPolicyPatPolicyDef, g.ListOptions().SQL("PAT_POLICY =").Parentheses().NoComma()).
 			OptionalQueryStructField("WorkloadIdentityPolicy", AuthenticationPolicyWorkloadIdentityPolicyDef, g.ListOptions().SQL("WORKLOAD_IDENTITY_POLICY =").Parentheses().NoComma()).
@@ -64,6 +71,8 @@ var authenticationPoliciesDef = g.NewInterface(
 		SecurityIntegrationsOptionDef,
 		AuthenticationPolicyMfaPolicyListItemDef,
 		AuthenticationPolicyMfaPolicyDef,
+		AuthenticationPolicyClientPolicyEntryParamsDef,
+		AuthenticationPolicyClientPolicyEntryDef,
 		AuthenticationPolicyAllowedProviderListItemDef,
 		AuthenticationPolicyWorkloadIdentityPolicyDef,
 	).
@@ -81,17 +90,19 @@ var authenticationPoliciesDef = g.NewInterface(
 					PredefinedQueryStructField("MfaEnrollment", g.KindOfTPointer[sdkcommons.MfaEnrollmentOption](), g.ParameterOptions().SQL("MFA_ENROLLMENT")).
 					OptionalQueryStructField("MfaPolicy", AuthenticationPolicyMfaPolicyDef, g.ListOptions().SQL("MFA_POLICY =").Parentheses().NoComma()).
 					ListAssignment("CLIENT_TYPES", "ClientTypes", g.ParameterOptions().Parentheses()).
+					ListAssignment("CLIENT_POLICY", "AuthenticationPolicyClientPolicyEntry", g.ParameterOptions().Parentheses()).
 					OptionalQueryStructField("SecurityIntegrations", SecurityIntegrationsOptionDef, g.ParameterOptions().SQL("SECURITY_INTEGRATIONS")).
 					OptionalQueryStructField("PatPolicy", AuthenticationPolicyPatPolicyDef, g.ListOptions().SQL("PAT_POLICY =").Parentheses().NoComma()).
 					OptionalQueryStructField("WorkloadIdentityPolicy", AuthenticationPolicyWorkloadIdentityPolicyDef, g.ListOptions().SQL("WORKLOAD_IDENTITY_POLICY =").Parentheses().NoComma()).
 					OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-					WithValidation(g.AtLeastOneValueSet, "AuthenticationMethods", "MfaEnrollment", "ClientTypes", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
+					WithValidation(g.AtLeastOneValueSet, "AuthenticationMethods", "MfaEnrollment", "ClientTypes", "ClientPolicy", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
 				g.KeywordOptions().SQL("SET"),
 			).
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("AuthenticationPolicyUnset").
 					OptionalSQL("CLIENT_TYPES").
+					OptionalSQL("CLIENT_POLICY").
 					OptionalSQL("AUTHENTICATION_METHODS").
 					OptionalSQL("SECURITY_INTEGRATIONS").
 					OptionalSQL("MFA_ENROLLMENT").
@@ -99,7 +110,7 @@ var authenticationPoliciesDef = g.NewInterface(
 					OptionalSQL("PAT_POLICY").
 					OptionalSQL("WORKLOAD_IDENTITY_POLICY").
 					OptionalSQL("COMMENT").
-					WithValidation(g.AtLeastOneValueSet, "ClientTypes", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
+					WithValidation(g.AtLeastOneValueSet, "ClientTypes", "ClientPolicy", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).

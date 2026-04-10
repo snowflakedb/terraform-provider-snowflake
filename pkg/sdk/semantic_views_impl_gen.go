@@ -10,8 +10,10 @@ import (
 
 var _ SemanticViews = (*semanticViews)(nil)
 
-var _ convertibleRow[SemanticViewDetails] = new(semanticViewDetailsRow)
-var _ convertibleRow[SemanticView] = new(semanticViewDBRow)
+var (
+	_ convertibleRow[SemanticViewDetails] = new(semanticViewDetailsRow)
+	_ convertibleRow[SemanticView]        = new(semanticViewDBRow)
+)
 
 type semanticViews struct {
 	client *Client
@@ -153,34 +155,37 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 		opts.semanticViewRelationships = s
 	}
 	if r.semanticViewFacts != nil {
-		s := make([]SemanticExpression, len(r.semanticViewFacts))
+		s := make([]FactDefinition, len(r.semanticViewFacts))
 		for i, v := range r.semanticViewFacts {
-			s[i] = SemanticExpression{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.qualifiedExpressionName.QualifiedExpressionName},
-				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.sqlExpression.SqlExpression},
-				Comment:                 v.Comment,
+			exp := SemanticExpression{
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.semanticExpression.qualifiedExpressionName.QualifiedExpressionName},
+				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.semanticExpression.sqlExpression.SqlExpression},
+				Comment:                 v.semanticExpression.Comment,
 			}
-			if v.synonyms != nil {
-				s[i].synonyms = &Synonyms{
-					WithSynonyms: v.synonyms.WithSynonyms,
+			if v.semanticExpression.synonyms != nil {
+				exp.synonyms = &Synonyms{
+					WithSynonyms: v.semanticExpression.synonyms.WithSynonyms,
 				}
 			}
+			s[i].semanticExpression = &exp
+			s[i].isPrivate = v.isPrivate
 		}
 		opts.semanticViewFacts = s
 	}
 	if r.semanticViewDimensions != nil {
-		s := make([]SemanticExpression, len(r.semanticViewDimensions))
+		s := make([]DimensionDefinition, len(r.semanticViewDimensions))
 		for i, v := range r.semanticViewDimensions {
-			s[i] = SemanticExpression{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.qualifiedExpressionName.QualifiedExpressionName},
-				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.sqlExpression.SqlExpression},
-				Comment:                 v.Comment,
+			exp := SemanticExpression{
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.semanticExpression.qualifiedExpressionName.QualifiedExpressionName},
+				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.semanticExpression.sqlExpression.SqlExpression},
+				Comment:                 v.semanticExpression.Comment,
 			}
-			if v.synonyms != nil {
-				s[i].synonyms = &Synonyms{
-					WithSynonyms: v.synonyms.WithSynonyms,
+			if v.semanticExpression.synonyms != nil {
+				exp.synonyms = &Synonyms{
+					WithSynonyms: v.semanticExpression.synonyms.WithSynonyms,
 				}
 			}
+			s[i].semanticExpression = &exp
 		}
 		opts.semanticViewDimensions = s
 	}
@@ -218,6 +223,7 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 					}
 				}
 			}
+			s[i].isPrivate = v.isPrivate
 		}
 		opts.semanticViewMetrics = s
 	}

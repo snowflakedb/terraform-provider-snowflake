@@ -1,0 +1,244 @@
+package sdk
+
+import (
+	"encoding/json"
+	"fmt"
+	"slices"
+	"strings"
+)
+
+// CopySentinelStorageLocationItem creates a copy of the given storage location with a
+// sentinel name used for Terraform provider operations. This is useful for managing
+// storage location state without affecting user-visible names.
+func CopySentinelStorageLocationItem(
+	storageLocationItem ExternalVolumeStorageLocationItem,
+) (ExternalVolumeStorageLocationItem, error) {
+	// Validate that the storage location has a recognized provider before copying.
+	if _, err := GetStorageLocationStorageProvider(storageLocationItem); err != nil {
+		return ExternalVolumeStorageLocationItem{}, err
+	}
+
+	tempNameStorageLocation := ExternalVolumeStorageLocation{
+		Name:                          "terraform_provider_sentinel_storage_location",
+		S3StorageLocationParams:       storageLocationItem.ExternalVolumeStorageLocation.S3StorageLocationParams,
+		GCSStorageLocationParams:      storageLocationItem.ExternalVolumeStorageLocation.GCSStorageLocationParams,
+		AzureStorageLocationParams:    storageLocationItem.ExternalVolumeStorageLocation.AzureStorageLocationParams,
+		S3CompatStorageLocationParams: storageLocationItem.ExternalVolumeStorageLocation.S3CompatStorageLocationParams,
+	}
+
+	return ExternalVolumeStorageLocationItem{
+		ExternalVolumeStorageLocation: tempNameStorageLocation,
+	}, nil
+}
+
+func GetStorageLocationStorageProvider(i ExternalVolumeStorageLocationItem) (StorageProvider, error) {
+	s := i.ExternalVolumeStorageLocation
+	switch {
+	case s.S3StorageLocationParams != nil && *s.S3StorageLocationParams != S3StorageLocationParams{}:
+		return ToStorageProvider(string(s.S3StorageLocationParams.StorageProvider))
+	case s.GCSStorageLocationParams != nil && *s.GCSStorageLocationParams != GCSStorageLocationParams{}:
+		return StorageProviderGCS, nil
+	case s.AzureStorageLocationParams != nil && *s.AzureStorageLocationParams != AzureStorageLocationParams{}:
+		return StorageProviderAzure, nil
+	case s.S3CompatStorageLocationParams != nil && *s.S3CompatStorageLocationParams != S3CompatStorageLocationParams{}:
+		return StorageProviderS3Compatible, nil
+	default:
+		return "", fmt.Errorf("Invalid storage location")
+	}
+}
+
+// ExternalVolumeStorageLocationDetails is the typed representation of a storage location
+// returned by DESCRIBE EXTERNAL VOLUME. Common fields live on the wrapper; provider-specific
+// fields live on exactly one of the provider sub-structs (the rest are nil).
+type ExternalVolumeStorageLocationDetails struct {
+	Name                    string
+	StorageProvider         string
+	StorageBaseUrl          string
+	StorageAllowedLocations []string
+	EncryptionType          string
+	S3StorageLocation       *StorageLocationS3Details
+	GCSStorageLocation      *StorageLocationGcsDetails
+	AzureStorageLocation    *StorageLocationAzureDetails
+	S3CompatStorageLocation *StorageLocationS3CompatDetails
+}
+
+type StorageLocationS3Details struct {
+	StorageAwsRoleArn        string
+	StorageAwsIamUserArn     string
+	StorageAwsExternalId     string
+	StorageAwsAccessPointArn string
+	UsePrivatelinkEndpoint   *bool
+	EncryptionKmsKeyId       string
+}
+
+type StorageLocationGcsDetails struct {
+	StorageGcpServiceAccount string
+	EncryptionKmsKeyId       string
+}
+
+type StorageLocationAzureDetails struct {
+	AzureTenantId           string
+	AzureMultiTenantAppName string
+	AzureConsentUrl         string
+}
+
+type StorageLocationS3CompatDetails struct {
+	Endpoint           string
+	AwsAccessKeyId     string
+	EncryptionKmsKeyId string
+}
+
+type ExternalVolumeDetails struct {
+	StorageLocations []ExternalVolumeStorageLocationDetails
+	Active           string
+	Comment          string
+	AllowWrites      string
+}
+
+// externalVolumeStorageLocationJsonRaw is the internal JSON deserialization type
+// for storage location properties.
+type externalVolumeStorageLocationJsonRaw struct {
+	Name                     string   `json:"NAME"`
+	StorageProvider          string   `json:"STORAGE_PROVIDER"`
+	StorageBaseUrl           string   `json:"STORAGE_BASE_URL"`
+	StorageAllowedLocations  []string `json:"STORAGE_ALLOWED_LOCATIONS"`
+	StorageAwsRoleArn        string   `json:"STORAGE_AWS_ROLE_ARN"`
+	StorageAwsIamUserArn     string   `json:"STORAGE_AWS_IAM_USER_ARN"`
+	StorageAwsExternalId     string   `json:"STORAGE_AWS_EXTERNAL_ID"`
+	StorageAwsAccessPointArn string   `json:"STORAGE_AWS_ACCESS_POINT_ARN"`
+	Endpoint                 string   `json:"ENDPOINT"`
+	UsePrivatelinkEndpoint   *bool    `json:"USE_PRIVATELINK_ENDPOINT"`
+	EncryptionType           string   `json:"ENCRYPTION_TYPE"`
+	EncryptionKmsKeyId       string   `json:"ENCRYPTION_KMS_KEY_ID"`
+	AzureTenantId            string   `json:"AZURE_TENANT_ID"`
+	AzureMultiTenantAppName  string   `json:"AZURE_MULTI_TENANT_APP_NAME"`
+	AzureConsentUrl          string   `json:"AZURE_CONSENT_URL"`
+	StorageGcpServiceAccount string   `json:"STORAGE_GCP_SERVICE_ACCOUNT"`
+	AwsAccessKeyId           string   `json:"AWS_ACCESS_KEY_ID"`
+}
+
+func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (ExternalVolumeStorageLocationDetails, error) {
+	details := ExternalVolumeStorageLocationDetails{
+		Name:                    e.Name,
+		StorageProvider:         e.StorageProvider,
+		StorageBaseUrl:          e.StorageBaseUrl,
+		StorageAllowedLocations: e.StorageAllowedLocations,
+		EncryptionType:          e.EncryptionType,
+	}
+
+	storageProvider, err := ToStorageProvider(e.StorageProvider)
+	if err != nil {
+		return ExternalVolumeStorageLocationDetails{}, err
+	}
+
+	switch storageProvider {
+	case StorageProviderS3, StorageProviderS3GOV:
+		details.S3StorageLocation = &StorageLocationS3Details{
+			StorageAwsRoleArn:        e.StorageAwsRoleArn,
+			StorageAwsIamUserArn:     e.StorageAwsIamUserArn,
+			StorageAwsExternalId:     e.StorageAwsExternalId,
+			StorageAwsAccessPointArn: e.StorageAwsAccessPointArn,
+			UsePrivatelinkEndpoint:   e.UsePrivatelinkEndpoint,
+			EncryptionKmsKeyId:       e.EncryptionKmsKeyId,
+		}
+	case StorageProviderGCS:
+		details.GCSStorageLocation = &StorageLocationGcsDetails{
+			StorageGcpServiceAccount: e.StorageGcpServiceAccount,
+			EncryptionKmsKeyId:       e.EncryptionKmsKeyId,
+		}
+	case StorageProviderAzure:
+		details.AzureStorageLocation = &StorageLocationAzureDetails{
+			AzureTenantId:           e.AzureTenantId,
+			AzureMultiTenantAppName: e.AzureMultiTenantAppName,
+			AzureConsentUrl:         e.AzureConsentUrl,
+		}
+	case StorageProviderS3Compatible:
+		details.S3CompatStorageLocation = &StorageLocationS3CompatDetails{
+			Endpoint:           e.Endpoint,
+			AwsAccessKeyId:     e.AwsAccessKeyId,
+			EncryptionKmsKeyId: e.EncryptionKmsKeyId,
+		}
+	default:
+		return ExternalVolumeStorageLocationDetails{}, fmt.Errorf("unsupported storage provider type: %s", e.StorageProvider)
+	}
+
+	return details, nil
+}
+
+func ParseExternalVolumeDescribed(props []ExternalVolumeProperty) (ExternalVolumeDetails, error) {
+	externalVolumeDetails := ExternalVolumeDetails{}
+	var storageLocations []ExternalVolumeStorageLocationDetails
+	for _, p := range props {
+		switch {
+		case p.Name == "COMMENT":
+			externalVolumeDetails.Comment = p.Value
+		case p.Name == "ACTIVE":
+			externalVolumeDetails.Active = p.Value
+		case p.Name == "ALLOW_WRITES":
+			externalVolumeDetails.AllowWrites = p.Value
+		case strings.Contains(p.Name, "STORAGE_LOCATION_"):
+			var raw externalVolumeStorageLocationJsonRaw
+			err := json.Unmarshal([]byte(p.Value), &raw)
+			if err != nil {
+				return ExternalVolumeDetails{}, err
+			}
+			details, err := raw.toStorageLocationDetails()
+			if err != nil {
+				return ExternalVolumeDetails{}, err
+			}
+			storageLocations = append(storageLocations, details)
+		default:
+			return ExternalVolumeDetails{}, fmt.Errorf("Unrecognized external volume property: %s", p.Name)
+		}
+	}
+
+	externalVolumeDetails.StorageLocations = storageLocations
+	err := validateExternalVolumeDetails(externalVolumeDetails)
+	if err != nil {
+		return ExternalVolumeDetails{}, err
+	}
+
+	return externalVolumeDetails, nil
+}
+
+func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
+	if len(p.StorageLocations) == 0 {
+		return fmt.Errorf("No storage locations could be parsed from the external volume.")
+	}
+	if len(p.AllowWrites) == 0 {
+		return fmt.Errorf("The external volume AllowWrites property could not be parsed.")
+	}
+
+	for _, s := range p.StorageLocations {
+		if len(s.Name) == 0 {
+			return fmt.Errorf("A storage location's Name in this volume could not be parsed.")
+		}
+		if !slices.Contains(AsStringList(AllStorageProviderValues), s.StorageProvider) {
+			return fmt.Errorf("invalid storage provider parsed: %s", s.StorageProvider)
+		}
+		if len(s.StorageBaseUrl) == 0 {
+			return fmt.Errorf("A storage location's StorageBaseUrl in this volume could not be parsed.")
+		}
+
+		switch {
+		case s.S3StorageLocation != nil:
+			if len(s.S3StorageLocation.StorageAwsRoleArn) == 0 {
+				return fmt.Errorf("An S3 storage location's StorageAwsRoleArn in this volume could not be parsed.")
+			}
+		case s.AzureStorageLocation != nil:
+			if len(s.AzureStorageLocation.AzureTenantId) == 0 {
+				return fmt.Errorf("An Azure storage location's AzureTenantId in this volume could not be parsed.")
+			}
+		case s.S3CompatStorageLocation != nil:
+			if len(s.S3CompatStorageLocation.Endpoint) == 0 {
+				return fmt.Errorf("An S3Compatible storage location's StorageEndpoint in this volume could not be parsed.")
+			}
+		}
+	}
+
+	return nil
+}
+
+func (r *CreateExternalVolumeRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}

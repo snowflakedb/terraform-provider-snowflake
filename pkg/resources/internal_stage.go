@@ -9,10 +9,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -82,6 +84,8 @@ var internalStageSchema = func() map[string]*schema.Schema {
 
 func InternalStage() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.InternalStageResource), TrackingCreateWrapper(resources.InternalStage, CreateInternalStage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.InternalStageResource), TrackingReadWrapper(resources.InternalStage, ReadInternalStageFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.InternalStageResource), TrackingUpdateWrapper(resources.InternalStage, UpdateInternalStage)),
@@ -90,7 +94,7 @@ func InternalStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.InternalStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(internalStageSchema, ShowOutputAttributeName, "name", "comment"),
-			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "file_format"),
+			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh"),
 			ComputedIfAnyAttributeChanged(internalStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
@@ -102,39 +106,44 @@ func InternalStage() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.InternalStage, ImportInternalStage),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_InternalStageStateUpgrader,
+			},
+		},
 	}
 }
 
 func ImportInternalStage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
+		return nil, err
+	}
+
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
 	}
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
-		return nil, err
-	}
-	stageDetails, err := client.Stages.Describe(ctx, id)
+
+	stageProperties, err := client.Stages.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	details, err := sdk.ParseStageDetails(stageDetails)
+	details, err := sdk.ParseStageDetails(stageProperties)
 	if err != nil {
 		return nil, err
 	}
-	if err := d.Set("directory", []map[string]any{
-		{
-			"enable":       details.DirectoryTable.Enable,
-			"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-		},
-	}); err != nil {
+
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+
+	if err := importStageCommonFields(d, details, setDefaults); err != nil {
 		return nil, err
 	}
-	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
-		if err := d.Set("file_format", fileFormat); err != nil {
-			return nil, err
-		}
-	}
+
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -245,20 +254,8 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 		}
 
 		if withExternalChangesMarking {
-			directoryTable := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": details.DirectoryTable.AutoRefresh,
-				},
-			}
-			directoryTableToSet := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-				},
-			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+				directoryTableOutputMapping(*details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)
 			}

@@ -230,7 +230,25 @@ func UpdateShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			}
 		} else {
 			accountIdentifiers := accountIdentifiersFromSlice(newAccounts)
-			err := setShareAccounts(ctx, client, id, accountIdentifiers)
+
+			share, err := client.Shares.ShowByID(ctx, id)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error reading share (%v) err = %w", d.Id(), err))
+			}
+
+			// If a database is already granted to the share, we can add accounts directly.
+			// The setShareAccounts workaround (which creates a temp database) is only needed
+			// when no database has been granted yet — Snowflake requires at least one database
+			// on a share before accounts can be added.
+			if share.DatabaseName.Name() != "" {
+				err = client.Shares.Alter(ctx, id, &sdk.AlterShareOptions{
+					Add: &sdk.ShareAdd{
+						Accounts: accountIdentifiers,
+					},
+				})
+			} else {
+				err = setShareAccounts(ctx, client, id, accountIdentifiers)
+			}
 			if err != nil {
 				return diag.FromErr(err)
 			}

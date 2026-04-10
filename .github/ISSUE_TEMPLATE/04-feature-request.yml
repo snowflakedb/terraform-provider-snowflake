@@ -1,6 +1,5 @@
 name: Feature Request
 description: Something is missing or could be improved.
-title: "[Feature]: "
 labels: ["feature-request"]
 body:
   - type: markdown
@@ -14,6 +13,8 @@ body:
         If you are not running the latest version of either CLI or the Provider, please consider upgrading as the feature could be already implemented.
 
         If you would like to contribute to the project, please let us know and refer to the [contribution guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/CONTRIBUTING.md) for tips on getting started.
+
+        You may also report this request through your Snowflake Account Executive. This helps us prioritize and deliver faster.
 
         Here's a list of useful links that may answer your question:
         - Guide on [creating issues](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/CREATING_ISSUES.md) + [FAQ](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/FAQ.md) + [Commonly Known Issues](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/KNOWN_ISSUES.md) - If you would like to create a GitHub issue, please read those in the first order.
@@ -246,24 +247,6 @@ body:
       label: Proposal
       description: What solutions would you prefer?
       placeholder: Description of proposed solutions.
-
-  - id: impact
-    type: dropdown
-    attributes:
-      label: How much impact is this issue causing?
-      description: |
-        Please choose the appropriate impact for the issue keeping in mind that:
-        - **High** - completely not able to use the provider or unexpected destruction of data/infrastructure.
-        - **Medium** - unable to upgrade provider version or an issue with potential workaround.
-        - **Low** - minor provider code or configuration issues.
-      options:
-        - High
-        - Medium
-        - Low
-      default:
-        2 # Low
-    validations:
-      required: true
 
   - id: additional-information
     type: textarea

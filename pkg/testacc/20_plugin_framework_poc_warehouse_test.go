@@ -92,18 +92,33 @@ type WarehousePocParametersPrivateJson struct {
 }
 
 func warehousePocPrivateJsonFromWarehouse(warehouse *sdk.Warehouse) *WarehousePocPrivateJson {
-	return &WarehousePocPrivateJson{
-		WarehouseType:                   warehouse.Type,
-		WarehouseSize:                   warehouse.Size,
-		MaxClusterCount:                 warehouse.MaxClusterCount,
-		MinClusterCount:                 warehouse.MinClusterCount,
-		ScalingPolicy:                   warehouse.ScalingPolicy,
-		AutoSuspend:                     warehouse.AutoSuspend,
-		AutoResume:                      warehouse.AutoResume,
-		ResourceMonitor:                 warehouse.ResourceMonitor.Name(),
-		EnableQueryAcceleration:         warehouse.EnableQueryAcceleration,
-		QueryAccelerationMaxScaleFactor: warehouse.QueryAccelerationMaxScaleFactor,
+	result := &WarehousePocPrivateJson{
+		WarehouseType:   warehouse.Type,
+		ResourceMonitor: warehouse.ResourceMonitor.Name(),
 	}
+	if warehouse.Size != nil {
+		result.WarehouseSize = *warehouse.Size
+	}
+	if warehouse.MaxClusterCount != nil {
+		result.MaxClusterCount = *warehouse.MaxClusterCount
+	}
+	if warehouse.MinClusterCount != nil {
+		result.MinClusterCount = *warehouse.MinClusterCount
+	}
+	if warehouse.ScalingPolicy != nil {
+		result.ScalingPolicy = *warehouse.ScalingPolicy
+	}
+	if warehouse.AutoSuspend != nil {
+		result.AutoSuspend = *warehouse.AutoSuspend
+	}
+	result.AutoResume = warehouse.AutoResume
+	if warehouse.EnableQueryAcceleration != nil {
+		result.EnableQueryAcceleration = *warehouse.EnableQueryAcceleration
+	}
+	if warehouse.QueryAccelerationMaxScaleFactor != nil {
+		result.QueryAccelerationMaxScaleFactor = *warehouse.QueryAccelerationMaxScaleFactor
+	}
+	return result
 }
 
 func warehousePocParametersPrivateJsonFromParameters(warehouseParameters []*sdk.Parameter) (*WarehousePocParametersPrivateJson, error) {
@@ -393,19 +408,33 @@ func (r *WarehouseResource) ImportState(ctx context.Context, request resource.Im
 		return
 	}
 	data := &warehousePocModelV0{
-		Id:                              types.StringValue(helpers.EncodeResourceIdentifier(id)),
-		Name:                            types.StringValue(id.Name()),
-		WarehouseType:                   customtypes.NewEnumValue(warehouse.Type),
-		WarehouseSize:                   customtypes.NewEnumValue(warehouse.Size),
-		MaxClusterCount:                 types.Int64Value(int64(warehouse.MaxClusterCount)),
-		MinClusterCount:                 types.Int64Value(int64(warehouse.MinClusterCount)),
-		ScalingPolicy:                   customtypes.NewEnumValue(warehouse.ScalingPolicy),
-		AutoSuspend:                     types.Int64Value(int64(warehouse.AutoSuspend)),
-		AutoResume:                      types.BoolValue(warehouse.AutoResume),
-		ResourceMonitor:                 types.StringValue(warehouse.ResourceMonitor.Name()),
-		Comment:                         types.StringValue(warehouse.Comment),
-		EnableQueryAcceleration:         types.BoolValue(warehouse.EnableQueryAcceleration),
-		QueryAccelerationMaxScaleFactor: types.Int64Value(int64(warehouse.QueryAccelerationMaxScaleFactor)),
+		Id:              types.StringValue(helpers.EncodeResourceIdentifier(id)),
+		Name:            types.StringValue(id.Name()),
+		WarehouseType:   customtypes.NewEnumValue(warehouse.Type),
+		ResourceMonitor: types.StringValue(warehouse.ResourceMonitor.Name()),
+		Comment:         types.StringValue(warehouse.Comment),
+	}
+	if warehouse.Size != nil {
+		data.WarehouseSize = customtypes.NewEnumValue(*warehouse.Size)
+	}
+	if warehouse.MaxClusterCount != nil {
+		data.MaxClusterCount = types.Int64Value(int64(*warehouse.MaxClusterCount))
+	}
+	if warehouse.MinClusterCount != nil {
+		data.MinClusterCount = types.Int64Value(int64(*warehouse.MinClusterCount))
+	}
+	if warehouse.ScalingPolicy != nil {
+		data.ScalingPolicy = customtypes.NewEnumValue(*warehouse.ScalingPolicy)
+	}
+	if warehouse.AutoSuspend != nil {
+		data.AutoSuspend = types.Int64Value(int64(*warehouse.AutoSuspend))
+	}
+	data.AutoResume = types.BoolValue(warehouse.AutoResume)
+	if warehouse.EnableQueryAcceleration != nil {
+		data.EnableQueryAcceleration = types.BoolValue(*warehouse.EnableQueryAcceleration)
+	}
+	if warehouse.QueryAccelerationMaxScaleFactor != nil {
+		data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(*warehouse.QueryAccelerationMaxScaleFactor))
 	}
 
 	warehouseParameters, err := client.Warehouses.ShowParameters(ctx, id)
@@ -601,20 +630,20 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		if warehouse.Type != prevValue.WarehouseType {
 			data.WarehouseType = customtypes.NewEnumValue(warehouse.Type)
 		}
-		if warehouse.Size != prevValue.WarehouseSize {
-			data.WarehouseSize = customtypes.NewEnumValue(warehouse.Size)
+		if warehouse.Size != nil && *warehouse.Size != prevValue.WarehouseSize {
+			data.WarehouseSize = customtypes.NewEnumValue(*warehouse.Size)
 		}
-		if warehouse.MaxClusterCount != prevValue.MaxClusterCount {
-			data.MaxClusterCount = types.Int64Value(int64(warehouse.MaxClusterCount))
+		if warehouse.MaxClusterCount != nil && *warehouse.MaxClusterCount != prevValue.MaxClusterCount {
+			data.MaxClusterCount = types.Int64Value(int64(*warehouse.MaxClusterCount))
 		}
-		if warehouse.MinClusterCount != prevValue.MinClusterCount {
-			data.MinClusterCount = types.Int64Value(int64(warehouse.MinClusterCount))
+		if warehouse.MinClusterCount != nil && *warehouse.MinClusterCount != prevValue.MinClusterCount {
+			data.MinClusterCount = types.Int64Value(int64(*warehouse.MinClusterCount))
 		}
-		if warehouse.ScalingPolicy != prevValue.ScalingPolicy {
-			data.ScalingPolicy = customtypes.NewEnumValue(warehouse.ScalingPolicy)
+		if warehouse.ScalingPolicy != nil && *warehouse.ScalingPolicy != prevValue.ScalingPolicy {
+			data.ScalingPolicy = customtypes.NewEnumValue(*warehouse.ScalingPolicy)
 		}
-		if warehouse.AutoSuspend != prevValue.AutoSuspend {
-			data.AutoSuspend = types.Int64Value(int64(warehouse.AutoSuspend))
+		if warehouse.AutoSuspend != nil && *warehouse.AutoSuspend != prevValue.AutoSuspend {
+			data.AutoSuspend = types.Int64Value(int64(*warehouse.AutoSuspend))
 		}
 		if warehouse.AutoResume != prevValue.AutoResume {
 			data.AutoResume = types.BoolValue(warehouse.AutoResume)
@@ -622,11 +651,11 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		if warehouse.ResourceMonitor.Name() != prevValue.ResourceMonitor {
 			data.ResourceMonitor = types.StringValue(warehouse.ResourceMonitor.Name())
 		}
-		if warehouse.EnableQueryAcceleration != prevValue.EnableQueryAcceleration {
-			data.EnableQueryAcceleration = types.BoolValue(warehouse.EnableQueryAcceleration)
+		if warehouse.EnableQueryAcceleration != nil && *warehouse.EnableQueryAcceleration != prevValue.EnableQueryAcceleration {
+			data.EnableQueryAcceleration = types.BoolValue(*warehouse.EnableQueryAcceleration)
 		}
-		if warehouse.QueryAccelerationMaxScaleFactor != prevValue.QueryAccelerationMaxScaleFactor {
-			data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(warehouse.QueryAccelerationMaxScaleFactor))
+		if warehouse.QueryAccelerationMaxScaleFactor != nil && *warehouse.QueryAccelerationMaxScaleFactor != prevValue.QueryAccelerationMaxScaleFactor {
+			data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(*warehouse.QueryAccelerationMaxScaleFactor))
 		}
 
 		if parametersJson, err := warehousePocParametersPrivateJsonFromParameters(warehouseParameters); err != nil {

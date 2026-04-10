@@ -13,7 +13,7 @@ import (
 )
 
 type SemanticViewDetailsCollection struct {
-	Details []sdk.SemanticViewDetails
+	Details *sdk.SemanticViewDescribeDetails
 }
 type SemanticViewDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[SemanticViewDetailsCollection, sdk.SchemaObjectIdentifier]
@@ -38,8 +38,8 @@ func SemanticViewDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *SemanticV
 func (s *SemanticViewDetailsAssert) HasDetailsCount(expected int) *SemanticViewDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *SemanticViewDetailsCollection) error {
 		t.Helper()
-		if len(o.Details) != expected {
-			return fmt.Errorf("expected %d semantic view details; got: %d", expected, len(o.Details))
+		if o.Details.DescribeRowCount != expected {
+			return fmt.Errorf("expected %d semantic view details; got: %d", expected, o.Details.DescribeRowCount)
 		}
 		return nil
 	})
@@ -49,13 +49,35 @@ func (s *SemanticViewDetailsAssert) HasDetailsCount(expected int) *SemanticViewD
 func (s *SemanticViewDetailsAssert) ContainsDetail(expected sdk.SemanticViewDetails) *SemanticViewDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *SemanticViewDetailsCollection) error {
 		t.Helper()
-		found := slices.ContainsFunc(o.Details, func(detail sdk.SemanticViewDetails) bool {
-			return detail.Property == expected.Property &&
-				detail.PropertyValue == expected.PropertyValue &&
-				reflect.DeepEqual(detail.ObjectName, expected.ObjectName) &&
-				reflect.DeepEqual(detail.ObjectKind, expected.ObjectKind) &&
-				reflect.DeepEqual(detail.ParentEntity, expected.ParentEntity)
-		})
+		var found bool
+		var detailType []sdk.SemanticViewDetails
+		if expected.ObjectKind == nil {
+			found = expected.Property == "COMMENT" &&
+				o.Details.Comment == expected.PropertyValue &&
+				expected.ObjectName == nil &&
+				expected.ObjectKind == nil &&
+				expected.ParentEntity == nil
+		} else {
+			switch *expected.ObjectKind {
+			case "TABLE":
+				detailType = o.Details.Tables
+			case "RELATIONSHIP":
+				detailType = o.Details.Relationships
+			case "DIMENSION":
+				detailType = o.Details.Dimensions
+			case "FACT":
+				detailType = o.Details.Facts
+			case "METRIC":
+				detailType = o.Details.Metrics
+			}
+			found = slices.ContainsFunc(detailType, func(detail sdk.SemanticViewDetails) bool {
+				return detail.Property == expected.Property &&
+					detail.PropertyValue == expected.PropertyValue &&
+					reflect.DeepEqual(detail.ObjectName, expected.ObjectName) &&
+					reflect.DeepEqual(detail.ObjectKind, expected.ObjectKind) &&
+					reflect.DeepEqual(detail.ParentEntity, expected.ParentEntity)
+			})
+		}
 		if !found {
 			return fmt.Errorf("expected semantic view to contain a detail row matching %s", semanticViewDetailsString(expected))
 		}

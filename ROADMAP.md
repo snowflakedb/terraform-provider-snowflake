@@ -5,6 +5,58 @@ We usually create new entries in quarterly cycles, so expect an entry in the fir
 We may add more entries when we have some bigger announcements.
 These should be treated as projections and not strict commitments. Keep in mind that the plan can be subject to change.
 
+## (2026-03-12) Roadmap update
+
+Recent efforts concentrated on:
+
+* Stabilizing selected preview features and promoting them to stable.
+* Helping users migrate from legacy `0.x.x` versions to GA+ (`v2.x.x`) versions of the provider.
+* Adding support for additional Snowflake regions, like GOV ([#4011](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4011)), by validating provider behavior and auth flows, documenting region-specific requirements, and adding targeted tests.
+* Improving the security, stability, and maintainability of the provider.
+* Stabilizing the `snowflake_network_rule` resource and adding a new  `snowflake_network_rules` data source ([#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956)).
+* Extend data type support by introducing and thoroughly testing the [`DECFLOAT`](https://docs.snowflake.com/en/sql-reference/data-types-numeric#decfloat) (or equivalent high‑precision numeric) type across all relevant resources and data sources, ensuring objects using this type can be managed consistently.
+
+In the upcoming months, our focus will be on the following topics:
+
+* [Further migration help](#migration)
+* [Feature gap](#feature-gap)
+* [Stability improvements](#stability-improvements)
+
+If you have any questions, please open an issue or comment on the roadmap discussion. Enterprise customers can also contact their Snowflake account team.
+
+### Migration
+
+We are continuing the migration to GA+ versions of the provider.
+
+Our focus this quarter will be to:
+
+* Continue proactive communication around the migration timeline and expectations, including reminders for customers who are still on older versions.
+* Prioritize support for issues directly blocking upgrades from `0.x.x` to `v1.x.x`/`v2.x.x` and from early GA versions to the latest GA+ version.
+* Provide additional guidance and examples for migration to redesigned patterns (for example, grants), so that users can complete the “last mile” of their migration.
+
+If you have not yet started moving away from `0.x.x` versions, we strongly recommend prioritizing this migration and consulting the migration guide and previous roadmap entries.
+
+The decision regarding the migration plan for version removal, initially discussed in [#4039](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4039), has been updated to reflect our latest strategic decisions. Please familiarize yourself with the updated content, and feel free to reach out to us with any questions either through GitHub or the Snowflake account team (if you are an enterprise customer).
+
+### Feature gap
+
+We continue closing the most impactful feature gaps, guided by user demand. The list below is not exhaustive; it reflects the main feature-related efforts planned for this quarter.
+
+We plan to focus on:
+
+* **Resource Stabilization**
+  * **External volumes** — stabilize the `snowflake_external_volume` resource and add a `snowflake_external_volumes` data source ([#3217](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3217)).
+* **Updates to stable resources** — enhance existing stable resources by adding frequently requested, missing attributes and behaviors. This effort aims to minimize the need for workarounds, particularly by focusing on `snowflake_authentication_policy`, `snowflake_tag`, and `snowflake_account_parameter` ([#3080](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3080)) resources.
+* **Closing the feature gap**
+  * **Catalog integrations** — add support for [catalog integrations](https://docs.snowflake.com/en/user-guide/tables-iceberg#label-tables-iceberg-catalog-integration-def).
+  * **Session policies** — add support for [session policies](https://docs.snowflake.com/en/user-guide/session-policies) ([#2870](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2870) and [#3293](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3293)).
+
+These efforts are aligned with our broader goal of improving parity between the provider and Snowflake’s GA feature set, especially in areas that unblock adoption of GA+ versions.
+
+### Stability improvements
+
+Some of the [previous stability topics](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#stability-improvements), such as handling removed object dependencies across the provider, were deprioritized but are planned to be addressed in the coming weeks and months.
+
 ## (2025-12-18) Roadmap update
 
 Recent efforts concentrated on:

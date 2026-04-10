@@ -5,8 +5,6 @@ package main
 import (
 	"strings"
 
-	objectassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert/gen"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
@@ -22,7 +20,7 @@ func main() {
 			WithImport("testing").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"),
-		objectassertgen.GetSdkObjectDetails,
+		gen.GetFilteredSdkObjectDetails,
 		gen.ModelFromSdkObjectDetails,
 		getFilename,
 		gen.AllTemplates,

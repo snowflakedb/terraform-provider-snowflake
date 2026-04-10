@@ -9,10 +9,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -146,6 +148,8 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 
 func ExternalAzureStage() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingCreateWrapper(resources.ExternalAzureStage, CreateExternalAzureStage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingReadWrapper(resources.ExternalAzureStage, ReadExternalAzureStageFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingUpdateWrapper(resources.ExternalAzureStage, UpdateExternalAzureStage)),
@@ -154,7 +158,7 @@ func ExternalAzureStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalAzureStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalAzureStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "file_format"),
+			ComputedIfAnyAttributeChanged(externalAzureStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint"),
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
@@ -171,16 +175,26 @@ func ExternalAzureStage() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.ExternalAzureStage, ImportExternalAzureStage),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_ExternalAzureStageStateUpgrader,
+			},
+		},
 	}
 }
 
 func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
 		return nil, err
 	}
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
+
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
 		return nil, err
 	}
 	stage, err := client.Stages.ShowByIDSafely(ctx, id)
@@ -188,37 +202,33 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		return nil, err
 	}
 
-	stageDetails, err := client.Stages.Describe(ctx, id)
+	stageProperties, err := client.Stages.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	details, err := sdk.ParseStageDetails(stageDetails)
+	details, err := sdk.ParseStageDetails(stageProperties)
 	if err != nil {
 		return nil, err
 	}
-	if details.DirectoryTable != nil {
-		if err := d.Set("directory", []map[string]any{
-			{
-				"enable":       details.DirectoryTable.Enable,
-				"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-			},
-		}); err != nil {
-			return nil, err
-		}
+
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+
+	if err := importStageCommonFields(d, details, setDefaults); err != nil {
+		return nil, err
 	}
+
 	if details.PrivateLink != nil {
-		if err := d.Set("use_privatelink_endpoint", booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)); err != nil {
+		usePrivatelinkEndpointValue := booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)
+		if setDefaults {
+			usePrivatelinkEndpointValue = BooleanDefault
+		}
+		if err := d.Set("use_privatelink_endpoint", usePrivatelinkEndpointValue); err != nil {
 			return nil, err
 		}
 	}
 	// If PrivateLink is nil, let the schema default (BooleanDefault) apply
 	if err := d.Set("url", stage.Url); err != nil {
 		return nil, err
-	}
-	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
-		if err := d.Set("file_format", fileFormat); err != nil {
-			return nil, err
-		}
 	}
 	if stage.StorageIntegration != nil {
 		if err := d.Set("storage_integration", stage.StorageIntegration.Name()); err != nil {
@@ -315,20 +325,8 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			); err != nil {
 				return diag.FromErr(err)
 			}
-			directoryTable := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": details.DirectoryTable.AutoRefresh,
-				},
-			}
-			directoryTableToSet := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-				},
-			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+				directoryTableOutputMapping(*details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)
 			}

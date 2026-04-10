@@ -89,6 +89,7 @@ func Test_ToObjectType(t *testing.T) {
 		{input: "EXPERIMENT", want: ObjectTypeExperiment},
 		{input: "STORAGE LIFECYCLE POLICY", want: ObjectTypeStorageLifecyclePolicy},
 		{input: "WORKSPACE", want: ObjectTypeWorkspace},
+		{input: "CATALOG INTEGRATION", want: ObjectTypeCatalogIntegration},
 	}
 
 	invalid := []test{

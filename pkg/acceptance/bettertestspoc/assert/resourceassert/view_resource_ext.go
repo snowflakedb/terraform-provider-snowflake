@@ -1,9 +1,11 @@
 package resourceassert
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 func (v *ViewResourceAssert) HasColumnLength(len int) *ViewResourceAssert {
@@ -48,5 +50,17 @@ func (v *ViewResourceAssert) HasNoDataMetricScheduleByLength() *ViewResourceAsse
 
 func (v *ViewResourceAssert) HasNoDataMetricFunctionByLength() *ViewResourceAssert {
 	v.AddAssertion(assert.ValueNotSet("data_metric_function.#"))
+	return v
+}
+
+func (v *ViewResourceAssert) HasColumns(columns []sdk.ViewColumn) *ViewResourceAssert {
+	v.AddAssertion(assert.ValueSet("column.#", strconv.Itoa(len(columns))))
+	for i, col := range columns {
+		v.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.column_name", i), col.Name))
+		if col.MaskingPolicy != nil {
+			v.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.masking_policy.#", i), "1"))
+			v.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.masking_policy.0.policy_name", i), col.MaskingPolicy.MaskingPolicy.FullyQualifiedName()))
+		}
+	}
 	return v
 }

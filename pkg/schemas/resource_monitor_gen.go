@@ -41,7 +41,7 @@ var ShowResourceMonitorSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// commented out manually
+	// Adjusted manually: commented out - slice type not supported by generator.
 	// "notify_at": {
 	//	Type:     schema.TypeInvalid,
 	//	Computed: true,
@@ -66,7 +66,7 @@ var ShowResourceMonitorSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// commented out manually
+	// Adjusted manually: commented out - slice type not supported by generator.
 	// "notify_users": {
 	//	Type:     schema.TypeInvalid,
 	//	Computed: true,
@@ -82,24 +82,23 @@ func ResourceMonitorToSchema(resourceMonitor *sdk.ResourceMonitor) map[string]an
 	resourceMonitorSchema["used_credits"] = resourceMonitor.UsedCredits
 	resourceMonitorSchema["remaining_credits"] = resourceMonitor.RemainingCredits
 	if resourceMonitor.Level != nil {
-		// adjusted manually
-		resourceMonitorSchema["level"] = string(*resourceMonitor.Level)
+		resourceMonitorSchema["level"] = string((*resourceMonitor.Level))
 	}
 	resourceMonitorSchema["frequency"] = string(resourceMonitor.Frequency)
 	resourceMonitorSchema["start_time"] = resourceMonitor.StartTime
 	resourceMonitorSchema["end_time"] = resourceMonitor.EndTime
-	// commented out manually
+	// Adjusted manually: commented out - slice type not supported by generator.
 	// resourceMonitorSchema["notify_at"] = resourceMonitor.NotifyAt
 	if resourceMonitor.SuspendAt != nil {
-		resourceMonitorSchema["suspend_at"] = resourceMonitor.SuspendAt
+		resourceMonitorSchema["suspend_at"] = (*resourceMonitor.SuspendAt)
 	}
 	if resourceMonitor.SuspendImmediateAt != nil {
-		resourceMonitorSchema["suspend_immediate_at"] = resourceMonitor.SuspendImmediateAt
+		resourceMonitorSchema["suspend_immediate_at"] = (*resourceMonitor.SuspendImmediateAt)
 	}
 	resourceMonitorSchema["created_on"] = resourceMonitor.CreatedOn.String()
 	resourceMonitorSchema["owner"] = resourceMonitor.Owner
 	resourceMonitorSchema["comment"] = resourceMonitor.Comment
-	// commented out manually
+	// Adjusted manually: commented out - slice type not supported by generator.
 	// resourceMonitorSchema["notify_users"] = resourceMonitor.NotifyUsers
 	return resourceMonitorSchema
 }

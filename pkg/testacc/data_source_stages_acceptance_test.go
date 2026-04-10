@@ -210,6 +210,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(stagesWithDescribe.DatasourceReference(), "stages.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(stagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(stagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(stagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.last_refreshed_on", "")),
 					assert.Check(resource.TestCheckResourceAttr(stagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.file_format.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(stagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.file_format.0.csv.#", "0")),
 					assert.Check(resource.TestCheckResourceAttr(stagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.file_format.0.format_name", fileFormat.ID().FullyQualifiedName())),
@@ -228,7 +229,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("eastus").
-						HasCloud(string(sdk.StageCloudAzure)).
+						HasCloud(sdk.StageCloudAzure).
 						HasStorageIntegrationEmpty().
 						HasEndpointEmpty().
 						HasOwnerRoleType("ROLE").
@@ -241,6 +242,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(azureStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(azureStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(azureStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(azureStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.last_refreshed_on", "")),
 					assert.Check(resource.TestCheckResourceAttr(azureStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.file_format.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(azureStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.file_format.0.csv.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(azureStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.file_format.0.format_name", "")),
@@ -259,7 +261,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("us-west-2").
-						HasCloud(string(sdk.StageCloudAws)).
+						HasCloud(sdk.StageCloudAws).
 						HasStorageIntegrationEmpty().
 						HasEndpointEmpty().
 						HasOwnerRoleType("ROLE").
@@ -272,6 +274,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(externalS3StagesWithDescribe.DatasourceReference(), "stages.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3StagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3StagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(externalS3StagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.last_refreshed_on", "")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3StagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3StagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.location.0.url.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3StagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.location.0.url.0", awsBucketUrl)),
@@ -295,7 +298,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegionEmpty().
-						HasCloud(string(sdk.StageCloudGcp)).
+						HasCloud(sdk.StageCloudGcp).
 						HasStorageIntegration(ids.PrecreatedGcpStorageIntegration).
 						HasEndpointEmpty().
 						HasOwnerRoleType("ROLE").
@@ -327,7 +330,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("us-west-2").
-						HasCloud(string(sdk.StageCloudAws)).
+						HasCloud(sdk.StageCloudAws).
 						HasStorageIntegrationEmpty().
 						HasEndpoint(endpoint).
 						HasOwnerRoleType("ROLE").
@@ -363,7 +366,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("us-west-2").
-						HasCloud(string(sdk.StageCloudAws)).
+						HasCloud(sdk.StageCloudAws).
 						HasStorageIntegrationEmpty().
 						HasEndpoint(endpoint).
 						HasOwnerRoleType("ROLE").
@@ -376,6 +379,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.last_refreshed_on", "")),
 					assert.Check(resource.TestCheckNoResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.privatelink.0.use_privatelink_endpoint")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.location.0.url.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.location.0.url.0", compatibleBucketUrl)),
@@ -399,7 +403,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("us-west-2").
-						HasCloud(string(sdk.StageCloudAws)).
+						HasCloud(sdk.StageCloudAws).
 						HasStorageIntegrationEmpty().
 						HasEndpoint(endpoint).
 						HasOwnerRoleType("ROLE").
@@ -412,6 +416,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.directory_table.0.last_refreshed_on", "")),
 					assert.Check(resource.TestCheckNoResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.privatelink.0.use_privatelink_endpoint")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.location.0.url.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(externalS3CompatibleStagesWithDescribe.DatasourceReference(), "stages.0.describe_output.0.location.0.url.0", compatibleBucketUrl)),

@@ -149,7 +149,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "DIRECTION", Type: "String", Value: "INBOUND", Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "GCP_PUBSUB_SUBSCRIPTION_NAME", Type: "String", Value: gcpPubsubSubscriptionName, Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
@@ -171,7 +171,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "AZURE_STORAGE_QUEUE_PRIMARY_URI", Type: "String", Value: azureStorageQueuePrimaryUri, Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 
@@ -220,7 +220,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "NOTIFICATION_PROVIDER", Type: "String", Value: "AWS_SNS", Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "DIRECTION", Type: "String", Value: "OUTBOUND", Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "AWS_SNS_TOPIC_ARN", Type: "String", Value: awsSnsTopicArn, Default: ""})
@@ -247,7 +247,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "NOTIFICATION_PROVIDER", Type: "String", Value: "GCP_PUBSUB", Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "DIRECTION", Type: "String", Value: "OUTBOUND", Default: "INBOUND"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "GCP_PUBSUB_TOPIC_NAME", Type: "String", Value: gcpPubsubTopicName, Default: ""})
@@ -266,7 +266,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "NOTIFICATION_PROVIDER", Type: "String", Value: "GCP_PUBSUB", Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "DIRECTION", Type: "String", Value: "OUTBOUND", Default: "INBOUND"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "AZURE_EVENT_GRID_TOPIC_ENDPOINT", Type: "String", Value: azureEventGridTopicEndpoint, Default: ""})
@@ -284,7 +284,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: "artur.sawicki@snowflake.com", Default: "[]"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})
@@ -319,7 +319,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "changed comment", Default: ""})
 
 		// only SET is tested because UNSET is unsupported: 000002 (0A000): Unsupported feature 'UNSET'
@@ -341,7 +341,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "AWS_SNS_TOPIC_ARN", Type: "String", Value: awsSnsOtherTopicArn, Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "AWS_SNS_ROLE_ARN", Type: "String", Value: awsSnsOtherRoleArn, Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "changed comment", Default: ""})
@@ -375,7 +375,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: "jan.cieslak@snowflake.com", Default: "[]"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "changed comment", Default: ""})
 
@@ -391,7 +391,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err = client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: "", Default: "[]"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})

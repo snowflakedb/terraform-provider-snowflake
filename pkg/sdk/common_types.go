@@ -79,6 +79,11 @@ type ServiceIn struct {
 	ComputePool AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
 }
 
+type TableIn struct {
+	In
+	Table SchemaObjectIdentifier `ddl:"identifier" sql:"TABLE"`
+}
+
 type Like struct {
 	Pattern *string `ddl:"keyword,single_quotes"`
 }
@@ -496,6 +501,14 @@ func NewStageLocation(stage SchemaObjectIdentifier, path string) StageLocation {
 		stage: stage,
 		path:  path,
 	}
+}
+
+func (s StageLocation) GetStageId() SchemaObjectIdentifier {
+	return s.stage
+}
+
+func (s StageLocation) GetPath() string {
+	return s.path
 }
 
 func (s StageLocation) ToSql() string {

@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNetworkRules_Create(t *testing.T) {
@@ -43,6 +45,12 @@ func TestNetworkRules_Create(t *testing.T) {
 		opts.OrReplace = Bool(true)
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE NETWORK RULE %s TYPE = IPV4 VALUE_LIST = ('0.0.0.0', '1.1.1.1') MODE = INGRESS COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("create with empty value list", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ValueList = []NetworkRuleValue{}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE NETWORK RULE %s TYPE = IPV4 MODE = INGRESS`, id.FullyQualifiedName())
 	})
 }
 
@@ -196,4 +204,83 @@ func TestNetworkRules_Describe(t *testing.T) {
 	})
 
 	// all options removed manually
+}
+
+func Test_ToNetworkRuleType(t *testing.T) {
+	type test struct {
+		input string
+		want  NetworkRuleType
+	}
+
+	valid := []test{
+		// case insensitive
+		{input: "ipv4", want: NetworkRuleTypeIpv4},
+
+		// Supported Values
+		{input: "IPV4", want: NetworkRuleTypeIpv4},
+		{input: "AWSVPCEID", want: NetworkRuleTypeAwsVpcEndpointId},
+		{input: "AZURELINKID", want: NetworkRuleTypeAzureLinkId},
+		{input: "GCPPSCID", want: NetworkRuleTypeGcpPscId},
+		{input: "HOST_PORT", want: NetworkRuleTypeHostPort},
+		{input: "PRIVATE_HOST_PORT", want: NetworkRuleTypePrivateHostPort},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToNetworkRuleType(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToNetworkRuleType(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ToNetworkRuleMode(t *testing.T) {
+	type test struct {
+		input string
+		want  NetworkRuleMode
+	}
+
+	valid := []test{
+		// case insensitive
+		{input: "ingress", want: NetworkRuleModeIngress},
+
+		// Supported Values
+		{input: "INGRESS", want: NetworkRuleModeIngress},
+		{input: "INTERNAL_STAGE", want: NetworkRuleModeInternalStage},
+		{input: "EGRESS", want: NetworkRuleModeEgress},
+		{input: "POSTGRES_INGRESS", want: NetworkRuleModePostgresIngress},
+		{input: "POSTGRES_EGRESS", want: NetworkRuleModePostgresEgress},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToNetworkRuleMode(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToNetworkRuleMode(tc.input)
+			require.Error(t, err)
+		})
+	}
 }

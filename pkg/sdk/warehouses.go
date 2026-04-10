@@ -17,6 +17,7 @@ import (
 
 var (
 	_ validatable = new(CreateWarehouseOptions)
+	_ validatable = new(CreateAdaptiveWarehouseOptions)
 	_ validatable = new(AlterWarehouseOptions)
 	_ validatable = new(DropWarehouseOptions)
 	_ validatable = new(ShowWarehouseOptions)
@@ -27,6 +28,7 @@ var (
 
 type Warehouses interface {
 	Create(ctx context.Context, id AccountObjectIdentifier, opts *CreateWarehouseOptions) error
+	CreateAdaptive(ctx context.Context, id AccountObjectIdentifier, opts *CreateAdaptiveWarehouseOptions) error
 	Alter(ctx context.Context, id AccountObjectIdentifier, opts *AlterWarehouseOptions) error
 	Drop(ctx context.Context, id AccountObjectIdentifier, opts *DropWarehouseOptions) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
@@ -52,6 +54,7 @@ type WarehouseType string
 const (
 	WarehouseTypeStandard          WarehouseType = "STANDARD"
 	WarehouseTypeSnowparkOptimized WarehouseType = "SNOWPARK-OPTIMIZED"
+	WarehouseTypeAdaptive          WarehouseType = "ADAPTIVE"
 )
 
 func ToWarehouseType(s string) (WarehouseType, error) {
@@ -60,6 +63,8 @@ func ToWarehouseType(s string) (WarehouseType, error) {
 		return WarehouseTypeStandard, nil
 	case string(WarehouseTypeSnowparkOptimized):
 		return WarehouseTypeSnowparkOptimized, nil
+	case string(WarehouseTypeAdaptive):
+		return WarehouseTypeAdaptive, nil
 	default:
 		return "", fmt.Errorf("invalid warehouse type: %s", s)
 	}
@@ -67,6 +72,19 @@ func ToWarehouseType(s string) (WarehouseType, error) {
 
 func (e WarehouseType) FromString(s string) (WarehouseType, error) {
 	return ToWarehouseType(s)
+}
+
+// ToWarehouseTypeUserSettable parses a warehouse type string, excluding ADAPTIVE
+// which is not settable through the standard warehouse resource.
+func ToWarehouseTypeUserSettable(s string) (WarehouseType, error) {
+	switch strings.ToUpper(s) {
+	case string(WarehouseTypeStandard):
+		return WarehouseTypeStandard, nil
+	case string(WarehouseTypeSnowparkOptimized):
+		return WarehouseTypeSnowparkOptimized, nil
+	default:
+		return "", fmt.Errorf("invalid warehouse type: %s", s)
+	}
 }
 
 type WarehouseSize string
@@ -140,8 +158,6 @@ func (e ScalingPolicy) FromString(s string) (ScalingPolicy, error) {
 type WarehouseResourceConstraint string
 
 const (
-	WarehouseResourceConstraintStandardGen1 WarehouseResourceConstraint = "STANDARD_GEN_1"
-	WarehouseResourceConstraintStandardGen2 WarehouseResourceConstraint = "STANDARD_GEN_2"
 	WarehouseResourceConstraintMemory1X     WarehouseResourceConstraint = "MEMORY_1X"
 	WarehouseResourceConstraintMemory1Xx86  WarehouseResourceConstraint = "MEMORY_1X_x86"
 	WarehouseResourceConstraintMemory16X    WarehouseResourceConstraint = "MEMORY_16X"
@@ -151,31 +167,6 @@ const (
 )
 
 func ToWarehouseResourceConstraint(s string) (WarehouseResourceConstraint, error) {
-	// Handle case-insensitive comparison for resource constraints
-	// The x86 variants should keep x86 lowercase
-	switch strings.ToUpper(s) {
-	case "STANDARD_GEN_1":
-		return WarehouseResourceConstraintStandardGen1, nil
-	case "STANDARD_GEN_2":
-		return WarehouseResourceConstraintStandardGen2, nil
-	case "MEMORY_1X":
-		return WarehouseResourceConstraintMemory1X, nil
-	case "MEMORY_1X_X86":
-		return WarehouseResourceConstraintMemory1Xx86, nil
-	case "MEMORY_16X":
-		return WarehouseResourceConstraintMemory16X, nil
-	case "MEMORY_16X_X86":
-		return WarehouseResourceConstraintMemory16Xx86, nil
-	case "MEMORY_64X":
-		return WarehouseResourceConstraintMemory64X, nil
-	case "MEMORY_64X_X86":
-		return WarehouseResourceConstraintMemory64Xx86, nil
-	default:
-		return "", fmt.Errorf("invalid resource constraint: %s", s)
-	}
-}
-
-func ToWarehouseResourceConstraintWithoutGeneration(s string) (WarehouseResourceConstraint, error) {
 	switch strings.ToUpper(s) {
 	case "MEMORY_1X":
 		return WarehouseResourceConstraintMemory1X, nil
@@ -230,34 +221,51 @@ var AllWarehouseGenerations = []string{
 	string(WarehouseGenerationStandardGen2),
 }
 
-var AllWarehouseResourceConstraintsForStandardWarehouses = []string{
-	string(WarehouseResourceConstraintStandardGen1),
-	string(WarehouseResourceConstraintStandardGen2),
+type MaxQueryPerformanceLevel string
+
+const (
+	MaxQueryPerformanceLevelXSmall   MaxQueryPerformanceLevel = "XSMALL"
+	MaxQueryPerformanceLevelSmall    MaxQueryPerformanceLevel = "SMALL"
+	MaxQueryPerformanceLevelMedium   MaxQueryPerformanceLevel = "MEDIUM"
+	MaxQueryPerformanceLevelLarge    MaxQueryPerformanceLevel = "LARGE"
+	MaxQueryPerformanceLevelXLarge   MaxQueryPerformanceLevel = "XLARGE"
+	MaxQueryPerformanceLevelXXLarge  MaxQueryPerformanceLevel = "XXLARGE"
+	MaxQueryPerformanceLevelXXXLarge MaxQueryPerformanceLevel = "XXXLARGE"
+	MaxQueryPerformanceLevelX4Large  MaxQueryPerformanceLevel = "X4LARGE"
+)
+
+var AllMaxQueryPerformanceLevels = []string{
+	string(MaxQueryPerformanceLevelXSmall),
+	string(MaxQueryPerformanceLevelSmall),
+	string(MaxQueryPerformanceLevelMedium),
+	string(MaxQueryPerformanceLevelLarge),
+	string(MaxQueryPerformanceLevelXLarge),
+	string(MaxQueryPerformanceLevelXXLarge),
+	string(MaxQueryPerformanceLevelXXXLarge),
+	string(MaxQueryPerformanceLevelX4Large),
 }
 
-func IsWarehouseResourceConstraintForStandard(s WarehouseResourceConstraint) bool {
-	return slices.Contains(AllWarehouseResourceConstraintsForStandardWarehouses, string(s))
-}
-
-func (s WarehouseResourceConstraint) ToWarehouseGeneration() (WarehouseGeneration, error) {
+func ToMaxQueryPerformanceLevel(s string) (MaxQueryPerformanceLevel, error) {
+	s = strings.ToUpper(s)
 	switch s {
-	case WarehouseResourceConstraintStandardGen1:
-		return WarehouseGenerationStandardGen1, nil
-	case WarehouseResourceConstraintStandardGen2:
-		return WarehouseGenerationStandardGen2, nil
+	case string(MaxQueryPerformanceLevelXSmall), "X-SMALL":
+		return MaxQueryPerformanceLevelXSmall, nil
+	case string(MaxQueryPerformanceLevelSmall):
+		return MaxQueryPerformanceLevelSmall, nil
+	case string(MaxQueryPerformanceLevelMedium):
+		return MaxQueryPerformanceLevelMedium, nil
+	case string(MaxQueryPerformanceLevelLarge):
+		return MaxQueryPerformanceLevelLarge, nil
+	case string(MaxQueryPerformanceLevelXLarge), "X-LARGE":
+		return MaxQueryPerformanceLevelXLarge, nil
+	case string(MaxQueryPerformanceLevelXXLarge), "2X-LARGE":
+		return MaxQueryPerformanceLevelXXLarge, nil
+	case string(MaxQueryPerformanceLevelXXXLarge), "3X-LARGE":
+		return MaxQueryPerformanceLevelXXXLarge, nil
+	case string(MaxQueryPerformanceLevelX4Large), "4X-LARGE":
+		return MaxQueryPerformanceLevelX4Large, nil
 	default:
-		return "", fmt.Errorf("invalid resource constraint for generation: %s", s)
-	}
-}
-
-func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceConstraint, error) {
-	switch s {
-	case WarehouseGenerationStandardGen1:
-		return WarehouseResourceConstraintStandardGen1, nil
-	case WarehouseGenerationStandardGen2:
-		return WarehouseResourceConstraintStandardGen2, nil
-	default:
-		return "", fmt.Errorf("invalid generation for resource constraint: %s", s)
+		return "", fmt.Errorf("invalid max query performance level: %s", s)
 	}
 }
 
@@ -306,12 +314,70 @@ func (opts *CreateWarehouseOptions) validate() error {
 	if valueSet(opts.QueryAccelerationMaxScaleFactor) && !validateIntInRangeInclusive(*opts.QueryAccelerationMaxScaleFactor, 0, 100) {
 		errs = append(errs, errIntBetween("CreateWarehouseOptions", "QueryAccelerationMaxScaleFactor", 0, 100))
 	}
+	if valueSet(opts.WarehouseType) && !slices.Contains(ValidWarehouseTypesRegularString, string(*opts.WarehouseType)) {
+		errs = append(errs, fmt.Errorf("only %s warehouses are supported, got %s", collections.JoinStrings(ValidWarehouseTypesRegularString, ", "), *opts.WarehouseType))
+	}
 	return errors.Join(errs...)
 }
 
 func (c *warehouses) Create(ctx context.Context, id AccountObjectIdentifier, opts *CreateWarehouseOptions) error {
 	if opts == nil {
 		opts = &CreateWarehouseOptions{}
+	}
+	opts.name = id
+	if err := opts.validate(); err != nil {
+		return err
+	}
+	stmt, err := structToSQL(opts)
+	if err != nil {
+		return err
+	}
+	_, err = c.client.exec(ctx, stmt)
+	return err
+}
+
+// CreateAdaptiveWarehouseOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses
+type CreateAdaptiveWarehouseOptions struct {
+	create        bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace     *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	warehouse     bool                    `ddl:"static" sql:"WAREHOUSE"`
+	IfNotExists   *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name          AccountObjectIdentifier `ddl:"identifier"`
+	warehouseType bool                    `ddl:"static" sql:"WAREHOUSE_TYPE = 'ADAPTIVE'"`
+
+	// Object properties
+	Comment                   *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	MaxQueryPerformanceLevel  *MaxQueryPerformanceLevel `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
+	QueryThroughputMultiplier *int                      `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
+
+	// Tags
+	Tag []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
+
+	// Object params
+	StatementQueuedTimeoutInSeconds *int `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds       *int `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+}
+
+func (opts *CreateAdaptiveWarehouseOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateAdaptiveWarehouseOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.QueryThroughputMultiplier) && !validateIntGreaterThanOrEqual(*opts.QueryThroughputMultiplier, 0) {
+		errs = append(errs, fmt.Errorf("QueryThroughputMultiplier must be greater than or equal to 0"))
+	}
+	return errors.Join(errs...)
+}
+
+func (c *warehouses) CreateAdaptive(ctx context.Context, id AccountObjectIdentifier, opts *CreateAdaptiveWarehouseOptions) error {
+	if opts == nil {
+		opts = &CreateAdaptiveWarehouseOptions{}
 	}
 	opts.name = id
 	if err := opts.validate(); err != nil {
@@ -390,6 +456,8 @@ type WarehouseSet struct {
 	QueryAccelerationMaxScaleFactor *int                         `ddl:"parameter" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
 	ResourceConstraint              *WarehouseResourceConstraint `ddl:"parameter,single_quotes" sql:"RESOURCE_CONSTRAINT"`
 	Generation                      *WarehouseGeneration         `ddl:"parameter,single_quotes" sql:"GENERATION"`
+	QueryThroughputMultiplier       *int                         `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
+	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel    `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 
 	// Object params
 	MaxConcurrencyLevel             *int `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
@@ -414,8 +482,13 @@ func (v *WarehouseSet) validate() error {
 			return fmt.Errorf("QueryAccelerationMaxScaleFactor must be between 0 and 100")
 		}
 	}
-	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
-		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
+	if v.QueryThroughputMultiplier != nil {
+		if ok := validateIntGreaterThanOrEqual(*v.QueryThroughputMultiplier, 0); !ok {
+			return fmt.Errorf("QueryThroughputMultiplier must be greater than or equal to 0")
+		}
+	}
+	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.QueryThroughputMultiplier, v.MaxQueryPerformanceLevel) {
+		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")
 	}
 	return nil
 }
@@ -440,11 +513,13 @@ type WarehouseUnset struct {
 	MaxConcurrencyLevel             *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	QueryThroughputMultiplier       *bool `ddl:"keyword" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
+	MaxQueryPerformanceLevel        *bool `ddl:"keyword" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 }
 
 func (v *WarehouseUnset) validate() error {
-	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
-		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
+	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.QueryThroughputMultiplier, v.MaxQueryPerformanceLevel) {
+		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")
 	}
 	return nil
 }
@@ -482,7 +557,7 @@ func (c *warehouses) Alter(ctx context.Context, id AccountObjectIdentifier, opts
 
 			// needed to make sure that warehouse is suspended
 			var warehouseSuspensionErrs []error
-			err = util.Retry(3, 1*time.Second, func() (error, bool) {
+			err = util.Retry(5, 1*time.Second, func() (error, bool) {
 				warehouse, err = c.ShowByID(ctx, id)
 				if err != nil {
 					warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
@@ -581,15 +656,15 @@ type Warehouse struct {
 	Name                            string
 	State                           WarehouseState
 	Type                            WarehouseType
-	Size                            WarehouseSize
-	MinClusterCount                 int
-	MaxClusterCount                 int
-	StartedClusters                 int
-	Running                         int
-	Queued                          int
+	Size                            *WarehouseSize
+	MinClusterCount                 *int
+	MaxClusterCount                 *int
+	StartedClusters                 *int
+	Running                         *int
+	Queued                          *int
 	IsDefault                       bool
 	IsCurrent                       bool
-	AutoSuspend                     int
+	AutoSuspend                     *int
 	AutoResume                      bool
 	Available                       float64
 	Provisioning                    float64
@@ -600,25 +675,27 @@ type Warehouse struct {
 	UpdatedOn                       time.Time
 	Owner                           string
 	Comment                         string
-	EnableQueryAcceleration         bool
-	QueryAccelerationMaxScaleFactor int
+	EnableQueryAcceleration         *bool
+	QueryAccelerationMaxScaleFactor *int
 	ResourceMonitor                 AccountObjectIdentifier
-	ScalingPolicy                   ScalingPolicy
+	ScalingPolicy                   *ScalingPolicy
 	OwnerRoleType                   string
 	ResourceConstraint              *WarehouseResourceConstraint
 	Generation                      *WarehouseGeneration
+	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel
+	QueryThroughputMultiplier       *int
 }
 
 type warehouseDBRow struct {
 	Name                            string         `db:"name"`
 	State                           string         `db:"state"`
 	Type                            string         `db:"type"`
-	Size                            string         `db:"size"`
-	MinClusterCount                 int            `db:"min_cluster_count"`
-	MaxClusterCount                 int            `db:"max_cluster_count"`
-	StartedClusters                 int            `db:"started_clusters"`
-	Running                         int            `db:"running"`
-	Queued                          int            `db:"queued"`
+	Size                            sql.NullString `db:"size"`
+	MinClusterCount                 sql.NullInt64  `db:"min_cluster_count"`
+	MaxClusterCount                 sql.NullInt64  `db:"max_cluster_count"`
+	StartedClusters                 sql.NullInt64  `db:"started_clusters"`
+	Running                         sql.NullInt64  `db:"running"`
+	Queued                          sql.NullInt64  `db:"queued"`
 	IsDefault                       string         `db:"is_default"`
 	IsCurrent                       string         `db:"is_current"`
 	AutoSuspend                     sql.NullInt64  `db:"auto_suspend"`
@@ -632,46 +709,50 @@ type warehouseDBRow struct {
 	UpdatedOn                       time.Time      `db:"updated_on"`
 	Owner                           string         `db:"owner"`
 	Comment                         string         `db:"comment"`
-	EnableQueryAcceleration         bool           `db:"enable_query_acceleration"`
-	QueryAccelerationMaxScaleFactor int            `db:"query_acceleration_max_scale_factor"`
+	EnableQueryAcceleration         sql.NullBool   `db:"enable_query_acceleration"`
+	QueryAccelerationMaxScaleFactor sql.NullInt64  `db:"query_acceleration_max_scale_factor"`
 	ResourceMonitor                 string         `db:"resource_monitor"`
 	Actives                         string         `db:"actives"`
 	Pendings                        string         `db:"pendings"`
 	Failed                          string         `db:"failed"`
 	Suspended                       string         `db:"suspended"`
 	UUID                            string         `db:"uuid"`
-	ScalingPolicy                   string         `db:"scaling_policy"`
+	ScalingPolicy                   sql.NullString `db:"scaling_policy"`
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
 	ResourceConstraint              sql.NullString `db:"resource_constraint"`
 	Generation                      sql.NullString `db:"generation"`
+	MaxQueryPerformanceLevel        sql.NullString `db:"max_query_performance_level"`
+	QueryThroughputMultiplier       sql.NullInt64  `db:"query_throughput_multiplier"`
 }
 
 func (row warehouseDBRow) convert() (*Warehouse, error) {
 	wh := &Warehouse{
-		Name:                            row.Name,
-		State:                           WarehouseState(row.State),
-		Type:                            WarehouseType(row.Type),
-		MinClusterCount:                 row.MinClusterCount,
-		MaxClusterCount:                 row.MaxClusterCount,
-		StartedClusters:                 row.StartedClusters,
-		Running:                         row.Running,
-		Queued:                          row.Queued,
-		IsDefault:                       row.IsDefault == "Y",
-		IsCurrent:                       row.IsCurrent == "Y",
-		AutoResume:                      row.AutoResume,
-		CreatedOn:                       row.CreatedOn,
-		ResumedOn:                       row.ResumedOn,
-		UpdatedOn:                       row.UpdatedOn,
-		Owner:                           row.Owner,
-		Comment:                         row.Comment,
-		EnableQueryAcceleration:         row.EnableQueryAcceleration,
-		QueryAccelerationMaxScaleFactor: row.QueryAccelerationMaxScaleFactor,
-		ScalingPolicy:                   ScalingPolicy(row.ScalingPolicy),
+		Name:       row.Name,
+		State:      WarehouseState(row.State),
+		Type:       WarehouseType(row.Type),
+		IsDefault:  row.IsDefault == "Y",
+		IsCurrent:  row.IsCurrent == "Y",
+		CreatedOn:  row.CreatedOn,
+		ResumedOn:  row.ResumedOn,
+		UpdatedOn:  row.UpdatedOn,
+		Owner:      row.Owner,
+		Comment:    row.Comment,
+		AutoResume: row.AutoResume,
 	}
-	if size, err := ToWarehouseSize(row.Size); err != nil {
-		return nil, err
-	} else {
-		wh.Size = size
+	mapNullInt(&wh.MinClusterCount, row.MinClusterCount)
+	mapNullInt(&wh.MaxClusterCount, row.MaxClusterCount)
+	mapNullInt(&wh.StartedClusters, row.StartedClusters)
+	mapNullInt(&wh.Running, row.Running)
+	mapNullInt(&wh.Queued, row.Queued)
+	mapNullBool(&wh.EnableQueryAcceleration, row.EnableQueryAcceleration)
+	mapNullInt(&wh.QueryAccelerationMaxScaleFactor, row.QueryAccelerationMaxScaleFactor)
+	mapNullStringWithMapping(&wh.ScalingPolicy, row.ScalingPolicy, ToScalingPolicy)
+	if row.Size.Valid {
+		if size, err := ToWarehouseSize(row.Size.String); err != nil {
+			return nil, err
+		} else {
+			wh.Size = &size
+		}
 	}
 	if available := strings.TrimSpace(row.Available); available != "" {
 		if val, err := strconv.ParseFloat(available, 64); err != nil {
@@ -701,9 +782,7 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 			wh.Other = val
 		}
 	}
-	if row.AutoSuspend.Valid {
-		wh.AutoSuspend = int(row.AutoSuspend.Int64)
-	}
+	mapNullInt(&wh.AutoSuspend, row.AutoSuspend)
 	if row.OwnerRoleType.Valid {
 		wh.OwnerRoleType = row.OwnerRoleType.String
 	}
@@ -718,26 +797,23 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 		wh.Generation = &generation
 	}
 	if row.ResourceConstraint.Valid {
-		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
-		if err != nil {
-			return nil, err
-		}
 		switch wh.Type {
 		case WarehouseTypeStandard:
-			// Before BCR 2025_07, the generation column was not present, so we converted the resource constraint to generation.
-			if wh.Generation == nil {
-				generation, err := resourceConstraint.ToWarehouseGeneration()
-				if err != nil {
-					return nil, err
-				}
-				wh.Generation = &generation
-			}
+			// After BCR 2026_02, resource_constraint is NULL for Standard warehouses; generation column is used instead.
 		case WarehouseTypeSnowparkOptimized:
+			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+			if err != nil {
+				return nil, err
+			}
 			wh.ResourceConstraint = &resourceConstraint
+		case WarehouseTypeAdaptive:
+			// Adaptive warehouses don't use resource constraints; ignore.
 		default:
 			return nil, fmt.Errorf("invalid warehouse type: %s", wh.Type)
 		}
 	}
+	mapNullStringWithMapping(&wh.MaxQueryPerformanceLevel, row.MaxQueryPerformanceLevel, ToMaxQueryPerformanceLevel)
+	mapNullInt(&wh.QueryThroughputMultiplier, row.QueryThroughputMultiplier)
 	return wh, nil
 }
 

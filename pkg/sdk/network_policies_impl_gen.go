@@ -10,8 +10,10 @@ import (
 
 var _ NetworkPolicies = (*networkPolicies)(nil)
 
-var _ convertibleRow[NetworkPolicy] = new(showNetworkPolicyDBRow)
-var _ convertibleRow[NetworkPolicyProperty] = new(describeNetworkPolicyDBRow)
+var (
+	_ convertibleRow[NetworkPolicy]         = new(showNetworkPolicyDBRow)
+	_ convertibleRow[NetworkPolicyProperty] = new(describeNetworkPolicyDBRow)
+)
 
 type networkPolicies struct {
 	client *Client

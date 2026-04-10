@@ -6,6 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
 
+// TODO [SNOW-3127764]: Use set asserts in acceptance tests instead
 func (n *NetworkPolicyResourceAssert) HasAllowedIpListLength(expected int) *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("allowed_ip_list.#", fmt.Sprintf("%d", expected)))
 	return n

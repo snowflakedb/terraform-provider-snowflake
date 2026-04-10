@@ -27,6 +27,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TODO [SNOW-3151661]: test creation with DECFLOAT column
+
 func TestAcc_TableWithSeparateDataRetentionObjectParameterWithoutLifecycle(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -2218,4 +2220,52 @@ func TestAcc_Table_SchemaRemovedExternally(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAcc_Table_Decfloat(t *testing.T) {
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	argName := "A"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: tableConfigDecfloat(tableId, argName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", tableId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "id"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", argName),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "DECFLOAT(38)"),
+				),
+			},
+		},
+	})
+}
+
+func tableConfigDecfloat(tableId sdk.SchemaObjectIdentifier, argName string) string {
+	return fmt.Sprintf(`
+resource "snowflake_table" "test_table" {
+	database = "%[1]s"
+	schema   = "%[2]s"
+	name     = "%[3]s"
+
+	column {
+		name = "id"
+		type = "NUMBER"
+	}
+
+	column {
+		name = "%s"
+		type = "DECFLOAT"
+	}
+}
+`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), argName)
 }

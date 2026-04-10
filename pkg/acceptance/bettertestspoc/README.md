@@ -405,6 +405,7 @@ it will result in:
 - Add assertions for
   - The `describe_output` and handle describe objects too.
   - Custom objects: functions using `NewSnowflakeObjectAssertWithTestClientObjectProvider` can handle only objects that have proper identifiers. Not all of them have such IDs (check user PAT), so this function can't be used.
+  - Custom assertions in `ToTerraformTestCheckFunc`, e.g. value range.
 - Add support for datasource tests (assertions and config builders).
 - Consider overriding the assertions when invoking same check multiple times with different params (e.g. `Warehouse(...).HasType(X).HasType(Y)`; it could use the last-check-wins approach, to more easily reuse complex checks between the test steps).
 - Consider not adding the check for `show_output` presence on creation (same with `parameters`). The majority of the use cases need it to be present but there are a few others (like conditional presence in the datasources). Currently, it seems that they should be always present in the resources, so no change is made. Later, with adding the support for the datasource tests, consider simple destructive implementation like:
@@ -450,7 +451,7 @@ func (w *WarehouseDatasourceShowOutputAssert) IsEmpty() {
 - add possibility for object parameter assert not take any identifier (currently there's a workaround in `account_parameters_snowflake_gen.go`, because `SHOW PARAMETERS FOR ACCOUNT` don't take any identifiers)
 - SNOW-2048330: add possibility to override the default value (and optionally default level) used in HasAllDefaults -> HasDefaultParameterValueOnLevel parameter assertions (it's required for cases like asserting `NETWORK_POLICY` which is predefined for our testing environments and causes test failures)
 - `Mapper` is just a `func(string) string`, so there is no easy way inside the template to know what mapper is being applied. Because of that, we have the `Identity` mapper which just returns the input string which leads to easier template logic applicable both to cases needed the mapping and not needing it. It leads to more unnecessary code (like for collections comparison in object asserts), so it would be great to change the logic, e.g. by handling the list of mappers (logic allowing the emptiness check, easier piping).
-- Do not generate `Has...String` for complex types, like maps and lists. Instead, generate correct assertions for checking all the values in such type.
+- Support nested assertions. Snowflake sometimes returns nested objects in DESC. Some of the fields are read-only and set by Snowflake. As a workaround, we write custom comparator functions, check `external_volume_describe_snowflake_ext.go`.
 
 ## Known limitations
 - generating provider config may misbehave when used only with one object/map paramter (like `params`), e.g.:

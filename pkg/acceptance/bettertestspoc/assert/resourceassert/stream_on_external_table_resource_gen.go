@@ -28,6 +28,64 @@ func ImportedStreamOnExternalTableResource(t *testing.T, id string) *StreamOnExt
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StreamOnExternalTableResourceAssert) HasDatabase(expected string) *StreamOnExternalTableResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasSchema(expected string) *StreamOnExternalTableResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasName(expected string) *StreamOnExternalTableResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+// typed assert for "at" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "before" (type: List, subtype: Map) is not currently supported
+
+func (s *StreamOnExternalTableResourceAssert) HasComment(expected string) *StreamOnExternalTableResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasCopyGrants(expected bool) *StreamOnExternalTableResourceAssert {
+	s.BoolValueSet("copy_grants", expected)
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasExternalTable(expected string) *StreamOnExternalTableResourceAssert {
+	s.StringValueSet("external_table", expected)
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasFullyQualifiedName(expected string) *StreamOnExternalTableResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasInsertOnly(expected string) *StreamOnExternalTableResourceAssert {
+	s.StringValueSet("insert_only", expected)
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasStale(expected bool) *StreamOnExternalTableResourceAssert {
+	s.BoolValueSet("stale", expected)
+	return s
+}
+
+func (s *StreamOnExternalTableResourceAssert) HasStreamType(expected string) *StreamOnExternalTableResourceAssert {
+	s.StringValueSet("stream_type", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -44,16 +102,6 @@ func (s *StreamOnExternalTableResourceAssert) HasSchemaString(expected string) *
 
 func (s *StreamOnExternalTableResourceAssert) HasNameString(expected string) *StreamOnExternalTableResourceAssert {
 	s.AddAssertion(assert.ValueSet("name", expected))
-	return s
-}
-
-func (s *StreamOnExternalTableResourceAssert) HasAtString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("at", expected))
-	return s
-}
-
-func (s *StreamOnExternalTableResourceAssert) HasBeforeString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("before", expected))
 	return s
 }
 

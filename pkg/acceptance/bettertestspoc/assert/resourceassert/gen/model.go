@@ -16,10 +16,16 @@ type ResourceAssertionsModel struct {
 }
 
 type ResourceAttributeAssertionModel struct {
-	Name          string
-	AttributeType string
-	IsCollection  bool
-	IsRequired    bool
+	Name         string
+	IsCollection bool
+	IsRequired   bool
+
+	Type    string
+	SubType string
+
+	ExpectedType                 string
+	AssertionCreator             string
+	ShouldGenerateTypedAssertion bool
 }
 
 func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel) ResourceAssertionsModel {
@@ -28,12 +34,23 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		if slices.Contains([]string{resources.ShowOutputAttributeName, resources.ParametersAttributeName, resources.DescribeOutputAttributeName}, attr.Name) {
 			continue
 		}
+
+		expectedType, assertionCreator := getExpectedTypeAndAssertionCreator(attr)
+		var subType string
+		if attr.AttributeSubType != schema.TypeInvalid {
+			subType = genhelpers.ResourceSchemaTypeToString(attr.AttributeSubType)
+		}
 		attributes = append(attributes, ResourceAttributeAssertionModel{
-			Name: attr.Name,
-			// TODO [SNOW-1501905]: add attribute type logic; allow type safe assertions
-			AttributeType: "string",
-			IsCollection:  attr.AttributeType == schema.TypeList || attr.AttributeType == schema.TypeSet,
-			IsRequired:    attr.Required,
+			Name:         attr.Name,
+			IsCollection: attr.AttributeType == schema.TypeList || attr.AttributeType == schema.TypeSet,
+			IsRequired:   attr.Required,
+
+			Type:    genhelpers.ResourceSchemaTypeToString(attr.AttributeType),
+			SubType: subType,
+
+			ExpectedType:                 expectedType,
+			AssertionCreator:             assertionCreator,
+			ShouldGenerateTypedAssertion: assertionCreator != "",
 		})
 	}
 
@@ -42,4 +59,69 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		Attributes:    attributes,
 		PreambleModel: preamble,
 	}
+}
+
+func getExpectedTypeAndAssertionCreator(attr genhelpers.SchemaAttribute) (expectedType string, assertionCreator string) {
+	switch attr.AttributeType {
+	case schema.TypeBool:
+		expectedType = "bool"
+		assertionCreator = "BoolValueSet"
+	case schema.TypeInt:
+		expectedType = "int"
+		assertionCreator = "IntValueSet"
+	case schema.TypeFloat:
+		expectedType = "float64"
+		assertionCreator = "FloatValueSet"
+	case schema.TypeString:
+		expectedType = "string"
+		assertionCreator = "StringValueSet"
+	case schema.TypeSet:
+		expectedType, assertionCreator = getExpectedTypeAndAssertionCreatorForSet(attr)
+	case schema.TypeList:
+		expectedType, assertionCreator = getExpectedTypeAndAssertionCreatorForList(attr)
+	case schema.TypeMap:
+		// map type is not currently supported
+	case schema.TypeInvalid:
+	}
+	return
+}
+
+func getExpectedTypeAndAssertionCreatorForSet(attr genhelpers.SchemaAttribute) (expectedType string, assertionCreator string) {
+	switch attr.AttributeSubType {
+	case schema.TypeBool:
+		expectedType = "...bool"
+		assertionCreator = "SetContainsExactlyBoolValues"
+	case schema.TypeInt:
+		expectedType = "...int"
+		assertionCreator = "SetContainsExactlyIntValues"
+	case schema.TypeFloat:
+		expectedType = "...float64"
+		assertionCreator = "SetContainsExactlyFloatValues"
+	case schema.TypeString:
+		expectedType = "...string"
+		assertionCreator = "SetContainsExactlyStringValues"
+	default:
+		// other types are not currently supported
+	}
+	return
+}
+
+func getExpectedTypeAndAssertionCreatorForList(attr genhelpers.SchemaAttribute) (expectedType string, assertionCreator string) {
+	switch attr.AttributeSubType {
+	case schema.TypeBool:
+		expectedType = "...bool"
+		assertionCreator = "ListContainsExactlyBoolValuesInOrder"
+	case schema.TypeInt:
+		expectedType = "...int"
+		assertionCreator = "ListContainsExactlyIntValuesInOrder"
+	case schema.TypeFloat:
+		expectedType = "...float64"
+		assertionCreator = "ListContainsExactlyFloatValuesInOrder"
+	case schema.TypeString:
+		expectedType = "...string"
+		assertionCreator = "ListContainsExactlyStringValuesInOrder"
+	default:
+		// other types are not currently supported
+	}
+	return
 }

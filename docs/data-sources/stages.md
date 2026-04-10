@@ -127,6 +127,7 @@ Read-Only:
 
 - `auto_refresh` (Boolean)
 - `enable` (Boolean)
+- `last_refreshed_on` (String)
 
 
 <a id="nestedobjatt--stages--describe_output--file_format"></a>

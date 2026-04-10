@@ -10,8 +10,10 @@ import (
 
 var _ StorageIntegrations = (*storageIntegrations)(nil)
 
-var _ convertibleRow[StorageIntegration] = new(showStorageIntegrationsDbRow)
-var _ convertibleRow[StorageIntegrationProperty] = new(descStorageIntegrationsDbRow)
+var (
+	_ convertibleRow[StorageIntegration]         = new(showStorageIntegrationsDbRow)
+	_ convertibleRow[StorageIntegrationProperty] = new(descStorageIntegrationsDbRow)
+)
 
 type storageIntegrations struct {
 	client *Client

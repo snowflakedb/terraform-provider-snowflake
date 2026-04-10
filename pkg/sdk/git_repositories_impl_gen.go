@@ -12,10 +12,12 @@ import (
 
 var _ GitRepositories = (*gitRepositories)(nil)
 
-// adjusted manually
-var _ convertibleRow[GitRepository] = new(gitRepositoriesRow)
-var _ convertibleRow[GitBranch] = new(gitBranchesRow)
-var _ convertibleRow[GitTag] = new(gitTagsRow)
+var (
+	// adjusted manually
+	_ convertibleRow[GitRepository] = new(gitRepositoriesRow)
+	_ convertibleRow[GitBranch]     = new(gitBranchesRow)
+	_ convertibleRow[GitTag]        = new(gitTagsRow)
+)
 
 type gitRepositories struct {
 	client *Client

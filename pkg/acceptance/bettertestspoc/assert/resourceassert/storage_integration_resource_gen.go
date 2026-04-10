@@ -28,6 +28,100 @@ func ImportedStorageIntegrationResource(t *testing.T, id string) *StorageIntegra
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StorageIntegrationResourceAssert) HasName(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasAzureConsentUrl(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("azure_consent_url", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasAzureMultiTenantAppName(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("azure_multi_tenant_app_name", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasAzureTenantId(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("azure_tenant_id", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasComment(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasCreatedOn(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("created_on", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasEnabled(expected bool) *StorageIntegrationResourceAssert {
+	s.BoolValueSet("enabled", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasFullyQualifiedName(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasStorageAllowedLocations(expected ...string) *StorageIntegrationResourceAssert {
+	s.ListContainsExactlyStringValuesInOrder("storage_allowed_locations", expected...)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasStorageAwsExternalId(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("storage_aws_external_id", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasStorageAwsIamUserArn(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("storage_aws_iam_user_arn", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasStorageAwsObjectAcl(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("storage_aws_object_acl", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasStorageAwsRoleArn(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("storage_aws_role_arn", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasStorageBlockedLocations(expected ...string) *StorageIntegrationResourceAssert {
+	s.ListContainsExactlyStringValuesInOrder("storage_blocked_locations", expected...)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasStorageGcpServiceAccount(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("storage_gcp_service_account", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasStorageProvider(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("storage_provider", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasType(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("type", expected)
+	return s
+}
+
+func (s *StorageIntegrationResourceAssert) HasUsePrivatelinkEndpoint(expected string) *StorageIntegrationResourceAssert {
+	s.StringValueSet("use_privatelink_endpoint", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -72,11 +166,6 @@ func (s *StorageIntegrationResourceAssert) HasFullyQualifiedNameString(expected 
 	return s
 }
 
-func (s *StorageIntegrationResourceAssert) HasStorageAllowedLocationsString(expected string) *StorageIntegrationResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_allowed_locations", expected))
-	return s
-}
-
 func (s *StorageIntegrationResourceAssert) HasStorageAwsExternalIdString(expected string) *StorageIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_aws_external_id", expected))
 	return s
@@ -94,11 +183,6 @@ func (s *StorageIntegrationResourceAssert) HasStorageAwsObjectAclString(expected
 
 func (s *StorageIntegrationResourceAssert) HasStorageAwsRoleArnString(expected string) *StorageIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_aws_role_arn", expected))
-	return s
-}
-
-func (s *StorageIntegrationResourceAssert) HasStorageBlockedLocationsString(expected string) *StorageIntegrationResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_blocked_locations", expected))
 	return s
 }
 

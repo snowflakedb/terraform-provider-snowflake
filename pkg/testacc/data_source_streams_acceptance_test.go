@@ -267,9 +267,9 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(stage.ID().Name()).
+						HasTableName(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())).
 						HasSourceType(sdk.StreamSourceTypeStage).
-						HasBaseTablesPartiallyQualified(stage.ID().Name()).
+						HasBaseTablesPartiallyQualified(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())).
 						HasType("DELTA").
 						HasStale(false).
 						HasMode(sdk.StreamModeDefault).
@@ -282,10 +282,10 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.schema_name", id.SchemaName())),
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.comment", comment)),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.table_name", stage.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.table_name", fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name()))),
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.source_type", string(sdk.StreamSourceTypeStage))),
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.base_tables.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.base_tables.0", stage.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.base_tables.0", fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name()))),
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.type", "DELTA")),
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.stale", "false")),
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.mode", string(sdk.StreamModeDefault))),

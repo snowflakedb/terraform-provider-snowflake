@@ -17,6 +17,9 @@ type SemanticViews interface {
 	Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
+
+	// DescribeSemanticViewDetails is added manually; it returns converted describe output for semantic views
+	DescribeSemanticViewDetails(ctx context.Context, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error)
 }
 
 // CreateSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view.
@@ -28,8 +31,8 @@ type CreateSemanticViewOptions struct {
 	name                      SchemaObjectIdentifier     `ddl:"identifier"`
 	logicalTables             []LogicalTable             `ddl:"parameter,parentheses,no_equals" sql:"TABLES"`
 	semanticViewRelationships []SemanticViewRelationship `ddl:"parameter,parentheses,no_equals" sql:"RELATIONSHIPS"`
-	semanticViewFacts         []SemanticExpression       `ddl:"parameter,parentheses,no_equals" sql:"FACTS"`
-	semanticViewDimensions    []SemanticExpression       `ddl:"parameter,parentheses,no_equals" sql:"DIMENSIONS"`
+	semanticViewFacts         []FactDefinition           `ddl:"parameter,parentheses,no_equals" sql:"FACTS"`
+	semanticViewDimensions    []DimensionDefinition      `ddl:"parameter,parentheses,no_equals" sql:"DIMENSIONS"`
 	semanticViewMetrics       []MetricDefinition         `ddl:"parameter,parentheses,no_equals" sql:"METRICS"`
 	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
@@ -104,7 +107,17 @@ type SemanticSqlExpression struct {
 	SqlExpression string `ddl:"keyword,no_quotes"`
 }
 
+type FactDefinition struct {
+	isPrivate          *bool               `ddl:"keyword" sql:"PRIVATE"`
+	semanticExpression *SemanticExpression `ddl:"keyword"`
+}
+
+type DimensionDefinition struct {
+	semanticExpression *SemanticExpression `ddl:"keyword"`
+}
+
 type MetricDefinition struct {
+	isPrivate                      *bool                           `ddl:"keyword" sql:"PRIVATE"`
 	semanticExpression             *SemanticExpression             `ddl:"keyword"`
 	windowFunctionMetricDefinition *WindowFunctionMetricDefinition `ddl:"keyword"`
 }

@@ -13,8 +13,10 @@ import (
 
 var _ Functions = (*functions)(nil)
 
-var _ convertibleRow[Function] = new(functionRow)
-var _ convertibleRow[FunctionDetail] = new(functionDetailRow)
+var (
+	_ convertibleRow[Function]       = new(functionRow)
+	_ convertibleRow[FunctionDetail] = new(functionDetailRow)
+)
 
 type functions struct {
 	client *Client

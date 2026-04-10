@@ -28,6 +28,46 @@ func ImportedInternalStageResource(t *testing.T, id string) *InternalStageResour
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (i *InternalStageResourceAssert) HasDatabase(expected string) *InternalStageResourceAssert {
+	i.StringValueSet("database", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasSchema(expected string) *InternalStageResourceAssert {
+	i.StringValueSet("schema", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasName(expected string) *InternalStageResourceAssert {
+	i.StringValueSet("name", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasComment(expected string) *InternalStageResourceAssert {
+	i.StringValueSet("comment", expected)
+	return i
+}
+
+// typed assert for "directory" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "encryption" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "file_format" (type: List, subtype: Map) is not currently supported
+
+func (i *InternalStageResourceAssert) HasFullyQualifiedName(expected string) *InternalStageResourceAssert {
+	i.StringValueSet("fully_qualified_name", expected)
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasStageType(expected string) *InternalStageResourceAssert {
+	i.StringValueSet("stage_type", expected)
+	return i
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -49,16 +89,6 @@ func (i *InternalStageResourceAssert) HasNameString(expected string) *InternalSt
 
 func (i *InternalStageResourceAssert) HasCommentString(expected string) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("comment", expected))
-	return i
-}
-
-func (i *InternalStageResourceAssert) HasDirectoryString(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("directory", expected))
-	return i
-}
-
-func (i *InternalStageResourceAssert) HasEncryptionString(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("encryption", expected))
 	return i
 }
 
@@ -122,6 +152,11 @@ func (i *InternalStageResourceAssert) HasDirectoryEmpty() *InternalStageResource
 
 func (i *InternalStageResourceAssert) HasEncryptionEmpty() *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("encryption.#", "0"))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatEmpty() *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.#", "0"))
 	return i
 }
 

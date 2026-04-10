@@ -28,6 +28,20 @@ func ImportedAccountParameterResource(t *testing.T, id string) *AccountParameter
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (a *AccountParameterResourceAssert) HasKey(expected string) *AccountParameterResourceAssert {
+	a.StringValueSet("key", expected)
+	return a
+}
+
+func (a *AccountParameterResourceAssert) HasValue(expected string) *AccountParameterResourceAssert {
+	a.StringValueSet("value", expected)
+	return a
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

@@ -28,6 +28,35 @@ func ImportedImageRepositoryResource(t *testing.T, id string) *ImageRepositoryRe
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (i *ImageRepositoryResourceAssert) HasDatabase(expected string) *ImageRepositoryResourceAssert {
+	i.StringValueSet("database", expected)
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasSchema(expected string) *ImageRepositoryResourceAssert {
+	i.StringValueSet("schema", expected)
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasName(expected string) *ImageRepositoryResourceAssert {
+	i.StringValueSet("name", expected)
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasComment(expected string) *ImageRepositoryResourceAssert {
+	i.StringValueSet("comment", expected)
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasFullyQualifiedName(expected string) *ImageRepositoryResourceAssert {
+	i.StringValueSet("fully_qualified_name", expected)
+	return i
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

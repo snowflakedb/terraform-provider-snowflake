@@ -81,3 +81,7 @@ func experimentalFeatureDescription(feature experimentalfeatures.ExperimentalFea
 func ignoredAfterCreationDescription() string {
 	return "This field is used only when creating the object. Changes on this field are ignored after creation."
 }
+
+func enumValuesDescription[T ~string](values []T) string {
+	return fmt.Sprintf("Valid values are (case-insensitive): %s.", possibleValuesListed(values))
+}

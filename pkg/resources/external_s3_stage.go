@@ -9,10 +9,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -191,6 +193,8 @@ var externalS3StageSchema = func() map[string]*schema.Schema {
 
 func ExternalS3Stage() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingCreateWrapper(resources.ExternalS3Stage, CreateExternalS3Stage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingReadWrapper(resources.ExternalS3Stage, ReadExternalS3StageFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingUpdateWrapper(resources.ExternalS3Stage, UpdateExternalS3Stage)),
@@ -199,7 +203,7 @@ func ExternalS3Stage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3Stage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalS3StageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalS3StageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "aws_access_point_arn", "file_format"),
+			ComputedIfAnyAttributeChanged(externalS3StageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "aws_access_point_arn"),
 			ComputedIfAnyAttributeChanged(externalS3StageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
@@ -222,16 +226,26 @@ func ExternalS3Stage() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.ExternalS3Stage, ImportExternalS3Stage),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_ExternalS3StageStateUpgrader,
+			},
+		},
 	}
 }
 
 func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
 		return nil, err
 	}
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
+
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
 		return nil, err
 	}
 	stage, err := client.Stages.ShowByIDSafely(ctx, id)
@@ -239,31 +253,27 @@ func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 		return nil, err
 	}
 
-	stageDetails, err := client.Stages.Describe(ctx, id)
+	stageProperties, err := client.Stages.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	details, err := sdk.ParseStageDetails(stageDetails)
+	details, err := sdk.ParseStageDetails(stageProperties)
 	if err != nil {
 		return nil, err
 	}
-	if details.DirectoryTable != nil {
-		if err := d.Set("directory", []map[string]any{
-			{
-				"enable":       details.DirectoryTable.Enable,
-				"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-			},
-		}); err != nil {
-			return nil, err
-		}
+
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+
+	if err := importStageCommonFields(d, details, setDefaults); err != nil {
+		return nil, err
 	}
-	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
-		if err := d.Set("file_format", fileFormat); err != nil {
-			return nil, err
-		}
-	}
+
 	if details.PrivateLink != nil {
-		if err := d.Set("use_privatelink_endpoint", booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)); err != nil {
+		usePrivatelinkEndpointValue := booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)
+		if setDefaults {
+			usePrivatelinkEndpointValue = BooleanDefault
+		}
+		if err := d.Set("use_privatelink_endpoint", usePrivatelinkEndpointValue); err != nil {
 			return nil, err
 		}
 	}
@@ -373,20 +383,8 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			); err != nil {
 				return diag.FromErr(err)
 			}
-			directoryTable := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": details.DirectoryTable.AutoRefresh,
-				},
-			}
-			directoryTableToSet := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-				},
-			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+				directoryTableOutputMapping(*details.DirectoryTable),
 				outputMapping{"location.0.aws_access_point_arn", "aws_access_point_arn", details.Location.AwsAccessPointArn, details.Location.AwsAccessPointArn, nil},
 			); err != nil {
 				return diag.FromErr(err)

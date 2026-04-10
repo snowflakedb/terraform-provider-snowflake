@@ -28,6 +28,70 @@ func ImportedApiAuthenticationIntegrationWithJwtBearerResource(t *testing.T, id 
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasName(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("name", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasComment(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("comment", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasEnabled(expected bool) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.BoolValueSet("enabled", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasFullyQualifiedName(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("fully_qualified_name", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAccessTokenValidity(expected int) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.IntValueSet("oauth_access_token_validity", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAssertionIssuer(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("oauth_assertion_issuer", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAuthorizationEndpoint(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("oauth_authorization_endpoint", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientAuthMethod(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("oauth_client_auth_method", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientId(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("oauth_client_id", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientSecret(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("oauth_client_secret", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthRefreshTokenValidity(expected int) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.IntValueSet("oauth_refresh_token_validity", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthTokenEndpoint(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
+	a.StringValueSet("oauth_token_endpoint", expected)
+	return a
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

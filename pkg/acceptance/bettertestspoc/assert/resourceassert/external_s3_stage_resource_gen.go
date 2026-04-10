@@ -28,6 +28,73 @@ func ImportedExternalS3StageResource(t *testing.T, id string) *ExternalS3StageRe
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (e *ExternalS3StageResourceAssert) HasDatabase(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("database", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasSchema(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("schema", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasName(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("name", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasAwsAccessPointArn(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("aws_access_point_arn", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasCloud(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("cloud", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasComment(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("comment", expected)
+	return e
+}
+
+// typed assert for "credentials" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "directory" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "encryption" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "file_format" (type: List, subtype: Map) is not currently supported
+
+func (e *ExternalS3StageResourceAssert) HasFullyQualifiedName(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("fully_qualified_name", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasStageType(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("stage_type", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasStorageIntegration(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("storage_integration", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasUrl(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("url", expected)
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasUsePrivatelinkEndpoint(expected string) *ExternalS3StageResourceAssert {
+	e.StringValueSet("use_privatelink_endpoint", expected)
+	return e
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -59,21 +126,6 @@ func (e *ExternalS3StageResourceAssert) HasCloudString(expected string) *Externa
 
 func (e *ExternalS3StageResourceAssert) HasCommentString(expected string) *ExternalS3StageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", expected))
-	return e
-}
-
-func (e *ExternalS3StageResourceAssert) HasCredentialsString(expected string) *ExternalS3StageResourceAssert {
-	e.AddAssertion(assert.ValueSet("credentials", expected))
-	return e
-}
-
-func (e *ExternalS3StageResourceAssert) HasDirectoryString(expected string) *ExternalS3StageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory", expected))
-	return e
-}
-
-func (e *ExternalS3StageResourceAssert) HasEncryptionString(expected string) *ExternalS3StageResourceAssert {
-	e.AddAssertion(assert.ValueSet("encryption", expected))
 	return e
 }
 
@@ -192,6 +244,11 @@ func (e *ExternalS3StageResourceAssert) HasDirectoryEmpty() *ExternalS3StageReso
 
 func (e *ExternalS3StageResourceAssert) HasEncryptionEmpty() *ExternalS3StageResourceAssert {
 	e.AddAssertion(assert.ValueSet("encryption.#", "0"))
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasFileFormatEmpty() *ExternalS3StageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
 	return e
 }
 

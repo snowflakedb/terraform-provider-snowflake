@@ -6,6 +6,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var ProgrammaticAccessTokenStatusDef = g.NewEnum("ProgrammaticAccessTokenStatus", "ProgrammaticAccessTokenStatuses", "ACTIVE", "EXPIRED", "DISABLED")
+
 var programmaticAccessTokenResultDBRowDef = g.DbStruct("programmaticAccessTokenResultDBRow").
 	Text("name").
 	Text("user_name").
@@ -142,4 +144,5 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
 		OptionalIdentifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
-).ShowByIdOperationWithNoFiltering()
+).ShowByIdOperationWithNoFiltering().
+	WithEnums(ProgrammaticAccessTokenStatusDef)

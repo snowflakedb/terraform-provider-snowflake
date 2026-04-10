@@ -35,6 +35,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.AuthenticationPolicies().Schema,
 	},
 	{
+		name:   "CatalogIntegrations",
+		schema: datasources.CatalogIntegrations().Schema,
+	},
+	{
 		name:   "ComputePools",
 		schema: datasources.ComputePools().Schema,
 	},
@@ -53,6 +57,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Databases",
 		schema: datasources.Databases().Schema,
+	},
+	{
+		name:   "ExternalVolumes",
+		schema: datasources.ExternalVolumes().Schema,
 	},
 	{
 		name:   "Functions",
@@ -81,6 +89,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "NetworkPolicies",
 		schema: datasources.NetworkPolicies().Schema,
+	},
+	{
+		name:   "NetworkRules",
+		schema: datasources.NetworkRules().Schema,
 	},
 	{
 		name:   "Notebooks",

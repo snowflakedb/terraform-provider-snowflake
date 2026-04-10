@@ -28,6 +28,49 @@ func ImportedGrantPrivilegesToDatabaseRoleResource(t *testing.T, id string) *Gra
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAllPrivileges(expected bool) *GrantPrivilegesToDatabaseRoleResourceAssert {
+	g.BoolValueSet("all_privileges", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAlwaysApply(expected bool) *GrantPrivilegesToDatabaseRoleResourceAssert {
+	g.BoolValueSet("always_apply", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAlwaysApplyTrigger(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
+	g.StringValueSet("always_apply_trigger", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasDatabaseRoleName(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
+	g.StringValueSet("database_role_name", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnDatabase(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
+	g.StringValueSet("on_database", expected)
+	return g
+}
+
+// typed assert for "on_schema" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "on_schema_object" (type: List, subtype: Map) is not currently supported
+
+func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasPrivileges(expected ...string) *GrantPrivilegesToDatabaseRoleResourceAssert {
+	g.SetContainsExactlyStringValues("privileges", expected...)
+	return g
+}
+
+func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasWithGrantOption(expected bool) *GrantPrivilegesToDatabaseRoleResourceAssert {
+	g.BoolValueSet("with_grant_option", expected)
+	return g
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,21 +97,6 @@ func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasDatabaseRoleNameString(
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnDatabaseString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
 	g.AddAssertion(assert.ValueSet("on_database", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnSchemaString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnSchemaObjectString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema_object", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasPrivilegesString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("privileges", expected))
 	return g
 }
 

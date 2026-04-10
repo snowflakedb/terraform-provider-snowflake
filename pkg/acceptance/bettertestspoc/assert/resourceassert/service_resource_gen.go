@@ -28,6 +28,84 @@ func ImportedServiceResource(t *testing.T, id string) *ServiceResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *ServiceResourceAssert) HasDatabase(expected string) *ServiceResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasSchema(expected string) *ServiceResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasName(expected string) *ServiceResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasAutoResume(expected string) *ServiceResourceAssert {
+	s.StringValueSet("auto_resume", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasAutoSuspendSecs(expected int) *ServiceResourceAssert {
+	s.IntValueSet("auto_suspend_secs", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasComment(expected string) *ServiceResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasComputePool(expected string) *ServiceResourceAssert {
+	s.StringValueSet("compute_pool", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasExternalAccessIntegrations(expected ...string) *ServiceResourceAssert {
+	s.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return s
+}
+
+// typed assert for "from_specification" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "from_specification_template" (type: List, subtype: Map) is not currently supported
+
+func (s *ServiceResourceAssert) HasFullyQualifiedName(expected string) *ServiceResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMaxInstances(expected int) *ServiceResourceAssert {
+	s.IntValueSet("max_instances", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMinInstances(expected int) *ServiceResourceAssert {
+	s.IntValueSet("min_instances", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasMinReadyInstances(expected int) *ServiceResourceAssert {
+	s.IntValueSet("min_ready_instances", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasQueryWarehouse(expected string) *ServiceResourceAssert {
+	s.StringValueSet("query_warehouse", expected)
+	return s
+}
+
+func (s *ServiceResourceAssert) HasServiceType(expected string) *ServiceResourceAssert {
+	s.StringValueSet("service_type", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -64,21 +142,6 @@ func (s *ServiceResourceAssert) HasCommentString(expected string) *ServiceResour
 
 func (s *ServiceResourceAssert) HasComputePoolString(expected string) *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueSet("compute_pool", expected))
-	return s
-}
-
-func (s *ServiceResourceAssert) HasExternalAccessIntegrationsString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_access_integrations", expected))
-	return s
-}
-
-func (s *ServiceResourceAssert) HasFromSpecificationString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("from_specification", expected))
-	return s
-}
-
-func (s *ServiceResourceAssert) HasFromSpecificationTemplateString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("from_specification_template", expected))
 	return s
 }
 

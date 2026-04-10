@@ -176,6 +176,84 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Stage{},
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.NetworkRule{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationS3Details{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationGcsDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationAzureDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationS3CompatDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.CatalogIntegration{},
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationAwsGlueDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationObjectStorageDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationIcebergRestDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationSapBdcDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.IcebergRestRestConfigDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.OAuthRestAuthenticationDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.SessionPolicyDetails{},
+		IsDataSourceOutput: true,
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

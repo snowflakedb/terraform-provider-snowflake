@@ -30,10 +30,13 @@ type sanitizedDataTypeRaw struct {
 }
 
 // ParseDataType is the entry point to get the implementation of the DataType from input raw string.
-// TODO [SNOW-1843440]: order currently matters (e.g. HasPrefix(TIME) can match also TIMESTAMP*, make the checks more precise and order-independent)
+// TODO [SNOW-1843440]: order currently matters (e.g. HasPrefix(TIME) can match also TIMESTAMP*, HasPrefix(DEC) can match also DECFLOAT*, make the checks more precise and order-independent)
 func ParseDataType(raw string) (DataType, error) {
 	dataTypeRaw := strings.TrimSpace(strings.ToUpper(raw))
 
+	if idx := slices.IndexFunc(DecfloatDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
+		return parseDecfloatDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, DecfloatDataTypeSynonyms[idx]})
+	}
 	if idx := slices.IndexFunc(AllNumberDataTypes, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
 		return parseNumberDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, AllNumberDataTypes[idx]})
 	}
@@ -113,6 +116,8 @@ func AreTheSame(a DataType, b DataType) bool {
 		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
 	case *DateDataType:
 		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
+	case *DecfloatDataType:
+		return castSuccessfully(v, b, areDecfloatDataTypesTheSame)
 	case *FloatDataType:
 		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
 	case *GeographyDataType:
@@ -191,6 +196,8 @@ func AreDefinitelyDifferent(a DataType, b DataType) bool {
 		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
 	case *DateDataType:
 		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
+	case *DecfloatDataType:
+		return castSuccessfully(v, b, areDecfloatDataTypesDefinitelyDifferent)
 	case *FloatDataType:
 		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
 	case *GeographyDataType:

@@ -59,6 +59,10 @@ var (
 	//go:embed templates/dto_builder.tmpl
 	dtoBuilderTemplateContent string
 
+	//go:embed templates/enum.tmpl
+	enumTemplateContent string
+	EnumTemplate        *template.Template
+
 	//go:embed templates/implementation.tmpl
 	implementationTemplateContent string
 	ImplementationTemplate        *template.Template
@@ -128,4 +132,5 @@ func init() {
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)
+	EnumTemplate, _ = subTemplates.New("enumTemplate").Parse(enumTemplateContent)
 }

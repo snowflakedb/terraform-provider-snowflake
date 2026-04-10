@@ -31,8 +31,7 @@ type S3StorageParamsRequest struct {
 	UsePrivatelinkEndpoint *bool
 }
 
-type GCSStorageParamsRequest struct {
-}
+type GCSStorageParamsRequest struct{}
 
 type AzureStorageParamsRequest struct {
 	AzureTenantId          string // required

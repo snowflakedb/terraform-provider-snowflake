@@ -16,7 +16,15 @@ type CreateSessionPolicyRequest struct {
 	name                     SchemaObjectIdentifier // required
 	SessionIdleTimeoutMins   *int
 	SessionUiIdleTimeoutMins *int
+	AllowedSecondaryRoles    *SessionPolicySecondaryRolesRequest
+	BlockedSecondaryRoles    *SessionPolicySecondaryRolesRequest
 	Comment                  *string
+}
+
+type SessionPolicySecondaryRolesRequest struct {
+	All   *bool
+	None  *bool
+	Roles []AccountObjectIdentifier
 }
 
 type AlterSessionPolicyRequest struct {
@@ -32,12 +40,16 @@ type AlterSessionPolicyRequest struct {
 type SessionPolicySetRequest struct {
 	SessionIdleTimeoutMins   *int
 	SessionUiIdleTimeoutMins *int
+	AllowedSecondaryRoles    *SessionPolicySecondaryRolesRequest
+	BlockedSecondaryRoles    *SessionPolicySecondaryRolesRequest
 	Comment                  *string
 }
 
 type SessionPolicyUnsetRequest struct {
 	SessionIdleTimeoutMins   *bool
 	SessionUiIdleTimeoutMins *bool
+	AllowedSecondaryRoles    *bool
+	BlockedSecondaryRoles    *bool
 	Comment                  *bool
 }
 
@@ -47,6 +59,11 @@ type DropSessionPolicyRequest struct {
 }
 
 type ShowSessionPolicyRequest struct {
+	Like       *Like
+	In         *ExtendedIn
+	On         *On
+	StartsWith *string
+	Limit      *LimitFrom
 }
 
 type DescribeSessionPolicyRequest struct {
