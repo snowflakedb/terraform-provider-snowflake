@@ -20,6 +20,14 @@ import (
 func createApp(t *testing.T) *sdk.Application {
 	t.Helper()
 
+	application, _ := createAppReturnApplicationPackage(t)
+	return application
+}
+
+// TODO [SNOW-1431726]: Move to helpers
+func createAppReturnApplicationPackage(t *testing.T) (*sdk.Application, *sdk.ApplicationPackage) {
+	t.Helper()
+
 	stage, cleanupStage := testClient().Stage.CreateStage(t)
 	t.Cleanup(cleanupStage)
 
@@ -33,7 +41,7 @@ func createApp(t *testing.T) *sdk.Application {
 
 	application, cleanupApplication := testClient().Application.CreateApplication(t, applicationPackage.ID(), "v1")
 	t.Cleanup(cleanupApplication)
-	return application
+	return application, applicationPackage
 }
 
 func TestAcc_GrantApplicationRole_accountRole(t *testing.T) {
