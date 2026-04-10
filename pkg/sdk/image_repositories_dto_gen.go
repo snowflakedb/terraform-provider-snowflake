@@ -13,8 +13,13 @@ type CreateImageRepositoryRequest struct {
 	OrReplace   *bool
 	IfNotExists *bool
 	name        SchemaObjectIdentifier // required
+	Encryption  *ImageRepositoryEncryptionRequest
 	Comment     *string
 	Tag         []TagAssociation
+}
+
+type ImageRepositoryEncryptionRequest struct {
+	EncryptionType ImageRepositoryEncryptionType // required
 }
 
 type AlterImageRepositoryRequest struct {

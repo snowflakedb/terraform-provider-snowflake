@@ -19,7 +19,7 @@ type ImageRepositoryAssert struct {
 func ImageRepository(t *testing.T, id sdk.SchemaObjectIdentifier) *ImageRepositoryAssert {
 	t.Helper()
 	return &ImageRepositoryAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeImageRepository, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ImageRepository, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("ImageRepository"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ImageRepository, sdk.SchemaObjectIdentifier] {
 			return testClient.ImageRepository.Show
 		}),
 	}
@@ -114,6 +114,17 @@ func (i *ImageRepositoryAssert) HasComment(expected string) *ImageRepositoryAsse
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *ImageRepositoryAssert) HasEncryption(expected sdk.ImageRepositoryEncryptionType) *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.Encryption != expected {
+			return fmt.Errorf("expected encryption: %v; got: %v", expected, o.Encryption)
 		}
 		return nil
 	})

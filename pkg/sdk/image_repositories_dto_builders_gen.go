@@ -20,6 +20,11 @@ func (s *CreateImageRepositoryRequest) WithIfNotExists(ifNotExists bool) *Create
 	return s
 }
 
+func (s *CreateImageRepositoryRequest) WithEncryption(encryption ImageRepositoryEncryptionRequest) *CreateImageRepositoryRequest {
+	s.Encryption = &encryption
+	return s
+}
+
 func (s *CreateImageRepositoryRequest) WithComment(comment string) *CreateImageRepositoryRequest {
 	s.Comment = &comment
 	return s
@@ -28,6 +33,14 @@ func (s *CreateImageRepositoryRequest) WithComment(comment string) *CreateImageR
 func (s *CreateImageRepositoryRequest) WithTag(tag []TagAssociation) *CreateImageRepositoryRequest {
 	s.Tag = tag
 	return s
+}
+
+func NewImageRepositoryEncryptionRequest(
+	encryptionType ImageRepositoryEncryptionType,
+) *ImageRepositoryEncryptionRequest {
+	s := ImageRepositoryEncryptionRequest{}
+	s.EncryptionType = encryptionType
+	return &s
 }
 
 func NewAlterImageRepositoryRequest(

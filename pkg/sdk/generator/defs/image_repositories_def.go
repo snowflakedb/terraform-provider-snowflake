@@ -6,6 +6,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var ImageRepositoryEncryptionTypeDef = g.NewEnum("ImageRepositoryEncryptionType", "ImageRepositoryEncryptionTypes", "SNOWFLAKE_FULL", "SNOWFLAKE_SSE")
+
 var imageRepositoriesDef = g.NewInterface(
 	"ImageRepositories",
 	"ImageRepository",
@@ -18,6 +20,13 @@ var imageRepositoriesDef = g.NewInterface(
 		SQL("IMAGE REPOSITORY").
 		IfNotExists().
 		Name().
+		OptionalQueryStructField(
+			"Encryption",
+			g.NewQueryStruct("ImageRepositoryEncryption").
+				AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.ImageRepositoryEncryptionType](), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
+				WithValidation(g.ValidateValueSet, "EncryptionType"),
+			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
+		).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
@@ -59,6 +68,7 @@ var imageRepositoriesDef = g.NewInterface(
 		Text("owner").
 		Text("owner_role_type").
 		Text("comment").
+		Text("encryption").
 		Text("privatelink_repository_url"),
 	g.PlainStruct("ImageRepository").
 		Time("CreatedOn").
@@ -69,6 +79,7 @@ var imageRepositoriesDef = g.NewInterface(
 		Text("Owner").
 		Text("OwnerRoleType").
 		Text("Comment").
+		Field("Encryption", g.KindOfT[sdkcommons.ImageRepositoryEncryptionType]()).
 		Text("PrivatelinkRepositoryUrl"),
 	g.NewQueryStruct("ShowImageRepositories").
 		Show().
@@ -78,4 +89,4 @@ var imageRepositoriesDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-)
+).WithEnums(ImageRepositoryEncryptionTypeDef)
