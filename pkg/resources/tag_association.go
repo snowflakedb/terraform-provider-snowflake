@@ -188,7 +188,6 @@ func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta
 	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 	var correctObjectIds []string
 	for _, oid := range ids {
-
 		objectTagValue, err := client.SystemFunctions.GetTag(ctx, tagId, oid, objectType)
 		if safeDestroy && errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			continue
@@ -304,21 +303,12 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 }
 
 func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
+	client := meta.(*provider.Context).Client
 	tagId, ids, objectType, err := TagIdentifierAndObjectIdentifier(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 	for _, id := range ids {
-		request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
-		if safeDestroy {
-			if err := client.Tags.UnsetSafely(ctx, request); err != nil {
-				return diag.FromErr(err)
-			}
-			continue
-		}
 		if objectType == sdk.ObjectTypeColumn {
 			skip, err := skipColumnIfDoesNotExist(ctx, client, id)
 			if err != nil {
@@ -328,6 +318,7 @@ func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 				continue
 			}
 		}
+		request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
 		if err := client.Tags.Unset(ctx, request); err != nil {
 			return diag.FromErr(err)
 		}
@@ -343,7 +334,7 @@ func skipColumnIfDoesNotExist(ctx context.Context, client *sdk.Client, id sdk.Ob
 		return false, errors.New("invalid column identifier")
 	}
 	// TODO [SNOW-1007542]: use SHOW COLUMNS
-	_, err := client.Tables.ShowByID(ctx, columnId.SchemaObjectId())
+	_, err := client.Tables.ShowByIDSafely(ctx, columnId.SchemaObjectId())
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			log.Printf("[DEBUG] table %s not found, skipping", columnId.SchemaObjectId())

@@ -101,6 +101,14 @@ func (c *TableClient) CreateWithRequest(t *testing.T, req *sdk.CreateTableReques
 	return table, c.DropFunc(t, req.GetName())
 }
 
+func (c *TableClient) AlterWithRequest(t *testing.T, req *sdk.AlterTableRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *TableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
