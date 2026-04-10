@@ -25,11 +25,11 @@ func (s *sessionPolicies) DescribeDetails(ctx context.Context, id SchemaObjectId
 	if err != nil {
 		return nil, err
 	}
-	return parseSessionPolicyProperties(properties)
+	return parseSessionPolicyProperties(properties, id)
 }
 
-func parseSessionPolicyProperties(properties []SessionPolicyProperty) (*SessionPolicyDetails, error) {
-	details := &SessionPolicyDetails{}
+func parseSessionPolicyProperties(properties []SessionPolicyProperty, id SchemaObjectIdentifier) (*SessionPolicyDetails, error) {
+	details := &SessionPolicyDetails{Id: id}
 	var errs []error
 	for _, prop := range properties {
 		switch prop.Property {
