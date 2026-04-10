@@ -2,11 +2,13 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -275,7 +277,8 @@ func CreateGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 }
 
 func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	id, err := ParseGrantOwnershipId(d.Id())
 	if err != nil {
@@ -310,6 +313,9 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 			},
 			getOwnershipGrantOpts(id),
 		)
+		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+			err = nil
+		}
 		if err != nil {
 			return diag.Diagnostics{
 				diag.Diagnostic{
