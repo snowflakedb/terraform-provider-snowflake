@@ -38,11 +38,12 @@ func ToExampleStatus(s string) (ExampleStatus, error) {
 type ExampleSize string
 
 const (
-	ExampleSizeXsmall ExampleSize = "XSMALL"
-	ExampleSizeSmall  ExampleSize = "SMALL"
-	ExampleSizeMedium ExampleSize = "MEDIUM"
-	ExampleSizeLarge  ExampleSize = "LARGE"
-	ExampleSizeXlarge ExampleSize = "XLARGE"
+	ExampleSizeXsmall  ExampleSize = "XSMALL"
+	ExampleSizeSmall   ExampleSize = "SMALL"
+	ExampleSizeMedium  ExampleSize = "MEDIUM"
+	ExampleSizeLarge   ExampleSize = "LARGE"
+	ExampleSizeXlarge  ExampleSize = "XLARGE"
+	ExampleSizeXxlarge ExampleSize = "XXLARGE"
 )
 
 var AllExampleSizes = []ExampleSize{
@@ -51,6 +52,7 @@ var AllExampleSizes = []ExampleSize{
 	ExampleSizeMedium,
 	ExampleSizeLarge,
 	ExampleSizeXlarge,
+	ExampleSizeXxlarge,
 }
 
 var AllExampleSizesString = []string{
@@ -61,6 +63,9 @@ var AllExampleSizesString = []string{
 	string(ExampleSizeLarge),
 	string(ExampleSizeXlarge),
 	"X-LARGE",
+	string(ExampleSizeXxlarge),
+	"X2LARGE",
+	"2X-LARGE",
 }
 
 func ToExampleSize(s string) (ExampleSize, error) {
@@ -76,6 +81,8 @@ func ToExampleSize(s string) (ExampleSize, error) {
 		return ExampleSizeLarge, nil
 	case string(ExampleSizeXlarge), "X-LARGE":
 		return ExampleSizeXlarge, nil
+	case string(ExampleSizeXxlarge), "X2LARGE", "2X-LARGE":
+		return ExampleSizeXxlarge, nil
 	default:
 		return "", fmt.Errorf("invalid example size: %s", s)
 	}

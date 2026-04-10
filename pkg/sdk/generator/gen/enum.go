@@ -1,6 +1,11 @@
 package gen
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+import (
+	"log"
+	"slices"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+)
 
 // Enum defines an enum type with its name and values. For now, only string values are supported.
 type Enum struct {
@@ -22,6 +27,9 @@ func NewEnum(name, namePlural string, values ...string) *Enum {
 // WithAliases adds aliases for a canonical enum value.
 // E.g. for canonical value "XSMALL" with aliases "X-SMALL".
 func (e *Enum) WithAliases(value string, aliases ...string) *Enum {
+	if !slices.Contains(e.Values, value) {
+		log.Panicf("WithAliases: value %q is not a declared enum value in %s; declared values: %v", value, e.Name, e.Values)
+	}
 	e.Aliases[value] = append(e.Aliases[value], aliases...)
 	return e
 }

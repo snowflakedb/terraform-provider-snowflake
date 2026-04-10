@@ -84,4 +84,10 @@ func TestEnum_WithAliases(t *testing.T) {
 		require.Equal(t, []string{"X-SMALL"}, enum.Aliases["XSMALL"])
 		require.Equal(t, []string{"X-LARGE"}, enum.Aliases["XLARGE"])
 	})
+
+	t.Run("panics on undeclared value", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewEnum("Size", "Sizes", "XSMALL").WithAliases("UNKNOWN", "alias")
+		})
+	})
 }

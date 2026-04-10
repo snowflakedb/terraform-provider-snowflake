@@ -19,9 +19,10 @@ var ExampleStatusDef = g.NewEnum(
 var ExampleSizeDef = g.NewEnum(
 	"ExampleSize",
 	"ExampleSizes",
-	"XSMALL", "SMALL", "MEDIUM", "LARGE", "XLARGE",
+	"XSMALL", "SMALL", "MEDIUM", "LARGE", "XLARGE", "XXLARGE",
 ).WithAliases("XSMALL", "X-SMALL").
-	WithAliases("XLARGE", "X-LARGE")
+	WithAliases("XLARGE", "X-LARGE").
+	WithAliases("XXLARGE", "X2LARGE", "2X-LARGE")
 
 var EnumExamplesDef = g.NewInterface(
 	"EnumExamples",
