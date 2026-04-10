@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
@@ -176,16 +177,21 @@ func CreateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 }
 
 func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	tagValue := d.Get("tag_value").(string)
 
 	tagId, ids, objectType, err := TagIdentifierAndObjectIdentifier(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 	var correctObjectIds []string
 	for _, oid := range ids {
 		objectTagValue, err := client.SystemFunctions.GetTag(ctx, tagId, oid, objectType)
+		if safeDestroy && errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+			continue
+		}
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -328,7 +334,7 @@ func skipColumnIfDoesNotExist(ctx context.Context, client *sdk.Client, id sdk.Ob
 		return false, errors.New("invalid column identifier")
 	}
 	// TODO [SNOW-1007542]: use SHOW COLUMNS
-	_, err := client.Tables.ShowByID(ctx, columnId.SchemaObjectId())
+	_, err := client.Tables.ShowByIDSafely(ctx, columnId.SchemaObjectId())
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			log.Printf("[DEBUG] table %s not found, skipping", columnId.SchemaObjectId())

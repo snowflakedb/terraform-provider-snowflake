@@ -114,6 +114,19 @@ provider "snowflake" {
 }
 ```
 
+### *(new feature)* TAG_ASSOCIATION_SAFE_DESTROY experiment
+
+A new `TAG_ASSOCIATION_SAFE_DESTROY` experiment has been added. When enabled, `snowflake_tag_association` destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists, instead of failing with `does not exist or not authorized` or `object does not exist, or operation cannot be performed`.
+
+This is useful when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration. It also fixes [#3869](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3869), where destroying a column-level tag association failed when the parent table or schema had already been dropped.
+
+To enable, add `TAG_ASSOCIATION_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["TAG_ASSOCIATION_SAFE_DESTROY"]
+}
+```
+
 ### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
 
 #### Resource `snowflake_authentication_policy`
