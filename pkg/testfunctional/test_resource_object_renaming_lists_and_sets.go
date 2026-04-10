@@ -17,6 +17,7 @@ import (
 )
 
 type ObjectRenamingDatabaseListItem struct {
+	Name   string
 	String string
 	Int    int
 }
@@ -24,7 +25,12 @@ type ObjectRenamingDatabaseListItem struct {
 func mapObjectRenamingDatabaseListItemFromValue(items []cty.Value) []ObjectRenamingDatabaseListItem {
 	return collections.Map(items, func(item cty.Value) ObjectRenamingDatabaseListItem {
 		intValue, _ := item.AsValueMap()["int"].AsBigFloat().Int64()
+		var name string
+		if nameValue, ok := item.AsValueMap()["name"]; ok && !nameValue.IsNull() {
+			name = nameValue.AsString()
+		}
 		return ObjectRenamingDatabaseListItem{
+			Name:   name,
 			String: item.AsValueMap()["string"].AsString(),
 			Int:    int(intValue),
 		}
@@ -33,7 +39,12 @@ func mapObjectRenamingDatabaseListItemFromValue(items []cty.Value) []ObjectRenam
 
 func objectRenamingDatabaseListFromSchema(items []any) []ObjectRenamingDatabaseListItem {
 	return collections.Map(items, func(item any) ObjectRenamingDatabaseListItem {
+		var name string
+		if nameValue, ok := item.(map[string]any)["name"]; ok {
+			name = nameValue.(string)
+		}
 		return ObjectRenamingDatabaseListItem{
+			Name:   name,
 			String: item.(map[string]any)["string"].(string),
 			Int:    item.(map[string]any)["int"].(int),
 		}
@@ -137,6 +148,10 @@ var objectRenamingListsAndSetsSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: ignoreListOrderAfterFirstApply("list"),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"name": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
 				"string": {
 					Type:     schema.TypeString,
 					Optional: true,
@@ -290,20 +305,28 @@ func UpdateObjectRenamingListsAndSets(ctx context.Context, d *schema.ResourceDat
 			ObjectRenamingDatabaseInstance.List = slices.DeleteFunc(ObjectRenamingDatabaseInstance.List, func(item ObjectRenamingDatabaseListItem) bool {
 				shouldRemove := item == removedItem
 				if shouldRemove {
-					ObjectRenamingDatabaseInstance.ChangeLog.Removed = append(ObjectRenamingDatabaseInstance.ChangeLog.Removed, map[string]any{
+					changelogEntry := map[string]any{
 						"int":    item.Int,
 						"string": item.String,
-					})
+					}
+					if item.Name != "" {
+						changelogEntry["name"] = item.Name
+					}
+					ObjectRenamingDatabaseInstance.ChangeLog.Removed = append(ObjectRenamingDatabaseInstance.ChangeLog.Removed, changelogEntry)
 				}
 				return shouldRemove
 			})
 		}
 
 		for _, addedItem := range addedItems {
-			ObjectRenamingDatabaseInstance.ChangeLog.Added = append(ObjectRenamingDatabaseInstance.ChangeLog.Added, map[string]any{
+			changelogEntry := map[string]any{
 				"int":    addedItem.Int,
 				"string": addedItem.String,
-			})
+			}
+			if addedItem.Name != "" {
+				changelogEntry["name"] = addedItem.Name
+			}
+			ObjectRenamingDatabaseInstance.ChangeLog.Added = append(ObjectRenamingDatabaseInstance.ChangeLog.Added, changelogEntry)
 		}
 
 		ObjectRenamingDatabaseInstance.List = append(ObjectRenamingDatabaseInstance.List, addedItems...)
@@ -446,6 +469,7 @@ func ReadObjectRenamingListsAndSets(withExternalChangesMarking bool) schema.Read
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		list := collections.Map(ObjectRenamingDatabaseInstance.List, func(t ObjectRenamingDatabaseListItem) map[string]any {
 			return map[string]any{
+				"name":   t.Name,
 				"string": t.String,
 				"int":    t.Int,
 			}
@@ -541,7 +565,7 @@ func ignoreListOrderAfterFirstApply(parentKey string) schema.SchemaDiffSuppressF
 		// Raw state is not null after first apply
 		if !d.GetRawState().IsNull() {
 			// Parse item index from the key
-			keyParts := strings.Split(strings.TrimLeft(key, parentKey+"."), ".")
+			keyParts := strings.Split(strings.TrimPrefix(key, parentKey+"."), ".")
 			if len(keyParts) >= 2 {
 				index, err := strconv.Atoi(keyParts[0])
 				if err != nil {

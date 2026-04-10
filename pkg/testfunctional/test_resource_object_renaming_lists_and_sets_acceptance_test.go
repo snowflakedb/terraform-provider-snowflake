@@ -36,9 +36,9 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "111", "int": "111"},
-						{"string": "222", "int": "222"},
-						{"string": "333", "int": "333"},
+						{"name": "", "string": "111", "int": "111"},
+						{"name": "", "string": "222", "int": "222"},
+						{"name": "", "string": "333", "int": "333"},
 					}),
 				),
 			},
@@ -66,9 +66,9 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "222", "int": "222"},
-						{"string": "444", "int": "444"},
-						{"string": "333", "int": "333"},
+						{"name": "", "string": "222", "int": "222"},
+						{"name": "", "string": "444", "int": "444"},
+						{"name": "", "string": "333", "int": "333"},
 					}),
 				),
 			},
@@ -96,9 +96,9 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "444", "int": "444"},
-						{"string": "333", "int": "333"},
-						{"string": "111", "int": "111"},
+						{"name": "", "string": "444", "int": "444"},
+						{"name": "", "string": "333", "int": "333"},
+						{"name": "", "string": "111", "int": "111"},
 					}),
 				),
 			},
@@ -126,9 +126,9 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "222", "int": "222"},
-						{"string": "333", "int": "333"},
-						{"string": "444", "int": "444"},
+						{"name": "", "string": "222", "int": "222"},
+						{"name": "", "string": "333", "int": "333"},
+						{"name": "", "string": "444", "int": "444"},
 					}),
 				),
 			},
@@ -154,10 +154,10 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "444", "int": "444"},
-						{"string": "555", "int": "555"},
-						{"string": "333", "int": "333"},
-						{"string": "222", "int": "222"},
+						{"name": "", "string": "444", "int": "444"},
+						{"name": "", "string": "555", "int": "555"},
+						{"name": "", "string": "333", "int": "333"},
+						{"name": "", "string": "222", "int": "222"},
 					}),
 				),
 			},
@@ -192,10 +192,10 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "1111", "int": "1111"},
-						{"string": "2222", "int": "2222"},
-						{"string": "3333", "int": "3333"},
-						{"string": "4444", "int": "4444"},
+						{"name": "", "string": "1111", "int": "1111"},
+						{"name": "", "string": "2222", "int": "2222"},
+						{"name": "", "string": "3333", "int": "3333"},
+						{"name": "", "string": "4444", "int": "4444"},
 					}),
 				),
 			},
@@ -220,8 +220,8 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "1111", "int": "1111"},
-						{"string": "2222", "int": "2222"},
+						{"name": "", "string": "1111", "int": "1111"},
+						{"name": "", "string": "2222", "int": "2222"},
 					}),
 				),
 			},
@@ -266,8 +266,8 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "1111", "int": "1111"},
-						{"string": "2222", "int": "2222"},
+						{"name": "", "string": "1111", "int": "1111"},
+						{"name": "", "string": "2222", "int": "2222"},
 					}),
 				),
 			},
@@ -297,8 +297,8 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "1111", "int": "1111"},
-						{"string": "2222", "int": "2222"},
+						{"name": "", "string": "1111", "int": "1111"},
+						{"name": "", "string": "2222", "int": "2222"},
 					}),
 				),
 			},
@@ -325,8 +325,8 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "1111", "int": "1111"},
-						{"string": "2222", "int": "2222"},
+						{"name": "", "string": "1111", "int": "1111"},
+						{"name": "", "string": "2222", "int": "2222"},
 					}),
 				),
 			},
@@ -357,8 +357,8 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "1111", "int": "1111"},
-						{"string": "2222", "int": "2222"},
+						{"name": "", "string": "1111", "int": "1111"},
+						{"name": "", "string": "2222", "int": "2222"},
 					}),
 				),
 			},
@@ -370,8 +370,8 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 			//	}),
 			//	Check: resource.ComposeAggregateTestCheckFunc(
 			//		assert.HasListItemsOrderIndependent("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-			//			{"string": "222", "int": "222"},
-			//			{"string": "222", "int": "222"},
+			//			{"name": "", "string": "222", "int": "222"},
+			//			{"name": "", "string": "222", "int": "222"},
 			//		}),
 			//	),
 			// },
@@ -382,8 +382,6 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 // This test researches the possibility of performing update instead of remove + add item
 func TestAcc_SdkV2Functional_ListNameUpdate(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-
-	t.Skip("Currently failing, will be investigated soon.")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -454,9 +452,9 @@ func TestAcc_SdkV2Functional_ListsWithDuplicatedItems(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "111", "int": "111"},
-						{"string": "222", "int": "222"},
-						{"string": "333", "int": "333"},
+						{"name": "", "string": "111", "int": "111"},
+						{"name": "", "string": "222", "int": "222"},
+						{"name": "", "string": "333", "int": "333"},
 					}),
 				),
 			},
@@ -472,12 +470,12 @@ func TestAcc_SdkV2Functional_ListsWithDuplicatedItems(t *testing.T) {
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
-						{"string": "111", "int": "111"},
-						{"string": "111", "int": "111"},
-						{"string": "222", "int": "222"},
-						{"string": "222", "int": "222"},
-						{"string": "333", "int": "333"},
-						{"string": "333", "int": "333"},
+						{"name": "", "string": "111", "int": "111"},
+						{"name": "", "string": "111", "int": "111"},
+						{"name": "", "string": "222", "int": "222"},
+						{"name": "", "string": "222", "int": "222"},
+						{"name": "", "string": "333", "int": "333"},
+						{"name": "", "string": "333", "int": "333"},
 					}),
 				),
 			},
@@ -486,18 +484,23 @@ func TestAcc_SdkV2Functional_ListsWithDuplicatedItems(t *testing.T) {
 }
 
 func objectRenamingConfigList(listItems []map[string]any) string {
-	generateListItem := func(s string, i int) string {
+	generateListItem := func(name string, s string, i int) string {
 		return fmt.Sprintf(`
 	list {
+		name = %[3]q
 		string = "%[1]s"
 		int = %[2]d
 	}
-`, s, i)
+`, s, i, name)
 	}
 
 	generatedListItems := ""
 	for _, item := range listItems {
-		generatedListItems += generateListItem(item["string"].(string), item["int"].(int))
+		var name string
+		if n, ok := item["name"]; ok {
+			name = n.(string)
+		}
+		generatedListItems += generateListItem(name, item["string"].(string), item["int"].(int))
 	}
 
 	return fmt.Sprintf(`
