@@ -87,6 +87,7 @@ Functional improvements:
 - add a generic terraform schema reader, to allow later generation from schemas
 - handle the missing types (TODOs in [struct_details_extractor_test.go](./struct_details_extractor_test.go))
 - add support for custom command line flags
+- Currently, there is no friendly error handling in the created generators. Some of them, use panic to prevent obvious configuration mistakes. It would be better to handle errors programmatically (e.g. do not fail on the first one but collect errors from all object declarations and present nicely to the user invoking).
 
 Implementation improvements:
 - add acceptance test for a `testStruct` (the one from [struct_details_extractor_test.go](./struct_details_extractor_test.go)) for the whole generation flow

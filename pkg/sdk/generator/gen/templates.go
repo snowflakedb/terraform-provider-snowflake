@@ -132,5 +132,7 @@ func init() {
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)
-	EnumTemplate, _ = subTemplates.New("enumTemplate").Parse(enumTemplateContent)
+	EnumTemplate, _ = subTemplates.New("enumTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
+		genhelpers.CamelToWords,
+	)).Parse(enumTemplateContent)
 }

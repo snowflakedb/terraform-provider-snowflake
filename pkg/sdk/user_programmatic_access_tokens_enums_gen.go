@@ -4,7 +4,6 @@ package sdk
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 )
 
@@ -24,8 +23,14 @@ var AllProgrammaticAccessTokenStatuses = []ProgrammaticAccessTokenStatus{
 
 func ToProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(AllProgrammaticAccessTokenStatuses, ProgrammaticAccessTokenStatus(s)) {
-		return "", fmt.Errorf("invalid ProgrammaticAccessTokenStatus: %s", s)
+	switch s {
+	case string(ProgrammaticAccessTokenStatusActive):
+		return ProgrammaticAccessTokenStatusActive, nil
+	case string(ProgrammaticAccessTokenStatusExpired):
+		return ProgrammaticAccessTokenStatusExpired, nil
+	case string(ProgrammaticAccessTokenStatusDisabled):
+		return ProgrammaticAccessTokenStatusDisabled, nil
+	default:
+		return "", fmt.Errorf("invalid programmatic access token status: %s", s)
 	}
-	return ProgrammaticAccessTokenStatus(s), nil
 }

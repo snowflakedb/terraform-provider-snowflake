@@ -2,12 +2,14 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
+
+// added manually (we can add it to unit test generation if accepted)
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ProgrammaticAccessTokenStatus]{"ProgrammaticAccessTokenStatus", AllProgrammaticAccessTokenStatuses, ToProgrammaticAccessTokenStatus})
+}
 
 func TestUserProgrammaticAccessTokens_Add(t *testing.T) {
 	// adjusted manually
@@ -272,43 +274,4 @@ func TestUserProgrammaticAccessTokens_Show(t *testing.T) {
 		opts.UserName = &id
 		assertOptsValidAndSQLEquals(t, opts, `SHOW USER PROGRAMMATIC ACCESS TOKENS FOR USER %s`, id.FullyQualifiedName())
 	})
-}
-
-// test added manually
-func Test_ProgrammaticAccessTokenStatus(t *testing.T) {
-	type test struct {
-		input string
-		want  ProgrammaticAccessTokenStatus
-	}
-
-	valid := []test{
-		// case insensitive.
-		{input: "active", want: ProgrammaticAccessTokenStatusActive},
-
-		// Supported Values
-		{input: "ACTIVE", want: ProgrammaticAccessTokenStatusActive},
-		{input: "EXPIRED", want: ProgrammaticAccessTokenStatusExpired},
-		{input: "DISABLED", want: ProgrammaticAccessTokenStatusDisabled},
-	}
-
-	invalid := []test{
-		// bad values
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToProgrammaticAccessTokenStatus(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToProgrammaticAccessTokenStatus(tc.input)
-			require.Error(t, err)
-		})
-	}
 }
