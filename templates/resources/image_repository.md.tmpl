@@ -11,6 +11,8 @@ description: |-
 
 -> **Note** Quoted names for special characters or case-sensitive names are not supported. The same constraint also applies to database and schema names where you create an image repository. That is, database and schema names without quotes are valid when creating an image repository. This limitation in the provider follows the limitation in Snowflake (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository)). Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier).
 
+-> **Note** The `encryption` attribute can only be set at creation time and Snowflake default is used if omitted. Changing this value requires destroying and recreating the resource. When importing an existing image repository, the `encryption` field is not populated in state — only `show_output[0].encryption` reflects the actual value. To avoid a diff after import, either omit `encryption` from your configuration or set it explicitly to match the current Snowflake value.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
