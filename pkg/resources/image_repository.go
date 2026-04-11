@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -42,6 +43,14 @@ var imageRepositorySchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the object.",
 	},
+	"encryption": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: sdkValidation(sdk.ToImageRepositoryEncryptionType),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToImageRepositoryEncryptionType), IgnoreChangeToCurrentSnowflakeValueInShow("encryption")),
+		Description:      fmt.Sprintf("Specifies the encryption type for the image repository. Can only be set at creation time. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllImageRepositoryEncryptionTypes)),
+	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -62,7 +71,7 @@ func ImageRepository() *schema.Resource {
 	)
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.ImageRepository, CreateImageRepository),
-		ReadContext:   TrackingReadWrapper(resources.ImageRepository, ReadImageRepository),
+		ReadContext:   TrackingReadWrapper(resources.ImageRepository, GetReadImageRepositoryFunc(true)),
 		UpdateContext: TrackingUpdateWrapper(resources.ImageRepository, UpdateImageRepository),
 		DeleteContext: TrackingDeleteWrapper(resources.ImageRepository, deleteFunc),
 		Description: joinWithSpace(
@@ -72,7 +81,7 @@ func ImageRepository() *schema.Resource {
 		),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ImageRepository, customdiff.All(
-			ComputedIfAnyAttributeChanged(imageRepositorySchema, ShowOutputAttributeName, "comment"),
+			ComputedIfAnyAttributeChanged(imageRepositorySchema, ShowOutputAttributeName, "comment", "encryption"),
 		)),
 
 		Schema: imageRepositorySchema,
@@ -81,6 +90,16 @@ func ImageRepository() *schema.Resource {
 		},
 
 		Timeouts: defaultTimeouts,
+
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+				Type:    cty.EmptyObject,
+				Upgrade: v2_15_0_ImageRepositoryEncryptionUpgrader,
+			},
+		},
 	}
 }
 
@@ -98,43 +117,61 @@ func CreateImageRepository(ctx context.Context, d *schema.ResourceData, meta any
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
+	if v := d.Get("encryption").(string); v != "" {
+		encryptionType, err := sdk.ToImageRepositoryEncryptionType(v)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		request.WithEncryption(*sdk.NewImageRepositoryEncryptionRequest(encryptionType))
+	}
 	if err := client.ImageRepositories.Create(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-	return ReadImageRepository(ctx, d, meta)
+	return GetReadImageRepositoryFunc(false)(ctx, d, meta)
 }
 
-func ReadImageRepository(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func GetReadImageRepositoryFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		client := meta.(*provider.Context).Client
+		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	imageRepository, err := client.ImageRepositories.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query image repository. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Image repository id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
+		imageRepository, err := client.ImageRepositories.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query image repository. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Image repository id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
+		}
+
+		if withExternalChangesMarking {
+			if err = handleExternalChangesToObjectInShow(d,
+				outputMapping{"encryption", "encryption", string(imageRepository.Encryption), imageRepository.Encryption, nil},
+			); err != nil {
+				return diag.FromErr(err)
 			}
 		}
-		return diag.FromErr(err)
+
+		errs := errors.Join(
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ImageRepositoryToSchema(imageRepository)}),
+			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+			d.Set("comment", imageRepository.Comment),
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
+		}
+		return nil
 	}
-	errs := errors.Join(
-		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ImageRepositoryToSchema(imageRepository)}),
-		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-		d.Set("comment", imageRepository.Comment),
-	)
-	if errs != nil {
-		return diag.FromErr(errs)
-	}
-	return nil
 }
 
 func UpdateImageRepository(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -153,5 +190,5 @@ func UpdateImageRepository(ctx context.Context, d *schema.ResourceData, meta any
 	if err := client.ImageRepositories.Alter(ctx, sdk.NewAlterImageRepositoryRequest(id).WithSet(*set)); err != nil {
 		return diag.FromErr(err)
 	}
-	return ReadImageRepository(ctx, d, meta)
+	return GetReadImageRepositoryFunc(false)(ctx, d, meta)
 }

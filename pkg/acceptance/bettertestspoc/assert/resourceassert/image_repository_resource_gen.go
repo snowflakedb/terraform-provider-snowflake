@@ -52,6 +52,11 @@ func (i *ImageRepositoryResourceAssert) HasComment(expected string) *ImageReposi
 	return i
 }
 
+func (i *ImageRepositoryResourceAssert) HasEncryption(expected string) *ImageRepositoryResourceAssert {
+	i.StringValueSet("encryption", expected)
+	return i
+}
+
 func (i *ImageRepositoryResourceAssert) HasFullyQualifiedName(expected string) *ImageRepositoryResourceAssert {
 	i.StringValueSet("fully_qualified_name", expected)
 	return i
@@ -78,6 +83,11 @@ func (i *ImageRepositoryResourceAssert) HasNameString(expected string) *ImageRep
 
 func (i *ImageRepositoryResourceAssert) HasCommentString(expected string) *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueSet("comment", expected))
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasEncryptionString(expected string) *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValueSet("encryption", expected))
 	return i
 }
 
@@ -110,6 +120,11 @@ func (i *ImageRepositoryResourceAssert) HasNoComment() *ImageRepositoryResourceA
 	return i
 }
 
+func (i *ImageRepositoryResourceAssert) HasNoEncryption() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValueNotSet("encryption"))
+	return i
+}
+
 func (i *ImageRepositoryResourceAssert) HasNoFullyQualifiedName() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return i
@@ -121,6 +136,11 @@ func (i *ImageRepositoryResourceAssert) HasNoFullyQualifiedName() *ImageReposito
 
 func (i *ImageRepositoryResourceAssert) HasCommentEmpty() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValueSet("comment", ""))
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasEncryptionEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValueSet("encryption", ""))
 	return i
 }
 
@@ -150,6 +170,11 @@ func (i *ImageRepositoryResourceAssert) HasNameNotEmpty() *ImageRepositoryResour
 
 func (i *ImageRepositoryResourceAssert) HasCommentNotEmpty() *ImageRepositoryResourceAssert {
 	i.AddAssertion(assert.ValuePresent("comment"))
+	return i
+}
+
+func (i *ImageRepositoryResourceAssert) HasEncryptionNotEmpty() *ImageRepositoryResourceAssert {
+	i.AddAssertion(assert.ValuePresent("encryption"))
 	return i
 }
 
