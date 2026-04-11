@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-// added manually (we can add it to unit test generation if accepted)
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ProgrammaticAccessTokenStatus]{"ProgrammaticAccessTokenStatus", AllProgrammaticAccessTokenStatuses, ToProgrammaticAccessTokenStatus})
 }
