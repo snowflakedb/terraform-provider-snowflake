@@ -7,6 +7,54 @@ import (
 )
 
 var (
+	ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef = g.NewEnum(
+		"ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption",
+		"ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptions",
+		"CLIENT_SECRET_POST",
+	)
+	ExternalOauthSecurityIntegrationTypeOptionEnumDef = g.NewEnum(
+		"ExternalOauthSecurityIntegrationTypeOption",
+		"ExternalOauthSecurityIntegrationTypeOptions",
+		"OKTA", "AZURE", "PING_FEDERATE", "CUSTOM",
+	)
+	ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEnumDef = g.NewEnum(
+		"ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption",
+		"ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptions",
+		"LOGIN_NAME", "EMAIL_ADDRESS",
+	)
+	ExternalOauthSecurityIntegrationAnyRoleModeOptionEnumDef = g.NewEnum(
+		"ExternalOauthSecurityIntegrationAnyRoleModeOption",
+		"ExternalOauthSecurityIntegrationAnyRoleModeOptions",
+		"DISABLE", "ENABLE", "ENABLE_FOR_PRIVILEGE",
+	)
+	OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef = g.NewEnum(
+		"OauthSecurityIntegrationUseSecondaryRolesOption",
+		"OauthSecurityIntegrationUseSecondaryRolesOptions",
+		"IMPLICIT", "NONE",
+	)
+	OauthSecurityIntegrationClientTypeOptionEnumDef = g.NewEnum(
+		"OauthSecurityIntegrationClientTypeOption",
+		"OauthSecurityIntegrationClientTypeOptions",
+		"PUBLIC", "CONFIDENTIAL",
+	)
+	OauthSecurityIntegrationClientOptionEnumDef = g.NewEnum(
+		"OauthSecurityIntegrationClientOption",
+		"OauthSecurityIntegrationClientOptions",
+		"LOOKER", "TABLEAU_DESKTOP", "TABLEAU_SERVER",
+	)
+	Saml2SecurityIntegrationSaml2ProviderOptionEnumDef = g.NewEnum(
+		"Saml2SecurityIntegrationSaml2ProviderOption",
+		"Saml2SecurityIntegrationSaml2ProviderOptions",
+		"OKTA", "ADFS", "CUSTOM",
+	)
+	ScimSecurityIntegrationScimClientOptionEnumDef = g.NewEnum(
+		"ScimSecurityIntegrationScimClientOption",
+		"ScimSecurityIntegrationScimClientOptions",
+		"OKTA", "AZURE", "GENERIC",
+	)
+)
+
+var (
 	allowedScopeDef           = g.NewQueryStruct("AllowedScope").Text("Scope", g.KeywordOptions().SingleQuotes().Required())
 	userDomainDef             = g.NewQueryStruct("UserDomain").Text("Domain", g.KeywordOptions().SingleQuotes().Required())
 	emailPatternDef           = g.NewQueryStruct("EmailPattern").Text("Pattern", g.KeywordOptions().SingleQuotes().Required())
@@ -55,7 +103,7 @@ var apiAuthClientCredentialsFlowIntegrationSetDef = g.NewQueryStruct("ApiAuthent
 	OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment(
 		"OAUTH_CLIENT_AUTH_METHOD",
-		g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+		ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef.Kind(),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes()).
@@ -79,7 +127,7 @@ var apiAuthCodeGrantFlowIntegrationSetDef = g.NewQueryStruct("ApiAuthenticationW
 	OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment(
 		"OAUTH_CLIENT_AUTH_METHOD",
-		g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+		ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef.Kind(),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes()).
@@ -103,7 +151,7 @@ var apiAuthJwtBearerFlowIntegrationSetDef = g.NewQueryStruct("ApiAuthenticationW
 	OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment(
 		"OAUTH_CLIENT_AUTH_METHOD",
-		g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+		ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef.Kind(),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes()).
@@ -124,14 +172,14 @@ var externalOauthIntegrationSetDef = g.NewQueryStruct("ExternalOauthIntegrationS
 	OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 	OptionalAssignment(
 		"EXTERNAL_OAUTH_TYPE",
-		g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationTypeOption](),
+		ExternalOauthSecurityIntegrationTypeOptionEnumDef.Kind(),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("EXTERNAL_OAUTH_ISSUER", g.ParameterOptions().SingleQuotes()).
 	ListAssignment("EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM", "TokenUserMappingClaim", g.ParameterOptions().Parentheses()).
 	OptionalAssignment(
 		"EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE",
-		g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption](),
+		ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEnumDef.Kind(),
 		g.ParameterOptions().SingleQuotes(),
 	).
 	ListAssignment("EXTERNAL_OAUTH_JWS_KEYS_URL", "JwsKeysUrl", g.ParameterOptions().Parentheses()).
@@ -142,7 +190,7 @@ var externalOauthIntegrationSetDef = g.NewQueryStruct("ExternalOauthIntegrationS
 	OptionalQueryStructField("ExternalOauthAudienceList", audienceListDef, g.ParameterOptions().SQL("EXTERNAL_OAUTH_AUDIENCE_LIST").Parentheses()).
 	OptionalAssignment(
 		"EXTERNAL_OAUTH_ANY_ROLE_MODE",
-		g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationAnyRoleModeOption](),
+		ExternalOauthSecurityIntegrationAnyRoleModeOptionEnumDef.Kind(),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("EXTERNAL_OAUTH_SCOPE_DELIMITER", g.ParameterOptions().SingleQuotes()).
@@ -168,7 +216,7 @@ var oauthForPartnerApplicationsIntegrationSetDef = g.NewQueryStruct("OauthForPar
 	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
 	OptionalAssignment(
 		"OAUTH_USE_SECONDARY_ROLES",
-		g.KindOfT[sdkcommons.OauthSecurityIntegrationUseSecondaryRolesOption](),
+		OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef.Kind(),
 		g.ParameterOptions(),
 	).
 	OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses()).
@@ -192,7 +240,7 @@ var oauthForCustomClientsIntegrationSetDef = g.NewQueryStruct("OauthForCustomCli
 	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
 	OptionalAssignment(
 		"OAUTH_USE_SECONDARY_ROLES",
-		g.KindOfT[sdkcommons.OauthSecurityIntegrationUseSecondaryRolesOption](),
+		OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef.Kind(),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
@@ -217,7 +265,7 @@ var saml2IntegrationSetDef = g.NewQueryStruct("Saml2IntegrationSet").
 	OptionalTextAssignment("SAML2_SSO_URL", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment(
 		"SAML2_PROVIDER",
-		g.KindOfT[sdkcommons.Saml2SecurityIntegrationSaml2ProviderOption](),
+		Saml2SecurityIntegrationSaml2ProviderOptionEnumDef.Kind(),
 		g.ParameterOptions().SingleQuotes(),
 	).
 	OptionalTextAssignment("SAML2_X509_CERT", g.ParameterOptions().SingleQuotes()).
@@ -278,7 +326,7 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment(
 					"OAUTH_CLIENT_AUTH_METHOD",
-					g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+					ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef.Kind(),
 					g.ParameterOptions(),
 				).
 				TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().Required().SingleQuotes()).
@@ -302,7 +350,7 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment(
 					"OAUTH_CLIENT_AUTH_METHOD",
-					g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+					ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef.Kind(),
 					g.ParameterOptions(),
 				).
 				TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().Required().SingleQuotes()).
@@ -326,7 +374,7 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment(
 					"OAUTH_CLIENT_AUTH_METHOD",
-					g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+					ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef.Kind(),
 					g.ParameterOptions(),
 				).
 				TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().Required().SingleQuotes()).
@@ -345,14 +393,14 @@ var securityIntegrationsDef = g.NewInterface(
 				BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 				Assignment(
 					"EXTERNAL_OAUTH_TYPE",
-					g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationTypeOption](),
+					ExternalOauthSecurityIntegrationTypeOptionEnumDef.Kind(),
 					g.ParameterOptions().Required(),
 				).
 				TextAssignment("EXTERNAL_OAUTH_ISSUER", g.ParameterOptions().Required().SingleQuotes()).
 				ListAssignment("EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM", "TokenUserMappingClaim", g.ParameterOptions().Required().Parentheses()).
 				Assignment(
 					"EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE",
-					g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption](),
+					ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEnumDef.Kind(),
 					g.ParameterOptions().SingleQuotes().Required(),
 				).
 				ListAssignment("EXTERNAL_OAUTH_JWS_KEYS_URL", "JwsKeysUrl", g.ParameterOptions().Parentheses()).
@@ -363,7 +411,7 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalQueryStructField("ExternalOauthAudienceList", audienceListDef, g.ParameterOptions().SQL("EXTERNAL_OAUTH_AUDIENCE_LIST").Parentheses()).
 				OptionalAssignment(
 					"EXTERNAL_OAUTH_ANY_ROLE_MODE",
-					g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationAnyRoleModeOption](),
+					ExternalOauthSecurityIntegrationAnyRoleModeOptionEnumDef.Kind(),
 					g.ParameterOptions(),
 				).
 				OptionalTextAssignment("EXTERNAL_OAUTH_SCOPE_DELIMITER", g.ParameterOptions().SingleQuotes()).
@@ -387,7 +435,7 @@ var securityIntegrationsDef = g.NewInterface(
 				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = OAUTH")).
 				Assignment(
 					"OAUTH_CLIENT",
-					g.KindOfT[sdkcommons.OauthSecurityIntegrationClientOption](),
+					OauthSecurityIntegrationClientOptionEnumDef.Kind(),
 					g.ParameterOptions().Required(),
 				).
 				OptionalTextAssignment("OAUTH_REDIRECT_URI", g.ParameterOptions().SingleQuotes()).
@@ -396,7 +444,7 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
 				OptionalAssignment(
 					"OAUTH_USE_SECONDARY_ROLES",
-					g.KindOfT[sdkcommons.OauthSecurityIntegrationUseSecondaryRolesOption](),
+					OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef.Kind(),
 					g.ParameterOptions(),
 				).
 				OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses())
@@ -413,7 +461,7 @@ var securityIntegrationsDef = g.NewInterface(
 				PredefinedQueryStructField("oauthClient", "string", g.StaticOptions().SQL("OAUTH_CLIENT = CUSTOM")).
 				Assignment(
 					"OAUTH_CLIENT_TYPE",
-					g.KindOfT[sdkcommons.OauthSecurityIntegrationClientTypeOption](),
+					OauthSecurityIntegrationClientTypeOptionEnumDef.Kind(),
 					g.ParameterOptions().Required().SingleQuotes(),
 				).
 				TextAssignment("OAUTH_REDIRECT_URI", g.ParameterOptions().Required().SingleQuotes()).
@@ -422,7 +470,7 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalBooleanAssignment("OAUTH_ENFORCE_PKCE", g.ParameterOptions()).
 				OptionalAssignment(
 					"OAUTH_USE_SECONDARY_ROLES",
-					g.KindOfT[sdkcommons.OauthSecurityIntegrationUseSecondaryRolesOption](),
+					OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef.Kind(),
 					g.ParameterOptions(),
 				).
 				OptionalQueryStructField("PreAuthorizedRolesList", preAuthorizedRolesListDef, g.ParameterOptions().SQL("PRE_AUTHORIZED_ROLES_LIST").Parentheses()).
@@ -445,7 +493,7 @@ var securityIntegrationsDef = g.NewInterface(
 				TextAssignment("SAML2_SSO_URL", g.ParameterOptions().Required().SingleQuotes()).
 				Assignment(
 					"SAML2_PROVIDER",
-					g.KindOfT[sdkcommons.Saml2SecurityIntegrationSaml2ProviderOption](),
+					Saml2SecurityIntegrationSaml2ProviderOptionEnumDef.Kind(),
 					g.ParameterOptions().Required().SingleQuotes(),
 				).
 				TextAssignment("SAML2_X509_CERT", g.ParameterOptions().Required().SingleQuotes()).
@@ -477,7 +525,7 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				Assignment(
 					"SCIM_CLIENT",
-					g.KindOfT[sdkcommons.ScimSecurityIntegrationScimClientOption](),
+					ScimSecurityIntegrationScimClientOptionEnumDef.Kind(),
 					g.ParameterOptions().SingleQuotes().Required(),
 				).
 				TextAssignment("RUN_AS_ROLE", g.ParameterOptions().Required().NoQuotes()).
@@ -657,4 +705,15 @@ var securityIntegrationsDef = g.NewInterface(
 	).
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
+	).
+	WithEnums(
+		ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef,
+		ExternalOauthSecurityIntegrationTypeOptionEnumDef,
+		ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEnumDef,
+		ExternalOauthSecurityIntegrationAnyRoleModeOptionEnumDef,
+		OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef,
+		OauthSecurityIntegrationClientTypeOptionEnumDef,
+		OauthSecurityIntegrationClientOptionEnumDef,
+		Saml2SecurityIntegrationSaml2ProviderOptionEnumDef,
+		ScimSecurityIntegrationScimClientOptionEnumDef,
 	)

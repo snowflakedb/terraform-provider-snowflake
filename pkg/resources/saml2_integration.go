@@ -49,7 +49,7 @@ var saml2IntegrationSchema = map[string]*schema.Schema{
 		Required:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToSaml2SecurityIntegrationSaml2ProviderOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToSaml2SecurityIntegrationSaml2ProviderOption),
-		Description:      fmt.Sprintf("The string describing the IdP. Valid options are: %v.", possibleValuesListed(sdk.AllSaml2SecurityIntegrationSaml2Providers)),
+		Description:      fmt.Sprintf("The string describing the IdP. Valid options are: %v.", possibleValuesListed(sdk.AllSaml2SecurityIntegrationSaml2ProviderOptions)),
 	},
 	"saml2_x509_cert": {
 		Type:        schema.TypeString,

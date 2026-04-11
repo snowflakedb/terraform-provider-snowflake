@@ -39,15 +39,15 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	basic := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientLooker)).
+	basic := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionLooker)).
 		WithOauthRedirectUri("https://example.com/callback")
 
-	complete := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientLooker)).
+	complete := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionLooker)).
 		WithOauthRedirectUri("https://example.com/callback").
 		WithEnabled(r.BooleanTrue).
 		WithOauthIssueRefreshTokens(r.BooleanFalse).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
 		WithComment(comment)
 
 	assertBasic := []assert.TestCheckFuncProvider{
@@ -205,7 +205,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 							WithComment(comment).
 							WithOauthIssueRefreshTokens(true).
 							WithOauthRefreshTokenValidity(3600).
-							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit),
+							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit),
 					))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -242,11 +242,11 @@ func TestAcc_OauthIntegrationForPartnerApplications_CompleteUseCase(t *testing.T
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	complete := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauServer)).
+	complete := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauServer)).
 		WithEnabled(r.BooleanTrue).
 		WithOauthIssueRefreshTokens(r.BooleanFalse).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -335,15 +335,15 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	basicModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauDesktop)).
+	basicModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
-	completeModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauDesktop)).
+	completeModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN", role.ID().Name()).
 		WithComment(comment).
 		WithEnabled(datasources.BooleanTrue).
 		WithOauthIssueRefreshTokens(datasources.BooleanFalse).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit))
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -357,7 +357,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 				Config: accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientTableauDesktop)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "oauth_redirect_uri"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "enabled", "default"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_issue_refresh_tokens", "default"),
@@ -375,7 +375,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 					resource.TestCheckResourceAttrSet(basicModel.ResourceReference(), "show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypePublic)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic)),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
@@ -397,11 +397,11 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_client", string(sdk.OauthSecurityIntegrationClientTableauDesktop)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_client", string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_issue_refresh_tokens", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_refresh_token_validity", "7776000"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesNone)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "blocked_roles_list.#", "2"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", ""),
 				),
@@ -416,12 +416,12 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientTableauDesktop)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "oauth_redirect_uri"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_issue_refresh_tokens", "false"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_refresh_token_validity", "86400"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "blocked_roles_list.#", "3"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "comment", comment),
 
@@ -434,7 +434,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypePublic)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT"),
@@ -456,11 +456,11 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_client", string(sdk.OauthSecurityIntegrationClientTableauDesktop)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_client", string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_issue_refresh_tokens", "false"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_refresh_token_validity", "86400"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "blocked_roles_list.#", "3"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", comment),
 				),
@@ -487,24 +487,24 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 						plancheck.ExpectResourceAction(completeModel.ResourceReference(), plancheck.ResourceActionUpdate),
 
 						planchecks.ExpectDrift(completeModel.ResourceReference(), "comment", sdk.String(comment), sdk.String("")),
-						planchecks.ExpectDrift(completeModel.ResourceReference(), "oauth_use_secondary_roles", sdk.String(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)), sdk.String(string(sdk.OauthSecurityIntegrationUseSecondaryRolesNone))),
+						planchecks.ExpectDrift(completeModel.ResourceReference(), "oauth_use_secondary_roles", sdk.String(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)), sdk.String(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone))),
 						planchecks.ExpectDrift(completeModel.ResourceReference(), "oauth_issue_refresh_tokens", sdk.String("false"), sdk.String("true")),
 						planchecks.ExpectDrift(completeModel.ResourceReference(), "oauth_refresh_token_validity", sdk.String("86400"), sdk.String("3600")),
 
 						planchecks.ExpectChange(completeModel.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.String(""), sdk.String(comment)),
-						planchecks.ExpectChange(completeModel.ResourceReference(), "oauth_use_secondary_roles", tfjson.ActionUpdate, sdk.String(string(sdk.OauthSecurityIntegrationUseSecondaryRolesNone)), sdk.String(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit))),
+						planchecks.ExpectChange(completeModel.ResourceReference(), "oauth_use_secondary_roles", tfjson.ActionUpdate, sdk.String(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)), sdk.String(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit))),
 						planchecks.ExpectChange(completeModel.ResourceReference(), "oauth_issue_refresh_tokens", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
 						planchecks.ExpectChange(completeModel.ResourceReference(), "oauth_refresh_token_validity", tfjson.ActionUpdate, sdk.String("3600"), sdk.String("86400")),
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientTableauDesktop)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "oauth_redirect_uri"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_issue_refresh_tokens", "false"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_refresh_token_validity", "86400"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "blocked_roles_list.#", "3"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "comment", comment),
 
@@ -517,7 +517,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypePublic)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT"),
@@ -542,7 +542,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientTableauDesktop)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "oauth_redirect_uri"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "enabled", "default"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_issue_refresh_tokens", "default"),
@@ -560,7 +560,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 					resource.TestCheckResourceAttrSet(basicModel.ResourceReference(), "show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypePublic)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic)),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
@@ -583,12 +583,12 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	completeModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauServer)).
+	completeModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauServer)).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN").
 		WithEnabled(datasources.BooleanTrue).
 		WithOauthIssueRefreshTokens(datasources.BooleanFalse).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -603,12 +603,12 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientTableauServer)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_client", string(sdk.OauthSecurityIntegrationClientOptionTableauServer)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "oauth_redirect_uri"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_issue_refresh_tokens", "false"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_refresh_token_validity", "86400"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "blocked_roles_list.#", "2"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "comment", comment),
 
@@ -621,10 +621,10 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypePublic)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "false"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400"),
@@ -644,11 +644,11 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "fully_qualified_name", id.FullyQualifiedName()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_client", string(sdk.OauthSecurityIntegrationClientTableauServer)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_client", string(sdk.OauthSecurityIntegrationClientOptionTableauServer)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_issue_refresh_tokens", "false"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_refresh_token_validity", "86400"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "blocked_roles_list.#", "2"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", comment),
 				),
@@ -660,7 +660,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 func TestAcc_OauthIntegrationForPartnerApplications_Invalid(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	invalidUseSecondaryRolesModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauDesktop)).
+	invalidUseSecondaryRolesModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN").
 		WithOauthUseSecondaryRoles("invalid")
 
@@ -692,7 +692,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_migrateFromV0941_ensureSmoot
 	validUrl := "https://example.com"
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
-	basicModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientLooker)).
+	basicModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionLooker)).
 		WithOauthRedirectUri(validUrl).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
 
@@ -728,7 +728,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithQuotedName(t *testing.T)
 	validUrl := "https://example.com"
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
-	basicModel := model.OauthIntegrationForPartnerApplications("test", quotedId, string(sdk.OauthSecurityIntegrationClientLooker)).
+	basicModel := model.OauthIntegrationForPartnerApplications("test", quotedId, string(sdk.OauthSecurityIntegrationClientOptionLooker)).
 		WithOauthRedirectUri(validUrl).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
 
@@ -776,7 +776,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_DetectExternalChangesForOaut
 	configModel := model.OauthIntegrationForPartnerApplications(
 		"test",
 		id.Name(),
-		string(sdk.OauthSecurityIntegrationClientLooker),
+		string(sdk.OauthSecurityIntegrationClientOptionLooker),
 	).WithOauthRedirectUri(oauthRedirectUri)
 
 	resource.Test(t, resource.TestCase{
@@ -828,8 +828,8 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithPrivilegedRolesBlockedLi
 	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, "true")
 	t.Cleanup(paramCleanup)
 
-	modelWithoutBlockedRole := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauDesktop))
-	modelWithBlockedRole := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTableauDesktop)).
+	modelWithoutBlockedRole := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop))
+	modelWithBlockedRole := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop)).
 		WithBlockedRolesList(role.ID().Name())
 
 	resource.Test(t, resource.TestCase{

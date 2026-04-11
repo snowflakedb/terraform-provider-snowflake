@@ -37,9 +37,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 	key, _ := random.GenerateRSAPublicKey(t)
 	comment := random.Comment()
 
-	basic := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl)
+	basic := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl)
 
-	complete := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl).
+	complete := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithOauthAllowNonTlsRedirectUri(resources.BooleanTrue).
 		WithOauthClientRsaPublicKey(key).
@@ -48,7 +48,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		WithEnabled(resources.BooleanTrue).
 		WithOauthIssueRefreshTokens(resources.BooleanTrue).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
 		WithComment(comment)
 
@@ -234,7 +234,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 							WithOauthEnforcePkce(true).
 							WithOauthIssueRefreshTokens(true).
 							WithOauthRefreshTokenValidity(86400).
-							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit).
+							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit).
 							WithPreAuthorizedRolesList(*sdk.NewPreAuthorizedRolesListRequest().WithPreAuthorizedRolesList([]sdk.AccountObjectIdentifier{preAuthorizedRole.ID()})).
 							WithComment(comment),
 					))
@@ -281,7 +281,7 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 	key, _ := random.GenerateRSAPublicKey(t)
 	comment := random.Comment()
 
-	complete := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypePublic), validUrl).
+	complete := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionPublic), validUrl).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithOauthAllowNonTlsRedirectUri(resources.BooleanTrue).
 		WithOauthClientRsaPublicKey(key).
@@ -290,7 +290,7 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 		WithEnabled(resources.BooleanTrue).
 		WithOauthIssueRefreshTokens(resources.BooleanTrue).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
 		WithComment(comment)
 
@@ -388,8 +388,8 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 	validUrl := "https://example.com"
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	basicModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl)
-	defaultValuesModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl).
+	basicModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl)
+	defaultValuesModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl).
 		WithComment("").
 		WithEnabled(resources.BooleanFalse).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN").
@@ -400,7 +400,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 		WithOauthEnforcePkce(resources.BooleanFalse).
 		WithOauthIssueRefreshTokens(resources.BooleanFalse).
 		WithOauthRefreshTokenValidity(7776000).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesNone)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
 		WithPreAuthorizedRolesEmpty()
 
 	resource.Test(t, resource.TestCase{
@@ -413,12 +413,12 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 				Config: accconfig.FromModels(t, defaultValuesModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_client_type", string(sdk.OauthSecurityIntegrationClientTypeConfidential)),
+					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_client_type", string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential)),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_redirect_uri", validUrl),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "enabled", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_allow_non_tls_redirect_uri", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_enforce_pkce", "false"),
-					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesNone)),
+					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "pre_authorized_roles_list.#", "0"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "blocked_roles_list.#", "2"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_issue_refresh_tokens", "false"),
@@ -437,7 +437,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttrSet(defaultValuesModel.ResourceReference(), "show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeConfidential)),
+					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential)),
 					resource.TestCheckNoResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.enabled.0.value", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "false"),
@@ -462,7 +462,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 				Config: accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_client_type", string(sdk.OauthSecurityIntegrationClientTypeConfidential)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_client_type", string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential)),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_redirect_uri", validUrl),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "enabled", resources.BooleanDefault),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_allow_non_tls_redirect_uri", resources.BooleanDefault),
@@ -486,7 +486,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttrSet(basicModel.ResourceReference(), "show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeConfidential)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential)),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "false"),
@@ -515,7 +515,7 @@ func TestAcc_OauthIntegrationForCustomClients_Invalid(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	validUrl := "https://example.com"
 
-	invalidUseSecondaryRolesModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl).
+	invalidUseSecondaryRolesModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl).
 		WithOauthUseSecondaryRoles("invalid")
 	invalidClientTypesModel := model.OauthIntegrationForCustomClients("test", id.Name(), "invalid", validUrl)
 
@@ -544,7 +544,7 @@ func TestAcc_OauthIntegrationForCustomClients_migrateFromV0941_ensureSmoothUpgra
 	validUrl := "https://example.com"
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
-	basicModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl).
+	basicModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
 
 	resource.Test(t, resource.TestCase{
@@ -579,7 +579,7 @@ func TestAcc_OauthIntegrationForCustomClients_WithQuotedName(t *testing.T) {
 	validUrl := "https://example.com"
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
-	basicModel := model.OauthIntegrationForCustomClients("test", quotedId, string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl).
+	basicModel := model.OauthIntegrationForCustomClients("test", quotedId, string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
 
 	resource.Test(t, resource.TestCase{
