@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -203,7 +204,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ImageRepository.DropImageRepositoryFunc(t, id)()
-					testClient().ImageRepository.CreateWithRequest(t, sdk.NewCreateImageRepositoryRequest(id).WithEncryption(*sdk.NewImageRepositoryEncryptionRequest(sdk.ImageRepositoryEncryptionTypeSnowflakeSse)))
+					_, imageRepositoryCleanup := testClient().ImageRepository.CreateWithRequest(t, sdk.NewCreateImageRepositoryRequest(id).WithEncryption(*sdk.NewImageRepositoryEncryptionRequest(sdk.ImageRepositoryEncryptionTypeSnowflakeSse)))
+					t.Cleanup(imageRepositoryCleanup)
 				},
 				Config: accconfig.FromModels(t, imageRepositoryModelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -326,6 +328,155 @@ func TestAcc_ImageRepository_complete(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"encryption"},
+			},
+		},
+	})
+}
+
+func TestAcc_ImageRepository_importWithoutEncryptionSet(t *testing.T) {
+	// TODO(SNOW-2070746): We set up a separate database and schema with capitalized ids. Remove this after fix on snowflake side.
+	db, dbCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(dbCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, db.ID())
+	t.Cleanup(schemaCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+
+	imageRepositoryModel := model.ImageRepository("test", id.DatabaseName(), id.SchemaName(), id.Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ImageRepository),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					_, imageRepositoryCleanup := testClient().ImageRepository.CreateWithRequest(t, sdk.NewCreateImageRepositoryRequest(id))
+					t.Cleanup(imageRepositoryCleanup)
+				},
+				Config:             accconfig.FromModels(t, imageRepositoryModel),
+				ResourceName:       imageRepositoryModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedImageRepositoryResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNoEncryption(),
+					resourceshowoutputassert.ImportedImageRepositoryShowOutput(t, helpers.EncodeResourceIdentifier(id)).
+						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull),
+				),
+			},
+			// Plan to verify no diff
+			{
+				Config: accconfig.FromModels(t, imageRepositoryModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(imageRepositoryModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_ImageRepository_importWithEncryptionSetToSnowflakeValue(t *testing.T) {
+	// TODO(SNOW-2070746): We set up a separate database and schema with capitalized ids. Remove this after fix on snowflake side.
+	db, dbCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(dbCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, db.ID())
+	t.Cleanup(schemaCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+
+	imageRepositoryModel := model.ImageRepository("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithEncryptionEnum(sdk.ImageRepositoryEncryptionTypeSnowflakeFull)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ImageRepository),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					_, imageRepositoryCleanup := testClient().ImageRepository.CreateWithRequest(t, sdk.NewCreateImageRepositoryRequest(id))
+					t.Cleanup(imageRepositoryCleanup)
+				},
+				Config:             accconfig.FromModels(t, imageRepositoryModel),
+				ResourceName:       imageRepositoryModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedImageRepositoryResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNoEncryption(),
+					resourceshowoutputassert.ImportedImageRepositoryShowOutput(t, helpers.EncodeResourceIdentifier(id)).
+						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull),
+				),
+			},
+			// Plan to verify no diff
+			{
+				Config: accconfig.FromModels(t, imageRepositoryModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(imageRepositoryModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_ImageRepository_importWithEncryptionSetToDifferentValue(t *testing.T) {
+	// TODO(SNOW-2070746): We set up a separate database and schema with capitalized ids. Remove this after fix on snowflake side.
+	db, dbCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(dbCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, db.ID())
+	t.Cleanup(schemaCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+
+	imageRepositoryModel := model.ImageRepository("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithEncryptionEnum(sdk.ImageRepositoryEncryptionTypeSnowflakeSse)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ImageRepository),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					_, imageRepositoryCleanup := testClient().ImageRepository.CreateWithRequest(t, sdk.NewCreateImageRepositoryRequest(id))
+					t.Cleanup(imageRepositoryCleanup)
+				},
+				Config:             accconfig.FromModels(t, imageRepositoryModel),
+				ResourceName:       imageRepositoryModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedImageRepositoryResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNoEncryption(),
+					resourceshowoutputassert.ImportedImageRepositoryShowOutput(t, helpers.EncodeResourceIdentifier(id)).
+						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull),
+				),
+			},
+			// Plan to verify drop and recreate need
+			{
+				Config: accconfig.FromModels(t, imageRepositoryModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(imageRepositoryModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
 			},
 		},
 	})
