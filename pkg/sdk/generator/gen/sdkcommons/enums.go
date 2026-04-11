@@ -29,14 +29,12 @@ type (
 	ExternalStageGCSEncryptionOption                                    string
 	ExternalStageS3EncryptionOption                                     string
 	FileFormatType                                                      string
-	FileFormatTypeOptions                                               string
 	GCSEncryptionType                                                   string
 	ImageRepositoryEncryptionType                                       string
 	InternalStageEncryptionOption                                       string
 	JsonCompression                                                     string
 	ListingState                                                        string
 	ListingRevision                                                     string
-	Location                                                            string
 	LogLevel                                                            string
 	MetricLevel                                                         string
 	MfaAuthenticationMethodsOption                                      string
@@ -59,7 +57,6 @@ type (
 	S3StorageProvider                                                   string
 	Saml2SecurityIntegrationSaml2ProviderOption                         string
 	Saml2SecurityIntegrationSaml2RequestedNameidFormatOption            string
-	ScimSecurityIntegrationRunAsRoleOption                              string
 	ScimSecurityIntegrationScimClientOption                             string
 	SecretType                                                          string
 	SequenceName                                                        string
