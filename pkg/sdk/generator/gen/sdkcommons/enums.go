@@ -1,11 +1,9 @@
 package sdkcommons
 
 type (
-	AllowedProviderOption                                               string
 	ColumnConstraintType                                                string
 	ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption     string
 	ApiIntegrationAwsApiProviderType                                    string
-	AuthenticationMethodsOption                                         string
 	AutoEventLogging                                                    string
 	AvroCompression                                                     string
 	BinaryFormat                                                        string
@@ -14,14 +12,11 @@ type (
 	CatalogIntegrationCatalogSourceType                                 string
 	CatalogIntegrationRestAuthenticationType                            string
 	CatalogIntegrationTableFormat                                       string
-	ClientPolicyDriverType                                              string
-	ClientTypesOption                                                   string
 	ComputePoolInstanceFamily                                           string
 	CsvCompression                                                      string
 	CsvEncoding                                                         string
 	DataMetricFunctionRefEntityDomainOption                             string
 	DataType                                                            string
-	EnforceMfaOnExternalAuthenticationOption                            string
 	ExternalOauthSecurityIntegrationAnyRoleModeOption                   string
 	ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption string
 	ExternalOauthSecurityIntegrationTypeOption                          string
@@ -37,10 +32,6 @@ type (
 	ListingRevision                                                     string
 	LogLevel                                                            string
 	MetricLevel                                                         string
-	MfaAuthenticationMethodsOption                                      string
-	MfaEnrollmentOption                                                 string
-	MfaPolicyAllowedMethodsOption                                       string
-	NetworkPolicyEvaluationOption                                       string
 	NetworkRuleMode                                                     string
 	NetworkRuleType                                                     string
 	NullInputBehavior                                                   string
