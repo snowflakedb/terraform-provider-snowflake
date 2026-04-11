@@ -7,6 +7,54 @@ import (
 )
 
 var (
+	AuthenticationMethodsOptionEnumDef = g.NewEnum(
+		"AuthenticationMethodsOption", "AuthenticationMethodsOptions",
+		"ALL", "SAML", "PASSWORD", "OAUTH", "KEYPAIR", "PROGRAMMATIC_ACCESS_TOKEN", "WORKLOAD_IDENTITY",
+	)
+	MfaAuthenticationMethodsOptionEnumDef = g.NewEnum(
+		"MfaAuthenticationMethodsOption", "MfaAuthenticationMethodsOptions",
+		"ALL", "SAML", "PASSWORD",
+	)
+	MfaAuthenticationMethodsReadOptionEnumDef = g.NewEnum(
+		"MfaAuthenticationMethodsReadOption", "MfaAuthenticationMethodsReadOptions",
+		"ALL", "SAML", "PASSWORD", "OIDC",
+	)
+	MfaEnrollmentOptionEnumDef = g.NewEnum(
+		"MfaEnrollmentOption", "MfaEnrollmentOptions",
+		"REQUIRED", "REQUIRED_PASSWORD_ONLY", "OPTIONAL",
+	)
+	MfaEnrollmentReadOptionEnumDef = g.NewEnum(
+		"MfaEnrollmentReadOption", "MfaEnrollmentReadOptions",
+		"REQUIRED", "REQUIRED_PASSWORD_ONLY", "OPTIONAL", "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY",
+	)
+	ClientTypesOptionEnumDef = g.NewEnum(
+		"ClientTypesOption", "ClientTypesOptions",
+		"ALL", "SNOWFLAKE_UI", "DRIVERS", "SNOWSQL", "SNOWFLAKE_CLI",
+	)
+	ClientPolicyDriverTypeEnumDef = g.NewEnum(
+		"ClientPolicyDriverType", "ClientPolicyDriverTypes",
+		"JDBC_DRIVER", "ODBC_DRIVER", "PYTHON_DRIVER", "JAVASCRIPT_DRIVER",
+		"C_DRIVER", "GO_DRIVER", "PHP_DRIVER", "DOTNET_DRIVER",
+		"SQL_API", "SNOWPIPE_STREAMING_CLIENT_SDK", "PY_CORE",
+		"SPROC_PYTHON", "PYTHON_SNOWPARK", "SQL_ALCHEMY", "SNOWPARK", "SNOWFLAKE_CLIENT",
+	)
+	MfaPolicyAllowedMethodsOptionEnumDef = g.NewEnum(
+		"MfaPolicyAllowedMethodsOption", "MfaPolicyAllowedMethodsOptions",
+		"ALL", "PASSKEY", "TOTP", "OTP", "DUO",
+	)
+	NetworkPolicyEvaluationOptionEnumDef = g.NewEnum(
+		"NetworkPolicyEvaluationOption", "NetworkPolicyEvaluationOptions",
+		"ENFORCED_REQUIRED", "ENFORCED_NOT_REQUIRED", "NOT_ENFORCED",
+	)
+	AllowedProviderOptionEnumDef = g.NewEnum(
+		"AllowedProviderOption", "AllowedProviderOptions",
+		"ALL", "AWS", "AZURE", "GCP", "OIDC",
+	)
+	EnforceMfaOnExternalAuthenticationOptionEnumDef = g.NewEnum(
+		"EnforceMfaOnExternalAuthenticationOption", "EnforceMfaOnExternalAuthenticationOptions",
+		"ALL", "NONE",
+	)
+
 	AuthenticationMethodsOptionDef = g.NewQueryStruct("AuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[sdkcommons.AuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
 	ClientTypesOptionDef           = g.NewQueryStruct("ClientTypes").PredefinedQueryStructField("ClientType", g.KindOfT[sdkcommons.ClientTypesOption](), g.KeywordOptions().SingleQuotes().Required())
 	SecurityIntegrationsOptionDef  = g.NewQueryStruct("SecurityIntegrationsOption").
@@ -180,4 +228,17 @@ var authenticationPoliciesDef = g.NewInterface(
 			SQL("AUTHENTICATION POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	WithEnums(
+		AuthenticationMethodsOptionEnumDef,
+		MfaAuthenticationMethodsOptionEnumDef,
+		MfaAuthenticationMethodsReadOptionEnumDef,
+		MfaEnrollmentOptionEnumDef,
+		MfaEnrollmentReadOptionEnumDef,
+		ClientTypesOptionEnumDef,
+		ClientPolicyDriverTypeEnumDef,
+		AllowedProviderOptionEnumDef,
+		NetworkPolicyEvaluationOptionEnumDef,
+		MfaPolicyAllowedMethodsOptionEnumDef,
+		EnforceMfaOnExternalAuthenticationOptionEnumDef,
 	)
