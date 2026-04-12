@@ -4,26 +4,20 @@ type (
 	ColumnConstraintType                                     string
 	ApiIntegrationAwsApiProviderType                         string
 	AutoEventLogging                                         string
-	AvroCompression                                          string
-	BinaryFormat                                             string
 	CatalogIntegrationAccessDelegationMode                   string
 	CatalogIntegrationCatalogApiType                         string
 	CatalogIntegrationCatalogSourceType                      string
 	CatalogIntegrationRestAuthenticationType                 string
 	CatalogIntegrationTableFormat                            string
 	ComputePoolInstanceFamily                                string
-	CsvCompression                                           string
-	CsvEncoding                                              string
 	DataMetricFunctionRefEntityDomainOption                  string
 	DataType                                                 string
 	ExternalStageAzureEncryptionOption                       string
 	ExternalStageGCSEncryptionOption                         string
 	ExternalStageS3EncryptionOption                          string
-	FileFormatType                                           string
 	GCSEncryptionType                                        string
 	ImageRepositoryEncryptionType                            string
 	InternalStageEncryptionOption                            string
-	JsonCompression                                          string
 	ListingState                                             string
 	ListingRevision                                          string
 	LogLevel                                                 string
@@ -32,7 +26,6 @@ type (
 	NetworkRuleType                                          string
 	NullInputBehavior                                        string
 	OrganizationAccountEdition                               string
-	ParquetCompression                                       string
 	ReclusterState                                           string
 	ReturnNullValues                                         string
 	ReturnResultsBehavior                                    string
@@ -47,7 +40,6 @@ type (
 	TaskState                                                string
 	TraceLevel                                               string
 	ViewDataMetricScheduleStatusOperationOption              string
-	XmlCompression                                           string
 )
 
 // copied from SDK for now

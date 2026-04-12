@@ -14,15 +14,15 @@ func Test_FileFormat_ToFileFormatType(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "csv", want: FileFormatTypeCSV},
+		{input: "csv", want: FileFormatTypeCsv},
 
 		// Supported Values
-		{input: "CSV", want: FileFormatTypeCSV},
-		{input: "JSON", want: FileFormatTypeJSON},
+		{input: "CSV", want: FileFormatTypeCsv},
+		{input: "JSON", want: FileFormatTypeJson},
 		{input: "AVRO", want: FileFormatTypeAvro},
-		{input: "ORC", want: FileFormatTypeORC},
+		{input: "ORC", want: FileFormatTypeOrc},
 		{input: "PARQUET", want: FileFormatTypeParquet},
-		{input: "XML", want: FileFormatTypeXML},
+		{input: "XML", want: FileFormatTypeXml},
 	}
 
 	invalid := []test{
@@ -60,7 +60,7 @@ func Test_FileFormat_ToBinaryFormat(t *testing.T) {
 		// Supported Values
 		{input: "HEX", want: BinaryFormatHex},
 		{input: "BASE64", want: BinaryFormatBase64},
-		{input: "UTF8", want: BinaryFormatUTF8},
+		{input: "UTF8", want: BinaryFormatUtf8},
 	}
 
 	invalid := []test{
@@ -93,17 +93,17 @@ func Test_FileFormat_ToCsvCompression(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "gzip", want: CSVCompressionGzip},
+		{input: "gzip", want: CsvCompressionGzip},
 
 		// Supported Values
-		{input: "AUTO", want: CSVCompressionAuto},
-		{input: "GZIP", want: CSVCompressionGzip},
-		{input: "BZ2", want: CSVCompressionBz2},
-		{input: "BROTLI", want: CSVCompressionBrotli},
-		{input: "ZSTD", want: CSVCompressionZstd},
-		{input: "DEFLATE", want: CSVCompressionDeflate},
-		{input: "RAW_DEFLATE", want: CSVCompressionRawDeflate},
-		{input: "NONE", want: CSVCompressionNone},
+		{input: "AUTO", want: CsvCompressionAuto},
+		{input: "GZIP", want: CsvCompressionGzip},
+		{input: "BZ2", want: CsvCompressionBz2},
+		{input: "BROTLI", want: CsvCompressionBrotli},
+		{input: "ZSTD", want: CsvCompressionZstd},
+		{input: "DEFLATE", want: CsvCompressionDeflate},
+		{input: "RAW_DEFLATE", want: CsvCompressionRawDeflate},
+		{input: "NONE", want: CsvCompressionNone},
 	}
 
 	invalid := []test{
@@ -136,42 +136,42 @@ func Test_FileFormat_ToCsvEncoding(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "utf8", want: CSVEncodingUTF8},
+		{input: "utf8", want: CsvEncodingUtf8},
 
 		// Supported Values
-		{input: "BIG5", want: CSVEncodingBIG5},
-		{input: "EUCJP", want: CSVEncodingEUCJP},
-		{input: "EUCKR", want: CSVEncodingEUCKR},
-		{input: "GB18030", want: CSVEncodingGB18030},
-		{input: "IBM420", want: CSVEncodingIBM420},
-		{input: "IBM424", want: CSVEncodingIBM424},
-		{input: "ISO2022CN", want: CSVEncodingISO2022CN},
-		{input: "ISO2022JP", want: CSVEncodingISO2022JP},
-		{input: "ISO2022KR", want: CSVEncodingISO2022KR},
-		{input: "ISO88591", want: CSVEncodingISO88591},
-		{input: "ISO88592", want: CSVEncodingISO88592},
-		{input: "ISO88595", want: CSVEncodingISO88595},
-		{input: "ISO88596", want: CSVEncodingISO88596},
-		{input: "ISO88597", want: CSVEncodingISO88597},
-		{input: "ISO88598", want: CSVEncodingISO88598},
-		{input: "ISO88599", want: CSVEncodingISO88599},
-		{input: "ISO885915", want: CSVEncodingISO885915},
-		{input: "KOI8R", want: CSVEncodingKOI8R},
-		{input: "SHIFTJIS", want: CSVEncodingSHIFTJIS},
-		{input: "UTF8", want: CSVEncodingUTF8},
-		{input: "UTF16", want: CSVEncodingUTF16},
-		{input: "UTF16BE", want: CSVEncodingUTF16BE},
-		{input: "UTF16LE", want: CSVEncodingUTF16LE},
-		{input: "UTF32", want: CSVEncodingUTF32},
-		{input: "UTF32BE", want: CSVEncodingUTF32BE},
-		{input: "UTF32LE", want: CSVEncodingUTF32LE},
-		{input: "WINDOWS1250", want: CSVEncodingWINDOWS1250},
-		{input: "WINDOWS1251", want: CSVEncodingWINDOWS1251},
-		{input: "WINDOWS1252", want: CSVEncodingWINDOWS1252},
-		{input: "WINDOWS1253", want: CSVEncodingWINDOWS1253},
-		{input: "WINDOWS1254", want: CSVEncodingWINDOWS1254},
-		{input: "WINDOWS1255", want: CSVEncodingWINDOWS1255},
-		{input: "WINDOWS1256", want: CSVEncodingWINDOWS1256},
+		{input: "BIG5", want: CsvEncodingBig5},
+		{input: "EUCJP", want: CsvEncodingEucjp},
+		{input: "EUCKR", want: CsvEncodingEuckr},
+		{input: "GB18030", want: CsvEncodingGb18030},
+		{input: "IBM420", want: CsvEncodingIbm420},
+		{input: "IBM424", want: CsvEncodingIbm424},
+		{input: "ISO2022CN", want: CsvEncodingIso2022cn},
+		{input: "ISO2022JP", want: CsvEncodingIso2022jp},
+		{input: "ISO2022KR", want: CsvEncodingIso2022kr},
+		{input: "ISO88591", want: CsvEncodingIso88591},
+		{input: "ISO88592", want: CsvEncodingIso88592},
+		{input: "ISO88595", want: CsvEncodingIso88595},
+		{input: "ISO88596", want: CsvEncodingIso88596},
+		{input: "ISO88597", want: CsvEncodingIso88597},
+		{input: "ISO88598", want: CsvEncodingIso88598},
+		{input: "ISO88599", want: CsvEncodingIso88599},
+		{input: "ISO885915", want: CsvEncodingIso885915},
+		{input: "KOI8R", want: CsvEncodingKoi8r},
+		{input: "SHIFTJIS", want: CsvEncodingShiftjis},
+		{input: "UTF8", want: CsvEncodingUtf8},
+		{input: "UTF16", want: CsvEncodingUtf16},
+		{input: "UTF16BE", want: CsvEncodingUtf16be},
+		{input: "UTF16LE", want: CsvEncodingUtf16le},
+		{input: "UTF32", want: CsvEncodingUtf32},
+		{input: "UTF32BE", want: CsvEncodingUtf32be},
+		{input: "UTF32LE", want: CsvEncodingUtf32le},
+		{input: "WINDOWS1250", want: CsvEncodingWindows1250},
+		{input: "WINDOWS1251", want: CsvEncodingWindows1251},
+		{input: "WINDOWS1252", want: CsvEncodingWindows1252},
+		{input: "WINDOWS1253", want: CsvEncodingWindows1253},
+		{input: "WINDOWS1254", want: CsvEncodingWindows1254},
+		{input: "WINDOWS1255", want: CsvEncodingWindows1255},
+		{input: "WINDOWS1256", want: CsvEncodingWindows1256},
 	}
 
 	invalid := []test{
@@ -204,17 +204,17 @@ func Test_FileFormat_ToJsonCompression(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "gzip", want: JSONCompressionGzip},
+		{input: "gzip", want: JsonCompressionGzip},
 
 		// Supported Values
-		{input: "AUTO", want: JSONCompressionAuto},
-		{input: "GZIP", want: JSONCompressionGzip},
-		{input: "BZ2", want: JSONCompressionBz2},
-		{input: "BROTLI", want: JSONCompressionBrotli},
-		{input: "ZSTD", want: JSONCompressionZstd},
-		{input: "DEFLATE", want: JSONCompressionDeflate},
-		{input: "RAW_DEFLATE", want: JSONCompressionRawDeflate},
-		{input: "NONE", want: JSONCompressionNone},
+		{input: "AUTO", want: JsonCompressionAuto},
+		{input: "GZIP", want: JsonCompressionGzip},
+		{input: "BZ2", want: JsonCompressionBz2},
+		{input: "BROTLI", want: JsonCompressionBrotli},
+		{input: "ZSTD", want: JsonCompressionZstd},
+		{input: "DEFLATE", want: JsonCompressionDeflate},
+		{input: "RAW_DEFLATE", want: JsonCompressionRawDeflate},
+		{input: "NONE", want: JsonCompressionNone},
 	}
 
 	invalid := []test{
@@ -328,17 +328,17 @@ func Test_FileFormat_ToXmlCompression(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "gzip", want: XMLCompressionGzip},
+		{input: "gzip", want: XmlCompressionGzip},
 
 		// Supported Values
-		{input: "AUTO", want: XMLCompressionAuto},
-		{input: "GZIP", want: XMLCompressionGzip},
-		{input: "BZ2", want: XMLCompressionBz2},
-		{input: "BROTLI", want: XMLCompressionBrotli},
-		{input: "ZSTD", want: XMLCompressionZstd},
-		{input: "DEFLATE", want: XMLCompressionDeflate},
-		{input: "RAW_DEFLATE", want: XMLCompressionRawDeflate},
-		{input: "NONE", want: XMLCompressionNone},
+		{input: "AUTO", want: XmlCompressionAuto},
+		{input: "GZIP", want: XmlCompressionGzip},
+		{input: "BZ2", want: XmlCompressionBz2},
+		{input: "BROTLI", want: XmlCompressionBrotli},
+		{input: "ZSTD", want: XmlCompressionZstd},
+		{input: "DEFLATE", want: XmlCompressionDeflate},
+		{input: "RAW_DEFLATE", want: XmlCompressionRawDeflate},
+		{input: "NONE", want: XmlCompressionNone},
 	}
 
 	invalid := []test{
