@@ -254,7 +254,7 @@ func TestAcc_ScimIntegration_InvalidScimClient(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, scimModelBasic),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid ScimSecurityIntegrationScimClientOption: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid scim security integration scim client option: INVALID`),
 			},
 		},
 	})

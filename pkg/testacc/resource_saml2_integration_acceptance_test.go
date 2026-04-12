@@ -709,7 +709,7 @@ func TestAcc_Saml2Integration_InvalidProvider(t *testing.T) {
 				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: invalid Saml2SecurityIntegrationSaml2ProviderOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid saml2 security integration saml2 provider option: INVALID"),
 			},
 		},
 	})

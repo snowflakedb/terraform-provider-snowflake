@@ -528,12 +528,12 @@ func TestAcc_OauthIntegrationForCustomClients_Invalid(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, invalidUseSecondaryRolesModel),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`Error: invalid OauthSecurityIntegrationUseSecondaryRolesOption: INVALID`),
+				ExpectError: regexp.MustCompile(`Error: invalid oauth security integration use secondary roles option: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, invalidClientTypesModel),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`Error: invalid OauthSecurityIntegrationClientTypeOption: INVALID`),
+				ExpectError: regexp.MustCompile(`Error: invalid oauth security integration client type option: INVALID`),
 			},
 		},
 	})

@@ -345,7 +345,7 @@ func TestAcc_ExternalOauthIntegration_invalidAnyRoleMode(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
 				ConfigVariables: m(),
-				ExpectError:     regexp.MustCompile("Error: invalid ExternalOauthSecurityIntegrationAnyRoleModeOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid external oauth security integration any role mode option: INVALID"),
 			},
 		},
 	})
@@ -381,7 +381,7 @@ func TestAcc_ExternalOauthIntegration_invalidSnowflakeUserMappingAttribute(t *te
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
 				ConfigVariables: m(),
-				ExpectError:     regexp.MustCompile("Error: invalid ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid external oauth security integration snowflake user mapping attribute option: INVALID"),
 			},
 		},
 	})
@@ -417,7 +417,7 @@ func TestAcc_ExternalOauthIntegration_invalidOauthType(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
 				ConfigVariables: m(),
-				ExpectError:     regexp.MustCompile("Error: invalid ExternalOauthSecurityIntegrationTypeOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid external oauth security integration type option: INVALID"),
 			},
 		},
 	})
