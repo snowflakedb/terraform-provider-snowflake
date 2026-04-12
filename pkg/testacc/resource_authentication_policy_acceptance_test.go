@@ -795,27 +795,27 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelInvalidAuthenticationMethods),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid authentication method: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid authentication methods option: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidMfaEnrollment),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid MFA enrollment option: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid mfa enrollment option: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidClientTypes),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid client type: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid client types option: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidEnforceMfaOnExternalAuthentication),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid enforce MFA on external authentication option: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid enforce mfa on external authentication option: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidAllowedMethods),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid MFA policy allowed methods option: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid mfa policy allowed methods option: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidDefaultExpiryInDays),
@@ -835,7 +835,7 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelInvalidAllowedProviders),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid allowed provider: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid allowed provider option: INVALID`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidClientPolicyDriverType),
