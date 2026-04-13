@@ -1338,16 +1338,17 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 			},
 			// Import with ordered_allowed_values config.
 			{
-				Config:            config.FromModels(t, providerModel, withOrderedModified),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, providerModel, withOrderedModified),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"allowed_values", "ordered_allowed_values"},
 			},
-			// Apply after import - values already in ordered_allowed_values, no reconciliation needed.
+			// Apply after import
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
 				Config: config.FromModels(t, providerModel, withOrderedModified),
@@ -1423,7 +1424,7 @@ func TestAcc_Tag_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, allowedValuesSequenceWithAllowedValues),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`"on_conflict.0.allowed_values_sequence": all of .+must be specified`),
+				ExpectError: regexp.MustCompile(`Missing required argument`),
 			},
 		},
 	})

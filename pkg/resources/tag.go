@@ -318,20 +318,24 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
-		// Use ordered_allowed_values by default (including import where rawConfig is null).
-		// Fall back to allowed_values only when it is explicitly set in the config.
+		d.Set("propagate", tag.Propagate),
 		func() error {
+			// Use ordered_allowed_values by default (including import where rawConfig is null).
+			// Determine the usage by checking config values, but if not provided by Terraform,
+			// use the collection that was set in the state.
 			useAllowedValues := false
 			if !d.GetRawConfig().IsNull() {
 				v, ok := d.GetRawConfig().AsValueMap()["allowed_values"]
 				useAllowedValues = ok && !v.IsNull() && v.LengthInt() > 0
+			} else if v, ok := d.GetOk("allowed_values"); ok {
+				useAllowedValues = ok && v != nil
 			}
+
 			if useAllowedValues {
 				return d.Set("allowed_values", tag.AllowedValues)
 			}
 			return d.Set("ordered_allowed_values", tag.AllowedValues)
 		}(),
-		d.Set("propagate", tag.Propagate),
 		func() error {
 			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
 			if err != nil {
