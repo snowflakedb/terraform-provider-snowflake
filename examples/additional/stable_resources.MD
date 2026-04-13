@@ -51,6 +51,8 @@
 - [snowflake_tag](./docs/resources/tag)
 - [snowflake_tag_association](./docs/resources/tag_association)
 - [snowflake_task](./docs/resources/task)
+- [snowflake_trust_center_scanner](./docs/resources/trust_center_scanner)
+- [snowflake_trust_center_scanner_package](./docs/resources/trust_center_scanner_package)
 - [snowflake_user](./docs/resources/user)
 - [snowflake_user_programmatic_access_token](./docs/resources/user_programmatic_access_token)
 - [snowflake_view](./docs/resources/view)

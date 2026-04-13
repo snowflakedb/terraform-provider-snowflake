@@ -22,6 +22,8 @@
 - [snowflake_streams](./docs/data-sources/streams)
 - [snowflake_tags](./docs/data-sources/tags)
 - [snowflake_tasks](./docs/data-sources/tasks)
+- [snowflake_trust_center_scanner_packages](./docs/data-sources/trust_center_scanner_packages)
+- [snowflake_trust_center_scanners](./docs/data-sources/trust_center_scanners)
 - [snowflake_user_programmatic_access_tokens](./docs/data-sources/user_programmatic_access_tokens)
 - [snowflake_users](./docs/data-sources/users)
 - [snowflake_views](./docs/data-sources/views)
