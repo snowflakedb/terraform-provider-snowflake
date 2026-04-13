@@ -210,7 +210,8 @@ func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	tagId, _, objectType, err := TagIdentifierAndObjectIdentifier(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -267,7 +268,15 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
+		safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 		for _, id := range removedIds {
+			request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
+			if safeDestroy {
+				if err := client.Tags.UnsetSafely(ctx, request); err != nil {
+					return diag.FromErr(err)
+				}
+				continue
+			}
 			if objectType == sdk.ObjectTypeColumn {
 				skip, err := skipColumnIfDoesNotExist(ctx, client, id)
 				if err != nil {
@@ -277,7 +286,6 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 					continue
 				}
 			}
-			request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
 			if err := client.Tags.Unset(ctx, request); err != nil {
 				return diag.FromErr(err)
 			}
@@ -303,12 +311,21 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 }
 
 func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	tagId, ids, objectType, err := TagIdentifierAndObjectIdentifier(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 	for _, id := range ids {
+		request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
+		if safeDestroy {
+			if err := client.Tags.UnsetSafely(ctx, request); err != nil {
+				return diag.FromErr(err)
+			}
+			continue
+		}
 		if objectType == sdk.ObjectTypeColumn {
 			skip, err := skipColumnIfDoesNotExist(ctx, client, id)
 			if err != nil {
@@ -318,7 +335,6 @@ func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 				continue
 			}
 		}
-		request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
 		if err := client.Tags.Unset(ctx, request); err != nil {
 			return diag.FromErr(err)
 		}
