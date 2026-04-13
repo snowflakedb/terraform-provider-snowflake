@@ -67,4 +67,13 @@ This prevents errors when, for example, a warehouse or role is deleted externall
 
 Without this experiment, destroying such resources fails with `does not exist or not authorized`.
 
+#### TAG_ASSOCIATION_SAFE_DESTROY
+When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.
+
+Currently supported by: `snowflake_tag_association`.
+
+This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.
+
+Without this experiment, destroying such resources fails with `does not exist or not authorized`.
+
 
