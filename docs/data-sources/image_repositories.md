@@ -129,6 +129,7 @@ Read-Only:
 - `comment` (String)
 - `created_on` (String)
 - `database_name` (String)
+- `encryption` (String)
 - `name` (String)
 - `owner` (String)
 - `owner_role_type` (String)

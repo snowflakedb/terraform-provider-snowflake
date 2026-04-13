@@ -90,6 +90,22 @@ now support the `IMAGE REPOSITORY` for future grants (in `on_schema_object.futur
 
 No changes to existing configurations are required.
 
+### *(new feature)* `encryption` attribute in `snowflake_image_repository` resource
+
+A new optional `encryption` attribute has been added to the `snowflake_image_repository` resource.
+It controls the encryption type used for the image repository and can only be set at creation time.
+Valid values are (case-insensitive): `SNOWFLAKE_FULL`, `SNOWFLAKE_SSE`.
+If omitted, Snowflake default is used.
+
+Changing the `encryption` value requires destroying and recreating the resource.
+
+No configuration changes are required if you do not need to manage the encryption type explicitly.
+The actual Snowflake encryption type is always available via `show_output[0].encryption`.
+
+**Import behavior:** Importing an existing image repository does not populate the `encryption` field in the resource configuration. To avoid a diff after import, either omit `encryption` from your configuration or set it explicitly to match the current Snowflake value.
+
+State is upgraded automatically — no manual changes are required.
+
 #### Adaptive warehouse columns in `snowflake_warehouses` data source
 
 The `show_output` field in the `snowflake_warehouses` data source now includes two additional computed attributes that surface adaptive warehouse details:

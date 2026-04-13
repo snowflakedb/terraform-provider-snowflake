@@ -41,6 +41,10 @@ var ShowImageRepositorySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"encryption": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"privatelink_repository_url": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -59,6 +63,7 @@ func ImageRepositoryToSchema(imageRepository *sdk.ImageRepository) map[string]an
 	imageRepositorySchema["owner"] = imageRepository.Owner
 	imageRepositorySchema["owner_role_type"] = imageRepository.OwnerRoleType
 	imageRepositorySchema["comment"] = imageRepository.Comment
+	imageRepositorySchema["encryption"] = string(imageRepository.Encryption)
 	imageRepositorySchema["privatelink_repository_url"] = imageRepository.PrivatelinkRepositoryUrl
 	return imageRepositorySchema
 }
