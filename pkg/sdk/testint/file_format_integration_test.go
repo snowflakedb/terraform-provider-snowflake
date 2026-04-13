@@ -21,7 +21,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCsv,
 			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
-				CSVCompression:                &sdk.CsvCompressionBz2,
+				CSVCompression:                sdk.Pointer(sdk.CsvCompressionBz2),
 				CSVRecordDelimiter:            sdk.String("\\123"),
 				CSVFieldDelimiter:             sdk.String("0x42"),
 				CSVFileExtension:              sdk.String("c"),
@@ -30,7 +30,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 				CSVDateFormat:                 sdk.String("d"),
 				CSVTimeFormat:                 sdk.String("e"),
 				CSVTimestampFormat:            sdk.String("f"),
-				CSVBinaryFormat:               &sdk.BinaryFormatBase64,
+				CSVBinaryFormat:               sdk.Pointer(sdk.BinaryFormatBase64),
 				CSVEscape:                     sdk.String(`\`),
 				CSVEscapeUnenclosedField:      sdk.String("h"),
 				CSVTrimSpace:                  sdk.Bool(true),
@@ -40,7 +40,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 				CSVReplaceInvalidCharacters:   sdk.Bool(true),
 				CSVEmptyFieldAsNull:           sdk.Bool(true),
 				CSVSkipByteOrderMark:          sdk.Bool(true),
-				CSVEncoding:                   &sdk.CsvEncodingGb18030,
+				CSVEncoding:                   sdk.Pointer(sdk.CsvEncodingGb18030),
 			},
 			Comment: sdk.String("test comment"),
 		})
@@ -59,7 +59,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.Equal(t, client.GetConfig().Role, result.Owner)
 		assert.Equal(t, "test comment", result.Comment)
 		assert.Equal(t, "ROLE", result.OwnerRoleType)
-		assert.Equal(t, &sdk.CsvCompressionBz2, result.Options.CSVCompression)
+		assert.Equal(t, sdk.Pointer(sdk.CsvCompressionBz2), result.Options.CSVCompression)
 		assert.Equal(t, "S", *result.Options.CSVRecordDelimiter) // o123 == 83 == 'S' (ASCII)
 		assert.Equal(t, "B", *result.Options.CSVFieldDelimiter)  // 0x42 == 66 == 'B' (ASCII)
 		assert.Equal(t, "c", *result.Options.CSVFileExtension)
@@ -68,7 +68,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.Equal(t, "d", *result.Options.CSVDateFormat)
 		assert.Equal(t, "e", *result.Options.CSVTimeFormat)
 		assert.Equal(t, "f", *result.Options.CSVTimestampFormat)
-		assert.Equal(t, &sdk.BinaryFormatBase64, result.Options.CSVBinaryFormat)
+		assert.Equal(t, sdk.Pointer(sdk.BinaryFormatBase64), result.Options.CSVBinaryFormat)
 		assert.Equal(t, `\`, *result.Options.CSVEscape)
 		assert.Equal(t, "h", *result.Options.CSVEscapeUnenclosedField)
 		assert.True(t, *result.Options.CSVTrimSpace)
@@ -78,12 +78,12 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *result.Options.CSVReplaceInvalidCharacters)
 		assert.True(t, *result.Options.CSVEmptyFieldAsNull)
 		assert.True(t, *result.Options.CSVSkipByteOrderMark)
-		assert.Equal(t, &sdk.CsvEncodingGb18030, result.Options.CSVEncoding)
+		assert.Equal(t, sdk.Pointer(sdk.CsvEncodingGb18030), result.Options.CSVEncoding)
 
 		describeResult, err := client.FileFormats.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.FileFormatTypeCsv, describeResult.Type)
-		assert.Equal(t, &sdk.CsvCompressionBz2, describeResult.Options.CSVCompression)
+		assert.Equal(t, sdk.Pointer(sdk.CsvCompressionBz2), describeResult.Options.CSVCompression)
 		assert.Equal(t, "S", *describeResult.Options.CSVRecordDelimiter) // o123 == 83 == 'S' (ASCII)
 		assert.Equal(t, "B", *describeResult.Options.CSVFieldDelimiter)  // 0x42 == 66 == 'B' (ASCII)
 		assert.Equal(t, "c", *describeResult.Options.CSVFileExtension)
@@ -92,7 +92,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.Equal(t, "d", *describeResult.Options.CSVDateFormat)
 		assert.Equal(t, "e", *describeResult.Options.CSVTimeFormat)
 		assert.Equal(t, "f", *describeResult.Options.CSVTimestampFormat)
-		assert.Equal(t, &sdk.BinaryFormatBase64, describeResult.Options.CSVBinaryFormat)
+		assert.Equal(t, sdk.Pointer(sdk.BinaryFormatBase64), describeResult.Options.CSVBinaryFormat)
 		assert.Equal(t, `\\`, *describeResult.Options.CSVEscape) // Describe does not un-escape backslashes, but show does ....
 		assert.Equal(t, "h", *describeResult.Options.CSVEscapeUnenclosedField)
 		assert.True(t, *describeResult.Options.CSVTrimSpace)
@@ -102,7 +102,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *describeResult.Options.CSVReplaceInvalidCharacters)
 		assert.True(t, *describeResult.Options.CSVEmptyFieldAsNull)
 		assert.True(t, *describeResult.Options.CSVSkipByteOrderMark)
-		assert.Equal(t, &sdk.CsvEncodingGb18030, describeResult.Options.CSVEncoding)
+		assert.Equal(t, sdk.Pointer(sdk.CsvEncodingGb18030), describeResult.Options.CSVEncoding)
 	})
 
 	// Check that field_optionally_enclosed_by can take the value NONE
@@ -130,11 +130,11 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeJson,
 			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
-				JSONCompression:       &sdk.JsonCompressionBrotli,
+				JSONCompression:       sdk.Pointer(sdk.JsonCompressionBrotli),
 				JSONDateFormat:        sdk.String("a"),
 				JSONTimeFormat:        sdk.String("b"),
 				JSONTimestampFormat:   sdk.String("c"),
-				JSONBinaryFormat:      &sdk.BinaryFormatHex,
+				JSONBinaryFormat:      sdk.Pointer(sdk.BinaryFormatHex),
 				JSONTrimSpace:         sdk.Bool(true),
 				JSONNullIf:            []sdk.NullString{{S: "d"}, {S: "e"}},
 				JSONFileExtension:     sdk.String("f"),
@@ -201,7 +201,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeAvro,
 			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
-				AvroCompression:              &sdk.AvroCompressionGzip,
+				AvroCompression:              sdk.Pointer(sdk.AvroCompressionGzip),
 				AvroTrimSpace:                sdk.Bool(true),
 				AvroReplaceInvalidCharacters: sdk.Bool(true),
 				AvroNullIf:                   &[]sdk.NullString{{S: "a"}, {S: "b"}},
@@ -280,7 +280,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeParquet,
 			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
-				ParquetCompression:              &sdk.ParquetCompressionLzo,
+				ParquetCompression:              sdk.Pointer(sdk.ParquetCompressionLzo),
 				ParquetBinaryAsText:             sdk.Bool(true),
 				ParquetTrimSpace:                sdk.Bool(true),
 				ParquetReplaceInvalidCharacters: sdk.Bool(true),
@@ -324,7 +324,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeXml,
 			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
-				XMLCompression:          &sdk.XmlCompressionDeflate,
+				XMLCompression:          sdk.Pointer(sdk.XmlCompressionDeflate),
 				XMLIgnoreUTF8Errors:     sdk.Bool(true),
 				XMLPreserveSpace:        sdk.Bool(true),
 				XMLStripOuterElement:    sdk.Bool(true),
@@ -408,7 +408,7 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormatWithOptions(t, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCsv,
 			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
-				CSVCompression: &sdk.CsvCompressionAuto,
+				CSVCompression: sdk.Pointer(sdk.CsvCompressionAuto),
 				CSVParseHeader: sdk.Bool(false),
 			},
 		})
@@ -417,7 +417,7 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 		err := client.FileFormats.Alter(ctx, fileFormat.ID(), &sdk.AlterFileFormatOptions{
 			Set: &sdk.LegacyFileFormatTypeOptions{
 				Comment:        sdk.String("some comment"),
-				CSVCompression: &sdk.CsvCompressionBz2,
+				CSVCompression: sdk.Pointer(sdk.CsvCompressionBz2),
 				CSVParseHeader: sdk.Bool(true),
 			},
 		})
