@@ -48,3 +48,17 @@ func (m *PreambleModel) getPreambleModel() *PreambleModel { return m }
 type HasPreambleModel interface {
 	getPreambleModel() *PreambleModel
 }
+
+// ObjectGenerationSettings holds per-object generation configuration.
+// Embed this in input object types to enable per-object generation part filtering.
+type ObjectGenerationSettings struct {
+	// AllowedGenerationParts lists which generation parts apply to this object.
+	// nil/empty means "use the generator's default" (all globally-filtered parts).
+	AllowedGenerationParts []string
+}
+
+type HasObjectGenerationSettings interface {
+	getObjectGenerationSettings() *ObjectGenerationSettings
+}
+
+func (i *ObjectGenerationSettings) getObjectGenerationSettings() *ObjectGenerationSettings { return i }

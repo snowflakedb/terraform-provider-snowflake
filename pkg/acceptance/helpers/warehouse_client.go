@@ -108,12 +108,30 @@ func (c *WarehouseClient) UpdateResourceConstraint(t *testing.T, id sdk.AccountO
 	require.NoError(t, err)
 }
 
+func (c *WarehouseClient) UpdateGeneration(t *testing.T, id sdk.AccountObjectIdentifier, newGeneration sdk.WarehouseGeneration) {
+	t.Helper()
+
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, id, &sdk.AlterWarehouseOptions{Set: &sdk.WarehouseSet{Generation: sdk.Pointer(newGeneration)}})
+	require.NoError(t, err)
+}
+
 func (c *WarehouseClient) UpdateWarehouseTypeAndResourceConstraint(t *testing.T, id sdk.AccountObjectIdentifier, newType sdk.WarehouseType, newResourceConstraint sdk.WarehouseResourceConstraint) {
 	t.Helper()
 
 	ctx := context.Background()
 
 	err := c.client().Alter(ctx, id, &sdk.AlterWarehouseOptions{Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(newType), ResourceConstraint: sdk.Pointer(newResourceConstraint)}})
+	require.NoError(t, err)
+}
+
+func (c *WarehouseClient) UpdateWarehouseTypeAndGeneration(t *testing.T, id sdk.AccountObjectIdentifier, newType sdk.WarehouseType, newGeneration sdk.WarehouseGeneration) {
+	t.Helper()
+
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, id, &sdk.AlterWarehouseOptions{Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(newType), Generation: sdk.Pointer(newGeneration)}})
 	require.NoError(t, err)
 }
 
@@ -167,4 +185,22 @@ func (c *WarehouseClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*s
 	ctx := context.Background()
 
 	return c.client().ShowByID(ctx, id)
+}
+
+func (c *WarehouseClient) CreateAdaptive(t *testing.T) (*sdk.Warehouse, func()) {
+	t.Helper()
+	return c.CreateAdaptiveWithOptions(t, c.ids.RandomAccountObjectIdentifier(), &sdk.CreateAdaptiveWarehouseOptions{})
+}
+
+func (c *WarehouseClient) CreateAdaptiveWithOptions(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.CreateAdaptiveWarehouseOptions) (*sdk.Warehouse, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().CreateAdaptive(ctx, id, opts)
+	require.NoError(t, err)
+
+	warehouse, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return warehouse, c.DropWarehouseFunc(t, id)
 }

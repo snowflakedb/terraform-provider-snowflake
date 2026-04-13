@@ -87,6 +87,7 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 		AuthenticationMethods: r.AuthenticationMethods,
 		MfaEnrollment:         r.MfaEnrollment,
 		ClientTypes:           r.ClientTypes,
+		ClientPolicy:          r.ClientPolicy,
 		Comment:               r.Comment,
 	}
 	if r.MfaPolicy != nil {
@@ -103,9 +104,10 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 	}
 	if r.PatPolicy != nil {
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
-			DefaultExpiryInDays:     r.PatPolicy.DefaultExpiryInDays,
-			MaxExpiryInDays:         r.PatPolicy.MaxExpiryInDays,
-			NetworkPolicyEvaluation: r.PatPolicy.NetworkPolicyEvaluation,
+			DefaultExpiryInDays:                   r.PatPolicy.DefaultExpiryInDays,
+			MaxExpiryInDays:                       r.PatPolicy.MaxExpiryInDays,
+			RequireRoleRestrictionForServiceUsers: r.PatPolicy.RequireRoleRestrictionForServiceUsers,
+			NetworkPolicyEvaluation:               r.PatPolicy.NetworkPolicyEvaluation,
 		}
 	}
 	if r.WorkloadIdentityPolicy != nil {
@@ -130,6 +132,7 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 			AuthenticationMethods: r.Set.AuthenticationMethods,
 			MfaEnrollment:         r.Set.MfaEnrollment,
 			ClientTypes:           r.Set.ClientTypes,
+			ClientPolicy:          r.Set.ClientPolicy,
 			Comment:               r.Set.Comment,
 		}
 		if r.Set.MfaPolicy != nil {
@@ -146,9 +149,10 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 		}
 		if r.Set.PatPolicy != nil {
 			opts.Set.PatPolicy = &AuthenticationPolicyPatPolicy{
-				DefaultExpiryInDays:     r.Set.PatPolicy.DefaultExpiryInDays,
-				MaxExpiryInDays:         r.Set.PatPolicy.MaxExpiryInDays,
-				NetworkPolicyEvaluation: r.Set.PatPolicy.NetworkPolicyEvaluation,
+				DefaultExpiryInDays:                   r.Set.PatPolicy.DefaultExpiryInDays,
+				MaxExpiryInDays:                       r.Set.PatPolicy.MaxExpiryInDays,
+				RequireRoleRestrictionForServiceUsers: r.Set.PatPolicy.RequireRoleRestrictionForServiceUsers,
+				NetworkPolicyEvaluation:               r.Set.PatPolicy.NetworkPolicyEvaluation,
 			}
 		}
 		if r.Set.WorkloadIdentityPolicy != nil {
@@ -163,6 +167,7 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 	if r.Unset != nil {
 		opts.Unset = &AuthenticationPolicyUnset{
 			ClientTypes:            r.Unset.ClientTypes,
+			ClientPolicy:           r.Unset.ClientPolicy,
 			AuthenticationMethods:  r.Unset.AuthenticationMethods,
 			SecurityIntegrations:   r.Unset.SecurityIntegrations,
 			MfaEnrollment:          r.Unset.MfaEnrollment,
@@ -202,30 +207,23 @@ func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) 
 		Options: r.Options,
 		Comment: r.Comment,
 	}
+
 	var errs []error
-	if r.DatabaseName.Valid {
-		policy.DatabaseName = r.DatabaseName.String
-	} else {
+	if !r.DatabaseName.Valid {
 		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
 	}
-	if r.SchemaName.Valid {
-		policy.SchemaName = r.SchemaName.String
-	} else {
+	if !r.SchemaName.Valid {
 		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
 	}
 	if len(errs) > 0 {
 		return nil, errors.Join(errs...)
 	}
 
-	if r.CreatedOn.Valid {
-		policy.CreatedOn = r.CreatedOn.Time
-	}
-	if r.Owner.Valid {
-		policy.Owner = r.Owner.String
-	}
-	if r.OwnerRoleType.Valid {
-		policy.OwnerRoleType = r.OwnerRoleType.String
-	}
+	mapNullStringToNonNullableField(&policy.DatabaseName, r.DatabaseName)
+	mapNullStringToNonNullableField(&policy.SchemaName, r.SchemaName)
+	mapNullTimeToNonNullableField(&policy.CreatedOn, r.CreatedOn)
+	mapNullStringToNonNullableField(&policy.Owner, r.Owner)
+	mapNullStringToNonNullableField(&policy.OwnerRoleType, r.OwnerRoleType)
 
 	return policy, nil
 }

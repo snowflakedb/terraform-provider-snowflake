@@ -18,6 +18,11 @@ const (
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
 	AuthenticationPolicyResource                  feature = "snowflake_authentication_policy_resource"
 	AuthenticationPoliciesDatasource              feature = "snowflake_authentication_policies_datasource"
+	CatalogIntegrationAwsGlueResource             feature = "snowflake_catalog_integration_aws_glue_resource"
+	CatalogIntegrationObjectStorageResource       feature = "snowflake_catalog_integration_object_storage_resource"
+	CatalogIntegrationOpenCatalogResource         feature = "snowflake_catalog_integration_open_catalog_resource"
+	CatalogIntegrationIcebergRestResource         feature = "snowflake_catalog_integration_iceberg_rest_resource"
+	CatalogIntegrationsDatasource                 feature = "snowflake_catalog_integrations_datasource"
 	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
@@ -39,6 +44,7 @@ const (
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
 	ExternalTablesDatasource                      feature = "snowflake_external_tables_datasource"
 	ExternalVolumeResource                        feature = "snowflake_external_volume_resource"
+	ExternalVolumesDatasource                     feature = "snowflake_external_volumes_datasource"
 	FailoverGroupResource                         feature = "snowflake_failover_group_resource"
 	FailoverGroupsDatasource                      feature = "snowflake_failover_groups_datasource"
 	FileFormatResource                            feature = "snowflake_file_format_resource"
@@ -106,6 +112,7 @@ const (
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
 	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
+	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
 )
 
 var allPreviewFeatures = []feature{
@@ -116,6 +123,11 @@ var allPreviewFeatures = []feature{
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
+	CatalogIntegrationAwsGlueResource,
+	CatalogIntegrationObjectStorageResource,
+	CatalogIntegrationOpenCatalogResource,
+	CatalogIntegrationIcebergRestResource,
+	CatalogIntegrationsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -134,6 +146,7 @@ var allPreviewFeatures = []feature{
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	ExternalVolumeResource,
+	ExternalVolumesDatasource,
 	FailoverGroupResource,
 	FailoverGroupsDatasource,
 	FileFormatResource,
@@ -192,6 +205,7 @@ var allPreviewFeatures = []feature{
 	UserAuthenticationPolicyAttachmentResource,
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+	WarehouseAdaptiveResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 

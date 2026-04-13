@@ -13,12 +13,24 @@ const (
 	azureStorageQueuePrimaryUri = "azure://great-bucket/great-path/"
 	azureEventGridTopicEndpoint = "https://apim-hello-world.azure-api.net/dev"
 	awsSnsTopicArn              = "arn:aws:sns:us-east-2:123456789012:MyTopic"
+	webhookUrl                  = "https://hooks.slack.com/services/SNOWFLAKE_WEBHOOK_SECRET"
 )
 
 func TestNotificationIntegrations_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 
 	// minimal option for each variant added manually
+	// Minimal valid CreateNotificationIntegrationOptions for Webhook
+	defaultOptsWebhook := func() *CreateNotificationIntegrationOptions {
+		return &CreateNotificationIntegrationOptions{
+			name:    id,
+			Enabled: true,
+			WebhookParams: &WebhookParams{
+				WebhookUrl: webhookUrl,
+			},
+		}
+	}
+
 	// Minimal valid CreateNotificationIntegrationOptions for AutomatedDataLoads
 	defaultOptsAutomatedDataLoads := func() *CreateNotificationIntegrationOptions {
 		return &CreateNotificationIntegrationOptions{
@@ -75,16 +87,16 @@ func TestNotificationIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateNotificationIntegrationOptions", "IfNotExists", "OrReplace"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams opts.PushNotificationParams opts.EmailParams] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams opts.PushNotificationParams opts.EmailParams opts.WebhookParams] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.EmailParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams opts.PushNotificationParams opts.EmailParams] should be present - more present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams opts.PushNotificationParams opts.EmailParams opts.WebhookParams] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.PushNotificationParams = &PushNotificationParams{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"))
 	})
 
 	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams.GoogleAutoParams opts.AutomatedDataLoadsParams.AzureAutoParams] should be present", func(t *testing.T) {
@@ -168,6 +180,24 @@ func TestNotificationIntegrations_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true DIRECTION = OUTBOUND TYPE = QUEUE NOTIFICATION_PROVIDER = AZURE_EVENT_GRID AZURE_EVENT_GRID_TOPIC_ENDPOINT = '%s' AZURE_TENANT_ID = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), azureEventGridTopicEndpoint, azureTenantId)
 	})
 
+	t.Run("all options - webhook minimal", func(t *testing.T) {
+		opts := defaultOptsWebhook()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION %s ENABLED = true TYPE = WEBHOOK WEBHOOK_URL = '%s'", id.FullyQualifiedName(), webhookUrl)
+	})
+
+	t.Run("all options - webhook with secret and headers", func(t *testing.T) {
+		secretId := NewSchemaObjectIdentifier("metrics_catalog", "metric_config", "slack_integration_webhook")
+		opts := defaultOptsWebhook()
+		opts.IfNotExists = Bool(true)
+		opts.Comment = String("slack webhook")
+		opts.WebhookParams.WebhookSecret = &secretId
+		opts.WebhookParams.WebhookBodyTemplate = String("SNOWFLAKE_WEBHOOK_MESSAGE")
+		opts.WebhookParams.WebhookHeaders = []WebhookHeader{
+			{Header: "Content-Type", Value: "application/json"},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = WEBHOOK WEBHOOK_URL = '%s' WEBHOOK_SECRET = %s WEBHOOK_BODY_TEMPLATE = 'SNOWFLAKE_WEBHOOK_MESSAGE' WEBHOOK_HEADERS = ('Content-Type' = 'application/json') COMMENT = 'slack webhook'`, id.FullyQualifiedName(), webhookUrl, secretId.FullyQualifiedName())
+	})
+
 	t.Run("all options - email", func(t *testing.T) {
 		email := "some.email@some.com"
 		otherEmail := "some.other.email@some.com"
@@ -203,12 +233,12 @@ func TestNotificationIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.Set opts.UnsetEmailParams opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set opts.UnsetEmailParams opts.UnsetWebhookParams opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
 	})
 
-	t.Run("validation: exactly one field from [opts.Set opts.UnsetEmailParams opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set opts.UnsetEmailParams opts.UnsetWebhookParams opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &NotificationIntegrationSet{
 			Enabled: Bool(true),
@@ -216,22 +246,22 @@ func TestNotificationIntegrations_Alter(t *testing.T) {
 		opts.UnsetEmailParams = &NotificationIntegrationUnsetEmailParams{
 			Comment: Bool(true),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.Set.SetPushParams opts.Set.SetEmailParams]", func(t *testing.T) {
+	t.Run("validation: conflicting fields for [opts.Set.SetPushParams opts.Set.SetEmailParams opts.Set.SetWebhookParams]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &NotificationIntegrationSet{
 			SetPushParams:  &SetPushParams{},
 			SetEmailParams: &SetEmailParams{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams", "SetWebhookParams"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.SetPushParams opts.Set.SetEmailParams opts.Set.Comment] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.SetPushParams opts.Set.SetEmailParams opts.Set.SetWebhookParams opts.Set.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &NotificationIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNotificationIntegrationOptions.Set", "Enabled", "SetPushParams", "SetEmailParams", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNotificationIntegrationOptions.Set", "Enabled", "SetPushParams", "SetEmailParams", "SetWebhookParams", "Comment"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Set.SetPushParams.SetAmazonPush opts.Set.SetPushParams.SetGooglePush opts.Set.SetPushParams.SetAzurePush] should be present", func(t *testing.T) {
@@ -337,6 +367,35 @@ func TestNotificationIntegrations_Alter(t *testing.T) {
 			Comment: String("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s SET ENABLED = true ALLOWED_RECIPIENTS = ('%s', '%s') COMMENT = 'some comment'", id.FullyQualifiedName(), email, otherEmail)
+	})
+
+	t.Run("set - webhook", func(t *testing.T) {
+		secretId := NewSchemaObjectIdentifier("metrics_catalog", "metric_config", "slack_integration_webhook")
+		opts := defaultOpts()
+		opts.Set = &NotificationIntegrationSet{
+			Enabled: Bool(true),
+			SetWebhookParams: &SetWebhookParams{
+				WebhookUrl:          String(webhookUrl),
+				WebhookSecret:       &secretId,
+				WebhookBodyTemplate: String("SNOWFLAKE_WEBHOOK_MESSAGE"),
+				WebhookHeaders: []WebhookHeader{
+					{Header: "Content-Type", Value: "application/json"},
+				},
+			},
+			Comment: String("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER NOTIFICATION INTEGRATION %s SET ENABLED = true WEBHOOK_URL = '%s' WEBHOOK_SECRET = %s WEBHOOK_BODY_TEMPLATE = 'SNOWFLAKE_WEBHOOK_MESSAGE' WEBHOOK_HEADERS = ('Content-Type' = 'application/json') COMMENT = 'some comment'`, id.FullyQualifiedName(), webhookUrl, secretId.FullyQualifiedName())
+	})
+
+	t.Run("unset webhook", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetWebhookParams = &NotificationIntegrationUnsetWebhookParams{
+			WebhookSecret:       Bool(true),
+			WebhookBodyTemplate: Bool(true),
+			WebhookHeaders:      Bool(true),
+			Comment:             Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s UNSET WEBHOOK_SECRET, WEBHOOK_BODY_TEMPLATE, WEBHOOK_HEADERS, COMMENT", id.FullyQualifiedName())
 	})
 
 	t.Run("unset single", func(t *testing.T) {

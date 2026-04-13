@@ -114,7 +114,7 @@ where script options are:
       When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
       The script always outputs fields that have non-empty default values in Snowflake (they can be removed from the output)
 
-      Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended)
+      Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended). Adaptive warehouses are also not supported.
 
       For more details about using multiple sources, visit [Multiple sources section](#multiple-sources).
 

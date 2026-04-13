@@ -86,7 +86,7 @@ func ImportStreamOnTable(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return nil, err
 	}
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
 		return nil, err
 	}
 	if err := d.Set("append_only", booleanStringFromBool(v.IsAppendOnly())); err != nil {
