@@ -26,7 +26,130 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### **IMPORTANT** *(improvement)* Go driver bumped to v2
+
+There was a recent major release for the underlying Go Snowflake driver ([summary](https://github.com/snowflakedb/gosnowflake/issues/1586) and [v2.0.0 release notes](https://github.com/snowflakedb/gosnowflake/releases/tag/v2.0.0)). It introduced a few breaking changes but the provider adopted them in a non-breaking way - summary in the sections below. Keep in mind, that we will align the behavior with the driver in the next major release of the provider.
+
+#### `ClientIP` configuration attribute removed from the driver
+
+`ClientIP` attribute was not used by the driver internally. It's still allowed to set this attribute on the provider configuration side, but:
+- it won't be passed to the driver;
+- it will be removed with the next major release.
+
+No changes are required, but because `client_ip` attribute is not affecting the configuration, you can safely remove it, to reduce the number of required changes in the next major provider release.
+
+#### `InsecureMode` configuration attribute removed from the driver
+
+`InsecureMode` attribute was deprecated both in the driver and the provider for a long time already. It's behavior was the same as using `DisableOCSPChecks`. We still allow to set it, but:
+- setting any of `insecure_mode` or `disable_ocsp_checks` to `true` sets the `DisableOCSPChecks` on the driver side (from every perspective: tf config, environment variable, TOML config).
+- `insecure_mode` will be removed with the next major release.
+
+No changes are required, but because `insecure_mode` will be removed in the next major version, switch to `disable_ocsp_checks`, to reduce the number of required changes in the next major provider release.
+
+#### `TelemetryDisabled` configuration attribute removed from the driver
+
+`TelemetryDisabled` was removed from the driver. To avoid making it a breaking change in the provider, setting it in your configuration will cause `CLIENT_TELEMETRY_ENABLED` with value `false` to be added to session parameters (`params` map). It shouldn't affect the existing configurations as:
+- in the previous Go driver versions, setting `CLIENT_TELEMETRY_ENABLED` parameter had no effect (only `TelemetryDisabled` mattered);
+- the parameter is by default set to `true`.
+
+No changes are required, but switch to `CLIENT_TELEMETRY_ENABLED` instead of the `telemetry_disabled` attribute, to reduce the number of required changes in the next major provider release.
+
+#### `KeepSessionAlive` configuration attribute renamed on the driver side
+
+`KeepSessionAlive` was renamed to `ServerSessionKeepAlive` to align it with other drivers.
+
+No changes are required. `keep_session_alive` attribute will be renamed in the next major provider release.
+
+#### `DriverTracing` log levels changes on the driver side
+
+The driver changed the supported log levels. The `print` and `panic` levels no longer exist, and a new `off` level was added. The valid values are now: `trace`, `debug`, `info`, `warn`, `error`, `fatal`, `off`.
+
+For backward compatibility, the following deprecated values are still accepted and mapped automatically:
+- `warning` → `warn`
+- `panic` → `fatal`
+- `print` → `info`
+
+No changes are required, but switch to the new values, as the deprecated ones will be removed in the next major provider release.
+
+### **IMPORTANT** *(new feature)* GRANTS_SAFE_DESTROY experiment
+
+A new `GRANTS_SAFE_DESTROY` experiment has been added. When enabled, resource destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists, instead of failing with `does not exist or not authorized`.
+
+This is useful when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.
+
+To enable, add `GRANTS_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["GRANTS_SAFE_DESTROY"]
+}
+```
+
+### **IMPORTANT** *(new feature)* TAG_ASSOCIATION_SAFE_DESTROY experiment
+
+A new `TAG_ASSOCIATION_SAFE_DESTROY` experiment has been added. When enabled, `snowflake_tag_association` destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists, instead of failing with `does not exist or not authorized` or `object does not exist, or operation cannot be performed`.
+
+This is useful when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration. It also fixes [#3869](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3869), where destroying a column-level tag association failed when the parent table or schema had already been dropped.
+
+To enable, add `TAG_ASSOCIATION_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["TAG_ASSOCIATION_SAFE_DESTROY"]
+}
+```
+
 ### *(new feature)* snowflake_tag resource changes
+
+#### Improved `allowed_values` handling in `snowflake_tag`
+
+Previously, removing `allowed_values` from your tag configuration did not revert the tag to accepting any value, and there was no way to explicitly block all values.
+The new `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experimental feature fixes both issues, giving you full control over which values a tag accepts:
+omit `allowed_values` to allow any value, specify a list to restrict to certain values, or set `no_allowed_values = true` to block all values entirely.
+The `allowed_values` and `no_allowed_values` fields are conflicting and cannot be set at the same time.
+
+Here are examples presenting all options for allowed values management:
+
+1. Any value is allowed (`allowed_values` should be removed from the configuration or left empty)
+
+```terraform
+resource "snowflake_tag" "example" {
+  name     = "my_tag"
+  database = "my_database"
+  schema   = "my_schema"
+  # or allowed_values = []
+}
+```
+
+2. Given values are allowed (`allowed_values` should be set to the desired values)
+
+```terraform
+resource "snowflake_tag" "example" {
+  name           = "my_tag"
+  database       = "my_database"
+  schema         = "my_schema"
+  allowed_values = ["production", "staging", "development"]
+}
+```
+
+3. No value is allowed (`no_allowed_values` field set to true)
+
+```terraform
+resource "snowflake_tag" "example" {
+  name              = "my_tag"
+  database          = "my_database"
+  schema            = "my_schema"
+  no_allowed_values = true
+}
+```
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
+
+**It's still considered a preview feature, even when applied to the stable resources.**
+
+No changes in configuration are required.
+Without the flag enabled, the behavior remains the same as in previous versions.
 
 #### Propagation and conflict resolution support
 
@@ -83,6 +206,15 @@ Adaptive Compute is a compute service focused on delivering strong performance w
 
 This feature will be marked as stable in a future release. To use it, add `snowflake_warehouse_adaptive_resource` to the `preview_features_enabled` field in the provider configuration.
 
+#### Adaptive warehouse columns in `snowflake_warehouses` data source
+
+The `show_output` field in the `snowflake_warehouses` data source now includes two additional computed attributes that surface adaptive warehouse details:
+
+- `max_query_performance_level` — the initial compute capacity level of an adaptive warehouse
+- `query_throughput_multiplier` — the query throughput multiplier of an adaptive warehouse
+
+These fields are populated only when the warehouse type is `ADAPTIVE`; for standard and Snowpark-Optimized warehouses they remain empty. No configuration changes are required.
+
 ### *(new feature)* Support for future grants on `IMAGE REPOSITORIES`
 
 Both, `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources,
@@ -105,58 +237,6 @@ The actual Snowflake encryption type is always available via `show_output[0].enc
 **Import behavior:** Importing an existing image repository does not populate the `encryption` field in the resource configuration. To avoid a diff after import, either omit `encryption` from your configuration or set it explicitly to match the current Snowflake value.
 
 State is upgraded automatically — no manual changes are required.
-
-#### Adaptive warehouse columns in `snowflake_warehouses` data source
-
-The `show_output` field in the `snowflake_warehouses` data source now includes two additional computed attributes that surface adaptive warehouse details:
-
-- `max_query_performance_level` — the initial compute capacity level of an adaptive warehouse
-- `query_throughput_multiplier` — the query throughput multiplier of an adaptive warehouse
-
-These fields are populated only when the warehouse type is `ADAPTIVE`; for standard and Snowpark-Optimized warehouses they remain empty. No configuration changes are required.
-
-### *(new feature)* GRANTS_SAFE_DESTROY experiment
-
-A new `GRANTS_SAFE_DESTROY` experiment has been added. When enabled, resource destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists, instead of failing with `does not exist or not authorized`.
-
-This is useful when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
-
-Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.
-
-To enable, add `GRANTS_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
-```hcl
-provider "snowflake" {
-  experimental_features_enabled = ["GRANTS_SAFE_DESTROY"]
-}
-```
-
-### *(new feature)* TAG_ASSOCIATION_SAFE_DESTROY experiment
-
-A new `TAG_ASSOCIATION_SAFE_DESTROY` experiment has been added. When enabled, `snowflake_tag_association` destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists, instead of failing with `does not exist or not authorized` or `object does not exist, or operation cannot be performed`.
-
-This is useful when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration. It also fixes [#3869](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3869), where destroying a column-level tag association failed when the parent table or schema had already been dropped.
-
-To enable, add `TAG_ASSOCIATION_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
-```hcl
-provider "snowflake" {
-  experimental_features_enabled = ["TAG_ASSOCIATION_SAFE_DESTROY"]
-}
-```
-
-### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
-
-#### Resource `snowflake_authentication_policy`
-- New optional block **`client_policy`**.
-- New field **`pat_policy.require_role_restriction_for_service_users`**.
-- New **`OTP`** option added to `mfa_policy.allowed_methods`.
-- New field **`client_policy`** added to **`describe_output`**.
-
-#### Data source `snowflake_authentication_policies`
-- New field **`client_policy`** added to **`describe_output`**.
-
-For more details about added features head over to the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy) or [Terraform Registry documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy).
-
-No changes are required to existing configurations unless you want to adopt any of the newly introduced features.
 
 ### *(new feature)* snowflake_account_parameter: adding missing parameters
 
@@ -206,61 +286,6 @@ We have added a new preview data source for catalog integrations: [snowflake_cat
 
 This feature will be marked as stable in future releases. To use it, add `snowflake_catalog_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
 
-### *(bug fix)* snowflake_account: fix nil pointer dereference panics
-
-Previously, the `snowflake_account` resource could panic with a nil pointer dereference in the following scenarios:
-- During **import**, if some fields (`edition`, `is_org_admin`, `consumption_billing_entity`) were not returned by `SHOW ACCOUNTS`.
-- During **read** (plan/apply), if the same fields were missing from the Snowflake response.
-
-These panics are now replaced with proper nil checks and error messages.
-
-References: [#4101](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4101#issuecomment-4069319904).
-
-### *(improvement)* Go driver bumped to v2
-
-There was a recent major release for the underlying Go Snowflake driver ([summary](https://github.com/snowflakedb/gosnowflake/issues/1586) and [v2.0.0 release notes](https://github.com/snowflakedb/gosnowflake/releases/tag/v2.0.0)). It introduced a few breaking changes but the provider adopted them in a non-breaking way - summary in the sections below. Keep in mind, that we will align the behavior with the driver in the next major release of the provider.
-
-#### `ClientIP` configuration attribute removed from the driver
-
-`ClientIP` attribute was not used by the driver internally. It's still allowed to set this attribute on the provider configuration side, but:
-- it won't be passed to the driver;
-- it will be removed with the next major release.
-
-No changes are required, but because `client_ip` attribute is not affecting the configuration, you can safely remove it, to reduce the number of required changes in the next major provider release.
-
-#### `InsecureMode` configuration attribute removed from the driver
-
-`InsecureMode` attribute was deprecated both in the driver and the provider for a long time already. It's behavior was the same as using `DisableOCSPChecks`. We still allow to set it, but:
-- setting any of `insecure_mode` or `disable_ocsp_checks` to `true` sets the `DisableOCSPChecks` on the driver side (from every perspective: tf config, environment variable, TOML config).
-- `insecure_mode` will be removed with the next major release.
-
-No changes are required, but because `insecure_mode` will be removed in the next major version, switch to `disable_ocsp_checks`, to reduce the number of required changes in the next major provider release.
-
-#### `TelemetryDisabled` configuration attribute removed from the driver
-
-`TelemetryDisabled` was removed from the driver. To avoid making it a breaking change in the provider, setting it in your configuration will cause `CLIENT_TELEMETRY_ENABLED` with value `false` to be added to session parameters (`params` map). It shouldn't affect the existing configurations as:
-- in the previous Go driver versions, setting `CLIENT_TELEMETRY_ENABLED` parameter had no effect (only `TelemetryDisabled` mattered);
-- the parameter is by default set to `true`.
-
-No changes are required, but switch to `CLIENT_TELEMETRY_ENABLED` instead of the `telemetry_disabled` attribute, to reduce the number of required changes in the next major provider release.
-
-#### `KeepSessionAlive` configuration attribute renamed on the driver side
-
-`KeepSessionAlive` was renamed to `ServerSessionKeepAlive` to align it with other drivers.
-
-No changes are required. `keep_session_alive` attribute will be renamed in the next major provider release.
-
-#### `DriverTracing` log levels changes on the driver side
-
-The driver changed the supported log levels. The `print` and `panic` levels no longer exist, and a new `off` level was added. The valid values are now: `trace`, `debug`, `info`, `warn`, `error`, `fatal`, `off`.
-
-For backward compatibility, the following deprecated values are still accepted and mapped automatically:
-- `warning` → `warn`
-- `panic` → `fatal`
-- `print` → `info`
-
-No changes are required, but switch to the new values, as the deprecated ones will be removed in the next major provider release.
-
 ### *(new feature)* Private Facts and Metrics support in Semantic Views
 
 We have added support for Private Facts and Metrics in the Semantic Views resource.
@@ -269,7 +294,28 @@ We have added support for Private Facts and Metrics in the Semantic Views resour
 
 Added a new `snowflake_external_volumes` data source that allows querying existing external volumes. It supports `like` filtering and an optional `with_describe` flag (default `true`) to include `DESCRIBE EXTERNAL VOLUME` output. This data source is a preview feature and must be enabled by adding `snowflake_external_volumes_datasource` to `preview_features_enabled` in provider configuration.
 
-### *(enhancement)* Rework of `snowflake_external_volume` resource
+### *(new feature)* snowflake_grant_ownership: support for DBT PROJECT object type
+
+The `snowflake_grant_ownership` resource now supports granting ownership on `DBT PROJECT` objects. This includes single object grants, bulk grants (`ALL DBT PROJECTS IN ...`), and future grants (`FUTURE DBT PROJECTS IN ...`). For more details, see [Access control for dbt projects on Snowflake](https://docs.snowflake.com/en/user-guide/data-engineering/dbt-projects-on-snowflake-access-control).
+
+No changes in configuration are required.
+
+### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
+
+#### Resource `snowflake_authentication_policy`
+- New optional block **`client_policy`**.
+- New field **`pat_policy.require_role_restriction_for_service_users`**.
+- New **`OTP`** option added to `mfa_policy.allowed_methods`.
+- New field **`client_policy`** added to **`describe_output`**.
+
+#### Data source `snowflake_authentication_policies`
+- New field **`client_policy`** added to **`describe_output`**.
+
+For more details about added features head over to the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy) or [Terraform Registry documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy).
+
+No changes are required to existing configurations unless you want to adopt any of the newly introduced features.
+
+### *(improvement)* Rework of `snowflake_external_volume` resource
 
 We have added support for S3-compatible (S3COMPAT) storage locations and several missing S3 fields to the `snowflake_external_volume` resource.
 
@@ -312,6 +358,16 @@ output "ev_comment" {
 }
 ```
 
+### *(bugfix)* snowflake_account: fix nil pointer dereference panics
+
+Previously, the `snowflake_account` resource could panic with a nil pointer dereference in the following scenarios:
+- During **import**, if some fields (`edition`, `is_org_admin`, `consumption_billing_entity`) were not returned by `SHOW ACCOUNTS`.
+- During **read** (plan/apply), if the same fields were missing from the Snowflake response.
+
+These panics are now replaced with proper nil checks and error messages.
+
+References: [#4101](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4101#issuecomment-4069319904).
+
 ### *(bugfix)* Fixed allowed_accounts update in snowflake_failover_group
 
 Previously, updating the `allowed_accounts` field would fail because the constructed request was not correct. This has been fixed and `allowed_accounts` can now be updated correctly without requiring workarounds.
@@ -332,62 +388,6 @@ No changes in the configuration are required.
 
 References: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524), [#4593](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4593).
 
-### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
-
-Previously, removing `allowed_values` from your tag configuration did not revert the tag to accepting any value, and there was no way to explicitly block all values.
-The new `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experimental feature fixes both issues, giving you full control over which values a tag accepts:
-omit `allowed_values` to allow any value, specify a list to restrict to certain values, or set `no_allowed_values = true` to block all values entirely.
-The `allowed_values` and `no_allowed_values` fields are conflicting and cannot be set at the same time.
-
-Here are examples presenting all options for allowed values management:
-
-1. Any value is allowed (`allowed_values` should be removed from the configuration or left empty)
-
-```terraform
-resource "snowflake_tag" "example" {
-  name     = "my_tag"
-  database = "my_database"
-  schema   = "my_schema"
-  # or allowed_values = []
-}
-```
-
-2. Given values are allowed (`allowed_values` should be set to the desired values)
-
-```terraform
-resource "snowflake_tag" "example" {
-  name           = "my_tag"
-  database       = "my_database"
-  schema         = "my_schema"
-  allowed_values = ["production", "staging", "development"]
-}
-```
-
-3. No value is allowed (`no_allowed_values` field set to true)
-
-```terraform
-resource "snowflake_tag" "example" {
-  name              = "my_tag"
-  database          = "my_database"
-  schema            = "my_schema"
-  no_allowed_values = true
-}
-```
-
-It's not enabled by default and to use it, you have to enable this feature on the provider level
-by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
-
-**It's still considered a preview feature, even when applied to the stable resources.**
-
-No changes in configuration are required.
-Without the flag enabled, the behavior remains the same as in previous versions.
-
-### *(new feature)* snowflake_grant_ownership: support for DBT PROJECT object type
-
-The `snowflake_grant_ownership` resource now supports granting ownership on `DBT PROJECT` objects. This includes single object grants, bulk grants (`ALL DBT PROJECTS IN ...`), and future grants (`FUTURE DBT PROJECTS IN ...`). For more details, see [Access control for dbt projects on Snowflake](https://docs.snowflake.com/en/user-guide/data-engineering/dbt-projects-on-snowflake-access-control).
-
-No changes in configuration are required.
-
 ### *(bugfix)* Fixed panic in `snowflake_view` when the last column has a masking policy without a `using` clause
 
 The `snowflake_view` resource could panic with `index out of range` during plan, apply, or refresh when the last column definition included a `masking_policy` block without a `using` argument. The error could be as follows:
@@ -404,7 +404,7 @@ This was caused by a missing early-exit check in the internal SQL parser used to
 
 No changes in configuration are required. If this error happened during object creation, the state of this resource may be empty. In this case, just reimport the object.
 
-### *(bug fix)* Fixed `describe_output` permadiff on stage resources
+### *(bugfix)* Fixed `describe_output` permadiff on stage resources
 
 The `describe_output` computed attribute on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, `snowflake_stage_internal`) was incorrectly tracking `file_format` as a trigger for recomputation. The provider normalizes selected file format subfields (e.g. resolves identifier quoting), but it's not applied in the recomputation logic, which could lead to permadiffs.
 
