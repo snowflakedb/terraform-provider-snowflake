@@ -1321,6 +1321,27 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
 				),
 			},
+			// Import with ordered_allowed_values config.
+			{
+				Config:                  config.FromModels(t, providerModel, withOrderedModified),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"allowed_values", "ordered_allowed_values"},
+			},
+			// Apply after import
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, providerModel, withOrderedModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValues("x", "b", "c"),
+					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
+				),
+			},
 			// Switch to allowed_values (unordered).
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -1334,27 +1355,6 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					resourceassert.TagResource(t, ref).
 						HasAllowedValues("x", "b", "c").
 						HasOrderedAllowedValuesEmpty(),
-				),
-			},
-			// Import with ordered_allowed_values config.
-			{
-				Config:                  config.FromModels(t, providerModel, withOrderedModified),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"allowed_values", "ordered_allowed_values"},
-			},
-			// Apply after import
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, providerModel, withOrderedModified),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).HasAllowedValues("x", "b", "c"),
-					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
 				),
 			},
 			// Import with allowed_values config (import populates ordered_allowed_values by default).
