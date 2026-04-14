@@ -43,7 +43,7 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 		}).
 		WithFileFormatJson(sdk.FileFormatJsonOptions{
 			BinaryFormat: sdk.Pointer(sdk.BinaryFormatHex),
-			Compression:  sdk.Pointer(sdk.JSONCompressionAuto),
+			Compression:  sdk.Pointer(sdk.JsonCompressionAuto),
 			DateFormat: sdk.Pointer(sdk.StageFileFormatStringOrAuto{
 				Value: sdk.Pointer("AUTO"),
 			}),
@@ -60,7 +60,7 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 				FileFormatOptions: &sdk.FileFormatOptions{
 					JsonOptions: &sdk.FileFormatJsonOptions{
 						BinaryFormat: sdk.Pointer(sdk.BinaryFormatHex),
-						Compression:  sdk.Pointer(sdk.JSONCompressionAuto),
+						Compression:  sdk.Pointer(sdk.JsonCompressionAuto),
 						DateFormat: sdk.Pointer(sdk.StageFileFormatStringOrAuto{
 							Value: sdk.Pointer("AUTO"),
 						}),

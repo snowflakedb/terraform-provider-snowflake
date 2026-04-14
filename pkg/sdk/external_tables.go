@@ -106,10 +106,10 @@ type ExternalTableFileFormat struct {
 type ExternalTableFileFormatType string
 
 var (
-	ExternalTableFileFormatTypeCSV     ExternalTableFileFormatType = "CSV"
-	ExternalTableFileFormatTypeJSON    ExternalTableFileFormatType = "JSON"
+	ExternalTableFileFormatTypeCsv     ExternalTableFileFormatType = "CSV"
+	ExternalTableFileFormatTypeJson    ExternalTableFileFormatType = "JSON"
 	ExternalTableFileFormatTypeAvro    ExternalTableFileFormatType = "AVRO"
-	ExternalTableFileFormatTypeORC     ExternalTableFileFormatType = "ORC"
+	ExternalTableFileFormatTypeOrc     ExternalTableFileFormatType = "ORC"
 	ExternalTableFileFormatTypeParquet ExternalTableFileFormatType = "PARQUET"
 )
 

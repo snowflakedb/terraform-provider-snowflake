@@ -34,7 +34,7 @@ var oauthIntegrationForCustomClientsSchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToOauthSecurityIntegrationClientTypeOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToOauthSecurityIntegrationClientTypeOption),
-		Description:      fmt.Sprintf("Specifies the type of client being registered. Snowflake supports both confidential and public clients. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationClientTypes)),
+		Description:      fmt.Sprintf("Specifies the type of client being registered. Snowflake supports both confidential and public clients. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationClientTypeOptions)),
 	},
 	"oauth_redirect_uri": {
 		Type:        schema.TypeString,
@@ -71,7 +71,7 @@ var oauthIntegrationForCustomClientsSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToOauthSecurityIntegrationUseSecondaryRolesOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToOauthSecurityIntegrationUseSecondaryRolesOption),
-		Description:      fmt.Sprintf("Specifies whether default secondary roles set in the user properties are activated by default in the session being opened. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationUseSecondaryRoles)),
+		Description:      fmt.Sprintf("Specifies whether default secondary roles set in the user properties are activated by default in the session being opened. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationUseSecondaryRolesOptions)),
 	},
 	"pre_authorized_roles_list": {
 		Type: schema.TypeSet,

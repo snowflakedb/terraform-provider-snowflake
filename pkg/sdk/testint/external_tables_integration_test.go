@@ -41,7 +41,7 @@ func TestInt_ExternalTables(t *testing.T) {
 		return sdk.NewCreateExternalTableRequest(
 			id,
 			stage.Location(),
-		).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJSON))
+		).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJson))
 	}
 
 	createExternalTableWithManualPartitioningReq := func(id sdk.SchemaObjectIdentifier) *sdk.CreateWithManualPartitioningExternalTableRequest {
@@ -49,7 +49,7 @@ func TestInt_ExternalTables(t *testing.T) {
 			id,
 			stage.Location(),
 		).
-			WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJson)).
 			WithOrReplace(true).
 			WithColumns(columnsWithPartition).
 			WithPartitionBy([]string{"part_date"}).
@@ -89,7 +89,7 @@ func TestInt_ExternalTables(t *testing.T) {
 				externalTableID,
 				stage.Location(),
 			).
-				WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJSON)).
+				WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJson)).
 				WithOrReplace(true).
 				WithColumns(columns).
 				WithPartitionBy([]string{"filename"}).
@@ -382,7 +382,7 @@ func TestInt_ExternalTablesShowByID(t *testing.T) {
 	createExternalTableHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
 		t.Helper()
 
-		request := sdk.NewCreateExternalTableRequest(id, stage.Location()).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJSON))
+		request := sdk.NewCreateExternalTableRequest(id, stage.Location()).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJson))
 		err := client.ExternalTables.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ExternalTable.DropFunc(t, id))

@@ -38,7 +38,7 @@ var scimIntegrationSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		Description:      fmt.Sprintf("Specifies the client type for the scim integration. Valid options are: %v.", possibleValuesListed(sdk.AllScimSecurityIntegrationScimClients)),
+		Description:      fmt.Sprintf("Specifies the client type for the scim integration. Valid options are: %v.", possibleValuesListed(sdk.AllScimSecurityIntegrationScimClientOptions)),
 		ValidateDiagFunc: sdkValidation(sdk.ToScimSecurityIntegrationScimClientOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToScimSecurityIntegrationScimClientOption),
 	},
@@ -166,7 +166,7 @@ func ImportScimIntegration(ctx context.Context, d *schema.ResourceData, meta any
 			return nil, err
 		}
 	}
-	if strings.EqualFold(strings.TrimSpace(scimClient), string(sdk.ScimSecurityIntegrationScimClientAzure)) {
+	if strings.EqualFold(strings.TrimSpace(scimClient), string(sdk.ScimSecurityIntegrationScimClientOptionAzure)) {
 		if err = d.Set("sync_password", BooleanDefault); err != nil {
 			return nil, err
 		}
@@ -207,7 +207,7 @@ func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if v := d.Get("sync_password").(string); v != BooleanDefault {
-		if scimClient := d.Get("scim_client").(string); strings.EqualFold(strings.TrimSpace(scimClient), string(sdk.ScimSecurityIntegrationScimClientAzure)) {
+		if scimClient := d.Get("scim_client").(string); strings.EqualFold(strings.TrimSpace(scimClient), string(sdk.ScimSecurityIntegrationScimClientOptionAzure)) {
 			return diag.Diagnostics{
 				{
 					Severity: diag.Error,
@@ -328,7 +328,7 @@ func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadCont
 				return diag.FromErr(err)
 			}
 
-			if !strings.EqualFold(strings.TrimSpace(scimClient), string(sdk.ScimSecurityIntegrationScimClientAzure)) {
+			if !strings.EqualFold(strings.TrimSpace(scimClient), string(sdk.ScimSecurityIntegrationScimClientOptionAzure)) {
 				syncPasswordProperty, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool { return property.Name == "SYNC_PASSWORD" })
 				if err != nil {
 					return diag.FromErr(err)
@@ -382,7 +382,7 @@ func UpdateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("sync_password") {
-		if scimClient := d.Get("scim_client").(string); strings.EqualFold(strings.TrimSpace(scimClient), string(sdk.ScimSecurityIntegrationScimClientAzure)) {
+		if scimClient := d.Get("scim_client").(string); strings.EqualFold(strings.TrimSpace(scimClient), string(sdk.ScimSecurityIntegrationScimClientOptionAzure)) {
 			return diag.Diagnostics{
 				{
 					Severity: diag.Error,

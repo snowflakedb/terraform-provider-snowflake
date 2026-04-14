@@ -917,7 +917,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FileFormatOptions: &FileFormatOptions{
 				CsvOptions: &FileFormatCsvOptions{
-					Compression: Pointer(CSVCompressionGzip),
+					Compression: Pointer(CsvCompressionGzip),
 					RecordDelimiter: &StageFileFormatStringOrNone{
 						Value: String("\\n"),
 					},
@@ -953,7 +953,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					ReplaceInvalidCharacters:   Bool(true),
 					EmptyFieldAsNull:           Bool(true),
 					SkipByteOrderMark:          Bool(true),
-					Encoding:                   Pointer(CSVEncodingUTF8),
+					Encoding:                   Pointer(CsvEncodingUtf8),
 				},
 			},
 		}
@@ -1014,7 +1014,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FileFormatOptions: &FileFormatOptions{
 				JsonOptions: &FileFormatJsonOptions{
-					Compression: Pointer(JSONCompressionGzip),
+					Compression: Pointer(JsonCompressionGzip),
 					DateFormat: &StageFileFormatStringOrAuto{
 						Value: String("YYYY-MM-DD"),
 					},
@@ -1046,7 +1046,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FileFormatOptions: &FileFormatOptions{
 				JsonOptions: &FileFormatJsonOptions{
-					Compression: Pointer(JSONCompressionBrotli),
+					Compression: Pointer(JsonCompressionBrotli),
 					DateFormat: &StageFileFormatStringOrAuto{
 						Auto: Bool(true),
 					},
@@ -1056,7 +1056,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					TimestampFormat: &StageFileFormatStringOrAuto{
 						Auto: Bool(true),
 					},
-					BinaryFormat:             Pointer(BinaryFormatUTF8),
+					BinaryFormat:             Pointer(BinaryFormatUtf8),
 					TrimSpace:                Bool(false),
 					MultiLine:                Bool(false),
 					NullIf:                   []NullString{{S: ""}},
@@ -1172,7 +1172,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FileFormatOptions: &FileFormatOptions{
 				XmlOptions: &FileFormatXmlOptions{
-					Compression:        Pointer(XMLCompressionGzip),
+					Compression:        Pointer(XmlCompressionGzip),
 					IgnoreUtf8Errors:   Bool(true),
 					PreserveSpace:      Bool(true),
 					StripOuterElement:  Bool(true),
@@ -1189,7 +1189,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FileFormatOptions: &FileFormatOptions{
 				XmlOptions: &FileFormatXmlOptions{
-					Compression:              Pointer(XMLCompressionBz2),
+					Compression:              Pointer(XmlCompressionBz2),
 					PreserveSpace:            Bool(false),
 					StripOuterElement:        Bool(false),
 					DisableAutoConvert:       Bool(false),
