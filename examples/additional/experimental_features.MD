@@ -61,9 +61,18 @@ Note: this is supported only on all stage resources (`snowflake_stage_external_s
 #### GRANTS_SAFE_DESTROY
 When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.
 
-Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`.
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.
 
 This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
+
+Without this experiment, destroying such resources fails with `does not exist or not authorized`.
+
+#### TAG_ASSOCIATION_SAFE_DESTROY
+When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.
+
+Currently supported by: `snowflake_tag_association`.
+
+This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.
 
 Without this experiment, destroying such resources fails with `does not exist or not authorized`.
 
