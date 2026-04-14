@@ -1,11 +1,9 @@
 package sdkcommons
 
 type (
-	AllowedProviderOption                                               string
 	ColumnConstraintType                                                string
 	ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption     string
 	ApiIntegrationAwsApiProviderType                                    string
-	AuthenticationMethodsOption                                         string
 	AutoEventLogging                                                    string
 	AvroCompression                                                     string
 	BinaryFormat                                                        string
@@ -14,14 +12,11 @@ type (
 	CatalogIntegrationCatalogSourceType                                 string
 	CatalogIntegrationRestAuthenticationType                            string
 	CatalogIntegrationTableFormat                                       string
-	ClientPolicyDriverType                                              string
-	ClientTypesOption                                                   string
 	ComputePoolInstanceFamily                                           string
 	CsvCompression                                                      string
 	CsvEncoding                                                         string
 	DataMetricFunctionRefEntityDomainOption                             string
 	DataType                                                            string
-	EnforceMfaOnExternalAuthenticationOption                            string
 	ExternalOauthSecurityIntegrationAnyRoleModeOption                   string
 	ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption string
 	ExternalOauthSecurityIntegrationTypeOption                          string
@@ -29,20 +24,14 @@ type (
 	ExternalStageGCSEncryptionOption                                    string
 	ExternalStageS3EncryptionOption                                     string
 	FileFormatType                                                      string
-	FileFormatTypeOptions                                               string
 	GCSEncryptionType                                                   string
 	ImageRepositoryEncryptionType                                       string
 	InternalStageEncryptionOption                                       string
 	JsonCompression                                                     string
 	ListingState                                                        string
 	ListingRevision                                                     string
-	Location                                                            string
 	LogLevel                                                            string
 	MetricLevel                                                         string
-	MfaAuthenticationMethodsOption                                      string
-	MfaEnrollmentOption                                                 string
-	MfaPolicyAllowedMethodsOption                                       string
-	NetworkPolicyEvaluationOption                                       string
 	NetworkRuleMode                                                     string
 	NetworkRuleType                                                     string
 	NullInputBehavior                                                   string
@@ -59,7 +48,6 @@ type (
 	S3StorageProvider                                                   string
 	Saml2SecurityIntegrationSaml2ProviderOption                         string
 	Saml2SecurityIntegrationSaml2RequestedNameidFormatOption            string
-	ScimSecurityIntegrationRunAsRoleOption                              string
 	ScimSecurityIntegrationScimClientOption                             string
 	SecretType                                                          string
 	SequenceName                                                        string
