@@ -27,7 +27,7 @@ func (c *FileFormatClient) client() sdk.LegacyFileFormats {
 func (c *FileFormatClient) CreateFileFormat(t *testing.T) (*sdk.FileFormat, func()) {
 	t.Helper()
 	return c.CreateFileFormatWithOptions(t, &sdk.CreateFileFormatOptions{
-		Type: sdk.FileFormatTypeCSV,
+		Type: sdk.FileFormatTypeCsv,
 	})
 }
 

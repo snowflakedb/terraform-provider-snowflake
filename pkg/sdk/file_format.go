@@ -135,7 +135,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 	}
 
 	switch ff.Type {
-	case FileFormatTypeCSV:
+	case FileFormatTypeCsv:
 		ff.Options.CSVCompression = (*CsvCompression)(&inputOptions.Compression)
 		ff.Options.CSVRecordDelimiter = &inputOptions.RecordDelimiter
 		ff.Options.CSVFieldDelimiter = &inputOptions.FieldDelimiter
@@ -157,7 +157,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		ff.Options.CSVEmptyFieldAsNull = &inputOptions.EmptyFieldAsNull
 		ff.Options.CSVSkipByteOrderMark = &inputOptions.SkipByteOrderMark
 		ff.Options.CSVEncoding = (*CsvEncoding)(&inputOptions.Encoding)
-	case FileFormatTypeJSON:
+	case FileFormatTypeJson:
 		ff.Options.JSONCompression = (*JsonCompression)(&inputOptions.Compression)
 		ff.Options.JSONDateFormat = &inputOptions.DateFormat
 		ff.Options.JSONTimeFormat = &inputOptions.TimeFormat
@@ -178,7 +178,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		ff.Options.AvroNullIf = &newNullIf
 		ff.Options.AvroCompression = (*AvroCompression)(&inputOptions.Compression)
 		ff.Options.AvroReplaceInvalidCharacters = &inputOptions.ReplaceInvalidCharacters
-	case FileFormatTypeORC:
+	case FileFormatTypeOrc:
 		ff.Options.ORCTrimSpace = &inputOptions.TrimSpace
 		ff.Options.ORCReplaceInvalidCharacters = &inputOptions.ReplaceInvalidCharacters
 		ff.Options.ORCNullIf = &newNullIf
@@ -188,7 +188,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		ff.Options.ParquetCompression = (*ParquetCompression)(&inputOptions.Compression)
 		ff.Options.ParquetBinaryAsText = &inputOptions.BinaryAsText
 		ff.Options.ParquetReplaceInvalidCharacters = &inputOptions.ReplaceInvalidCharacters
-	case FileFormatTypeXML:
+	case FileFormatTypeXml:
 		ff.Options.XMLCompression = (*XmlCompression)(&inputOptions.Compression)
 		ff.Options.XMLIgnoreUTF8Errors = &inputOptions.IgnoreUTF8Errors
 		ff.Options.XMLPreserveSpace = &inputOptions.PreserveSpace
@@ -358,7 +358,7 @@ type LegacyFileFormatTypeOptions struct {
 
 func (opts *LegacyFileFormatTypeOptions) fieldsByType() map[FileFormatType][]any {
 	return map[FileFormatType][]any{
-		FileFormatTypeCSV: {
+		FileFormatTypeCsv: {
 			opts.CSVCompression,
 			opts.CSVRecordDelimiter,
 			opts.CSVFieldDelimiter,
@@ -381,7 +381,7 @@ func (opts *LegacyFileFormatTypeOptions) fieldsByType() map[FileFormatType][]any
 			opts.CSVSkipByteOrderMark,
 			opts.CSVEncoding,
 		},
-		FileFormatTypeJSON: {
+		FileFormatTypeJson: {
 			opts.JSONCompression,
 			opts.JSONDateFormat,
 			opts.JSONTimeFormat,
@@ -404,7 +404,7 @@ func (opts *LegacyFileFormatTypeOptions) fieldsByType() map[FileFormatType][]any
 			opts.AvroReplaceInvalidCharacters,
 			opts.AvroNullIf,
 		},
-		FileFormatTypeORC: {
+		FileFormatTypeOrc: {
 			opts.ORCTrimSpace,
 			opts.ORCReplaceInvalidCharacters,
 			opts.ORCNullIf,
@@ -417,7 +417,7 @@ func (opts *LegacyFileFormatTypeOptions) fieldsByType() map[FileFormatType][]any
 			opts.ParquetReplaceInvalidCharacters,
 			opts.ParquetNullIf,
 		},
-		FileFormatTypeXML: {
+		FileFormatTypeXml: {
 			opts.XMLCompression,
 			opts.XMLIgnoreUTF8Errors,
 			opts.XMLPreserveSpace,
@@ -604,7 +604,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 	}
 
 	switch details.Type {
-	case FileFormatTypeCSV:
+	case FileFormatTypeCsv:
 		for _, row := range rows {
 			if row.Property_Value == "" {
 				continue
@@ -697,7 +697,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.CSVEncoding = &enc
 			}
 		}
-	case FileFormatTypeJSON:
+	case FileFormatTypeJson:
 		for _, row := range rows {
 			if row.Property_Value == "" {
 				continue
@@ -804,7 +804,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.AvroReplaceInvalidCharacters = &b
 			}
 		}
-	case FileFormatTypeORC:
+	case FileFormatTypeOrc:
 		for _, row := range rows {
 			if row.Property_Value == "" {
 				continue
@@ -867,7 +867,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.ParquetReplaceInvalidCharacters = &b
 			}
 		}
-	case FileFormatTypeXML:
+	case FileFormatTypeXml:
 		for _, row := range rows {
 			if row.Property_Value == "" {
 				continue
