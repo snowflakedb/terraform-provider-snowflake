@@ -296,20 +296,17 @@ func secondaryRolesAttributeUpdate(d *schema.ResourceData, key string, setField 
 func buildSessionPolicySecondaryRolesRequest(rawRoles []any) (*sdk.SessionPolicySecondaryRolesRequest, error) {
 	roles := expandStringList(rawRoles)
 	request := sdk.NewSessionPolicySecondaryRolesRequest()
-	var errs []error
 	switch {
 	case len(roles) == 0:
 		request.WithNone(true)
 	case len(roles) == 1 && strings.EqualFold("ALL", roles[0]):
 		request.WithAll(true)
 	default:
-		request.WithRoles(collections.Map(roles, func(elem string) sdk.AccountObjectIdentifier {
-			id, err := sdk.ParseAccountObjectIdentifier(elem)
-			if err != nil {
-				errs = append(errs, err)
-			}
-			return id
-		}))
+		mapped, err := collections.MapErr(roles, sdk.ParseAccountObjectIdentifier)
+		if err != nil {
+			return nil, err
+		}
+		request.WithRoles(mapped)
 	}
-	return request, errors.Join(errs...)
+	return request, nil
 }
