@@ -12,6 +12,7 @@ type Object struct {
 	Name       ObjectIdentifier `ddl:"identifier"`
 }
 
+// TODO: Change to struct that has also level of object (account, database, schema, etc.) encoded as an enum.
 // ObjectType is the type of object.
 type ObjectType string
 
