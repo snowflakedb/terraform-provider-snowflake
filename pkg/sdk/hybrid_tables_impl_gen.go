@@ -51,7 +51,7 @@ func (v *hybridTables) Show(ctx context.Context, request *ShowHybridTableRequest
 func (v *hybridTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error) {
 	request := NewShowHybridTableRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(TableIn{In: In{Schema: id.SchemaId()}})
+		WithIn(In{Schema: id.SchemaId()})
 	hybridTables, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
@@ -120,22 +120,10 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 		s := make([]HybridTableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
 			s[i] = HybridTableOutOfLineConstraint{
-				Name:               v.Name,
-				Type:               v.Type,
-				Columns:            v.Columns,
-				ForeignKey:         v.ForeignKey,
-				Enforced:           v.Enforced,
-				NotEnforced:        v.NotEnforced,
-				Deferrable:         v.Deferrable,
-				NotDeferrable:      v.NotDeferrable,
-				InitiallyDeferred:  v.InitiallyDeferred,
-				InitiallyImmediate: v.InitiallyImmediate,
-				Enable:             v.Enable,
-				Disable:            v.Disable,
-				Validate:           v.Validate,
-				Novalidate:         v.Novalidate,
-				Rely:               v.Rely,
-				Norely:             v.Norely,
+				Name:       v.Name,
+				Type:       v.Type,
+				Columns:    v.Columns,
+				ForeignKey: v.ForeignKey,
 			}
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = s

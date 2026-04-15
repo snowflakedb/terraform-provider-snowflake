@@ -38,22 +38,10 @@ type HybridTableColumnRequest struct {
 }
 
 type HybridTableOutOfLineConstraintRequest struct {
-	Name               *string
-	Type               ColumnConstraintType // required
-	Columns            []string
-	ForeignKey         *OutOfLineForeignKey
-	Enforced           *bool
-	NotEnforced        *bool
-	Deferrable         *bool
-	NotDeferrable      *bool
-	InitiallyDeferred  *bool
-	InitiallyImmediate *bool
-	Enable             *bool
-	Disable            *bool
-	Validate           *bool
-	Novalidate         *bool
-	Rely               *bool
-	Norely             *bool
+	Name       *string
+	Type       ColumnConstraintType // required
+	Columns    []string
+	ForeignKey *OutOfLineForeignKey
 }
 
 type HybridTableOutOfLineIndexRequest struct {
@@ -92,11 +80,9 @@ type HybridTableConstraintActionRequest struct {
 
 type HybridTableConstraintActionRenameRequest struct {
 	OldName string // required
-	NewName string // required
+	NewName string
 }
 
-// NOTE: PrimaryKey omitted — DROP PRIMARY KEY is unsupported on hybrid tables (errors at runtime).
-// Removed per PR #4461 review. See hybrid_tables_def.go for the authoritative definition.
 type HybridTableConstraintActionDropRequest struct {
 	ConstraintName *string
 	Unique         *bool
@@ -106,8 +92,6 @@ type HybridTableConstraintActionDropRequest struct {
 	Restrict       *bool
 }
 
-// NOTE: Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL (discovered via integration testing against Snowflake).
-// Snowflake docs may suggest otherwise but the operation errors at runtime.
 type HybridTableAlterColumnActionRequest struct {
 	ColumnName   string // required
 	DropDefault  *bool
@@ -143,16 +127,11 @@ type HybridTableReclusterChangeStateRequest struct {
 	State *ReclusterState
 }
 
-// NOTE: Hybrid tables do not support CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION,
-// CONTACT, or ROW_TIMESTAMP in ALTER TABLE SET (per Snowflake documentation and runtime behavior).
 type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	Comment                    *string
 }
-
-// NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
-// Snowflake docs may suggest otherwise but the operation errors at runtime.
 
 type DropHybridTableRequest struct {
 	IfExists *bool
@@ -164,7 +143,7 @@ type DropHybridTableRequest struct {
 type ShowHybridTableRequest struct {
 	Terse      *bool
 	Like       *Like
-	In         *TableIn
+	In         *In
 	StartsWith *string
 	Limit      *LimitFrom
 }
@@ -189,7 +168,7 @@ type DropIndexHybridTableRequest struct {
 
 type ShowIndexesHybridTableRequest struct {
 	Like       *Like
-	In         *TableIn
+	In         *In
 	StartsWith *string
 	Limit      *LimitFrom
 }

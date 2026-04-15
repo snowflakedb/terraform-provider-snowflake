@@ -19,19 +19,11 @@ var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConst
 	OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.ColumnConstraintType](), g.KeywordOptions().Required()).
 	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
-	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions()).
-	OptionalSQL("ENFORCED").
-	OptionalSQL("NOT ENFORCED").
-	OptionalSQL("DEFERRABLE").
-	OptionalSQL("NOT DEFERRABLE").
-	OptionalSQL("INITIALLY DEFERRED").
-	OptionalSQL("INITIALLY IMMEDIATE").
-	OptionalSQL("ENABLE").
-	OptionalSQL("DISABLE").
-	OptionalSQL("VALIDATE").
-	OptionalSQL("NOVALIDATE").
-	OptionalSQL("RELY").
-	OptionalSQL("NORELY")
+	// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
+	// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
+	// are not supported on hybrid tables — Snowflake returns "invalid constraint property".
+	// Removed from the SDK per PR #4461 review feedback.
+	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions())
 
 var hybridTableOutOfLineIndex = g.NewQueryStruct("HybridTableOutOfLineIndex").
 	SQL("INDEX").

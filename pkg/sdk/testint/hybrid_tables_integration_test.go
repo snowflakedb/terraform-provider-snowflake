@@ -68,7 +68,7 @@ func TestInt_HybridTables(t *testing.T) {
 						Name: "COUNTER",
 						Type: sdk.DataType("NUMBER(38,0)"),
 						DefaultValue: &sdk.ColumnDefaultValue{
-							Identity: &sdk.ColumnIdentity{Start: 1, Increment: 1},
+							Identity: &sdk.ColumnIdentity{Start: 100, Increment: 5, Order: sdk.Bool(true)},
 						},
 					},
 					{
@@ -249,7 +249,7 @@ func TestInt_HybridTables(t *testing.T) {
 				},
 			}
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns))
-			require.Error(t, err)
+			require.ErrorContains(t, err, "primary key")
 		})
 	})
 
@@ -355,43 +355,32 @@ func TestInt_HybridTables(t *testing.T) {
 		// NOTE: ALTER TABLE UNSET COMMENT succeeds on hybrid tables.
 		// Other UNSET properties may or may not be supported.
 
-		t.Run("set comment", func(t *testing.T) {
+		t.Run("set properties", func(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.Create(t)
 			t.Cleanup(cleanup)
 
+			// Set comment (also tests IfExists)
 			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithIfExists(true).
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithComment("new comment")))
 			require.NoError(t, err)
-
 			assertThatObject(t, objectassert.HybridTable(t, id).HasComment("new comment"))
 
-			// Overwrite comment with a different value (UNSET is not supported for hybrid tables)
+			// Overwrite comment (UNSET is not supported for hybrid tables)
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithComment("updated comment")))
 			require.NoError(t, err)
-
 			assertThatObject(t, objectassert.HybridTable(t, id).HasComment("updated comment"))
-		})
 
-		t.Run("set data_retention_time_in_days", func(t *testing.T) {
-			id, cleanup := testClientHelper().HybridTable.Create(t)
-			t.Cleanup(cleanup)
-
-			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+			// Set data retention
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithDataRetentionTimeInDays(7)))
 			require.NoError(t, err)
-
 			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).HasDataRetentionTimeInDays(7))
-		})
 
-		t.Run("set max_data_extension_time_in_days", func(t *testing.T) {
-			id, cleanup := testClientHelper().HybridTable.Create(t)
-			t.Cleanup(cleanup)
-
-			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+			// Set max data extension
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithMaxDataExtensionTimeInDays(28)))
 			require.NoError(t, err)
-
 			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).HasMaxDataExtensionTimeInDays(28))
 		})
 
@@ -416,9 +405,6 @@ func TestInt_HybridTables(t *testing.T) {
 					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "CODE", Type: sdk.DataType("VARCHAR(50)")},
 				},
-				// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
-				// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
-				// are not supported on hybrid tables — Snowflake returns "invalid constraint property".
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
 					{Name: sdk.String("uq_code"), Type: sdk.ColumnConstraintTypeUnique, Columns: []string{"CODE"}},
 				},
@@ -431,10 +417,18 @@ func TestInt_HybridTables(t *testing.T) {
 					WithRename(*sdk.NewHybridTableConstraintActionRenameRequest("uq_code", "uq_code_renamed"))))
 			require.NoError(t, err)
 
+			details, err := client.HybridTables.Describe(ctx, id)
+			require.NoError(t, err)
+			require.True(t, details[1].UniqueKey)
+
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithConstraintAction(*sdk.NewHybridTableConstraintActionRequest().
 					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithConstraintName("uq_code_renamed"))))
 			require.NoError(t, err)
+
+			details, err = client.HybridTables.Describe(ctx, id)
+			require.NoError(t, err)
+			require.False(t, details[1].UniqueKey)
 		})
 
 		t.Run("alter column - drop default", func(t *testing.T) {
@@ -510,7 +504,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(childId).
 				WithConstraintAction(*sdk.NewHybridTableConstraintActionRequest().
-					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithForeignKey(true).WithColumns([]string{"PARENT_REF"}))))
+					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithForeignKey(true).WithColumns([]string{"PARENT_REF"}).WithRestrict(true))))
 			require.NoError(t, err)
 		})
 
@@ -523,11 +517,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().WithClusterBy([]string{"CATEGORY"})))
-			// NOTE: If hybrid tables don't support clustering, this will error.
-			if err != nil {
-				t.Skipf("Clustering not supported on hybrid tables: %v", err)
-				return
-			}
+			require.NoError(t, err)
 
 			// Suspend recluster
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
@@ -595,7 +585,7 @@ func TestInt_HybridTables(t *testing.T) {
 			t.Cleanup(cleanup)
 
 			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
-				WithIn(sdk.TableIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(id.DatabaseName())}}).
+				WithIn(sdk.In{Database: sdk.NewAccountObjectIdentifier(id.DatabaseName())}).
 				WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
 			require.NoError(t, err)
 			require.Len(t, tables, 1)
@@ -621,7 +611,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			// Query IN SCHEMA should return only the table in the original schema
 			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
-				WithIn(sdk.TableIn{In: sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(id1.DatabaseName(), id1.SchemaName())}}).
+				WithIn(sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(id1.DatabaseName(), id1.SchemaName())}).
 				WithLike(sdk.Like{Pattern: sdk.String(id1.Name())}))
 			require.NoError(t, err)
 			require.Len(t, tables, 1)

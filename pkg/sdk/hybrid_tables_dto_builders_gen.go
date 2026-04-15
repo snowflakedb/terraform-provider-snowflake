@@ -105,66 +105,6 @@ func (s *HybridTableOutOfLineConstraintRequest) WithForeignKey(foreignKey OutOfL
 	return s
 }
 
-func (s *HybridTableOutOfLineConstraintRequest) WithEnforced(enforced bool) *HybridTableOutOfLineConstraintRequest {
-	s.Enforced = &enforced
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithNotEnforced(notEnforced bool) *HybridTableOutOfLineConstraintRequest {
-	s.NotEnforced = &notEnforced
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithDeferrable(deferrable bool) *HybridTableOutOfLineConstraintRequest {
-	s.Deferrable = &deferrable
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithNotDeferrable(notDeferrable bool) *HybridTableOutOfLineConstraintRequest {
-	s.NotDeferrable = &notDeferrable
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithInitiallyDeferred(initiallyDeferred bool) *HybridTableOutOfLineConstraintRequest {
-	s.InitiallyDeferred = &initiallyDeferred
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithInitiallyImmediate(initiallyImmediate bool) *HybridTableOutOfLineConstraintRequest {
-	s.InitiallyImmediate = &initiallyImmediate
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithEnable(enable bool) *HybridTableOutOfLineConstraintRequest {
-	s.Enable = &enable
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithDisable(disable bool) *HybridTableOutOfLineConstraintRequest {
-	s.Disable = &disable
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithValidate(validate bool) *HybridTableOutOfLineConstraintRequest {
-	s.Validate = &validate
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithNovalidate(novalidate bool) *HybridTableOutOfLineConstraintRequest {
-	s.Novalidate = &novalidate
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithRely(rely bool) *HybridTableOutOfLineConstraintRequest {
-	s.Rely = &rely
-	return s
-}
-
-func (s *HybridTableOutOfLineConstraintRequest) WithNorely(norely bool) *HybridTableOutOfLineConstraintRequest {
-	s.Norely = &norely
-	return s
-}
-
 func NewHybridTableOutOfLineIndexRequest(
 	name string,
 	columns []string,
@@ -495,7 +435,7 @@ func (s *ShowHybridTableRequest) WithLike(like Like) *ShowHybridTableRequest {
 	return s
 }
 
-func (s *ShowHybridTableRequest) WithIn(in TableIn) *ShowHybridTableRequest {
+func (s *ShowHybridTableRequest) WithIn(in In) *ShowHybridTableRequest {
 	s.In = &in
 	return s
 }
@@ -568,7 +508,7 @@ func (s *ShowIndexesHybridTableRequest) WithLike(like Like) *ShowIndexesHybridTa
 	return s
 }
 
-func (s *ShowIndexesHybridTableRequest) WithIn(in TableIn) *ShowIndexesHybridTableRequest {
+func (s *ShowIndexesHybridTableRequest) WithIn(in In) *ShowIndexesHybridTableRequest {
 	s.In = &in
 	return s
 }

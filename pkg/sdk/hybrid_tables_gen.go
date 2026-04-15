@@ -50,22 +50,10 @@ type HybridTableColumn struct {
 }
 
 type HybridTableOutOfLineConstraint struct {
-	Name               *string              `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	Type               ColumnConstraintType `ddl:"keyword"`
-	Columns            []string             `ddl:"keyword,parentheses"`
-	ForeignKey         *OutOfLineForeignKey `ddl:"keyword"`
-	Enforced           *bool                `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool                `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool                `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool                `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool                `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool                `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool                `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool                `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool                `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool                `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool                `ddl:"keyword" sql:"RELY"`
-	Norely             *bool                `ddl:"keyword" sql:"NORELY"`
+	Name       *string              `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	Type       ColumnConstraintType `ddl:"keyword"`
+	Columns    []string             `ddl:"keyword,parentheses"`
+	ForeignKey *OutOfLineForeignKey `ddl:"keyword"`
 }
 
 type HybridTableOutOfLineIndex struct {
@@ -116,7 +104,7 @@ type HybridTableConstraintActionRename struct {
 
 type HybridTableConstraintActionDrop struct {
 	drop           bool     `ddl:"static" sql:"DROP"`
-	ConstraintName *string  `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
 	Columns        []string `ddl:"keyword,parentheses"`
