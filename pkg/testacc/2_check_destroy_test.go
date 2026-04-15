@@ -378,6 +378,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ServiceUser: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Users.ShowByID)
 	},
+	resources.SessionPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.SessionPolicies.ShowByID)
+	},
 	resources.Share: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Shares.ShowByID)
 	},

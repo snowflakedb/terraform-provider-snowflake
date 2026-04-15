@@ -254,6 +254,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.SemanticView().Schema,
 	},
 	{
+		name:   "SessionPolicy",
+		schema: resources.SessionPolicy().Schema,
+	},
+	{
 		name:   "Service",
 		schema: resources.Service().Schema,
 	},

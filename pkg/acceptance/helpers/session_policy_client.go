@@ -58,3 +58,10 @@ func (c *SessionPolicyClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifi
 	ctx := context.Background()
 	return c.client().DescribeDetails(ctx, id)
 }
+
+func (c *SessionPolicyClient) Alter(t *testing.T, request *sdk.AlterSessionPolicyRequest) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.client().Alter(ctx, request)
+	require.NoError(t, err)
+}
