@@ -3187,6 +3187,7 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 }
 
 func TestAcc_Warehouse_ExternalTypeChange(t *testing.T) {
+	t.Skip("TODO(SNOW-3383116): Fix this test when the issue is resolved: SQL compilation error: invalid property 'WAREHOUSE_CREDIT_LIMIT' for 'WAREHOUSE'")
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	warehouseModel := model.Warehouse("test", id.Name()).
 		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)

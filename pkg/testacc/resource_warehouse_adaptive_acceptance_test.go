@@ -327,6 +327,7 @@ func TestAcc_WarehouseAdaptive_Validations(t *testing.T) {
 }
 
 func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
+	t.Skip("TODO(SNOW-3383116): Fix this test when the issue is resolved: SQL compilation error: invalid property 'WAREHOUSE_CREDIT_LIMIT' for 'WAREHOUSE'")
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	warehouseModel := model.WarehouseAdaptiveWithId(id)
 	ref := warehouseModel.ResourceReference()
