@@ -35,6 +35,7 @@ func testResources() map[string]*schema.Resource {
 		"snowflake_test_resource_data_type_diff_handling_list":            testfunctional.TestResourceDataTypeDiffHandlingList(),
 		"snowflake_test_resource_list_null_value_logic":                   testfunctional.TestResourceListNullValueLogic(),
 		"snowflake_test_resource_list_null_value_logic_with_helper_field": testfunctional.TestResourceListNullValueLogicWithHelperField(),
+		"snowflake_test_resource_computed_field_custom_diff":              testfunctional.TestResourceComputedFieldCustomDiff(),
 	}
 }
 
