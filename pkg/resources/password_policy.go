@@ -180,8 +180,6 @@ func CreatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any)
 	objectIdentifier := sdk.NewSchemaObjectIdentifier(database, schema, name)
 
 	createRequest := sdk.NewCreatePasswordPolicyRequest(objectIdentifier).
-		WithOrReplace(d.Get("or_replace").(bool)).
-		WithIfNotExists(d.Get("if_not_exists").(bool)).
 		WithPasswordMinLength(d.Get("min_length").(int)).
 		WithPasswordMaxLength(d.Get("max_length").(int)).
 		WithPasswordMinUpperCaseChars(d.Get("min_upper_case_chars").(int)).
@@ -193,6 +191,13 @@ func CreatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any)
 		WithPasswordMaxRetries(d.Get("max_retries").(int)).
 		WithPasswordLockoutTimeMins(d.Get("lockout_time_mins").(int)).
 		WithPasswordHistory(d.Get("history").(int))
+
+	if v, ok := d.GetOk("or_replace"); ok {
+		createRequest = createRequest.WithOrReplace(v.(bool))
+	}
+	if v, ok := d.GetOk("if_not_exists"); ok {
+		createRequest = createRequest.WithIfNotExists(v.(bool))
+	}
 
 	if v, ok := d.GetOk("comment"); ok {
 		createRequest = createRequest.WithComment(v.(string))
