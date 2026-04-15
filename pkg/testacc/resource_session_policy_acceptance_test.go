@@ -52,9 +52,8 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 	altered := model.SessionPolicy("t", newId.DatabaseName(), newId.SchemaName(), newId.Name()).
 		WithSessionIdleTimeoutMins(sessionIdleTimeoutMins).
 		WithSessionUiIdleTimeoutMins(sessionUiIdleTimeoutMins).
-		// TODO: make it possible to provide an empty list
-		// WithAllowedSecondaryRoles().
-		WithBlockedSecondaryRoles("all").
+		WithAllowedSecondaryRolesNone().
+		WithBlockedSecondaryRolesAll().
 		WithComment(comment)
 
 	allAttributes := model.SessionPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -114,8 +113,8 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasDatabase(newId.DatabaseName()).
 			HasSessionIdleTimeoutMins(sessionIdleTimeoutMins).
 			HasSessionUiIdleTimeoutMins(sessionUiIdleTimeoutMins).
-			HasAllowedSecondaryRolesEmpty().
-			HasBlockedSecondaryRoles("all").
+			HasNoAllowedSecondaryRoles().
+			HasAllBlockedSecondaryRoles().
 			HasComment(comment),
 		resourceshowoutputassert.SessionPolicyShowOutput(t, ref).
 			HasName(newId.Name()).
@@ -132,9 +131,7 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasSessionIdleTimeoutMins(sessionIdleTimeoutMins).
 			HasSessionUiIdleTimeoutMins(sessionUiIdleTimeoutMins).
-			// TODO: uncomment the line below
-			// HasNoAllowedSecondaryRoles().
-			HasAllowedSecondaryRoles("ALL").
+			HasNoAllowedSecondaryRoles().
 			HasBlockedSecondaryRoles("ALL"),
 	}
 
@@ -267,12 +264,16 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 							planchecks.ExpectDrift(ref, "session_idle_timeout_mins", sessionIdle, externalSessionIdle),
 							planchecks.ExpectDrift(ref, "session_ui_idle_timeout_mins", sessionUiIdle, externalSessionUiIdle),
-							// Don't check allowed_secondary_roles, as the order of elements is unpredictable
-							planchecks.ExpectDrift(ref, "blocked_secondary_roles", blockedSecondaryRoles, sdk.String("[ALL]")),
+							// Don't check allowed_secondary_roles.0.roles, as the order of elements is unpredictable
+							planchecks.ExpectDrift(ref, "allowed_secondary_roles.0.none", sdk.String("false"), sdk.String("true")),
+							planchecks.ExpectDrift(ref, "blocked_secondary_roles.0.roles", blockedSecondaryRoles, sdk.String("[]")),
+							planchecks.ExpectDrift(ref, "blocked_secondary_roles.0.all", sdk.String("false"), sdk.String("true")),
 							planchecks.ExpectDrift(ref, "comment", sdk.String(comment), sdk.String(externalComment)),
 							planchecks.ExpectChange(ref, "session_idle_timeout_mins", tfjson.ActionUpdate, externalSessionIdle, sessionIdle),
 							planchecks.ExpectChange(ref, "session_ui_idle_timeout_mins", tfjson.ActionUpdate, externalSessionUiIdle, sessionUiIdle),
-							planchecks.ExpectChange(ref, "blocked_secondary_roles", tfjson.ActionUpdate, sdk.String("[ALL]"), blockedSecondaryRoles),
+							planchecks.ExpectChange(ref, "allowed_secondary_roles.0.none", tfjson.ActionUpdate, sdk.String("true"), nil),
+							planchecks.ExpectChange(ref, "blocked_secondary_roles.0.roles", tfjson.ActionUpdate, sdk.String("[]"), blockedSecondaryRoles),
+							planchecks.ExpectChange(ref, "blocked_secondary_roles.0.all", tfjson.ActionUpdate, sdk.String("true"), nil),
 							planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(externalComment), sdk.String(comment)),
 						}
 					}(),

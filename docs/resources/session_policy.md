@@ -25,15 +25,33 @@ resource "snowflake_session_policy" "basic" {
 }
 
 ## Complete (with every optional set)
-resource "snowflake_session_policy" "timeouts" {
+resource "snowflake_session_policy" "complete" {
   database                     = "database_name"
   schema                       = "schema_name"
-  name                         = "session_policy_timeouts"
+  name                         = "session_policy_name"
   session_idle_timeout_mins    = 60
   session_ui_idle_timeout_mins = 60
-  allowed_secondary_roles      = ["ROLE_A", "ROLE_B"]
-  blocked_secondary_roles      = ["ROLE_C", "ROLE_D"]
-  comment                      = "My session policy"
+  allowed_secondary_roles {
+    roles = ["ROLE_A", "ROLE_B"]
+  }
+  blocked_secondary_roles {
+    roles = ["ROLE_C", "ROLE_D"]
+  }
+  comment = "My session policy"
+}
+
+## Secondary roles using all / none
+resource "snowflake_session_policy" "secondary_roles_all_none" {
+  database = "database_name"
+  schema   = "schema_name"
+  name     = "session_policy_name"
+
+  allowed_secondary_roles {
+    all = true
+  }
+  blocked_secondary_roles {
+    none = true
+  }
 }
 ```
 
@@ -50,8 +68,8 @@ resource "snowflake_session_policy" "timeouts" {
 
 ### Optional
 
-- `allowed_secondary_roles` (Set of String) Specifies the allowed secondary roles for a session policy, if any. Use a single-element set whose only value is `all` (case-insensitive) to allow all secondary roles, equivalent to `('ALL')` in Snowflake.
-- `blocked_secondary_roles` (Set of String) Specifies the blocked secondary roles for a session policy, if any. Blocked secondary roles take precedence over allowed secondary roles. Use a single-element set whose only value is `all` (case-insensitive) to disallow all secondary roles, equivalent to `('ALL')` in Snowflake.
+- `allowed_secondary_roles` (Block List, Max: 1) Specifies the allowed secondary roles for a session policy, if any. (see [below for nested schema](#nestedblock--allowed_secondary_roles))
+- `blocked_secondary_roles` (Block List, Max: 1) Specifies the blocked secondary roles for a session policy, if any. Blocked secondary roles take precedence over allowed secondary roles. (see [below for nested schema](#nestedblock--blocked_secondary_roles))
 - `comment` (String) Specifies a comment for the session policy.
 - `session_idle_timeout_mins` (Number) For Snowflake clients and programmatic clients, specifies the number of minutes in which a session can be idle before users must authenticate to Snowflake again.
 - `session_ui_idle_timeout_mins` (Number) For Snowsight, specifies the number of minutes in which a session can be idle before users must authenticate to Snowflake again.
@@ -63,6 +81,26 @@ resource "snowflake_session_policy" "timeouts" {
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW SESSION POLICIES` for this session policy. (see [below for nested schema](#nestedatt--show_output))
+
+<a id="nestedblock--allowed_secondary_roles"></a>
+### Nested Schema for `allowed_secondary_roles`
+
+Optional:
+
+- `all` (Boolean) When true, allows all secondary roles.
+- `none` (Boolean) When true, disallows all secondary roles.
+- `roles` (Set of String) Specifies roles to be allowed as secondary roles.
+
+
+<a id="nestedblock--blocked_secondary_roles"></a>
+### Nested Schema for `blocked_secondary_roles`
+
+Optional:
+
+- `all` (Boolean) When true, disallows all secondary roles.
+- `none` (Boolean) When true, allows all secondary roles.
+- `roles` (Set of String) Specifies roles to be blocked as secondary roles.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
