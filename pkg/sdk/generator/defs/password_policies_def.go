@@ -94,8 +94,6 @@ var passwordPoliciesDef = g.NewInterface(
 	).
 	ShowOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-password-policies",
-		// TODO: the original manual implementation also reads an `options` column from the DB result;
-		// verify whether it carries useful data and add it back if needed.
 		g.DbStruct("passwordPolicyDBRow").
 			Field("created_on", "time.Time").
 			Text("name").

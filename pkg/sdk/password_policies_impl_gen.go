@@ -163,6 +163,7 @@ func (r passwordPolicyDBRow) convert() (*PasswordPolicy, error) {
 		Owner:         r.Owner,
 		Comment:       r.Comment,
 		OwnerRoleType: r.OwnerRoleType,
+		Options:       r.Options,
 	}, nil
 }
 

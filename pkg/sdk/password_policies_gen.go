@@ -108,6 +108,7 @@ type passwordPolicyDBRow struct {
 	Owner         string    `db:"owner"`
 	Comment       string    `db:"comment"`
 	OwnerRoleType string    `db:"owner_role_type"`
+	Options       string    `db:"options"`
 }
 
 type PasswordPolicy struct {
@@ -119,6 +120,7 @@ type PasswordPolicy struct {
 	Owner         string
 	Comment       string
 	OwnerRoleType string
+	Options       string
 }
 
 func (v *PasswordPolicy) ID() SchemaObjectIdentifier {
