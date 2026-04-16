@@ -231,7 +231,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 	t.Run("encryption: None", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
-			None: &ExternalStageS3EncryptionNone{},
+			None: &ExternalStageS3EncryptionTypeNone{},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
 	})
@@ -1420,7 +1420,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 			AwsAccessPointArn:  String("aws-access-point-arn"),
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageS3Encryption{
-				None: &ExternalStageS3EncryptionNone{},
+				None: &ExternalStageS3EncryptionTypeNone{},
 			},
 		}
 		opts.FileFormat = &StageFileFormat{

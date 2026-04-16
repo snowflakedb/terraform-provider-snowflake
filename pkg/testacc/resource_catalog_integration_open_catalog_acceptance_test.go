@@ -787,7 +787,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_ImportValidation(t *testing.T) {
 				ResourceName:  catalogIntegrationOpenCatalog2.ResourceReference(),
 				ImportState:   true,
 				ImportStateId: catalogIntegrationObjectStorageId.Name(),
-				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypePolaris, sdk.CatalogIntegrationCatalogSourceTypeObjectStorage)),
+				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypePolaris, sdk.CatalogIntegrationCatalogSourceTypeObjectStore)),
 			},
 		},
 	})

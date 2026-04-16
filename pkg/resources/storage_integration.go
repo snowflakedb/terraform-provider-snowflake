@@ -66,8 +66,8 @@ var storageIntegrationSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: StringInSlice(sdk.AllStorageProviders, true),
-		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
+		ValidateDiagFunc: StringInSlice(sdk.AllStorageIntegrationProviders, true),
+		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageIntegrationProviders)),
 	},
 	"storage_aws_external_id": {
 		Type:             schema.TypeString,

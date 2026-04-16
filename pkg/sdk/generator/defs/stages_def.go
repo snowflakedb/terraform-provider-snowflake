@@ -6,6 +6,37 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	InternalStageEncryptionOptionEnumDef = g.NewEnum(
+		"InternalStageEncryptionOption", "InternalStageEncryptionOptions",
+		"SNOWFLAKE_FULL", "SNOWFLAKE_SSE",
+	)
+	ExternalStageS3EncryptionOptionEnumDef = g.NewEnum(
+		"ExternalStageS3EncryptionOption", "ExternalStageS3EncryptionOptions",
+		"AWS_CSE", "AWS_SSE_S3", "AWS_SSE_KMS", "NONE",
+	)
+	ExternalStageGCSEncryptionOptionEnumDef = g.NewEnum(
+		"ExternalStageGCSEncryptionOption", "ExternalStageGCSEncryptionOptions",
+		"GCS_SSE_KMS", "NONE",
+	)
+	ExternalStageAzureEncryptionOptionEnumDef = g.NewEnum(
+		"ExternalStageAzureEncryptionOption", "ExternalStageAzureEncryptionOptions",
+		"AZURE_CSE", "NONE",
+	)
+	StageCopyColumnMapOptionEnumDef = g.NewEnum(
+		"StageCopyColumnMapOption", "StageCopyColumnMapOptions",
+		"CASE_SENSITIVE", "CASE_INSENSITIVE", "NONE",
+	)
+	StageCloudEnumDef = g.NewEnum(
+		"StageCloud", "StageClouds",
+		"AZURE", "AWS", "GCP",
+	)
+	StageTypeEnumDef = g.NewEnum(
+		"StageType", "StageTypes",
+		"INTERNAL", "INTERNAL NO CSE", "INTERNAL TEMPORARY", "EXTERNAL", "EXTERNAL TEMPORARY",
+	)
+)
+
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -417,4 +448,13 @@ var stagesDef = g.NewInterface(
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 		g.ShowByIDExtendedInFiltering,
+	).
+	WithEnums(
+		InternalStageEncryptionOptionEnumDef,
+		ExternalStageS3EncryptionOptionEnumDef,
+		ExternalStageGCSEncryptionOptionEnumDef,
+		ExternalStageAzureEncryptionOptionEnumDef,
+		StageCopyColumnMapOptionEnumDef,
+		StageCloudEnumDef,
+		StageTypeEnumDef,
 	)

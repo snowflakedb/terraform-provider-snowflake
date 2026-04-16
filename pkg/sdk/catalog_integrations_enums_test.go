@@ -14,14 +14,14 @@ func Test_ToCatalogIntegrationCatalogSourceType(t *testing.T) {
 
 	valid := []test{
 		// case insensitive
-		{input: "glue", want: CatalogIntegrationCatalogSourceTypeAWSGlue},
+		{input: "glue", want: CatalogIntegrationCatalogSourceTypeGlue},
 
 		// Supported Values
-		{input: "GLUE", want: CatalogIntegrationCatalogSourceTypeAWSGlue},
-		{input: "OBJECT_STORE", want: CatalogIntegrationCatalogSourceTypeObjectStorage},
+		{input: "GLUE", want: CatalogIntegrationCatalogSourceTypeGlue},
+		{input: "OBJECT_STORE", want: CatalogIntegrationCatalogSourceTypeObjectStore},
 		{input: "POLARIS", want: CatalogIntegrationCatalogSourceTypePolaris},
-		{input: "ICEBERG_REST", want: CatalogIntegrationCatalogSourceTypeIcebergREST},
-		{input: "SAP_BDC", want: CatalogIntegrationCatalogSourceTypeSAPBusinessDataCloud},
+		{input: "ICEBERG_REST", want: CatalogIntegrationCatalogSourceTypeIcebergRest},
+		{input: "SAP_BDC", want: CatalogIntegrationCatalogSourceTypeSapBdc},
 	}
 
 	invalid := []test{
@@ -89,12 +89,12 @@ func Test_ToCatalogIntegrationRestAuthenticationType(t *testing.T) {
 
 	valid := []test{
 		// case insensitive
-		{input: "oauth", want: CatalogIntegrationRestAuthenticationTypeOAuth},
+		{input: "oauth", want: CatalogIntegrationRestAuthenticationTypeOauth},
 
 		// Supported Values
-		{input: "OAUTH", want: CatalogIntegrationRestAuthenticationTypeOAuth},
+		{input: "OAUTH", want: CatalogIntegrationRestAuthenticationTypeOauth},
 		{input: "BEARER", want: CatalogIntegrationRestAuthenticationTypeBearer},
-		{input: "SIGV4", want: CatalogIntegrationRestAuthenticationTypeSigV4},
+		{input: "SIGV4", want: CatalogIntegrationRestAuthenticationTypeSigv4},
 	}
 
 	invalid := []test{

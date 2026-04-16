@@ -101,7 +101,7 @@ type ExternalStageS3Encryption struct {
 	AwsCse    *ExternalStageS3EncryptionAwsCse    `ddl:"keyword"`
 	AwsSseS3  *ExternalStageS3EncryptionAwsSseS3  `ddl:"keyword"`
 	AwsSseKms *ExternalStageS3EncryptionAwsSseKms `ddl:"keyword"`
-	None      *ExternalStageS3EncryptionNone      `ddl:"keyword"`
+	None      *ExternalStageS3EncryptionTypeNone  `ddl:"keyword"`
 }
 
 type ExternalStageS3EncryptionAwsCse struct {
@@ -118,7 +118,7 @@ type ExternalStageS3EncryptionAwsSseKms struct {
 	KmsKeyId       *string `ddl:"parameter,single_quotes" sql:"KMS_KEY_ID"`
 }
 
-type ExternalStageS3EncryptionNone struct {
+type ExternalStageS3EncryptionTypeNone struct {
 	encryptionType string `ddl:"static" sql:"TYPE = 'NONE'"`
 }
 

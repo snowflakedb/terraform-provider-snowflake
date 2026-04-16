@@ -143,7 +143,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -218,7 +218,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(true).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -266,7 +266,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -314,7 +314,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -362,7 +362,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -437,7 +437,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -725,7 +725,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -901,7 +901,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			HasSigv4SigningRegion(sigV4SigningRegion),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -1217,7 +1217,7 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportValidation(t *testing.T) {
 				ResourceName:  catalogIntegrationIcebergRest2.ResourceReference(),
 				ImportState:   true,
 				ImportStateId: catalogIntegrationObjectStorageId.Name(),
-				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypeIcebergREST, sdk.CatalogIntegrationCatalogSourceTypeObjectStorage)),
+				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypeIcebergRest, sdk.CatalogIntegrationCatalogSourceTypeObjectStore)),
 			},
 		},
 	})

@@ -544,7 +544,7 @@ func parseS3StageEncryption(v any) (sdk.ExternalStageS3EncryptionRequest, error)
 
 	if none, ok := encryptionConfig["none"]; ok {
 		if noneList := none.([]any); len(noneList) > 0 {
-			encryptionReq.WithNone(*sdk.NewExternalStageS3EncryptionNoneRequest())
+			encryptionReq.WithNone(*sdk.NewExternalStageS3EncryptionTypeNoneRequest())
 		}
 	}
 
