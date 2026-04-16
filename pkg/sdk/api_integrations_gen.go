@@ -139,7 +139,6 @@ func (v *ApiIntegration) ID() AccountObjectIdentifier {
 }
 
 func (v *ApiIntegration) ObjectType() ObjectType {
-	// Manually edited
 	return ObjectTypeIntegration
 }
 

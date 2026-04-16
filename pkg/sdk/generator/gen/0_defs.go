@@ -60,7 +60,11 @@ func preprocessDefinition(definition *Interface) {
 					o.ObjectIdMethod = NewShowObjectIDMethod(definition.NameSingular, idKind)
 				}
 
-				o.ObjectTypeMethod = NewShowObjectTypeMethod(definition.NameSingular)
+				typeName := definition.NameSingular
+				if definition.ShowObjectTypeName != "" {
+					typeName = definition.ShowObjectTypeName
+				}
+				o.ObjectTypeMethod = NewShowObjectTypeMethod(definition.NameSingular, typeName)
 			}
 
 			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.

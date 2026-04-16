@@ -153,4 +153,5 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithShowObjectType("Integration")

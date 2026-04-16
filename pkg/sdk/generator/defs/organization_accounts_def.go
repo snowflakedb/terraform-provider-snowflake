@@ -133,4 +133,5 @@ var organizationAccountsDef = g.NewInterface(
 	WithCustomInterfaceMethod("UnsetAll", "", nil, "error").
 	WithEnums(
 		OrganizationAccountEditionEnumDef,
-	)
+	).
+	WithShowObjectType("Account")

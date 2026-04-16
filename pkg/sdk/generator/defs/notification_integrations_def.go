@@ -227,4 +227,5 @@ var notificationIntegrationsDef = g.NewInterface(
 			SQL("NOTIFICATION INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithShowObjectType("Integration")

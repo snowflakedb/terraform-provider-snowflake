@@ -704,4 +704,5 @@ var securityIntegrationsDef = g.NewInterface(
 		OauthSecurityIntegrationClientOptionEnumDef,
 		Saml2SecurityIntegrationSaml2ProviderOptionEnumDef,
 		ScimSecurityIntegrationScimClientOptionEnumDef,
-	)
+	).
+	WithShowObjectType("Integration")
