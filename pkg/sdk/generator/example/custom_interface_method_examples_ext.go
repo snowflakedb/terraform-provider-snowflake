@@ -22,3 +22,10 @@ func (v *customInterfaceMethodExamples) ShowParameters(_ context.Context, _ Acco
 func (v *customInterfaceMethodExamples) SuspendRootTasks(_ context.Context, _ SchemaObjectIdentifier, _ SchemaObjectIdentifier) ([]SchemaObjectIdentifier, error) {
 	return nil, nil
 }
+
+func (v *customInterfaceMethodExamples) Refresh(_ context.Context, _ AccountObjectIdentifier) {
+}
+
+func (v *customInterfaceMethodExamples) ResumeTasks(_ context.Context, _ []SchemaObjectIdentifier) error {
+	return nil
+}

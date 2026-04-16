@@ -31,7 +31,11 @@ type {{ .Name }} interface {
 		{{- end -}}
 	{{ end }}
 	{{- range .CustomMethods }}
-		// {{ .Doc }}
-		{{ .Name }}(ctx context.Context{{ range .Parameters }}, {{ .Name }} {{ .Kind }}{{ end }}) {{ if eq (len .ReturnTypes) 1 }}{{ index .ReturnTypes 0 }}{{ else }}({{ join .ReturnTypes ", " }}){{ end }}
+		{{- if .Doc }}
+			{{- range splitLines .Doc }}
+			// {{ . }}
+			{{- end }}
+		{{- end }}
+		{{ .Name }}(ctx context.Context{{ range .Parameters }}, {{ .Name }} {{ .Kind }}{{ end }}){{ if eq (len .ReturnTypes) 0 }}{{ else if eq (len .ReturnTypes) 1 }} {{ index .ReturnTypes 0 }}{{ else }} ({{ join .ReturnTypes ", " }}){{ end }}
 	{{- end }}
 }

@@ -14,6 +14,10 @@ type CustomInterfaceMethodExamples interface {
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
 	// SuspendRootTasks is added to iterate over tasks to find all roots and suspend them, as no such method is available on the Snowflake side
 	SuspendRootTasks(ctx context.Context, taskId SchemaObjectIdentifier, id SchemaObjectIdentifier) ([]SchemaObjectIdentifier, error)
+	Refresh(ctx context.Context, id AccountObjectIdentifier)
+	// ResumeTasks is added manually;
+	// it resumes all given tasks in the correct order
+	ResumeTasks(ctx context.Context, ids []SchemaObjectIdentifier) error
 }
 
 // CreateCustomInterfaceMethodExampleOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-database-role.

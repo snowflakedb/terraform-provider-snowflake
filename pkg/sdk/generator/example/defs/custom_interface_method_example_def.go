@@ -44,4 +44,21 @@ var CustomInterfaceMethodExamplesDef = g.NewInterface(
 			g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]()),
 		},
 		"[]SchemaObjectIdentifier", "error",
+	).
+	// WithCustomInterfaceMethod with no return values and no comment.
+	WithCustomInterfaceMethod(
+		"Refresh",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]()),
+		},
+	).
+	// WithCustomInterfaceMethod with a multiline doc comment.
+	WithCustomInterfaceMethod(
+		"ResumeTasks",
+		"ResumeTasks is added manually;\nit resumes all given tasks in the correct order",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("ids", "[]SchemaObjectIdentifier"),
+		},
+		"error",
 	)
