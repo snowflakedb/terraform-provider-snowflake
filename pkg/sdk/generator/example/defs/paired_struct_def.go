@@ -43,7 +43,23 @@ func pairedStructExampleAllOptions(dbName, plainName string) *g.PairedStructs {
 		// db string, plain AccountObjectIdentifier; plain name defaults to "Id"
 		AccountObjectIdentifier("account_id").
 		// db string, plain AccountObjectIdentifier; plain name overridden
-		AccountObjectIdentifier("second_account_id", g.WithPlainFieldName("OverriddenSecondAccountId"))
+		AccountObjectIdentifier("second_account_id", g.WithPlainFieldName("OverriddenSecondAccountId")).
+		// db string, plain *AccountObjectIdentifier; plain name overridden (default would be "Id")
+		OptionalAccountObjectIdentifier("optional_account_id", g.WithPlainFieldName("OptionalAccountId")).
+		// db string, plain *AccountObjectIdentifier; plain name overridden
+		OptionalAccountObjectIdentifier("optional_second_account_id", g.WithPlainFieldName("OverriddenOptionalAccountId")).
+		// db string, plain SchemaObjectIdentifier; plain name overridden (default would be "Id")
+		SchemaObjectIdentifier("schema_object_id", g.WithPlainFieldName("SchemaObjectId")).
+		// db string, plain SchemaObjectIdentifier; plain name overridden
+		SchemaObjectIdentifier("second_schema_object_id", g.WithPlainFieldName("OverriddenSchemaObjectId")).
+		// db string, plain *SchemaObjectIdentifier; plain name overridden (default would be "Id")
+		OptionalSchemaObjectIdentifier("optional_schema_object_id", g.WithPlainFieldName("OptionalSchemaObjectId")).
+		// db string, plain *SchemaObjectIdentifier; plain name overridden
+		OptionalSchemaObjectIdentifier("optional_second_schema_object_id", g.WithPlainFieldName("OverriddenOptionalSchemaObjectId")).
+		// db string, plain DatabaseObjectIdentifier; plain name overridden (default would be "Id")
+		DatabaseObjectIdentifier("database_object_id", g.WithPlainFieldName("DatabaseObjectId")).
+		// db string, plain DatabaseObjectIdentifier; plain name overridden
+		DatabaseObjectIdentifier("second_database_object_id", g.WithPlainFieldName("OverriddenDatabaseObjectId"))
 }
 
 // PairedStructExample demonstrates the PairedStructs single-definition approach.

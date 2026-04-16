@@ -235,28 +235,18 @@ var hybridTablesDef = g.NewInterface(
 		OptionalSQL("RESTRICT").
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-hybrid-tables",
-	g.DbStruct("hybridTableRow").
+	g.StructPair("hybridTableRow", "HybridTable").
 		Time("created_on").
 		Text("name").
 		Text("database_name").
 		Text("schema_name").
-		OptionalText("owner").
+		OptionalText("owner", g.WithRequiredInPlain()).
 		OptionalNumber("rows").
 		OptionalNumber("bytes").
-		OptionalText("comment").
-		OptionalText("owner_role_type"),
-	g.PlainStruct("HybridTable").
-		Time("CreatedOn").
-		Text("Name").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("Owner").
-		OptionalNumber("Rows").
-		OptionalNumber("Bytes").
-		Text("Comment").
-		Text("OwnerRoleType"),
+		OptionalText("comment", g.WithRequiredInPlain()).
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowHybridTables").
 		Show().
 		Terse().
@@ -268,37 +258,23 @@ var hybridTablesDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
-	g.DbStruct("hybridTableDetailsRow").
+	g.StructPair("hybridTableDetailsRow", "HybridTableDetails").
 		Text("name").
 		Text("type").
 		Text("kind").
-		Text("null").
-		OptionalText("default").
-		Text("primary key").
-		Text("unique key").
-		OptionalText("check").
-		OptionalText("expression").
-		OptionalText("comment").
-		OptionalText("policy name").
-		OptionalText("privacy domain").
-		OptionalText("schema_evolution_record"),
-	g.PlainStruct("HybridTableDetails").
-		Text("Name").
-		Text("Type").
-		Text("Kind").
-		Text("IsNullable").
-		Text("Default").
-		Text("PrimaryKey").
-		Text("UniqueKey").
-		Text("Check").
-		Text("Expression").
-		Text("Comment").
-		Text("PolicyName").
-		Text("PrivacyDomain").
-		Text("SchemaEvolutionRecord"),
+		Text("null", g.WithPlainFieldName("IsNullable")).
+		OptionalText("default", g.WithRequiredInPlain()).
+		Text("primary key", g.WithPlainFieldName("PrimaryKey")).
+		Text("unique key", g.WithPlainFieldName("UniqueKey")).
+		OptionalText("check", g.WithRequiredInPlain()).
+		OptionalText("expression", g.WithRequiredInPlain()).
+		OptionalText("comment", g.WithRequiredInPlain()).
+		OptionalText("policy name", g.WithPlainFieldName("PolicyName"), g.WithRequiredInPlain()).
+		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"), g.WithRequiredInPlain()).
+		OptionalText("schema_evolution_record", g.WithRequiredInPlain()),
 	g.NewQueryStruct("DescribeHybridTable").
 		Describe().
 		SQL("TABLE").

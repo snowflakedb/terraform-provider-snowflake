@@ -6,64 +6,35 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var viewDbRow = g.DbStruct("viewDBRow").
+var viewPairs = g.StructPair("viewDBRow", "View").
 	Text("created_on").
 	Text("name").
-	OptionalText("kind").
-	OptionalText("reserved").
+	OptionalText("kind", g.WithRequiredInPlain()).
+	OptionalText("reserved", g.WithRequiredInPlain()).
 	Text("database_name").
 	Text("schema_name").
-	OptionalText("owner").
-	OptionalText("comment").
-	OptionalText("text").
-	OptionalBool("is_secure").
-	OptionalBool("is_materialized").
-	OptionalText("owner_role_type").
-	OptionalText("change_tracking")
-
-var view = g.PlainStruct("View").
-	Text("CreatedOn").
-	Text("Name").
-	Text("Kind").
-	Text("Reserved").
-	Text("DatabaseName").
-	Text("SchemaName").
-	Text("Owner").
-	Text("Comment").
-	Text("Text").
-	Bool("IsSecure").
-	Bool("IsMaterialized").
-	Text("OwnerRoleType").
-	Text("ChangeTracking")
+	OptionalText("owner", g.WithRequiredInPlain()).
+	OptionalText("comment", g.WithRequiredInPlain()).
+	OptionalText("text", g.WithRequiredInPlain()).
+	OptionalBool("is_secure", g.WithRequiredInPlain()).
+	OptionalBool("is_materialized", g.WithRequiredInPlain()).
+	OptionalText("owner_role_type", g.WithRequiredInPlain()).
+	OptionalText("change_tracking", g.WithRequiredInPlain())
 
 // TODO [SNOW-965322]: extract common type for describe
-var viewDetailsDbRow = g.DbStruct("viewDetailsRow").
+var viewDetailsPairs = g.StructPair("viewDetailsRow", "ViewDetails").
 	Text("name").
-	Field("type", "DataType").
+	Field("type", "DataType", "DataType").
 	Text("kind").
-	Text("null").
+	Field("null?", "string", "bool", g.WithDbFieldName("Null"), g.WithPlainFieldName("IsNullable")).
 	OptionalText("default").
-	Text("primary key").
-	Text("unique key").
-	OptionalText("check").
+	Field("primary key", "string", "bool", g.WithPlainFieldName("IsPrimary")).
+	Field("unique key", "string", "bool", g.WithPlainFieldName("IsUnique")).
+	Field("check", "sql.NullString", "*bool").
 	OptionalText("expression").
 	OptionalText("comment").
-	OptionalText("policy name").
-	OptionalText("privacy domain")
-
-var viewDetails = g.PlainStruct("ViewDetails").
-	Text("Name").
-	Field("Type", "DataType").
-	Text("Kind").
-	Bool("IsNullable").
-	OptionalText("Default").
-	Bool("IsPrimary").
-	Bool("IsUnique").
-	OptionalBool("Check").
-	OptionalText("Expression").
-	OptionalText("Comment").
-	OptionalText("PolicyName").
-	OptionalText("PrivacyDomain")
+	OptionalText("policy name", g.WithPlainFieldName("PolicyName")).
+	OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"))
 
 var columnDef = g.NewQueryStruct("Column").
 	Text("Value", g.KeywordOptions().Required().DoubleQuotes())
@@ -294,10 +265,9 @@ var viewsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-views",
-		viewDbRow,
-		view,
+		viewPairs,
 		g.NewQueryStruct("ShowViews").
 			Show().
 			Terse().
@@ -311,11 +281,10 @@ var viewsDef = g.NewInterface(
 		g.ShowByIDExtendedInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-view",
-		viewDetailsDbRow,
-		viewDetails,
+		viewDetailsPairs,
 		g.NewQueryStruct("DescribeView").
 			Describe().
 			SQL("VIEW").

@@ -51,30 +51,19 @@ var sequencesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "SetIncrement", "Set", "UnsetComment"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-sequences",
-	g.DbStruct("sequenceRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("schema_name", "string").
-		Field("database_name", "string").
-		Field("next_value", "int").
-		Field("interval", "int").
-		Field("owner", "string").
-		Field("owner_role_type", "string").
-		Field("comment", "string").
-		Field("ordered", "string"),
-	g.PlainStruct("Sequence").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("SchemaName", "string").
-		Field("DatabaseName", "string").
-		Field("NextValue", "int").
-		Field("Interval", "int").
-		Field("Owner", "string").
-		Field("OwnerRoleType", "string").
-		Field("Comment", "string").
-		Field("Ordered", "bool"),
+	g.StructPair("sequenceRow", "Sequence").
+		Text("created_on").
+		Text("name").
+		Text("schema_name").
+		Text("database_name").
+		Number("next_value").
+		Number("interval").
+		Text("owner").
+		Text("owner_role_type").
+		Text("comment").
+		Field("ordered", "string", "bool"),
 	g.NewQueryStruct("ShowSequences").
 		Show().
 		SQL("SEQUENCES").
@@ -83,31 +72,20 @@ var sequencesDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-sequence",
-	g.DbStruct("sequenceDetailRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("schema_name", "string").
-		Field("database_name", "string").
-		Field("next_value", "int").
-		Field("interval", "int").
-		Field("owner", "string").
-		Field("owner_role_type", "string").
-		Field("comment", "string").
-		Field("ordered", "string"),
-	g.PlainStruct("SequenceDetail").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("SchemaName", "string").
-		Field("DatabaseName", "string").
-		Field("NextValue", "int").
-		Field("Interval", "int").
-		Field("Owner", "string").
-		Field("OwnerRoleType", "string").
-		Field("Comment", "string").
-		Field("Ordered", "bool"),
+	g.StructPair("sequenceDetailRow", "SequenceDetail").
+		Text("created_on").
+		Text("name").
+		Text("schema_name").
+		Text("database_name").
+		Number("next_value").
+		Number("interval").
+		Text("owner").
+		Text("owner_role_type").
+		Text("comment").
+		Field("ordered", "string", "bool"),
 	g.NewQueryStruct("DescribeSequence").
 		Describe().
 		SQL("SEQUENCE").

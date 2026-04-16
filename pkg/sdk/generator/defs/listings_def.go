@@ -13,7 +13,7 @@ var listingWithDef = g.NewQueryStruct("ListingWith").
 
 // There are more fields listed than in https://docs.snowflake.com/en/sql-reference/sql/show-listings.
 // They are mapped straight from the SHOW LISTINGS output.
-var listingDbRow = g.DbStruct("listingDBRow").
+var listingPairs = g.StructPair("listingDBRow", "Listing").
 	Text("global_name").
 	Text("name").
 	Text("title").
@@ -22,7 +22,7 @@ var listingDbRow = g.DbStruct("listingDBRow").
 	Text("created_on").
 	Text("updated_on").
 	OptionalText("published_on").
-	Text("state").
+	PlainField("state", "ListingState").
 	OptionalText("review_state").
 	OptionalText("comment").
 	Text("owner").
@@ -40,34 +40,6 @@ var listingDbRow = g.DbStruct("listingDBRow").
 	OptionalText("organization_profile_name").
 	OptionalText("uniform_listing_locator").
 	OptionalText("detailed_target_accounts")
-
-var listing = g.PlainStruct("Listing").
-	Text("GlobalName").
-	Text("Name").
-	Text("Title").
-	OptionalText("Subtitle").
-	Text("Profile").
-	Text("CreatedOn").
-	Text("UpdatedOn").
-	OptionalText("PublishedOn").
-	Field("State", g.KindOfT[sdkcommons.ListingState]()).
-	OptionalText("ReviewState").
-	OptionalText("Comment").
-	Text("Owner").
-	Text("OwnerRoleType").
-	OptionalText("Regions").
-	Text("TargetAccounts").
-	Bool("IsMonetized").
-	Bool("IsApplication").
-	Bool("IsTargeted").
-	OptionalBool("IsLimitedTrial").
-	OptionalBool("IsByRequest").
-	OptionalText("Distribution").
-	OptionalBool("IsMountlessQueryable").
-	OptionalText("RejectedOn").
-	OptionalText("OrganizationProfileName").
-	OptionalText("UniformListingLocator").
-	OptionalText("DetailedTargetAccounts")
 
 // There are more fields listed than in https://docs.snowflake.com/en/sql-reference/sql/desc-listing
 // They are mapped straight from the DESC LISTING output.
@@ -294,10 +266,9 @@ var listingsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-listings",
-		listingDbRow,
-		listing,
+		listingPairs,
 		g.NewQueryStruct("ShowListings").
 			Show().
 			SQL("LISTINGS").

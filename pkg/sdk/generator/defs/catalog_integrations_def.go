@@ -169,22 +169,15 @@ var catalogIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-catalog-integrations",
-		g.DbStruct("showCatalogIntegrationsDbRow").
+		g.StructPair("showCatalogIntegrationsDbRow", "CatalogIntegration").
 			Text("name").
 			Bool("enabled").
 			Text("type").
 			Text("category").
-			OptionalText("comment").
+			OptionalText("comment", g.WithRequiredInPlain()).
 			Time("created_on"),
-		g.PlainStruct("CatalogIntegration").
-			Text("Name").
-			Bool("Enabled").
-			Text("Type").
-			Text("Category").
-			Text("Comment").
-			Time("CreatedOn"),
 		g.NewQueryStruct("ShowCatalogIntegration").
 			Show().
 			SQL("CATALOG INTEGRATIONS").
@@ -193,19 +186,14 @@ var catalogIntegrationsDef = g.NewInterface(
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-catalog-integration",
-		g.DbStruct("descCatalogIntegrationsDbRow").
-			Text("property").
-			Text("property_type").
-			Text("property_value").
-			Text("property_default"),
-		g.PlainStruct("CatalogIntegrationProperty").
-			Text("Name").
-			Text("Type").
-			Text("Value").
-			Text("Default"),
+		g.StructPair("descCatalogIntegrationsDbRow", "CatalogIntegrationProperty").
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeCatalogIntegration").
 			Describe().
 			SQL("CATALOG INTEGRATION").

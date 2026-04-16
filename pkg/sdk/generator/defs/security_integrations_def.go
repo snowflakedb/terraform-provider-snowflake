@@ -663,41 +663,29 @@ var securityIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
-		g.DbStruct("securityIntegrationDescRow").
-			Field("property", "string").
-			Field("property_type", "string").
-			Field("property_value", "string").
-			Field("property_default", "string"),
-		g.PlainStruct("SecurityIntegrationProperty").
-			Field("Name", "string").
-			Field("Type", "string").
-			Field("Value", "string").
-			Field("Default", "string"),
+		g.StructPair("securityIntegrationDescRow", "SecurityIntegrationProperty").
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescSecurityIntegration").
 			Describe().
 			SQL("SECURITY INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-integrations",
-		g.DbStruct("securityIntegrationShowRow").
+		g.StructPair("securityIntegrationShowRow", "SecurityIntegration").
 			Text("name").
-			Text("type").
+			Text("type", g.WithPlainFieldName("IntegrationType")).
 			Text("category").
 			Bool("enabled").
-			OptionalText("comment").
+			OptionalText("comment", g.WithRequiredInPlain()).
 			Time("created_on"),
-		g.PlainStruct("SecurityIntegration").
-			Text("Name").
-			Text("IntegrationType").
-			Text("Category").
-			Bool("Enabled").
-			Text("Comment").
-			Time("CreatedOn"),
 		g.NewQueryStruct("ShowSecurityIntegrations").
 			Show().
 			SQL("SECURITY INTEGRATIONS").

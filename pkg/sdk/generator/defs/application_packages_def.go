@@ -134,32 +134,20 @@ var applicationPackagesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-application-packages",
-	g.DbStruct("applicationPackageRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("is_default", "string").
-		Field("is_current", "string").
-		Field("distribution", "string").
-		Field("owner", "string").
-		Field("comment", "string").
-		Field("retention_time", "int").
-		Field("options", "string").
-		Field("dropped_on", "sql.NullString").
-		Field("application_class", "sql.NullString"),
-	g.PlainStruct("ApplicationPackage").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("IsDefault", "bool").
-		Field("IsCurrent", "bool").
-		Field("Distribution", "string").
-		Field("Owner", "string").
-		Field("Comment", "string").
-		Field("RetentionTime", "int").
-		Field("Options", "string").
-		Field("DroppedOn", "string").
-		Field("ApplicationClass", "string"),
+	g.StructPair("applicationPackageRow", "ApplicationPackage").
+		Text("created_on").
+		Text("name").
+		Field("is_default", "string", "bool").
+		Field("is_current", "string", "bool").
+		Text("distribution").
+		Text("owner").
+		Text("comment").
+		Number("retention_time").
+		Text("options").
+		OptionalText("dropped_on", g.WithRequiredInPlain()).
+		OptionalText("application_class", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowApplicationPackages").
 		Show().
 		SQL("APPLICATION PACKAGES").

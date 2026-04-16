@@ -8,29 +8,17 @@ import (
 
 var ProgrammaticAccessTokenStatusDef = g.NewEnum("ProgrammaticAccessTokenStatus", "ProgrammaticAccessTokenStatuses", "ACTIVE", "EXPIRED", "DISABLED")
 
-var programmaticAccessTokenResultDBRowDef = g.DbStruct("programmaticAccessTokenResultDBRow").
+var programmaticAccessTokenPairs = g.StructPair("programmaticAccessTokenResultDBRow", "ProgrammaticAccessToken").
 	Text("name").
-	Text("user_name").
-	Text("role_restriction").
+	AccountObjectIdentifier("user_name", g.WithPlainFieldName("UserName")).
+	OptionalAccountObjectIdentifier("role_restriction", g.WithPlainFieldName("RoleRestriction")).
 	Time("expires_at").
-	Text("status").
+	PlainField("status", "ProgrammaticAccessTokenStatus").
 	OptionalText("comment").
 	Time("created_on").
 	Text("created_by").
 	OptionalNumber("mins_to_bypass_network_policy_requirement").
 	OptionalText("rotated_to")
-
-var programmaticAccessTokenDef = g.PlainStruct("ProgrammaticAccessToken").
-	Text("Name").
-	Field("UserName", "AccountObjectIdentifier").
-	Field("RoleRestriction", "*AccountObjectIdentifier").
-	Time("ExpiresAt").
-	Field("Status", "ProgrammaticAccessTokenStatus").
-	OptionalText("Comment").
-	Time("CreatedOn").
-	Text("CreatedBy").
-	OptionalNumber("MinsToBypassNetworkPolicyRequirement").
-	OptionalText("RotatedTo")
 
 var addProgrammaticAccessTokenResultDBRowDef = g.DbStruct("addProgrammaticAccessTokenResultDBRow").
 	Text("token_name").
@@ -136,10 +124,9 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "UserName"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens",
-	programmaticAccessTokenResultDBRowDef,
-	programmaticAccessTokenDef,
+	programmaticAccessTokenPairs,
 	g.NewQueryStruct("ShowUserProgrammaticAccessTokens").
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").

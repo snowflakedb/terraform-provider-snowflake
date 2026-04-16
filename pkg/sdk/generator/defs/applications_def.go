@@ -100,36 +100,22 @@ var applicationsDef = g.NewInterface(
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "Upgrade", "UpgradeVersion", "UnsetReferences", "SetTags", "UnsetTags"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-applications",
-	g.DbStruct("applicationRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("is_default", "string").
-		Field("is_current", "string").
-		Field("source_type", "string").
-		Field("source", "string").
-		Field("owner", "string").
-		Field("comment", "string").
-		Field("version", "string").
-		Field("label", "string").
-		Field("patch", "int").
-		Field("options", "string").
-		Field("retention_time", "int"),
-	g.PlainStruct("Application").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("IsDefault", "bool").
-		Field("IsCurrent", "bool").
-		Field("SourceType", "string").
-		Field("Source", "string").
-		Field("Owner", "string").
-		Field("Comment", "string").
-		Field("Version", "string").
-		Field("Label", "string").
-		Field("Patch", "int").
-		Field("Options", "string").
-		Field("RetentionTime", "int"),
+	g.StructPair("applicationRow", "Application").
+		Text("created_on").
+		Text("name").
+		Field("is_default", "string", "bool").
+		Field("is_current", "string", "bool").
+		Text("source_type").
+		Text("source").
+		Text("owner").
+		Text("comment").
+		Text("version").
+		Text("label").
+		Number("patch").
+		Text("options").
+		Number("retention_time"),
 	g.NewQueryStruct("ShowApplications").
 		Show().
 		SQL("APPLICATIONS").
@@ -138,15 +124,12 @@ var applicationsDef = g.NewInterface(
 		OptionalLimit(),
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-application",
-	g.DbStruct("applicationPropertyRow").
-		Field("property", "string").
-		Field("value", "sql.NullString"),
-	g.PlainStruct("ApplicationProperty").
-		Field("Property", "string").
-		Field("Value", "string"),
+	g.StructPair("applicationPropertyRow", "ApplicationProperty").
+		Text("property").
+		OptionalText("value", g.WithRequiredInPlain()),
 	g.NewQueryStruct("DescribeApplication").
 		Describe().
 		SQL("APPLICATION").
