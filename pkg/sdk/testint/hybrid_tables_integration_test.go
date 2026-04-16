@@ -509,6 +509,8 @@ func TestInt_HybridTables(t *testing.T) {
 		})
 
 		t.Run("clustering operations", func(t *testing.T) {
+			// Snowflake currently rejects CLUSTER BY on hybrid tables (error 391407).
+			// We verify the SDK generates valid SQL and Snowflake returns the expected error.
 			id, cleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
 				{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				{Name: "CATEGORY", Type: sdk.DataType("VARCHAR(50)")},
@@ -517,38 +519,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().WithClusterBy([]string{"CATEGORY"})))
-			require.NoError(t, err)
-
-			// Suspend recluster
-			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
-					WithChangeReclusterState(*sdk.NewHybridTableReclusterChangeStateRequest().WithState(sdk.ReclusterStateSuspend))))
-			require.NoError(t, err)
-
-			// Resume recluster
-			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
-					WithChangeReclusterState(*sdk.NewHybridTableReclusterChangeStateRequest().WithState(sdk.ReclusterStateResume))))
-			require.NoError(t, err)
-
-			// Recluster (basic, no options)
-			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
-					WithRecluster(*sdk.NewHybridTableReclusterActionRequest())))
-			require.NoError(t, err)
-
-			// Recluster with MaxSize and Where
-			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
-					WithRecluster(*sdk.NewHybridTableReclusterActionRequest().
-						WithMaxSize(1024).
-						WithWhere("CATEGORY = 'A'"))))
-			require.NoError(t, err)
-
-			// Drop clustering key
-			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().WithDropClusteringKey(true)))
-			require.NoError(t, err)
+			require.ErrorContains(t, err, "CLUSTER BY cannot be set for a hybrid table")
 		})
 	})
 
