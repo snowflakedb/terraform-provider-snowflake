@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[DataMetricFunctionRefEntityDomainOption]{"DataMetricFunctionRefEntityDomainOption", AllDataMetricFunctionRefEntityDomainOptions, ToDataMetricFunctionRefEntityDomainOption})
+}
+
 func TestDataMetricFunctionReferences_GetForEntity(t *testing.T) {
 	// id and defaultOpts removed manually
 

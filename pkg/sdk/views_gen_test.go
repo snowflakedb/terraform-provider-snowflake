@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ViewDataMetricScheduleStatusOperationOption]{"ViewDataMetricScheduleStatusOperationOption", AllViewDataMetricScheduleStatusOperationOptions, ToViewDataMetricScheduleStatusOperationOption})
+}
+
 func TestViews_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 
