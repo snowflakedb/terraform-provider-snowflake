@@ -13,6 +13,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -65,7 +66,15 @@ func StreamOnTable() *schema.Resource {
 			RecreateWhenStreamTypeChangedExternally(sdk.StreamSourceTypeTable),
 		)),
 
-		Schema: streamOnTableSchema,
+		Schema:        streamOnTableSchema,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_15_0_StreamStateUpgrader,
+			},
+		},
 
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.StreamOnTable, ImportStreamOnTable),
@@ -89,8 +98,12 @@ func ImportStreamOnTable(ctx context.Context, d *schema.ResourceData, meta any) 
 	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
 		return nil, err
 	}
-	if err := d.Set("append_only", booleanStringFromBool(v.IsAppendOnly())); err != nil {
-		return nil, err
+	errs := errors.Join(
+		d.Set("append_only", booleanStringFromBool(v.IsAppendOnly())),
+		d.Set("show_initial_rows", BooleanDefault),
+	)
+	if errs != nil {
+		return nil, errs
 	}
 	return []*schema.ResourceData{d}, nil
 }

@@ -39,6 +39,32 @@ func ExternalProviderWithExactVersion(version string) map[string]resource.Extern
 	}
 }
 
+// In some steps (especially when importing), we must use a config like this, otherwise we get errors like
+//
+//	| Error: Failed to query available provider packages
+//	|
+//	| Could not retrieve the list of available versions for provider
+//	| hashicorp/snowflake: provider registry registry.terraform.io does not have a
+//	| provider named registry.terraform.io/hashicorp/snowflake
+//	|
+//	| All modules should specify their required_providers so that external
+//	| consumers will get the correct providers when using a module. To see which
+//	| modules are currently depending on hashicorp/snowflake, run the following
+//	| command:
+//	|     terraform providers
+func requiredProvidersBlock(version string) string {
+	return fmt.Sprintf(
+		`terraform {
+  required_providers {
+    snowflake = {
+      source  = "snowflakedb/snowflake"
+      version = "%s"
+    }
+  }
+}
+`, version)
+}
+
 func setConfigPathEnv(t *testing.T, configName string) {
 	t.Helper()
 	home, err := os.UserHomeDir()

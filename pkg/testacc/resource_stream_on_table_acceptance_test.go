@@ -808,3 +808,104 @@ func TestAcc_StreamOnTable_ExternalStreamTypeChange(t *testing.T) {
 		},
 	})
 }
+
+// Test for https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896
+func TestAcc_StreamOnTable_ImportShowInitialRowsNotSet(t *testing.T) {
+	table, tableCleanup := testClient().Table.CreateWithChangeTracking(t)
+	t.Cleanup(tableCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	streamModel := model.StreamOnTableBase("test", id, table.ID()).
+		WithAppendOnly(r.BooleanFalse)
+
+	// Note: these tests have split import (with persisting state) + ConfigPlanChecks.
+	// This is because in the TF framework, one cannot assert plan after the import without applying it.
+	// Additionally, after each variant, we destroy the object and recreate in order to import in the next step.
+	// It is not possible to import the resource when it already exists in the state when using ImportStatePersist.
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StreamOnTable),
+		Steps: []resource.TestStep{
+			// 1. Prove the error happens in v2.15.0.
+			{
+				PreConfig: func() {
+					_, streamCleanup := testClient().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
+					t.Cleanup(streamCleanup)
+				},
+				ExternalProviders:  ExternalProviderWithExactVersion("2.15.0"),
+				Config:             requiredProvidersBlock("2.15.0") + config.FromModels(t, streamModel),
+				ResourceName:       streamModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, streamModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(streamModel.ResourceReference(), "show_initial_rows", tfjson.ActionUpdate, nil, sdk.String(r.BooleanDefault)),
+					},
+				},
+			},
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, streamModel),
+				Destroy:           true,
+			},
+			// 2. Prove the state upgrader fixes it: after upgrade, the plan is empty.
+			{
+				PreConfig: func() {
+					_, streamCleanup := testClient().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
+					t.Cleanup(streamCleanup)
+				},
+				ExternalProviders:  ExternalProviderWithExactVersion("2.15.0"),
+				Config:             requiredProvidersBlock("2.15.0") + config.FromModels(t, streamModel),
+				ResourceName:       streamModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
+				Destroy:                  true,
+			},
+			// 3. Prove that importint straight to >v2.15.0 has correct behavior.
+			{
+				PreConfig: func() {
+					_, streamCleanup := testClient().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
+					t.Cleanup(streamCleanup)
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
+				ResourceName:             streamModel.ResourceReference(),
+				ImportState:              true,
+				ImportStateId:            id.FullyQualifiedName(),
+				ImportStatePersist:       true,
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
+						planchecks.PrintPlanDetails(streamModel.ResourceReference(), "show_initial_rows", "append_only"),
+					},
+				},
+			},
+		},
+	})
+}
