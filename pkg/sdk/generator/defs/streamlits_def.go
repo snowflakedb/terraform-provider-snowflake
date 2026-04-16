@@ -75,30 +75,19 @@ var streamlitsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-streamlits",
-	g.DbStruct("streamlitsRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("database_name", "string").
-		Field("schema_name", "string").
-		Field("title", "sql.NullString").
-		Field("owner", "string").
-		Field("comment", "sql.NullString").
-		Field("query_warehouse", "sql.NullString").
-		Field("url_id", "string").
-		Field("owner_role_type", "string"),
-	g.PlainStruct("Streamlit").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("DatabaseName", "string").
-		Field("SchemaName", "string").
-		Field("Title", "string").
-		Field("Owner", "string").
-		Field("Comment", "string").
-		Field("QueryWarehouse", "string").
-		Field("UrlId", "string").
-		Field("OwnerRoleType", "string"),
+	g.StructPair("streamlitsRow", "Streamlit").
+		Text("created_on").
+		Text("name").
+		Text("database_name").
+		Text("schema_name").
+		OptionalText("title", g.WithRequiredInPlain()).
+		Text("owner").
+		OptionalText("comment", g.WithRequiredInPlain()).
+		OptionalText("query_warehouse", g.WithRequiredInPlain()).
+		Text("url_id").
+		Text("owner_role_type"),
 	g.NewQueryStruct("ShowStreamlits").
 		Show().
 		Terse().
@@ -109,33 +98,21 @@ var streamlitsDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-streamlit",
-	g.DbStruct("streamlitsDetailRow").
-		Field("name", "string").
-		Field("title", "sql.NullString").
-		Field("root_location", "string").
-		Field("main_file", "string").
-		Field("query_warehouse", "sql.NullString").
-		Field("url_id", "string").
-		Field("default_packages", "string").
-		Field("user_packages", "string").
-		Field("import_urls", "string").
-		Field("external_access_integrations", "string").
-		Field("external_access_secrets", "string"),
-	g.PlainStruct("StreamlitDetail").
-		Field("Name", "string").
-		Field("Title", "string").
-		Field("RootLocation", "string").
-		Field("MainFile", "string").
-		Field("QueryWarehouse", "string").
-		Field("UrlId", "string").
-		Field("DefaultPackages", "string").
-		Field("UserPackages", "[]string").
-		Field("ImportUrls", "[]string").
-		Field("ExternalAccessIntegrations", "[]string").
-		Field("ExternalAccessSecrets", "string"),
+	g.StructPair("streamlitsDetailRow", "StreamlitDetail").
+		Text("name").
+		OptionalText("title", g.WithRequiredInPlain()).
+		Text("root_location").
+		Text("main_file").
+		OptionalText("query_warehouse", g.WithRequiredInPlain()).
+		Text("url_id").
+		Text("default_packages").
+		StringList("user_packages").
+		StringList("import_urls").
+		StringList("external_access_integrations").
+		Text("external_access_secrets"),
 	g.NewQueryStruct("DescribeStreamlit").
 		Describe().
 		SQL("STREAMLIT").

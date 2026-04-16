@@ -6,55 +6,30 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var taskDbRow = g.DbStruct("taskDBRow").
+var taskPairs = g.StructPair("taskDBRow", "Task").
 	Text("created_on").
 	Text("name").
 	Text("id").
 	Text("database_name").
 	Text("schema_name").
 	Text("owner").
-	OptionalText("comment").
-	OptionalText("warehouse").
-	OptionalText("schedule").
-	Text("predecessors").
-	Text("state").
+	OptionalText("comment", g.WithRequiredInPlain()).
+	Field("warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Warehouse")).
+	OptionalText("schedule", g.WithRequiredInPlain()).
+	Field("predecessors", "string", "[]SchemaObjectIdentifier").
+	PlainField("state", "TaskState").
 	Text("definition").
-	OptionalText("condition").
-	Text("allow_overlapping_execution").
-	OptionalText("error_integration").
-	OptionalText("last_committed_on").
-	OptionalText("last_suspended_on").
+	OptionalText("condition", g.WithRequiredInPlain()).
+	Field("allow_overlapping_execution", "string", "bool").
+	Field("error_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("ErrorIntegration")).
+	OptionalText("last_committed_on", g.WithRequiredInPlain()).
+	OptionalText("last_suspended_on", g.WithRequiredInPlain()).
 	Text("owner_role_type").
-	OptionalText("config").
-	OptionalText("budget").
-	Text("task_relations").
-	OptionalText("last_suspended_reason").
-	OptionalText("target_completion_interval")
-
-var task = g.PlainStruct("Task").
-	Text("CreatedOn").
-	Text("Name").
-	Text("Id").
-	Text("DatabaseName").
-	Text("SchemaName").
-	Text("Owner").
-	Text("Comment").
-	Field("Warehouse", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier]()).
-	Text("Schedule").
-	Field("Predecessors", g.KindOfTSlice[sdkcommons.SchemaObjectIdentifier]()).
-	Field("State", g.KindOfT[sdkcommons.TaskState]()).
-	Text("Definition").
-	Text("Condition").
-	Bool("AllowOverlappingExecution").
-	Field("ErrorIntegration", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier]()).
-	Text("LastCommittedOn").
-	Text("LastSuspendedOn").
-	Text("OwnerRoleType").
-	Text("Config").
-	Text("Budget").
-	Field("TaskRelations", "TaskRelations").
-	Text("LastSuspendedReason").
-	Field("TargetCompletionInterval", "*TaskTargetCompletionInterval")
+	OptionalText("config", g.WithRequiredInPlain()).
+	OptionalText("budget", g.WithRequiredInPlain()).
+	PlainField("task_relations", "TaskRelations").
+	OptionalText("last_suspended_reason", g.WithRequiredInPlain()).
+	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"))
 
 var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
 	OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
@@ -212,10 +187,9 @@ var tasksDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-tasks",
-		taskDbRow,
-		task,
+		taskPairs,
 		g.NewQueryStruct("ShowTasks").
 			Show().
 			Terse().
@@ -230,11 +204,10 @@ var tasksDef = g.NewInterface(
 		g.ShowByIDExtendedInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-task",
-		taskDbRow,
-		task,
+		taskPairs,
 		g.NewQueryStruct("DescribeTask").
 			Describe().
 			SQL("TASK").

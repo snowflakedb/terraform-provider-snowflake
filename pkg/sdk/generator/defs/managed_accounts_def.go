@@ -6,27 +6,16 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var managedAccountDbRow = g.DbStruct("managedAccountDBRow").
-	OptionalText("account_name").
+var managedAccountPairs = g.StructPair("managedAccountDBRow", "ManagedAccount").
+	OptionalText("account_name", g.WithPlainFieldName("Name"), g.WithRequiredInPlain()).
 	Text("cloud").
 	Text("region").
-	OptionalText("account_locator").
+	OptionalText("account_locator", g.WithPlainFieldName("Locator"), g.WithRequiredInPlain()).
 	Text("created_on").
-	OptionalText("account_url").
-	Text("account_locator_url").
+	OptionalText("account_url", g.WithPlainFieldName("URL"), g.WithRequiredInPlain()).
+	Text("account_locator_url", g.WithPlainFieldName("AccountLocatorURL")).
 	Bool("is_reader").
 	OptionalText("comment")
-
-var managedAccount = g.PlainStruct("ManagedAccount").
-	Text("Name").
-	Text("Cloud").
-	Text("Region").
-	Text("Locator").
-	Text("CreatedOn").
-	Text("URL").
-	Text("AccountLocatorURL").
-	Bool("IsReader").
-	OptionalText("Comment")
 
 var managedAccountsDef = g.NewInterface(
 	"ManagedAccounts",
@@ -61,10 +50,9 @@ var managedAccountsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-managed-accounts",
-		managedAccountDbRow,
-		managedAccount,
+		managedAccountPairs,
 		g.NewQueryStruct("ShowManagedAccounts").
 			Show().
 			SQL("MANAGED ACCOUNTS").

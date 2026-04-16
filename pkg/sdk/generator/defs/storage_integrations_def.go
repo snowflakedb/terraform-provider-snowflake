@@ -134,22 +134,15 @@ var storageIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-integrations",
-		g.DbStruct("showStorageIntegrationsDbRow").
+		g.StructPair("showStorageIntegrationsDbRow", "StorageIntegration").
 			Text("name").
-			Text("type").
+			Text("type", g.WithPlainFieldName("StorageType")).
 			Text("category").
 			Bool("enabled").
-			OptionalText("comment").
+			OptionalText("comment", g.WithRequiredInPlain()).
 			Time("created_on"),
-		g.PlainStruct("StorageIntegration").
-			Text("Name").
-			Text("StorageType").
-			Text("Category").
-			Bool("Enabled").
-			Text("Comment").
-			Time("CreatedOn"),
 		g.NewQueryStruct("ShowStorageIntegrations").
 			Show().
 			SQL("STORAGE INTEGRATIONS").
@@ -158,19 +151,14 @@ var storageIntegrationsDef = g.NewInterface(
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
-		g.DbStruct("descStorageIntegrationsDbRow").
-			Text("property").
-			Text("property_type").
-			Text("property_value").
-			Text("property_default"),
-		g.PlainStruct("StorageIntegrationProperty").
-			Text("Name").
-			Text("Type").
-			Text("Value").
-			Text("Default"),
+		g.StructPair("descStorageIntegrationsDbRow", "StorageIntegrationProperty").
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeStorageIntegration").
 			Describe().
 			SQL("STORAGE INTEGRATION").

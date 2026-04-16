@@ -61,30 +61,19 @@ var networkRulesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-network-rules",
-		g.DbStruct("ShowNetworkRulesRow").
+		g.StructPair("ShowNetworkRulesRow", "NetworkRule").
 			Time("created_on").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
 			Text("comment").
-			Text("type").
-			Text("mode").
-			Number("entries_in_valuelist").
+			PlainField("type", "NetworkRuleType").
+			PlainField("mode", "NetworkRuleMode").
+			Number("entries_in_valuelist", g.WithPlainFieldName("EntriesInValueList")).
 			Text("owner_role_type"),
-		g.PlainStruct("NetworkRule").
-			Time("CreatedOn").
-			Text("Name").
-			Text("DatabaseName").
-			Text("SchemaName").
-			Text("Owner").
-			Text("Comment").
-			Field("Type", "NetworkRuleType").
-			Field("Mode", "NetworkRuleMode").
-			Number("EntriesInValueList").
-			Text("OwnerRoleType"),
 		g.NewQueryStruct("ShowNetworkRules").
 			Show().
 			SQL("NETWORK RULES").
@@ -97,29 +86,19 @@ var networkRulesDef = g.NewInterface(
 		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-network-rule",
-		g.DbStruct("DescNetworkRulesRow").
+		g.StructPair("DescNetworkRulesRow", "NetworkRuleDetails").
 			Time("created_on").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
 			Text("comment").
-			Text("type").
-			Text("mode").
-			Text("value_list"),
-		g.PlainStruct("NetworkRuleDetails").
-			Time("CreatedOn").
-			Text("Name").
-			Text("DatabaseName").
-			Text("SchemaName").
-			Text("Owner").
-			Text("Comment").
-			Field("Type", "NetworkRuleType").
-			Field("Mode", "NetworkRuleMode").
-			Field("ValueList", "[]string"),
+			PlainField("type", "NetworkRuleType").
+			PlainField("mode", "NetworkRuleMode").
+			StringList("value_list"),
 		g.NewQueryStruct("ShowNetworkRules").
 			Describe().
 			SQL("NETWORK RULE").

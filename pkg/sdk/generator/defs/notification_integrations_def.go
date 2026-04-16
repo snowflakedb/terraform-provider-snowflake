@@ -197,22 +197,15 @@ var notificationIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-integrations",
-		g.DbStruct("showNotificationIntegrationsDbRow").
+		g.StructPair("showNotificationIntegrationsDbRow", "NotificationIntegration").
 			Text("name").
-			Text("type").
+			Text("type", g.WithPlainFieldName("NotificationType")).
 			Text("category").
 			Bool("enabled").
-			OptionalText("comment").
+			OptionalText("comment", g.WithRequiredInPlain()).
 			Time("created_on"),
-		g.PlainStruct("NotificationIntegration").
-			Text("Name").
-			Text("NotificationType").
-			Text("Category").
-			Bool("Enabled").
-			Text("Comment").
-			Time("CreatedOn"),
 		g.NewQueryStruct("ShowNotificationIntegrations").
 			Show().
 			SQL("NOTIFICATION INTEGRATIONS").
@@ -221,19 +214,14 @@ var notificationIntegrationsDef = g.NewInterface(
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
-		g.DbStruct("descNotificationIntegrationsDbRow").
-			Text("property").
-			Text("property_type").
-			Text("property_value").
-			Text("property_default"),
-		g.PlainStruct("NotificationIntegrationProperty").
-			Text("Name").
-			Text("Type").
-			Text("Value").
-			Text("Default"),
+		g.StructPair("descNotificationIntegrationsDbRow", "NotificationIntegrationProperty").
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeNotificationIntegration").
 			Describe().
 			SQL("NOTIFICATION INTEGRATION").

@@ -6,31 +6,18 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var gitRepositoryDbRow = g.DbStruct("gitRepositoriesRow").
+var gitRepositoryPairs = g.StructPair("gitRepositoriesRow", "GitRepository").
 	Time("created_on").
 	Text("name").
 	Text("database_name").
 	Text("schema_name").
 	Text("origin").
-	Text("api_integration").
-	OptionalText("git_credentials").
+	OptionalAccountObjectIdentifier("api_integration", g.WithPlainFieldName("ApiIntegration")).
+	Field("git_credentials", "sql.NullString", "*SchemaObjectIdentifier", g.WithPlainFieldName("GitCredentials")).
 	Text("owner").
 	Text("owner_role_type").
 	OptionalText("comment").
 	OptionalTime("last_fetched_at")
-
-var gitRepository = g.PlainStruct("GitRepository").
-	Time("CreatedOn").
-	Text("Name").
-	Text("DatabaseName").
-	Text("SchemaName").
-	Text("Origin").
-	Field("ApiIntegration", "*AccountObjectIdentifier").
-	Field("GitCredentials", "*SchemaObjectIdentifier").
-	Text("Owner").
-	Text("OwnerRoleType").
-	OptionalText("Comment").
-	OptionalTime("LastFetchedAt")
 
 var gitRepositoriesDef = g.NewInterface(
 	"GitRepositories",
@@ -90,20 +77,18 @@ var gitRepositoriesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-git-repository",
-	gitRepositoryDbRow,
-	gitRepository,
+	gitRepositoryPairs,
 	g.NewQueryStruct("DescribeGitRepository").
 		Describe().
 		SQL("GIT REPOSITORY").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-git-repositories",
-	gitRepositoryDbRow,
-	gitRepository,
+	gitRepositoryPairs,
 	g.NewQueryStruct("ShowGitRepositories").
 		Show().
 		SQL("GIT REPOSITORIES").
