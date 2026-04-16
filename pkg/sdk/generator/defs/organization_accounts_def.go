@@ -113,6 +113,24 @@ var organizationAccountsDef = g.NewInterface(
 			OptionalLike(),
 	).
 	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering).
+	WithCustomInterfaceMethod("ShowParameters", "", nil, "[]*Parameter", "error").
+	WithCustomInterfaceMethod("UnsetAllParameters", "", nil, "error").
+	WithCustomInterfaceMethod(
+		"UnsetPolicySafely",
+		"UnsetPolicySafely unsets a policy on the current account by a given supported kind.\nIt ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.",
+		[]*g.MethodParameter{g.NewMethodParameter("kind", "PolicyKind")},
+		"error",
+	).
+	WithCustomInterfaceMethod(
+		"SetPolicySafely",
+		"SetPolicySafely sets a policy on the current account by a given supported kind.\nIt firstly tries to unset the policy with UnsetPolicySafely method to make sure that the policy is not set,\nthen proceeds by setting the passed policy on the organization account.",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("kind", "PolicyKind"),
+			g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]()),
+		},
+		"error",
+	).
+	WithCustomInterfaceMethod("UnsetAll", "", nil, "error").
 	WithEnums(
 		OrganizationAccountEditionEnumDef,
 	)

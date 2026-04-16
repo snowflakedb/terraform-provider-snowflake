@@ -125,4 +125,10 @@ var sessionPoliciesDef = g.NewInterface(
 			Number("SessionUiIdleTimeoutMins").
 			StringList("AllowedSecondaryRoles").
 			StringList("BlockedSecondaryRoles"),
+	).
+	WithCustomInterfaceMethod(
+		"DescribeDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*SessionPolicyDetails", "error",
 	)

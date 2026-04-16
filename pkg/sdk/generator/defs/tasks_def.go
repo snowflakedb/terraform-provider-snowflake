@@ -223,4 +223,25 @@ var tasksDef = g.NewInterface(
 			Name().
 			OptionalSQL("RETRY LAST").
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	WithCustomInterfaceMethod(
+		"ShowParameters",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"[]*Parameter", "error",
+	).
+	WithCustomInterfaceMethod(
+		"SuspendRootTasks",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("taskId", g.KindOfT[sdkcommons.SchemaObjectIdentifier]()),
+			g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]()),
+		},
+		"[]SchemaObjectIdentifier", "error",
+	).
+	WithCustomInterfaceMethod(
+		"ResumeTasks",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("ids", "[]SchemaObjectIdentifier")},
+		"error",
 	)

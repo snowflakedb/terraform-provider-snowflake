@@ -97,7 +97,13 @@ var semanticViewsDef = g.NewInterface(
 			OptionalStartsWith().
 			OptionalLimitFrom(),
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDInFiltering, g.ShowByIDLikeFiltering)
+	ShowByIdOperationWithFiltering(g.ShowByIDInFiltering, g.ShowByIDLikeFiltering).
+	WithCustomInterfaceMethod(
+		"DescribeSemanticViewDetails",
+		"DescribeSemanticViewDetails returns converted describe output for semantic views.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*SemanticViewDescribeDetails", "error",
+	)
 
 var primaryKey = g.NewQueryStruct("PrimaryKeys").
 	ListAssignment("PRIMARY KEY", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals().Required())
