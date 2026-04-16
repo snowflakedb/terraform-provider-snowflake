@@ -212,14 +212,13 @@ type DropHybridTableOptions struct {
 
 // ShowHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-hybrid-tables.
 type ShowHybridTableOptions struct {
-	show         bool  `ddl:"static" sql:"SHOW"`
-	Terse        *bool `ddl:"keyword" sql:"TERSE"`
-	hybridTables bool  `ddl:"static" sql:"HYBRID TABLES"`
-	Like         *Like `ddl:"keyword" sql:"LIKE"`
-	// adjusted manually
-	In         *TableIn   `ddl:"keyword" sql:"IN"`
-	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+	show         bool       `ddl:"static" sql:"SHOW"`
+	Terse        *bool      `ddl:"keyword" sql:"TERSE"`
+	hybridTables bool       `ddl:"static" sql:"HYBRID TABLES"`
+	Like         *Like      `ddl:"keyword" sql:"LIKE"`
+	In           *TableIn   `ddl:"keyword" sql:"IN"`
+	StartsWith   *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit        *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 type hybridTableRow struct {
@@ -316,10 +315,9 @@ type DropIndexHybridTableOptions struct {
 
 // ShowIndexesHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-indexes.
 type ShowIndexesHybridTableOptions struct {
-	show    bool  `ddl:"static" sql:"SHOW"`
-	indexes bool  `ddl:"static" sql:"INDEXES"`
-	Like    *Like `ddl:"keyword" sql:"LIKE"`
-	// adjusted manually
+	show       bool       `ddl:"static" sql:"SHOW"`
+	indexes    bool       `ddl:"static" sql:"INDEXES"`
+	Like       *Like      `ddl:"keyword" sql:"LIKE"`
 	In         *TableIn   `ddl:"keyword" sql:"IN"`
 	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
