@@ -218,9 +218,9 @@ func Test_ToNetworkRuleType(t *testing.T) {
 
 		// Supported Values
 		{input: "IPV4", want: NetworkRuleTypeIpv4},
-		{input: "AWSVPCEID", want: NetworkRuleTypeAwsVpcEndpointId},
-		{input: "AZURELINKID", want: NetworkRuleTypeAzureLinkId},
-		{input: "GCPPSCID", want: NetworkRuleTypeGcpPscId},
+		{input: "AWSVPCEID", want: NetworkRuleTypeAwsvpceid},
+		{input: "AZURELINKID", want: NetworkRuleTypeAzurelinkid},
+		{input: "GCPPSCID", want: NetworkRuleTypeGcppscid},
 		{input: "HOST_PORT", want: NetworkRuleTypeHostPort},
 		{input: "PRIVATE_HOST_PORT", want: NetworkRuleTypePrivateHostPort},
 	}

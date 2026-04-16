@@ -298,7 +298,7 @@ func TestViews_Alter(t *testing.T) {
 
 		opts := defaultOpts()
 		opts.ModifyDataMetricFunction = &ViewModifyDataMetricFunctions{
-			DataMetricFunction: []ViewModifyDataMetricFunction{{DataMetricFunction: dmfId, On: []Column{{"foo"}}, ViewDataMetricScheduleStatusOperationOption: ViewDataMetricScheduleStatusOperationSuspend}},
+			DataMetricFunction: []ViewModifyDataMetricFunction{{DataMetricFunction: dmfId, On: []Column{{"foo"}}, ViewDataMetricScheduleStatusOperationOption: ViewDataMetricScheduleStatusOperationOptionSuspend}},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s MODIFY DATA METRIC FUNCTION %s ON (\"foo\") SUSPEND", id.FullyQualifiedName(), dmfId.FullyQualifiedName())
 	})
