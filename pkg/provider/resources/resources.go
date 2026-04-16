@@ -89,6 +89,7 @@ const (
 	SecretWithGenericString                                resource = "snowflake_secret_with_generic_string"
 	SemanticView                                           resource = "snowflake_semantic_view"
 	SessionParameter                                       resource = "snowflake_session_parameter"
+	SessionPolicy                                          resource = "snowflake_session_policy"
 	Sequence                                               resource = "snowflake_sequence"
 	Service                                                resource = "snowflake_service"
 	ServiceUser                                            resource = "snowflake_service_user"

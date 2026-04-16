@@ -24,6 +24,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.15.x ➞ v2.16.0
+
+### *(new feature)* New `snowflake_session_policy` resource
+
+We have added a new preview resource for managing session policies: [snowflake_session_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_session_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to manage session policies with Terraform.
+
 ## v2.14.x ➞ v2.15.0
 
 ### **IMPORTANT** *(improvement)* Go driver bumped to v2

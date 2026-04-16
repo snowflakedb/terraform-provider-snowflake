@@ -41,6 +41,7 @@
 - [snowflake_procedure_sql](./docs/resources/procedure_sql)
 - [snowflake_semantic_view](./docs/resources/semantic_view)
 - [snowflake_sequence](./docs/resources/sequence)
+- [snowflake_session_policy](./docs/resources/session_policy)
 - [snowflake_share](./docs/resources/share)
 - [snowflake_stage](./docs/resources/stage)
 - [snowflake_stage_external_azure](./docs/resources/stage_external_azure)
