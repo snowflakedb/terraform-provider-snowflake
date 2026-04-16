@@ -445,10 +445,7 @@ func TestInt_Warehouses(t *testing.T) {
 		err := client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
 			Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(sdk.WarehouseTypeAdaptive)},
 		})
-		// TODO(SNOW-3383116): Fix this test when the issue is resolved
-		// require.NoError(t, err)
-		require.ErrorContains(t, err, "invalid property 'WAREHOUSE_CREDIT_LIMIT' for 'WAREHOUSE'")
-		return
+		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
 			HasType(sdk.WarehouseTypeAdaptive).
