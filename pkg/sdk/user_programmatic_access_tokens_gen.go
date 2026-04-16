@@ -115,7 +115,7 @@ type ShowUserProgrammaticAccessTokenOptions struct {
 type programmaticAccessTokenResultDBRow struct {
 	Name                                 string         `db:"name"`
 	UserName                             string         `db:"user_name"`
-	RoleRestriction                      string         `db:"role_restriction"`
+	RoleRestriction                      sql.NullString `db:"role_restriction"`
 	ExpiresAt                            time.Time      `db:"expires_at"`
 	Status                               string         `db:"status"`
 	Comment                              sql.NullString `db:"comment"`

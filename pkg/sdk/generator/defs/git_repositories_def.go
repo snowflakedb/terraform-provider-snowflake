@@ -19,6 +19,19 @@ var gitRepositoryPairs = g.StructPair("gitRepositoriesRow", "GitRepository").
 	OptionalText("comment").
 	OptionalTime("last_fetched_at")
 
+var gitBranchesPairs = g.StructPair("gitBranchesRow", "GitBranch").
+	Text("name").
+	Text("path").
+	Text("checkouts").
+	Text("commit_hash")
+
+var gitTagsPairs = g.StructPair("gitTagsRow", "GitTag").
+	Text("name").
+	Text("path").
+	Text("commit_hash").
+	Text("author").
+	Text("message")
+
 var gitRepositoriesDef = g.NewInterface(
 	"GitRepositories",
 	"GitRepository",
@@ -98,42 +111,22 @@ var gitRepositoriesDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"ShowGitBranches",
 	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-git-branches",
-	g.DbStruct("gitBranchesRow").
-		Text("name").
-		Text("path").
-		Text("checkouts").
-		Text("commit_hash"),
-	g.PlainStruct("GitBranch").
-		Text("Name").
-		Text("Path").
-		Text("Checkouts").
-		Text("CommitHash"),
+	gitBranchesPairs,
 	g.NewQueryStruct("ShowGitBranches").
 		SQL("SHOW GIT BRANCHES").
 		OptionalLike().
 		SQL("IN").
 		OptionalSQL("GIT REPOSITORY").
 		Name(),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"ShowGitTags",
 	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-git-tags",
-	g.DbStruct("gitTagsRow").
-		Text("name").
-		Text("path").
-		Text("commit_hash").
-		Text("author").
-		Text("message"),
-	g.PlainStruct("GitTag").
-		Text("Name").
-		Text("Path").
-		Text("CommitHash").
-		Text("Author").
-		Text("Message"),
+	gitTagsPairs,
 	g.NewQueryStruct("ShowGitTags").
 		SQL("SHOW GIT TAGS").
 		OptionalLike().
