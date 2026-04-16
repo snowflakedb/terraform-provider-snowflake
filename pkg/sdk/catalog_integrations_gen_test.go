@@ -6,6 +6,14 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationCatalogSourceType]{"CatalogIntegrationCatalogSourceType", AllCatalogIntegrationCatalogSourceTypes, ToCatalogIntegrationCatalogSourceType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationTableFormat]{"CatalogIntegrationTableFormat", AllCatalogIntegrationTableFormats, ToCatalogIntegrationTableFormat})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationRestAuthenticationType]{"CatalogIntegrationRestAuthenticationType", AllCatalogIntegrationRestAuthenticationTypes, ToCatalogIntegrationRestAuthenticationType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationAccessDelegationMode]{"CatalogIntegrationAccessDelegationMode", AllCatalogIntegrationAccessDelegationModes, ToCatalogIntegrationAccessDelegationMode})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationCatalogApiType]{"CatalogIntegrationCatalogApiType", AllCatalogIntegrationCatalogApiTypes, ToCatalogIntegrationCatalogApiType})
+}
+
 // Added manually
 const (
 	glueAwsRoleArn       = "arn:aws:iam::123456789012:role/sqsAccess"

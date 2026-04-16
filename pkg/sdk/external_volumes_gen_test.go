@@ -10,6 +10,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StorageProvider]{"StorageProvider", AllStorageProviders, ToStorageProvider})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[S3StorageProvider]{"S3StorageProvider", AllS3StorageProviders, ToS3StorageProvider})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[S3EncryptionType]{"S3EncryptionType", AllS3EncryptionTypes, ToS3EncryptionType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[GCSEncryptionType]{"GCSEncryptionType", AllGCSEncryptionTypes, ToGCSEncryptionType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AzureEncryptionType]{"AzureEncryptionType", AllAzureEncryptionTypes, ToAzureEncryptionType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[S3CompatEncryptionType]{"S3CompatEncryptionType", AllS3CompatEncryptionTypes, ToS3CompatEncryptionType})
+}
+
 func TestExternalVolumes_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	// Minimal valid CreateExternalVolumeOptions
@@ -362,147 +371,6 @@ func TestExternalVolumes_Show(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW EXTERNAL VOLUMES LIKE '%s'", id.Name())
 	})
-}
-
-func Test_ExternalVolumes_ToS3EncryptionType(t *testing.T) {
-	type test struct {
-		input string
-		want  S3EncryptionType
-	}
-
-	valid := []test{
-		{input: "aws_sse_s3", want: S3EncryptionTypeAwsSseS3},
-		{input: "AWS_SSE_S3", want: S3EncryptionTypeAwsSseS3},
-		{input: "AWS_SSE_KMS", want: S3EncryptionTypeAwsSseKms},
-		{input: "NONE", want: S3EncryptionTypeNone},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToS3EncryptionType(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToS3EncryptionType(tc.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ExternalVolumes_ToStorageProvider(t *testing.T) {
-	type test struct {
-		input string
-		want  StorageProvider
-	}
-
-	valid := []test{
-		{input: "s3", want: StorageProviderS3},
-		{input: "S3", want: StorageProviderS3},
-		{input: "s3gov", want: StorageProviderS3gov},
-		{input: "S3GOV", want: StorageProviderS3gov},
-		{input: "gcs", want: StorageProviderGcs},
-		{input: "GCS", want: StorageProviderGcs},
-		{input: "azure", want: StorageProviderAzure},
-		{input: "AZURE", want: StorageProviderAzure},
-		{input: "s3compat", want: StorageProviderS3compat},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToStorageProvider(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToStorageProvider(tc.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ExternalVolumes_ToS3StorageProvider(t *testing.T) {
-	type test struct {
-		input string
-		want  S3StorageProvider
-	}
-
-	valid := []test{
-		{input: "s3", want: S3StorageProviderS3},
-		{input: "S3", want: S3StorageProviderS3},
-		{input: "s3gov", want: S3StorageProviderS3gov},
-		{input: "S3GOV", want: S3StorageProviderS3gov},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToS3StorageProvider(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToS3StorageProvider(tc.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ExternalVolumes_ToGCSEncryptionType(t *testing.T) {
-	type test struct {
-		input string
-		want  GCSEncryptionType
-	}
-
-	valid := []test{
-		{input: "gcs_sse_kms", want: GCSEncryptionTypeGcsSseKms},
-		{input: "GCS_SSE_KMS", want: GCSEncryptionTypeGcsSseKms},
-		{input: "NONE", want: GCSEncryptionTypeNone},
-		{input: "none", want: GCSEncryptionTypeNone},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToGCSEncryptionType(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToGCSEncryptionType(tc.input)
-			require.Error(t, err)
-		})
-	}
 }
 
 // External volume helper tests
