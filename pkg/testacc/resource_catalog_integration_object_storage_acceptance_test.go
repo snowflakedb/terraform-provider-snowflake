@@ -304,7 +304,7 @@ func TestAcc_CatalogIntegrationObjectStorage_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, invalidTableFormat),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid table format: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid catalog integration table format: INVALID`),
 			},
 		},
 	})

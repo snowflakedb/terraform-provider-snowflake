@@ -720,12 +720,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, invalidCatalogApiType),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid catalog api type: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid catalog integration catalog api type: INVALID`),
 			},
 			{
 				Config:      config.FromModels(t, invalidAccessDelegationMode),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid access delegation mode: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid catalog integration access delegation mode: INVALID`),
 			},
 			{
 				Config:      config.FromModels(t, emptyOAuthTokenUri),
