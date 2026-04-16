@@ -12,7 +12,7 @@ var gitRepositoryPairs = g.StructPair("gitRepositoriesRow", "GitRepository").
 	Text("database_name").
 	Text("schema_name").
 	Text("origin").
-	OptionalAccountObjectIdentifier("api_integration", g.WithPlainFieldName("ApiIntegration")).
+	AccountObjectIdentifier("api_integration", g.WithPlainFieldName("ApiIntegration")).
 	Field("git_credentials", "sql.NullString", "*SchemaObjectIdentifier", g.WithPlainFieldName("GitCredentials")).
 	Text("owner").
 	Text("owner_role_type").
