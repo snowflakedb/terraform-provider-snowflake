@@ -553,7 +553,7 @@ func TestInt_Stages(t *testing.T) {
 			WithIfExists(true).
 			WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 				WithStorageIntegration(ids.PrecreatedS3StorageIntegration).
-				WithEncryption(*sdk.NewExternalStageS3EncryptionRequest().WithNone(*sdk.NewExternalStageS3EncryptionTypeNoneRequest()))).
+				WithEncryption(*sdk.NewExternalStageS3EncryptionRequest().WithNone(*sdk.NewExternalStageS3EncryptionNoneRequest()))).
 			WithComment(sdk.StringAllowEmpty{Value: "Updated comment"}))
 		require.NoError(t, err)
 

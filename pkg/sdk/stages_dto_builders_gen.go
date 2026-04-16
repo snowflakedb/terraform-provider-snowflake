@@ -228,7 +228,7 @@ func (s *ExternalStageS3EncryptionRequest) WithAwsSseKms(awsSseKms ExternalStage
 	return s
 }
 
-func (s *ExternalStageS3EncryptionRequest) WithNone(none ExternalStageS3EncryptionTypeNoneRequest) *ExternalStageS3EncryptionRequest {
+func (s *ExternalStageS3EncryptionRequest) WithNone(none ExternalStageS3EncryptionNoneRequest) *ExternalStageS3EncryptionRequest {
 	s.None = &none
 	return s
 }
@@ -256,8 +256,8 @@ func (s *ExternalStageS3EncryptionAwsSseKmsRequest) WithKmsKeyId(kmsKeyId string
 	return s
 }
 
-func NewExternalStageS3EncryptionTypeNoneRequest() *ExternalStageS3EncryptionTypeNoneRequest {
-	s := ExternalStageS3EncryptionTypeNoneRequest{}
+func NewExternalStageS3EncryptionNoneRequest() *ExternalStageS3EncryptionNoneRequest {
+	s := ExternalStageS3EncryptionNoneRequest{}
 	return &s
 }
 

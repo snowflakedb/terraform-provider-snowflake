@@ -191,7 +191,7 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 			}
 		}
 		if r.ExternalStageParams.Encryption.None != nil {
-			opts.ExternalStageParams.Encryption.None = &ExternalStageS3EncryptionTypeNone{}
+			opts.ExternalStageParams.Encryption.None = &ExternalStageS3EncryptionNone{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -396,7 +396,7 @@ func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOp
 				}
 			}
 			if r.ExternalStageParams.Encryption.None != nil {
-				opts.ExternalStageParams.Encryption.None = &ExternalStageS3EncryptionTypeNone{}
+				opts.ExternalStageParams.Encryption.None = &ExternalStageS3EncryptionNone{}
 			}
 		}
 	}

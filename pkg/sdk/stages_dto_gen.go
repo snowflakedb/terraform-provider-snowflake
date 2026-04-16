@@ -82,7 +82,7 @@ type ExternalStageS3EncryptionRequest struct {
 	AwsCse    *ExternalStageS3EncryptionAwsCseRequest
 	AwsSseS3  *ExternalStageS3EncryptionAwsSseS3Request
 	AwsSseKms *ExternalStageS3EncryptionAwsSseKmsRequest
-	None      *ExternalStageS3EncryptionTypeNoneRequest
+	None      *ExternalStageS3EncryptionNoneRequest
 }
 
 type ExternalStageS3EncryptionAwsCseRequest struct {
@@ -95,7 +95,7 @@ type ExternalStageS3EncryptionAwsSseKmsRequest struct {
 	KmsKeyId *string
 }
 
-type ExternalStageS3EncryptionTypeNoneRequest struct{}
+type ExternalStageS3EncryptionNoneRequest struct{}
 
 type StageS3CommonDirectoryTableOptionsRequest struct {
 	Enable          bool
