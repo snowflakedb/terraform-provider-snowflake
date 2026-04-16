@@ -341,13 +341,6 @@ func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadCont
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, scimIntegrationSchema, []string{
-			"network_policy",
-			"sync_password",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.SecurityIntegrationToSchema(integration)}); err != nil {
 			return diag.FromErr(err)
 		}

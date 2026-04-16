@@ -391,27 +391,6 @@ func ReadAccount(withExternalChangesMarking bool) schema.ReadContextFunc {
 			); err != nil {
 				return diag.FromErr(err)
 			}
-		} else {
-			if err = setStateToValuesFromConfig(d, accountSchema, []string{
-				"name",
-				"admin_name",
-				"admin_password",
-				"admin_rsa_public_key",
-				"admin_user_type",
-				"first_name",
-				"last_name",
-				"email",
-				"must_change_password",
-				"edition",
-				"region_group",
-				"region",
-				"comment",
-				"is_org_admin",
-				"grace_period_in_days",
-				"consumption_billing_entity",
-			}); err != nil {
-				return diag.FromErr(err)
-			}
 		}
 
 		if errs := errors.Join(

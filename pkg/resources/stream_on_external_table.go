@@ -183,12 +183,6 @@ func ReadStreamOnExternalTable(withExternalChangesMarking bool) schema.ReadConte
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, streamOnExternalTableSchema, []string{
-			"insert_only",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		return nil
 	}
 }

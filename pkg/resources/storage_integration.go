@@ -232,13 +232,6 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, storageIntegrationSchema, []string{
-			"storage_aws_external_id",
-			"use_privatelink_endpoint",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		errs := errors.Join(
 			d.Set("name", s.Name),
 			d.Set("type", s.StorageType),

@@ -324,12 +324,6 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, externalVolumeSchema, []string{
-			"allow_writes",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		externalVolumeDescribe, err := client.ExternalVolumes.Describe(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)

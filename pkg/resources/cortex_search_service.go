@@ -206,12 +206,6 @@ func GetReadCortexSearchServiceFunc(withExternalChangesMarking bool) schema.Read
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, cortexSearchServiceSchema, []string{
-			"embedding_model",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		errs := errors.Join(
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CortexSearchServiceDetailsToSchema(cortexSearchServiceDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
