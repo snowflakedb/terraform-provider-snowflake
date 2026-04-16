@@ -92,10 +92,10 @@ var passwordPoliciesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-password-policies",
-		g.DbStruct("passwordPolicyDBRow").
-			Field("created_on", "time.Time").
+		g.StructPair("passwordPolicyDBRow", "PasswordPolicy").
+			Time("created_on").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
@@ -104,16 +104,6 @@ var passwordPoliciesDef = g.NewInterface(
 			Text("comment").
 			Text("owner_role_type").
 			Text("options"),
-		g.PlainStruct("PasswordPolicy").
-			Field("CreatedOn", "time.Time").
-			Text("Name").
-			Text("DatabaseName").
-			Text("SchemaName").
-			Text("Kind").
-			Text("Owner").
-			Text("Comment").
-			Text("OwnerRoleType").
-			Text("Options"),
 		g.NewQueryStruct("ShowPasswordPolicies").
 			Show().
 			SQL("PASSWORD POLICIES").
@@ -122,19 +112,14 @@ var passwordPoliciesDef = g.NewInterface(
 			OptionalLimit(),
 	).
 	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering, g.ShowByIDInFiltering).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-password-policy",
-		g.DbStruct("describePasswordPolicyDBRow").
+		g.StructPair("describePasswordPolicyDBRow", "PasswordPolicyProperty").
 			Text("property").
 			Text("value").
 			Text("default").
 			Text("description"),
-		g.PlainStruct("PasswordPolicyProperty").
-			Text("Property").
-			Text("Value").
-			Text("Default").
-			Text("Description"),
 		g.NewQueryStruct("DescribePasswordPolicy").
 			Describe().
 			SQL("PASSWORD POLICY").
