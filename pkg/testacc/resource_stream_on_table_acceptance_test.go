@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"testing"
 
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -847,7 +846,7 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 			// Import WITHOUT experiment — show_initial_rows is not set during import.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, streamModel),
+				Config:                   config.FromModels(t, streamModel),
 				ResourceName:             streamModel.ResourceReference(),
 				ImportState:              true,
 				ImportStateId:            id.FullyQualifiedName(),
@@ -860,7 +859,7 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 			// Plan WITHOUT experiment — proves the bug: config has "default", state has nil → permadiff.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, streamModel),
+				Config:                   config.FromModels(t, streamModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -872,14 +871,14 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 			// Destroy to clear Terraform state before reimporting with the experiment enabled.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, streamModel),
+				Config:                   config.FromModels(t, streamModel),
 				Destroy:                  true,
 			},
 			// Import WITH experiment — show_initial_rows is set to "default".
 			{
 				PreConfig:                createStream,
 				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelWithExperiment, streamModel),
+				Config:                   config.FromModels(t, providerModelWithExperiment, streamModel),
 				ResourceName:             streamModel.ResourceReference(),
 				ImportState:              true,
 				ImportStatePersist:       true,
@@ -892,7 +891,7 @@ func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 			// Plan WITH experiment — proves the fix: config and state both have "default" → no diff.
 			{
 				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModelWithExperiment, streamModel),
+				Config:                   config.FromModels(t, providerModelWithExperiment, streamModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
