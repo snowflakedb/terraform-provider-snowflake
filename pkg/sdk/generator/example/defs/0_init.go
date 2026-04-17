@@ -13,6 +13,9 @@ func init() {
 		DatabaseRoles,
 		ToOptsOptionalExample,
 		SequencesDef,
+		PartialGenerationExample,
+		PairedStructExample,
+		EnumExamplesDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

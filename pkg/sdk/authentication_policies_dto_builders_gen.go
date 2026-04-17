@@ -40,6 +40,11 @@ func (s *CreateAuthenticationPolicyRequest) WithClientTypes(clientTypes []Client
 	return s
 }
 
+func (s *CreateAuthenticationPolicyRequest) WithClientPolicy(clientPolicy []AuthenticationPolicyClientPolicyEntry) *CreateAuthenticationPolicyRequest {
+	s.ClientPolicy = clientPolicy
+	return s
+}
+
 func (s *CreateAuthenticationPolicyRequest) WithSecurityIntegrations(securityIntegrations SecurityIntegrationsOptionRequest) *CreateAuthenticationPolicyRequest {
 	s.SecurityIntegrations = &securityIntegrations
 	return s
@@ -102,6 +107,11 @@ func (s *AuthenticationPolicyPatPolicyRequest) WithDefaultExpiryInDays(defaultEx
 
 func (s *AuthenticationPolicyPatPolicyRequest) WithMaxExpiryInDays(maxExpiryInDays int) *AuthenticationPolicyPatPolicyRequest {
 	s.MaxExpiryInDays = &maxExpiryInDays
+	return s
+}
+
+func (s *AuthenticationPolicyPatPolicyRequest) WithRequireRoleRestrictionForServiceUsers(requireRoleRestrictionForServiceUsers bool) *AuthenticationPolicyPatPolicyRequest {
+	s.RequireRoleRestrictionForServiceUsers = &requireRoleRestrictionForServiceUsers
 	return s
 }
 
@@ -188,6 +198,11 @@ func (s *AuthenticationPolicySetRequest) WithClientTypes(clientTypes []ClientTyp
 	return s
 }
 
+func (s *AuthenticationPolicySetRequest) WithClientPolicy(clientPolicy []AuthenticationPolicyClientPolicyEntry) *AuthenticationPolicySetRequest {
+	s.ClientPolicy = clientPolicy
+	return s
+}
+
 func (s *AuthenticationPolicySetRequest) WithSecurityIntegrations(securityIntegrations SecurityIntegrationsOptionRequest) *AuthenticationPolicySetRequest {
 	s.SecurityIntegrations = &securityIntegrations
 	return s
@@ -215,6 +230,11 @@ func NewAuthenticationPolicyUnsetRequest() *AuthenticationPolicyUnsetRequest {
 
 func (s *AuthenticationPolicyUnsetRequest) WithClientTypes(clientTypes bool) *AuthenticationPolicyUnsetRequest {
 	s.ClientTypes = &clientTypes
+	return s
+}
+
+func (s *AuthenticationPolicyUnsetRequest) WithClientPolicy(clientPolicy bool) *AuthenticationPolicyUnsetRequest {
+	s.ClientPolicy = &clientPolicy
 	return s
 }
 

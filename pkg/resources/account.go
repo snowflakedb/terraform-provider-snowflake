@@ -196,7 +196,7 @@ func ImportAccount(ctx context.Context, d *schema.ResourceData, meta any) ([]*sc
 		return nil, err
 	}
 
-	if _, err := ImportName[sdk.AccountIdentifier](context.Background(), d, nil); err != nil {
+	if _, err := ImportName[sdk.AccountIdentifier](ctx, d, nil); err != nil {
 		return nil, err
 	}
 

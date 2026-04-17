@@ -31,7 +31,7 @@ var oauthIntegrationForPartnerApplicationsSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		Description:      fmt.Sprintf("Creates an OAuth interface between Snowflake and a partner application. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationClients)),
+		Description:      fmt.Sprintf("Creates an OAuth interface between Snowflake and a partner application. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationClientOptions)),
 		ValidateDiagFunc: sdkValidation(sdk.ToOauthSecurityIntegrationClientOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToOauthSecurityIntegrationClientOption),
 	},
@@ -68,7 +68,7 @@ var oauthIntegrationForPartnerApplicationsSchema = map[string]*schema.Schema{
 	"oauth_use_secondary_roles": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      fmt.Sprintf("Specifies whether default secondary roles set in the user properties are activated by default in the session being opened. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationUseSecondaryRoles)),
+		Description:      fmt.Sprintf("Specifies whether default secondary roles set in the user properties are activated by default in the session being opened. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationUseSecondaryRolesOptions)),
 		ValidateDiagFunc: sdkValidation(sdk.ToOauthSecurityIntegrationUseSecondaryRolesOption),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToOauthSecurityIntegrationUseSecondaryRolesOption), IgnoreChangeToCurrentSnowflakeListValueInDescribe("oauth_use_secondary_roles")),
 	},

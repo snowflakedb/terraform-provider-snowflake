@@ -165,7 +165,7 @@ func TestAcc_ExternalVolumes_CompleteUseCase(t *testing.T) {
 							},
 							{
 								Name:               gcsLocationName,
-								StorageProvider:    string(sdk.StorageProviderGCS),
+								StorageProvider:    string(sdk.StorageProviderGcs),
 								StorageBaseUrl:     gcsBaseUrl,
 								EncryptionType:     "NONE",
 								GCSStorageLocation: &sdk.StorageLocationGcsDetails{},
@@ -181,7 +181,7 @@ func TestAcc_ExternalVolumes_CompleteUseCase(t *testing.T) {
 							},
 							{
 								Name:            s3CompatLocationName,
-								StorageProvider: string(sdk.StorageProviderS3Compatible),
+								StorageProvider: string(sdk.StorageProviderS3compat),
 								StorageBaseUrl:  s3CompatBaseUrl,
 								EncryptionType:  "NONE",
 								S3CompatStorageLocation: &sdk.StorageLocationS3CompatDetails{

@@ -47,7 +47,7 @@ var apiAuthCommonSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption), IgnoreChangeToCurrentSnowflakeListValueInDescribe("oauth_client_auth_method")),
-		Description:      fmt.Sprintf("Specifies that POST is used as the authentication method to the external service. If removed from the config, the resource is recreated. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption))),
+		Description:      fmt.Sprintf("Specifies that POST is used as the authentication method to the external service. If removed from the config, the resource is recreated. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptions))),
 	},
 	"oauth_access_token_validity": {
 		Type:             schema.TypeInt,
@@ -211,10 +211,10 @@ func handleApiAuthCreate(d *schema.ResourceData) (commonApiAuthCreate, error) {
 	return create, nil
 }
 
-func handleApiAuthImport(d *schema.ResourceData, integration *sdk.SecurityIntegration,
+func handleApiAuthImport(ctx context.Context, d *schema.ResourceData, integration *sdk.SecurityIntegration,
 	properties []sdk.SecurityIntegrationProperty,
 ) error {
-	if _, err := ImportName[sdk.AccountObjectIdentifier](context.Background(), d, nil); err != nil {
+	if _, err := ImportName[sdk.AccountObjectIdentifier](ctx, d, nil); err != nil {
 		return err
 	}
 

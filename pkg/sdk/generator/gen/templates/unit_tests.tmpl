@@ -1,6 +1,14 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
 
 import "testing"
+{{- if .Enums }}
+
+func init() {
+{{- range .Enums }}
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[{{ .Name }}]{"{{ .Name }}", All{{ .NamePlural }}, To{{ .Name }}})
+{{- end }}
+}
+{{- end }}
 
 {{ range .Operations }}
     {{- if .OptsField }}

@@ -50,7 +50,7 @@ type HybridTableColumn struct {
 }
 
 type HybridTableOutOfLineConstraint struct {
-	Name               *string              `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
+	Name               *string              `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	Type               ColumnConstraintType `ddl:"keyword"`
 	Columns            []string             `ddl:"keyword,parentheses"`
 	ForeignKey         *OutOfLineForeignKey `ddl:"keyword"`
@@ -118,12 +118,12 @@ type HybridTableConstraintActionAdd struct {
 type HybridTableConstraintActionRename struct {
 	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
 	OldName          string `ddl:"keyword,double_quotes"`
-	NewName          string `ddl:"parameter,no_equals,double_quotes" sql:"TO"`
+	NewName          string `ddl:"parameter,double_quotes,no_equals" sql:"TO"`
 }
 
 type HybridTableConstraintActionDrop struct {
 	drop           bool     `ddl:"static" sql:"DROP"`
-	ConstraintName *string  `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
@@ -212,13 +212,14 @@ type DropHybridTableOptions struct {
 
 // ShowHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-hybrid-tables.
 type ShowHybridTableOptions struct {
-	show         bool       `ddl:"static" sql:"SHOW"`
-	Terse        *bool      `ddl:"keyword" sql:"TERSE"`
-	hybridTables bool       `ddl:"static" sql:"HYBRID TABLES"`
-	Like         *Like      `ddl:"keyword" sql:"LIKE"`
-	In           *TableIn   `ddl:"keyword" sql:"IN"`
-	StartsWith   *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit        *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+	show         bool  `ddl:"static" sql:"SHOW"`
+	Terse        *bool `ddl:"keyword" sql:"TERSE"`
+	hybridTables bool  `ddl:"static" sql:"HYBRID TABLES"`
+	Like         *Like `ddl:"keyword" sql:"LIKE"`
+	// adjusted manually
+	In         *TableIn   `ddl:"keyword" sql:"IN"`
+	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 type hybridTableRow struct {
@@ -315,9 +316,10 @@ type DropIndexHybridTableOptions struct {
 
 // ShowIndexesHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-indexes.
 type ShowIndexesHybridTableOptions struct {
-	show       bool       `ddl:"static" sql:"SHOW"`
-	indexes    bool       `ddl:"static" sql:"INDEXES"`
-	Like       *Like      `ddl:"keyword" sql:"LIKE"`
+	show    bool  `ddl:"static" sql:"SHOW"`
+	indexes bool  `ddl:"static" sql:"INDEXES"`
+	Like    *Like `ddl:"keyword" sql:"LIKE"`
+	// adjusted manually
 	In         *TableIn   `ddl:"keyword" sql:"IN"`
 	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`

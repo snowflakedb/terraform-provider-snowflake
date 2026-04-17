@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+func mapNullTimeToNonNullableField(timeField *time.Time, sqlValue sql.NullTime) {
+	if sqlValue.Valid {
+		*timeField = sqlValue.Time
+	}
+}
+
+func mapNullStringToNonNullableField(stringField *string, sqlValue sql.NullString) {
+	if sqlValue.Valid {
+		*stringField = sqlValue.String
+	}
+}
+
 func mapNullString(stringField **string, sqlValue sql.NullString) {
 	if sqlValue.Valid {
 		*stringField = &sqlValue.String

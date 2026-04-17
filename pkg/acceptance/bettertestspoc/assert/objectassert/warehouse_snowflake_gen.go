@@ -386,3 +386,31 @@ func (w *WarehouseAssert) HasGeneration(expected sdk.WarehouseGeneration) *Wareh
 	})
 	return w
 }
+
+func (w *WarehouseAssert) HasMaxQueryPerformanceLevel(expected sdk.MaxQueryPerformanceLevel) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxQueryPerformanceLevel == nil {
+			return fmt.Errorf("expected max query performance level to have value; got: nil")
+		}
+		if *o.MaxQueryPerformanceLevel != expected {
+			return fmt.Errorf("expected max query performance level: %v; got: %v", expected, *o.MaxQueryPerformanceLevel)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasQueryThroughputMultiplier(expected int) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.QueryThroughputMultiplier == nil {
+			return fmt.Errorf("expected query throughput multiplier to have value; got: nil")
+		}
+		if *o.QueryThroughputMultiplier != expected {
+			return fmt.Errorf("expected query throughput multiplier: %v; got: %v", expected, *o.QueryThroughputMultiplier)
+		}
+		return nil
+	})
+	return w
+}

@@ -174,10 +174,9 @@ type DescribeMaterializedViewOptions struct {
 }
 
 type materializedViewDetailsRow struct {
-	Name string   `db:"name"`
-	Type DataType `db:"type"`
-	Kind string   `db:"kind"`
-	// manually adjusted name
+	Name       string         `db:"name"`
+	Type       DataType       `db:"type"`
+	Kind       string         `db:"kind"`
 	Null       string         `db:"null?"`
 	Default    sql.NullString `db:"default"`
 	PrimaryKey string         `db:"primary key"`

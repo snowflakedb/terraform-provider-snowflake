@@ -282,10 +282,9 @@ type DescribeViewOptions struct {
 }
 
 type viewDetailsRow struct {
-	Name string   `db:"name"`
-	Type DataType `db:"type"`
-	Kind string   `db:"kind"`
-	// adjusted manually
+	Name          string         `db:"name"`
+	Type          DataType       `db:"type"`
+	Kind          string         `db:"kind"`
 	Null          string         `db:"null?"`
 	Default       sql.NullString `db:"default"`
 	PrimaryKey    string         `db:"primary key"`

@@ -26,10 +26,15 @@ jobs:
           go-version-file: ./go.mod
           cache: false
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        id: setup_terraform
+        with:
+          terraform_version: 1.7.4
+          terraform_wrapper: false
+
       - name: Install dependencies
         run: make dev-setup
 
-      - run: make docs-check
-
-      - run: if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then exit 1; fi
-        name: check gofmt
+      - name: Check documentation and code formatting
+        run: make pre-push-check

@@ -195,6 +195,12 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.CatalogIntegrationObjectStorage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
 	},
+	resources.CatalogIntegrationOpenCatalog: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
+	resources.CatalogIntegrationIcebergRest: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
 	},
@@ -372,6 +378,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ServiceUser: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Users.ShowByID)
 	},
+	resources.SessionPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.SessionPolicies.ShowByID)
+	},
 	resources.Share: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Shares.ShowByID)
 	},
@@ -422,6 +431,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.View: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Views.ShowByID)
+	},
+	resources.WarehouseAdaptive: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Warehouses.ShowByID)
 	},
 	resources.Warehouse: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Warehouses.ShowByID)
