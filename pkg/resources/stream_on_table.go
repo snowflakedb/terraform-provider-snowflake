@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -66,15 +66,7 @@ func StreamOnTable() *schema.Resource {
 			RecreateWhenStreamTypeChangedExternally(sdk.StreamSourceTypeTable),
 		)),
 
-		Schema:        streamOnTableSchema,
-		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				Type:    cty.EmptyObject,
-				Upgrade: v2_15_0_StreamStateUpgrader,
-			},
-		},
+		Schema: streamOnTableSchema,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.StreamOnTable, ImportStreamOnTable),
@@ -85,7 +77,8 @@ func StreamOnTable() *schema.Resource {
 
 func ImportStreamOnTable(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	log.Printf("[DEBUG] Starting stream import")
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
@@ -100,8 +93,10 @@ func ImportStreamOnTable(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 	errs := errors.Join(
 		d.Set("append_only", booleanStringFromBool(v.IsAppendOnly())),
-		d.Set("show_initial_rows", BooleanDefault),
 	)
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments) {
+		errs = errors.Join(errs, d.Set("show_initial_rows", BooleanDefault))
+	}
 	if errs != nil {
 		return nil, errs
 	}

@@ -970,7 +970,7 @@ Changes import behavior for boolean fields using the special `"default"` value.
 
 When enabled, boolean fields using the special `"default"` value are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`). This prevents unavoidable diffs on every plan after import.
 
-Note: this is supported only on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`).
+Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).
 
 #### GRANTS_SAFE_DESTROY
 When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.

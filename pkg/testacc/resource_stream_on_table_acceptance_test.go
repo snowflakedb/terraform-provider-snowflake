@@ -7,7 +7,10 @@ import (
 	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 	pluginconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -19,10 +22,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -809,99 +814,88 @@ func TestAcc_StreamOnTable_ExternalStreamTypeChange(t *testing.T) {
 	})
 }
 
-// Test for https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896
-func TestAcc_StreamOnTable_ImportShowInitialRowsNotSet(t *testing.T) {
+// TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults verifies that importing a stream on table
+// without the IMPORT_BOOLEAN_DEFAULT experiment causes a permadiff (non-empty plan), and that enabling
+// the experiment fixes it by setting show_initial_rows to "default" instead of leaving it unset.
+// Regression test for https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896.
+func TestAcc_Experimental_StreamOnTable_ImportBooleanDefaults(t *testing.T) {
 	table, tableCleanup := testClient().Table.CreateWithChangeTracking(t)
 	t.Cleanup(tableCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	providerModelWithExperiment := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
+
 	streamModel := model.StreamOnTableBase("test", id, table.ID()).
 		WithAppendOnly(r.BooleanFalse)
 
-	// Note: these tests have split import (with persisting state) + ConfigPlanChecks.
-	// This is because in the TF framework, one cannot assert plan after the import without applying it.
-	// Additionally, after each variant, we destroy the object and recreate in order to import in the next step.
-	// It is not possible to import the resource when it already exists in the state when using ImportStatePersist.
+	createStream := func() {
+		_, streamCleanup := testClient().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
+		t.Cleanup(streamCleanup)
+	}
+	createStream()
+
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
+
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.StreamOnTable),
 		Steps: []resource.TestStep{
-			// 1. Prove the error happens in v2.15.0.
-			{
-				PreConfig: func() {
-					_, streamCleanup := testClient().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
-					t.Cleanup(streamCleanup)
-				},
-				ExternalProviders:  ExternalProviderWithExactVersion("2.15.0"),
-				Config:             requiredProvidersBlock("2.15.0") + config.FromModels(t, streamModel),
-				ResourceName:       streamModel.ResourceReference(),
-				ImportState:        true,
-				ImportStateId:      id.FullyQualifiedName(),
-				ImportStatePersist: true,
-			},
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
-				Config:            config.FromModels(t, streamModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(streamModel.ResourceReference(), "show_initial_rows", tfjson.ActionUpdate, nil, sdk.String(r.BooleanDefault)),
-					},
-				},
-			},
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
-				Config:            config.FromModels(t, streamModel),
-				Destroy:           true,
-			},
-			// 2. Prove the state upgrader fixes it: after upgrade, the plan is empty.
-			{
-				PreConfig: func() {
-					_, streamCleanup := testClient().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
-					t.Cleanup(streamCleanup)
-				},
-				ExternalProviders:  ExternalProviderWithExactVersion("2.15.0"),
-				Config:             requiredProvidersBlock("2.15.0") + config.FromModels(t, streamModel),
-				ResourceName:       streamModel.ResourceReference(),
-				ImportState:        true,
-				ImportStateId:      id.FullyQualifiedName(),
-				ImportStatePersist: true,
-			},
+			// Import WITHOUT experiment — show_initial_rows is not set during import.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, streamModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
-					},
-				},
-			},
-			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, streamModel),
-				Destroy:                  true,
-			},
-			// 3. Prove that importint straight to >v2.15.0 has correct behavior.
-			{
-				PreConfig: func() {
-					_, streamCleanup := testClient().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
-					t.Cleanup(streamCleanup)
-				},
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, streamModel),
+				Config:                   accconfig.FromModels(t, streamModel),
 				ResourceName:             streamModel.ResourceReference(),
 				ImportState:              true,
 				ImportStateId:            id.FullyQualifiedName(),
-				ImportStatePersist:       true,
+				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
+					importchecks.TestCheckResourceAttrInstanceState(resourceId, "append_only", r.BooleanFalse),
+					importchecks.TestCheckResourceAttrNotInInstanceState(resourceId, "show_initial_rows"),
+				),
+				ImportStatePersist: true,
 			},
+			// Plan WITHOUT experiment — proves the bug: config has "default", state has nil → permadiff.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, streamModel),
+				Config:                   accconfig.FromModels(t, streamModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
+						plancheck.ExpectNonEmptyPlan(),
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.PrintPlanDetails(streamModel.ResourceReference(), "show_initial_rows", "append_only"),
+					},
+				},
+			},
+			// Destroy to clear Terraform state before reimporting with the experiment enabled.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, streamModel),
+				Destroy:                  true,
+			},
+			// Import WITH experiment — show_initial_rows is set to "default".
+			{
+				PreConfig:                createStream,
+				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModelWithExperiment, streamModel),
+				ResourceName:             streamModel.ResourceReference(),
+				ImportState:              true,
+				ImportStatePersist:       true,
+				ImportStateId:            id.FullyQualifiedName(),
+				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
+					importchecks.TestCheckResourceAttrInstanceState(resourceId, "append_only", r.BooleanFalse),
+					importchecks.TestCheckResourceAttrInstanceState(resourceId, "show_initial_rows", r.BooleanDefault),
+				),
+			},
+			// Plan WITH experiment — proves the fix: config and state both have "default" → no diff.
+			{
+				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModelWithExperiment, streamModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
 						planchecks.PrintPlanDetails(streamModel.ResourceReference(), "show_initial_rows", "append_only"),
 					},
 				},

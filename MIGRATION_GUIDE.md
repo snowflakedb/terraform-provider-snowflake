@@ -40,7 +40,7 @@ No changes are required for existing configurations unless you want to manage se
 
 Previously, importing `snowflake_stream_on_table` or `snowflake_stream_on_view` with `terraform import` left the `show_initial_rows` attribute as `null` in state, because it cannot be read from Snowflake. On the next `terraform apply`, Terraform detected a diff and produced an "Update" plan. Because of it, the stream was recreated (see the [note](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stream_on_table)).
 
-A state upgrader handles the migration automatically for both of these stream resources. No changes in configuration are required.
+To fix this, enable the `IMPORT_BOOLEAN_DEFAULT` experimental feature in the provider configuration and reimport the affected stream resources. When enabled, the `show_initial_rows` attribute is set to `"default"` during import, preventing the permadiff.
 
 References: [#3896](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896)
 
