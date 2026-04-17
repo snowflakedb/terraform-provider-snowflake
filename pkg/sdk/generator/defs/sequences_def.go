@@ -69,7 +69,6 @@ var sequencesDef = g.NewInterface(
 		SQL("SEQUENCES").
 		OptionalLike().
 		OptionalIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(

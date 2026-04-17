@@ -187,7 +187,6 @@ var servicesDef = g.NewInterface(
 		OptionalStartsWith().
 		OptionalLimitFrom().
 		WithValidation(g.ConflictingFields, "Job", "ExcludeJobs"),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDServiceInFiltering,
 ).DescribeOperationWithPairedStructs(

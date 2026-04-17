@@ -140,8 +140,6 @@ var materializedViewsDef = g.NewInterface(
 			SQL("MATERIALIZED VIEWS").
 			OptionalLike().
 			OptionalIn(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).

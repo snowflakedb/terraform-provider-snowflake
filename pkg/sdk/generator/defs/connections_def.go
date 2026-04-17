@@ -92,6 +92,4 @@ var connectionsDef = g.NewInterface(
 		Show().
 		SQL("CONNECTIONS").
 		OptionalLike(),
-).ShowByIdOperationWithFiltering(
-	g.ShowByIDLikeFiltering,
 )

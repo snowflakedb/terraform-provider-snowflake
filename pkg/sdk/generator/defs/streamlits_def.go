@@ -95,7 +95,6 @@ var streamlitsDef = g.NewInterface(
 		OptionalLike().
 		OptionalIn().
 		OptionalLimit(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).DescribeOperationWithPairedStructs(

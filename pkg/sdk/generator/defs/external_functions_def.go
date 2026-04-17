@@ -152,7 +152,6 @@ var externalFunctionsDef = g.NewInterface(
 		SQL("EXTERNAL FUNCTIONS").
 		OptionalLike().
 		OptionalIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(

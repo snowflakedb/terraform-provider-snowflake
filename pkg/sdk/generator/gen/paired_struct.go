@@ -275,8 +275,8 @@ func (p *PairedStructs) asPlainStruct() *plainStruct {
 // ShowOperationWithPairedStructs is equivalent to ShowOperation but accepts a single PairedStructs
 // definition instead of separate DbStruct and PlainStruct arguments. The PairedStructs is
 // materialized into both structs and forwarded to the existing ShowOperation unchanged.
-func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct) *Interface {
-	return i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct)
+func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
+	return i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, filtering...)
 }
 
 // DescribeOperationWithPairedStructs is equivalent to DescribeOperation but accepts a single
