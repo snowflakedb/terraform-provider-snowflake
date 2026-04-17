@@ -138,7 +138,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 		assertThatObject(t, objectassert.CatalogIntegrationAwsGlueDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -156,7 +156,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 		assertThatObject(t, objectassert.CatalogIntegrationObjectStorageDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -202,7 +202,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetailsFromObject(t, icebergRestDetails).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -224,7 +224,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSAPBusinessDataCloud).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSapBdc).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -245,7 +245,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "test comment")
 		assertThatObject(t, objectassert.CatalogIntegrationAwsGlueDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(120).
@@ -266,7 +266,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "test comment")
 		assertThatObject(t, objectassert.CatalogIntegrationObjectStorageDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(120).
@@ -355,7 +355,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetailsFromObject(t, icebergRestDetails).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(120).
@@ -382,7 +382,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		integration := createCatalogIntegrationWithRequest(t, request)
 
 		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSAPBusinessDataCloud).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSapBdc).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(120).
@@ -539,7 +539,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		id := createAwsGlueCatalogIntegration(t).ID()
 
 		assertThatObject(t, objectassert.CatalogIntegrationAwsGlueDetails(t, id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -554,7 +554,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		id := createObjectStorageCatalogIntegration(t).ID()
 
 		assertThatObject(t, objectassert.CatalogIntegrationObjectStorageDetails(t, id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -592,7 +592,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetailsFromObject(t, icebergRestDetails).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -611,7 +611,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		id := createSapBdcCatalogIntegration(t).ID()
 
 		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSAPBusinessDataCloud).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSapBdc).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
