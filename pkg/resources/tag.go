@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -74,13 +73,13 @@ var tagSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: fmt.Sprintf("Specifies that the tag will be automatically propagated from source objects to target objects. See more about tag propagation in the [official documentation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). Valid options are: %s", docs.PossibleValuesListed(sdk.AllTagPropagationValues)),
-		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
-			// Snowflake returns "NONE" when propagation is disabled; treat as equivalent to unset.
-			if strings.EqualFold(oldValue, string(sdk.TagPropagationNone)) && newValue == "" {
-				return true
+		DiffSuppressFunc: NormalizeAndCompare(func(s string) (sdk.TagPropagation, error) {
+			// Removed from config is the same as NONE.
+			if s == "" {
+				return sdk.TagPropagationNone, nil
 			}
-			return NormalizeAndCompare(sdk.ToTagPropagation)(k, oldValue, newValue, d)
-		},
+			return sdk.ToTagPropagation(s)
+		}),
 		ValidateDiagFunc: sdkValidation(sdk.ToTagPropagation),
 	},
 	"on_conflict": {
@@ -225,23 +224,9 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	if v, ok := d.GetOk("propagate"); ok {
-		tagPropagation, err := sdk.ToTagPropagation(v.(string))
+		propagate, err := buildTagPropagateRequest(v.(string), d)
 		if err != nil {
 			return diag.FromErr(err)
-		}
-		propagate := sdk.NewTagPropagateRequest(tagPropagation)
-		if v, ok := d.GetOk("on_conflict"); ok {
-			onConflictMap := v.([]any)[0].(map[string]any)
-			if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
-				propagate.WithOnConflict(sdk.TagOnConflict{
-					AllowedValuesSequence: sdk.Bool(true),
-				})
-			}
-			if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
-				propagate.WithOnConflict(sdk.TagOnConflict{
-					CustomValue: sdk.String(v.(string)),
-				})
-			}
 		}
 		request.WithPropagate(*propagate)
 	}
@@ -333,20 +318,24 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
-		// Use ordered_allowed_values by default (including import where rawConfig is null).
-		// Fall back to allowed_values only when it is explicitly set in the config.
+		d.Set("propagate", tag.Propagate),
 		func() error {
+			// Use ordered_allowed_values by default (including import where rawConfig is null).
+			// Determine the usage by checking config values, but if not provided by Terraform,
+			// use the collection that was set in the state.
 			useAllowedValues := false
 			if !d.GetRawConfig().IsNull() {
 				v, ok := d.GetRawConfig().AsValueMap()["allowed_values"]
 				useAllowedValues = ok && !v.IsNull() && v.LengthInt() > 0
+			} else if v, ok := d.GetOk("allowed_values"); ok {
+				useAllowedValues = ok && v != nil
 			}
+
 			if useAllowedValues {
 				return d.Set("allowed_values", tag.AllowedValues)
 			}
 			return d.Set("ordered_allowed_values", tag.AllowedValues)
 		}(),
-		d.Set("propagate", tag.Propagate),
 		func() error {
 			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
 			if err != nil {
@@ -505,24 +494,9 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	if shouldPropagate {
 		if v, ok := d.GetOk("propagate"); ok {
-			tagPropagation, err := sdk.ToTagPropagation(v.(string))
+			propagate, err := buildTagPropagateRequest(v.(string), d)
 			if err != nil {
 				return diag.FromErr(err)
-			}
-			propagate := sdk.NewTagPropagateRequest(tagPropagation)
-
-			if v, ok := d.GetOk("on_conflict"); ok && len(v.([]any)) > 0 {
-				onConflictMap := v.([]any)[0].(map[string]any)
-				if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
-					propagate.WithOnConflict(sdk.TagOnConflict{
-						AllowedValuesSequence: sdk.Bool(true),
-					})
-				}
-				if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
-					propagate.WithOnConflict(sdk.TagOnConflict{
-						CustomValue: sdk.String(v.(string)),
-					})
-				}
 			}
 
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(
@@ -615,4 +589,26 @@ func DeleteContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	d.SetId("")
 	return nil
+}
+
+func buildTagPropagateRequest(propagate string, d *schema.ResourceData) (*sdk.TagPropagateRequest, error) {
+	tagPropagation, err := sdk.ToTagPropagation(propagate)
+	if err != nil {
+		return nil, err
+	}
+	propagateReq := sdk.NewTagPropagateRequest(tagPropagation)
+	if v, ok := d.GetOk("on_conflict"); ok && len(v.([]any)) > 0 {
+		onConflictMap := v.([]any)[0].(map[string]any)
+		if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
+			propagateReq.WithOnConflict(sdk.TagOnConflict{
+				AllowedValuesSequence: sdk.Bool(true),
+			})
+		}
+		if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
+			propagateReq.WithOnConflict(sdk.TagOnConflict{
+				CustomValue: sdk.String(v.(string)),
+			})
+		}
+	}
+	return propagateReq, nil
 }

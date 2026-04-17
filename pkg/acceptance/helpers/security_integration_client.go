@@ -65,9 +65,9 @@ func (c *SecurityIntegrationClient) CreateExternalOauth(t *testing.T) (*sdk.Secu
 	t.Helper()
 	id := c.ids.RandomAccountObjectIdentifier()
 	issuer := random.String()
-	request := sdk.NewCreateExternalOauthSecurityIntegrationRequest(id, false, sdk.ExternalOauthSecurityIntegrationTypeCustom,
-		issuer, []sdk.TokenUserMappingClaim{{Claim: "foo"}}, sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
-	).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "http://example.com"}})
+	request := sdk.NewCreateExternalOauthSecurityIntegrationRequest(id, false, sdk.ExternalOauthSecurityIntegrationTypeOptionCustom,
+		issuer, []sdk.TokenUserMappingClaim{{Claim: "foo"}}, sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName,
+	).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example.com"}})
 	return c.CreateExternalOauthWithRequest(t, request)
 }
 
@@ -89,7 +89,7 @@ func (c *SecurityIntegrationClient) CreateOauthForPartnerApplications(t *testing
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	request := sdk.NewCreateOauthForPartnerApplicationsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientLooker).
+	request := sdk.NewCreateOauthForPartnerApplicationsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientOptionLooker).
 		WithOauthRedirectUri("http://example.com")
 	err := c.client().CreateOauthForPartnerApplications(ctx, request)
 	require.NoError(t, err)
@@ -105,7 +105,7 @@ func (c *SecurityIntegrationClient) CreateOauthForCustomClients(t *testing.T) (*
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	request := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypePublic, "https://example.com")
+	request := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypeOptionPublic, "https://example.com")
 	err := c.client().CreateOauthForCustomClients(ctx, request)
 	require.NoError(t, err)
 
@@ -136,7 +136,7 @@ func (c *SecurityIntegrationClient) CreateSaml2WithRequest(t *testing.T, request
 
 func (c *SecurityIntegrationClient) CreateScim(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
-	return c.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.ScimSecurityIntegrationScimClientGeneric, snowflakeroles.GenericScimProvisioner.FullyQualifiedName()))
+	return c.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.ScimSecurityIntegrationScimClientOptionGeneric, snowflakeroles.GenericScimProvisioner.FullyQualifiedName()))
 }
 
 func (c *SecurityIntegrationClient) CreateApiAuthenticationClientCredentialsWithRequest(t *testing.T, request *sdk.CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {

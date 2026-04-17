@@ -6,39 +6,27 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var notebookDbRow = g.DbStruct("notebookRow").
+var notebookPairs = g.StructPair("notebookRow", "Notebook").
 	Time("created_on").
 	Text("name").
 	Text("database_name").
 	Text("schema_name").
 	OptionalText("comment").
 	Text("owner").
-	OptionalText("query_warehouse").
+	Field("query_warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("QueryWarehouse")).
 	Text("url_id").
 	Text("owner_role_type").
-	Text("code_warehouse")
+	Field("code_warehouse", "string", "AccountObjectIdentifier", g.WithPlainFieldName("CodeWarehouse"))
 
-var notebook = g.PlainStruct("Notebook").
-	Time("CreatedOn").
-	Text("Name").
-	Text("DatabaseName").
-	Text("SchemaName").
-	OptionalText("Comment").
-	Text("Owner").
-	Field("QueryWarehouse", "*AccountObjectIdentifier").
-	Text("UrlId").
-	Text("OwnerRoleType").
-	Field("CodeWarehouse", "AccountObjectIdentifier")
-
-var notebookDetailsDbRow = g.DbStruct("NotebookDetailsRow").
+var notebookDetailsPairs = g.StructPair("NotebookDetailsRow", "NotebookDetails").
 	OptionalText("title").
 	Text("main_file").
-	OptionalText("query_warehouse").
+	Field("query_warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("QueryWarehouse")).
 	Text("url_id").
 	Text("default_packages").
 	OptionalText("user_packages").
 	OptionalText("runtime_name").
-	OptionalText("compute_pool").
+	Field("compute_pool", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("ComputePool")).
 	Text("owner").
 	Text("import_urls").
 	Text("external_access_integrations").
@@ -60,37 +48,6 @@ var notebookDetailsDbRow = g.DbStruct("NotebookDetailsRow").
 	OptionalText("last_version_source_location_uri").
 	OptionalText("last_version_git_commit_hash").
 	OptionalText("live_version_location_uri")
-
-var notebookDetails = g.PlainStruct("NotebookDetails").
-	OptionalText("Title").
-	Text("MainFile").
-	Field("QueryWarehouse", "*AccountObjectIdentifier").
-	Text("UrlId").
-	Text("DefaultPackages").
-	OptionalText("UserPackages").
-	OptionalText("RuntimeName").
-	Field("ComputePool", "*AccountObjectIdentifier").
-	Text("Owner").
-	Text("ImportUrls").
-	Text("ExternalAccessIntegrations").
-	Text("ExternalAccessSecrets").
-	Text("CodeWarehouse").
-	Number("IdleAutoShutdownTimeSeconds").
-	Text("RuntimeEnvironmentVersion").
-	Text("Name").
-	OptionalText("Comment").
-	Text("DefaultVersion").
-	Text("DefaultVersionName").
-	OptionalText("DefaultVersionAlias").
-	Text("DefaultVersionLocationUri").
-	OptionalText("DefaultVersionSourceLocationUri").
-	OptionalText("DefaultVersionGitCommitHash").
-	Text("LastVersionName").
-	OptionalText("LastVersionAlias").
-	Text("LastVersionLocationUri").
-	OptionalText("LastVersionSourceLocationUri").
-	OptionalText("LastVersionGitCommitHash").
-	OptionalText("LiveVersionLocationUri")
 
 var notebooksDef = g.NewInterface(
 	"Notebooks",
@@ -176,20 +133,18 @@ var notebooksDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-notebook",
-	notebookDetailsDbRow,
-	notebookDetails,
+	notebookDetailsPairs,
 	g.NewQueryStruct("DescribeNotebook").
 		Describe().
 		SQL("NOTEBOOK").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-notebooks",
-	notebookDbRow,
-	notebook,
+	notebookPairs,
 	g.NewQueryStruct("ShowNotebooks").
 		Show().
 		SQL("NOTEBOOKS").

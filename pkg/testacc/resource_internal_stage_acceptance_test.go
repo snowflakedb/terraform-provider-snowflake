@@ -537,7 +537,7 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 
 	modelCompleteCsv := model.InternalStageWithId(id).
 		WithFileFormatCsv(sdk.FileFormatCsvOptions{
-			Compression:                sdk.Pointer(sdk.CSVCompressionGzip),
+			Compression:                sdk.Pointer(sdk.CsvCompressionGzip),
 			FieldDelimiter:             &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer("|")},
 			MultiLine:                  &multiLine,
 			FileExtension:              sdk.Pointer("csv"),
@@ -556,7 +556,7 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 			ReplaceInvalidCharacters:   &replaceInvalidCharacters,
 			EmptyFieldAsNull:           &emptyFieldAsNull,
 			SkipByteOrderMark:          &skipByteOrderMark,
-			Encoding:                   sdk.Pointer(sdk.CSVEncodingUTF8),
+			Encoding:                   sdk.Pointer(sdk.CsvEncodingUtf8),
 			RecordDelimiter:            &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(";")},
 		})
 
@@ -574,7 +574,7 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 
 	modelAlteredCsv := model.InternalStageWithId(id).
 		WithFileFormatCsv(sdk.FileFormatCsvOptions{
-			Compression:                sdk.Pointer(sdk.CSVCompressionZstd),
+			Compression:                sdk.Pointer(sdk.CsvCompressionZstd),
 			FieldDelimiter:             &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(",")},
 			MultiLine:                  &altMultiLine,
 			FileExtension:              sdk.Pointer("txt"),
@@ -593,13 +593,13 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 			ReplaceInvalidCharacters:   &altReplaceInvalidCharacters,
 			EmptyFieldAsNull:           &altEmptyFieldAsNull,
 			SkipByteOrderMark:          &altSkipByteOrderMark,
-			Encoding:                   sdk.Pointer(sdk.CSVEncodingISO88591),
+			Encoding:                   sdk.Pointer(sdk.CsvEncodingIso88591),
 			RecordDelimiter:            &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(":")},
 		})
 	defaultAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelWithoutFileFormat.ResourceReference()).
 			HasFileFormatEmpty(),
-		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.type", string(sdk.FileFormatTypeCSV))),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.type", string(sdk.FileFormatTypeCsv))),
 		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.record_delimiter", "\\n")),
 		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.field_delimiter", ",")),
 		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.file_extension", "")),
@@ -621,14 +621,14 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.replace_invalid_characters", "false")),
 		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.empty_field_as_null", "true")),
 		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.skip_byte_order_mark", "true")),
-		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.encoding", string(sdk.CSVEncodingUTF8))),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.encoding", string(sdk.CsvEncodingUtf8))),
 		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.csv.0.multi_line", "true")),
 	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelCompleteCsv.ResourceReference()).
 			HasFileFormatCsv().
-			HasFileFormatCsvCompression(sdk.CSVCompressionGzip).
+			HasFileFormatCsvCompression(sdk.CsvCompressionGzip).
 			HasFileFormatCsvFieldDelimiter("|").
 			HasFileFormatCsvSkipHeader(-1).
 			HasFileFormatCsvTrimSpace(trimSpace).
@@ -649,8 +649,8 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 			HasFileFormatCsvReplaceInvalidCharacters(replaceInvalidCharacters).
 			HasFileFormatCsvEmptyFieldAsNull(emptyFieldAsNull).
 			HasFileFormatCsvSkipByteOrderMark(skipByteOrderMark).
-			HasFileFormatCsvEncoding(sdk.CSVEncodingUTF8),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.type", string(sdk.FileFormatTypeCSV))),
+			HasFileFormatCsvEncoding(sdk.CsvEncodingUtf8),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.type", string(sdk.FileFormatTypeCsv))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.record_delimiter", ";")),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.field_delimiter", "|")),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.file_extension", "csv")),
@@ -667,19 +667,19 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.null_if.#", "2")),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.null_if.0", "NULL")),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.null_if.1", "")),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.compression", string(sdk.CSVCompressionGzip))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.compression", string(sdk.CsvCompressionGzip))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.error_on_column_count_mismatch", strconv.FormatBool(errorOnColumnCountMismatch))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.skip_blank_lines", strconv.FormatBool(skipBlankLines))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.replace_invalid_characters", strconv.FormatBool(replaceInvalidCharacters))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.empty_field_as_null", strconv.FormatBool(emptyFieldAsNull))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.skip_byte_order_mark", strconv.FormatBool(skipByteOrderMark))),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.encoding", string(sdk.CSVEncodingUTF8))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.encoding", string(sdk.CsvEncodingUtf8))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.multi_line", strconv.FormatBool(multiLine))),
 	}
 	alteredAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelAlteredCsv.ResourceReference()).
 			HasFileFormatCsv().
-			HasFileFormatCsvCompression(sdk.CSVCompressionZstd).
+			HasFileFormatCsvCompression(sdk.CsvCompressionZstd).
 			HasFileFormatCsvFieldDelimiter(",").
 			HasFileFormatCsvSkipHeader(-1).
 			HasFileFormatCsvTrimSpace(altTrimSpace).
@@ -700,8 +700,8 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 			HasFileFormatCsvReplaceInvalidCharacters(altReplaceInvalidCharacters).
 			HasFileFormatCsvEmptyFieldAsNull(altEmptyFieldAsNull).
 			HasFileFormatCsvSkipByteOrderMark(altSkipByteOrderMark).
-			HasFileFormatCsvEncoding(sdk.CSVEncodingISO88591),
-		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.type", string(sdk.FileFormatTypeCSV))),
+			HasFileFormatCsvEncoding(sdk.CsvEncodingIso88591),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.type", string(sdk.FileFormatTypeCsv))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.record_delimiter", ":")),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.field_delimiter", ",")),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.file_extension", "txt")),
@@ -717,13 +717,13 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.field_optionally_enclosed_by", "\\\"")),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.null_if.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.null_if.0", "NA")),
-		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.compression", string(sdk.CSVCompressionZstd))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.compression", string(sdk.CsvCompressionZstd))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.error_on_column_count_mismatch", "true")),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.skip_blank_lines", strconv.FormatBool(altSkipBlankLines))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.replace_invalid_characters", strconv.FormatBool(altReplaceInvalidCharacters))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.empty_field_as_null", strconv.FormatBool(altEmptyFieldAsNull))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.skip_byte_order_mark", strconv.FormatBool(altSkipByteOrderMark))),
-		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.encoding", string(sdk.CSVEncodingISO88591))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.encoding", string(sdk.CsvEncodingIso88591))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.multi_line", strconv.FormatBool(altMultiLine))),
 	}
 
@@ -788,7 +788,7 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
 						FileFormatOptions: &sdk.FileFormatOptions{
 							CsvOptions: &sdk.FileFormatCsvOptions{
-								Compression:                sdk.Pointer(sdk.CSVCompressionGzip),
+								Compression:                sdk.Pointer(sdk.CsvCompressionGzip),
 								FieldDelimiter:             &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(",")},
 								RecordDelimiter:            &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer("\n")},
 								MultiLine:                  sdk.Bool(false),
@@ -801,7 +801,7 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 								ReplaceInvalidCharacters:   sdk.Bool(true),
 								EmptyFieldAsNull:           sdk.Bool(false),
 								SkipByteOrderMark:          sdk.Bool(true),
-								Encoding:                   sdk.Pointer(sdk.CSVEncodingUTF8),
+								Encoding:                   sdk.Pointer(sdk.CsvEncodingUtf8),
 								ParseHeader:                new(bool),
 								DateFormat:                 &sdk.StageFileFormatStringOrAuto{Auto: sdk.Pointer(true)},
 								TimeFormat:                 &sdk.StageFileFormatStringOrAuto{Auto: sdk.Pointer(true)},
@@ -853,7 +853,7 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 
 	modelCompleteJson := model.InternalStageWithId(id).
 		WithFileFormatJson(sdk.FileFormatJsonOptions{
-			Compression:       sdk.Pointer(sdk.JSONCompressionGzip),
+			Compression:       sdk.Pointer(sdk.JsonCompressionGzip),
 			DateFormat:        &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
 			TimeFormat:        &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
 			TimestampFormat:   &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
@@ -886,7 +886,7 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 
 	modelAlteredJson := model.InternalStageWithId(id).
 		WithFileFormatJson(sdk.FileFormatJsonOptions{
-			Compression:       sdk.Pointer(sdk.JSONCompressionZstd),
+			Compression:       sdk.Pointer(sdk.JsonCompressionZstd),
 			DateFormat:        &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("YYYY")},
 			TimeFormat:        &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("HH24:MI:SS")},
 			TimestampFormat:   &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("YYYY-MM-DD HH24:MI:SS")},
@@ -906,8 +906,8 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 	defaultAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelBasicJson.ResourceReference()).
 			HasFileFormatJson(),
-		assert.Check(resource.TestCheckResourceAttr(modelBasicJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJSON))),
-		assert.Check(resource.TestCheckResourceAttr(modelBasicJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JSONCompressionAuto))),
+		assert.Check(resource.TestCheckResourceAttr(modelBasicJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJson))),
+		assert.Check(resource.TestCheckResourceAttr(modelBasicJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JsonCompressionAuto))),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicJson.ResourceReference(), "describe_output.0.file_format.0.json.0.date_format", "AUTO")),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicJson.ResourceReference(), "describe_output.0.file_format.0.json.0.time_format", "AUTO")),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicJson.ResourceReference(), "describe_output.0.file_format.0.json.0.timestamp_format", "AUTO")),
@@ -928,7 +928,7 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 	completeAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelCompleteJson.ResourceReference()).
 			HasFileFormatJson().
-			HasFileFormatJsonCompression(sdk.JSONCompressionGzip).
+			HasFileFormatJsonCompression(sdk.JsonCompressionGzip).
 			HasFileFormatJsonDateFormat("AUTO").
 			HasFileFormatJsonTimeFormat("AUTO").
 			HasFileFormatJsonTimestampFormat("AUTO").
@@ -943,8 +943,8 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 			HasFileFormatJsonStripNullValues(stripNullValues).
 			HasFileFormatJsonReplaceInvalidCharactersString(r.BooleanDefault).
 			HasFileFormatJsonSkipByteOrderMark(skipByteOrderMark),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJSON))),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JSONCompressionGzip))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJson))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JsonCompressionGzip))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.date_format", "AUTO")),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.time_format", "AUTO")),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.timestamp_format", "AUTO")),
@@ -967,7 +967,7 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 	alteredAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelAlteredJson.ResourceReference()).
 			HasFileFormatJson().
-			HasFileFormatJsonCompression(sdk.JSONCompressionZstd).
+			HasFileFormatJsonCompression(sdk.JsonCompressionZstd).
 			HasFileFormatJsonDateFormat("YYYY").
 			HasFileFormatJsonTimeFormat("HH24:MI:SS").
 			HasFileFormatJsonTimestampFormat("YYYY-MM-DD HH24:MI:SS").
@@ -982,8 +982,8 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 			HasFileFormatJsonStripNullValues(altStripNullValues).
 			HasFileFormatJsonIgnoreUtf8Errors(altIgnoreUtf8Errors).
 			HasFileFormatJsonSkipByteOrderMark(altSkipByteOrderMark),
-		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJSON))),
-		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JSONCompressionZstd))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJson))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JsonCompressionZstd))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.date_format", "YYYY")),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.time_format", "HH24:MI:SS")),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.timestamp_format", "YYYY-MM-DD HH24:MI:SS")),
@@ -1059,7 +1059,7 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
 						FileFormatOptions: &sdk.FileFormatOptions{
 							JsonOptions: &sdk.FileFormatJsonOptions{
-								Compression:              sdk.Pointer(sdk.JSONCompressionGzip),
+								Compression:              sdk.Pointer(sdk.JsonCompressionGzip),
 								DateFormat:               &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
 								TimeFormat:               &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
 								TimestampFormat:          &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
@@ -1282,7 +1282,7 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 			HasFileFormatOrc().
 			HasFileFormatOrcTrimSpaceString(r.BooleanDefault).
 			HasFileFormatOrcReplaceInvalidCharactersString(r.BooleanDefault),
-		assert.Check(resource.TestCheckResourceAttr(modelBasicOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeORC))),
+		assert.Check(resource.TestCheckResourceAttr(modelBasicOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeOrc))),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.trim_space", "false")),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.replace_invalid_characters", "false")),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.#", "0")),
@@ -1294,7 +1294,7 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 			HasFileFormatOrcTrimSpace(trimSpace).
 			HasFileFormatOrcReplaceInvalidCharacters(replaceInvalidCharacters).
 			HasFileFormatOrcNullIfCount(2),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeORC))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeOrc))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.trim_space", strconv.FormatBool(trimSpace))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.replace_invalid_characters", strconv.FormatBool(replaceInvalidCharacters))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.#", "2")),
@@ -1308,7 +1308,7 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 			HasFileFormatOrcTrimSpace(altTrimSpace).
 			HasFileFormatOrcReplaceInvalidCharacters(altReplaceInvalidCharacters).
 			HasFileFormatOrcNullIfCount(1),
-		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeORC))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeOrc))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.trim_space", strconv.FormatBool(altTrimSpace))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.replace_invalid_characters", strconv.FormatBool(altReplaceInvalidCharacters))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.#", "1")),
@@ -1578,7 +1578,7 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 
 	modelCompleteXml := model.InternalStageWithId(id).
 		WithFileFormatXml(sdk.FileFormatXmlOptions{
-			Compression:        sdk.Pointer(sdk.XMLCompressionGzip),
+			Compression:        sdk.Pointer(sdk.XmlCompressionGzip),
 			PreserveSpace:      &preserveSpace,
 			StripOuterElement:  &stripOuterElement,
 			DisableAutoConvert: &disableAutoConvert,
@@ -1599,7 +1599,7 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 
 	modelAlteredXml := model.InternalStageWithId(id).
 		WithFileFormatXml(sdk.FileFormatXmlOptions{
-			Compression:        sdk.Pointer(sdk.XMLCompressionZstd),
+			Compression:        sdk.Pointer(sdk.XmlCompressionZstd),
 			PreserveSpace:      &altPreserveSpace,
 			StripOuterElement:  &altStripOuterElement,
 			DisableAutoConvert: &altDisableAutoConvert,
@@ -1610,8 +1610,8 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 	defaultAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelBasicXml.ResourceReference()).
 			HasFileFormatXml(),
-		assert.Check(resource.TestCheckResourceAttr(modelBasicXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXML))),
-		assert.Check(resource.TestCheckResourceAttr(modelBasicXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XMLCompressionAuto))),
+		assert.Check(resource.TestCheckResourceAttr(modelBasicXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXml))),
+		assert.Check(resource.TestCheckResourceAttr(modelBasicXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XmlCompressionAuto))),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.ignore_utf8_errors", "false")),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.preserve_space", "false")),
 		assert.Check(resource.TestCheckResourceAttr(modelBasicXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.strip_outer_element", "false")),
@@ -1623,14 +1623,14 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 	completeAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelCompleteXml.ResourceReference()).
 			HasFileFormatXml().
-			HasFileFormatXmlCompression(sdk.XMLCompressionGzip).
+			HasFileFormatXmlCompression(sdk.XmlCompressionGzip).
 			HasFileFormatXmlPreserveSpace(preserveSpace).
 			HasFileFormatXmlStripOuterElement(stripOuterElement).
 			HasFileFormatXmlDisableAutoConvert(disableAutoConvert).
 			HasFileFormatXmlSkipByteOrderMark(skipByteOrderMark).
 			HasFileFormatXmlReplaceInvalidCharactersString(r.BooleanDefault),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXML))),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XMLCompressionGzip))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXml))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XmlCompressionGzip))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.ignore_utf8_errors", strconv.FormatBool(ignoreUtf8Errors))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.preserve_space", strconv.FormatBool(preserveSpace))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.strip_outer_element", strconv.FormatBool(stripOuterElement))),
@@ -1642,14 +1642,14 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 	alteredAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelAlteredXml.ResourceReference()).
 			HasFileFormatXml().
-			HasFileFormatXmlCompression(sdk.XMLCompressionZstd).
+			HasFileFormatXmlCompression(sdk.XmlCompressionZstd).
 			HasFileFormatXmlPreserveSpace(altPreserveSpace).
 			HasFileFormatXmlStripOuterElement(altStripOuterElement).
 			HasFileFormatXmlDisableAutoConvert(altDisableAutoConvert).
 			HasFileFormatXmlIgnoreUtf8Errors(altIgnoreUtf8Errors).
 			HasFileFormatXmlSkipByteOrderMark(altSkipByteOrderMark),
-		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXML))),
-		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XMLCompressionZstd))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXml))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XmlCompressionZstd))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.ignore_utf8_errors", strconv.FormatBool(altIgnoreUtf8Errors))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.preserve_space", strconv.FormatBool(altPreserveSpace))),
 		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.strip_outer_element", strconv.FormatBool(altStripOuterElement))),
@@ -1715,7 +1715,7 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
 						FileFormatOptions: &sdk.FileFormatOptions{
 							XmlOptions: &sdk.FileFormatXmlOptions{
-								Compression:              sdk.Pointer(sdk.XMLCompressionGzip),
+								Compression:              sdk.Pointer(sdk.XmlCompressionGzip),
 								PreserveSpace:            sdk.Bool(true),
 								StripOuterElement:        sdk.Bool(true),
 								DisableAutoConvert:       sdk.Bool(true),

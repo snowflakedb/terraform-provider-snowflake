@@ -116,8 +116,8 @@ var warehouseSchema = map[string]*schema.Schema{
 	"resource_constraint": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraintWithoutGeneration),
-		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraintWithoutGeneration), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
+		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraint),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraint), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
 		Description: joinWithSpace("Specifies the resource constraint for the warehouse. Only available for snowpark-optimized warehouses. For setting generation please use the `generation` field.",
 			"Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint.",
 			fmt.Sprintf("Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraintsWithoutGenerations)),
@@ -159,7 +159,7 @@ var warehouseSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `SHOW WAREHOUSES` for the given warehouse.",
 		Elem: &schema.Resource{
-			Schema: schemas.ShowRegularWarehouseSchema,
+			Schema: schemas.ShowWarehouseSchema,
 		},
 	},
 	ParametersAttributeName: {
@@ -374,7 +374,7 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		createOptions.QueryAccelerationMaxScaleFactor = sdk.Int(v)
 	}
 	if v := d.Get("resource_constraint").(string); v != "" {
-		resourceConstraint, err := sdk.ToWarehouseResourceConstraintWithoutGeneration(v)
+		resourceConstraint, err := sdk.ToWarehouseResourceConstraint(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -650,7 +650,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			if warehouseType == sdk.WarehouseTypeSnowparkOptimized {
 				if v := d.Get("resource_constraint").(string); v != "" {
-					resourceConstraint, err := sdk.ToWarehouseResourceConstraintWithoutGeneration(v)
+					resourceConstraint, err := sdk.ToWarehouseResourceConstraint(v)
 					if err != nil {
 						return diag.FromErr(err)
 					}

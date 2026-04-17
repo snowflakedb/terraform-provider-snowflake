@@ -150,37 +150,27 @@ var externalVolumesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-external-volume",
-		g.DbStruct("externalVolumeDescRow").
-			Text("parent_property").
-			Text("property").
-			Text("property_type").
-			Text("property_value").
-			Text("property_default"),
-		g.PlainStruct("ExternalVolumeProperty").
-			Text("Parent").
-			Text("Name").
-			Text("Type").
-			Text("Value").
-			Text("Default"),
+		g.StructPair("externalVolumeDescRow", "ExternalVolumeProperty").
+			Text("parent_property", g.WithPlainFieldName("Parent")).
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescExternalVolume").
 			Describe().
 			SQL("EXTERNAL VOLUME").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes",
-		g.DbStruct("externalVolumeShowRow").
+		g.StructPair("externalVolumeShowRow", "ExternalVolume").
 			Text("name").
 			Bool("allow_writes").
-			OptionalText("comment"),
-		g.PlainStruct("ExternalVolume").
-			Text("Name").
-			Bool("AllowWrites").
-			Text("Comment"),
+			OptionalText("comment", g.WithRequiredInPlain()),
 		g.NewQueryStruct("ShowExternalVolumes").
 			Show().
 			SQL("EXTERNAL VOLUMES").

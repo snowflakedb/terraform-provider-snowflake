@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -155,7 +156,8 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	parts := strings.Split(d.Id(), helpers.IDDelimiter)
 	if len(parts) != 3 {
 		return diag.FromErr(fmt.Errorf("invalid ID specified: %v, expected <role_name>|<grantee_object_type>|<grantee_identifier>", d.Id()))
@@ -164,17 +166,21 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	objectType := parts[1]
 	granteeName := parts[2]
 	granteeIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(granteeName)
+	revokeFunc := client.Roles.Revoke
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		revokeFunc = client.Roles.RevokeSafely
+	}
+	var err error
 	switch objectType {
 	case "ROLE":
-		if err := client.Roles.Revoke(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{Role: &granteeIdentifier})); err != nil {
-			return diag.FromErr(err)
-		}
+		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{Role: &granteeIdentifier}))
 	case "USER":
-		if err := client.Roles.Revoke(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{User: &granteeIdentifier})); err != nil {
-			return diag.FromErr(err)
-		}
+		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{User: &granteeIdentifier}))
 	default:
 		return diag.FromErr(fmt.Errorf("invalid object type specified: %v, expected ROLE or USER", objectType))
+	}
+	if err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil

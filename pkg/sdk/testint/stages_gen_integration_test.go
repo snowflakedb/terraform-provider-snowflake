@@ -174,9 +174,9 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateInternal - complete with CSV file format options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		gzipCompression := sdk.CSVCompressionGzip
+		gzipCompression := sdk.CsvCompressionGzip
 		base64Format := sdk.BinaryFormatBase64
-		utf8Encoding := sdk.CSVEncodingUTF8
+		utf8Encoding := sdk.CsvEncodingUtf8
 		multiLine := false
 		fileExtension := ".csv"
 		skipHeader := 2

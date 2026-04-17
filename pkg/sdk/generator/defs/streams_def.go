@@ -24,39 +24,22 @@ var (
 			WithValidation(g.ExactlyOneValueSet, "At", "Before")
 	}
 
-	showStreamDbRowDef = g.DbStruct("showStreamsDbRow").
-				Field("created_on", "time.Time").
-				Field("name", "string").
-				Field("database_name", "string").
-				Field("schema_name", "string").
-				Field("owner", "sql.NullString").
-				Field("comment", "sql.NullString").
-				Field("table_name", "sql.NullString").
-				Field("source_type", "sql.NullString").
-				Field("base_tables", "sql.NullString").
-				Field("type", "sql.NullString").
-				Field("stale", "string").
-				Field("mode", "sql.NullString").
-				Field("stale_after", "sql.NullTime").
-				Field("invalid_reason", "sql.NullString").
-				Field("owner_role_type", "sql.NullString")
-
-	streamPlainStructDef = g.PlainStruct("Stream").
-				Field("CreatedOn", "time.Time").
-				Field("Name", "string").
-				Field("DatabaseName", "string").
-				Field("SchemaName", "string").
-				Field("Owner", "*string").
-				Field("Comment", "*string").
-				Field("TableName", "*string").
-				Field("SourceType", "*StreamSourceType").
-				Field("BaseTables", "[]string").
-				Field("Type", "*string").
-				Field("Stale", "bool").
-				Field("Mode", "*StreamMode").
-				Field("StaleAfter", "*time.Time").
-				Field("InvalidReason", "*string").
-				Field("OwnerRoleType", "*string")
+	streamPairs = g.StructPair("showStreamsDbRow", "Stream").
+			Time("created_on").
+			Text("name").
+			Text("database_name").
+			Text("schema_name").
+			OptionalText("owner").
+			OptionalText("comment").
+			OptionalText("table_name").
+			Field("source_type", "sql.NullString", "*StreamSourceType").
+			Field("base_tables", "sql.NullString", "[]string").
+			OptionalText("type").
+			Field("stale", "string", "bool").
+			Field("mode", "sql.NullString", "*StreamMode").
+			OptionalTime("stale_after").
+			OptionalText("invalid_reason").
+			OptionalText("owner_role_type")
 
 	streamsDef = g.NewInterface(
 		"Streams",
@@ -179,10 +162,9 @@ var (
 				Name().
 				WithValidation(g.ValidIdentifier, "name"),
 		).
-		ShowOperation(
+		ShowOperationWithPairedStructs(
 			"https://docs.snowflake.com/en/sql-reference/sql/show-streams",
-			showStreamDbRowDef,
-			streamPlainStructDef,
+			streamPairs,
 			g.NewQueryStruct("ShowStreams").
 				Show().
 				Terse().
@@ -196,11 +178,10 @@ var (
 			g.ShowByIDExtendedInFiltering,
 			g.ShowByIDLikeFiltering,
 		).
-		DescribeOperation(
+		DescribeOperationWithPairedStructs(
 			g.DescriptionMappingKindSingleValue,
 			"https://docs.snowflake.com/en/sql-reference/sql/desc-stream",
-			showStreamDbRowDef,
-			streamPlainStructDef,
+			streamPairs,
 			g.NewQueryStruct("DescribeStream").
 				Describe().
 				SQL("STREAM").

@@ -392,7 +392,7 @@ func Test_ContainsIdentifierIgnoreQuotes(t *testing.T) {
 // External volume helper tests
 
 func Test_ContainsValue(t *testing.T) {
-	haystack := sdk.AsStringList([]sdk.AuthenticationMethodsOption{sdk.AuthenticationMethodsAll, sdk.AuthenticationMethodsSaml, sdk.AuthenticationMethodsPassword})
+	haystack := sdk.AsStringList([]sdk.AuthenticationMethodsOption{sdk.AuthenticationMethodsOptionAll, sdk.AuthenticationMethodsOptionSaml, sdk.AuthenticationMethodsOptionPassword})
 	testCases := []struct {
 		name     string
 		haystack []string
@@ -402,7 +402,7 @@ func Test_ContainsValue(t *testing.T) {
 		{
 			name:     "needle is in haystack",
 			haystack: haystack,
-			needle:   string(sdk.AuthenticationMethodsSaml),
+			needle:   string(sdk.AuthenticationMethodsOptionSaml),
 			expected: true,
 		},
 		{
@@ -414,7 +414,7 @@ func Test_ContainsValue(t *testing.T) {
 		{
 			name:     "haystack is empty",
 			haystack: []string{},
-			needle:   string(sdk.AuthenticationMethodsSaml),
+			needle:   string(sdk.AuthenticationMethodsOptionSaml),
 			expected: false,
 		},
 		{
@@ -426,7 +426,7 @@ func Test_ContainsValue(t *testing.T) {
 		{
 			name:     "needle is in haystack, normalized",
 			haystack: haystack,
-			needle:   strings.ToLower(string(sdk.AuthenticationMethodsSaml)),
+			needle:   strings.ToLower(string(sdk.AuthenticationMethodsOptionSaml)),
 			expected: true,
 		},
 	}

@@ -54,6 +54,12 @@ func TestGetOnObjectIdentifier(t *testing.T) {
 			Expected:   sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_table"),
 		},
 		{
+			Name:       "dbt project - schema object identifier",
+			ObjectType: sdk.ObjectTypeDbtProject,
+			ObjectName: "test_database.test_schema.test_dbt_project",
+			Expected:   sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_dbt_project"),
+		},
+		{
 			Name:       "semantic view - schema object identifier",
 			ObjectType: sdk.ObjectTypeSemanticView,
 			ObjectName: "test_database.test_schema.test_semantic_view",
@@ -160,6 +166,19 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 				Object: &sdk.Object{
 					ObjectType: sdk.ObjectTypeTable,
 					Name:       sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_table"),
+				},
+			},
+		},
+		{
+			Name: "dbt project object type",
+			On: map[string]any{
+				"object_type": "DBT PROJECT",
+				"object_name": "test_database.test_schema.test_dbt_project",
+			},
+			Expected: sdk.OwnershipGrantOn{
+				Object: &sdk.Object{
+					ObjectType: sdk.ObjectTypeDbtProject,
+					Name:       sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_dbt_project"),
 				},
 			},
 		},

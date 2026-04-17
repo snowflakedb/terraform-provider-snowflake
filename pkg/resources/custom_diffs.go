@@ -284,6 +284,27 @@ func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.C
 	return RecreateWhenResourceTypeChangedExternally("cloud", stageCloud, sdk.ToStageCloud)
 }
 
+// HandleWarehouseExternalTypeChange detects when the warehouse type has been changed externally
+// and plans an update to restore it to warehouseType (without forcing recreation).
+func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		if n := diff.Get("warehouse_type"); n != nil {
+			gotTypeRaw := n.(string)
+			if gotTypeRaw == "" {
+				return nil
+			}
+			gotType, err := sdk.ToWarehouseType(gotTypeRaw)
+			if err != nil {
+				return fmt.Errorf("unknown warehouse type: %w", err)
+			}
+			if gotType != warehouseType {
+				return diff.SetNew("warehouse_type", string(warehouseType))
+			}
+		}
+		return nil
+	}
+}
+
 // RecreateWhenResourceTypeChangedExternally recreates a resource when argument wantType is different than the value in typeField.
 func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, wantType T, toType func(string) (T, error)) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {

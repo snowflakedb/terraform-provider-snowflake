@@ -74,14 +74,14 @@ var computePoolsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools",
-	g.DbStruct("computePoolsRow").
+	g.StructPair("computePoolsRow", "ComputePool").
 		Text("name").
-		Text("state").
+		PlainField("state", "ComputePoolState").
 		Number("min_nodes").
 		Number("max_nodes").
-		Text("instance_family").
+		PlainField("instance_family", "ComputePoolInstanceFamily").
 		Number("num_services").
 		Number("num_jobs").
 		Number("auto_suspend_secs").
@@ -95,27 +95,7 @@ var computePoolsDef = g.NewInterface(
 		Text("owner").
 		OptionalText("comment").
 		Bool("is_exclusive").
-		OptionalText("application"),
-	g.PlainStruct("ComputePool").
-		Text("Name").
-		Field("State", "ComputePoolState").
-		Number("MinNodes").
-		Number("MaxNodes").
-		Field("InstanceFamily", "ComputePoolInstanceFamily").
-		Number("NumServices").
-		Number("NumJobs").
-		Number("AutoSuspendSecs").
-		Bool("AutoResume").
-		Number("ActiveNodes").
-		Number("IdleNodes").
-		Number("TargetNodes").
-		Time("CreatedOn").
-		Time("ResumedOn").
-		Time("UpdatedOn").
-		Text("Owner").
-		OptionalText("Comment").
-		Bool("IsExclusive").
-		Field("Application", "*AccountObjectIdentifier"),
+		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")),
 	g.NewQueryStruct("ShowComputePools").
 		Show().
 		SQL("COMPUTE POOLS").
@@ -124,15 +104,15 @@ var computePoolsDef = g.NewInterface(
 		OptionalLimitFrom(),
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-compute-pool",
-	g.DbStruct("computePoolDescRow").
+	g.StructPair("computePoolDescRow", "ComputePoolDetails").
 		Text("name").
-		Text("state").
+		PlainField("state", "ComputePoolState").
 		Number("min_nodes").
 		Number("max_nodes").
-		Text("instance_family").
+		PlainField("instance_family", "ComputePoolInstanceFamily").
 		Number("num_services").
 		Number("num_jobs").
 		Number("auto_suspend_secs").
@@ -146,31 +126,9 @@ var computePoolsDef = g.NewInterface(
 		Text("owner").
 		OptionalText("comment").
 		Bool("is_exclusive").
-		OptionalText("application").
+		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
 		Text("error_code").
 		Text("status_message"),
-	g.PlainStruct("ComputePoolDetails").
-		Text("Name").
-		Field("State", "ComputePoolState").
-		Number("MinNodes").
-		Number("MaxNodes").
-		Field("InstanceFamily", "ComputePoolInstanceFamily").
-		Number("NumServices").
-		Number("NumJobs").
-		Number("AutoSuspendSecs").
-		Bool("AutoResume").
-		Number("ActiveNodes").
-		Number("IdleNodes").
-		Number("TargetNodes").
-		Time("CreatedOn").
-		Time("ResumedOn").
-		Time("UpdatedOn").
-		Text("Owner").
-		OptionalText("Comment").
-		Bool("IsExclusive").
-		Field("Application", "*AccountObjectIdentifier").
-		Text("ErrorCode").
-		Text("StatusMessage"),
 	g.NewQueryStruct("DescComputePool").
 		Describe().
 		SQL("COMPUTE POOL").

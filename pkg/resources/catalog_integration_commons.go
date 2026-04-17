@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -101,4 +103,46 @@ func deleteCatalogIntegrationFunc() schema.DeleteContextFunc {
 			return client.CatalogIntegrations.DropSafely
 		},
 	)
+}
+
+func buildOAuthRestAuthenticationRequest(d *schema.ResourceData, attrName string) (sdk.OAuthRestAuthenticationRequest, error) {
+	v := d.Get(attrName).([]any)
+	block := v[0].(map[string]any)
+	oauthClientId := block["oauth_client_id"].(string)
+	oauthClientSecret := block["oauth_client_secret"].(string)
+	scopesRaw := expandStringList(block["oauth_allowed_scopes"].([]any))
+	scopes := collections.Map(scopesRaw, func(v string) sdk.StringListItemWrapper {
+		return sdk.StringListItemWrapper{Value: v}
+	})
+	req := sdk.NewOAuthRestAuthenticationRequest(oauthClientId, oauthClientSecret, scopes)
+
+	if v, ok := block["oauth_token_uri"].(string); ok && v != "" {
+		req = req.WithOauthTokenUri(v)
+	}
+	return *req, nil
+}
+
+func handleExternalChangesToOAuthRestAuthentication(d *schema.ResourceData, attrName, oAuthTokenUri, oAuthClientId string, oAuthAllowedScopes []string) error {
+	output, ok := d.GetOk(DescribeOutputAttributeName + ".0." + attrName)
+	if !ok {
+		return nil
+	}
+	outputList := output.([]any)
+	if len(outputList) == 0 {
+		return nil
+	}
+	result := outputList[0].(map[string]any)
+
+	if result["oauth_token_uri"] == oAuthTokenUri &&
+		result["oauth_client_id"] == oAuthClientId &&
+		slices.Equal(expandStringList(result["oauth_allowed_scopes"].([]any)), oAuthAllowedScopes) {
+		return nil
+	}
+
+	return d.Set(attrName, []any{map[string]any{
+		"oauth_token_uri": oAuthTokenUri,
+		"oauth_client_id": oAuthClientId,
+		// oauth_client_secret is skipped because all other fields are ForceNew
+		"oauth_allowed_scopes": oAuthAllowedScopes,
+	}})
 }

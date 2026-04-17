@@ -169,22 +169,15 @@ var catalogIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-catalog-integrations",
-		g.DbStruct("showCatalogIntegrationsDbRow").
+		g.StructPair("showCatalogIntegrationsDbRow", "CatalogIntegration").
 			Text("name").
 			Bool("enabled").
 			Text("type").
 			Text("category").
-			OptionalText("comment").
+			OptionalText("comment", g.WithRequiredInPlain()).
 			Time("created_on"),
-		g.PlainStruct("CatalogIntegration").
-			Text("Name").
-			Bool("Enabled").
-			Text("Type").
-			Text("Category").
-			Text("Comment").
-			Time("CreatedOn"),
 		g.NewQueryStruct("ShowCatalogIntegration").
 			Show().
 			SQL("CATALOG INTEGRATIONS").
@@ -193,19 +186,14 @@ var catalogIntegrationsDef = g.NewInterface(
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-catalog-integration",
-		g.DbStruct("descCatalogIntegrationsDbRow").
-			Text("property").
-			Text("property_type").
-			Text("property_value").
-			Text("property_default"),
-		g.PlainStruct("CatalogIntegrationProperty").
-			Text("Name").
-			Text("Type").
-			Text("Value").
-			Text("Default"),
+		g.StructPair("descCatalogIntegrationsDbRow", "CatalogIntegrationProperty").
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeCatalogIntegration").
 			Describe().
 			SQL("CATALOG INTEGRATION").
@@ -258,6 +246,22 @@ var catalogIntegrationsDef = g.NewInterface(
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment"),
+		g.PlainStruct("CatalogIntegrationAllDetails").
+			AccountObjectIdentifier().
+			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
+			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Bool("Enabled").
+			Number("RefreshIntervalSeconds").
+			Text("Comment").
+			Text("GlueAwsRoleArn").
+			Text("GlueCatalogId").
+			Text("GlueRegion").
+			Text("CatalogNamespace").
+			// IcebergRestRestConfigDetails contains all properties of OpenCatalogRestConfigDetails
+			OptionalField("RestConfig", "IcebergRestRestConfigDetails").
+			OptionalField("OAuthRestAuthentication", "OAuthRestAuthenticationDetails").
+			OptionalField("BearerRestAuthentication", "BearerRestAuthenticationDetails").
+			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
 		g.PlainStruct("OpenCatalogRestConfigDetails").
 			Text("CatalogUri").
 			Field("CatalogApiType", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType]()).
@@ -278,5 +282,6 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("BearerToken"),
 		g.PlainStruct("SigV4RestAuthenticationDetails").
 			Text("Sigv4IamRole").
-			Text("Sigv4SigningRegion"),
+			Text("Sigv4SigningRegion").
+			Text("Sigv4ExternalId"),
 	)

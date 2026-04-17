@@ -36,6 +36,12 @@ func TestImageRepositories_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateImageRepositoryOptions", "IfNotExists", "OrReplace"))
 	})
 
+	t.Run("validation: [opts.Encryption.EncryptionType] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Encryption = &ImageRepositoryEncryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateImageRepositoryOptions.Encryption", "EncryptionType"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE IMAGE REPOSITORY %s", id.FullyQualifiedName())
@@ -46,6 +52,9 @@ func TestImageRepositories_Create(t *testing.T) {
 		comment := random.Comment()
 		tagId := NewAccountObjectIdentifier("tag1")
 		opts.IfNotExists = Bool(true)
+		opts.Encryption = &ImageRepositoryEncryption{
+			EncryptionType: ImageRepositoryEncryptionTypeSnowflakeFull,
+		}
 		opts.Comment = &comment
 		opts.Tag = []TagAssociation{
 			{
@@ -53,7 +62,7 @@ func TestImageRepositories_Create(t *testing.T) {
 				Value: "value1",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE IMAGE REPOSITORY IF NOT EXISTS %s COMMENT = '%s' TAG (%s = 'value1')", id.FullyQualifiedName(), comment, tagId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CREATE IMAGE REPOSITORY IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') COMMENT = '%s' TAG (%s = 'value1')", id.FullyQualifiedName(), comment, tagId.FullyQualifiedName())
 	})
 }
 

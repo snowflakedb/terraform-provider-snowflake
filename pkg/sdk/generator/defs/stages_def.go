@@ -349,65 +349,41 @@ var stagesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-stage",
-		g.DbStruct("stageDescRow").
-			Field("parent_property", "string").
-			Field("property", "string").
-			Field("property_type", "string").
-			Field("property_value", "string").
-			Field("property_default", "string"),
-		g.PlainStruct("StageProperty").
-			Field("Parent", "string").
-			Field("Name", "string").
-			Field("Type", "string").
-			Field("Value", "string").
-			Field("Default", "string"),
+		g.StructPair("stageDescRow", "StageProperty").
+			Text("parent_property", g.WithPlainFieldName("Parent")).
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescStage").
 			Describe().
 			SQL("STAGE").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-stages",
-		g.DbStruct("stageShowRow").
-			Field("created_on", "time.Time").
-			Field("name", "string").
-			Field("database_name", "string").
-			Field("schema_name", "string").
-			Field("url", "string").
-			Field("has_credentials", "string").
-			Field("has_encryption_key", "string").
-			Field("owner", "string").
-			Field("comment", "string").
-			Field("region", "sql.NullString").
-			Field("type", "string").
-			Field("cloud", "sql.NullString").
+		g.StructPair("stageShowRow", "Stage").
+			Time("created_on").
+			Text("name").
+			Text("database_name").
+			Text("schema_name").
+			Text("url").
+			Field("has_credentials", "string", "bool").
+			Field("has_encryption_key", "string", "bool").
+			Text("owner").
+			Text("comment").
+			OptionalText("region").
+			PlainField("type", "StageType").
+			Field("cloud", "sql.NullString", "*StageCloud").
 			// notification_channel is deprecated in Snowflake.
-			Field("storage_integration", "sql.NullString").
-			Field("endpoint", "sql.NullString").
-			Field("owner_role_type", "sql.NullString").
-			Field("directory_enabled", "string"),
-		g.PlainStruct("Stage").
-			Field("CreatedOn", "time.Time").
-			Field("Name", "string").
-			Field("DatabaseName", "string").
-			Field("SchemaName", "string").
-			Field("Url", "string").
-			Field("HasCredentials", "bool").
-			Field("HasEncryptionKey", "bool").
-			Field("Owner", "string").
-			Field("Comment", "string").
-			Field("Region", "*string").
-			Field("Type", "StageType").
-			Field("Cloud", "*StageCloud").
-			// notification_channel is deprecated in Snowflake.
-			Field("StorageIntegration", "*AccountObjectIdentifier").
-			Field("Endpoint", "*string").
-			Field("OwnerRoleType", "*string").
-			Field("DirectoryEnabled", "bool"),
+			Field("storage_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("StorageIntegration")).
+			OptionalText("endpoint").
+			Field("owner_role_type", "sql.NullString", "*string").
+			Field("directory_enabled", "string", "bool"),
 		g.NewQueryStruct("ShowStages").
 			Show().
 			SQL("STAGES").

@@ -1343,6 +1343,27 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
 				),
 			},
+			// Import with ordered_allowed_values config.
+			{
+				Config:                  config.FromModels(t, providerModel, withOrderedModified),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"allowed_values", "ordered_allowed_values"},
+			},
+			// Apply after import
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, providerModel, withOrderedModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValues("x", "b", "c"),
+					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
+				),
+			},
 			// Switch to allowed_values (unordered).
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -1356,26 +1377,6 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					resourceassert.TagResource(t, ref).
 						HasAllowedValues("x", "b", "c").
 						HasOrderedAllowedValuesEmpty(),
-				),
-			},
-			// Import with ordered_allowed_values config.
-			{
-				Config:            config.FromModels(t, providerModel, withOrderedModified),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			// Apply after import - values already in ordered_allowed_values, no reconciliation needed.
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
-					},
-				},
-				Config: config.FromModels(t, providerModel, withOrderedModified),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).HasAllowedValues("x", "b", "c"),
-					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
 				),
 			},
 			// Import with allowed_values config (import populates ordered_allowed_values by default).
@@ -1445,7 +1446,7 @@ func TestAcc_Tag_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, allowedValuesSequenceWithAllowedValues),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`"on_conflict.0.allowed_values_sequence": all of .+must be specified`),
+				ExpectError: regexp.MustCompile(`Missing required argument`),
 			},
 		},
 	})

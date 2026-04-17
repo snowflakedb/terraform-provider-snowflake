@@ -28,8 +28,8 @@ func TestAcc_OauthIntegrationForCustomClients_WithPrivilegedRolesBlockedList(t *
 	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, "true")
 	t.Cleanup(paramCleanup)
 
-	modelWithoutBlockedRole := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypePublic), "https://example.com")
-	modelWithBlockedRole := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypePublic), "https://example.com").
+	modelWithoutBlockedRole := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionPublic), "https://example.com")
+	modelWithBlockedRole := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionPublic), "https://example.com").
 		WithBlockedRolesList(role.ID().Name())
 
 	resource.Test(t, resource.TestCase{

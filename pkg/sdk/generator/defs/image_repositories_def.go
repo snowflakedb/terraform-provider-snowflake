@@ -6,6 +6,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var ImageRepositoryEncryptionTypeDef = g.NewEnum("ImageRepositoryEncryptionType", "ImageRepositoryEncryptionTypes", "SNOWFLAKE_FULL", "SNOWFLAKE_SSE")
+
 var imageRepositoriesDef = g.NewInterface(
 	"ImageRepositories",
 	"ImageRepository",
@@ -18,6 +20,13 @@ var imageRepositoriesDef = g.NewInterface(
 		SQL("IMAGE REPOSITORY").
 		IfNotExists().
 		Name().
+		OptionalQueryStructField(
+			"Encryption",
+			g.NewQueryStruct("ImageRepositoryEncryption").
+				AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.ImageRepositoryEncryptionType](), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
+				WithValidation(g.ValidateValueSet, "EncryptionType"),
+			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
+		).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
@@ -48,9 +57,9 @@ var imageRepositoriesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-image-repositories",
-	g.DbStruct("imageRepositoriesRow").
+	g.StructPair("imageRepositoriesRow", "ImageRepository").
 		Time("created_on").
 		Text("name").
 		Text("database_name").
@@ -59,17 +68,8 @@ var imageRepositoriesDef = g.NewInterface(
 		Text("owner").
 		Text("owner_role_type").
 		Text("comment").
+		PlainField("encryption", "ImageRepositoryEncryptionType").
 		Text("privatelink_repository_url"),
-	g.PlainStruct("ImageRepository").
-		Time("CreatedOn").
-		Text("Name").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("RepositoryUrl").
-		Text("Owner").
-		Text("OwnerRoleType").
-		Text("Comment").
-		Text("PrivatelinkRepositoryUrl"),
 	g.NewQueryStruct("ShowImageRepositories").
 		Show().
 		SQL("IMAGE REPOSITORIES").
@@ -78,4 +78,4 @@ var imageRepositoriesDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-)
+).WithEnums(ImageRepositoryEncryptionTypeDef)

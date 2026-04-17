@@ -26,6 +26,11 @@ func (v *applicationRoles) Revoke(ctx context.Context, request *RevokeApplicatio
 	return validateAndExec(v.client, ctx, opts)
 }
 
+// Adjusted manually
+func (v *applicationRoles) RevokeSafely(ctx context.Context, request *RevokeApplicationRoleRequest) error {
+	return SafeRevokePrivileges(func() error { return v.Revoke(ctx, request) })
+}
+
 func (v *applicationRoles) Show(ctx context.Context, request *ShowApplicationRoleRequest) ([]ApplicationRole, error) {
 	opts := request.toOpts()
 	dbRows, err := validateAndQuery[applicationRoleDbRow](v.client, ctx, opts)
