@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
@@ -93,7 +94,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
 
 	safePublicRole := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
-		isPublicRole(roleIdentifier)
+		strings.EqualFold(roleIdentifier.Name(), snowflakeroles.Public.Name())
 
 	// format of snowflakeResourceID is <role_identifier>|<object type>|<target_identifier>
 	var snowflakeResourceID string
@@ -124,6 +125,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	}
 	d.SetId(snowflakeResourceID)
 	if safePublicRole {
+		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleSafePublicRole)
 		return nil
 	}
 	return ReadGrantAccountRole(ctx, d, meta)
@@ -141,7 +143,8 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 
 	// PUBLIC is always implicitly granted; SHOW GRANTS won't list it as an explicit grant.
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
-		isPublicRole(roleIdentifier) {
+		strings.EqualFold(roleIdentifier.Name(), snowflakeroles.Public.Name()) {
+		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", d.Id(), experimentalfeatures.GrantAccountRoleSafePublicRole)
 		return nil
 	}
 
@@ -189,7 +192,8 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 
 	// PUBLIC is always implicitly granted and cannot be explicitly revoked.
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
-		isPublicRole(id) {
+		strings.EqualFold(id.Name(), snowflakeroles.Public.Name()) {
+		log.Printf("[DEBUG] skipping REVOKE for PUBLIC role grant (%s) — experiment %s enabled", d.Id(), experimentalfeatures.GrantAccountRoleSafePublicRole)
 		d.SetId("")
 		return nil
 	}
@@ -212,8 +216,4 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	}
 	d.SetId("")
 	return nil
-}
-
-func isPublicRole(id sdk.AccountObjectIdentifier) bool {
-	return strings.EqualFold(id.Name(), "PUBLIC")
 }

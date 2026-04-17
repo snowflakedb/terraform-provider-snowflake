@@ -34,6 +34,16 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to manage session policies with Terraform.
 
+### *(bug fix)* Improve handling of granting PUBLIC role
+
+A new experiment `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` is now available for the `snowflake_grant_account_role` resource. When enabled, granting the PUBLIC role is treated as a silent no-op instead of producing an inconsistent-result error.
+
+Snowflake implicitly grants PUBLIC to every role and user, so `GRANT ROLE PUBLIC` is always a no-op at the SQL level and `SHOW GRANTS` never lists it. Without this experiment, the provider's Read clears the state because it cannot find the grant, resulting in `Root object was present, but now absent` errors.
+
+To enable, add `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` to the `experimental_features_enabled` field in the provider configuration. No changes are required for existing configurations that do not grant the PUBLIC role.
+
+References: [#3001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3001)
+
 ## v2.14.x ➞ v2.15.0
 
 ### **IMPORTANT** *(improvement)* Go driver bumped to v2
