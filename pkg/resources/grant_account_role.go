@@ -87,44 +87,64 @@ func GrantAccountRole() *schema.Resource {
 
 // CreateGrantAccountRole implements schema.CreateFunc.
 func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	roleName := d.Get("role_name").(string)
 	roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
+
+	safePublicRole := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
+		isPublicRole(roleIdentifier)
+
 	// format of snowflakeResourceID is <role_identifier>|<object type>|<target_identifier>
 	var snowflakeResourceID string
 	if parentRoleName, ok := d.GetOk("parent_role_name"); ok && parentRoleName.(string) != "" {
 		parentRoleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parentRoleName.(string))
 		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleIdentifier.FullyQualifiedName())
-		req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
-			Role: &parentRoleIdentifier,
-		})
-		if err := client.Roles.Grant(ctx, req); err != nil {
-			return diag.FromErr(err)
+		if !safePublicRole {
+			req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
+				Role: &parentRoleIdentifier,
+			})
+			if err := client.Roles.Grant(ctx, req); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	} else if userName, ok := d.GetOk("user_name"); ok && userName.(string) != "" {
 		userIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(userName.(string))
 		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), userIdentifier.FullyQualifiedName())
-		req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
-			User: &userIdentifier,
-		})
-		if err := client.Roles.Grant(ctx, req); err != nil {
-			return diag.FromErr(err)
+		if !safePublicRole {
+			req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
+				User: &userIdentifier,
+			})
+			if err := client.Roles.Grant(ctx, req); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	} else {
 		return diag.FromErr(fmt.Errorf("invalid role grant specified: both parent_role_name and user_name are empty"))
 	}
 	d.SetId(snowflakeResourceID)
+	if safePublicRole {
+		return nil
+	}
 	return ReadGrantAccountRole(ctx, d, meta)
 }
 
 func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	parts := strings.Split(d.Id(), helpers.IDDelimiter)
 	if len(parts) != 3 {
 		return diag.FromErr(fmt.Errorf("invalid ID specified: %v, expected <role_name>|<grantee_object_type>|<grantee_identifier>", d.Id()))
 	}
 	roleName := parts[0]
 	roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
+
+	// PUBLIC is always implicitly granted; SHOW GRANTS won't list it as an explicit grant.
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
+		isPublicRole(roleIdentifier) {
+		return nil
+	}
+
 	objectType := parts[1]
 	targetIdentifier := parts[2]
 	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
@@ -166,6 +186,14 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	objectType := parts[1]
 	granteeName := parts[2]
 	granteeIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(granteeName)
+
+	// PUBLIC is always implicitly granted and cannot be explicitly revoked.
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
+		isPublicRole(id) {
+		d.SetId("")
+		return nil
+	}
+
 	revokeFunc := client.Roles.Revoke
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
 		revokeFunc = client.Roles.RevokeSafely
@@ -184,4 +212,8 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	}
 	d.SetId("")
 	return nil
+}
+
+func isPublicRole(id sdk.AccountObjectIdentifier) bool {
+	return strings.EqualFold(id.Name(), "PUBLIC")
 }

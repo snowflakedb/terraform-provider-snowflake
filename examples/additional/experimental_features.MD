@@ -76,4 +76,11 @@ This prevents errors when, for example, a table or schema is deleted externally 
 
 Without this experiment, destroying such resources fails with `does not exist or not authorized`.
 
+#### GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE
+When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.
+
+Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.
+
+With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.
+
 
