@@ -204,6 +204,7 @@ func (i *Interface) appendShowByID(filtering []ShowByIDFilteringKind) *Interface
 func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
 	op := i.newOperationWithDBMapping(string(OperationKindShow), doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
 	kind := ShowMappingKindSlice
+	i.ShowObjectName = op.ShowMapping.To.Name
 	op.ShowKind = &kind
 	return i.appendShowByID(filtering)
 }

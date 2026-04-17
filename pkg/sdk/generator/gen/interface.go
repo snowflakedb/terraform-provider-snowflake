@@ -48,6 +48,8 @@ type Interface struct {
 	// ShowObjectTypeName overrides the suffix used in the generated ObjectType() return value.
 	// If empty, NameSingular is used (producing ObjectType<NameSingular>).
 	ShowObjectTypeName string
+	// ShowObjectName is the name of the main object returned from this interface through Show methods family.
+	ShowObjectName string
 
 	*genhelpers.PreambleModel
 	*genhelpers.ObjectGenerationSettings
