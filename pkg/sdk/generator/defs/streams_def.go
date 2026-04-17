@@ -34,21 +34,21 @@ var (
 	}
 
 	streamPairs = g.StructPair("showStreamsDbRow", "Stream").
-		Time("created_on").
-		Text("name").
-		Text("database_name").
-		Text("schema_name").
-		OptionalText("owner").
-		OptionalText("comment").
-		OptionalText("table_name").
-		Field("source_type", "sql.NullString", StreamSourceTypeEnumDef.KindPtr()).
-		Field("base_tables", "sql.NullString", "[]string").
-		OptionalText("type").
-		Field("stale", "string", "bool").
-		Field("mode", "sql.NullString", StreamModeEnumDef.KindPtr()).
-		OptionalTime("stale_after").
-		OptionalText("invalid_reason").
-		OptionalText("owner_role_type")
+			Time("created_on").
+			Text("name").
+			Text("database_name").
+			Text("schema_name").
+			OptionalText("owner").
+			OptionalText("comment").
+			OptionalText("table_name").
+			Field("source_type", "sql.NullString", StreamSourceTypeEnumDef.KindPtr()).
+			Field("base_tables", "sql.NullString", "[]string").
+			OptionalText("type").
+			Field("stale", "string", "bool").
+			Field("mode", "sql.NullString", StreamModeEnumDef.KindPtr()).
+			OptionalTime("stale_after").
+			OptionalText("invalid_reason").
+			OptionalText("owner_role_type")
 
 	streamsDef = g.NewInterface(
 		"Streams",
