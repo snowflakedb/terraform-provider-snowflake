@@ -33,7 +33,7 @@ func TestInt_TagReferences(t *testing.T) {
 		)
 		t.Cleanup(tableCleanup)
 
-		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(table.ID(), sdk.TagReferenceObjectDomainTable))
+		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequestFull(table.ID().FullyQualifiedName(), sdk.TagReferenceObjectDomainTable))
 		require.NoError(t, err)
 
 		ref, err := collections.FindFirst(refs, func(r sdk.TagReference) bool {
@@ -75,7 +75,7 @@ func TestInt_TagReferences(t *testing.T) {
 		)
 		t.Cleanup(tableCleanup)
 
-		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(table.ID(), sdk.TagReferenceObjectDomainTable))
+		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequestFull(table.ID().FullyQualifiedName(), sdk.TagReferenceObjectDomainTable))
 		require.NoError(t, err)
 		require.Len(t, refs, 2)
 	})
@@ -93,7 +93,7 @@ func TestInt_TagReferences(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
 
-		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(table.ID(), sdk.TagReferenceObjectDomainTable))
+		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequestFull(table.ID().FullyQualifiedName(), sdk.TagReferenceObjectDomainTable))
 		require.NoError(t, err)
 
 		ref, err := collections.FindFirst(refs, func(r sdk.TagReference) bool {
@@ -132,7 +132,7 @@ func TestInt_TagReferences(t *testing.T) {
 		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
 		t.Cleanup(viewCleanup)
 
-		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(view.ID(), sdk.TagReferenceObjectDomainTable))
+		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequestFull(view.ID().FullyQualifiedName(), sdk.TagReferenceObjectDomainTable))
 		require.NoError(t, err)
 
 		ref, err := collections.FindFirst(refs, func(r sdk.TagReference) bool {
@@ -153,13 +153,13 @@ func TestInt_TagReferences(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
 
-		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(table.ID(), sdk.TagReferenceObjectDomainTable))
+		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequestFull(table.ID().FullyQualifiedName(), sdk.TagReferenceObjectDomainTable))
 		require.NoError(t, err)
 		assert.Empty(t, refs)
 	})
 
 	t.Run("error: non-existent object", func(t *testing.T) {
-		_, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(NonExistingSchemaObjectIdentifier, sdk.TagReferenceObjectDomainTable))
+		_, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequestFull(NonExistingSchemaObjectIdentifier.FullyQualifiedName(), sdk.TagReferenceObjectDomainTable))
 		require.Error(t, err)
 	})
 }
