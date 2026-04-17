@@ -7,15 +7,15 @@ import (
 	"errors"
 )
 
-var _ TagReferences = (*tagReferences)(nil)
-
-var _ convertibleRow[TagReference] = new(tagReferenceDBRow)
+var (
+	_ TagReferences                = (*tagReferences)(nil)
+	_ convertibleRow[TagReference] = new(tagReferenceDBRow)
+)
 
 type tagReferences struct {
 	client *Client
 }
 
-// Manually edited return type and implementation.
 func (v *tagReferences) GetForEntity(ctx context.Context, request *GetForEntityTagReferenceRequest) ([]TagReference, error) {
 	opts := request.toOpts()
 	dbRows, err := validateAndQuery[tagReferenceDBRow](v.client, ctx, opts)
@@ -23,6 +23,20 @@ func (v *tagReferences) GetForEntity(ctx context.Context, request *GetForEntityT
 		return nil, err
 	}
 	return convertRows[tagReferenceDBRow, TagReference](dbRows)
+}
+
+func (r *GetForEntityTagReferenceRequest) toOpts() *GetForEntityTagReferenceOptions {
+	opts := &GetForEntityTagReferenceOptions{}
+	if r.parameters != nil {
+		opts.parameters = &tagReferenceParameters{}
+		if r.parameters.arguments != nil {
+			opts.parameters.arguments = &tagReferenceFunctionArguments{
+				ObjectName:   r.parameters.arguments.ObjectName,
+				ObjectDomain: r.parameters.arguments.ObjectDomain,
+			}
+		}
+	}
+	return opts
 }
 
 func (row tagReferenceDBRow) convert() (*TagReference, error) {
@@ -44,18 +58,4 @@ func (row tagReferenceDBRow) convert() (*TagReference, error) {
 	mapNullString(&tagReference.ObjectSchema, row.ObjectSchema)
 	mapNullString(&tagReference.ColumnName, row.ColumnName)
 	return &tagReference, nil
-}
-
-func (r *GetForEntityTagReferenceRequest) toOpts() *GetForEntityTagReferenceOptions {
-	opts := &GetForEntityTagReferenceOptions{}
-	if r.parameters != nil {
-		opts.parameters = &tagReferenceParameters{}
-		if r.parameters.arguments != nil {
-			opts.parameters.arguments = &tagReferenceFunctionArguments{
-				ObjectName:   r.parameters.arguments.Objectname,
-				ObjectDomain: r.parameters.arguments.Objectdomain,
-			}
-		}
-	}
-	return opts
 }

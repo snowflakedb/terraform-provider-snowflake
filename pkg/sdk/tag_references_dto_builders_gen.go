@@ -19,25 +19,11 @@ func NewtagReferenceParametersRequest(
 }
 
 func NewtagReferenceFunctionArgumentsRequest(
-	objectname *string,
-	objectdomain *TagReferenceObjectDomain,
+	objectName *string,
+	objectDomain *TagReferenceObjectDomain,
 ) *tagReferenceFunctionArgumentsRequest {
 	s := tagReferenceFunctionArgumentsRequest{}
-	s.Objectname = objectname
-	s.Objectdomain = objectdomain
+	s.ObjectName = objectName
+	s.ObjectDomain = objectDomain
 	return &s
-}
-
-func NewGetForEntityTagReferenceSimpleRequest(
-	objectName ObjectIdentifier,
-	objectDomain TagReferenceObjectDomain,
-) *GetForEntityTagReferenceRequest {
-	return NewGetForEntityTagReferenceRequest(
-		NewtagReferenceParametersRequest(
-			NewtagReferenceFunctionArgumentsRequest(
-				Pointer(objectName.FullyQualifiedName()),
-				Pointer(objectDomain),
-			),
-		),
-	)
 }

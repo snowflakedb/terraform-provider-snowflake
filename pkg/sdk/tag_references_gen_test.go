@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TagReferenceObjectDomain]{"TagReferenceObjectDomain", AllTagReferenceObjectDomains, ToTagReferenceObjectDomain})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TagReferenceApplyMethod]{"TagReferenceApplyMethod", AllTagReferenceApplyMethods, ToTagReferenceApplyMethod})
+}
+
+
 func TestTagReferences_GetForEntity(t *testing.T) {
 	// id and defaultOpts removed manually
 
@@ -70,6 +76,6 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES ('"my_warehouse"', 'WAREHOUSE'))`)
+		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES ('\"my_warehouse\"', 'WAREHOUSE'))`)
 	})
 }

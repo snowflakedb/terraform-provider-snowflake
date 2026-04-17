@@ -105,7 +105,7 @@ func (c *TagClient) GetReferencesForObject(t *testing.T, objectId sdk.ObjectIden
 	t.Helper()
 	ctx := context.Background()
 
-	return c.context.client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(objectId, objectDomain))
+	return c.context.client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequestFull(objectId.FullyQualifiedName(), objectDomain))
 }
 
 // SetupTagPropagationConflictOnView creates two tables with conflicting tag values and a view that joins them,

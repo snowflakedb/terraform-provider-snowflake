@@ -6,6 +6,41 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var TagReferenceObjectDomainDef = g.NewEnum(
+	"TagReferenceObjectDomain",
+	"TagReferenceObjectDomains",
+	"ACCOUNT",
+	"ALERT",
+	"COLUMN",
+	"COMPUTE POOL",
+	"DATABASE",
+	"DATABASE ROLE",
+	"FAILOVER GROUP",
+	"FUNCTION",
+	"INTEGRATION",
+	"NETWORK POLICY",
+	"PROCEDURE",
+	"REPLICATION GROUP",
+	"ROLE",
+	"SCHEMA",
+	"SHARE",
+	"STAGE",
+	"STREAM",
+	"TABLE",
+	"TASK",
+	"USER",
+	"WAREHOUSE",
+)
+
+var TagReferenceApplyMethodDef = g.NewEnum(
+	"TagReferenceApplyMethod",
+	"TagReferenceApplyMethods",
+	"CLASSIFIED",
+	"INHERITED",
+	"MANUAL",
+	"PROPAGATED",
+)
+
 var tagReferenceParametersDef = g.NewQueryStruct("tagReferenceParameters").
 	SQLWithCustomFieldName("functionFullyQualifiedName", "SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES").
 	OptionalQueryStructField(
@@ -31,18 +66,10 @@ var tagReferencesDef = g.NewInterface(
 	"TagReferences",
 	"TagReference",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).CustomOperation(
+).CustomShowOperation(
 	"GetForEntity",
+	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/functions/tag_references",
-	g.NewQueryStruct("GetForEntity").
-		SQLWithCustomFieldName("selectEverythingFrom", "SELECT * FROM TABLE").
-		OptionalQueryStructField(
-			"parameters",
-			tagReferenceParametersDef,
-			g.ListOptions().Parentheses().NoComma().Required(),
-		).WithValidation(g.ValidateValueSet, "parameters"),
-	tagReferenceParametersDef,
-	tagReferenceFunctionArgumentsDef,
 	g.DbStruct("tagReferenceDBRow").
 		Text("TAG_DATABASE").
 		Text("TAG_SCHEMA").
@@ -67,4 +94,13 @@ var tagReferencesDef = g.NewInterface(
 		Field("Domain", "TagReferenceObjectDomain").
 		Field("ColumnName", "*string").
 		Field("ApplyMethod", "TagReferenceApplyMethod"),
-)
+	g.NewQueryStruct("GetForEntity").
+		SQLWithCustomFieldName("selectEverythingFrom", "SELECT * FROM TABLE").
+		OptionalQueryStructField(
+			"parameters",
+			tagReferenceParametersDef,
+			g.ListOptions().Parentheses().NoComma().Required(),
+		).WithValidation(g.ValidateValueSet, "parameters"),
+	tagReferenceParametersDef,
+	tagReferenceFunctionArgumentsDef,
+).WithEnums(TagReferenceObjectDomainDef, TagReferenceApplyMethodDef)
