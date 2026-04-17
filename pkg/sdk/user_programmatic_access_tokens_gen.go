@@ -136,7 +136,6 @@ type ProgrammaticAccessToken struct {
 	RotatedTo                            *string
 }
 
-// adjusted manually
 func (v *ProgrammaticAccessToken) ObjectType() ObjectType {
 	return ObjectTypeProgrammaticAccessToken
 }
