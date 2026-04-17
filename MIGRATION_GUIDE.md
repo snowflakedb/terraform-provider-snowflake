@@ -34,7 +34,7 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to manage session policies with Terraform.
 
-## v2.15.x ➞ v2.16.0
+## v2.15.x ➞ v2.15.1
 
 ### *(bug fix)* `snowflake_stream_on_table` and `snowflake_stream_on_view` import fix
 
