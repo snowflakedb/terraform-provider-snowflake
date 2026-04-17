@@ -59,4 +59,5 @@
 - [snowflake_user_authentication_policy_attachment](./docs/resources/user_authentication_policy_attachment)
 - [snowflake_user_password_policy_attachment](./docs/resources/user_password_policy_attachment)
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
+- [snowflake_user_session_policy_attachment](./docs/resources/user_session_policy_attachment)
 - [snowflake_warehouse_adaptive](./docs/resources/warehouse_adaptive)
