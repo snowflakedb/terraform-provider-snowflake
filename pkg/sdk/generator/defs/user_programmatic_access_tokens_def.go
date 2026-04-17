@@ -128,4 +128,5 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		[]*g.MethodParameter{g.NewMethodParameter("request", "*RemoveUserProgrammaticAccessTokenRequest")},
 		"error",
 	).
-	WithEnums(ProgrammaticAccessTokenStatusDef)
+	WithEnums(ProgrammaticAccessTokenStatusDef).
+	WithShowObjectType("ProgrammaticAccessToken")
