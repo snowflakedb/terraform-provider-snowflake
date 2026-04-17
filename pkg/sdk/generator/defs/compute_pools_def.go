@@ -84,10 +84,10 @@ var computePoolsDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools",
 	g.StructPair("computePoolsRow", "ComputePool").
 		Text("name").
-		PlainField("state", "ComputePoolState").
+		PlainField("state", ComputePoolStateEnumDef.Kind()).
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("instance_family", ComputePoolStateEnumDef.Kind()).
+		PlainField("instance_family", "ComputePoolInstanceFamily").
 		Number("num_services").
 		Number("num_jobs").
 		Number("auto_suspend_secs").
