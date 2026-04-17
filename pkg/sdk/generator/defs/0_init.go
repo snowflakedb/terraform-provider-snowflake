@@ -48,6 +48,7 @@ func init() {
 		storageIntegrationsDef,
 		streamlitsDef,
 		streamsDef,
+		tagReferencesDef,
 		tasksDef,
 		userProgrammaticAccessTokensDef,
 		viewsDef,

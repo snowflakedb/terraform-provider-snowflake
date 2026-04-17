@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,46 +10,46 @@ import (
 
 func TestTagReferencesGetForEntity(t *testing.T) {
 	t.Run("validation: missing parameters", func(t *testing.T) {
-		opts := &getForEntityTagReferenceOptions{}
+		opts := &GetForEntityTagReferenceOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("getForEntityTagReferenceOptions", "parameters"))
 	})
 
 	t.Run("validation: missing arguments", func(t *testing.T) {
-		opts := &getForEntityTagReferenceOptions{
+		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("tagReferenceParameters", "arguments"))
 	})
 
 	t.Run("validation: missing objectName", func(t *testing.T) {
-		opts := &getForEntityTagReferenceOptions{
+		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{
 				arguments: &tagReferenceFunctionArguments{
-					objectDomain: Pointer(TagReferenceObjectDomainTable),
+					ObjectDomain: Pointer(TagReferenceObjectDomainTable),
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("tagReferenceFunctionArguments", "objectName"))
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityTagReferenceOptions.parameters.arguments", "ObjectName"))
 	})
 
 	t.Run("validation: missing objectDomain", func(t *testing.T) {
-		opts := &getForEntityTagReferenceOptions{
+		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{
 				arguments: &tagReferenceFunctionArguments{
-					objectName: Pointer("some_name"),
+					ObjectName: Pointer("some_name"),
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("tagReferenceFunctionArguments", "objectDomain"))
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityTagReferenceOptions.parameters.arguments", "ObjectDomain"))
 	})
 
 	t.Run("table domain", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
-		opts := &getForEntityTagReferenceOptions{
+		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{
 				arguments: &tagReferenceFunctionArguments{
-					objectName:   Pointer(id.FullyQualifiedName()),
-					objectDomain: Pointer(TagReferenceObjectDomainTable),
+					ObjectName:   Pointer(id.FullyQualifiedName()),
+					ObjectDomain: Pointer(TagReferenceObjectDomainTable),
 				},
 			},
 		}
@@ -56,11 +57,11 @@ func TestTagReferencesGetForEntity(t *testing.T) {
 	})
 
 	t.Run("warehouse domain", func(t *testing.T) {
-		opts := &getForEntityTagReferenceOptions{
+		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{
 				arguments: &tagReferenceFunctionArguments{
-					objectName:   Pointer(NewAccountObjectIdentifier("my_warehouse").FullyQualifiedName()),
-					objectDomain: Pointer(TagReferenceObjectDomainWarehouse),
+					ObjectName:   Pointer(NewAccountObjectIdentifier("my_warehouse").FullyQualifiedName()),
+					ObjectDomain: Pointer(TagReferenceObjectDomainWarehouse),
 				},
 			},
 		}
@@ -69,7 +70,14 @@ func TestTagReferencesGetForEntity(t *testing.T) {
 
 	t.Run("via request builder", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
-		request := NewGetForEntityTagReferenceRequest(id, TagReferenceObjectDomainTable)
+		request := NewGetForEntityTagReferenceRequest(
+			NewtagReferenceParametersRequest(
+				NewtagReferenceFunctionArgumentsRequest(
+					Pointer(id.FullyQualifiedName()),
+					Pointer(TagReferenceObjectDomainTable),
+				),
+			),
+		)
 		opts := request.toOpts()
 		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES ('%s', 'TABLE'))`, temporaryReplace(id))
 	})
@@ -82,6 +90,32 @@ func TestToTagReferenceObjectDomain(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, d, result)
 		}
+	})
+
+	t.Run("all declared constants are covered", func(t *testing.T) {
+		assert.ElementsMatch(t, []TagReferenceObjectDomain{
+			TagReferenceObjectDomainAccount,
+			TagReferenceObjectDomainAlert,
+			TagReferenceObjectDomainColumn,
+			TagReferenceObjectDomainComputePool,
+			TagReferenceObjectDomainDatabase,
+			TagReferenceObjectDomainDatabaseRole,
+			TagReferenceObjectDomainFailoverGroup,
+			TagReferenceObjectDomainFunction,
+			TagReferenceObjectDomainIntegration,
+			TagReferenceObjectDomainNetworkPolicy,
+			TagReferenceObjectDomainProcedure,
+			TagReferenceObjectDomainReplicationGroup,
+			TagReferenceObjectDomainRole,
+			TagReferenceObjectDomainSchema,
+			TagReferenceObjectDomainShare,
+			TagReferenceObjectDomainStage,
+			TagReferenceObjectDomainStream,
+			TagReferenceObjectDomainTable,
+			TagReferenceObjectDomainTask,
+			TagReferenceObjectDomainUser,
+			TagReferenceObjectDomainWarehouse,
+		}, AllTagReferenceObjectDomains)
 	})
 
 	t.Run("case insensitive", func(t *testing.T) {
@@ -116,5 +150,33 @@ func TestToTagReferenceApplyMethod(t *testing.T) {
 		_, err := ToTagReferenceApplyMethod("INVALID")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "invalid TagReferenceApplyMethod")
+	})
+
+	t.Run("all declared constants are covered", func(t *testing.T) {
+		assert.ElementsMatch(t, []TagReferenceApplyMethod{
+			TagReferenceApplyMethodClassified,
+			TagReferenceApplyMethodInherited,
+			TagReferenceApplyMethodManual,
+			TagReferenceApplyMethodPropagated,
+		}, AllTagReferenceApplyMethods)
+	})
+
+	t.Run("convert returns joined mapping errors", func(t *testing.T) {
+		row := tagReferenceDBRow{
+			TagDatabase: "db",
+			TagSchema:   "schema",
+			TagName:     "tag",
+			TagValue:    "value",
+			Level:       "invalid-level",
+			ObjectName:  "obj",
+			Domain:      "invalid-domain",
+			ApplyMethod: "invalid-apply-method",
+		}
+
+		_, err := row.convert()
+		require.Error(t, err)
+		assert.ErrorContains(t, err, fmt.Sprintf("invalid TagReferenceObjectDomain: %s", "INVALID-LEVEL"))
+		assert.ErrorContains(t, err, fmt.Sprintf("invalid TagReferenceObjectDomain: %s", "INVALID-DOMAIN"))
+		assert.ErrorContains(t, err, fmt.Sprintf("invalid TagReferenceApplyMethod: %s", "INVALID-APPLY-METHOD"))
 	})
 }

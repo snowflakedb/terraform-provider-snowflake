@@ -55,6 +55,11 @@ func (v *QueryStruct) OptionalText(name string, transformer *KeywordTransformer)
 	return v
 }
 
+func (v *QueryStruct) OptionalEnum(name string, kind string, transformer *KeywordTransformer) *QueryStruct {
+	v.fields = append(v.fields, NewField(name, KindOfPointer(kind), Tags().Keyword(), transformer))
+	return v
+}
+
 func (v *QueryStruct) OptionalNumber(name string, transformer *KeywordTransformer) *QueryStruct {
 	v.fields = append(v.fields, NewField(name, "*int", Tags().Keyword(), transformer))
 	return v

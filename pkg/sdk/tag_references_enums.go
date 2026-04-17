@@ -1,32 +1,10 @@
 package sdk
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
 	"slices"
 	"strings"
 )
-
-type TagReferences interface {
-	GetForEntity(ctx context.Context, request *GetForEntityTagReferenceRequest) ([]TagReference, error)
-}
-
-// getForEntityTagReferenceOptions is based on https://docs.snowflake.com/en/sql-reference/functions/tag_references
-type getForEntityTagReferenceOptions struct {
-	selectEverythingFrom bool                    `ddl:"static" sql:"SELECT * FROM TABLE"`
-	parameters           *tagReferenceParameters `ddl:"list,parentheses,no_comma"`
-}
-
-type tagReferenceParameters struct {
-	functionFullyQualifiedName bool                           `ddl:"static" sql:"SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES"`
-	arguments                  *tagReferenceFunctionArguments `ddl:"list,parentheses"`
-}
-
-type tagReferenceFunctionArguments struct {
-	objectName   *string                   `ddl:"keyword,single_quotes"`
-	objectDomain *TagReferenceObjectDomain `ddl:"keyword,single_quotes"`
-}
 
 type TagReferenceObjectDomain string
 
@@ -79,11 +57,11 @@ var AllTagReferenceObjectDomains = []TagReferenceObjectDomain{
 }
 
 func ToTagReferenceObjectDomain(s string) (TagReferenceObjectDomain, error) {
-	d := TagReferenceObjectDomain(strings.ToUpper(s))
-	if !slices.Contains(AllTagReferenceObjectDomains, d) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllTagReferenceObjectDomains, TagReferenceObjectDomain(s)) {
 		return "", fmt.Errorf("invalid TagReferenceObjectDomain: %s", s)
 	}
-	return d, nil
+	return TagReferenceObjectDomain(s), nil
 }
 
 type TagReferenceApplyMethod string
@@ -103,58 +81,9 @@ var AllTagReferenceApplyMethods = []TagReferenceApplyMethod{
 }
 
 func ToTagReferenceApplyMethod(s string) (TagReferenceApplyMethod, error) {
-	m := TagReferenceApplyMethod(strings.ToUpper(s))
-	if !slices.Contains(AllTagReferenceApplyMethods, m) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllTagReferenceApplyMethods, TagReferenceApplyMethod(s)) {
 		return "", fmt.Errorf("invalid TagReferenceApplyMethod: %s", s)
 	}
-	return m, nil
-}
-
-type TagReference struct {
-	TagDatabase    string
-	TagSchema      string
-	TagName        string
-	TagValue       string
-	Level          TagReferenceObjectDomain
-	ObjectDatabase *string
-	ObjectSchema   *string
-	ObjectName     string
-	Domain         TagReferenceObjectDomain
-	ColumnName     *string
-	ApplyMethod    TagReferenceApplyMethod
-}
-
-func (t *TagReference) TagId() ObjectIdentifier {
-	return NewSchemaObjectIdentifier(t.TagDatabase, t.TagSchema, t.TagName)
-}
-
-type tagReferenceDBRow struct {
-	TagDatabase    string         `db:"TAG_DATABASE"`
-	TagSchema      string         `db:"TAG_SCHEMA"`
-	TagName        string         `db:"TAG_NAME"`
-	TagValue       string         `db:"TAG_VALUE"`
-	Level          string         `db:"LEVEL"`
-	ObjectDatabase sql.NullString `db:"OBJECT_DATABASE"`
-	ObjectSchema   sql.NullString `db:"OBJECT_SCHEMA"`
-	ObjectName     string         `db:"OBJECT_NAME"`
-	Domain         string         `db:"DOMAIN"`
-	ColumnName     sql.NullString `db:"COLUMN_NAME"`
-	ApplyMethod    string         `db:"APPLY_METHOD"`
-}
-
-func (row tagReferenceDBRow) convert() (*TagReference, error) {
-	tagReference := TagReference{
-		TagDatabase: row.TagDatabase,
-		TagSchema:   row.TagSchema,
-		TagName:     row.TagName,
-		TagValue:    row.TagValue,
-		ObjectName:  row.ObjectName,
-	}
-	mapStringWithMapping(&tagReference.Level, row.Level, ToTagReferenceObjectDomain)
-	mapStringWithMapping(&tagReference.Domain, row.Domain, ToTagReferenceObjectDomain)
-	mapStringWithMapping(&tagReference.ApplyMethod, row.ApplyMethod, ToTagReferenceApplyMethod)
-	mapNullString(&tagReference.ObjectDatabase, row.ObjectDatabase)
-	mapNullString(&tagReference.ObjectSchema, row.ObjectSchema)
-	mapNullString(&tagReference.ColumnName, row.ColumnName)
-	return &tagReference, nil
+	return TagReferenceApplyMethod(s), nil
 }
