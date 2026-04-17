@@ -352,3 +352,55 @@ resource "snowflake_notification_integration" "test" {
 }
 `, id.Name(), awsSnsTopicArn, awsSnsRoleArn)
 }
+
+func TestAcc_NotificationIntegration_AWS_SQS(t *testing.T) {
+	// TODO [SNOW-1017580]: Use real SQS queue ARN from test environment
+	const sqsArn = "arn:aws:sqs:us-east-2:123456789012:test-queue"
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.NotificationIntegration),
+		Steps: []resource.TestStep{
+			// Create AWS_SQS notification integration
+			{
+				Config: awsSqsNotificationIntegrationConfig(id, sqsArn, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "notification_provider", "AWS_SQS"),
+					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "aws_sqs_arn", sqsArn),
+					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "enabled", "true"),
+					resource.TestCheckResourceAttrSet("snowflake_notification_integration.test", "aws_sqs_iam_user_arn"),
+				),
+			},
+			// Import
+			{
+				ResourceName:      "snowflake_notification_integration.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update enabled
+			{
+				Config: awsSqsNotificationIntegrationConfig(id, sqsArn, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func awsSqsNotificationIntegrationConfig(id sdk.AccountObjectIdentifier, sqsArn string, enabled bool) string {
+	return fmt.Sprintf(`
+resource "snowflake_notification_integration" "test" {
+  name                  = "%s"
+  notification_provider = "AWS_SQS"
+  aws_sqs_arn           = "%s"
+  enabled               = %t
+  comment               = "Terraform acceptance test for AWS_SQS"
+}
+`, id.Name(), sqsArn, enabled)
+}

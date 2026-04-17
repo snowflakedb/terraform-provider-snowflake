@@ -99,17 +99,17 @@ func TestNotificationIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams.GoogleAutoParams opts.AutomatedDataLoadsParams.AzureAutoParams] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams.GoogleAutoParams opts.AutomatedDataLoadsParams.AzureAutoParams opts.AutomatedDataLoadsParams.AmazonAutoParams] should be present", func(t *testing.T) {
 		// default adjusted manually
 		opts := defaultOptsAutomatedDataLoads()
 		opts.AutomatedDataLoadsParams.GoogleAutoParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams", "AmazonAutoParams"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams.GoogleAutoParams opts.AutomatedDataLoadsParams.AzureAutoParams] should be present - more present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams.GoogleAutoParams opts.AutomatedDataLoadsParams.AzureAutoParams opts.AutomatedDataLoadsParams.AmazonAutoParams] should be present - more present", func(t *testing.T) {
 		opts := defaultOptsAutomatedDataLoads()
 		opts.AutomatedDataLoadsParams.AzureAutoParams = &AzureAutoParams{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams", "AmazonAutoParams"))
 	})
 
 	t.Run("validation: exactly one field from [opts.PushNotificationParams.AmazonPushParams opts.PushNotificationParams.GooglePushParams opts.PushNotificationParams.AzurePushParams] should be present", func(t *testing.T) {
@@ -148,6 +148,22 @@ func TestNotificationIntegrations_Create(t *testing.T) {
 			AzureTenantId:               azureTenantId,
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = QUEUE NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE AZURE_STORAGE_QUEUE_PRIMARY_URI = '%s' AZURE_TENANT_ID = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), azureStorageQueuePrimaryUri, azureTenantId)
+	})
+
+	t.Run("all options - auto amazon (AWS_SQS)", func(t *testing.T) {
+		const sqsArn = "arn:aws:sqs:us-east-2:123456789012:my-queue"
+		opts := &CreateNotificationIntegrationOptions{
+			name:        id,
+			IfNotExists: Bool(true),
+			Enabled:     true,
+			AutomatedDataLoadsParams: &AutomatedDataLoadsParams{
+				AmazonAutoParams: &AmazonAutoParams{
+					AwsSqsArn: sqsArn,
+				},
+			},
+			Comment: String("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = QUEUE NOTIFICATION_PROVIDER = AWS_SQS DIRECTION = INBOUND AWS_SQS_ARN = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), sqsArn)
 	})
 
 	t.Run("all options - push amazon", func(t *testing.T) {

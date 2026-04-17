@@ -93,6 +93,11 @@ func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationInteg
 				AzureTenantId:               r.AutomatedDataLoadsParams.AzureAutoParams.AzureTenantId,
 			}
 		}
+		if r.AutomatedDataLoadsParams.AmazonAutoParams != nil {
+			opts.AutomatedDataLoadsParams.AmazonAutoParams = &AmazonAutoParams{
+				AwsSqsArn: r.AutomatedDataLoadsParams.AmazonAutoParams.AwsSqsArn,
+			}
+		}
 	}
 	if r.PushNotificationParams != nil {
 		opts.PushNotificationParams = &PushNotificationParams{}
@@ -219,7 +224,7 @@ func (r *ShowNotificationIntegrationRequest) toOpts() *ShowNotificationIntegrati
 }
 
 func (r showNotificationIntegrationsDbRow) convert() (*NotificationIntegration, error) {
-	// adjusted manually
+	// Adjusted manually
 	s := &NotificationIntegration{
 		Name:             r.Name,
 		NotificationType: r.Type,
@@ -241,7 +246,7 @@ func (r *DescribeNotificationIntegrationRequest) toOpts() *DescribeNotificationI
 }
 
 func (r descNotificationIntegrationsDbRow) convert() (*NotificationIntegrationProperty, error) {
-	// adjusted manually
+	// Adjusted manually
 	return &NotificationIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,

@@ -48,7 +48,15 @@ var notificationIntegrationsDef = g.NewInterface(
 							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()),
 						g.KeywordOptions(),
 					).
-					WithValidation(g.ExactlyOneValueSet, "GoogleAutoParams", "AzureAutoParams"),
+					OptionalQueryStructField(
+						"AmazonAutoParams",
+						g.NewQueryStruct("AmazonAutoParams").
+							PredefinedQueryStructField("notificationProvider", "string", g.StaticOptions().SQL("NOTIFICATION_PROVIDER = AWS_SQS")).
+							PredefinedQueryStructField("direction", "string", g.StaticOptions().SQL("DIRECTION = INBOUND")).
+							TextAssignment("AWS_SQS_ARN", g.ParameterOptions().SingleQuotes().Required()),
+						g.KeywordOptions(),
+					).
+					WithValidation(g.ExactlyOneValueSet, "GoogleAutoParams", "AzureAutoParams", "AmazonAutoParams"),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(

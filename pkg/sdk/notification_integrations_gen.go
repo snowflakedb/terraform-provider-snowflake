@@ -208,7 +208,7 @@ func (v *NotificationIntegration) ID() AccountObjectIdentifier {
 }
 
 func (v *NotificationIntegration) ObjectType() ObjectType {
-	// adjusted manually
+	// Adjusted manually: ObjectTypeNotificationIntegration does not exist; notifications use the generic integration type.
 	return ObjectTypeIntegration
 }
 

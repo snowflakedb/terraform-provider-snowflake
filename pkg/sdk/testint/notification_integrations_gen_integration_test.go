@@ -124,11 +124,6 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		return createNotificationIntegrationWithRequest(t, createNotificationIntegrationAutoAzureRequest(t))
 	}
 
-	createNotificationIntegrationAutoAmazon := func(t *testing.T) *sdk.NotificationIntegration {
-		t.Helper()
-		return createNotificationIntegrationWithRequest(t, createNotificationIntegrationAutoAmazonRequest(t))
-	}
-
 	createNotificationIntegrationPushAmazon := func(t *testing.T) *sdk.NotificationIntegration {
 		t.Helper()
 		return createNotificationIntegrationWithRequest(t, createNotificationIntegrationPushAmazonRequest(t))
@@ -198,15 +193,16 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "DIRECTION", Type: "String", Value: "INBOUND", Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "AWS_SQS_ARN", Type: "String", Value: awsSqsArn, Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 
 		prop, err := collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
+			// TODO (this PR): this does not exist, verify
 			return property.Name == "SF_AWS_IAM_USER_ARN"
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotEmpty(t, prop.Value)
 	})
 

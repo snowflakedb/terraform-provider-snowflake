@@ -26,6 +26,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* AWS_SQS inbound notification integration support
+
+`snowflake_notification_integration` now supports inbound notification integrations using AWS SQS (Bring Your Own Queue — BYOQ).
+Set `notification_provider = "AWS_SQS"` and provide the SQS queue ARN via `aws_sqs_arn`.
+After creation, the `aws_sqs_iam_user_arn` computed attribute is populated with the Snowflake IAM user ARN
+that must be granted `sqs:*` permissions on the target queue.
+
+```hcl
+resource "snowflake_notification_integration" "example" {
+  name                  = "MY_SQS_INTEGRATION"
+  notification_provider = "AWS_SQS"
+  aws_sqs_arn           = "arn:aws:sqs:us-east-1:123456789012:my-queue"
+  enabled               = true
+}
+```
+
+No configuration changes are required for existing notification integrations using other providers.
+
 ### *(new feature)* snowflake_tag resource changes
 
 #### Propagation and conflict resolution support

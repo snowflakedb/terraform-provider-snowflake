@@ -81,8 +81,8 @@ resource "snowflake_notification_integration" "complete" {
 
 - `aws_sns_role_arn` (String) AWS IAM role ARN for notification integration to assume. Required for AWS_SNS provider
 - `aws_sns_topic_arn` (String) AWS SNS Topic ARN for notification integration to connect to. Required for AWS_SNS provider.
-- `aws_sqs_arn` (String) AWS SQS queue ARN for inbound notification integration (BYOQ - Bring Your Own Queue). Required for AWS_SQS provider.
-- `aws_sqs_role_arn` (String, Deprecated) AWS IAM role ARN for notification integration to assume (deprecated - not used for inbound AWS_SQS integrations)
+- `aws_sqs_arn` (String, Deprecated) AWS SQS queue ARN for inbound notification integration (BYOQ - Bring Your Own Queue). Required for AWS_SQS provider.
+- `aws_sqs_role_arn` (String, Deprecated) AWS IAM role ARN for notification integration to assume
 - `azure_storage_queue_primary_uri` (String) The queue ID for the Azure Queue Storage queue created for Event Grid notifications. Required for AZURE_STORAGE_QUEUE provider
 - `azure_tenant_id` (String) The ID of the Azure Active Directory tenant used for identity management. Required for AZURE_STORAGE_QUEUE provider
 - `comment` (String) A comment for the integration
@@ -97,8 +97,8 @@ resource "snowflake_notification_integration" "complete" {
 
 - `aws_sns_external_id` (String) The external ID that Snowflake will use when assuming the AWS role
 - `aws_sns_iam_user_arn` (String) The Snowflake user that will attempt to assume the AWS role.
-- `aws_sqs_external_id` (String) The external ID that Snowflake will use when assuming the AWS role
-- `aws_sqs_iam_user_arn` (String) The Snowflake user that will attempt to assume the AWS role.
+- `aws_sqs_external_id` (String, Deprecated) The external ID that Snowflake will use when assuming the AWS role
+- `aws_sqs_iam_user_arn` (String, Deprecated) The Snowflake user that will attempt to assume the AWS role.
 - `created_on` (String) Date and time when the notification integration was created.
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `gcp_pubsub_service_account` (String) The GCP service account identifier that Snowflake will use when assuming the GCP role

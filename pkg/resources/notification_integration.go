@@ -93,8 +93,8 @@ var notificationIntegrationSchema = map[string]*schema.Schema{
 	"aws_sqs_role_arn": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "AWS IAM role ARN for notification integration to assume (deprecated - not used for inbound AWS_SQS integrations)",
-		Deprecated:  "Not used for inbound AWS_SQS notification integrations",
+		Description: "AWS IAM role ARN for notification integration to assume",
+		Deprecated:  "No longer supported notification method",
 	},
 	"aws_sns_external_id": {
 		Type:        schema.TypeString,
@@ -344,15 +344,19 @@ func ReadNotificationIntegration(ctx context.Context, d *schema.ResourceData, me
 		case "SF_AWS_IAM_USER_ARN":
 			// Check notification provider to determine if this is for SNS or SQS
 			provider := d.Get("notification_provider").(string)
+			var err error
 			if strings.ToUpper(provider) == "AWS_SQS" {
-				if err := d.Set("aws_sqs_iam_user_arn", value); err != nil {
-					return diag.FromErr(err)
-				}
+				err = errors.Join(
+					d.Set("aws_sqs_iam_user_arn", value),
+					d.Set("aws_sns_iam_user_arn", ""),
+				)
 			} else {
-				if err := d.Set("aws_sns_iam_user_arn", value); err != nil {
-					return diag.FromErr(err)
-				}
+				err = errors.Join(
+					d.Set("aws_sns_iam_user_arn", value),
+					d.Set("aws_sqs_iam_user_arn", ""),
+				)
 			}
+			return diag.FromErr(err)
 		case "AWS_SQS_ARN":
 			if err := d.Set("aws_sqs_arn", value); err != nil {
 				return diag.FromErr(err)

@@ -25,8 +25,8 @@ func (opts *CreateNotificationIntegrationOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"))
 	}
 	if valueSet(opts.AutomatedDataLoadsParams) {
-		if !exactlyOneValueSet(opts.AutomatedDataLoadsParams.GoogleAutoParams, opts.AutomatedDataLoadsParams.AzureAutoParams) {
-			errs = append(errs, errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams"))
+		if !exactlyOneValueSet(opts.AutomatedDataLoadsParams.GoogleAutoParams, opts.AutomatedDataLoadsParams.AzureAutoParams, opts.AutomatedDataLoadsParams.AmazonAutoParams) {
+			errs = append(errs, errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams", "AmazonAutoParams"))
 		}
 	}
 	if valueSet(opts.PushNotificationParams) {
