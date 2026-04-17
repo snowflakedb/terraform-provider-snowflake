@@ -543,8 +543,7 @@ func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0_WithBCRBundle_2026_01_Dis
 	})
 }
 
-// TODO: REMOVE ONCE BCR BUNDLE 2026_01 IS ENABLED BY DEFAULT (AND CANNOT BE DISABLED)
-func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0_CrossSchemaStage(t *testing.T) {
+func TestAcc_StreamOnDirectoryTable_migrateFromV2_15_0_CrossSchemaStage(t *testing.T) {
 	schema, cleanupSchema := testClient().Schema.CreateSchema(t)
 	t.Cleanup(cleanupSchema)
 
@@ -554,9 +553,6 @@ func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0_CrossSchemaStage(t *testi
 	t.Cleanup(cleanupStage)
 
 	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
-
-	// Will be automatically enabled at the end of the test
-	testClient().BcrBundles.DisableBcrBundle(t, "2026_01")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{

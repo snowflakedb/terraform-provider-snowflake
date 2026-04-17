@@ -59,7 +59,7 @@ func StreamOnDirectoryTable() *schema.Resource {
 				Version: 0,
 				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
 				Type:    cty.EmptyObject,
-				Upgrade: v2_14_0_StreamOnDirectoryTableStateUpgrader,
+				Upgrade: v2_15_0_StreamOnDirectoryTableStateUpgrader,
 			},
 		},
 
