@@ -220,8 +220,6 @@ func TestAcc_ProcedureSql_DecfloatUnsupported(t *testing.T) {
 	})
 }
 
-// proves SNOW-2054316 fix: non-default numeric return type is preserved in state
-// without false drift detection
 func TestAcc_ProcedureSql_dataTypeWithNonDefaultParametrizedReturnType(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
 

@@ -249,7 +249,7 @@ func TestAcc_FunctionSql_Decfloat(t *testing.T) {
 	})
 }
 
-// In v2.14.1 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
+// In v2.15.0 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
 // time because the comma inside NUMBER(x,y) is incorrectly treated as a column separator.
 func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
@@ -267,7 +267,7 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: v2.14.1 fails because TABLE with parametrized columns cannot be parsed.
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
 				Config:            config.FromModels(t, functionModel),
 				ExpectError:       regexp.MustCompile(`number NUMBER\(38 could not be parsed, use "NUMBER\(precision, scale\)" format`),
 			},
@@ -279,15 +279,14 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
 					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFunctionLanguageString("SQL").
-						// State stores the ToSql() form which uses legacy (non-parametrized) types.
-						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"),
+						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER(38, 0), O_ERR_SEVERITY VARCHAR(16777216))"),
 				),
 			},
 		},
 	})
 }
 
-// In v2.14.1 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
+// In v2.15.0 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
 // time because the comma inside NUMBER(x,y) is incorrectly treated as a column separator.
 // This test uses non-default precision/scale to verify state preserves config values.
 func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *testing.T) {
@@ -306,7 +305,7 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *te
 		Steps: []resource.TestStep{
 			// Step 1: v2.14.1 fails because TABLE with parametrized columns cannot be parsed.
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
 				Config:            config.FromModels(t, functionModel),
 				ExpectError:       regexp.MustCompile(`number NUMBER\(24 could not be parsed, use "NUMBER\(precision, scale\)" format`),
 			},
@@ -319,7 +318,7 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *te
 						HasNameString(id.Name()).
 						HasFunctionLanguageString("SQL").
 						// State preserves config value (normalized via StateFunc).
-						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER(24, 2), O_ERR_SEVERITY VARCHAR)"),
+						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER(24, 2), O_ERR_SEVERITY VARCHAR(16777216))"),
 				),
 			},
 		},

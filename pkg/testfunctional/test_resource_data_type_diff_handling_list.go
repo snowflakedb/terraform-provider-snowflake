@@ -97,7 +97,7 @@ func TestResourceDataTypeDiffHandlingListRead(withExternalChangesMarking bool) s
 		if envExists {
 			if err := resources.HandleNestedDataTypeSet(d, "nesting_list", "nested_datatype", externalDataTypes,
 				func(externalItem datatypes.DataType) datatypes.DataType { return externalItem },
-				func(externalItem datatypes.DataType, item map[string]any) {},
+				func(externalItem datatypes.DataType, item map[string]any, _ map[string]any) {},
 			); err != nil {
 				return diag.FromErr(err)
 			}
