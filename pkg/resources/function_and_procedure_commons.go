@@ -12,21 +12,16 @@ func readFunctionOrProcedureArguments(d *schema.ResourceData, args []sdk.Normali
 		// TODO [before V1]: handle empty list
 		return nil
 	}
-	currentArgsList := d.Get("arguments").([]any)
-	i := 0
 	return HandleNestedDataTypeSet(d, "arguments", "arg_data_type", args,
 		func(arg sdk.NormalizedArgument) datatypes.DataType { return arg.DataType },
-		func(arg sdk.NormalizedArgument, item map[string]any) {
+		func(arg sdk.NormalizedArgument, item map[string]any, currentArg map[string]any) {
 			item["arg_name"] = arg.Name
 			item["arg_default_value"] = ""
-			if i < len(currentArgsList) {
-				if currentArg, ok := currentArgsList[i].(map[string]any); ok {
-					if v, ok := currentArg["arg_default_value"]; ok {
-						item["arg_default_value"] = v
-					}
+			if currentArg != nil {
+				if v, ok := currentArg["arg_default_value"]; ok {
+					item["arg_default_value"] = v
 				}
 			}
-			i++
 		},
 	)
 }
