@@ -351,4 +351,3 @@ var catalogIntegrationsDef = g.NewInterface(
 		CatalogIntegrationAccessDelegationModeEnumDef,
 		CatalogIntegrationCatalogApiTypeEnumDef,
 	)
-
