@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[DataMetricFunctionRefEntityDomainOption]{"DataMetricFunctionRefEntityDomainOption", AllDataMetricFunctionRefEntityDomainOptions, ToDataMetricFunctionRefEntityDomainOption})
+}
+
 func TestDataMetricFunctionReferences_GetForEntity(t *testing.T) {
 	// id and defaultOpts removed manually
 
@@ -41,7 +45,7 @@ func TestDataMetricFunctionReferences_GetForEntity(t *testing.T) {
 		opts := &GetForEntityDataMetricFunctionReferenceOptions{
 			parameters: &dataMetricFunctionReferenceParameters{
 				arguments: &dataMetricFunctionReferenceFunctionArguments{
-					RefEntityDomain: Pointer(DataMetricFunctionRefEntityDomainView),
+					RefEntityDomain: Pointer(DataMetricFunctionRefEntityDomainOptionView),
 				},
 			},
 		}
@@ -53,7 +57,7 @@ func TestDataMetricFunctionReferences_GetForEntity(t *testing.T) {
 			parameters: &dataMetricFunctionReferenceParameters{
 				arguments: &dataMetricFunctionReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{NewSchemaObjectIdentifier("a", "b", "c")},
-					RefEntityDomain: Pointer(DataMetricFunctionRefEntityDomainView),
+					RefEntityDomain: Pointer(DataMetricFunctionRefEntityDomainOptionView),
 				},
 			},
 		}

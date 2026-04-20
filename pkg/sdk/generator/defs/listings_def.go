@@ -6,6 +6,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	ListingRevisionEnumDef = g.NewEnum(
+		"ListingRevision", "ListingRevisions",
+		"DRAFT", "PUBLISHED",
+	)
+	ListingStateEnumDef = g.NewEnum(
+		"ListingState", "ListingStates",
+		"DRAFT", "PUBLISHED", "UNPUBLISHED",
+	)
+)
+
 var listingWithDef = g.NewQueryStruct("ListingWith").
 	OptionalIdentifier("Share", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("SHARE")).
 	OptionalIdentifier("ApplicationPackage", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION PACKAGE")).
@@ -22,7 +33,7 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 	Text("created_on").
 	Text("updated_on").
 	OptionalText("published_on").
-	PlainField("state", "ListingState").
+	PlainField("state", ListingStateEnumDef.Kind()).
 	OptionalText("review_state").
 	OptionalText("comment").
 	Text("owner").
@@ -212,7 +223,7 @@ var listingsDef = g.NewInterface(
 			Describe().
 			SQL("LISTING").
 			Name().
-			OptionalAssignment("REVISION", g.KindOfT[sdkcommons.ListingRevision](), g.ParameterOptions().NoQuotes()).
+			OptionalAssignment("REVISION", ListingRevisionEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	CustomShowOperationWithPairedStructs(
@@ -226,6 +237,10 @@ var listingsDef = g.NewInterface(
 			Name().
 			OptionalLimit().
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	WithEnums(
+		ListingRevisionEnumDef,
+		ListingStateEnumDef,
 	)
 
 	// TODO [SNOW-2236968]: Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface

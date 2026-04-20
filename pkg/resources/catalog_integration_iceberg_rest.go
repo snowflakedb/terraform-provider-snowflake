@@ -208,8 +208,8 @@ func ImportCatalogIntegrationIcebergRest(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return nil, err
 	}
-	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeIcebergREST {
-		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeIcebergREST, details.CatalogSource)
+	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeIcebergRest {
+		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeIcebergRest, details.CatalogSource)
 	}
 
 	return []*schema.ResourceData{d}, nil

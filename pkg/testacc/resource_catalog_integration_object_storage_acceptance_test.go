@@ -66,7 +66,7 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.CatalogIntegrationObjectStorageDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -100,7 +100,7 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			HasComment(newComment),
 		resourceshowoutputassert.CatalogIntegrationObjectStorageDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(true).
 			HasRefreshIntervalSeconds(newRefreshIntervalSeconds).
@@ -122,7 +122,7 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.CatalogIntegrationObjectStorageDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -144,7 +144,7 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.CatalogIntegrationObjectStorageDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -304,7 +304,7 @@ func TestAcc_CatalogIntegrationObjectStorage_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, invalidTableFormat),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid table format: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid catalog integration table format: INVALID`),
 			},
 		},
 	})
@@ -345,7 +345,7 @@ func TestAcc_CatalogIntegrationObjectStorage_ImportValidation(t *testing.T) {
 				ResourceName:  catalogIntegrationObjectStorage2.ResourceReference(),
 				ImportState:   true,
 				ImportStateId: catalogIntegrationAwsGlue.Name(),
-				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypeObjectStorage, sdk.CatalogIntegrationCatalogSourceTypeAWSGlue)),
+				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypeObjectStore, sdk.CatalogIntegrationCatalogSourceTypeGlue)),
 			},
 		},
 	})

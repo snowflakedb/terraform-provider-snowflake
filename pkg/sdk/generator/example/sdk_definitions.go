@@ -42,6 +42,7 @@ type (
 type (
 	ValuesBehavior = sdk.ValuesBehavior
 	ObjectType     = sdk.ObjectType
+	Parameter      = sdk.Parameter
 )
 
 const (
