@@ -4,9 +4,17 @@ package sdk
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[InternalStageEncryptionOption]{"InternalStageEncryptionOption", AllInternalStageEncryptionOptions, ToInternalStageEncryptionOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ExternalStageS3EncryptionOption]{"ExternalStageS3EncryptionOption", AllExternalStageS3EncryptionOptions, ToExternalStageS3EncryptionOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ExternalStageGCSEncryptionOption]{"ExternalStageGCSEncryptionOption", AllExternalStageGCSEncryptionOptions, ToExternalStageGCSEncryptionOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ExternalStageAzureEncryptionOption]{"ExternalStageAzureEncryptionOption", AllExternalStageAzureEncryptionOptions, ToExternalStageAzureEncryptionOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StageCopyColumnMapOption]{"StageCopyColumnMapOption", AllStageCopyColumnMapOptions, ToStageCopyColumnMapOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StageCloud]{"StageCloud", AllStageClouds, ToStageCloud})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StageType]{"StageType", AllStageTypes, ToStageType})
+}
 
 func TestStages_CreateInternal(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
@@ -1802,73 +1810,4 @@ func TestStages_Show(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES IN SCHEMA %s`, schemaId.FullyQualifiedName())
 	})
-}
-
-func TestStages_ToStageType(t *testing.T) {
-	valid := []struct {
-		input string
-		want  StageType
-	}{
-		{input: "INTERNAL", want: StageTypeInternal},
-		{input: "INTERNAL NO CSE", want: StageTypeInternalNoCse},
-		{input: "INTERNAL TEMPORARY", want: StageTypeInternalTemporary},
-		{input: "EXTERNAL", want: StageTypeExternal},
-		{input: "EXTERNAL TEMPORARY", want: StageTypeExternalTemporary},
-		// case insensitive
-		{input: "internal", want: StageTypeInternal},
-	}
-
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToStageType(tt.input)
-			require.NoError(t, err)
-			require.Equal(t, tt.want, got)
-		})
-	}
-
-	invalid := []struct {
-		input   string
-		wantErr string
-	}{
-		{input: "invalid", wantErr: "invalid stage type: INVALID"},
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToStageType(tt.input)
-			require.ErrorContains(t, err, tt.wantErr)
-		})
-	}
-}
-
-func TestStages_ToStageCloud(t *testing.T) {
-	valid := []struct {
-		input string
-		want  StageCloud
-	}{
-		{input: "AZURE", want: StageCloudAzure},
-		{input: "AWS", want: StageCloudAws},
-		{input: "GCP", want: StageCloudGcp},
-		// case insensitive
-		{input: "azure", want: StageCloudAzure},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToStageCloud(tt.input)
-			require.NoError(t, err)
-			require.Equal(t, tt.want, got)
-		})
-	}
-
-	invalid := []struct {
-		input   string
-		wantErr string
-	}{
-		{input: "invalid", wantErr: "invalid stage cloud: INVALID"},
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToStageCloud(tt.input)
-			require.ErrorContains(t, err, tt.wantErr)
-		})
-	}
 }

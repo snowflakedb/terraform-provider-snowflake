@@ -178,7 +178,9 @@ func (atc *acceptanceTestContext) initialize() error {
 
 		errs := errors.Join(
 			testClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+			testClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
 			secondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+			secondaryTestClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
 			testClient().EnsureEssentialRolesExist(ctx),
 			secondaryTestClient().EnsureEssentialRolesExist(ctx),
 		)

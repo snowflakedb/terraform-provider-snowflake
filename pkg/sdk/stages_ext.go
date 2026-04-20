@@ -7,6 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+var AcceptableStageTypes = map[StageType][]StageType{
+	StageTypeInternal: {StageTypeInternal, StageTypeInternalNoCse},
+	StageTypeExternal: {StageTypeExternal},
+}
+
 func (v *Stage) Location() string {
 	return NewStageLocation(v.ID(), "").ToSql()
 }

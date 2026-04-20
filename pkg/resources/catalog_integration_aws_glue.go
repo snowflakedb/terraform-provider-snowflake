@@ -87,8 +87,8 @@ func ImportCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return nil, err
 	}
-	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeAWSGlue {
-		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeAWSGlue, details.CatalogSource)
+	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeGlue {
+		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeGlue, details.CatalogSource)
 	}
 
 	return []*schema.ResourceData{d}, nil
