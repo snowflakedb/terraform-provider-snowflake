@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_UserSessionPolicyAttachment(t *testing.T) {
+func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 	user, userCleanup := testClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
 	userName := user.ID().Name()

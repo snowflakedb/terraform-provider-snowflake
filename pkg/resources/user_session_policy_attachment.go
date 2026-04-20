@@ -74,7 +74,10 @@ func ReadUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("required id format '<user_identifier>|<session_policy_fqn>', but got: '%s'", d.Id()))
 	}
 
-	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parts[0])
+	userName, err := sdk.ParseAccountObjectIdentifier(parts[0])
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(userName, sdk.PolicyEntityDomainUser))
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
@@ -135,6 +138,7 @@ func DeleteUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
 
 	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
+		IfExists: sdk.Bool(true),
 		Unset: &sdk.UserUnset{
 			SessionPolicy: sdk.Bool(true),
 		},
