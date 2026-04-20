@@ -13,6 +13,7 @@ type feature string
 const (
 	AccountAuthenticationPolicyAttachmentResource feature = "snowflake_account_authentication_policy_attachment_resource"
 	AccountPasswordPolicyAttachmentResource       feature = "snowflake_account_password_policy_attachment_resource"
+	AccountSessionPolicyAttachmentResource        feature = "snowflake_account_session_policy_attachment_resource"
 	AlertResource                                 feature = "snowflake_alert_resource"
 	AlertsDatasource                              feature = "snowflake_alerts_datasource"
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
@@ -119,6 +120,7 @@ const (
 var allPreviewFeatures = []feature{
 	AccountAuthenticationPolicyAttachmentResource,
 	AccountPasswordPolicyAttachmentResource,
+	AccountSessionPolicyAttachmentResource,
 	AlertResource,
 	AlertsDatasource,
 	ApiIntegrationResource,
