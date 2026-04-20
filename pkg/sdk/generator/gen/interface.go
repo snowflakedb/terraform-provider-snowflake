@@ -42,6 +42,9 @@ type Interface struct {
 	IdentifierKind string
 	// Enums contains all enum definitions for this operation group.
 	Enums []*Enum
+	// CustomMethods holds interface methods that have no generated implementation.
+	// They will appear in the generated interface but the user is responsible for implementing them.
+	CustomMethods []*CustomInterfaceMethod
 
 	*genhelpers.PreambleModel
 	*genhelpers.ObjectGenerationSettings

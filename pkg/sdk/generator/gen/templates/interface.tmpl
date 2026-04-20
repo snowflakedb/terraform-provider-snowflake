@@ -30,4 +30,12 @@ type {{ .Name }} interface {
 			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
 		{{- end -}}
 	{{ end }}
+	{{- range .CustomMethods }}
+		{{- if .Doc }}
+			{{- range splitLines .Doc }}
+			// {{ . }}
+			{{- end }}
+		{{- end }}
+		{{ .Name }}(ctx context.Context{{ range .Parameters }}, {{ .Name }} {{ .Kind }}{{ end }}){{ if eq (len .ReturnTypes) 0 }}{{ else if eq (len .ReturnTypes) 1 }} {{ index .ReturnTypes 0 }}{{ else }} ({{ join .ReturnTypes ", " }}){{ end }}
+	{{- end }}
 }
