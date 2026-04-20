@@ -16,11 +16,11 @@ func TestInt_PolicyReferences(t *testing.T) {
 	ctx := testContext(t)
 
 	passwordPolicyId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	err := client.PasswordPolicies.Create(ctx, passwordPolicyId, &sdk.CreatePasswordPolicyOptions{})
+	err := client.PasswordPolicies.Create(ctx, sdk.NewCreatePasswordPolicyRequest(passwordPolicyId))
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := client.PasswordPolicies.Drop(ctx, passwordPolicyId, &sdk.DropPasswordPolicyOptions{IfExists: sdk.Bool(true)})
+		err := client.PasswordPolicies.Drop(ctx, sdk.NewDropPasswordPolicyRequest(passwordPolicyId).WithIfExists(true))
 		require.NoError(t, err)
 	})
 
