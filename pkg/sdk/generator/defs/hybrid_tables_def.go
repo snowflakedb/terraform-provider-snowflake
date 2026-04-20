@@ -252,7 +252,7 @@ var hybridTablesDef = g.NewInterface(
 		Terse().
 		SQL("HYBRID TABLES").
 		OptionalLike().
-		OptionalIn().
+		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
 ).ShowByIdOperationWithFiltering(
@@ -305,37 +305,26 @@ var hybridTablesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"ShowIndexes",
 	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-indexes",
-	g.DbStruct("hybridTableIndexRow").
+	g.StructPair("hybridTableIndexRow", "HybridTableIndex").
 		Time("created_on").
 		Text("name").
-		OptionalText("is_unique").
+		Field("is_unique", "sql.NullString", "*bool").
 		OptionalText("columns").
-		OptionalText("included_columns").
-		Text("table").
+		OptionalText("included_columns", g.WithRequiredInPlain()).
+		Text("table", g.WithPlainFieldName("TableName")).
 		Text("database_name").
 		Text("schema_name").
-		OptionalText("owner").
-		OptionalText("owner_role_type"),
-	g.PlainStruct("HybridTableIndex").
-		Time("CreatedOn").
-		Text("Name").
-		OptionalBool("IsUnique").
-		OptionalText("Columns").
-		Text("IncludedColumns").
-		Text("TableName").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("Owner").
-		Text("OwnerRoleType"),
+		OptionalText("owner", g.WithRequiredInPlain()).
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowHybridTableIndexes").
 		Show().
 		SQL("INDEXES").
 		OptionalLike().
-		OptionalIn().
+		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
 )
