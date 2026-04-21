@@ -530,10 +530,11 @@ func TestBuilder_sql(t *testing.T) {
 func TestBuilder_instanceMethodInvocation(t *testing.T) {
 	t.Run("instance method with no arguments", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
+		type noArg struct{}
 		s := &struct {
 			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"MY_METHOD"`
-			args []struct{}              `ddl:"-,must_parentheses"`
-		}{name: id, args: []struct{}{}}
+			args *noArg                  `ddl:"list,must_parentheses"`
+		}{name: id, args: &noArg{}}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
 		assert.Equal(t, id.FullyQualifiedName()+"!MY_METHOD ()", sql)
