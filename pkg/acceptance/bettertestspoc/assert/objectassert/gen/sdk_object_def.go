@@ -254,6 +254,10 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct:       sdk.SessionPolicyDetails{},
 		IsDataSourceOutput: true,
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.HybridTable{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

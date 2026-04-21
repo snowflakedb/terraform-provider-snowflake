@@ -327,6 +327,10 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 						nil,
 					)
 					if err != nil {
+						if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
+							log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", db.ID().FullyQualifiedName(), err)
+							continue
+						}
 						errs = append(errs, fmt.Errorf("granting ownership on database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
 						continue
 					}
