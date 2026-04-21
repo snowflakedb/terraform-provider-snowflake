@@ -3,6 +3,8 @@
 package testacc
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"regexp"
 	"testing"
 
@@ -319,6 +321,49 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *te
 						HasFunctionLanguageString("SQL").
 						// State preserves config value (normalized via StateFunc).
 						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER(24, 2), O_ERR_SEVERITY VARCHAR(16777216))"),
+				),
+			},
+		},
+	})
+}
+
+// When a function with TABLE return type using non-parametrized column types was created in
+// v2.15.0, the current version must not produce spurious plan drift after migration.
+func TestAcc_FunctionSql_tableReturnTypeDefaultParamsNoDriftAfterMigration(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	definition := "SELECT 1::NUMBER, 'error'::VARCHAR"
+	returnType := "TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"
+
+	functionModel := model.FunctionSqlBasicInline("test", id, definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionSqlResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
+		Steps: []resource.TestStep{
+			// v2.15.0 creates the function successfully: TABLE(NUMBER, VARCHAR) has no commas
+			// inside type parameters, so the naive comma split in v2.15.0 works correctly.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, providerModel, functionModel),
+			},
+			// Current version: no drift even though the state now contains the full type.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, functionModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasReturnTypeString(returnType),
 				),
 			},
 		},

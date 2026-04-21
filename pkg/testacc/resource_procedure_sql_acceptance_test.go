@@ -3,6 +3,8 @@
 package testacc
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"regexp"
 	"testing"
 
@@ -252,6 +254,48 @@ func TestAcc_ProcedureSql_dataTypeWithNonDefaultParametrizedReturnType(t *testin
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
+			},
+		},
+	})
+}
+
+// When a procedure with a non-parametrized return type (NUMBER) was created in v2.15.0,
+// the current version must not produce spurious plan drift after migration.
+func TestAcc_ProcedureSql_defaultParamsNoDriftAfterMigration(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	returnType := "NUMBER"
+	definition := testClient().Procedure.SampleSqlDefinition(t)
+
+	procedureModel := model.ProcedureSql("test", id.DatabaseName(), id.SchemaName(), id.Name(), definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ProcedureSqlResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
+		Steps: []resource.TestStep{
+			// v2.15.0 creates the procedure with NUMBER return type successfully.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, providerModel, procedureModel),
+			},
+			// Current version: no drift even though state now contains the full type..
+			{
+				ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+				Config:                   config.FromModels(t, procedureModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasReturnTypeString(returnType),
+				),
 			},
 		},
 	})
