@@ -527,6 +527,48 @@ func TestBuilder_sql(t *testing.T) {
 	})
 }
 
+func TestBuilder_instanceMethodInvocation(t *testing.T) {
+	t.Run("instance method with no arguments", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"MY_METHOD"`
+			args []struct{}              `ddl:"-,must_parentheses"`
+		}{name: id, args: []struct{}{}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName()+"!MY_METHOD ()", sql)
+	})
+
+	t.Run("instance method with one argument", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		type oneArg struct {
+			V *string `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"ADD_NOTIFICATION_INTEGRATION"`
+			args *oneArg                 `ddl:"list,parentheses"`
+		}{name: id, args: &oneArg{V: String("integration_name")}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName()+"!ADD_NOTIFICATION_INTEGRATION ('integration_name')", sql)
+	})
+
+	t.Run("instance method with multiple arguments", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		type twoArgs struct {
+			A *string `ddl:"keyword,single_quotes"`
+			B *string `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"MY_METHOD"`
+			args *twoArgs                `ddl:"list,parentheses,comma"`
+		}{name: id, args: &twoArgs{A: String("first"), B: String("second")}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName()+"!MY_METHOD ('first', 'second')", sql)
+	})
+}
+
 func TestBuilder_DataType(t *testing.T) {
 	type dataTypeTestHelper struct {
 		DataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`

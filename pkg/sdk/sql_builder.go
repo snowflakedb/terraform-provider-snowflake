@@ -335,6 +335,16 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 				if reflectedValue.(Identifier).Name() == "" {
 					return nil, nil
 				}
+				// instance_method classifier: render as identifier!METHOD
+				for _, part := range ddlTagParts {
+					if strings.TrimSpace(part) == "instance_method" {
+						objectID, ok := reflectedValue.(ObjectIdentifier)
+						if !ok {
+							return nil, fmt.Errorf("instance_method classifier requires ObjectIdentifier, got %T", reflectedValue)
+						}
+						return sqlInstanceMethodClause{object: objectID, method: sqlTag}, nil
+					}
+				}
 				return sqlIdentifierClause{
 					key:   sqlTag,
 					value: reflectedValue.(Identifier),
@@ -667,4 +677,13 @@ func (v sqlParameterClause) String() string {
 	// key = "value"
 	s += v.qm.Modify(value)
 	return s
+}
+
+type sqlInstanceMethodClause struct {
+	object ObjectIdentifier
+	method string
+}
+
+func (v sqlInstanceMethodClause) String() string {
+	return fmt.Sprintf("%s!%s", v.object.FullyQualifiedName(), v.method)
 }
