@@ -41,10 +41,10 @@ type pairedStructExampleRow struct {
 	SecondAccountId              string         `db:"second_account_id"`
 	OptionalAccountId            sql.NullString `db:"optional_account_id"`
 	OptionalSecondAccountId      sql.NullString `db:"optional_second_account_id"`
-	SchemaObjectId               sql.NullString `db:"schema_object_id"`
-	SecondSchemaObjectId         sql.NullString `db:"second_schema_object_id"`
-	OptionalSchemaObjectId       string         `db:"optional_schema_object_id"`
-	OptionalSecondSchemaObjectId string         `db:"optional_second_schema_object_id"`
+	SchemaObjectId               string         `db:"schema_object_id"`
+	SecondSchemaObjectId         string         `db:"second_schema_object_id"`
+	OptionalSchemaObjectId       sql.NullString `db:"optional_schema_object_id"`
+	OptionalSecondSchemaObjectId sql.NullString `db:"optional_second_schema_object_id"`
 	DatabaseObjectId             string         `db:"database_object_id"`
 	SecondDatabaseObjectId       string         `db:"second_database_object_id"`
 }
@@ -110,10 +110,10 @@ type pairedStructExampleDetailRow struct {
 	SecondAccountId              string         `db:"second_account_id"`
 	OptionalAccountId            sql.NullString `db:"optional_account_id"`
 	OptionalSecondAccountId      sql.NullString `db:"optional_second_account_id"`
-	SchemaObjectId               sql.NullString `db:"schema_object_id"`
-	SecondSchemaObjectId         sql.NullString `db:"second_schema_object_id"`
-	OptionalSchemaObjectId       string         `db:"optional_schema_object_id"`
-	OptionalSecondSchemaObjectId string         `db:"optional_second_schema_object_id"`
+	SchemaObjectId               string         `db:"schema_object_id"`
+	SecondSchemaObjectId         string         `db:"second_schema_object_id"`
+	OptionalSchemaObjectId       sql.NullString `db:"optional_schema_object_id"`
+	OptionalSecondSchemaObjectId sql.NullString `db:"optional_second_schema_object_id"`
 	DatabaseObjectId             string         `db:"database_object_id"`
 	SecondDatabaseObjectId       string         `db:"second_database_object_id"`
 }
