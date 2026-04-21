@@ -16,8 +16,7 @@ import (
 )
 
 func TestAcc_AccountSessionPolicyAttachment_BasicUseCase(t *testing.T) {
-	// TODO [SNOW-1763613]: unskip
-	t.Skipf("Skip because managing account session policy in shared acceptance test accounts can conflict with other tests; enable locally to verify.")
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	sessionPolicy, sessionPolicyCleanup := testClient().SessionPolicy.CreateSessionPolicy(t)
 	t.Cleanup(sessionPolicyCleanup)
