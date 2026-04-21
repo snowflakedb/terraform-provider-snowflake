@@ -126,6 +126,7 @@ func (atc *acceptanceTestContext) initialize() error {
 
 			if errs := errors.Join(
 				azureTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+				azureTestClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
 				azureTestClient().EnsureEssentialRolesExist(ctx),
 			); errs != nil {
 				return errs
