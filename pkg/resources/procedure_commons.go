@@ -521,6 +521,7 @@ func ImportProcedure(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 		setOptionalFromStringPtr(d, "null_input_behavior", procedureDetails.NullHandling),
 		d.Set("execute_as", procedureDetails.ExecuteAs),
 		importFunctionOrProcedureArguments(d, procedureDetails.NormalizedArguments),
+		d.Set("return_type", procedureDetails.ReturnDataType.ToSql()),
 		// all others are set in read
 	)
 	if err != nil {

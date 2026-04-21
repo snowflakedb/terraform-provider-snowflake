@@ -528,6 +528,7 @@ func ImportFunction(ctx context.Context, d *schema.ResourceData, meta any) ([]*s
 		setOptionalFromStringPtr(d, "null_input_behavior", functionDetails.NullHandling),
 		setOptionalFromStringPtr(d, "return_results_behavior", functionDetails.Volatility),
 		importFunctionOrProcedureArguments(d, functionDetails.NormalizedArguments),
+		d.Set("return_type", functionDetails.ReturnDataType.ToSql()),
 		// all others are set in read
 	)
 	if err != nil {
