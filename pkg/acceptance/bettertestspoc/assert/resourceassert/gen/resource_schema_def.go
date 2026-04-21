@@ -330,6 +330,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.UserProgrammaticAccessToken().Schema,
 	},
 	{
+		name:   "UserSessionPolicyAttachment",
+		schema: resources.UserSessionPolicyAttachment().Schema,
+	},
+	{
 		name:   "View",
 		schema: resources.View().Schema,
 	},

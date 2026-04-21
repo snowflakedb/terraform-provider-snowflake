@@ -119,6 +119,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_user_authentication_policy_attachment_resource", want: UserAuthenticationPolicyAttachmentResource},
 		{input: "snowflake_user_public_keys_resource", want: UserPublicKeysResource},
 		{input: "snowflake_user_password_policy_attachment_resource", want: UserPasswordPolicyAttachmentResource},
+		{input: "snowflake_user_session_policy_attachment_resource", want: UserSessionPolicyAttachmentResource},
 		{input: "snowflake_user_programmatic_access_token_resource", want: UserProgrammaticAccessTokenResource},
 		{input: "snowflake_user_programmatic_access_tokens_datasource", want: UserProgrammaticAccessTokensDatasource},
 		{input: "snowflake_warehouse_adaptive_resource", want: WarehouseAdaptiveResource},

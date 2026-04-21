@@ -58,7 +58,7 @@ func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 
 func Test_AllEnumConversions(t *testing.T) {
 	additional := []enumTestProvider{
-		typedEnumTestProvider[NetworkRuleMode]{"NetworkRuleMode", AllNetworkRuleModes, ToNetworkRuleMode},
+		typedEnumTestProvider[ComputePoolInstanceFamily]{"ComputePoolInstanceFamily", AllComputePoolInstanceFamilies, ToComputePoolInstanceFamily},
 	}
 
 	require.Positive(t, len(allEnumConversionTests))

@@ -7,6 +7,15 @@ import (
 )
 
 var (
+	StreamSourceTypeEnumDef = g.NewEnum(
+		"StreamSourceType", "StreamSourceTypes",
+		"TABLE", "EXTERNAL TABLE", "VIEW", "STAGE",
+	)
+	StreamModeEnumDef = g.NewEnum(
+		"StreamMode", "StreamModes",
+		"DEFAULT", "APPEND_ONLY", "INSERT_ONLY",
+	)
+
 	onStreamDef = func() *g.QueryStruct {
 		return g.NewQueryStruct("OnStream").
 			OptionalSQL("AT").
@@ -32,11 +41,11 @@ var (
 			OptionalText("owner").
 			OptionalText("comment").
 			OptionalText("table_name").
-			Field("source_type", "sql.NullString", "*StreamSourceType").
+			Field("source_type", "sql.NullString", StreamSourceTypeEnumDef.KindPtr()).
 			Field("base_tables", "sql.NullString", "[]string").
 			OptionalText("type").
 			Field("stale", "string", "bool").
-			Field("mode", "sql.NullString", "*StreamMode").
+			Field("mode", "sql.NullString", StreamModeEnumDef.KindPtr()).
 			OptionalTime("stale_after").
 			OptionalText("invalid_reason").
 			OptionalText("owner_role_type")
@@ -187,5 +196,9 @@ var (
 				SQL("STREAM").
 				Name().
 				WithValidation(g.ValidIdentifier, "name"),
+		).
+		WithEnums(
+			StreamSourceTypeEnumDef,
+			StreamModeEnumDef,
 		)
 )

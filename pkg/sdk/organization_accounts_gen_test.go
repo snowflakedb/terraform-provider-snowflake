@@ -7,8 +7,11 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OrganizationAccountEdition]{"OrganizationAccountEdition", AllOrganizationAccountEditions, ToOrganizationAccountEdition})
+}
 
 func TestOrganizationAccounts_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
@@ -538,41 +541,4 @@ func TestOrganizationAccounts_Show(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW ORGANIZATION ACCOUNTS LIKE 'pattern'")
 	})
-}
-
-// added manually
-func Test_Provider_ToOrganizationAccountEdition(t *testing.T) {
-	type test struct {
-		input string
-		want  OrganizationAccountEdition
-	}
-
-	valid := []test{
-		// Case insensitive.
-		{input: "enterprise", want: OrganizationAccountEditionEnterprise},
-
-		// Supported Values.
-		{input: "ENTERPRISE", want: OrganizationAccountEditionEnterprise},
-		{input: "BUSINESS_CRITICAL", want: OrganizationAccountEditionBusinessCritical},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToOrganizationAccountEdition(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToOrganizationAccountEdition(tc.input)
-			require.Error(t, err)
-		})
-	}
 }
