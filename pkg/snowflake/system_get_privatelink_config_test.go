@@ -62,10 +62,9 @@ func TestSystemGetPrivateLinkGetStructuredConfigAws(t *testing.T) {
 	r.Equal("", c.ConnectionOCSPURLs)
 }
 
-// TestSystemGetPrivateLinkGetStructuredConfigAwsAsPerDocumentation tests parsing of all AWS fields
-// as documented at https://docs.snowflake.com/en/sql-reference/functions/system_get_privatelink_config,
-// using the standard "privatelink-ocsp-url" key and including client redirect connection URLs.
-func TestSystemGetPrivateLinkGetStructuredConfigAwsAsPerDocumentation(t *testing.T) {
+// TestSystemGetPrivateLinkGetStructuredConfigAwsWithConnectionURLs tests parsing of AWS fields
+// including client redirect connection URLs.
+func TestSystemGetPrivateLinkGetStructuredConfigAwsWithConnectionURLs(t *testing.T) {
 	r := require.New(t)
 
 	raw := &RawPrivateLinkConfig{
@@ -73,7 +72,7 @@ func TestSystemGetPrivateLinkGetStructuredConfigAwsAsPerDocumentation(t *testing
 			"privatelink-account-name": "testaccount.us-east-1.privatelink",
 			"privatelink-vpce-id": "com.amazonaws.vpce.us-east-1.vpce-svc-00000000000000000",
 			"privatelink-account-url": "testaccount.us-east-1.privatelink.snowflakecomputing.com",
-			"privatelink-ocsp-url": "ocsp.testaccount.us-east-1.privatelink.snowflakecomputing.com",
+			"privatelink_ocsp-url": "ocsp.testaccount.us-east-1.privatelink.snowflakecomputing.com",
 			"privatelink-account-principal": "arn:aws:iam::000000000000:root",
 			"app-service-privatelink-url": "*.testaccount.us-east-1.privatelink.snowflakecomputing.com",
 			"privatelink-connection-urls": "testaccount.us-east-1.privatelink.snowflakecomputing.com:443",
@@ -151,7 +150,7 @@ func TestSystemGetPrivateLinkGetStructuredConfigGcp(t *testing.T) {
 		Config: `{
 			"privatelink-account-name": "testaccount.us-central1.gcp.privatelink",
 			"privatelink-account-url": "testaccount.us-central1.gcp.privatelink.snowflakecomputing.com",
-			"privatelink-ocsp-url": "ocsp.testaccount.us-central1.gcp.privatelink.snowflakecomputing.com",
+			"privatelink_ocsp-url": "ocsp.testaccount.us-central1.gcp.privatelink.snowflakecomputing.com",
 			"privatelink-gcp-service-attachment": "projects/snowflake/regions/us-central1/serviceAttachments/testServiceAttachment",
 			"regionless-privatelink-account-url": "testorg-testaccount.privatelink.snowflakecomputing.com",
 			"regionless-privatelink-ocsp-url": "ocsp.testorg-testaccount.privatelink.snowflakecomputing.com",

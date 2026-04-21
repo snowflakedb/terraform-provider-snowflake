@@ -28,12 +28,11 @@ type privateLinkConfigInternal struct {
 	DashedDuoURLs                  string `json:"privatelink-dashed-urls-for-duo"`
 	GCPServiceAttachment           string `json:"privatelink-gcp-service-attachment,omitempty"`
 	InternalStage                  string `json:"privatelink-internal-stage,omitempty"`
-	OCSPURL                        string `json:"privatelink-ocsp-url,omitempty"`
+	OCSPURL                        string `json:"privatelink_ocsp-url,omitempty"`
 	RegionlessOCSPURL              string `json:"regionless-privatelink-ocsp-url"`
 	RegionlessAccountURL           string `json:"regionless-privatelink-account-url,omitempty"`
 	RegionlessSnowsightURL         string `json:"regionless-snowsight-privatelink-url,omitempty"`
 	SnowsightURL                   string `json:"snowsight-privatelink-url,omitempty"`
-	TypodOCSPURL                   string `json:"privatelink_ocsp-url,omitempty"` // because snowflake returns this for AWS, but don't have an Azure account to verify against
 }
 
 type PrivateLinkConfig struct {
@@ -93,10 +92,6 @@ func (i *privateLinkConfigInternal) getPrivateLinkConfig() (*PrivateLinkConfig, 
 		i.RegionlessOCSPURL,
 		i.RegionlessSnowsightURL,
 		i.SnowsightURL,
-	}
-
-	if i.TypodOCSPURL != "" {
-		config.OCSPURL = i.TypodOCSPURL
 	}
 
 	return config, nil
