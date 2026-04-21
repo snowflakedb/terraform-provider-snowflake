@@ -18,8 +18,6 @@ type UserProgrammaticAccessTokens interface {
 	ShowByID(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 	// adjusted manually
 	ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
-
-	// added manually
 	RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 }
 

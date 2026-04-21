@@ -36,6 +36,6 @@ type {{ .Name }} interface {
 			// {{ . }}
 			{{- end }}
 		{{- end }}
-		{{ .Name }}(ctx context.Context{{ range .Parameters }}, {{ .Name }} {{ .Kind }}{{ end }}){{ if eq (len .ReturnTypes) 0 }}{{ else if eq (len .ReturnTypes) 1 }} {{ index .ReturnTypes 0 }}{{ else }} ({{ join .ReturnTypes ", " }}){{ end }}
+		{{ .Name }}(ctx context.Context{{ range .Parameters }}, {{ .Name }} {{ .Kind }}{{ end }}){{ if eq (len .ReturnTypes) 1 }} {{ index .ReturnTypes 0 }}{{ else if gt (len .ReturnTypes) 1 }} ({{ join .ReturnTypes ", " }}){{ end }}
 	{{- end }}
 }

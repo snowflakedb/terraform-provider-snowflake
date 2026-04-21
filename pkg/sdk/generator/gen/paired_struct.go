@@ -240,7 +240,7 @@ func (p *PairedStructs) DatabaseObjectIdentifier(dbColumnName string, opts ...Pa
 //	plain: Id SchemaObjectIdentifier
 func (p *PairedStructs) SchemaObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
 	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
-	return p.addField(dbColumnName, "sql.NullString", "SchemaObjectIdentifier", allOpts)
+	return p.addField(dbColumnName, "string", "SchemaObjectIdentifier", allOpts)
 }
 
 // OptionalSchemaObjectIdentifier adds a nullable SchemaObjectIdentifier field. The db kind is string
@@ -251,7 +251,7 @@ func (p *PairedStructs) SchemaObjectIdentifier(dbColumnName string, opts ...Pair
 //	plain: Id *SchemaObjectIdentifier
 func (p *PairedStructs) OptionalSchemaObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
 	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
-	return p.addField(dbColumnName, "string", "*SchemaObjectIdentifier", allOpts)
+	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifier", allOpts)
 }
 
 // asDbStruct materializes the definition as a *dbStruct following the old implementation.

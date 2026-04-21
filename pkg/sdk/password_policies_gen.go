@@ -16,7 +16,6 @@ type PasswordPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]PasswordPolicyProperty, error)
-	// DescribeDetails is added manually
 	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicyDetails, error)
 }
 
