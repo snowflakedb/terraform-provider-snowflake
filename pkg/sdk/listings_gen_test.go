@@ -2,12 +2,12 @@
 
 package sdk
 
-// imports adjusted manually
-import (
-	"testing"
+import "testing"
 
-	"github.com/stretchr/testify/require"
-)
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ListingRevision]{"ListingRevision", AllListingRevisions, ToListingRevision})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ListingState]{"ListingState", AllListingStates, ToListingState})
+}
 
 // added manually
 func sampleListingManifest() string {
@@ -395,40 +395,4 @@ func TestListings_ShowVersions(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW VERSIONS IN LISTING %s LIMIT 5", id.FullyQualifiedName())
 	})
-}
-
-func Test_Listings_ToListingState(t *testing.T) {
-	type test struct {
-		input string
-		want  ListingState
-	}
-
-	valid := []test{
-		{input: "draft", want: ListingStateDraft},
-		{input: "published", want: ListingStatePublished},
-		{input: "unpublished", want: ListingStateUnpublished},
-		{input: "DRAft", want: ListingStateDraft},
-		{input: "drAFT", want: ListingStateDraft},
-		{input: "DRAFT", want: ListingStateDraft},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToListingState(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToListingState(tc.input)
-			require.Error(t, err)
-		})
-	}
 }

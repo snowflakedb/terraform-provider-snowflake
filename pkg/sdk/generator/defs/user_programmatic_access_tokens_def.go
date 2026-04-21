@@ -6,47 +6,28 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var programmaticAccessTokenResultDBRowDef = g.DbStruct("programmaticAccessTokenResultDBRow").
+var ProgrammaticAccessTokenStatusDef = g.NewEnum("ProgrammaticAccessTokenStatus", "ProgrammaticAccessTokenStatuses", "ACTIVE", "EXPIRED", "DISABLED")
+
+var programmaticAccessTokenPairs = g.StructPair("programmaticAccessTokenResultDBRow", "ProgrammaticAccessToken").
 	Text("name").
-	Text("user_name").
-	Text("role_restriction").
+	AccountObjectIdentifier("user_name", g.WithPlainFieldName("UserName")).
+	OptionalAccountObjectIdentifier("role_restriction", g.WithPlainFieldName("RoleRestriction")).
 	Time("expires_at").
-	Text("status").
+	PlainField("status", "ProgrammaticAccessTokenStatus").
 	OptionalText("comment").
 	Time("created_on").
 	Text("created_by").
 	OptionalNumber("mins_to_bypass_network_policy_requirement").
 	OptionalText("rotated_to")
 
-var programmaticAccessTokenDef = g.PlainStruct("ProgrammaticAccessToken").
-	Text("Name").
-	Field("UserName", "AccountObjectIdentifier").
-	Field("RoleRestriction", "*AccountObjectIdentifier").
-	Time("ExpiresAt").
-	Field("Status", "ProgrammaticAccessTokenStatus").
-	OptionalText("Comment").
-	Time("CreatedOn").
-	Text("CreatedBy").
-	OptionalNumber("MinsToBypassNetworkPolicyRequirement").
-	OptionalText("RotatedTo")
-
-var addProgrammaticAccessTokenResultDBRowDef = g.DbStruct("addProgrammaticAccessTokenResultDBRow").
+var addProgrammaticAccessTokenResultPairs = g.StructPair("addProgrammaticAccessTokenResultDBRow", "AddProgrammaticAccessTokenResult").
 	Text("token_name").
 	Text("token_secret")
 
-var addProgrammaticAccessTokenResultDef = g.PlainStruct("AddProgrammaticAccessTokenResult").
-	Text("TokenName").
-	Text("TokenSecret")
-
-var rotateProgrammaticAccessTokenResultDBRowDef = g.DbStruct("rotateProgrammaticAccessTokenResultDBRow").
+var rotateProgrammaticAccessTokenResultPairs = g.StructPair("rotateProgrammaticAccessTokenResultDBRow", "RotateProgrammaticAccessTokenResult").
 	Text("token_name").
 	Text("token_secret").
 	Text("rotated_token_name")
-
-var rotateProgrammaticAccessTokenResultDef = g.PlainStruct("RotateProgrammaticAccessTokenResult").
-	Text("TokenName").
-	Text("TokenSecret").
-	Text("RotatedTokenName")
 
 var userProgrammaticAccessTokensDef = g.NewInterface(
 	"UserProgrammaticAccessTokens",
@@ -56,12 +37,11 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 	// We use AccountObjectIdentifier as a kind of identifier for convenience.
 	// TODO(SNOW-2183032) Handle objects that do not have identifiers.
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"Add",
 	g.ShowMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token",
-	addProgrammaticAccessTokenResultDBRowDef,
-	addProgrammaticAccessTokenResultDef,
+	addProgrammaticAccessTokenResultPairs,
 	g.NewQueryStruct("AddUserProgrammaticAccessToken").
 		Alter().
 		SQL("USER").
@@ -106,12 +86,11 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "UserName").
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo"),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"Rotate",
 	g.ShowMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-user-rotate-programmatic-access-token",
-	rotateProgrammaticAccessTokenResultDBRowDef,
-	rotateProgrammaticAccessTokenResultDef,
+	rotateProgrammaticAccessTokenResultPairs,
 	g.NewQueryStruct("RotateUserProgrammaticAccessToken").
 		Alter().
 		SQL("USER").
@@ -134,12 +113,12 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "UserName"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens",
-	programmaticAccessTokenResultDBRowDef,
-	programmaticAccessTokenDef,
+	programmaticAccessTokenPairs,
 	g.NewQueryStruct("ShowUserProgrammaticAccessTokens").
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
 		OptionalIdentifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
-).ShowByIdOperationWithNoFiltering()
+).ShowByIdOperationWithNoFiltering().
+	WithEnums(ProgrammaticAccessTokenStatusDef)

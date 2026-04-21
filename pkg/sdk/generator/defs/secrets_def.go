@@ -8,55 +8,30 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var secretDbRow = g.DbStruct("secretDBRow").
-	Field("created_on", "time.Time").
-	Field("name", "string").
-	Field("schema_name", "string").
-	Field("database_name", "string").
-	Field("owner", "string").
-	Field("comment", "sql.NullString").
-	Field("secret_type", "string").
-	Field("oauth_scopes", "sql.NullString").
-	Field("owner_role_type", "string")
+var secretPairs = g.StructPair("secretDBRow", "Secret").
+	Time("created_on").
+	Text("name").
+	Text("schema_name").
+	Text("database_name").
+	Text("owner").
+	OptionalText("comment").
+	Text("secret_type").
+	Field("oauth_scopes", "sql.NullString", "[]string").
+	Text("owner_role_type")
 
-var secret = g.PlainStruct("Secret").
-	Field("CreatedOn", "time.Time").
-	Field("Name", "string").
-	Field("SchemaName", "string").
-	Field("DatabaseName", "string").
-	Field("Owner", "string").
-	Field("Comment", "*string").
-	Field("SecretType", "string").
-	Field("OauthScopes", "[]string").
-	Field("OwnerRoleType", "string")
-
-var secretDetailsDbRow = g.DbStruct("secretDetailsDBRow").
-	Field("created_on", "time.Time").
-	Field("name", "string").
-	Field("schema_name", "string").
-	Field("database_name", "string").
-	Field("owner", "string").
-	Field("comment", "sql.NullString").
-	Field("secret_type", "string").
-	Field("username", "sql.NullString").
-	Field("oauth_access_token_expiry_time", "*time.Time").
-	Field("oauth_refresh_token_expiry_time", "*time.Time").
-	Field("oauth_scopes", "sql.NullString").
-	Field("integration_name", "sql.NullString")
-
-var secretDetails = g.PlainStruct("SecretDetails").
-	Field("CreatedOn", "time.Time").
-	Field("Name", "string").
-	Field("SchemaName", "string").
-	Field("DatabaseName", "string").
-	Field("Owner", "string").
-	Field("Comment", "*string").
-	Field("SecretType", "string").
-	Field("Username", "*string").
-	Field("OauthAccessTokenExpiryTime", "*time.Time").
-	Field("OauthRefreshTokenExpiryTime", "*time.Time").
-	Field("OauthScopes", "[]string").
-	Field("IntegrationName", "*string")
+var secretDetailsPairs = g.StructPair("secretDetailsDBRow", "SecretDetails").
+	Time("created_on").
+	Text("name").
+	Text("schema_name").
+	Text("database_name").
+	Text("owner").
+	OptionalText("comment").
+	Text("secret_type").
+	OptionalText("username").
+	Field("oauth_access_token_expiry_time", "*time.Time", "*time.Time").
+	Field("oauth_refresh_token_expiry_time", "*time.Time", "*time.Time").
+	Field("oauth_scopes", "sql.NullString", "[]string").
+	OptionalText("integration_name")
 
 var secretsApiIntegrationScopeDef = g.NewQueryStruct("ApiIntegrationScope").
 	Text("Scope", g.KeywordOptions().SingleQuotes().Required())
@@ -194,10 +169,9 @@ var secretsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-secrets",
-	secretDbRow,
-	secret,
+	secretPairs,
 	g.NewQueryStruct("ShowSecret").
 		Show().
 		SQL("SECRETS").
@@ -206,11 +180,10 @@ var secretsDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDExtendedInFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-secret",
-	secretDetailsDbRow,
-	secretDetails,
+	secretDetailsPairs,
 	g.NewQueryStruct("DescribeSecret").
 		Describe().
 		SQL("SECRET").

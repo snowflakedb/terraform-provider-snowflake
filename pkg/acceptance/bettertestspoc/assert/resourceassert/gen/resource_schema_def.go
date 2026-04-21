@@ -58,6 +58,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CatalogIntegrationObjectStorage().Schema,
 	},
 	{
+		name:   "CatalogIntegrationOpenCatalog",
+		schema: resources.CatalogIntegrationOpenCatalog().Schema,
+	},
+	{
+		name:   "CatalogIntegrationIcebergRest",
+		schema: resources.CatalogIntegrationIcebergRest().Schema,
+	},
+	{
 		name:   "ComputePool",
 		schema: resources.ComputePool().Schema,
 	},
@@ -246,6 +254,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.SemanticView().Schema,
 	},
 	{
+		name:   "SessionPolicy",
+		schema: resources.SessionPolicy().Schema,
+	},
+	{
 		name:   "Service",
 		schema: resources.Service().Schema,
 	},
@@ -314,12 +326,20 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.UserProgrammaticAccessToken().Schema,
 	},
 	{
+		name:   "UserSessionPolicyAttachment",
+		schema: resources.UserSessionPolicyAttachment().Schema,
+	},
+	{
 		name:   "View",
 		schema: resources.View().Schema,
 	},
 	{
 		name:   "Warehouse",
 		schema: resources.Warehouse().Schema,
+	},
+	{
+		name:   "WarehouseAdaptive",
+		schema: resources.WarehouseAdaptive().Schema,
 	},
 	{
 		name:   "GrantPrivilegesToAccountRole",
@@ -344,6 +364,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "GrantApplicationRole",
 		schema: resources.GrantApplicationRole().Schema,
+	},
+	{
+		name:   "GrantOwnership",
+		schema: resources.GrantOwnership().Schema,
 	},
 	{
 		name:   "StorageIntegration",

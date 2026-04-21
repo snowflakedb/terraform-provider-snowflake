@@ -342,6 +342,8 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 		legacyAccountParameters.ClientEncryptionKeySize = Pointer(v)
 	case AccountParameterCortexEnabledCrossRegion:
 		legacyAccountParameters.CortexEnabledCrossRegion = &value
+	case AccountParameterCortexModelsAllowlist:
+		legacyAccountParameters.CortexModelsAllowlist = &value
 	case AccountParameterDefaultDbtVersion:
 		legacyAccountParameters.DefaultDbtVersion = &value
 	case AccountParameterDisableUserPrivilegeGrants:
@@ -360,6 +362,13 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.EnableBudgetEventLogging = b
+	case AccountParameterEnableCortexAnalyst:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableCortexAnalyst = b
 	case AccountParameterEnableIdentifierFirstLogin:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)

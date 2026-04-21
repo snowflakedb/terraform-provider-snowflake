@@ -6,28 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var rowAccessPolicyDbRow = g.DbStruct("rowAccessPolicyDBRow").
-	Text("created_on").
-	Text("name").
-	Text("database_name").
-	Text("schema_name").
-	Text("kind").
-	Text("owner").
-	OptionalText("comment").
-	Text("options").
-	Text("owner_role_type")
-
-var rowAccessPolicy = g.PlainStruct("RowAccessPolicy").
-	Text("CreatedOn").
-	Text("Name").
-	Text("DatabaseName").
-	Text("SchemaName").
-	Text("Kind").
-	Text("Owner").
-	Text("Comment").
-	Text("Options").
-	Text("OwnerRoleType")
-
 var rowAccessPoliciesDef = g.NewInterface(
 	"RowAccessPolicies",
 	"RowAccessPolicy",
@@ -81,10 +59,18 @@ var rowAccessPoliciesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-row-access-policies",
-		rowAccessPolicyDbRow,
-		rowAccessPolicy,
+		g.StructPair("rowAccessPolicyDBRow", "RowAccessPolicy").
+			Text("created_on").
+			Text("name").
+			Text("database_name").
+			Text("schema_name").
+			Text("kind").
+			Text("owner").
+			OptionalText("comment", g.WithRequiredInPlain()).
+			Text("options").
+			Text("owner_role_type"),
 		g.NewQueryStruct("ShowRowAccessPolicies").
 			Show().
 			SQL("ROW ACCESS POLICIES").
@@ -96,19 +82,14 @@ var rowAccessPoliciesDef = g.NewInterface(
 		g.ShowByIDExtendedInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-row-access-policy",
-		g.DbStruct("describeRowAccessPolicyDBRow").
-			Field("name", "string").
-			Field("signature", "string").
-			Field("return_type", "string").
-			Field("body", "string"),
-		g.PlainStruct("RowAccessPolicyDescription").
-			Field("Name", "string").
-			Field("Signature", "[]TableColumnSignature").
-			Field("ReturnType", "string").
-			Field("Body", "string"),
+		g.StructPair("describeRowAccessPolicyDBRow", "RowAccessPolicyDescription").
+			Text("name").
+			Field("signature", "string", "[]TableColumnSignature").
+			Text("return_type").
+			Text("body"),
 		g.NewQueryStruct("DescribeRowAccessPolicy").
 			Describe().
 			SQL("ROW ACCESS POLICY").

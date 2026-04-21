@@ -37,12 +37,12 @@ func TestAcc_ScimIntegration_basic(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModelOktaFull := model.ScimSecurityIntegration("test", id.Name(), true, role2.Name(), string(sdk.ScimSecurityIntegrationScimClientOkta)).
+	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
+	scimModelOktaFull := model.ScimSecurityIntegration("test", id.Name(), true, role2.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionOkta)).
 		WithSyncPassword(r.BooleanFalse).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithComment(comment)
-	scimModelOkta := model.ScimSecurityIntegration("test", id.Name(), true, role2.Name(), string(sdk.ScimSecurityIntegrationScimClientOkta))
+	scimModelOkta := model.ScimSecurityIntegration("test", id.Name(), true, role2.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionOkta))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -164,7 +164,7 @@ func TestAcc_ScimIntegration_complete(t *testing.T) {
 	t.Cleanup(roleCleanup)
 	comment := random.Comment()
 
-	scimCompleteModel := model.ScimSecurityIntegration("test", id.Name(), false, role.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
+	scimCompleteModel := model.ScimSecurityIntegration("test", id.Name(), false, role.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric)).
 		WithSyncPassword(r.BooleanFalse).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithComment(comment)
@@ -207,7 +207,7 @@ func TestAcc_ScimIntegration_completeAzure(t *testing.T) {
 	role := snowflakeroles.GenericScimProvisioner
 	comment := random.Comment()
 
-	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
+	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionAzure)).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithComment(comment)
 
@@ -223,7 +223,7 @@ func TestAcc_ScimIntegration_completeAzure(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(scimCompleteAzureModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(scimCompleteAzureModel.ResourceReference(), "enabled", "false"),
-					resource.TestCheckResourceAttr(scimCompleteAzureModel.ResourceReference(), "scim_client", string(sdk.ScimSecurityIntegrationScimClientAzure)),
+					resource.TestCheckResourceAttr(scimCompleteAzureModel.ResourceReference(), "scim_client", string(sdk.ScimSecurityIntegrationScimClientOptionAzure)),
 					resource.TestCheckResourceAttr(scimCompleteAzureModel.ResourceReference(), "run_as_role", role.Name()),
 					resource.TestCheckResourceAttr(scimCompleteAzureModel.ResourceReference(), "network_policy", networkPolicy.ID().Name()),
 					resource.TestCheckResourceAttr(scimCompleteAzureModel.ResourceReference(), "sync_password", r.BooleanDefault),
@@ -254,7 +254,7 @@ func TestAcc_ScimIntegration_InvalidScimClient(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, scimModelBasic),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid ScimSecurityIntegrationScimClientOption: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid scim security integration scim client option: INVALID`),
 			},
 		},
 	})
@@ -283,7 +283,7 @@ func TestAcc_ScimIntegration_InvalidCreateWithSyncPasswordWithAzure(t *testing.T
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
+	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionAzure)).
 		WithComment(comment).
 		WithSyncPassword(r.BooleanFalse)
 
@@ -307,8 +307,8 @@ func TestAcc_ScimIntegration_InvalidUpdateWithSyncPasswordWithAzure(t *testing.T
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	scimBasicAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure))
-	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientAzure)).
+	scimBasicAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionAzure))
+	scimCompleteAzureModel := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionAzure)).
 		WithComment(comment).
 		WithSyncPassword(r.BooleanFalse)
 
@@ -346,7 +346,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledTrue(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric),
+				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientOptionGeneric),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "provisioner_role", role.Name()),
@@ -355,7 +355,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledTrue(t *testing.T) {
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientGeneric),
+				Config:                   scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientOptionGeneric),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.ExpectChange(resourceName, "name", tfjson.ActionUpdate, sdk.String(id.Name()), sdk.String(id.Name())),
@@ -392,7 +392,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledFalse(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric),
+				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientOptionGeneric),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "provisioner_role", role.Name()),
@@ -401,7 +401,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledFalse(t *testing.T) {
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   scimIntegrationV093(id, role, false, sdk.ScimSecurityIntegrationScimClientGeneric),
+				Config:                   scimIntegrationV093(id, role, false, sdk.ScimSecurityIntegrationScimClientOptionGeneric),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -431,7 +431,7 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientAzure),
+				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientOptionAzure),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 				),
@@ -445,7 +445,7 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 						planchecks.ExpectChange(resourceName, "sync_password", tfjson.ActionUpdate, nil, sdk.String(r.BooleanDefault)),
 					},
 				},
-				Config: providerConfig + scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientAzure),
+				Config: providerConfig + scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientOptionAzure),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 				),
@@ -455,7 +455,7 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientAzure),
+				Config:                   scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientOptionAzure),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
@@ -493,7 +493,7 @@ func TestAcc_ScimIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResource
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
-	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -526,7 +526,7 @@ func TestAcc_ScimIntegration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
-	scimModelBasic := model.ScimSecurityIntegration("test", quotedId, false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModelBasic := model.ScimSecurityIntegration("test", quotedId, false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -571,8 +571,8 @@ func TestAcc_ScimIntegration_migrateFromV2_11_0_LowercasedGenericScimProvisioner
 	lowercaseRoleName := strings.ToLower(snowflakeroles.GenericScimProvisioner.Name())
 	uppercaseRoleName := snowflakeroles.GenericScimProvisioner.Name()
 
-	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, lowercaseRoleName, string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModelBasicUppercase := model.ScimSecurityIntegration("test", id.Name(), false, uppercaseRoleName, string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, lowercaseRoleName, string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
+	scimModelBasicUppercase := model.ScimSecurityIntegration("test", id.Name(), false, uppercaseRoleName, string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
 
 	assertBasicUppercase := []assert.TestCheckFuncProvider{
 		resourceassert.ScimSecurityIntegrationResource(t, scimModelBasic.ResourceReference()).
@@ -631,11 +631,11 @@ func TestAcc_ScimIntegration_RunAsRole(t *testing.T) {
 	lowercaseRole, lowercaseRoleCleanup := testClient().Role.CreateRoleWithIdentifierGrantedToCurrentRole(t, sdk.NewAccountObjectIdentifier(strings.ToLower(uppercaseRole.ID().Name())))
 	t.Cleanup(lowercaseRoleCleanup)
 
-	scimUppercaseRunAsRole := model.ScimSecurityIntegration("test", id.Name(), false, uppercaseRole.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimLowercaseRunAsRole := model.ScimSecurityIntegration("test", id.Name(), false, lowercaseRole.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimUppercaseRunAsRole := model.ScimSecurityIntegration("test", id.Name(), false, uppercaseRole.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
+	scimLowercaseRunAsRole := model.ScimSecurityIntegration("test", id.Name(), false, lowercaseRole.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
 
 	nonExistingRoleId := testClient().Ids.RandomAccountObjectIdentifier()
-	scimNonExistingRole := model.ScimSecurityIntegration("test", id.Name(), false, nonExistingRoleId.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimNonExistingRole := model.ScimSecurityIntegration("test", id.Name(), false, nonExistingRoleId.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
 
 	assertBasicUppercase := []assert.TestCheckFuncProvider{
 		resourceassert.ScimSecurityIntegrationResource(t, scimUppercaseRunAsRole.ResourceReference()).
@@ -672,7 +672,7 @@ func TestAcc_ScimIntegration_RunAsRole(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().SecurityIntegration.DropSecurityIntegrationFunc(t, id)()
-					testClient().SecurityIntegration.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientGeneric, uppercaseRole.ID().FullyQualifiedName()).WithEnabled(false))
+					testClient().SecurityIntegration.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientOptionGeneric, uppercaseRole.ID().FullyQualifiedName()).WithEnabled(false))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

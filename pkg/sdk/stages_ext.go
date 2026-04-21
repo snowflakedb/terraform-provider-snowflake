@@ -7,6 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+var AcceptableStageTypes = map[StageType][]StageType{
+	StageTypeInternal: {StageTypeInternal, StageTypeInternalNoCse},
+	StageTypeExternal: {StageTypeExternal},
+}
+
 func (v *Stage) Location() string {
 	return NewStageLocation(v.ID(), "").ToSql()
 }
@@ -168,17 +173,17 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 		return nil, err
 	}
 	switch formatType {
-	case FileFormatTypeCSV:
+	case FileFormatTypeCsv:
 		details.FileFormatCsv = parseCsvFileFormat(properties)
-	case FileFormatTypeJSON:
+	case FileFormatTypeJson:
 		details.FileFormatJson = parseJsonFileFormat(properties)
 	case FileFormatTypeAvro:
 		details.FileFormatAvro = parseAvroFileFormat(properties)
-	case FileFormatTypeORC:
+	case FileFormatTypeOrc:
 		details.FileFormatOrc = parseOrcFileFormat(properties)
 	case FileFormatTypeParquet:
 		details.FileFormatParquet = parseParquetFileFormat(properties)
-	case FileFormatTypeXML:
+	case FileFormatTypeXml:
 		details.FileFormatXml = parseXmlFileFormat(properties)
 	}
 

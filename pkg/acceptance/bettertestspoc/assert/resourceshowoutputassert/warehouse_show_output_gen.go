@@ -183,6 +183,16 @@ func (w *WarehouseShowOutputAssert) HasGeneration(expected sdk.WarehouseGenerati
 	return w
 }
 
+func (w *WarehouseShowOutputAssert) HasMaxQueryPerformanceLevel(expected sdk.MaxQueryPerformanceLevel) *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("max_query_performance_level", expected))
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasQueryThroughputMultiplier(expected int) *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputIntValueSet("query_throughput_multiplier", expected))
+	return w
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -329,5 +339,15 @@ func (w *WarehouseShowOutputAssert) HasNoResourceConstraint() *WarehouseShowOutp
 
 func (w *WarehouseShowOutputAssert) HasNoGeneration() *WarehouseShowOutputAssert {
 	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("generation"))
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoMaxQueryPerformanceLevel() *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("max_query_performance_level"))
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoQueryThroughputMultiplier() *WarehouseShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("query_throughput_multiplier"))
 	return w
 }

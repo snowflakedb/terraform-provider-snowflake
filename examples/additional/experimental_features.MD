@@ -51,4 +51,29 @@ When enabled, the three possible states in Snowflake for allowed values will be 
 
 Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).
 
+#### IMPORT_BOOLEAN_DEFAULT
+Changes import behavior for boolean fields using the special `"default"` value.
+
+When enabled, boolean fields using the special `"default"` value are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`). This prevents unavoidable diffs on every plan after import.
+
+Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).
+
+#### GRANTS_SAFE_DESTROY
+When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.
+
+This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
+
+Without this experiment, destroying such resources fails with `does not exist or not authorized`.
+
+#### TAG_ASSOCIATION_SAFE_DESTROY
+When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.
+
+Currently supported by: `snowflake_tag_association`.
+
+This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.
+
+Without this experiment, destroying such resources fails with `does not exist or not authorized`.
+
 

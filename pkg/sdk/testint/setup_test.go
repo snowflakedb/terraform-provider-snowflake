@@ -223,11 +223,12 @@ func (itc *integrationTestContext) initialize() error {
 		}
 		itc.secondaryWarehouse = secondaryWarehouse
 
-		err = testClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.ctx)
-		if err != nil {
-			return err
-		}
-		err = secondaryTestClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.secondaryCtx)
+		err = errors.Join(
+			testClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.ctx),
+			testClientHelper().EnsureEnableIdentifierFirstLoginIsSetToTrue(itc.ctx),
+			secondaryTestClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.secondaryCtx),
+			secondaryTestClientHelper().EnsureEnableIdentifierFirstLoginIsSetToTrue(itc.secondaryCtx),
+		)
 		if err != nil {
 			return err
 		}

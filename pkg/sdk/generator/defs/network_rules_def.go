@@ -6,6 +6,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	NetworkRuleTypeEnumDef = g.NewEnum(
+		"NetworkRuleType", "NetworkRuleTypes",
+		"IPV4", "AWSVPCEID", "AZURELINKID", "GCPPSCID", "HOST_PORT", "PRIVATE_HOST_PORT",
+	)
+	NetworkRuleModeEnumDef = g.NewEnum(
+		"NetworkRuleMode", "NetworkRuleModes",
+		"INGRESS", "INTERNAL_STAGE", "EGRESS", "POSTGRES_INGRESS", "POSTGRES_EGRESS",
+	)
+)
+
 var networkRulesDef = g.NewInterface(
 	"NetworkRules",
 	"NetworkRule",
@@ -18,9 +29,9 @@ var networkRulesDef = g.NewInterface(
 			OrReplace().
 			SQL("NETWORK RULE").
 			Name().
-			AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.NetworkRuleType](), g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
+			AssignmentWithFieldName("TYPE", NetworkRuleTypeEnumDef.Kind(), g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
 			ListAssignment("VALUE_LIST", "NetworkRuleValue", g.ParameterOptions().Required().Parentheses()).
-			Assignment("MODE", g.KindOfT[sdkcommons.NetworkRuleMode](), g.ParameterOptions().Required().NoQuotes()).
+			Assignment("MODE", NetworkRuleModeEnumDef.Kind(), g.ParameterOptions().Required().NoQuotes()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name"),
 		g.NewQueryStruct("NetworkRuleValue").
@@ -61,30 +72,19 @@ var networkRulesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-network-rules",
-		g.DbStruct("ShowNetworkRulesRow").
+		g.StructPair("ShowNetworkRulesRow", "NetworkRule").
 			Time("created_on").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
 			Text("comment").
-			Text("type").
-			Text("mode").
-			Number("entries_in_valuelist").
+			PlainField("type", "NetworkRuleType").
+			PlainField("mode", "NetworkRuleMode").
+			Number("entries_in_valuelist", g.WithPlainFieldName("EntriesInValueList")).
 			Text("owner_role_type"),
-		g.PlainStruct("NetworkRule").
-			Time("CreatedOn").
-			Text("Name").
-			Text("DatabaseName").
-			Text("SchemaName").
-			Text("Owner").
-			Text("Comment").
-			Field("Type", "NetworkRuleType").
-			Field("Mode", "NetworkRuleMode").
-			Number("EntriesInValueList").
-			Text("OwnerRoleType"),
 		g.NewQueryStruct("ShowNetworkRules").
 			Show().
 			SQL("NETWORK RULES").
@@ -97,32 +97,26 @@ var networkRulesDef = g.NewInterface(
 		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-network-rule",
-		g.DbStruct("DescNetworkRulesRow").
+		g.StructPair("DescNetworkRulesRow", "NetworkRuleDetails").
 			Time("created_on").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
 			Text("comment").
-			Text("type").
-			Text("mode").
-			Text("value_list"),
-		g.PlainStruct("NetworkRuleDetails").
-			Time("CreatedOn").
-			Text("Name").
-			Text("DatabaseName").
-			Text("SchemaName").
-			Text("Owner").
-			Text("Comment").
-			Field("Type", "NetworkRuleType").
-			Field("Mode", "NetworkRuleMode").
-			Field("ValueList", "[]string"),
+			PlainField("type", "NetworkRuleType").
+			PlainField("mode", "NetworkRuleMode").
+			StringList("value_list"),
 		g.NewQueryStruct("ShowNetworkRules").
 			Describe().
 			SQL("NETWORK RULE").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	WithEnums(
+		NetworkRuleTypeEnumDef,
+		NetworkRuleModeEnumDef,
 	)

@@ -128,6 +128,10 @@ func (v *QueryStruct) OptionalServiceIn() *QueryStruct {
 	return v.PredefinedQueryStructField("In", "*ServiceIn", KeywordOptions().SQL("IN"))
 }
 
+func (v *QueryStruct) OptionalTableIn() *QueryStruct {
+	return v.PredefinedQueryStructField("In", "*TableIn", KeywordOptions().SQL("IN"))
+}
+
 func (v *QueryStruct) OptionalOn() *QueryStruct {
 	return v.PredefinedQueryStructField("On", "*On", KeywordOptions().SQL("ON"))
 }

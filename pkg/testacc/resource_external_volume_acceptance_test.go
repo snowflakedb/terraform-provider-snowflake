@@ -603,7 +603,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 								Name:            s3CompatLocationName,
 								StorageProvider: "S3COMPAT",
 								StorageBaseUrl:  s3CompatBaseUrl,
-								EncryptionType:  string(sdk.S3EncryptionNone),
+								EncryptionType:  string(sdk.S3EncryptionTypeNone),
 								S3CompatStorageLocation: &sdk.StorageLocationS3CompatDetails{
 									Endpoint:       s3CompatEndpoint,
 									AwsAccessKeyId: s3CompatAwsKeyId,
@@ -656,7 +656,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 								Name:            s3CompatLocationName,
 								StorageProvider: "S3COMPAT",
 								StorageBaseUrl:  s3CompatBaseUrl,
-								EncryptionType:  string(sdk.S3EncryptionNone),
+								EncryptionType:  string(sdk.S3EncryptionTypeNone),
 								S3CompatStorageLocation: &sdk.StorageLocationS3CompatDetails{
 									Endpoint:       s3CompatEndpoint,
 									AwsAccessKeyId: s3CompatAwsKeyId,
@@ -709,7 +709,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 								Name:            s3CompatLocationName,
 								StorageProvider: "S3COMPAT",
 								StorageBaseUrl:  s3CompatBaseUrl,
-								EncryptionType:  string(sdk.S3EncryptionNone),
+								EncryptionType:  string(sdk.S3EncryptionTypeNone),
 								S3CompatStorageLocation: &sdk.StorageLocationS3CompatDetails{
 									Endpoint:       s3CompatEndpoint,
 									AwsAccessKeyId: s3CompatAwsKeyId,
@@ -773,7 +773,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 								Name:            s3CompatLocationName,
 								StorageProvider: "S3COMPAT",
 								StorageBaseUrl:  s3CompatBaseUrl,
-								EncryptionType:  string(sdk.S3EncryptionNone),
+								EncryptionType:  string(sdk.S3EncryptionTypeNone),
 								S3CompatStorageLocation: &sdk.StorageLocationS3CompatDetails{
 									Endpoint:       s3CompatEndpoint,
 									AwsAccessKeyId: s3CompatAwsKeyId,
@@ -817,7 +817,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 								Name:            s3CompatLocationName,
 								StorageProvider: "S3COMPAT",
 								StorageBaseUrl:  s3CompatBaseUrl,
-								EncryptionType:  string(sdk.S3EncryptionNone),
+								EncryptionType:  string(sdk.S3EncryptionTypeNone),
 								S3CompatStorageLocation: &sdk.StorageLocationS3CompatDetails{
 									Endpoint:       s3CompatEndpoint,
 									AwsAccessKeyId: s3CompatAwsKeyId,
@@ -2765,7 +2765,7 @@ func TestAcc_ExternalVolume_Validations(t *testing.T) {
 		"storage_provider":      config.StringVariable(azureStorageProvider),
 		"storage_base_url":      config.StringVariable(azureStorageBaseUrl),
 		"azure_tenant_id":       config.StringVariable(azureTenantId),
-		"encryption_type":       config.StringVariable(string(sdk.GCSEncryptionTypeSseKms)),
+		"encryption_type":       config.StringVariable(string(sdk.GCSEncryptionTypeGcsSseKms)),
 	})
 	gcsStorageLocationWithAwsExternalId := config.MapVariable(map[string]config.Variable{
 		"storage_location_name":   config.StringVariable(gcsStorageLocationName),

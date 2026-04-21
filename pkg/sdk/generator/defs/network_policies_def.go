@@ -104,24 +104,16 @@ var (
 				Name().
 				WithValidation(g.ValidIdentifier, "name"),
 		).
-		ShowOperation(
+		ShowOperationWithPairedStructs(
 			"https://docs.snowflake.com/en/sql-reference/sql/show-network-policies",
-			g.DbStruct("showNetworkPolicyDBRow").
-				Field("created_on", "string").
-				Field("name", "string").
-				Field("comment", "string").
-				Field("entries_in_allowed_ip_list", "int").
-				Field("entries_in_blocked_ip_list", "int").
-				Field("entries_in_allowed_network_rules", "int").
-				Field("entries_in_blocked_network_rules", "int"),
-			g.PlainStruct("NetworkPolicy").
-				Field("CreatedOn", "string").
-				Field("Name", "string").
-				Field("Comment", "string").
-				Field("EntriesInAllowedIpList", "int").
-				Field("EntriesInBlockedIpList", "int").
-				Field("EntriesInAllowedNetworkRules", "int").
-				Field("EntriesInBlockedNetworkRules", "int"),
+			g.StructPair("showNetworkPolicyDBRow", "NetworkPolicy").
+				Text("created_on").
+				Text("name").
+				Text("comment").
+				Number("entries_in_allowed_ip_list").
+				Number("entries_in_blocked_ip_list").
+				Number("entries_in_allowed_network_rules").
+				Number("entries_in_blocked_network_rules"),
 			g.NewQueryStruct("ShowNetworkPolicies").
 				Show().
 				SQL("NETWORK POLICIES").
@@ -130,15 +122,12 @@ var (
 		ShowByIdOperationWithFiltering(
 			g.ShowByIDLikeFiltering,
 		).
-		DescribeOperation(
+		DescribeOperationWithPairedStructs(
 			g.DescriptionMappingKindSlice,
 			"https://docs.snowflake.com/en/sql-reference/sql/desc-network-policy",
-			g.DbStruct("describeNetworkPolicyDBRow").
-				Field("name", "string").
-				Field("value", "string"),
-			g.PlainStruct("NetworkPolicyProperty").
-				Field("Name", "string").
-				Field("Value", "string"),
+			g.StructPair("describeNetworkPolicyDBRow", "NetworkPolicyProperty").
+				Text("name").
+				Text("value"),
 			g.NewQueryStruct("DescribeNetworkPolicy").
 				Describe().
 				SQL("NETWORK POLICY").

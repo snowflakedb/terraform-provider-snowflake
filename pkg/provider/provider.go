@@ -591,6 +591,8 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_authentication_policy":                                        resources.AuthenticationPolicy(),
 		"snowflake_catalog_integration_aws_glue":                                 resources.CatalogIntegrationAwsGlue(),
 		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
+		"snowflake_catalog_integration_open_catalog":                             resources.CatalogIntegrationOpenCatalog(),
+		"snowflake_catalog_integration_iceberg_rest":                             resources.CatalogIntegrationIcebergRest(),
 		"snowflake_compute_pool":                                                 resources.ComputePool(),
 		"snowflake_cortex_search_service":                                        resources.CortexSearchService(),
 		"snowflake_current_account":                                              resources.CurrentAccount(),
@@ -659,6 +661,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_secret_with_client_credentials":                               resources.SecretWithClientCredentials(),
 		"snowflake_secret_with_generic_string":                                   resources.SecretWithGenericString(),
 		"snowflake_semantic_view":                                                resources.SemanticView(),
+		"snowflake_session_policy":                                               resources.SessionPolicy(),
 		"snowflake_service":                                                      resources.Service(),
 		"snowflake_sequence":                                                     resources.Sequence(),
 		"snowflake_service_user":                                                 resources.ServiceUser(),
@@ -685,8 +688,10 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_user_password_policy_attachment":                              resources.UserPasswordPolicyAttachment(),
 		"snowflake_user_programmatic_access_token":                               resources.UserProgrammaticAccessToken(),
 		"snowflake_user_public_keys":                                             resources.UserPublicKeys(),
+		"snowflake_user_session_policy_attachment":                               resources.UserSessionPolicyAttachment(),
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
+		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
 	}
 }
 
@@ -696,6 +701,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_account_roles":                      datasources.AccountRoles(),
 		"snowflake_alerts":                             datasources.Alerts(),
 		"snowflake_authentication_policies":            datasources.AuthenticationPolicies(),
+		"snowflake_catalog_integrations":               datasources.CatalogIntegrations(),
 		"snowflake_compute_pools":                      datasources.ComputePools(),
 		"snowflake_connections":                        datasources.Connections(),
 		"snowflake_cortex_search_services":             datasources.CortexSearchServices(),

@@ -28,6 +28,8 @@ type CatalogIntegrations interface {
 	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
 	// DescribeSapBdcDetails is added manually
 	DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error)
+	// DescribeDetails is added manually; it returns combined describe output for all types of catalog integrations.
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error)
 }
 
 // CreateCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration.
@@ -244,8 +246,8 @@ type CatalogIntegrationOpenCatalogDetails struct {
 	RefreshIntervalSeconds int
 	Comment                string
 	CatalogNamespace       string
-	RestConfig             OpenCatalogRestConfig
-	RestAuthentication     OAuthRestAuthentication
+	RestConfig             OpenCatalogRestConfigDetails
+	RestAuthentication     OAuthRestAuthenticationDetails
 }
 
 type CatalogIntegrationIcebergRestDetails struct {
@@ -256,10 +258,10 @@ type CatalogIntegrationIcebergRestDetails struct {
 	RefreshIntervalSeconds   int
 	Comment                  string
 	CatalogNamespace         string
-	RestConfig               IcebergRestRestConfig
-	OAuthRestAuthentication  *OAuthRestAuthentication
-	BearerRestAuthentication *BearerRestAuthentication
-	SigV4RestAuthentication  *SigV4RestAuthentication
+	RestConfig               IcebergRestRestConfigDetails
+	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
+	BearerRestAuthentication *BearerRestAuthenticationDetails
+	SigV4RestAuthentication  *SigV4RestAuthenticationDetails
 }
 
 type CatalogIntegrationSapBdcDetails struct {
@@ -269,4 +271,53 @@ type CatalogIntegrationSapBdcDetails struct {
 	Enabled                bool
 	RefreshIntervalSeconds int
 	Comment                string
+}
+
+type CatalogIntegrationAllDetails struct {
+	Id                       AccountObjectIdentifier
+	CatalogSource            CatalogIntegrationCatalogSourceType
+	TableFormat              CatalogIntegrationTableFormat
+	Enabled                  bool
+	RefreshIntervalSeconds   int
+	Comment                  string
+	GlueAwsRoleArn           string
+	GlueCatalogId            string
+	GlueRegion               string
+	CatalogNamespace         string
+	RestConfig               *IcebergRestRestConfigDetails
+	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
+	BearerRestAuthentication *BearerRestAuthenticationDetails
+	SigV4RestAuthentication  *SigV4RestAuthenticationDetails
+}
+
+type OpenCatalogRestConfigDetails struct {
+	CatalogUri           string
+	CatalogApiType       CatalogIntegrationCatalogApiType
+	CatalogName          string
+	AccessDelegationMode CatalogIntegrationAccessDelegationMode
+}
+
+type IcebergRestRestConfigDetails struct {
+	CatalogUri           string
+	Prefix               string
+	CatalogName          string
+	CatalogApiType       CatalogIntegrationCatalogApiType
+	AccessDelegationMode CatalogIntegrationAccessDelegationMode
+}
+
+type OAuthRestAuthenticationDetails struct {
+	OauthTokenUri      string
+	OauthClientId      string
+	OauthClientSecret  string
+	OauthAllowedScopes []string
+}
+
+type BearerRestAuthenticationDetails struct {
+	BearerToken string
+}
+
+type SigV4RestAuthenticationDetails struct {
+	Sigv4IamRole       string
+	Sigv4SigningRegion string
+	Sigv4ExternalId    string
 }

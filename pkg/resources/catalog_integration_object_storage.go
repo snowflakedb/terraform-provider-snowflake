@@ -23,7 +23,7 @@ var catalogIntegrationObjectStorageSchema = func() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
-			Description:      "Specifies the table format. Supported values: ICEBERG, DELTA.",
+			Description:      "Specifies the table format. " + enumValuesDescription(sdk.AllCatalogIntegrationTableFormats),
 			DiffSuppressFunc: NormalizeAndCompare(sdk.ToCatalogIntegrationTableFormat),
 			ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationTableFormat),
 		},
@@ -63,8 +63,8 @@ func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *schema.Resour
 	if err != nil {
 		return nil, err
 	}
-	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeObjectStorage {
-		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeObjectStorage, details.CatalogSource)
+	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeObjectStore {
+		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeObjectStore, details.CatalogSource)
 	}
 
 	return []*schema.ResourceData{d}, nil
