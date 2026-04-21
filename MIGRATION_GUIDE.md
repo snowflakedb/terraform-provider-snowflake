@@ -48,6 +48,21 @@ To fix this, enable the `IMPORT_BOOLEAN_DEFAULT` experimental feature in the pro
 
 References: [#3896](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896)
 
+### *(bugfix)* TABLE data type parsing with parametrized column types
+
+In v2.15.0, resources that accept a `TABLE(...)` data type (e.g. return type in `snowflake_function_sql` or `snowflake_procedure_sql`)
+failed with an error when column types inside the `TABLE` definition carried precision or scale parameters (e.g. `NUMBER(38,0)`, `VARCHAR(256)`).
+The comma inside the type parameter was incorrectly treated as a column separator, producing a parse error similar to:
+
+```
+number NUMBER(38 could not be parsed, use "NUMBER(precision, scale)" format
+```
+
+This release fixes the parser to correctly handle nested parentheses when splitting column definitions,
+so `TABLE(ARG1 NUMBER(38,0), ARG2 VARCHAR)` is now parsed correctly.
+
+No configuration changes are required.
+
 ## v2.14.x ➞ v2.15.0
 
 ### **IMPORTANT** *(improvement)* Go driver bumped to v2
