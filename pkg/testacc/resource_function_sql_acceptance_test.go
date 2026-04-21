@@ -260,6 +260,8 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
 	returnType := "TABLE(O_ERR_CODE NUMBER(38,0), O_ERR_SEVERITY VARCHAR)"
 
 	functionModel := model.FunctionSqlBasicInline("test", id, definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionSqlResource))
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -267,10 +269,10 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
 		Steps: []resource.TestStep{
-			// Step 1: v2.14.1 fails because TABLE with parametrized columns cannot be parsed.
+			// Step 1: v2.15.0 fails because TABLE with parametrized columns cannot be parsed.
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
-				Config:            config.FromModels(t, functionModel),
+				Config:            config.FromModels(t, providerModel, functionModel),
 				ExpectError:       regexp.MustCompile(`number NUMBER\(38 could not be parsed, use "NUMBER\(precision, scale\)" format`),
 			},
 			// Step 2: Current version correctly parses TABLE with parametrized columns.
@@ -298,6 +300,8 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *te
 	returnType := "TABLE(O_ERR_CODE NUMBER(24,2), O_ERR_SEVERITY VARCHAR)"
 
 	functionModel := model.FunctionSqlBasicInline("test", id, definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionSqlResource))
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -305,10 +309,10 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *te
 		},
 		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
 		Steps: []resource.TestStep{
-			// Step 1: v2.14.1 fails because TABLE with parametrized columns cannot be parsed.
+			// Step 1: v2.15.0 fails because TABLE with parametrized columns cannot be parsed.
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
-				Config:            config.FromModels(t, functionModel),
+				Config:            config.FromModels(t, providerModel, functionModel),
 				ExpectError:       regexp.MustCompile(`number NUMBER\(24 could not be parsed, use "NUMBER\(precision, scale\)" format`),
 			},
 			// Step 2: Current version correctly parses TABLE with parametrized columns.
