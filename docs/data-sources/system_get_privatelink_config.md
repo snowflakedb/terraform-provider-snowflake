@@ -72,26 +72,24 @@ resource "aws_route53_record" "snowflake_private_link_ocsp_url" {
 
 ## Schema
 
-### Attributes Reference
+### Read-Only
 
-The following attributes are exported, depending on the Snowflake account configuration and service provider:
-
-- `id` (String) The ID of this resource being the the name of the Snowflake account.
 - `account_name` (String) The name of your Snowflake account.
 - `account_principal` (String) The AWS principal ARN to allow for outbound private connections to your VPC endpoint services.
-- `account_url` (String) The URL used to connect to Snowflake through private connectivity.
-- `app_service_url` (String) Wildcard DNS record required for routing Streamlit applications and/or Snowpark Container Services through private connectivity.
+- `account_url` (String) The URL used to connect to Snowflake through AWS PrivateLink or Azure Private Link.
+- `app_service_url` (String) The wildcard URL required for routing Streamlit applications and Snowpark Container Services through AWS PrivateLink or Azure Private Link.
 - `aws_vpce_id` (String) The AWS VPCE ID for your account.
-- `azure_pls_id` (String) Private connectivity service ID for your account when on Azure.
-- `client_redirect_urls` (String) The client redirect connection URLs for your account using private connectivity when using client redirect.
+- `azure_pls_id` (String) The Azure Private Link Service ID for your account.
+- `azure_storage_volume_fs` (String) The endpoint for failsafe Snowflake-managed storage volumes when using Azure Private Link.
+- `azure_storage_volume_nfs` (String) The endpoint for non-failsafe Snowflake-managed storage volumes when using Azure Private Link.
+- `dashed_duo_urls` (String) The dashed URLs for Duo integration using private connectivity.
 - `gcp_service_attachment` (String) The endpoint for the Snowflake service when using Google Cloud Private Service Connect.
-- `internal_stage` (String) The endpoint to connect to your Snowflake internal stage using private connectivity.
-- `ocsp_url` (String) The OCSP URL for your account identifier.
-- `openflow_url` (String) The OpenFlow URL to connect to Snowflake Openflow using private connectivity.
-- `openflow_telemetry_url` (String) The OpenFlow telemetry URL to connect to Snowflake Openflow telemetry using private connectivity.
+- `id` (String) The ID of this resource.
+- `internal_stage` (String) The endpoint to connect to your Snowflake internal stage using Azure Private Link.
+- `ocsp_url` (String) The OCSP URL corresponding to your Snowflake account that uses AWS PrivateLink or Azure Private Link.
+- `connection_ocsp_urls` (String) The list of OCSP URLs for use with redirecting client connections when using client redirect.
+- `connection_urls` (String) The private connectivity connection URLs for your account when using client redirect.
+- `regionless_account_url` (String) The regionless URL to connect to your Snowflake account using AWS PrivateLink, Azure Private Link, or Google Cloud Private Service Connect.
 - `regionless_ocsp_url` (String) The regionless OCSP URL to connect to Snowflake OCSP using private connectivity.
-- `regionless_account_url` (String) The regionless URL to connect to your Snowflake account using private connectivity.
 - `regionless_snowsight_url` (String) The URL for your organization to access Snowsight using Private Connectivity to the Snowflake Service.
-- `spcs_auth_url` (String) The Snowpark Container Services authentication URL using private connectivity.
-- `spcs_registry_url` (String) The Snowpark Container Services registry URL using private connectivity.
-- `snowsight_url` (String) The URL containing the cloud region to access Snowsight and the Snowflake Marketplace using private connectivity.
+- `snowsight_url` (String) The URL containing the cloud region to access Snowsight and the Snowflake Marketplace using Private Connectivity to the Snowflake Service.

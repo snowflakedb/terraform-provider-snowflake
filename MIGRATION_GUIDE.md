@@ -26,6 +26,22 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* snowflake_system_get_privatelink_config: new attributes
+
+The `snowflake_system_get_privatelink_config` data source now exposes additional attributes returned by `SYSTEM$GET_PRIVATELINK_CONFIG()`:
+
+- `account_principal` - The AWS principal ARN for outbound private connections.
+- `app_service_url` - Wildcard URL for routing Streamlit and Snowpark Container Services through private connectivity.
+- `azure_storage_volume_fs` - Endpoint for failsafe Snowflake-managed storage volumes on Azure.
+- `azure_storage_volume_nfs` - Endpoint for non-failsafe Snowflake-managed storage volumes on Azure.
+- `dashed_duo_urls` - Dashed URLs for Duo integration.
+- `gcp_service_attachment` - Endpoint for Google Cloud Private Service Connect.
+- `connection_ocsp_urls` - OCSP URLs for client redirect connections.
+- `connection_urls` - Connection URLs for client redirect (replaces `client_redirect_urls`).
+- `regionless_ocsp_url` - Regionless OCSP URL for private connectivity.
+
+No changes are required for existing configurations that only reference the previously available attributes.
+
 ### *(new feature)* snowflake_account_parameter: adding missing parameters
 
 The `snowflake_account_parameter` resource now supports the following additional parameters:
