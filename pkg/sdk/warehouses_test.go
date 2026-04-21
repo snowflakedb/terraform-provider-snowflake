@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -10,6 +11,14 @@ import (
 )
 
 func TestWarehouseCreate(t *testing.T) {
+	t.Run("validation: invalid warehouse type", func(t *testing.T) {
+		opts := &CreateWarehouseOptions{
+			name:          NewAccountObjectIdentifier("mywarehouse"),
+			WarehouseType: Pointer(WarehouseTypeAdaptive),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("only STANDARD, SNOWPARK-OPTIMIZED warehouses are supported, got ADAPTIVE"))
+	})
+
 	t.Run("only name", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name: AccountObjectIdentifier{
@@ -40,7 +49,7 @@ func TestWarehouseCreate(t *testing.T) {
 			Comment:                         String("hello"),
 			EnableQueryAcceleration:         Bool(true),
 			QueryAccelerationMaxScaleFactor: Int(62),
-			ResourceConstraint:              Pointer(WarehouseResourceConstraintStandardGen1),
+			ResourceConstraint:              Pointer(WarehouseResourceConstraintMemory1X),
 			Generation:                      Pointer(WarehouseGenerationStandardGen1),
 
 			MaxConcurrencyLevel:             Int(7),
@@ -57,7 +66,64 @@ func TestWarehouseCreate(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE IF NOT EXISTS "completewarehouse" WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'STANDARD_GEN_1' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`, resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE IF NOT EXISTS "completewarehouse" WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'MEMORY_1X' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`, resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	})
+}
+
+func TestWarehouseCreateAdaptive(t *testing.T) {
+	t.Run("only name", func(t *testing.T) {
+		opts := &CreateAdaptiveWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE WAREHOUSE "mywarehouse" WAREHOUSE_TYPE = 'ADAPTIVE'`)
+	})
+
+	t.Run("with complete options", func(t *testing.T) {
+		tagId1 := randomSchemaObjectIdentifier()
+		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
+		opts := &CreateAdaptiveWarehouseOptions{
+			OrReplace: Bool(true),
+			name:      NewAccountObjectIdentifier("myadaptivewh"),
+
+			Comment:                         String("adaptive warehouse"),
+			MaxQueryPerformanceLevel:        Pointer(MaxQueryPerformanceLevelMedium),
+			QueryThroughputMultiplier:       Int(22),
+			StatementQueuedTimeoutInSeconds: Int(30),
+			StatementTimeoutInSeconds:       Int(60),
+			Tag: []TagAssociation{
+				{
+					Name:  tagId1,
+					Value: "v1",
+				},
+				{
+					Name:  tagId2,
+					Value: "v2",
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_QUERY_PERFORMANCE_LEVEL = 'MEDIUM' QUERY_THROUGHPUT_MULTIPLIER = 22 TAG (%s = 'v1', %s = 'v2') STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60`,
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	})
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *CreateAdaptiveWarehouseOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: invalid identifier", func(t *testing.T) {
+		opts := &CreateAdaptiveWarehouseOptions{
+			name: emptyAccountObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: conflicting OrReplace and IfNotExists", func(t *testing.T) {
+		opts := &CreateAdaptiveWarehouseOptions{
+			name:        NewAccountObjectIdentifier("mywarehouse"),
+			OrReplace:   Bool(true),
+			IfNotExists: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateAdaptiveWarehouseOptions", "OrReplace", "IfNotExists"))
 	})
 }
 
@@ -121,11 +187,11 @@ func TestWarehouseAlter(t *testing.T) {
 				ResourceMonitor:                 NewAccountObjectIdentifier("resmon"),
 				EnableQueryAcceleration:         Bool(false),
 				StatementQueuedTimeoutInSeconds: Int(1200),
-				ResourceConstraint:              Pointer(WarehouseResourceConstraintStandardGen1),
+				ResourceConstraint:              Pointer(WarehouseResourceConstraintMemory1X),
 				Generation:                      Pointer(WarehouseGenerationStandardGen1),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET WAREHOUSE_TYPE = 'SNOWPARK-OPTIMIZED' WAIT_FOR_COMPLETION = false MAX_CLUSTER_COUNT = 5 MIN_CLUSTER_COUNT = 4 AUTO_SUSPEND = 200 RESOURCE_MONITOR = "resmon" ENABLE_QUERY_ACCELERATION = false RESOURCE_CONSTRAINT = 'STANDARD_GEN_1' GENERATION = '1' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 1200`)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET WAREHOUSE_TYPE = 'SNOWPARK-OPTIMIZED' WAIT_FOR_COMPLETION = false MAX_CLUSTER_COUNT = 5 MIN_CLUSTER_COUNT = 4 AUTO_SUSPEND = 200 RESOURCE_MONITOR = "resmon" ENABLE_QUERY_ACCELERATION = false RESOURCE_CONSTRAINT = 'MEMORY_1X' GENERATION = '1' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 1200`)
 	})
 
 	t.Run("with set tag", func(t *testing.T) {
@@ -238,6 +304,34 @@ func TestWarehouseAlter(t *testing.T) {
 	})
 }
 
+func TestWarehouseAlterAdaptive(t *testing.T) {
+	t.Run("alter adaptive: set all adaptive params", func(t *testing.T) {
+		opts := &AlterWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+			Set: &WarehouseSet{
+				MaxQueryPerformanceLevel:        Pointer(MaxQueryPerformanceLevelXSmall),
+				QueryThroughputMultiplier:       Int(5),
+				StatementQueuedTimeoutInSeconds: Int(100),
+				StatementTimeoutInSeconds:       Int(200),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET QUERY_THROUGHPUT_MULTIPLIER = 5 MAX_QUERY_PERFORMANCE_LEVEL = 'XSMALL' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 100 STATEMENT_TIMEOUT_IN_SECONDS = 200`)
+	})
+
+	t.Run("alter adaptive: unset all adaptive params", func(t *testing.T) {
+		opts := &AlterWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+			Unset: &WarehouseUnset{
+				MaxQueryPerformanceLevel:        Bool(true),
+				QueryThroughputMultiplier:       Bool(true),
+				StatementQueuedTimeoutInSeconds: Bool(true),
+				StatementTimeoutInSeconds:       Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" UNSET STATEMENT_QUEUED_TIMEOUT_IN_SECONDS, STATEMENT_TIMEOUT_IN_SECONDS, QUERY_THROUGHPUT_MULTIPLIER, MAX_QUERY_PERFORMANCE_LEVEL`)
+	})
+}
+
 func TestWarehouseDrop(t *testing.T) {
 	t.Run("only name", func(t *testing.T) {
 		opts := &DropWarehouseOptions{
@@ -301,49 +395,8 @@ func TestWarehouseToResourceConstraint(t *testing.T) {
 
 	valid := []test{
 		// Case insensitive.
-		{input: "standard_gen_1", want: WarehouseResourceConstraintStandardGen1},
-
-		// Supported Values.
-		{input: "STANDARD_GEN_1", want: WarehouseResourceConstraintStandardGen1},
-		{input: "STANDARD_GEN_2", want: WarehouseResourceConstraintStandardGen2},
-		{input: "MEMORY_1X", want: WarehouseResourceConstraintMemory1X},
-		{input: "MEMORY_1X_X86", want: WarehouseResourceConstraintMemory1Xx86},
-		{input: "MEMORY_16X", want: WarehouseResourceConstraintMemory16X},
-		{input: "MEMORY_16X_X86", want: WarehouseResourceConstraintMemory16Xx86},
-		{input: "MEMORY_64X", want: WarehouseResourceConstraintMemory64X},
-		{input: "MEMORY_64X_X86", want: WarehouseResourceConstraintMemory64Xx86},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToWarehouseResourceConstraint(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToWarehouseResourceConstraint(tc.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func TestWarehouseToResourceConstraintWithoutGeneration(t *testing.T) {
-	type test struct {
-		input string
-		want  WarehouseResourceConstraint
-	}
-
-	valid := []test{
-		// Case insensitive.
 		{input: "memory_1x", want: WarehouseResourceConstraintMemory1X},
+
 		// Supported Values.
 		{input: "MEMORY_1X", want: WarehouseResourceConstraintMemory1X},
 		{input: "MEMORY_1X_X86", want: WarehouseResourceConstraintMemory1Xx86},
@@ -362,7 +415,7 @@ func TestWarehouseToResourceConstraintWithoutGeneration(t *testing.T) {
 
 	for _, tc := range valid {
 		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToWarehouseResourceConstraintWithoutGeneration(tc.input)
+			got, err := ToWarehouseResourceConstraint(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})
@@ -370,7 +423,7 @@ func TestWarehouseToResourceConstraintWithoutGeneration(t *testing.T) {
 
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToWarehouseResourceConstraintWithoutGeneration(tc.input)
+			_, err := ToWarehouseResourceConstraint(tc.input)
 			require.Error(t, err)
 		})
 	}
@@ -452,6 +505,7 @@ func Test_Warehouse_ToWarehouseType(t *testing.T) {
 		// Supported Values
 		{input: "STANDARD", want: WarehouseTypeStandard},
 		{input: "SNOWPARK-OPTIMIZED", want: WarehouseTypeSnowparkOptimized},
+		{input: "ADAPTIVE", want: WarehouseTypeAdaptive},
 	}
 
 	invalid := []test{
@@ -475,6 +529,45 @@ func Test_Warehouse_ToWarehouseType(t *testing.T) {
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToWarehouseType(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_Warehouse_ToWarehouseTypeUserSettable(t *testing.T) {
+	type test struct {
+		input string
+		want  WarehouseType
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "standard", want: WarehouseTypeStandard},
+
+		// Supported Values
+		{input: "STANDARD", want: WarehouseTypeStandard},
+		{input: "SNOWPARK-OPTIMIZED", want: WarehouseTypeSnowparkOptimized},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+		// adaptive is not user-settable
+		{input: "ADAPTIVE"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToWarehouseTypeUserSettable(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToWarehouseTypeUserSettable(tc.input)
 			require.Error(t, err)
 		})
 	}
@@ -517,17 +610,61 @@ func Test_Warehouse_ToScalingPolicy(t *testing.T) {
 	}
 }
 
+func Test_Warehouse_ToMaxQueryPerformanceLevel(t *testing.T) {
+	type test struct {
+		input string
+		want  MaxQueryPerformanceLevel
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "medium", want: MaxQueryPerformanceLevelMedium},
+
+		// Supported Values
+		{input: "XSMALL", want: MaxQueryPerformanceLevelXSmall},
+		{input: "SMALL", want: MaxQueryPerformanceLevelSmall},
+		{input: "MEDIUM", want: MaxQueryPerformanceLevelMedium},
+		{input: "LARGE", want: MaxQueryPerformanceLevelLarge},
+		{input: "XLARGE", want: MaxQueryPerformanceLevelXLarge},
+		{input: "XXLARGE", want: MaxQueryPerformanceLevelXXLarge},
+		{input: "XXXLARGE", want: MaxQueryPerformanceLevelXXXLarge},
+		{input: "X4LARGE", want: MaxQueryPerformanceLevelX4Large},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+		{input: "X5LARGE"},
+		{input: "X6LARGE"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToMaxQueryPerformanceLevel(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToMaxQueryPerformanceLevel(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
 func Test_Warehouse_Convert(t *testing.T) {
 	correctRow := func() warehouseDBRow {
 		return warehouseDBRow{
-			Size:      string(WarehouseSizeXSmall),
+			Size:      sql.NullString{String: string(WarehouseSizeXSmall), Valid: true},
 			Available: "100",
 		}
 	}
 
 	t.Run("convert error: size invalid", func(t *testing.T) {
 		row := correctRow()
-		row.Size = "INCORRECT_SIZE"
+		row.Size = sql.NullString{String: "INCORRECT_SIZE", Valid: true}
 
 		wh, err := row.convert()
 
@@ -552,7 +689,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, wh)
-		assert.Equal(t, WarehouseSizeXSmall, wh.Size)
+		assert.Equal(t, Pointer(WarehouseSizeXSmall), wh.Size)
 		assert.InDelta(t, 100.0, wh.Available, testvars.FloatEpsilon)
 	})
 
@@ -565,6 +702,19 @@ func Test_Warehouse_Convert(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, wh)
 		assert.InDelta(t, 0.0, wh.Available, testvars.FloatEpsilon)
+	})
+
+	t.Run("convert correct: adaptive warehouse skips size parsing", func(t *testing.T) {
+		row := correctRow()
+		row.Type = string(WarehouseTypeAdaptive)
+		row.Size = sql.NullString{Valid: false}
+
+		wh, err := row.convert()
+
+		require.NoError(t, err)
+		require.NotNil(t, wh)
+		assert.Equal(t, WarehouseTypeAdaptive, wh.Type)
+		assert.Nil(t, wh.Size)
 	})
 }
 
@@ -579,8 +729,6 @@ func TestIsWarehouseResourceConstraintForSnowparkOptimized(t *testing.T) {
 	}
 
 	falseCases := []WarehouseResourceConstraint{
-		WarehouseResourceConstraintStandardGen1,
-		WarehouseResourceConstraintStandardGen2,
 		WarehouseResourceConstraint("UNKNOWN"),
 	}
 
@@ -593,35 +741,6 @@ func TestIsWarehouseResourceConstraintForSnowparkOptimized(t *testing.T) {
 	for _, c := range falseCases {
 		t.Run(string(c), func(t *testing.T) {
 			assert.False(t, IsWarehouseResourceConstraintForSnowparkOptimized(c))
-		})
-	}
-}
-
-func TestIsWarehouseResourceConstraintForStandard(t *testing.T) {
-	trueCases := []WarehouseResourceConstraint{
-		WarehouseResourceConstraintStandardGen1,
-		WarehouseResourceConstraintStandardGen2,
-	}
-
-	falseCases := []WarehouseResourceConstraint{
-		WarehouseResourceConstraintMemory1X,
-		WarehouseResourceConstraintMemory1Xx86,
-		WarehouseResourceConstraintMemory16X,
-		WarehouseResourceConstraintMemory16Xx86,
-		WarehouseResourceConstraintMemory64X,
-		WarehouseResourceConstraintMemory64Xx86,
-		WarehouseResourceConstraint("UNKNOWN"),
-	}
-
-	for _, c := range trueCases {
-		t.Run(string(c), func(t *testing.T) {
-			assert.True(t, IsWarehouseResourceConstraintForStandard(c))
-		})
-	}
-
-	for _, c := range falseCases {
-		t.Run(string(c), func(t *testing.T) {
-			assert.False(t, IsWarehouseResourceConstraintForStandard(c))
 		})
 	}
 }
@@ -654,72 +773,6 @@ func Test_Warehouse_ToWarehouseGeneration(t *testing.T) {
 	for _, in := range invalid {
 		t.Run(in, func(t *testing.T) {
 			_, err := ToWarehouseGeneration(in)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_Warehouse_WarehouseGenerationToWarehouseResourceConstraint(t *testing.T) {
-	type test struct {
-		input WarehouseGeneration
-		want  WarehouseResourceConstraint
-	}
-
-	valid := []test{
-		{input: "1", want: WarehouseResourceConstraintStandardGen1},
-		{input: "2", want: WarehouseResourceConstraintStandardGen2},
-	}
-
-	invalid := []string{
-		"",
-		"0",
-		"GEN_1",
-	}
-
-	for _, tc := range valid {
-		t.Run(string(tc.input), func(t *testing.T) {
-			got, err := tc.input.ToWarehouseResourceConstraint()
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, in := range invalid {
-		t.Run(in, func(t *testing.T) {
-			_, err := WarehouseGeneration(in).ToWarehouseResourceConstraint()
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_Warehouse_WarehouseResourceConstraintToWarehouseGeneration(t *testing.T) {
-	type test struct {
-		input WarehouseResourceConstraint
-		want  WarehouseGeneration
-	}
-
-	valid := []test{
-		{input: WarehouseResourceConstraintStandardGen1, want: WarehouseGenerationStandardGen1},
-		{input: WarehouseResourceConstraintStandardGen2, want: WarehouseGenerationStandardGen2},
-	}
-
-	invalid := []string{
-		"",
-		"0",
-		"1",
-	}
-
-	for _, tc := range valid {
-		t.Run(string(tc.input), func(t *testing.T) {
-			got, err := tc.input.ToWarehouseGeneration()
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, in := range invalid {
-		t.Run(in, func(t *testing.T) {
-			_, err := WarehouseResourceConstraint(in).ToWarehouseGeneration()
 			require.Error(t, err)
 		})
 	}

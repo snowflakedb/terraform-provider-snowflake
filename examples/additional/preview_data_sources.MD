@@ -3,6 +3,7 @@
 
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_authentication_policies](./docs/data-sources/authentication_policies)
+- [snowflake_catalog_integrations](./docs/data-sources/catalog_integrations)
 - [snowflake_cortex_search_services](./docs/data-sources/cortex_search_services)
 - [snowflake_current_account](./docs/data-sources/current_account)
 - [snowflake_current_role](./docs/data-sources/current_role)
@@ -11,6 +12,7 @@
 - [snowflake_dynamic_tables](./docs/data-sources/dynamic_tables)
 - [snowflake_external_functions](./docs/data-sources/external_functions)
 - [snowflake_external_tables](./docs/data-sources/external_tables)
+- [snowflake_external_volumes](./docs/data-sources/external_volumes)
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)

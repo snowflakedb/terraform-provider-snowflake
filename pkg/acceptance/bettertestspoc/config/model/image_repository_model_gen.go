@@ -15,6 +15,7 @@ type ImageRepositoryModel struct {
 	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	Name               tfconfig.Variable `json:"name,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
+	Encryption         tfconfig.Variable `json:"encryption,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
@@ -100,6 +101,11 @@ func (i *ImageRepositoryModel) WithComment(comment string) *ImageRepositoryModel
 	return i
 }
 
+func (i *ImageRepositoryModel) WithEncryption(encryption string) *ImageRepositoryModel {
+	i.Encryption = tfconfig.StringVariable(encryption)
+	return i
+}
+
 func (i *ImageRepositoryModel) WithFullyQualifiedName(fullyQualifiedName string) *ImageRepositoryModel {
 	i.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return i
@@ -126,6 +132,11 @@ func (i *ImageRepositoryModel) WithNameValue(value tfconfig.Variable) *ImageRepo
 
 func (i *ImageRepositoryModel) WithCommentValue(value tfconfig.Variable) *ImageRepositoryModel {
 	i.Comment = value
+	return i
+}
+
+func (i *ImageRepositoryModel) WithEncryptionValue(value tfconfig.Variable) *ImageRepositoryModel {
+	i.Encryption = value
 	return i
 }
 

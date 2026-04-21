@@ -268,7 +268,7 @@ func functionBaseSchema() map[string]schema.Schema {
 			ForceNew:         true,
 			ValidateDiagFunc: sdkValidation(sdk.ToReturnResultsBehavior),
 			DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToReturnResultsBehavior)), // TODO [SNOW-1348103]: IgnoreChangeToCurrentSnowflakeValueInShow("return_results_behavior") but not in show
-			Description:      fmt.Sprintf("Specifies the behavior of the function when returning results. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllAllowedReturnResultsBehaviors)),
+			Description:      fmt.Sprintf("Specifies the behavior of the function when returning results. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllReturnResultsBehaviors)),
 		},
 		"runtime_version": {
 			Type:     schema.TypeString,

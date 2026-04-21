@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -42,6 +43,7 @@ type GenerationPart[T ObjectNameProvider, M HasPreambleModel] struct {
 	name             string
 	filenameProvider func(T, M) string
 	templates        []*template.Template
+	condition        func(T) bool
 }
 
 func (g *GenerationPart[_, _]) GetName() string {
@@ -90,6 +92,14 @@ func (g *Generator[T, M]) WithGenerationPart(partName string, filenameProvider f
 	return g
 }
 
+// WithConditionalGenerationPart registers a generation part that is only executed for an object when condition returns true.
+func (g *Generator[T, M]) WithConditionalGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
+	part := NewGenerationPart(partName, filenameProvider, templates)
+	part.condition = condition
+	g.generationParts = append(g.generationParts, part)
+	return g
+}
+
 func (g *Generator[T, M]) WithAdditionalObjectsDebugLogs(objectLogsProvider func([]T)) *Generator[T, M] {
 	g.additionalObjectDebugLogProviders = append(g.additionalObjectDebugLogProviders, objectLogsProvider)
 	return g
@@ -114,6 +124,23 @@ func (g *Generator[T, M]) WithDescription(description string) *Generator[T, M] {
 func (g *Generator[T, M]) WithMakefileCommandPart(part string) *Generator[T, M] {
 	g.makefileCommandPart = part
 	return g
+}
+
+// effectivePartsForObject returns the generation parts that should be used for the given object.
+// It returns the intersection of non-nil, non-empty per-object allowed parts and the global filtered parts.
+func (g *Generator[T, M]) effectivePartsForObject(object T, globalParts []GenerationPart[T, M]) []GenerationPart[T, M] {
+	if settings, ok := any(object).(HasObjectGenerationSettings); ok {
+		if s := settings.getObjectGenerationSettings(); s != nil && len(s.AllowedGenerationParts) > 0 {
+			filtered := make([]GenerationPart[T, M], 0)
+			for _, p := range globalParts {
+				if slices.Contains(s.AllowedGenerationParts, p.name) {
+					filtered = append(filtered, p)
+				}
+			}
+			return filtered
+		}
+	}
+	return globalParts
 }
 
 func (g *Generator[T, M]) Run() error {
@@ -248,7 +275,11 @@ func (g *Generator[T, M]) generateAndSave(objects []T, parts []GenerationPart[T,
 	for _, s := range objects {
 		model := g.modelProvider(s, g.preamble)
 
-		for _, p := range parts {
+		for _, p := range g.effectivePartsForObject(s, parts) {
+			if p.condition != nil && !p.condition(s) {
+				log.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
+				continue
+			}
 			buffer := bytes.Buffer{}
 
 			if err := executeAllTemplates(model, &buffer, p.templates...); err != nil {
@@ -271,7 +302,11 @@ func (g *Generator[T, M]) generateAndPrint(objects []T, parts []GenerationPart[T
 		fmt.Println("===========================")
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
-		for _, p := range parts {
+		for _, p := range g.effectivePartsForObject(s, parts) {
+			if p.condition != nil && !p.condition(s) {
+				log.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
+				continue
+			}
 			if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, p.templates...); err != nil {
 				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
 				continue

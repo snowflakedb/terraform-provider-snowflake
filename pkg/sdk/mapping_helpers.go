@@ -3,7 +3,20 @@ package sdk
 import (
 	"database/sql"
 	"log"
+	"time"
 )
+
+func mapNullTimeToNonNullableField(timeField *time.Time, sqlValue sql.NullTime) {
+	if sqlValue.Valid {
+		*timeField = sqlValue.Time
+	}
+}
+
+func mapNullStringToNonNullableField(stringField *string, sqlValue sql.NullString) {
+	if sqlValue.Valid {
+		*stringField = sqlValue.String
+	}
+}
 
 func mapNullString(stringField **string, sqlValue sql.NullString) {
 	if sqlValue.Valid {
@@ -20,6 +33,13 @@ func mapNullStringWithMapping[T any](stringField **T, sqlValue sql.NullString, m
 		} else {
 			log.Printf("[WARN] Failed to map string value, err = %s", err)
 		}
+	}
+}
+
+func mapNullInt(intField **int, sqlValue sql.NullInt64) {
+	if sqlValue.Valid {
+		v := int(sqlValue.Int64)
+		*intField = &v
 	}
 }
 

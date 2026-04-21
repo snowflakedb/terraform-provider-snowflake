@@ -20,6 +20,15 @@ func (t *TagModel) WithAllowedValues(allowedValues ...string) *TagModel {
 	return t
 }
 
+func (t *TagModel) WithOrderedAllowedValues(values ...string) *TagModel {
+	orderedAllowedValuesVariables := make([]tfconfig.Variable, len(values))
+	for i, v := range values {
+		orderedAllowedValuesVariables[i] = tfconfig.StringVariable(v)
+	}
+	t.OrderedAllowedValues = tfconfig.ListVariable(orderedAllowedValuesVariables...)
+	return t
+}
+
 func (t *TagModel) WithMaskingPolicies(maskingPolicies ...sdk.SchemaObjectIdentifier) *TagModel {
 	maskingPoliciesStringVariables := make([]tfconfig.Variable, len(maskingPolicies))
 	for i, v := range maskingPolicies {
@@ -27,5 +36,23 @@ func (t *TagModel) WithMaskingPolicies(maskingPolicies ...sdk.SchemaObjectIdenti
 	}
 
 	t.MaskingPolicies = tfconfig.SetVariable(maskingPoliciesStringVariables...)
+	return t
+}
+
+func (t *TagModel) WithPropagateEnum(propagateEnum sdk.TagPropagation) *TagModel {
+	return t.WithPropagate(string(propagateEnum))
+}
+
+func (t *TagModel) WithOnConflictCustomValue(customValue string) *TagModel {
+	t.OnConflict = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"custom_value": tfconfig.StringVariable(customValue),
+	})
+	return t
+}
+
+func (t *TagModel) WithOnConflictAllowedValuesSequence() *TagModel {
+	t.OnConflict = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"allowed_values_sequence": tfconfig.BoolVariable(true),
+	})
 	return t
 }

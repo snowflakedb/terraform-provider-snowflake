@@ -13,7 +13,7 @@ import (
 // TODO(SNOW-1501905): Remove after complex non-list type overrides are handled
 func (l *ListingModel) WithManifest(locations []sdk.StageLocation) *ListingModel {
 	if len(locations) != 1 {
-		log.Fatalf("expected exactly one location for manifest, got %d", len(locations))
+		log.Panicf("expected exactly one location for manifest, got %d", len(locations))
 	}
 
 	return l.WithManifestValue(tfconfig.ListVariable(

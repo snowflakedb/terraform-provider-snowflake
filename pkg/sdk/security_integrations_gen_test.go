@@ -10,6 +10,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption]{"ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption", AllApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptions, ToApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ExternalOauthSecurityIntegrationTypeOption]{"ExternalOauthSecurityIntegrationTypeOption", AllExternalOauthSecurityIntegrationTypeOptions, ToExternalOauthSecurityIntegrationTypeOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption]{"ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption", AllExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptions, ToExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ExternalOauthSecurityIntegrationAnyRoleModeOption]{"ExternalOauthSecurityIntegrationAnyRoleModeOption", AllExternalOauthSecurityIntegrationAnyRoleModeOptions, ToExternalOauthSecurityIntegrationAnyRoleModeOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OauthSecurityIntegrationUseSecondaryRolesOption]{"OauthSecurityIntegrationUseSecondaryRolesOption", AllOauthSecurityIntegrationUseSecondaryRolesOptions, ToOauthSecurityIntegrationUseSecondaryRolesOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OauthSecurityIntegrationClientTypeOption]{"OauthSecurityIntegrationClientTypeOption", AllOauthSecurityIntegrationClientTypeOptions, ToOauthSecurityIntegrationClientTypeOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OauthSecurityIntegrationClientOption]{"OauthSecurityIntegrationClientOption", AllOauthSecurityIntegrationClientOptions, ToOauthSecurityIntegrationClientOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[Saml2SecurityIntegrationSaml2ProviderOption]{"Saml2SecurityIntegrationSaml2ProviderOption", AllSaml2SecurityIntegrationSaml2ProviderOptions, ToSaml2SecurityIntegrationSaml2ProviderOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ScimSecurityIntegrationScimClientOption]{"ScimSecurityIntegrationScimClientOption", AllScimSecurityIntegrationScimClientOptions, ToScimSecurityIntegrationScimClientOption})
+}
+
 func TestSecurityIntegrations_CreateApiAuthenticationWithClientCredentialsFlow(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	// Minimal valid CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions
@@ -52,7 +64,7 @@ func TestSecurityIntegrations_CreateApiAuthenticationWithClientCredentialsFlow(t
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.OauthTokenEndpoint = Pointer("foo")
-		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)
+		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
 		opts.OauthGrantClientCredentials = Pointer(true)
 		opts.OauthAccessTokenValidity = Pointer(42)
 		opts.OauthRefreshTokenValidity = Pointer(42)
@@ -107,7 +119,7 @@ func TestSecurityIntegrations_CreateApiAuthenticationWithAuthorizationCodeGrantF
 		opts.IfNotExists = Bool(true)
 		opts.OauthAuthorizationEndpoint = Pointer("foo")
 		opts.OauthTokenEndpoint = Pointer("foo")
-		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)
+		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
 		opts.OauthGrantAuthorizationCode = Pointer(true)
 		opts.OauthAccessTokenValidity = Pointer(42)
 		opts.OauthRefreshTokenValidity = Pointer(42)
@@ -163,7 +175,7 @@ func TestSecurityIntegrations_CreateApiAuthenticationWithJwtBearerFlow(t *testin
 		opts.IfNotExists = Bool(true)
 		opts.OauthAuthorizationEndpoint = Pointer("foo")
 		opts.OauthTokenEndpoint = Pointer("foo")
-		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)
+		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
 		opts.OauthGrantJwtBearer = Pointer(true)
 		opts.OauthAccessTokenValidity = Pointer(42)
 		opts.OauthRefreshTokenValidity = Pointer(42)
@@ -182,10 +194,10 @@ func TestSecurityIntegrations_CreateExternalOauth(t *testing.T) {
 			// adjusted manually
 			name:                               id,
 			Enabled:                            false,
-			ExternalOauthType:                  ExternalOauthSecurityIntegrationTypeCustom,
+			ExternalOauthType:                  ExternalOauthSecurityIntegrationTypeOptionCustom,
 			ExternalOauthIssuer:                "foo",
 			ExternalOauthTokenUserMappingClaim: []TokenUserMappingClaim{{Claim: "foo"}},
-			ExternalOauthSnowflakeUserMappingAttribute: ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress,
+			ExternalOauthSnowflakeUserMappingAttribute: ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress,
 		}
 	}
 
@@ -252,7 +264,7 @@ func TestSecurityIntegrations_CreateExternalOauth(t *testing.T) {
 		opts.ExternalOauthRsaPublicKey = Pointer("foo")
 		opts.ExternalOauthRsaPublicKey2 = Pointer("foo")
 		opts.ExternalOauthAudienceList = &AudienceList{AudienceList: []AudienceListItem{{Item: "foo"}}}
-		opts.ExternalOauthAnyRoleMode = Pointer(ExternalOauthSecurityIntegrationAnyRoleModeDisable)
+		opts.ExternalOauthAnyRoleMode = Pointer(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)
 		opts.ExternalOauthScopeDelimiter = Pointer(" ")
 		opts.ExternalOauthScopeMappingAttribute = Pointer("foo")
 		opts.Comment = Pointer("foo")
@@ -270,7 +282,7 @@ func TestSecurityIntegrations_CreateOauthForPartnerApplications(t *testing.T) {
 		return &CreateOauthForPartnerApplicationsSecurityIntegrationOptions{
 			// adjusted manually
 			name:        id,
-			OauthClient: OauthSecurityIntegrationClientTableauDesktop,
+			OauthClient: OauthSecurityIntegrationClientOptionTableauDesktop,
 		}
 	}
 
@@ -302,12 +314,12 @@ func TestSecurityIntegrations_CreateOauthForPartnerApplications(t *testing.T) {
 		opts := defaultOpts()
 		blockedRoleID := randomAccountObjectIdentifier()
 		opts.IfNotExists = Bool(true)
-		opts.OauthClient = OauthSecurityIntegrationClientLooker
+		opts.OauthClient = OauthSecurityIntegrationClientOptionLooker
 		opts.OauthRedirectUri = Pointer("uri")
 		opts.Enabled = Pointer(true)
 		opts.OauthIssueRefreshTokens = Pointer(true)
 		opts.OauthRefreshTokenValidity = Pointer(42)
-		opts.OauthUseSecondaryRoles = Pointer(OauthSecurityIntegrationUseSecondaryRolesNone)
+		opts.OauthUseSecondaryRoles = Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone)
 		opts.BlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleID}}
 		opts.Comment = Pointer("a")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = OAUTH OAUTH_CLIENT = LOOKER OAUTH_REDIRECT_URI = 'uri' ENABLED = true OAUTH_ISSUE_REFRESH_TOKENS = true"+
@@ -322,7 +334,7 @@ func TestSecurityIntegrations_CreateOauthForCustomClients(t *testing.T) {
 		return &CreateOauthForCustomClientsSecurityIntegrationOptions{
 			// adjusted manually
 			name:             id,
-			OauthClientType:  OauthSecurityIntegrationClientTypePublic,
+			OauthClientType:  OauthSecurityIntegrationClientTypeOptionPublic,
 			OauthRedirectUri: "uri",
 		}
 	}
@@ -355,11 +367,11 @@ func TestSecurityIntegrations_CreateOauthForCustomClients(t *testing.T) {
 		opts := defaultOpts()
 		roleID, role2ID, npID := randomAccountObjectIdentifier(), randomAccountObjectIdentifier(), randomAccountObjectIdentifier()
 		opts.IfNotExists = Bool(true)
-		opts.OauthClientType = OauthSecurityIntegrationClientTypePublic
+		opts.OauthClientType = OauthSecurityIntegrationClientTypeOptionPublic
 		opts.Enabled = Pointer(true)
 		opts.OauthAllowNonTlsRedirectUri = Pointer(true)
 		opts.OauthEnforcePkce = Pointer(true)
-		opts.OauthUseSecondaryRoles = Pointer(OauthSecurityIntegrationUseSecondaryRolesNone)
+		opts.OauthUseSecondaryRoles = Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone)
 		opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{PreAuthorizedRolesList: []AccountObjectIdentifier{roleID}}
 		opts.BlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{role2ID}}
 		opts.OauthIssueRefreshTokens = Pointer(true)
@@ -470,7 +482,7 @@ func TestSecurityIntegrations_CreateScim(t *testing.T) {
 	// validation added manually
 	t.Run("validation: conflicting SyncPassword for Azure ScimClient", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ScimClient = ScimSecurityIntegrationScimClientAzure
+		opts.ScimClient = ScimSecurityIntegrationScimClientOptionAzure
 		opts.SyncPassword = Pointer(true)
 		assertOptsInvalidJoinedErrors(t, opts, NewError("SyncPassword is not supported for Azure scim client"))
 	})
@@ -544,7 +556,7 @@ func TestSecurityIntegrations_AlterApiAuthenticationWithClientCredentialsFlow(t 
 		opts.Set = &ApiAuthenticationWithClientCredentialsFlowIntegrationSet{
 			Enabled:                     Pointer(true),
 			OauthTokenEndpoint:          Pointer("foo"),
-			OauthClientAuthMethod:       Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost),
+			OauthClientAuthMethod:       Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
 			OauthClientId:               Pointer("foo"),
 			OauthClientSecret:           Pointer("foo"),
 			OauthGrantClientCredentials: Pointer(true),
@@ -642,7 +654,7 @@ func TestSecurityIntegrations_AlterApiAuthenticationWithAuthorizationCodeGrantFl
 		opts.Set = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSet{
 			Enabled:                     Pointer(true),
 			OauthTokenEndpoint:          Pointer("foo"),
-			OauthClientAuthMethod:       Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost),
+			OauthClientAuthMethod:       Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
 			OauthClientId:               Pointer("foo"),
 			OauthClientSecret:           Pointer("foo"),
 			OauthGrantAuthorizationCode: Pointer(true),
@@ -740,7 +752,7 @@ func TestSecurityIntegrations_AlterApiAuthenticationWithJwtBearerFlow(t *testing
 		opts.Set = &ApiAuthenticationWithJwtBearerFlowIntegrationSet{
 			Enabled:                   Pointer(true),
 			OauthTokenEndpoint:        Pointer("foo"),
-			OauthClientAuthMethod:     Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost),
+			OauthClientAuthMethod:     Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
 			OauthClientId:             Pointer("foo"),
 			OauthClientSecret:         Pointer("foo"),
 			OauthGrantJwtBearer:       Pointer(true),
@@ -877,15 +889,15 @@ func TestSecurityIntegrations_AlterExternalOauth(t *testing.T) {
 		roleID := randomAccountObjectIdentifier()
 		opts.Set = &ExternalOauthIntegrationSet{
 			Enabled:                            Pointer(true),
-			ExternalOauthType:                  Pointer(ExternalOauthSecurityIntegrationTypeCustom),
+			ExternalOauthType:                  Pointer(ExternalOauthSecurityIntegrationTypeOptionCustom),
 			ExternalOauthIssuer:                Pointer("foo"),
 			ExternalOauthTokenUserMappingClaim: []TokenUserMappingClaim{{Claim: "foo"}},
-			ExternalOauthSnowflakeUserMappingAttribute: Pointer(ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress),
+			ExternalOauthSnowflakeUserMappingAttribute: Pointer(ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
 			ExternalOauthAllowedRolesList:              &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{roleID}},
 			ExternalOauthRsaPublicKey:                  Pointer("foo"),
 			ExternalOauthRsaPublicKey2:                 Pointer("foo"),
 			ExternalOauthAudienceList:                  &AudienceList{AudienceList: []AudienceListItem{{Item: "foo"}}},
-			ExternalOauthAnyRoleMode:                   Pointer(ExternalOauthSecurityIntegrationAnyRoleModeDisable),
+			ExternalOauthAnyRoleMode:                   Pointer(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable),
 			ExternalOauthScopeDelimiter:                Pointer(" "),
 			ExternalOauthScopeMappingAttribute:         Pointer("foo"),
 			Comment:                                    Pointer(StringAllowEmpty{Value: "foo"}),
@@ -1004,7 +1016,7 @@ func TestSecurityIntegrations_AlterOauthForPartnerApplications(t *testing.T) {
 			OauthRedirectUri:          Pointer("uri"),
 			OauthIssueRefreshTokens:   Pointer(true),
 			OauthRefreshTokenValidity: Pointer(42),
-			OauthUseSecondaryRoles:    Pointer(OauthSecurityIntegrationUseSecondaryRolesNone),
+			OauthUseSecondaryRoles:    Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone),
 			BlockedRolesList:          &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{roleID}},
 			Comment:                   Pointer(StringAllowEmpty{""}),
 		}
@@ -1108,7 +1120,7 @@ func TestSecurityIntegrations_AlterOauthForCustomClients(t *testing.T) {
 			OauthRedirectUri:            Pointer("uri"),
 			OauthAllowNonTlsRedirectUri: Pointer(true),
 			OauthEnforcePkce:            Pointer(true),
-			OauthUseSecondaryRoles:      Pointer(OauthSecurityIntegrationUseSecondaryRolesNone),
+			OauthUseSecondaryRoles:      Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone),
 			PreAuthorizedRolesList:      &PreAuthorizedRolesList{PreAuthorizedRolesList: []AccountObjectIdentifier{roleID}},
 			BlockedRolesList:            &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{role2ID}},
 			OauthIssueRefreshTokens:     Pointer(true),
@@ -1211,7 +1223,7 @@ func TestSecurityIntegrations_AlterSaml2(t *testing.T) {
 			Enabled:                        Pointer(true),
 			Saml2Issuer:                    Pointer("issuer"),
 			Saml2SsoUrl:                    Pointer("url"),
-			Saml2Provider:                  Pointer(Saml2SecurityIntegrationSaml2ProviderCustom),
+			Saml2Provider:                  Pointer(Saml2SecurityIntegrationSaml2ProviderOptionCustom),
 			Saml2X509Cert:                  Pointer("cert"),
 			AllowedUserDomains:             []UserDomain{{Domain: "domain"}},
 			AllowedEmailPatterns:           []EmailPattern{{Pattern: "pattern"}},

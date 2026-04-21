@@ -37,11 +37,11 @@ var ShowSessionPolicySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"options": {
+	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"owner_role_type": {
+	"options": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -58,8 +58,8 @@ func SessionPolicyToSchema(sessionPolicy *sdk.SessionPolicy) map[string]any {
 	sessionPolicySchema["kind"] = sessionPolicy.Kind
 	sessionPolicySchema["owner"] = sessionPolicy.Owner
 	sessionPolicySchema["comment"] = sessionPolicy.Comment
-	sessionPolicySchema["options"] = sessionPolicy.Options
 	sessionPolicySchema["owner_role_type"] = sessionPolicy.OwnerRoleType
+	sessionPolicySchema["options"] = sessionPolicy.Options
 	return sessionPolicySchema
 }
 

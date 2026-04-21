@@ -6,8 +6,9 @@ type dbStruct struct {
 }
 
 type dbField struct {
-	name string
-	kind string
+	dbColumn  string
+	kind      string
+	fieldName string
 }
 
 func DbStruct(name string) *dbStruct {
@@ -17,10 +18,20 @@ func DbStruct(name string) *dbStruct {
 	}
 }
 
-func (v *dbStruct) Field(dbName string, kind string) *dbStruct {
+func (v *dbStruct) Field(dbColumn string, kind string) *dbStruct {
 	v.fields = append(v.fields, dbField{
-		name: dbName,
-		kind: kind,
+		dbColumn:  dbColumn,
+		kind:      kind,
+		fieldName: sqlToFieldName(dbColumn, true),
+	})
+	return v
+}
+
+func (v *dbStruct) FieldWithName(dbColumn string, kind string, name string) *dbStruct {
+	v.fields = append(v.fields, dbField{
+		dbColumn:  dbColumn,
+		kind:      kind,
+		fieldName: name,
 	})
 	return v
 }
@@ -60,7 +71,7 @@ func (v *dbStruct) OptionalNumber(dbName string) *dbStruct {
 func (v *dbStruct) IntoField() *Field {
 	f := NewField(v.name, v.name, nil, nil)
 	for _, field := range v.fields {
-		f.withField(NewField(sqlToFieldName(field.name, true), field.kind, Tags().DB(field.name), nil))
+		f.withField(NewField(field.fieldName, field.kind, Tags().DB(field.dbColumn), nil))
 	}
 	return f
 }

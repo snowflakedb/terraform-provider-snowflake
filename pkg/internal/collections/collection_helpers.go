@@ -66,6 +66,20 @@ func JoinStrings[S ~string](stringCollection []S, separator string) string {
 	return strings.Join(mappedCollection, separator)
 }
 
+// CommonPrefixLastIndex returns the index of the last element in the common prefix
+// of two slices, comparing elements using the provided cmp function.
+// Returns -1 if there is no common prefix (empty slices or first elements differ).
+func CommonPrefixLastIndex[T any](a []T, b []T, cmp func(T, T) bool) int {
+	result := -1
+	for i := 0; i < min(len(a), len(b)); i++ {
+		if !cmp(a[i], b[i]) {
+			break
+		}
+		result = i
+	}
+	return result
+}
+
 func GroupByProperty[T any, K comparable](items []T, getProperty func(T) K) map[K][]T {
 	grouped := make(map[K][]T)
 

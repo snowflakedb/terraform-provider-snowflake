@@ -67,6 +67,23 @@ func (t *TagResourceAssert) HasMaskingPolicies(expected ...string) *TagResourceA
 	return t
 }
 
+func (t *TagResourceAssert) HasNoAllowedValues(expected bool) *TagResourceAssert {
+	t.BoolValueSet("no_allowed_values", expected)
+	return t
+}
+
+// typed assert for "on_conflict" (type: List, subtype: Map) is not currently supported
+
+func (t *TagResourceAssert) HasOrderedAllowedValues(expected ...string) *TagResourceAssert {
+	t.ListContainsExactlyStringValuesInOrder("ordered_allowed_values", expected...)
+	return t
+}
+
+func (t *TagResourceAssert) HasPropagate(expected string) *TagResourceAssert {
+	t.StringValueSet("propagate", expected)
+	return t
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -93,6 +110,16 @@ func (t *TagResourceAssert) HasCommentString(expected string) *TagResourceAssert
 
 func (t *TagResourceAssert) HasFullyQualifiedNameString(expected string) *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	return t
+}
+
+func (t *TagResourceAssert) HasNoAllowedValuesString(expected string) *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("no_allowed_values", expected))
+	return t
+}
+
+func (t *TagResourceAssert) HasPropagateString(expected string) *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("propagate", expected))
 	return t
 }
 
@@ -125,6 +152,16 @@ func (t *TagResourceAssert) HasNoFullyQualifiedName() *TagResourceAssert {
 	return t
 }
 
+func (t *TagResourceAssert) HasNoNoAllowedValues() *TagResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("no_allowed_values"))
+	return t
+}
+
+func (t *TagResourceAssert) HasNoPropagate() *TagResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("propagate"))
+	return t
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -146,6 +183,26 @@ func (t *TagResourceAssert) HasFullyQualifiedNameEmpty() *TagResourceAssert {
 
 func (t *TagResourceAssert) HasMaskingPoliciesEmpty() *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("masking_policies.#", "0"))
+	return t
+}
+
+func (t *TagResourceAssert) HasNoAllowedValuesEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("no_allowed_values", ""))
+	return t
+}
+
+func (t *TagResourceAssert) HasOnConflictEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("on_conflict.#", "0"))
+	return t
+}
+
+func (t *TagResourceAssert) HasOrderedAllowedValuesEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("ordered_allowed_values.#", "0"))
+	return t
+}
+
+func (t *TagResourceAssert) HasPropagateEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("propagate", ""))
 	return t
 }
 
@@ -175,5 +232,15 @@ func (t *TagResourceAssert) HasCommentNotEmpty() *TagResourceAssert {
 
 func (t *TagResourceAssert) HasFullyQualifiedNameNotEmpty() *TagResourceAssert {
 	t.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return t
+}
+
+func (t *TagResourceAssert) HasNoAllowedValuesNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("no_allowed_values"))
+	return t
+}
+
+func (t *TagResourceAssert) HasPropagateNotEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValuePresent("propagate"))
 	return t
 }

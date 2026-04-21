@@ -47,7 +47,7 @@ func ReadSystemGetSnowflakePlatformInfo(ctx context.Context, d *schema.ResourceD
 	sel := snowflake.SystemGetSnowflakePlatformInfoQuery()
 	row := snowflake.QueryRow(db, sel)
 
-	acc, err := client.ContextFunctions.CurrentSessionDetails(context.Background())
+	acc, err := client.ContextFunctions.CurrentSessionDetails(ctx)
 	if err != nil {
 		// If not found, mark resource to be removed from state file during apply or refresh
 		d.SetId("")

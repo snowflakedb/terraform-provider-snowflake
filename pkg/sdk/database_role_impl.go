@@ -77,6 +77,10 @@ func (v *databaseRoles) Revoke(ctx context.Context, request *RevokeDatabaseRoleR
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *databaseRoles) RevokeSafely(ctx context.Context, request *RevokeDatabaseRoleRequest) error {
+	return SafeRevokePrivileges(func() error { return v.Revoke(ctx, request) })
+}
+
 func (v *databaseRoles) GrantToShare(ctx context.Context, request *GrantDatabaseRoleToShareRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -85,6 +89,10 @@ func (v *databaseRoles) GrantToShare(ctx context.Context, request *GrantDatabase
 func (v *databaseRoles) RevokeFromShare(ctx context.Context, request *RevokeDatabaseRoleFromShareRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *databaseRoles) RevokeFromShareSafely(ctx context.Context, request *RevokeDatabaseRoleFromShareRequest) error {
+	return SafeRevokePrivileges(func() error { return v.RevokeFromShare(ctx, request) })
 }
 
 func (s *CreateDatabaseRoleRequest) toOpts() *createDatabaseRoleOptions {

@@ -167,7 +167,7 @@ func ReadCortexSearchServices(ctx context.Context, d *schema.ResourceData, meta 
 		request.WithLimit(limit)
 	}
 
-	dts, err := client.CortexSearchServices.Show(context.Background(), request)
+	dts, err := client.CortexSearchServices.Show(ctx, request)
 	if err != nil {
 		log.Printf("[DEBUG] snowflake_cortex_search_services.go: %v", err)
 		d.SetId("")

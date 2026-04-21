@@ -84,6 +84,15 @@ func setOptionalFromStringPtr(d *schema.ResourceData, key string, ptr *string) e
 	return nil
 }
 
+func setOptionalFromPtr[T any](d *schema.ResourceData, key string, ptr *T) error {
+	if ptr != nil {
+		if err := d.Set(key, *ptr); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // TODO [SNOW-1348103]: return error if nil
 func setRequiredFromStringPtr(d *schema.ResourceData, key string, ptr *string) error {
 	if ptr != nil {
@@ -92,4 +101,32 @@ func setRequiredFromStringPtr(d *schema.ResourceData, key string, ptr *string) e
 		}
 	}
 	return nil
+}
+
+func optionalStringOutputMapping[T ~string](value *T) (any, string) {
+	if value != nil {
+		return *value, string(*value)
+	}
+	return nil, ""
+}
+
+func optionalBooleanStringOutputMapping(value *bool) (any, string) {
+	if value != nil {
+		return *value, booleanStringFromBool(*value)
+	}
+	return nil, BooleanDefault
+}
+
+func optionalIntOutputMapping[T ~int](value *T) any {
+	if value != nil {
+		return int(*value)
+	}
+	return nil
+}
+
+func optionalIntOutputMappingIntDefault[T ~int](value *T) any {
+	if value != nil {
+		return int(*value)
+	}
+	return IntDefault
 }

@@ -39,7 +39,7 @@ To create a new generator:
     - `main/main.go` file
     - `templates` directory
     - `model.go` containing the model definition and conversion
-    - `templates.go` containing the templates definitions and helper functions 
+    - `templates.go` containing the templates definitions and helper functions
 2. Create `generate.go` file on the same level as the `gen` package above with the following content only (in addition to the package name) `//go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS`.
 3. In the `gen/main/main.go` create and run a new generator. This means invoking the `genhelpers.NewGenerator` and:
    - providing the name and version for the generator
@@ -87,6 +87,7 @@ Functional improvements:
 - add a generic terraform schema reader, to allow later generation from schemas
 - handle the missing types (TODOs in [struct_details_extractor_test.go](./struct_details_extractor_test.go))
 - add support for custom command line flags
+- Currently, there is no friendly error handling in the created generators. Some of them, use panic to prevent obvious configuration mistakes. It would be better to handle errors programmatically (e.g. do not fail on the first one but collect errors from all object declarations and present nicely to the user invoking).
 
 Implementation improvements:
 - add acceptance test for a `testStruct` (the one from [struct_details_extractor_test.go](./struct_details_extractor_test.go)) for the whole generation flow

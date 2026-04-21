@@ -42,20 +42,14 @@ var applicationRolesDef = g.NewInterface(
 			g.KeywordOptions().SQL("FROM"),
 		).
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-application-roles",
-	g.DbStruct("applicationRoleDbRow").
-		Field("created_on", "time.Time").
-		Field("name", "string").
-		Field("owner", "string").
-		Field("comment", "string").
-		Field("owner_role_type", "string"),
-	g.PlainStruct("ApplicationRole").
-		Field("CreatedOn", "time.Time").
-		Field("Name", "string").
-		Field("Owner", "string").
-		Field("Comment", "string").
-		Field("OwnerRoleType", "string"),
+	g.StructPair("applicationRoleDbRow", "ApplicationRole").
+		Time("created_on").
+		Text("name").
+		Text("owner").
+		Text("comment").
+		Text("owner_role_type"),
 	g.NewQueryStruct("ShowApplicationRoles").
 		Show().
 		SQL("APPLICATION ROLES IN APPLICATION").

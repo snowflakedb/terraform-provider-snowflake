@@ -43,6 +43,7 @@ var (
 	functionsAndProceduresProviderFactory            = providerFactoryUsingCache("FunctionsAndProcedures")
 	viewsProviderFactory                             = providerFactoryUsingCache("Views")
 	tagsProviderFactory                              = providerFactoryUsingCache("Tags")
+	tagsWithExperimentFlagProviderFactory            = providerFactoryUsingCache("TagsWithExperimentFlag")
 	servicesProviderFactory                          = providerFactoryUsingCache("Services")
 	userPasswordPoliciesProviderFactory              = providerFactoryUsingCache("UserPasswordPolicies")
 	userAuthenticationPoliciesProviderFactory        = providerFactoryUsingCache("UserAuthenticationPolicies")
@@ -52,6 +53,9 @@ var (
 	grantsImportValidationAndStrictProviderFactory   = providerFactoryUsingCache("GrantsImportValidationAndStrictProvider")
 	userEnableDefaultWorkloadIdentityProviderFactory = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
 	s3StageProviderFactory                           = providerFactoryUsingCache("StageExternalS3")
+	grantsSafeDestroyProviderFactory                 = providerFactoryUsingCache("GrantsSafeDestroy")
+	tagAssociationSafeDestroyProviderFactory         = providerFactoryUsingCache("TagAssociationSafeDestroy")
+	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate

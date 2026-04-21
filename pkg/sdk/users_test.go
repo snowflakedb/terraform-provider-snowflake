@@ -393,6 +393,17 @@ func TestUserAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET AUTHENTICATION POLICY %s", id.FullyQualifiedName(), authenticationPolicy.FullyQualifiedName())
 	})
 
+	t.Run("with setting a session policy", func(t *testing.T) {
+		sessionPolicy := randomSchemaObjectIdentifier()
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				SessionPolicy: &sessionPolicy,
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET SESSION POLICY %s", id.FullyQualifiedName(), sessionPolicy.FullyQualifiedName())
+	})
+
 	t.Run("with setting tags", func(t *testing.T) {
 		tagId1 := randomSchemaObjectIdentifier()
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())

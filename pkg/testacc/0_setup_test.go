@@ -14,7 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 const AcceptanceTestPrefix = "acc_test_"
@@ -139,6 +139,9 @@ func (atc *acceptanceTestContext) initialize() error {
 
 		if errs := errors.Join(
 			testClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+			testClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
+			secondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+			secondaryTestClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
 			testClient().EnsureEssentialRolesExist(ctx),
 
 			secondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),

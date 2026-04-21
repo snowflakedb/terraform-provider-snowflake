@@ -78,24 +78,16 @@ var eventTablesDef = g.NewInterface(
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-event-tables",
-	g.DbStruct("eventTableRow").
-		Field("created_on", "time.Time").
-		Field("name", "string").
-		Field("database_name", "string").
-		Field("schema_name", "string").
-		Field("owner", "sql.NullString").
-		Field("comment", "sql.NullString").
-		Field("owner_role_type", "sql.NullString"),
-	g.PlainStruct("EventTable").
-		Field("CreatedOn", "time.Time").
-		Field("Name", "string").
-		Field("DatabaseName", "string").
-		Field("SchemaName", "string").
-		Field("Owner", "string").
-		Field("Comment", "string").
-		Field("OwnerRoleType", "string"),
+	g.StructPair("eventTableRow", "EventTable").
+		Time("created_on").
+		Text("name").
+		Text("database_name").
+		Text("schema_name").
+		OptionalText("owner", g.WithRequiredInPlain()).
+		OptionalText("comment", g.WithRequiredInPlain()).
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowEventTables").
 		Show().
 		Terse().
@@ -107,17 +99,13 @@ var eventTablesDef = g.NewInterface(
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-event-table",
-	g.DbStruct("eventTableDetailsRow").
-		Field("name", "string").
-		Field("kind", "string").
-		Field("comment", "string"),
-	g.PlainStruct("EventTableDetails").
-		Field("Name", "string").
-		Field("Kind", "string").
-		Field("Comment", "string"),
+	g.StructPair("eventTableDetailsRow", "EventTableDetails").
+		Text("name").
+		Text("kind").
+		Text("comment"),
 	g.NewQueryStruct("DescribeEventTable").
 		Describe().
 		SQL("EVENT TABLE").
