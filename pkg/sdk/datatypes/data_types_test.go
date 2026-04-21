@@ -1323,6 +1323,11 @@ func Test_AreTheSame(t *testing.T) {
 		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
 		{d1: "TABLE(A NUMBER, B NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: false},
 		{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(24,2), B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR(100))", d2: "TABLE(A NUMBER(24,2), B VARCHAR(200))", expectedOutcome: false},
 	}
 
 	for _, tc := range testCases {
@@ -1412,6 +1417,11 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: true},
 		{d1: "TABLE(B CHAR)", d2: "TABLE()", expectedOutcome: true},
 		{d1: "TABLE(A NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(24,2), B VARCHAR)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR(100))", d2: "TABLE(A NUMBER(24,2), B VARCHAR(200))", expectedOutcome: true},
 	}
 
 	for _, tc := range testCases {
