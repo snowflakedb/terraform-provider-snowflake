@@ -117,6 +117,7 @@ const (
 	UserPasswordPolicyAttachment                           resource = "snowflake_user_password_policy_attachment"
 	UserPublicKeys                                         resource = "snowflake_user_public_keys"
 	UserProgrammaticAccessToken                            resource = "snowflake_user_programmatic_access_token"
+	UserSessionPolicyAttachment                            resource = "snowflake_user_session_policy_attachment"
 	View                                                   resource = "snowflake_view"
 	Warehouse                                              resource = "snowflake_warehouse"
 	WarehouseAdaptive                                      resource = "snowflake_warehouse_adaptive"

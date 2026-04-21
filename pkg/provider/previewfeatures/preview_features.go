@@ -112,6 +112,7 @@ const (
 	UserPublicKeysResource                        feature = "snowflake_user_public_keys_resource"
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
 	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
+	UserSessionPolicyAttachmentResource           feature = "snowflake_user_session_policy_attachment_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
 	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
 )
@@ -205,8 +206,9 @@ var allPreviewFeatures = []feature{
 	TableResource,
 	TablesDatasource,
 	UserAuthenticationPolicyAttachmentResource,
-	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+	UserPublicKeysResource,
+	UserSessionPolicyAttachmentResource,
 	WarehouseAdaptiveResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
