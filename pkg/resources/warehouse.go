@@ -130,7 +130,8 @@ var warehouseSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseGeneration),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseGeneration), IgnoreChangeToCurrentSnowflakeValueInShow("generation")),
 		Description: joinWithSpace(fmt.Sprintf("Specifies the generation for the warehouse. Only available for standard warehouses. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseGenerations)),
-			"Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration."),
+			"Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration.",
+			"Note: with the 2026_03 bundle ([BCR-2250](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03/bcr-2250)), newly created standard warehouses without an explicit `generation` default to Gen2 in supported regions. Existing warehouses keep their current generation. Set `generation = \"1\"` explicitly to pin a warehouse to Gen1."),
 		ConflictsWith: []string{"resource_constraint"},
 	},
 	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {

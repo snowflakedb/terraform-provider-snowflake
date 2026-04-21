@@ -148,8 +148,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
-						HasEnableQueryAcceleration(false).
-						HasQueryAccelerationMaxScaleFactor(8),
+						HasEnableQueryAcceleration(true).
+						HasQueryAccelerationMaxScaleFactor(2),
 					objectparametersassert.WarehouseParameters(t, warehouseId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -175,8 +175,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasAutoResumeString("true").
 						HasResourceMonitorString("").
 						HasCommentString(comment).
-						HasEnableQueryAccelerationString("false").
-						HasQueryAccelerationMaxScaleFactorString("8").
+						HasEnableQueryAccelerationString("true").
+						HasQueryAccelerationMaxScaleFactorString("2").
 						HasNoMaxConcurrencyLevel().
 						HasNoStatementQueuedTimeoutInSeconds().
 						HasNoStatementTimeoutInSeconds(),
@@ -192,8 +192,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
-						HasEnableQueryAcceleration(false).
-						HasQueryAccelerationMaxScaleFactor(8),
+						HasEnableQueryAcceleration(true).
+						HasQueryAccelerationMaxScaleFactor(2),
 					objectparametersassert.WarehouseParameters(t, warehouseId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
