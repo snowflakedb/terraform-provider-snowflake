@@ -474,7 +474,7 @@ func TestHybridTables_Show(t *testing.T) {
 		opts := defaultOpts()
 		opts.Terse = Bool(true)
 		opts.Like = &Like{Pattern: String("some_pattern")}
-		opts.In = &In{Schema: NewDatabaseObjectIdentifier("db", "schema")}
+		opts.In = &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("db", "schema")}}
 		opts.StartsWith = String("prefix")
 		opts.Limit = &LimitFrom{Rows: Int(10)}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE HYBRID TABLES LIKE 'some_pattern' IN SCHEMA "db"."schema" STARTS WITH 'prefix' LIMIT 10`)
@@ -482,13 +482,13 @@ func TestHybridTables_Show(t *testing.T) {
 
 	t.Run("show with in database", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.In = &In{Database: NewAccountObjectIdentifier("test_db")}
+		opts.In = &TableIn{In: In{Database: NewAccountObjectIdentifier("test_db")}}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES IN DATABASE "test_db"`)
 	})
 
 	t.Run("show with in schema", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.In = &In{Schema: NewDatabaseObjectIdentifier("test_db", "test_schema")}
+		opts.In = &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("test_db", "test_schema")}}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES IN SCHEMA "test_db"."test_schema"`)
 	})
 
@@ -644,7 +644,7 @@ func TestHybridTables_ShowIndexes(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := &ShowIndexesHybridTableOptions{
 			Like:       &Like{Pattern: String("idx_pattern")},
-			In:         &In{Schema: NewDatabaseObjectIdentifier("db", "schema")},
+			In:         &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("db", "schema")}},
 			StartsWith: String("idx_"),
 			Limit:      &LimitFrom{Rows: Int(10)},
 		}
@@ -653,7 +653,7 @@ func TestHybridTables_ShowIndexes(t *testing.T) {
 
 	t.Run("in database", func(t *testing.T) {
 		opts := &ShowIndexesHybridTableOptions{
-			In: &In{Database: NewAccountObjectIdentifier("test_db")},
+			In: &TableIn{In: In{Database: NewAccountObjectIdentifier("test_db")}},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES IN DATABASE "test_db"`)
 	})
