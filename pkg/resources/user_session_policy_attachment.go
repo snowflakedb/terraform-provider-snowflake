@@ -25,7 +25,6 @@ var userSessionPolicyAttachmentSchema = map[string]*schema.Schema{
 	"session_policy_name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      "Fully qualified name of the session policy.",
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 	},
@@ -36,23 +35,43 @@ func UserSessionPolicyAttachment() *schema.Resource {
 		Description:   "Specifies the session policy to use for a certain user.",
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.UserSessionPolicyAttachmentResource), TrackingCreateWrapper(resources.UserSessionPolicyAttachment, CreateUserSessionPolicyAttachment)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.UserSessionPolicyAttachmentResource), TrackingReadWrapper(resources.UserSessionPolicyAttachment, ReadUserSessionPolicyAttachment)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.UserSessionPolicyAttachmentResource), TrackingUpdateWrapper(resources.UserSessionPolicyAttachment, UpdateUserSessionPolicyAttachment)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.UserSessionPolicyAttachmentResource), TrackingDeleteWrapper(resources.UserSessionPolicyAttachment, DeleteUserSessionPolicyAttachment)),
 
 		Schema: userSessionPolicyAttachmentSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: TrackingImportWrapper(resources.UserSessionPolicyAttachment, ImportUserSessionPolicyAttachment),
 		},
 		Timeouts: defaultTimeouts,
 	}
 }
 
+func ImportUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	userName, err := getUserNameForUserSessionPolicyAttachment(d)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := d.Set("user_name", userName.Name()); err != nil {
+		return nil, err
+	}
+
+	return []*schema.ResourceData{d}, nil
+}
+
 func CreateUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
-	sessionPolicy := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(d.Get("session_policy_name").(string))
+	userName, err := sdk.ParseAccountObjectIdentifier(d.Get("user_name").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	sessionPolicy, err := sdk.ParseSchemaObjectIdentifier(d.Get("session_policy_name").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
+	err = client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
 		Set: &sdk.UserSet{
 			SessionPolicy: &sessionPolicy,
 		},
@@ -69,12 +88,7 @@ func CreateUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 func ReadUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	parts := helpers.ParseResourceIdentifier(d.Id())
-	if len(parts) != 2 {
-		return diag.FromErr(fmt.Errorf("required id format '<user_identifier>|<session_policy_fqn>', but got: '%s'", d.Id()))
-	}
-
-	userName, err := sdk.ParseAccountObjectIdentifier(parts[0])
+	userName, err := getUserNameForUserSessionPolicyAttachment(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,9 +129,6 @@ func ReadUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	if err := d.Set("user_name", userName.Name()); err != nil {
-		return diag.FromErr(err)
-	}
 	if err := d.Set(
 		"session_policy_name",
 		sdk.NewSchemaObjectIdentifier(
@@ -132,12 +143,54 @@ func ReadUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
+func UpdateUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	if d.HasChange("session_policy_name") {
+		userName, err := getUserNameForUserSessionPolicyAttachment(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		newSessionPolicyName, err := sdk.ParseSchemaObjectIdentifier(d.Get("session_policy_name").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := client.Users.Alter(ctx, *userName, &sdk.AlterUserOptions{
+			IfExists: sdk.Bool(true),
+			Unset: &sdk.UserUnset{
+				SessionPolicy: sdk.Bool(true),
+			},
+		}); err != nil {
+			d.Partial(true)
+			return diag.FromErr(fmt.Errorf("error while unsetting old session policy from user %v, err = %w", userName.FullyQualifiedName(), err))
+		}
+		if err := client.Users.Alter(ctx, *userName, &sdk.AlterUserOptions{
+			IfExists: sdk.Bool(true),
+			Set: &sdk.UserSet{
+				SessionPolicy: &newSessionPolicyName,
+			},
+		}); err != nil {
+			d.Partial(true)
+			return diag.FromErr(fmt.Errorf("error while setting new session policy to user %v, err = %w", userName.FullyQualifiedName(), err))
+		}
+
+		d.SetId(helpers.EncodeResourceIdentifier(userName.FullyQualifiedName(), newSessionPolicyName.FullyQualifiedName()))
+	}
+
+	return ReadUserSessionPolicyAttachment(ctx, d, meta)
+}
+
 func DeleteUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
+	userName, err := sdk.ParseAccountObjectIdentifier(d.Get("user_name").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
+	err = client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
 		IfExists: sdk.Bool(true),
 		Unset: &sdk.UserUnset{
 			SessionPolicy: sdk.Bool(true),
@@ -150,4 +203,17 @@ func DeleteUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 	d.SetId("")
 
 	return nil
+}
+
+func getUserNameForUserSessionPolicyAttachment(d *schema.ResourceData) (*sdk.AccountObjectIdentifier, error) {
+	parts := helpers.ParseResourceIdentifier(d.Id())
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("required id format '<user_identifier>|<session_policy_fqn>', but got: '%s'", d.Id())
+	}
+
+	userName, err := sdk.ParseAccountObjectIdentifier(parts[0])
+	if err != nil {
+		return nil, err
+	}
+	return &userName, nil
 }

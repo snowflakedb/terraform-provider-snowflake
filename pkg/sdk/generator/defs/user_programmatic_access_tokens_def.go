@@ -121,4 +121,10 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
 		OptionalIdentifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
 ).ShowByIdOperationWithNoFiltering().
+	WithCustomInterfaceMethod(
+		"RemoveByIDSafely",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("request", "*RemoveUserProgrammaticAccessTokenRequest")},
+		"error",
+	).
 	WithEnums(ProgrammaticAccessTokenStatusDef)

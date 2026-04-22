@@ -20,6 +20,7 @@ func Test_StringToFeature(t *testing.T) {
 		// Supported Values.
 		{input: "snowflake_account_authentication_policy_attachment_resource", want: AccountAuthenticationPolicyAttachmentResource},
 		{input: "snowflake_account_password_policy_attachment_resource", want: AccountPasswordPolicyAttachmentResource},
+		{input: "snowflake_account_session_policy_attachment_resource", want: AccountSessionPolicyAttachmentResource},
 		{input: "snowflake_alert_resource", want: AlertResource},
 		{input: "snowflake_alerts_datasource", want: AlertsDatasource},
 		{input: "snowflake_api_integration_resource", want: ApiIntegrationResource},

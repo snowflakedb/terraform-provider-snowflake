@@ -15,14 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
-	user, userCleanup := testClient().User.CreateUser(t)
-	t.Cleanup(userCleanup)
-	userName := user.ID().Name()
-
-	user2, userCleanup2 := testClient().User.CreateUser(t)
-	t.Cleanup(userCleanup2)
-	userName2 := user2.ID().Name()
+func TestAcc_AccountSessionPolicyAttachment_BasicUseCase(t *testing.T) {
+	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	sessionPolicy, sessionPolicyCleanup := testClient().SessionPolicy.CreateSessionPolicy(t)
 	t.Cleanup(sessionPolicyCleanup)
@@ -32,29 +26,19 @@ func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 	t.Cleanup(sessionPolicyCleanup2)
 	sessionPolicyName2 := sessionPolicy2.ID().FullyQualifiedName()
 
-	basic := model.UserSessionPolicyAttachment("t", sessionPolicyName, userName)
+	basic := model.AccountSessionPolicyAttachment("t", sessionPolicyName)
 
-	newUser := model.UserSessionPolicyAttachment("t", sessionPolicyName, userName2)
-
-	newPolicy := model.UserSessionPolicyAttachment("t", sessionPolicyName2, userName2)
+	newPolicy := model.AccountSessionPolicyAttachment("t", sessionPolicyName2)
 
 	ref := basic.ResourceReference()
 
 	basicAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.UserSessionPolicyAttachmentResource(t, ref).
-			HasUserName(userName).
-			HasSessionPolicyName(sessionPolicyName),
-	}
-
-	newUserAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.UserSessionPolicyAttachmentResource(t, ref).
-			HasUserName(userName2).
+		resourceassert.AccountSessionPolicyAttachmentResource(t, ref).
 			HasSessionPolicyName(sessionPolicyName),
 	}
 
 	newPolicyAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.UserSessionPolicyAttachmentResource(t, ref).
-			HasUserName(userName2).
+		resourceassert.AccountSessionPolicyAttachmentResource(t, ref).
 			HasSessionPolicyName(sessionPolicyName2),
 	}
 
@@ -63,7 +47,7 @@ func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckUserSessionPolicyAttachmentDestroy(t),
+		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			// Create
 			{
@@ -81,16 +65,6 @@ func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
-			},
-			// Change user
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Config: config.FromModels(t, newUser),
-				Check:  assertThat(t, newUserAssertions...),
 			},
 			// Change policy
 			{
@@ -115,33 +89,18 @@ func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 			{
 				Config: config.FromModels(t, basic),
 			},
-			// Drop user externally and remove attachment from config - expect empty plan
-			{
-				PreConfig: func() {
-					testClient().User.DropUserFunc(t, user.ID())()
-				},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Config: " ",
-			},
-			{
-				Config: config.FromModels(t, newUser),
-			},
 			// Unset policy externally
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, user2.ID(), &sdk.AlterUserOptions{Unset: &sdk.UserUnset{SessionPolicy: sdk.Bool(true)}})
+					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{SessionPolicy: sdk.Bool(true)}})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
 					},
 				},
-				Config: config.FromModels(t, newUser),
-				Check:  assertThat(t, newUserAssertions...),
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, basicAssertions...),
 			},
 		},
 	})

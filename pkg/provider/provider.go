@@ -583,6 +583,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_account_role":                                                 resources.AccountRole(),
 		"snowflake_account_password_policy_attachment":                           resources.AccountPasswordPolicyAttachment(),
 		"snowflake_account_parameter":                                            resources.AccountParameter(),
+		"snowflake_account_session_policy_attachment":                            resources.AccountSessionPolicyAttachment(),
 		"snowflake_alert":                                                        resources.Alert(),
 		"snowflake_api_authentication_integration_with_authorization_code_grant": resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant(),
 		"snowflake_api_authentication_integration_with_client_credentials":       resources.ApiAuthenticationIntegrationWithClientCredentials(),

@@ -58,4 +58,9 @@ var applicationRolesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "ApplicationName"),
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDApplicationNameFiltering,
+).WithCustomInterfaceMethod(
+	"RevokeSafely",
+	"",
+	[]*g.MethodParameter{g.NewMethodParameter("request", "*RevokeApplicationRoleRequest")},
+	"error",
 )

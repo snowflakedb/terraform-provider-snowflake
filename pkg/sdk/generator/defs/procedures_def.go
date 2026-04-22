@@ -590,4 +590,14 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ValidIdentifier, "ProcedureName").
 		WithValidation(g.ValidIdentifier, "Name"),
+).WithCustomInterfaceMethod(
+	"DescribeDetails",
+	"DescribeDetails returns aggregated describe results for the given procedure.",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
+	"*ProcedureDetails", "error",
+).WithCustomInterfaceMethod(
+	"ShowParameters",
+	"",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
+	"[]*Parameter", "error",
 )

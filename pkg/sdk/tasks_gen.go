@@ -19,12 +19,8 @@ type Tasks interface {
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Task, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*Task, error)
 	Execute(ctx context.Context, request *ExecuteTaskRequest) error
-
-	// ShowParameters added manually
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
-	// SuspendRootTasks added manually
 	SuspendRootTasks(ctx context.Context, taskId SchemaObjectIdentifier, id SchemaObjectIdentifier) ([]SchemaObjectIdentifier, error)
-	// ResumeTasks added manually
 	ResumeTasks(ctx context.Context, ids []SchemaObjectIdentifier) error
 }
 
