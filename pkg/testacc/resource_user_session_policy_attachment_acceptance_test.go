@@ -59,7 +59,7 @@ func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: sessionPoliciesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -96,7 +96,7 @@ func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
 				Config: config.FromModels(t, newPolicy),
