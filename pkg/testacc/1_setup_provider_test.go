@@ -47,6 +47,7 @@ var (
 	servicesProviderFactory                          = providerFactoryUsingCache("Services")
 	userPasswordPoliciesProviderFactory              = providerFactoryUsingCache("UserPasswordPolicies")
 	userAuthenticationPoliciesProviderFactory        = providerFactoryUsingCache("UserAuthenticationPolicies")
+	sessionPoliciesProviderFactory                   = providerFactoryUsingCache("SessionPolicies")
 	explicitAccountAdminRoleProviderFactory          = providerFactoryUsingCache("ExplicitAccountAdminRole")
 	strictPrivilegeManagementGrantProviderFactory    = providerFactoryUsingCache("StrictPrivilegeManagementGrantProvider")
 	grantsImportValidationProviderFactory            = providerFactoryUsingCache("GrantsImportValidationProvider")

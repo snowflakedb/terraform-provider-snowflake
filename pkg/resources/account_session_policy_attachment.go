@@ -17,7 +17,6 @@ var accountSessionPolicyAttachmentSchema = map[string]*schema.Schema{
 	"session_policy_name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      "Fully qualified name of the session policy to apply to the current account.",
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 	},
@@ -29,6 +28,7 @@ func AccountSessionPolicyAttachment() *schema.Resource {
 
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.AccountSessionPolicyAttachmentResource), TrackingCreateWrapper(resources.AccountSessionPolicyAttachment, CreateAccountSessionPolicyAttachment)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AccountSessionPolicyAttachmentResource), TrackingReadWrapper(resources.AccountSessionPolicyAttachment, ReadAccountSessionPolicyAttachment)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.AccountSessionPolicyAttachmentResource), TrackingUpdateWrapper(resources.AccountSessionPolicyAttachment, UpdateAccountSessionPolicyAttachment)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AccountSessionPolicyAttachmentResource), TrackingDeleteWrapper(resources.AccountSessionPolicyAttachment, DeleteAccountSessionPolicyAttachment)),
 
 		Schema: accountSessionPolicyAttachmentSchema,
@@ -39,15 +39,15 @@ func AccountSessionPolicyAttachment() *schema.Resource {
 	}
 }
 
-func CreateAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	sessionPolicyId, ok := sdk.NewObjectIdentifierFromFullyQualifiedName(d.Get("session_policy_name").(string)).(sdk.SchemaObjectIdentifier)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("session_policy_name %s is not a valid session policy qualified name, expected format: `\"db\".\"schema\".\"policy\"`", d.Get("session_policy_name")))
+	sessionPolicyId, err := sdk.ParseSchemaObjectIdentifier(d.Get("session_policy_name").(string))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+	err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 		Set: &sdk.AccountSet{
 			SessionPolicy: &sessionPolicyId,
 		},
@@ -61,19 +61,10 @@ func CreateAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 	return ReadAccountSessionPolicyAttachment(ctx, d, meta)
 }
 
-func ReadAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	sessionPolicyId, err := sdk.ParseSchemaObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	currentAccountName, err := client.ContextFunctions.CurrentAccount(ctx)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	currentAccountId, err := sdk.ParseAccountObjectIdentifier(currentAccountName)
+	currentAccountId, err := sdk.ParseAccountObjectIdentifier(client.GetAccountLocator())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,7 +77,7 @@ func ReadAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceD
 	sessionPolicyReferences := make([]sdk.PolicyReference, 0)
 	for _, policyReference := range policyReferences {
 		if policyReference.PolicyKind == sdk.PolicyKindSessionPolicy {
-			sessionPolicyReferences = append(sessionPolicyReferences, sdk.PolicyReference{})
+			sessionPolicyReferences = append(sessionPolicyReferences, policyReference)
 		}
 	}
 
@@ -105,14 +96,54 @@ func ReadAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	if err := d.Set("session_policy_name", sessionPolicyId.FullyQualifiedName()); err != nil {
+	sessionPolicyFromRef := sdk.NewSchemaObjectIdentifier(
+		*sessionPolicyReferences[0].PolicyDb,
+		*sessionPolicyReferences[0].PolicySchema,
+		sessionPolicyReferences[0].PolicyName,
+	)
+
+	if err := d.Set("session_policy_name", sessionPolicyFromRef.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
 	}
+
+	d.SetId(helpers.EncodeResourceIdentifier(sessionPolicyFromRef))
 
 	return nil
 }
 
-func DeleteAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	if d.HasChange("session_policy_name") {
+		newSessionPolicyName, err := sdk.ParseSchemaObjectIdentifier(d.Get("session_policy_name").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Unset: &sdk.AccountUnset{
+				SessionPolicy: sdk.Bool(true),
+			},
+		}); err != nil {
+			d.Partial(true)
+			return diag.FromErr(fmt.Errorf("error while unsetting old session policy from account, err = %w", err))
+		}
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Set: &sdk.AccountSet{
+				SessionPolicy: &newSessionPolicyName,
+			},
+		}); err != nil {
+			d.Partial(true)
+			return diag.FromErr(fmt.Errorf("error while setting new session policy on account, err = %w", err))
+		}
+
+		d.SetId(helpers.EncodeResourceIdentifier(newSessionPolicyName))
+	}
+
+	return ReadAccountSessionPolicyAttachment(ctx, d, meta)
+}
+
+func DeleteAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
@@ -123,6 +154,8 @@ func DeleteAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	d.SetId("")
 
 	return nil
 }
