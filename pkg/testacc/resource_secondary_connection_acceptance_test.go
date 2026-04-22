@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -25,10 +26,12 @@ import (
 // For the test that checks behavior for promoting secondary to primary, see `secondary_connection_promotion` manual test.
 
 func TestAcc_SecondaryConnection_Basic(t *testing.T) {
-	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{
-		string(testenvs.SnowflakeProdEnvironment),
-		string(testenvs.SnowflakePreProdGovEnvironment),
-	}, "SNOW-3198924: Missing azure configuration on all testing environments")
+	if slices.Contains([]testenvs.SnowflakeEnvironment{
+		testenvs.SnowflakeProdEnvironment,
+		testenvs.SnowflakePreProdGovEnvironment,
+	}, testenvs.GetSnowflakeEnvironmentWithProdDefault()) {
+		t.Skip("Missing azure configuration on all testing environments")
+	}
 
 	// create primary connection
 	connection, connectionCleanup := azureTestClient().Connection.Create(t)
