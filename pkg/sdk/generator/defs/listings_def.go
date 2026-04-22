@@ -6,6 +6,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	ListingRevisionEnumDef = g.NewEnum(
+		"ListingRevision", "ListingRevisions",
+		"DRAFT", "PUBLISHED",
+	)
+	ListingStateEnumDef = g.NewEnum(
+		"ListingState", "ListingStates",
+		"DRAFT", "PUBLISHED", "UNPUBLISHED",
+	)
+)
+
 var listingWithDef = g.NewQueryStruct("ListingWith").
 	OptionalIdentifier("Share", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("SHARE")).
 	OptionalIdentifier("ApplicationPackage", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION PACKAGE")).
@@ -22,7 +33,7 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 	Text("created_on").
 	Text("updated_on").
 	OptionalText("published_on").
-	PlainField("state", "ListingState").
+	PlainField("state", ListingStateEnumDef.Kind()).
 	OptionalText("review_state").
 	OptionalText("comment").
 	Text("owner").
@@ -43,7 +54,7 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 
 // There are more fields listed than in https://docs.snowflake.com/en/sql-reference/sql/desc-listing
 // They are mapped straight from the DESC LISTING output.
-var listingDetailsDbRow = g.DbStruct("listingDetailsDBRow").
+var listingDetailsPairs = g.StructPair("listingDetailsDBRow", "ListingDetails").
 	Text("global_name").
 	Text("name").
 	Text("owner").
@@ -55,9 +66,9 @@ var listingDetailsDbRow = g.DbStruct("listingDetailsDBRow").
 	OptionalText("subtitle").
 	OptionalText("description").
 	OptionalText("listing_terms").
-	Text("state").
-	OptionalText("share").
-	OptionalText("application_package").
+	PlainField("state", "ListingState").
+	OptionalAccountObjectIdentifier("share", g.WithPlainFieldName("Share")).
+	OptionalAccountObjectIdentifier("application_package", g.WithPlainFieldName("ApplicationPackage")).
 	OptionalText("business_needs").
 	OptionalText("usage_examples").
 	OptionalText("data_attributes").
@@ -104,68 +115,7 @@ var listingDetailsDbRow = g.DbStruct("listingDetailsDBRow").
 	OptionalText("monetization_display_order").
 	OptionalText("legacy_uniform_listing_locators")
 
-var listingDetails = g.PlainStruct("ListingDetails").
-	Text("GlobalName").
-	Text("Name").
-	Text("Owner").
-	Text("OwnerRoleType").
-	Text("CreatedOn").
-	Text("UpdatedOn").
-	OptionalText("PublishedOn").
-	Text("Title").
-	OptionalText("Subtitle").
-	OptionalText("Description").
-	OptionalText("ListingTerms").
-	Field("State", g.KindOfT[sdkcommons.ListingState]()).
-	Field("Share", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier]()).
-	Field("ApplicationPackage", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier]()).
-	OptionalText("BusinessNeeds").
-	OptionalText("UsageExamples").
-	OptionalText("DataAttributes").
-	OptionalText("Categories").
-	OptionalText("Resources").
-	OptionalText("Profile").
-	OptionalText("CustomizedContactInfo").
-	OptionalText("DataDictionary").
-	OptionalText("DataPreview").
-	OptionalText("Comment").
-	Text("Revisions").
-	OptionalText("TargetAccounts").
-	OptionalText("Regions").
-	OptionalText("RefreshSchedule").
-	OptionalText("RefreshType").
-	OptionalText("ReviewState").
-	OptionalText("RejectionReason").
-	OptionalText("UnpublishedByAdminReasons").
-	Bool("IsMonetized").
-	Bool("IsApplication").
-	Bool("IsTargeted").
-	OptionalBool("IsLimitedTrial").
-	OptionalBool("IsByRequest").
-	OptionalText("LimitedTrialPlan").
-	OptionalText("RetriedOn").
-	OptionalText("ScheduledDropTime").
-	Text("ManifestYaml").
-	OptionalText("Distribution").
-	OptionalBool("IsMountlessQueryable").
-	OptionalText("OrganizationProfileName").
-	OptionalText("UniformListingLocator").
-	OptionalText("TrialDetails").
-	OptionalText("ApproverContact").
-	OptionalText("SupportContact").
-	OptionalText("LiveVersionUri").
-	OptionalText("LastCommittedVersionUri").
-	OptionalText("LastCommittedVersionName").
-	OptionalText("LastCommittedVersionAlias").
-	OptionalText("PublishedVersionUri").
-	OptionalText("PublishedVersionName").
-	OptionalText("PublishedVersionAlias").
-	OptionalBool("IsShare").
-	OptionalText("RequestApprovalType").
-	OptionalText("MonetizationDisplayOrder").
-	OptionalText("LegacyUniformListingLocators")
-
-var listingVersionDbRow = g.DbStruct("listingVersionDBRow").
+var listingVersionPairs = g.StructPair("listingVersionDBRow", "ListingVersion").
 	Text("created_on").
 	Text("name").
 	OptionalText("alias").
@@ -177,19 +127,6 @@ var listingVersionDbRow = g.DbStruct("listingVersionDBRow").
 	OptionalText("comment").
 	Text("source_location_url").
 	OptionalText("git_commit_hash")
-
-var listingVersion = g.PlainStruct("ListingVersion").
-	Text("CreatedOn").
-	Text("Name").
-	OptionalText("Alias").
-	Text("LocationUrl").
-	Bool("IsDefault").
-	Bool("IsLive").
-	Bool("IsFirst").
-	Bool("IsLast").
-	OptionalText("Comment").
-	Text("SourceLocationUrl").
-	OptionalText("GitCommitHash")
 
 var listingsDef = g.NewInterface(
 	"Listings",
@@ -277,31 +214,33 @@ var listingsDef = g.NewInterface(
 			OptionalLimitFrom(),
 	).
 	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering).
-	CustomShowOperation(
+	CustomShowOperationWithPairedStructs(
 		"Describe",
 		g.ShowMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-listing",
-		listingDetailsDbRow,
-		listingDetails,
+		listingDetailsPairs,
 		g.NewQueryStruct("DescribeListing").
 			Describe().
 			SQL("LISTING").
 			Name().
-			OptionalAssignment("REVISION", g.KindOfT[sdkcommons.ListingRevision](), g.ParameterOptions().NoQuotes()).
+			OptionalAssignment("REVISION", ListingRevisionEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	CustomShowOperation(
+	CustomShowOperationWithPairedStructs(
 		"ShowVersions",
 		g.ShowMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/show-versions-in-listing",
-		listingVersionDbRow,
-		listingVersion,
+		listingVersionPairs,
 		g.NewQueryStruct("ShowListings").
 			Show().
 			SQL("VERSIONS IN LISTING").
 			Name().
 			OptionalLimit().
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	WithEnums(
+		ListingRevisionEnumDef,
+		ListingStateEnumDef,
 	)
 
 	// TODO [SNOW-2236968]: Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface

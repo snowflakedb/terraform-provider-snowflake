@@ -5,17 +5,11 @@ type (
 	ApiIntegrationAwsApiProviderType                         string
 	AutoEventLogging                                         string
 	ComputePoolInstanceFamily                                string
-	DataMetricFunctionRefEntityDomainOption                  string
 	DataType                                                 string
 	ImageRepositoryEncryptionType                            string
-	ListingState                                             string
-	ListingRevision                                          string
 	LogLevel                                                 string
 	MetricLevel                                              string
-	NetworkRuleMode                                          string
-	NetworkRuleType                                          string
 	NullInputBehavior                                        string
-	OrganizationAccountEdition                               string
 	ReclusterState                                           string
 	ReturnNullValues                                         string
 	ReturnResultsBehavior                                    string
@@ -25,7 +19,6 @@ type (
 	SequenceName                                             string
 	TaskState                                                string
 	TraceLevel                                               string
-	ViewDataMetricScheduleStatusOperationOption              string
 )
 
 // copied from SDK for now

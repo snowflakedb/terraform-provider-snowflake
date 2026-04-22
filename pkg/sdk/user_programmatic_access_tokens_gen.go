@@ -18,8 +18,6 @@ type UserProgrammaticAccessTokens interface {
 	ShowByID(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 	// adjusted manually
 	ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
-
-	// added manually
 	RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 }
 
@@ -115,7 +113,7 @@ type ShowUserProgrammaticAccessTokenOptions struct {
 type programmaticAccessTokenResultDBRow struct {
 	Name                                 string         `db:"name"`
 	UserName                             string         `db:"user_name"`
-	RoleRestriction                      string         `db:"role_restriction"`
+	RoleRestriction                      sql.NullString `db:"role_restriction"`
 	ExpiresAt                            time.Time      `db:"expires_at"`
 	Status                               string         `db:"status"`
 	Comment                              sql.NullString `db:"comment"`

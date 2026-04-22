@@ -2,6 +2,8 @@ package sdk
 
 import "strings"
 
+var AllViewDataMetricScheduleMinutes = []int{5, 15, 30, 60, 720, 1440}
+
 // TODO(SNOW-1636212): remove
 func (v *View) HasCopyGrants() bool {
 	return strings.Contains(v.Text, " COPY GRANTS ")

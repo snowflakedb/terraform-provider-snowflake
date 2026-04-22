@@ -213,4 +213,28 @@ var storageIntegrationsDef = g.NewInterface(
 			Text("ConsentUrl").
 			Text("MultiTenantAppName").
 			Text("ServiceAccount"),
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAwsDetails",
+		"DescribeAwsDetails returns converted describe output for AWS storage integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*StorageIntegrationAwsDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAzureDetails",
+		"DescribeAzureDetails returns converted describe output for Azure storage integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*StorageIntegrationAzureDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeGcsDetails",
+		"DescribeGcsDetails returns converted describe output for GCS storage integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*StorageIntegrationGcsDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeDetails",
+		"DescribeDetails returns combined describe output for all types of storage integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*StorageIntegrationAllDetails", "error",
 	)

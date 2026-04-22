@@ -26,13 +26,27 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.15.x ➞ v2.16.0
 
-### *(new feature)* New `snowflake_session_policy` resource
+### *(new feature)* New session policy resources
 
-We have added a new preview resource for managing session policies: [snowflake_session_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy).
+We have added new preview resources for session policies: [snowflake_session_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy) for defining policies, [snowflake_user_session_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user_session_policy_attachment) for assigning a session policy to a user, and [snowflake_account_session_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_session_policy_attachment) for assigning a session policy to the current account.
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_session_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
 
-No changes are required for existing configurations unless you want to manage session policies with Terraform.
+- `snowflake_session_policy_resource` for `snowflake_session_policy`;
+- `snowflake_user_session_policy_attachment_resource` for `snowflake_user_session_policy_attachment`;
+- `snowflake_account_session_policy_attachment_resource` for `snowflake_account_session_policy_attachment`.
+
+No changes are required for existing configurations unless you want to manage session policies or their user or account attachments with Terraform.
+
+## v2.15.x ➞ v2.15.1
+
+### *(bug fix)* `snowflake_stream_on_table` and `snowflake_stream_on_view` import fix
+
+Previously, importing `snowflake_stream_on_table` or `snowflake_stream_on_view` with `terraform import` left the `show_initial_rows` attribute as `null` in state, because it cannot be read from Snowflake. On the next `terraform apply`, Terraform detected a diff and produced an "Update" plan. Because of it, the stream was recreated (see the [note](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stream_on_table)).
+
+To fix this, enable the `IMPORT_BOOLEAN_DEFAULT` experimental feature in the provider configuration and reimport the affected stream resources. When enabled, the `show_initial_rows` attribute is set to `"default"` during import, preventing the permadiff.
+
+References: [#3896](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896)
 
 ## v2.14.x ➞ v2.15.0
 
