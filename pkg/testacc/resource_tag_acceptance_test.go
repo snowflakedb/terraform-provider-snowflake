@@ -500,6 +500,90 @@ func TestAcc_Tag_ExternalChanges_WithoutExperimentFlag(t *testing.T) {
 	})
 }
 
+// TestAcc_Tag_OnConflict_Bcr2291 verifies that when BCR-2291 is enabled and the ON_CONFLICT column
+// is returned by SHOW TAGS, external changes to on_conflict are detected and reconciled.
+// When BCR-2291 is not enabled, the column is absent from SHOW TAGS and no drift is detected.
+// Steps that rely on drift detection skip automatically when BCR-2291 is not enabled.
+func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	withPropagateOnly := model.TagBase("test", id).
+		WithPropagateEnum(sdk.TagPropagationOnDependency)
+
+	withPropagateAndOnConflict := model.TagBase("test", id).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOnConflictCustomValue("conflict_value")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Create with propagate + on_conflict
+			{
+				Config: config.FromModels(t, withPropagateAndOnConflict),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasPropagateEnum(sdk.TagPropagationOnDependency),
+					resourceassert.TagResource(t, withPropagateAndOnConflict.ResourceReference()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasOnConflictCustomValue("conflict_value"),
+				),
+			},
+			// External change: modify on_conflict to a different value.
+			// When BCR-2291 is enabled, the provider reads ON_CONFLICT from SHOW TAGS, detects drift,
+			// and plans an update. When BCR-2291 is disabled, the column is absent and this step is skipped.
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).
+						WithSet(*sdk.NewTagSetRequest().WithPropagate(
+							*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+								WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("other_value")}))))
+
+					// Detect BCR-2291 availability: ON_CONFLICT column populated means BCR is enabled.
+					tag, err := testClient().Tag.Show(t, id)
+					require.NoError(t, err)
+					if tag.OnConflict == nil {
+						t.Skip("BCR-2291 is not enabled; ON_CONFLICT column not returned by SHOW TAGS — skipping drift detection assertion")
+					}
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withPropagateAndOnConflict.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withPropagateAndOnConflict),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, withPropagateAndOnConflict.ResourceReference()).
+						HasOnConflictCustomValue("conflict_value"),
+				),
+			},
+			// External change: externally set on_conflict when config has none.
+			// The provider reads the ON_CONFLICT column and detects the drift, then removes it on apply.
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).
+						WithSet(*sdk.NewTagSetRequest().WithPropagate(
+							*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+								WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("external_value")}))))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withPropagateOnly.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withPropagateOnly),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, withPropagateOnly.ResourceReference()).
+						HasOnConflictEmpty(),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 

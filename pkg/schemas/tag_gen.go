@@ -47,6 +47,11 @@ var ShowTagSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// on_conflict is only populated when the BCR-2291 behavior change bundle is enabled.
+	"on_conflict": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var _ = ShowTagSchema
@@ -62,6 +67,11 @@ func TagToSchema(tag *sdk.Tag) map[string]any {
 	tagSchema["allowed_values"] = tag.AllowedValues
 	tagSchema["owner_role_type"] = tag.OwnerRoleType
 	tagSchema["propagate"] = string(tag.Propagate)
+	if tag.OnConflict != nil {
+		tagSchema["on_conflict"] = *tag.OnConflict
+	} else {
+		tagSchema["on_conflict"] = ""
+	}
 	return tagSchema
 }
 
