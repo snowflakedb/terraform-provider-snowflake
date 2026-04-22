@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
@@ -25,10 +26,12 @@ import (
 )
 
 func TestAcc_PrimaryConnection_Basic(t *testing.T) {
-	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{
-		string(testenvs.SnowflakeProdEnvironment),
-		string(testenvs.SnowflakePreProdGovEnvironment),
-	}, "SNOW-3198924: Missing azure configuration on all testing environments")
+	if slices.Contains([]testenvs.SnowflakeEnvironment{
+		testenvs.SnowflakeProdEnvironment,
+		testenvs.SnowflakePreProdGovEnvironment,
+	}, testenvs.GetSnowflakeEnvironmentWithProdDefault()) {
+		t.Skip("Missing azure configuration on all testing environments")
+	}
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
@@ -151,10 +154,12 @@ func TestAcc_PrimaryConnection_Basic(t *testing.T) {
 }
 
 func TestAcc_PrimaryConnection_ExternalChanges(t *testing.T) {
-	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{
-		string(testenvs.SnowflakeProdEnvironment),
-		string(testenvs.SnowflakePreProdGovEnvironment),
-	}, "SNOW-3198924: Missing azure configuration on all testing environments")
+	if slices.Contains([]testenvs.SnowflakeEnvironment{
+		testenvs.SnowflakeProdEnvironment,
+		testenvs.SnowflakePreProdGovEnvironment,
+	}, testenvs.GetSnowflakeEnvironmentWithProdDefault()) {
+		t.Skip("Missing azure configuration on all testing environments")
+	}
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	accountId := testClient().Account.GetAccountIdentifier(t)
