@@ -1,0 +1,73 @@
+package sdk
+
+var (
+	_ validatable = new(CreateOpenflowDeploymentOptions)
+	_ validatable = new(AlterOpenflowDeploymentOptions)
+	_ validatable = new(DropOpenflowDeploymentOptions)
+	_ validatable = new(ShowOpenflowDeploymentOptions)
+	_ validatable = new(DescribeOpenflowDeploymentOptions)
+)
+
+func (opts *CreateOpenflowDeploymentOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterOpenflowDeploymentOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterOpenflowDeploymentOptions", "Set", "Unset"))
+	}
+	if valueSet(opts.Set) {
+		if !anyValueSet(opts.Set.Comment, opts.Set.DisplayName, opts.Set.EventTable) {
+			errs = append(errs, errAtLeastOneOf("AlterOpenflowDeploymentOptions.Set", "Comment", "DisplayName", "EventTable"))
+		}
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.Comment, opts.Unset.DisplayName, opts.Unset.EventTable) {
+			errs = append(errs, errAtLeastOneOf("AlterOpenflowDeploymentOptions.Unset", "Comment", "DisplayName", "EventTable"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *DropOpenflowDeploymentOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowOpenflowDeploymentOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	return nil
+}
+
+func (opts *DescribeOpenflowDeploymentOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}

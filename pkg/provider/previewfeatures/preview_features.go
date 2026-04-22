@@ -70,6 +70,9 @@ const (
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
 	NetworkRulesDatasource                        feature = "snowflake_network_rules_datasource"
 	NotebookResource                              feature = "snowflake_notebook_resource"
+	OpenflowDeploymentResource                    feature = "snowflake_openflow_deployment_resource"
+	OpenflowRuntimeResource                       feature = "snowflake_openflow_runtime_resource"
+	OpenflowConnectorResource                     feature = "snowflake_openflow_connector_resource"
 	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
@@ -167,6 +170,9 @@ var allPreviewFeatures = []feature{
 	NetworkRulesDatasource,
 	NotebookResource,
 	NotebooksDatasource,
+	OpenflowDeploymentResource,
+	OpenflowRuntimeResource,
+	OpenflowConnectorResource,
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
