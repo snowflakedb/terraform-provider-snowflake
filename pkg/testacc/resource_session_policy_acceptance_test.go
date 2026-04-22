@@ -84,9 +84,10 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasCommentEmpty(),
 		resourceshowoutputassert.SessionPolicyShowOutput(t, ref).
 			HasName(id.Name()).
+			HasCreatedOnNotEmpty().
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasKind("SESSION_POLICY").
+			HasKind(string(sdk.PolicyKindSessionPolicy)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
 			HasOwnerRoleType("ROLE").
@@ -125,9 +126,10 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.SessionPolicyShowOutput(t, ref).
 			HasName(newId.Name()).
+			HasCreatedOnNotEmpty().
 			HasDatabaseName(newId.DatabaseName()).
 			HasSchemaName(newId.SchemaName()).
-			HasKind("SESSION_POLICY").
+			HasKind(string(sdk.PolicyKindSessionPolicy)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE").
@@ -154,9 +156,10 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.SessionPolicyShowOutput(t, ref).
 			HasName(newId.Name()).
+			HasCreatedOnNotEmpty().
 			HasDatabaseName(newId.DatabaseName()).
 			HasSchemaName(newId.SchemaName()).
-			HasKind("SESSION_POLICY").
+			HasKind(string(sdk.PolicyKindSessionPolicy)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE").
@@ -183,9 +186,10 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.SessionPolicyShowOutput(t, ref).
 			HasName(id.Name()).
+			HasCreatedOnNotEmpty().
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasKind("SESSION_POLICY").
+			HasKind(string(sdk.PolicyKindSessionPolicy)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE").
