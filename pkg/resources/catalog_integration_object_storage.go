@@ -48,6 +48,7 @@ func CatalogIntegrationObjectStorage() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(catalogIntegrationObjectStorageSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(catalogIntegrationObjectStorageSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
+			RecreateWhenCatalogSourceChangedExternally(sdk.CatalogIntegrationCatalogSourceTypeObjectStore),
 		),
 	}
 }

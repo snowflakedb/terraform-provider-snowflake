@@ -132,6 +132,7 @@ func CatalogIntegrationOpenCatalog() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(catalogIntegrationOpenCatalogSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(catalogIntegrationOpenCatalogSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
+			RecreateWhenCatalogSourceChangedExternally(sdk.CatalogIntegrationCatalogSourceTypePolaris),
 		),
 	}
 }

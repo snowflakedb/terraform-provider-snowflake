@@ -275,6 +275,22 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, withChangedTableFormat),
 				Check:  assertThat(t, forceNewAssertions...),
 			},
+			// Change catalog source externally
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithOrReplace(true).
+						WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest("arn:aws:iam::123456789012:role/sqsAccess", random.NumericN(15)))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, withChangedTableFormat),
+				Check:  assertThat(t, forceNewAssertions...),
+			},
 		},
 	})
 }
