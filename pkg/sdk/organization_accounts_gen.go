@@ -135,6 +135,5 @@ type OrganizationAccount struct {
 }
 
 func (v *OrganizationAccount) ObjectType() ObjectType {
-	// adjusted manually
 	return ObjectTypeAccount
 }

@@ -213,7 +213,6 @@ var listingsDef = g.NewInterface(
 			OptionalStartsWith().
 			OptionalLimitFrom(),
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering).
 	CustomShowOperationWithPairedStructs(
 		"Describe",
 		g.ShowMappingKindSingleValue,

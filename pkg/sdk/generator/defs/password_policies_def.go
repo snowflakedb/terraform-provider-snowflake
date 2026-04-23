@@ -110,8 +110,9 @@ var passwordPoliciesDef = g.NewInterface(
 			OptionalLike().
 			OptionalIn().
 			OptionalLimit(),
+		g.ShowByIDLikeFiltering,
+		g.ShowByIDInFiltering,
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering, g.ShowByIDInFiltering).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-password-policy",

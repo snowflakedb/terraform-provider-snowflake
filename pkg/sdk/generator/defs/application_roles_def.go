@@ -56,7 +56,6 @@ var applicationRolesDef = g.NewInterface(
 		Identifier("ApplicationName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
 		OptionalLimitFrom().
 		WithValidation(g.ValidIdentifier, "ApplicationName"),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDApplicationNameFiltering,
 ).WithCustomInterfaceMethod(
 	"RevokeSafely",

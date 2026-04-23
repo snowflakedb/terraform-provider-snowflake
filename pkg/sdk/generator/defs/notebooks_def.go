@@ -152,7 +152,6 @@ var notebooksDef = g.NewInterface(
 		OptionalIn().
 		OptionalLimitFrom().
 		OptionalStartsWith(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 )

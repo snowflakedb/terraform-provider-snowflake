@@ -75,7 +75,6 @@ var imageRepositoriesDef = g.NewInterface(
 		SQL("IMAGE REPOSITORIES").
 		OptionalLike().
 		OptionalIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).WithEnums(ImageRepositoryEncryptionTypeDef)

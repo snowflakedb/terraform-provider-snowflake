@@ -101,8 +101,9 @@ var sessionPoliciesDef = g.NewInterface(
 			OptionalOn().
 			OptionalStartsWith().
 			OptionalLimit(),
+		g.ShowByIDLikeFiltering,
+		g.ShowByIDExtendedInFiltering,
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering, g.ShowByIDExtendedInFiltering).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-session-policy",

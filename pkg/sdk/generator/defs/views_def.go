@@ -281,8 +281,6 @@ var viewsDef = g.NewInterface(
 			OptionalExtendedIn().
 			OptionalStartsWith().
 			OptionalLimit(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDExtendedInFiltering,
 		g.ShowByIDLikeFiltering,
 	).

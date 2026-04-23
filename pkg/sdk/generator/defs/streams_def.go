@@ -182,8 +182,6 @@ var (
 				OptionalExtendedIn().
 				OptionalStartsWith().
 				OptionalLimit(),
-		).
-		ShowByIdOperationWithFiltering(
 			g.ShowByIDExtendedInFiltering,
 			g.ShowByIDLikeFiltering,
 		).

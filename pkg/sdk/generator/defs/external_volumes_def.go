@@ -201,9 +201,6 @@ var externalVolumesDef = g.NewInterface(
 			SQL("EXTERNAL VOLUMES").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
 	WithEnums(
 		StorageProviderEnumDef,
 		S3StorageProviderEnumDef,

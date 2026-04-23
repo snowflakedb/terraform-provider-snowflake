@@ -420,8 +420,6 @@ var stagesDef = g.NewInterface(
 			SQL("STAGES").
 			OptionalLike().
 			OptionalExtendedIn(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 		g.ShowByIDExtendedInFiltering,
 	).
