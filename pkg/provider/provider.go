@@ -739,6 +739,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_semantic_views":                     datasources.SemanticViews(),
 		"snowflake_services":                           datasources.Services(),
 		"snowflake_sequences":                          datasources.Sequences(),
+		"snowflake_session_policies":                   datasources.SessionPolicies(),
 		"snowflake_shares":                             datasources.Shares(),
 		"snowflake_stages":                             datasources.Stages(),
 		"snowflake_storage_integrations":               datasources.StorageIntegrations(),
