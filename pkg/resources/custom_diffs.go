@@ -271,23 +271,23 @@ func RecreateWhenSecretTypeChangedExternally(secretType sdk.SecretType) schema.C
 
 // RecreateWhenServiceTypeChangedExternally recreates a service when argument serviceType is different than in the state.
 func RecreateWhenServiceTypeChangedExternally(serviceType sdk.ServiceType) schema.CustomizeDiffFunc {
-	return RecreateWhenResourceTypeChangedExternally("service_type", "service_type", serviceType, sdk.ToServiceType)
+	return RecreateWhenResourceTypeChangedExternally("service_type", serviceType, sdk.ToServiceType)
 }
 
 // RecreateWhenStreamTypeChangedExternally recreates a stream when argument streamType is different than in the state.
 func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) schema.CustomizeDiffFunc {
-	return RecreateWhenResourceTypeChangedExternally("stream_type", "stream_type", streamType, sdk.ToStreamSourceType)
+	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)
 }
 
 // RecreateWhenCatalogSourceChangedExternally recreates a catalog integration when argument catalogSource is different
 // than in the state.
 func RecreateWhenCatalogSourceChangedExternally(catalogSource sdk.CatalogIntegrationCatalogSourceType) schema.CustomizeDiffFunc {
-	return RecreateWhenResourceTypeChangedExternally(DescribeOutputAttributeName+".0.catalog_source", FullyQualifiedNameAttributeName, catalogSource, sdk.ToCatalogIntegrationCatalogSourceType)
+	return RecreateWhenResourceTypeChangedExternally("catalog_source", catalogSource, sdk.ToCatalogIntegrationCatalogSourceType)
 }
 
 // RecreateWhenStageCloudChangedExternally recreates a stage when argument stageCloud is different than in the state.
 func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.CustomizeDiffFunc {
-	return RecreateWhenResourceTypeChangedExternally("cloud", "cloud", stageCloud, sdk.ToStageCloud)
+	return RecreateWhenResourceTypeChangedExternally("cloud", stageCloud, sdk.ToStageCloud)
 }
 
 // HandleWarehouseExternalTypeChange detects when the warehouse type has been changed externally
@@ -312,7 +312,7 @@ func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.C
 }
 
 // RecreateWhenResourceTypeChangedExternally recreates a resource when argument wantType is different than the value in typeField.
-func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, setField string, wantType T, toType func(string) (T, error)) schema.CustomizeDiffFunc {
+func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, wantType T, toType func(string) (T, error)) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get(typeField); n != nil {
 			log.Printf("[DEBUG] new external value for %s", typeField)
@@ -331,7 +331,7 @@ func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, setF
 				// we have to set here a value instead of just SetNewComputed
 				// because with empty value (default snowflake behavior for type) ForceNew fails
 				// because there are no changes (at least from the SDKv2 point of view) for typeField
-				return errors.Join(diff.SetNew(setField, "<changed externally>"), diff.ForceNew(setField))
+				return errors.Join(diff.SetNew(typeField, "<changed externally>"), diff.ForceNew(typeField))
 			}
 		}
 		return nil

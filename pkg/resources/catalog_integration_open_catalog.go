@@ -241,6 +241,7 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) sche
 			d.Set("enabled", details.Enabled),
 			// not reading refresh_interval_seconds on purpose (handled as external change to describe output)
 			d.Set("comment", details.Comment),
+			d.Set("catalog_source", string(details.CatalogSource)),
 			d.Set("catalog_namespace", details.CatalogNamespace),
 			// not reading rest_config and rest_authentication on purpose
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),

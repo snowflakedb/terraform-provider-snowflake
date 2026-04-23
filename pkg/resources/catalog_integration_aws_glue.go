@@ -168,6 +168,7 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) schema.R
 			d.Set("enabled", details.Enabled),
 			// not reading refresh_interval_seconds on purpose (handled as external change to describe output)
 			d.Set("comment", details.Comment),
+			d.Set("catalog_source", string(details.CatalogSource)),
 			d.Set("glue_aws_role_arn", details.GlueAwsRoleArn),
 			d.Set("glue_catalog_id", details.GlueCatalogId),
 			// not reading glue_region on purpose (handled as external change to describe output)
