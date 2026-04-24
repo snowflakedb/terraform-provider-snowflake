@@ -4,8 +4,12 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceState]{"PostgresInstanceState", AllPostgresInstanceStates, ToPostgresInstanceState})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceAuthenticationAuthority]{"PostgresInstanceAuthenticationAuthority", AllPostgresInstanceAuthenticationAuthorities, ToPostgresInstanceAuthenticationAuthority})
+}
 
 func TestPostgresInstances_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
@@ -331,81 +335,4 @@ func TestPostgresInstances_Describe(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE POSTGRES INSTANCE %s", id.FullyQualifiedName())
 	})
-}
-
-func Test_PostgresInstance_ToPostgresInstanceState(t *testing.T) {
-	type test struct {
-		input string
-		want  PostgresInstanceState
-	}
-
-	valid := []test{
-		// case insensitive
-		{input: "ready", want: PostgresInstanceStateReady},
-
-		// Supported Values
-		{input: "CREATING", want: PostgresInstanceStateCreating},
-		{input: "RESTORING", want: PostgresInstanceStateRestoring},
-		{input: "STARTING", want: PostgresInstanceStateStarting},
-		{input: "REPLAYING", want: PostgresInstanceStateReplaying},
-		{input: "FINALIZING", want: PostgresInstanceStateFinalizing},
-		{input: "READY", want: PostgresInstanceStateReady},
-		{input: "RESTARTING", want: PostgresInstanceStateRestarting},
-		{input: "RESUMING", want: PostgresInstanceStateResuming},
-		{input: "SUSPENDING", want: PostgresInstanceStateSuspending},
-		{input: "SUSPENDED", want: PostgresInstanceStateSuspended},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToPostgresInstanceState(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToPostgresInstanceState(tc.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_PostgresInstance_ToPostgresInstanceAuthenticationAuthority(t *testing.T) {
-	type test struct {
-		input string
-		want  PostgresInstanceAuthenticationAuthority
-	}
-
-	valid := []test{
-		{input: "postgres", want: PostgresInstanceAuthenticationAuthorityPostgres},
-		{input: "POSTGRES", want: PostgresInstanceAuthenticationAuthorityPostgres},
-		{input: "POSTGRES_OR_SNOWFLAKE", want: PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake},
-	}
-
-	invalid := []test{
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToPostgresInstanceAuthenticationAuthority(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToPostgresInstanceAuthenticationAuthority(tc.input)
-			require.Error(t, err)
-		})
-	}
 }

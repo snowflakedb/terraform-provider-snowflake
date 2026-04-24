@@ -6,6 +6,18 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	PostgresInstanceStateEnumDef = g.NewEnum(
+		"PostgresInstanceState", "PostgresInstanceStates",
+		"CREATING", "RESTORING", "STARTING", "REPLAYING", "FINALIZING",
+		"READY", "RESTARTING", "RESUMING", "SUSPENDING", "SUSPENDED",
+	)
+	PostgresInstanceAuthenticationAuthorityEnumDef = g.NewEnum(
+		"PostgresInstanceAuthenticationAuthority", "PostgresInstanceAuthenticationAuthorities",
+		"POSTGRES", "POSTGRES_OR_SNOWFLAKE",
+	)
+)
+
 var postgresInstancesDef = g.NewInterface(
 	"PostgresInstances",
 	"PostgresInstance",
@@ -37,7 +49,7 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalNumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
 		OptionalAssignment(
 			"AUTHENTICATION_AUTHORITY",
-			g.KindOfT[sdkcommons.PostgresInstanceAuthenticationAuthority](),
+			PostgresInstanceAuthenticationAuthorityEnumDef.Kind(),
 			g.ParameterOptions().NoQuotes(),
 		).
 		OptionalNumberAssignment("POSTGRES_VERSION", g.ParameterOptions()).
@@ -60,11 +72,11 @@ var postgresInstancesDef = g.NewInterface(
 			"Set",
 			g.NewQueryStruct("PostgresInstanceSet").
 				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment(
-					"AUTHENTICATION_AUTHORITY",
-					g.KindOfT[sdkcommons.PostgresInstanceAuthenticationAuthority](),
-					g.ParameterOptions().NoQuotes(),
-				).
+			OptionalAssignment(
+				"AUTHENTICATION_AUTHORITY",
+				PostgresInstanceAuthenticationAuthorityEnumDef.Kind(),
+				g.ParameterOptions().NoQuotes(),
+			).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				OptionalBooleanAssignment("HIGH_AVAILABILITY", g.ParameterOptions()).
 				OptionalTextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
@@ -145,7 +157,7 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalText("PostgresSettings").
 		Bool("IsHa").
 		Number("RetentionTime").
-		Field("State", "PostgresInstanceState").
+		Field("State", PostgresInstanceStateEnumDef.Kind()).
 		OptionalText("Comment"),
 	g.NewQueryStruct("ShowPostgresInstances").
 		Show().
@@ -169,4 +181,7 @@ var postgresInstancesDef = g.NewInterface(
 		SQL("POSTGRES INSTANCE").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+).WithEnums(
+	PostgresInstanceStateEnumDef,
+	PostgresInstanceAuthenticationAuthorityEnumDef,
 )

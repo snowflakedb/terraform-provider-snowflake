@@ -10,7 +10,6 @@ type (
 	LogLevel                                                 string
 	MetricLevel                                              string
 	NullInputBehavior                                        string
-	PostgresInstanceAuthenticationAuthority                  string
 	ReclusterState                                           string
 	ReturnNullValues                                         string
 	ReturnResultsBehavior                                    string
