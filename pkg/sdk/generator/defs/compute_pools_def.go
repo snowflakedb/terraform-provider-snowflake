@@ -108,8 +108,6 @@ var computePoolsDef = g.NewInterface(
 		OptionalLike().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).ShowByIdOperationWithFiltering(
-	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-compute-pool",

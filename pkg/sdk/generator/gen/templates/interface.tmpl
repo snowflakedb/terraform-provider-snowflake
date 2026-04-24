@@ -13,8 +13,8 @@ type {{ .Name }} interface {
 				{{- end }}
 			{{- end }}
 		{{- else if eq .Name "ShowByID" }}
-			{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)
-			{{ .Name }}Safely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)
+			{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error)
+			{{ .Name }}Safely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error)
 		{{- else if and (eq .Name "Describe") .DescribeMapping }}
 			{{- if .DescribeKind }}
 				{{- if eq (describe_mapping_deref .DescribeKind) "single_value" }}

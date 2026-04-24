@@ -361,7 +361,6 @@ var functionsDef = g.NewInterface(
 		SQL("USER FUNCTIONS").
 		OptionalLike().
 		OptionalExtendedIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDExtendedInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(

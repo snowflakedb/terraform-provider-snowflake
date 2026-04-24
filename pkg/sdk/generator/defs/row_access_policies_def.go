@@ -77,8 +77,6 @@ var rowAccessPoliciesDef = g.NewInterface(
 			OptionalLike().
 			OptionalExtendedIn().
 			OptionalLimitFrom(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDExtendedInFiltering,
 		g.ShowByIDLikeFiltering,
 	).

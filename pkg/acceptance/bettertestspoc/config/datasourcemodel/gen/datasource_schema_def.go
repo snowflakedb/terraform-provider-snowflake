@@ -127,6 +127,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.SemanticViews().Schema,
 	},
 	{
+		name:   "SessionPolicies",
+		schema: datasources.SessionPolicies().Schema,
+	},
+	{
 		name:   "Services",
 		schema: datasources.Services().Schema,
 	},

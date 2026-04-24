@@ -25,6 +25,7 @@
 - [snowflake_procedures](./docs/data-sources/procedures)
 - [snowflake_semantic_views](./docs/data-sources/semantic_views)
 - [snowflake_sequences](./docs/data-sources/sequences)
+- [snowflake_session_policies](./docs/data-sources/session_policies)
 - [snowflake_shares](./docs/data-sources/shares)
 - [snowflake_stages](./docs/data-sources/stages)
 - [snowflake_storage_integrations](./docs/data-sources/storage_integrations)

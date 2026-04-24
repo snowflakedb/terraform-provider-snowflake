@@ -96,8 +96,9 @@ var semanticViewsDef = g.NewInterface(
 			OptionalIn().
 			OptionalStartsWith().
 			OptionalLimitFrom(),
+		g.ShowByIDInFiltering,
+		g.ShowByIDLikeFiltering,
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDInFiltering, g.ShowByIDLikeFiltering).
 	WithCustomInterfaceMethod(
 		"DescribeSemanticViewDetails",
 		"DescribeSemanticViewDetails returns converted describe output for semantic views.",
