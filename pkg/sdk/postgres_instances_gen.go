@@ -10,6 +10,7 @@ import (
 
 type PostgresInstances interface {
 	Create(ctx context.Context, request *CreatePostgresInstanceRequest) error
+	Fork(ctx context.Context, request *ForkPostgresInstanceRequest) error
 	Alter(ctx context.Context, request *AlterPostgresInstanceRequest) error
 	Drop(ctx context.Context, request *DropPostgresInstanceRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
@@ -24,12 +25,9 @@ type CreatePostgresInstanceOptions struct {
 	create                  bool                                     `ddl:"static" sql:"CREATE"`
 	postgresInstance        bool                                     `ddl:"static" sql:"POSTGRES INSTANCE"`
 	name                    AccountObjectIdentifier                  `ddl:"identifier"`
-	Fork                    *AccountObjectIdentifier                 `ddl:"identifier" sql:"FORK"`
-	At                      *PostgresInstanceForkAt                  `ddl:"list,parentheses,no_comma" sql:"AT"`
-	Before                  *PostgresInstanceForkBefore              `ddl:"list,parentheses,no_comma" sql:"BEFORE"`
-	ComputeFamily           *string                                  `ddl:"parameter,single_quotes" sql:"COMPUTE_FAMILY"`
-	StorageSizeGb           *int                                     `ddl:"parameter" sql:"STORAGE_SIZE_GB"`
-	AuthenticationAuthority *PostgresInstanceAuthenticationAuthority `ddl:"parameter,no_quotes" sql:"AUTHENTICATION_AUTHORITY"`
+	ComputeFamily           string                                  `ddl:"parameter,single_quotes" sql:"COMPUTE_FAMILY"`
+	StorageSizeGb           int                                     `ddl:"parameter" sql:"STORAGE_SIZE_GB"`
+	AuthenticationAuthority PostgresInstanceAuthenticationAuthority `ddl:"parameter,no_quotes" sql:"AUTHENTICATION_AUTHORITY"`
 	PostgresVersion         *int                                     `ddl:"parameter" sql:"POSTGRES_VERSION"`
 	NetworkPolicy           *string                                  `ddl:"parameter,single_quotes" sql:"NETWORK_POLICY"`
 	HighAvailability        *bool                                    `ddl:"parameter" sql:"HIGH_AVAILABILITY"`
@@ -37,6 +35,22 @@ type CreatePostgresInstanceOptions struct {
 	PostgresSettings        *string                                  `ddl:"parameter,single_quotes" sql:"POSTGRES_SETTINGS"`
 	Comment                 *string                                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                     []TagAssociation                         `ddl:"keyword,parentheses" sql:"TAG"`
+}
+
+// ForkPostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance.
+type ForkPostgresInstanceOptions struct {
+	create           bool                        `ddl:"static" sql:"CREATE"`
+	postgresInstance bool                        `ddl:"static" sql:"POSTGRES INSTANCE"`
+	name             AccountObjectIdentifier     `ddl:"identifier"`
+	Fork             AccountObjectIdentifier     `ddl:"identifier,required" sql:"FORK"`
+	At               *PostgresInstanceForkAt     `ddl:"list,parentheses,no_comma" sql:"AT"`
+	Before           *PostgresInstanceForkBefore `ddl:"list,parentheses,no_comma" sql:"BEFORE"`
+	ComputeFamily    *string                     `ddl:"parameter,single_quotes" sql:"COMPUTE_FAMILY"`
+	StorageSizeGb    *int                        `ddl:"parameter" sql:"STORAGE_SIZE_GB"`
+	HighAvailability *bool                       `ddl:"parameter" sql:"HIGH_AVAILABILITY"`
+	PostgresSettings *string                     `ddl:"parameter,single_quotes" sql:"POSTGRES_SETTINGS"`
+	Comment          *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag              []TagAssociation            `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 type PostgresInstanceForkAt struct {

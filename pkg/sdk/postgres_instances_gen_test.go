@@ -15,7 +15,10 @@ func TestPostgresInstances_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	defaultOpts := func() *CreatePostgresInstanceOptions {
 		return &CreatePostgresInstanceOptions{
-			name: id,
+			name:                    id,
+			ComputeFamily:           "STANDARD_S",
+			StorageSizeGb:           50,
+			AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
 		}
 	}
 
@@ -30,32 +33,21 @@ func TestPostgresInstances_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.At.Timestamp opts.At.Offset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.At = &PostgresInstanceForkAt{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreatePostgresInstanceOptions.At", "Timestamp", "Offset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Before.Timestamp opts.Before.Offset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Before = &PostgresInstanceForkBefore{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreatePostgresInstanceOptions.Before", "Timestamp", "Offset"))
-	})
-
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE POSTGRES INSTANCE %s", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_S' STORAGE_SIZE_GB = 50 AUTHENTICATION_AUTHORITY = POSTGRES`,
+			id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		comment := random.Comment()
 		tagId := NewAccountObjectIdentifier("tag1")
-		auth := PostgresInstanceAuthenticationAuthorityPostgres
 		opts := &CreatePostgresInstanceOptions{
 			name:                    id,
-			ComputeFamily:           Pointer("STANDARD_S"),
-			StorageSizeGb:           Pointer(50),
-			AuthenticationAuthority: &auth,
+			ComputeFamily:           "STANDARD_S",
+			StorageSizeGb:           50,
+			AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
 			PostgresVersion:         Pointer(17),
 			NetworkPolicy:           Pointer("my_policy"),
 			HighAvailability:        Pointer(true),
@@ -76,11 +68,67 @@ func TestPostgresInstances_Create(t *testing.T) {
 				` COMMENT = '%s' TAG (%s = 'value1')`,
 			id.FullyQualifiedName(), comment, tagId.FullyQualifiedName())
 	})
+}
+
+func TestPostgresInstances_Fork(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+	forkId := randomAccountObjectIdentifier()
+	defaultOpts := func() *ForkPostgresInstanceOptions {
+		return &ForkPostgresInstanceOptions{
+			name: id,
+			Fork: forkId,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*ForkPostgresInstanceOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.Fork]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Fork = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.At.Timestamp opts.At.Offset] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.At = &PostgresInstanceForkAt{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ForkPostgresInstanceOptions.At", "Timestamp", "Offset"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Before.Timestamp opts.Before.Offset] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Before = &PostgresInstanceForkBefore{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ForkPostgresInstanceOptions.Before", "Timestamp", "Offset"))
+	})
+
+	t.Run("validation: conflicting fields [opts.At opts.Before]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.At = &PostgresInstanceForkAt{
+			Timestamp: Pointer("2025-01-15 12:00:00"),
+		}
+		opts.Before = &PostgresInstanceForkBefore{
+			Timestamp: Pointer("2025-01-15 12:00:00"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("ForkPostgresInstanceOptions", "At", "Before"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE POSTGRES INSTANCE %s FORK %s`,
+			id.FullyQualifiedName(), forkId.FullyQualifiedName())
+	})
 
 	t.Run("fork with at timestamp", func(t *testing.T) {
-		forkId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
-		opts.Fork = &forkId
 		opts.At = &PostgresInstanceForkAt{
 			Timestamp: Pointer("2025-01-15 12:00:00"),
 		}
@@ -90,9 +138,7 @@ func TestPostgresInstances_Create(t *testing.T) {
 	})
 
 	t.Run("fork with at offset", func(t *testing.T) {
-		forkId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
-		opts.Fork = &forkId
 		opts.At = &PostgresInstanceForkAt{
 			Offset: Pointer("-7200"),
 		}
@@ -102,15 +148,41 @@ func TestPostgresInstances_Create(t *testing.T) {
 	})
 
 	t.Run("fork with before timestamp", func(t *testing.T) {
-		forkId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
-		opts.Fork = &forkId
 		opts.Before = &PostgresInstanceForkBefore{
 			Timestamp: Pointer("2025-01-15 12:00:00"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`CREATE POSTGRES INSTANCE %s FORK %s BEFORE (TIMESTAMP => 2025-01-15 12:00:00)`,
 			id.FullyQualifiedName(), forkId.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		comment := random.Comment()
+		tagId := NewAccountObjectIdentifier("tag1")
+		opts := &ForkPostgresInstanceOptions{
+			name: id,
+			Fork: forkId,
+			At: &PostgresInstanceForkAt{
+				Timestamp: Pointer("2025-01-15 12:00:00"),
+			},
+			ComputeFamily:    Pointer("STANDARD_M"),
+			StorageSizeGb:    Pointer(100),
+			HighAvailability: Pointer(true),
+			PostgresSettings: Pointer("{}"),
+			Comment:          &comment,
+			Tag: []TagAssociation{
+				{
+					Name:  tagId,
+					Value: "value1",
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => 2025-01-15 12:00:00)`+
+				` COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 100 HIGH_AVAILABILITY = true`+
+				` POSTGRES_SETTINGS = '{}' COMMENT = '%s' TAG (%s = 'value1')`,
+			id.FullyQualifiedName(), forkId.FullyQualifiedName(), comment, tagId.FullyQualifiedName())
 	})
 }
 

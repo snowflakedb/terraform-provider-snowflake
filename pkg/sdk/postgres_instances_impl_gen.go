@@ -25,6 +25,11 @@ func (v *postgresInstances) Create(ctx context.Context, request *CreatePostgresI
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *postgresInstances) Fork(ctx context.Context, request *ForkPostgresInstanceRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *postgresInstances) Alter(ctx context.Context, request *AlterPostgresInstanceRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -76,7 +81,6 @@ func (v *postgresInstances) Describe(ctx context.Context, id AccountObjectIdenti
 func (r *CreatePostgresInstanceRequest) toOpts() *CreatePostgresInstanceOptions {
 	opts := &CreatePostgresInstanceOptions{
 		name:                    r.name,
-		Fork:                    r.Fork,
 		ComputeFamily:           r.ComputeFamily,
 		StorageSizeGb:           r.StorageSizeGb,
 		AuthenticationAuthority: r.AuthenticationAuthority,
@@ -87,6 +91,20 @@ func (r *CreatePostgresInstanceRequest) toOpts() *CreatePostgresInstanceOptions 
 		PostgresSettings:        r.PostgresSettings,
 		Comment:                 r.Comment,
 		Tag:                     r.Tag,
+	}
+	return opts
+}
+
+func (r *ForkPostgresInstanceRequest) toOpts() *ForkPostgresInstanceOptions {
+	opts := &ForkPostgresInstanceOptions{
+		name:             r.name,
+		Fork:             r.Fork,
+		ComputeFamily:    r.ComputeFamily,
+		StorageSizeGb:    r.StorageSizeGb,
+		HighAvailability: r.HighAvailability,
+		PostgresSettings: r.PostgresSettings,
+		Comment:          r.Comment,
+		Tag:              r.Tag,
 	}
 	if r.At != nil {
 		opts.At = &PostgresInstanceForkAt{

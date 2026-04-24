@@ -4,6 +4,7 @@ package sdk
 
 var (
 	_ validatable = new(CreatePostgresInstanceOptions)
+	_ validatable = new(ForkPostgresInstanceOptions)
 	_ validatable = new(AlterPostgresInstanceOptions)
 	_ validatable = new(DropPostgresInstanceOptions)
 	_ validatable = new(ShowPostgresInstanceOptions)
@@ -18,15 +19,32 @@ func (opts *CreatePostgresInstanceOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ForkPostgresInstanceOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !ValidObjectIdentifier(opts.Fork) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if valueSet(opts.At) {
 		if !exactlyOneValueSet(opts.At.Timestamp, opts.At.Offset) {
-			errs = append(errs, errExactlyOneOf("CreatePostgresInstanceOptions.At", "Timestamp", "Offset"))
+			errs = append(errs, errExactlyOneOf("ForkPostgresInstanceOptions.At", "Timestamp", "Offset"))
 		}
 	}
 	if valueSet(opts.Before) {
 		if !exactlyOneValueSet(opts.Before.Timestamp, opts.Before.Offset) {
-			errs = append(errs, errExactlyOneOf("CreatePostgresInstanceOptions.Before", "Timestamp", "Offset"))
+			errs = append(errs, errExactlyOneOf("ForkPostgresInstanceOptions.Before", "Timestamp", "Offset"))
 		}
+	}
+	if everyValueSet(opts.At, opts.Before) {
+		errs = append(errs, errOneOf("ForkPostgresInstanceOptions", "At", "Before"))
 	}
 	return JoinErrors(errs...)
 }

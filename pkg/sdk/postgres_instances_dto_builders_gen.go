@@ -4,40 +4,16 @@ package sdk
 
 func NewCreatePostgresInstanceRequest(
 	name AccountObjectIdentifier,
+	computeFamily string,
+	storageSizeGb int,
+	authenticationAuthority PostgresInstanceAuthenticationAuthority,
 ) *CreatePostgresInstanceRequest {
 	s := CreatePostgresInstanceRequest{}
 	s.name = name
+	s.ComputeFamily = computeFamily
+	s.StorageSizeGb = storageSizeGb
+	s.AuthenticationAuthority = authenticationAuthority
 	return &s
-}
-
-func (s *CreatePostgresInstanceRequest) WithFork(fork AccountObjectIdentifier) *CreatePostgresInstanceRequest {
-	s.Fork = &fork
-	return s
-}
-
-func (s *CreatePostgresInstanceRequest) WithAt(at PostgresInstanceForkAtRequest) *CreatePostgresInstanceRequest {
-	s.At = &at
-	return s
-}
-
-func (s *CreatePostgresInstanceRequest) WithBefore(before PostgresInstanceForkBeforeRequest) *CreatePostgresInstanceRequest {
-	s.Before = &before
-	return s
-}
-
-func (s *CreatePostgresInstanceRequest) WithComputeFamily(computeFamily string) *CreatePostgresInstanceRequest {
-	s.ComputeFamily = &computeFamily
-	return s
-}
-
-func (s *CreatePostgresInstanceRequest) WithStorageSizeGb(storageSizeGb int) *CreatePostgresInstanceRequest {
-	s.StorageSizeGb = &storageSizeGb
-	return s
-}
-
-func (s *CreatePostgresInstanceRequest) WithAuthenticationAuthority(authenticationAuthority PostgresInstanceAuthenticationAuthority) *CreatePostgresInstanceRequest {
-	s.AuthenticationAuthority = &authenticationAuthority
-	return s
 }
 
 func (s *CreatePostgresInstanceRequest) WithPostgresVersion(postgresVersion int) *CreatePostgresInstanceRequest {
@@ -71,6 +47,56 @@ func (s *CreatePostgresInstanceRequest) WithComment(comment string) *CreatePostg
 }
 
 func (s *CreatePostgresInstanceRequest) WithTag(tag []TagAssociation) *CreatePostgresInstanceRequest {
+	s.Tag = tag
+	return s
+}
+
+func NewForkPostgresInstanceRequest(
+	name AccountObjectIdentifier,
+	fork AccountObjectIdentifier,
+) *ForkPostgresInstanceRequest {
+	s := ForkPostgresInstanceRequest{}
+	s.name = name
+	s.Fork = fork
+	return &s
+}
+
+func (s *ForkPostgresInstanceRequest) WithAt(at PostgresInstanceForkAtRequest) *ForkPostgresInstanceRequest {
+	s.At = &at
+	return s
+}
+
+func (s *ForkPostgresInstanceRequest) WithBefore(before PostgresInstanceForkBeforeRequest) *ForkPostgresInstanceRequest {
+	s.Before = &before
+	return s
+}
+
+func (s *ForkPostgresInstanceRequest) WithComputeFamily(computeFamily string) *ForkPostgresInstanceRequest {
+	s.ComputeFamily = &computeFamily
+	return s
+}
+
+func (s *ForkPostgresInstanceRequest) WithStorageSizeGb(storageSizeGb int) *ForkPostgresInstanceRequest {
+	s.StorageSizeGb = &storageSizeGb
+	return s
+}
+
+func (s *ForkPostgresInstanceRequest) WithHighAvailability(highAvailability bool) *ForkPostgresInstanceRequest {
+	s.HighAvailability = &highAvailability
+	return s
+}
+
+func (s *ForkPostgresInstanceRequest) WithPostgresSettings(postgresSettings string) *ForkPostgresInstanceRequest {
+	s.PostgresSettings = &postgresSettings
+	return s
+}
+
+func (s *ForkPostgresInstanceRequest) WithComment(comment string) *ForkPostgresInstanceRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *ForkPostgresInstanceRequest) WithTag(tag []TagAssociation) *ForkPostgresInstanceRequest {
 	s.Tag = tag
 	return s
 }

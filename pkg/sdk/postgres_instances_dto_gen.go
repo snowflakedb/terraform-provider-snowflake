@@ -4,6 +4,7 @@ package sdk
 
 var (
 	_ optionsProvider[CreatePostgresInstanceOptions]   = new(CreatePostgresInstanceRequest)
+	_ optionsProvider[ForkPostgresInstanceOptions]     = new(ForkPostgresInstanceRequest)
 	_ optionsProvider[AlterPostgresInstanceOptions]    = new(AlterPostgresInstanceRequest)
 	_ optionsProvider[DropPostgresInstanceOptions]     = new(DropPostgresInstanceRequest)
 	_ optionsProvider[ShowPostgresInstanceOptions]     = new(ShowPostgresInstanceRequest)
@@ -11,13 +12,10 @@ var (
 )
 
 type CreatePostgresInstanceRequest struct {
-	name                    AccountObjectIdentifier // required
-	Fork                    *AccountObjectIdentifier
-	At                      *PostgresInstanceForkAtRequest
-	Before                  *PostgresInstanceForkBeforeRequest
-	ComputeFamily           *string
-	StorageSizeGb           *int
-	AuthenticationAuthority *PostgresInstanceAuthenticationAuthority
+	name                    AccountObjectIdentifier                // required
+	ComputeFamily           string                                 // required
+	StorageSizeGb           int                                    // required
+	AuthenticationAuthority PostgresInstanceAuthenticationAuthority // required
 	PostgresVersion         *int
 	NetworkPolicy           *string
 	HighAvailability        *bool
@@ -25,6 +23,19 @@ type CreatePostgresInstanceRequest struct {
 	PostgresSettings        *string
 	Comment                 *string
 	Tag                     []TagAssociation
+}
+
+type ForkPostgresInstanceRequest struct {
+	name             AccountObjectIdentifier // required
+	Fork             AccountObjectIdentifier // required
+	At               *PostgresInstanceForkAtRequest
+	Before           *PostgresInstanceForkBeforeRequest
+	ComputeFamily    *string
+	StorageSizeGb    *int
+	HighAvailability *bool
+	PostgresSettings *string
+	Comment          *string
+	Tag              []TagAssociation
 }
 
 type PostgresInstanceForkAtRequest struct {

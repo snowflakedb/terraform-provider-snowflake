@@ -28,7 +28,29 @@ var postgresInstancesDef = g.NewInterface(
 		Create().
 		SQL("POSTGRES INSTANCE").
 		Name().
-		OptionalIdentifier("Fork", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FORK")).
+		TextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
+		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
+		Assignment(
+			"AUTHENTICATION_AUTHORITY",
+			PostgresInstanceAuthenticationAuthorityEnumDef.Kind(),
+			g.ParameterOptions().NoQuotes().Required(),
+		).
+		OptionalNumberAssignment("POSTGRES_VERSION", g.ParameterOptions()).
+		OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("HIGH_AVAILABILITY", g.ParameterOptions()).
+		OptionalTextAssignment("STORAGE_INTEGRATION", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("POSTGRES_SETTINGS", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+		OptionalTags().
+		WithValidation(g.ValidIdentifier, "name"),
+).CustomOperation(
+	"Fork",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance",
+	g.NewQueryStruct("ForkPostgresInstance").
+		Create().
+		SQL("POSTGRES INSTANCE").
+		Name().
+		Identifier("Fork", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FORK").Required()).
 		OptionalQueryStructField(
 			"At",
 			g.NewQueryStruct("PostgresInstanceForkAt").
@@ -47,19 +69,13 @@ var postgresInstancesDef = g.NewInterface(
 		).
 		OptionalTextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
 		OptionalNumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
-		OptionalAssignment(
-			"AUTHENTICATION_AUTHORITY",
-			PostgresInstanceAuthenticationAuthorityEnumDef.Kind(),
-			g.ParameterOptions().NoQuotes(),
-		).
-		OptionalNumberAssignment("POSTGRES_VERSION", g.ParameterOptions()).
-		OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().SingleQuotes()).
 		OptionalBooleanAssignment("HIGH_AVAILABILITY", g.ParameterOptions()).
-		OptionalTextAssignment("STORAGE_INTEGRATION", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("POSTGRES_SETTINGS", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalTags().
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "Fork").
+		WithValidation(g.ConflictingFields, "At", "Before"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-postgres-instance",
 	g.NewQueryStruct("AlterPostgresInstance").
