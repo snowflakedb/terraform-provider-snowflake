@@ -88,11 +88,11 @@ var postgresInstancesDef = g.NewInterface(
 			"Set",
 			g.NewQueryStruct("PostgresInstanceSet").
 				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().SingleQuotes()).
-			OptionalAssignment(
-				"AUTHENTICATION_AUTHORITY",
-				PostgresInstanceAuthenticationAuthorityEnumDef.Kind(),
-				g.ParameterOptions().NoQuotes(),
-			).
+				OptionalAssignment(
+					"AUTHENTICATION_AUTHORITY",
+					PostgresInstanceAuthenticationAuthorityEnumDef.Kind(),
+					g.ParameterOptions().NoQuotes(),
+				).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				OptionalBooleanAssignment("HIGH_AVAILABILITY", g.ParameterOptions()).
 				OptionalTextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).

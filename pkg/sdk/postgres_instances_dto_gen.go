@@ -12,9 +12,9 @@ var (
 )
 
 type CreatePostgresInstanceRequest struct {
-	name                    AccountObjectIdentifier                // required
-	ComputeFamily           string                                 // required
-	StorageSizeGb           int                                    // required
+	name                    AccountObjectIdentifier                 // required
+	ComputeFamily           string                                  // required
+	StorageSizeGb           int                                     // required
 	AuthenticationAuthority PostgresInstanceAuthenticationAuthority // required
 	PostgresVersion         *int
 	NetworkPolicy           *string

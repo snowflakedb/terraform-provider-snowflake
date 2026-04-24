@@ -22,19 +22,19 @@ type PostgresInstances interface {
 
 // CreatePostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance.
 type CreatePostgresInstanceOptions struct {
-	create                  bool                                     `ddl:"static" sql:"CREATE"`
-	postgresInstance        bool                                     `ddl:"static" sql:"POSTGRES INSTANCE"`
-	name                    AccountObjectIdentifier                  `ddl:"identifier"`
+	create                  bool                                    `ddl:"static" sql:"CREATE"`
+	postgresInstance        bool                                    `ddl:"static" sql:"POSTGRES INSTANCE"`
+	name                    AccountObjectIdentifier                 `ddl:"identifier"`
 	ComputeFamily           string                                  `ddl:"parameter,single_quotes" sql:"COMPUTE_FAMILY"`
 	StorageSizeGb           int                                     `ddl:"parameter" sql:"STORAGE_SIZE_GB"`
 	AuthenticationAuthority PostgresInstanceAuthenticationAuthority `ddl:"parameter,no_quotes" sql:"AUTHENTICATION_AUTHORITY"`
-	PostgresVersion         *int                                     `ddl:"parameter" sql:"POSTGRES_VERSION"`
-	NetworkPolicy           *string                                  `ddl:"parameter,single_quotes" sql:"NETWORK_POLICY"`
-	HighAvailability        *bool                                    `ddl:"parameter" sql:"HIGH_AVAILABILITY"`
-	StorageIntegration      *string                                  `ddl:"parameter,single_quotes" sql:"STORAGE_INTEGRATION"`
-	PostgresSettings        *string                                  `ddl:"parameter,single_quotes" sql:"POSTGRES_SETTINGS"`
-	Comment                 *string                                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Tag                     []TagAssociation                         `ddl:"keyword,parentheses" sql:"TAG"`
+	PostgresVersion         *int                                    `ddl:"parameter" sql:"POSTGRES_VERSION"`
+	NetworkPolicy           *string                                 `ddl:"parameter,single_quotes" sql:"NETWORK_POLICY"`
+	HighAvailability        *bool                                   `ddl:"parameter" sql:"HIGH_AVAILABILITY"`
+	StorageIntegration      *string                                 `ddl:"parameter,single_quotes" sql:"STORAGE_INTEGRATION"`
+	PostgresSettings        *string                                 `ddl:"parameter,single_quotes" sql:"POSTGRES_SETTINGS"`
+	Comment                 *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                     []TagAssociation                        `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 // ForkPostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance.
