@@ -48,6 +48,8 @@ type Operation struct {
 	DescribeKind *DescriptionMappingKind
 	// DescribeMapping is a definition of mapping needed by Operation kind of OperationKindDescribe
 	DescribeMapping *Mapping
+	// InstanceMethodMapping is a definition of mapping needed when an InstanceMethodOperation returns a result struct
+	InstanceMethodMapping *Mapping
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
 
@@ -112,6 +114,10 @@ func addShowMapping(op *Operation, from, to *Field) {
 
 func addDescriptionMapping(op *Operation, from, to *Field) {
 	op.DescribeMapping = newMapping("convert", from, to)
+}
+
+func addInstanceMethodMapping(op *Operation, from, to *Field) {
+	op.InstanceMethodMapping = newMapping("convert", from, to)
 }
 
 func newNoSqlOperation(kind string) *Operation {

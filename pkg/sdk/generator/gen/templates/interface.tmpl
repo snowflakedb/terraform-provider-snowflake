@@ -26,6 +26,8 @@ type {{ .Name }} interface {
 		{{- else if eq .Name "Drop" }}
 			Drop(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
 			DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error
+		{{- else if .InstanceMethodMapping }}
+			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodMapping.To.Name }}, error)
 		{{- else }}
 			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
 		{{- end -}}

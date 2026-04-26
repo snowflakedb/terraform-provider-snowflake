@@ -53,6 +53,9 @@ func (v *QueryStruct) queryStructField(name string, queryStruct *QueryStruct, ki
 	qs := queryStruct.IntoField()
 	qs.Name = name
 	qs.Kind = kindPrefix + qs.Kind
+	if !qs.HasAnyFields() {
+		qs.IsEmptyStruct = true
+	}
 	if transformer != nil {
 		qs = transformer.Transform(qs)
 	}
