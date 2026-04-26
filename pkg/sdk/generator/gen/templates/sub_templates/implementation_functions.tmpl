@@ -96,10 +96,10 @@
                 return conversionErrorWrapped(result.convert())
             }
         {{ end }}
-    {{ else if .InstanceMethodKind }}
-        func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ instance_method_kind_deref .InstanceMethodKind }}, error) {
+    {{ else if .InstanceMethodScalarReturnType }}
+        func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodScalarReturnType }}, error) {
             // TODO: implement scalar result scanning
-            var result {{ instance_method_kind_deref .InstanceMethodKind }}
+            var result {{ .InstanceMethodScalarReturnType }}
             return &result, nil
         }
     {{ else }}

@@ -45,13 +45,6 @@ func (i *Interface) InstanceMethodOperationScalar(doc string, methodName string,
 	operationName := sqlToFieldName(methodName, true)
 	qs := i.newInstanceMethodCallStruct(operationName+"Options", methodName, argsQueryStruct).
 		WithValidation(ValidIdentifier, "name")
-	i.newSimpleOperation(operationName, doc, qs, helperStructs...)
-	// TODO [this PR]: add a dedicated field for scalar return type
-	if scalarKind != "" {
-		// scalar: store the return type in InstanceMethodKind; no InstanceMethodMapping
-		op := i.Operations[len(i.Operations)-1]
-		kind := InstanceMethodKind(scalarKind)
-		op.InstanceMethodKind = &kind
-	}
+	i.newSimpleScalarOperation(operationName, doc, qs, scalarKind, helperStructs...)
 	return i
 }

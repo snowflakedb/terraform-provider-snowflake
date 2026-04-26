@@ -32,6 +32,7 @@ type InstanceMethodKind string
 const (
 	InstanceMethodKindSingleValue InstanceMethodKind = "single_value"
 	InstanceMethodKindSlice       InstanceMethodKind = "slice"
+	InstanceMethodKindScalar      InstanceMethodKind = "scalar"
 )
 
 // Operation defines a single operation for given object or objects family (e.g. CREATE DATABASE ROLE)
@@ -58,10 +59,11 @@ type Operation struct {
 	// InstanceMethodMapping is a definition of mapping needed when an InstanceMethodOperation returns a result struct
 	InstanceMethodMapping *Mapping
 	// InstanceMethodKind defines the kind of result for an InstanceMethodOperation.
-	// For single_value/slice it is set to the matching named constant and InstanceMethodMapping is also set.
-	// For scalar, it is set to the Go return type name (e.g. "int", "string") and InstanceMethodMapping stays nil.
-	// For void operations it remains nil.
+	// For single_value/slice it is set to the matching named constant and InstanceMethodMapping should also be set.
+	// For scalar, the InstanceMethodScalarReturnType should be set and InstanceMethodMapping stays nil.
 	InstanceMethodKind *InstanceMethodKind
+	// InstanceMethodScalarReturnType should be set to the Go return type name (e.g. "int", "string") for scalar instance methods.
+	InstanceMethodScalarReturnType string
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
 
@@ -115,6 +117,11 @@ func (s *Operation) withHelperStructs(helperStructs ...*Field) *Operation {
 	return s
 }
 
+func (s *Operation) withScalarReturnType(scalarReturnType string) *Operation {
+	s.InstanceMethodScalarReturnType = scalarReturnType
+	return s
+}
+
 func (s *Operation) withObjectInterface(objectInterface *Interface) *Operation {
 	s.ObjectInterface = objectInterface
 	return s
@@ -141,6 +148,7 @@ func newNoSqlOperation(kind string) *Operation {
 	return operation
 }
 
+// TODO [next PRs]: add functional options to modify the operation on creation
 func (i *Interface) newSimpleOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	if queryStruct.identifierField != nil {
 		queryStruct.identifierField.Kind = i.IdentifierKind
@@ -154,6 +162,24 @@ func (i *Interface) newSimpleOperation(kind string, doc string, queryStruct *Que
 	operation := newOperation(kind, doc).
 		withOptionsStruct(queryStruct.IntoField()).
 		withHelperStructs(f...)
+	i.Operations = append(i.Operations, operation)
+	return i
+}
+
+func (i *Interface) newSimpleScalarOperation(kind string, doc string, queryStruct *QueryStruct, scalarReturnType string, helperStructs ...IntoField) *Interface {
+	if queryStruct.identifierField != nil {
+		queryStruct.identifierField.Kind = i.IdentifierKind
+	}
+	f := make([]*Field, len(helperStructs))
+	if len(f) > 0 {
+		for i, hs := range helperStructs {
+			f[i] = hs.IntoField()
+		}
+	}
+	operation := newOperation(kind, doc).
+		withOptionsStruct(queryStruct.IntoField()).
+		withHelperStructs(f...).
+		withScalarReturnType(scalarReturnType)
 	i.Operations = append(i.Operations, operation)
 	return i
 }
