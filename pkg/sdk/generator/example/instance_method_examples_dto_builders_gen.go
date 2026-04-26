@@ -4,7 +4,7 @@ package example
 
 func NewAddNotificationIntegrationInstanceMethodExampleRequest(
 	name AccountObjectIdentifier,
-	args AddNotificationIntegrationArgsRequest,
+	args InstanceMethodExampleAddNotificationIntegrationArgsRequest,
 ) *AddNotificationIntegrationInstanceMethodExampleRequest {
 	s := AddNotificationIntegrationInstanceMethodExampleRequest{}
 	s.name = name
@@ -12,12 +12,12 @@ func NewAddNotificationIntegrationInstanceMethodExampleRequest(
 	return &s
 }
 
-func NewAddNotificationIntegrationArgsRequest() *AddNotificationIntegrationArgsRequest {
-	s := AddNotificationIntegrationArgsRequest{}
+func NewInstanceMethodExampleAddNotificationIntegrationArgsRequest() *InstanceMethodExampleAddNotificationIntegrationArgsRequest {
+	s := InstanceMethodExampleAddNotificationIntegrationArgsRequest{}
 	return &s
 }
 
-func (s *AddNotificationIntegrationArgsRequest) WithIntegrationName(integrationName AccountObjectIdentifier) *AddNotificationIntegrationArgsRequest {
+func (s *InstanceMethodExampleAddNotificationIntegrationArgsRequest) WithIntegrationName(integrationName AccountObjectIdentifier) *InstanceMethodExampleAddNotificationIntegrationArgsRequest {
 	s.IntegrationName = integrationName
 	return s
 }

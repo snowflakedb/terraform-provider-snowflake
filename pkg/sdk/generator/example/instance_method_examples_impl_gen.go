@@ -33,7 +33,7 @@ func (r *AddNotificationIntegrationInstanceMethodExampleRequest) toOpts() *AddNo
 	opts := &AddNotificationIntegrationInstanceMethodExampleOptions{
 		name: r.name,
 	}
-	opts.args = AddNotificationIntegrationArgs{
+	opts.args = InstanceMethodExampleAddNotificationIntegrationArgs{
 		IntegrationName: r.args.IntegrationName,
 	}
 	return opts

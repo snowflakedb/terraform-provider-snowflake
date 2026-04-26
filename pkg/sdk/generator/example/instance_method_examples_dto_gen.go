@@ -8,11 +8,11 @@ var (
 )
 
 type AddNotificationIntegrationInstanceMethodExampleRequest struct {
-	name AccountObjectIdentifier               // required
-	args AddNotificationIntegrationArgsRequest // required
+	name AccountObjectIdentifier                                    // required
+	args InstanceMethodExampleAddNotificationIntegrationArgsRequest // required
 }
 
-type AddNotificationIntegrationArgsRequest struct {
+type InstanceMethodExampleAddNotificationIntegrationArgsRequest struct {
 	IntegrationName AccountObjectIdentifier
 }
 

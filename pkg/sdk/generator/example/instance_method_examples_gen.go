@@ -13,9 +13,9 @@ type InstanceMethodExamples interface {
 
 // AddNotificationIntegrationInstanceMethodExampleOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/method/add_notification_integration.
 type AddNotificationIntegrationInstanceMethodExampleOptions struct {
-	call bool                           `ddl:"static" sql:"CALL"`
-	name AccountObjectIdentifier        `ddl:"identifier,instance_method" sql:"ADD_NOTIFICATION_INTEGRATION"`
-	args AddNotificationIntegrationArgs `ddl:"list,must_parentheses"`
+	call bool                                                `ddl:"static" sql:"CALL"`
+	name AccountObjectIdentifier                             `ddl:"identifier,instance_method" sql:"ADD_NOTIFICATION_INTEGRATION"`
+	args InstanceMethodExampleAddNotificationIntegrationArgs `ddl:"list,must_parentheses"`
 }
 
 type addNotificationIntegrationRow struct {
@@ -26,15 +26,15 @@ type AddNotificationIntegrationResult struct {
 	Status string
 }
 
-type AddNotificationIntegrationArgs struct {
+type InstanceMethodExampleAddNotificationIntegrationArgs struct {
 	IntegrationName AccountObjectIdentifier `ddl:"identifier"`
 }
 
 // GetSpendingLimitInstanceMethodExampleOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/method/get_spending_limit.
 type GetSpendingLimitInstanceMethodExampleOptions struct {
-	call bool                    `ddl:"static" sql:"CALL"`
-	name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"GET_SPENDING_LIMIT"`
-	args getSpendingLimitArgs    `ddl:"list,must_parentheses"`
+	call bool                                      `ddl:"static" sql:"CALL"`
+	name AccountObjectIdentifier                   `ddl:"identifier,instance_method" sql:"GET_SPENDING_LIMIT"`
+	args instanceMethodExampleGetSpendingLimitArgs `ddl:"list,must_parentheses"`
 }
 
-type getSpendingLimitArgs struct{}
+type instanceMethodExampleGetSpendingLimitArgs struct{}
