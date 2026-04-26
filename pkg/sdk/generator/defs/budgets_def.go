@@ -58,36 +58,32 @@ var budgetsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).InstanceMethodOperation(
+).InstanceMethodOperationScalar(
 	"https://docs.snowflake.com/en/sql-reference/classes/budget/method/set_spending_limit",
 	"SET_SPENDING_LIMIT",
 	setSpendingLimitArgs,
-	nil,
-	g.InstanceMethodKind("string"),
-).InstanceMethodOperation(
+	"string",
+).InstanceMethodOperationScalar(
 	"https://docs.snowflake.com/en/sql-reference/classes/budget/method/get_spending_limit",
 	"GET_SPENDING_LIMIT",
 	nil,
-	nil,
-	g.InstanceMethodKind("int"),
-).InstanceMethodOperation(
+	"int",
+).InstanceMethodOperationScalar(
 	"https://docs.snowflake.com/en/sql-reference/classes/budget/method/set_email_notifications",
 	"SET_EMAIL_NOTIFICATIONS",
 	setEmailNotificationsArgs,
-	nil,
-	g.InstanceMethodKind("string"),
+	"string",
 ).InstanceMethodOperation(
 	"https://docs.snowflake.com/en/sql-reference/classes/budget/method/get_notification_integrations",
 	"GET_NOTIFICATION_INTEGRATIONS",
 	nil,
 	getNotificationIntegrationsResult,
 	g.InstanceMethodKindSlice,
-).InstanceMethodOperation(
+).InstanceMethodOperationScalar(
 	"https://docs.snowflake.com/en/sql-reference/classes/budget/methods/set_cycle_start_action",
 	"SET_CYCLE_START_ACTION",
 	setCycleStartActionArgs,
-	nil,
-	g.InstanceMethodKind("string"),
+	"string",
 ).InstanceMethodOperation(
 	"https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_cycle_start_action",
 	"GET_CYCLE_START_ACTION",
