@@ -14,9 +14,9 @@ func (i *Interface) newInstanceMethodCallStruct(structName string, methodName st
 	qs.identifierField = identifier
 	qs.fields = append(qs.fields, identifier)
 	if argsQueryStruct == nil {
-		// TODO [this PR]: improve naming handling
 		qs.QueryStructField("args", NewQueryStruct(sqlToFieldName(genhelpers.ToSnakeCase(i.NameSingular)+"_"+methodName, false)+"Args"), ListOptions().MustParentheses())
 	} else {
+		// TODO [next PRs]: generalize naming handling for query structs
 		argsQueryStruct.name = i.NameSingular + argsQueryStruct.name
 		qs.QueryStructField("args", argsQueryStruct, ListOptions().MustParentheses().Required())
 	}
