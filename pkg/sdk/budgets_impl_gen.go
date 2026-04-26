@@ -95,7 +95,7 @@ func (r *SetSpendingLimitBudgetRequest) toOpts() *SetSpendingLimitBudgetOptions 
 		name: r.name,
 	}
 	opts.args = BudgetSetSpendingLimitArgs{
-		spendingLimit: r.args.spendingLimit,
+		SpendingLimit: r.args.SpendingLimit,
 	}
 	return opts
 }
@@ -112,8 +112,8 @@ func (r *SetEmailNotificationsBudgetRequest) toOpts() *SetEmailNotificationsBudg
 		name: r.name,
 	}
 	opts.args = BudgetSetEmailNotificationsArgs{
-		notificationIntegration: r.args.notificationIntegration,
-		emails:                  r.args.emails,
+		NotificationIntegration: r.args.NotificationIntegration,
+		Emails:                  r.args.Emails,
 	}
 	return opts
 }
@@ -135,8 +135,8 @@ func (r *SetCycleStartActionBudgetRequest) toOpts() *SetCycleStartActionBudgetOp
 		name: r.name,
 	}
 	opts.args = BudgetSetCycleStartActionArgs{
-		procedure: r.args.procedure,
-		arguments: r.args.arguments,
+		Procedure: r.args.Procedure,
+		Arguments: r.args.Arguments,
 	}
 	return opts
 }

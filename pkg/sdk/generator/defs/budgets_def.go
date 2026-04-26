@@ -8,11 +8,11 @@ import (
 )
 
 var setSpendingLimitArgs = g.NewQueryStruct("SetSpendingLimitArgs").
-	PredefinedQueryStructField("spendingLimit", "int", g.ParameterOptions().Required().NoEquals())
+	PredefinedQueryStructField("SpendingLimit", "int", g.ParameterOptions().Required().NoEquals())
 
 var setEmailNotificationsArgs = g.NewQueryStruct("SetEmailNotificationsArgs").
-	PredefinedQueryStructField("notificationIntegration", "*string", g.ParameterOptions().NoEquals().SingleQuotes()).
-	PredefinedQueryStructField("emails", "string", g.ParameterOptions().Required().NoEquals().SingleQuotes())
+	PredefinedQueryStructField("NotificationIntegration", "*string", g.ParameterOptions().NoEquals().SingleQuotes()).
+	PredefinedQueryStructField("Emails", "string", g.ParameterOptions().Required().NoEquals().SingleQuotes())
 
 var getNotificationIntegrationsResult = g.StructPair(
 	"getNotificationIntegrationsRow",
@@ -22,8 +22,8 @@ var getNotificationIntegrationsResult = g.StructPair(
 	Time("added_date")
 
 var setCycleStartActionArgs = g.NewQueryStruct("SetCycleStartActionArgs").
-	PredefinedQueryStructField("procedure", "string", g.ParameterOptions().Required().NoEquals().SingleQuotes()).
-	PredefinedQueryStructField("arguments", "string", g.ParameterOptions().Required().NoEquals())
+	PredefinedQueryStructField("Procedure", "string", g.ParameterOptions().Required().NoEquals().SingleQuotes()).
+	PredefinedQueryStructField("Arguments", "string", g.ParameterOptions().Required().NoEquals())
 
 var getCycleStartActionResult = g.StructPair(
 	"getCycleStartActionRow",

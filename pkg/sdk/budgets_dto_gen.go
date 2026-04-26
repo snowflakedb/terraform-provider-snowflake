@@ -31,7 +31,7 @@ type SetSpendingLimitBudgetRequest struct {
 }
 
 type BudgetSetSpendingLimitArgsRequest struct {
-	spendingLimit int // required
+	SpendingLimit int // required
 }
 
 type GetSpendingLimitBudgetRequest struct {
@@ -44,8 +44,8 @@ type SetEmailNotificationsBudgetRequest struct {
 }
 
 type BudgetSetEmailNotificationsArgsRequest struct {
-	notificationIntegration *string
-	emails                  string // required
+	NotificationIntegration *string
+	Emails                  string // required
 }
 
 type GetNotificationIntegrationsBudgetRequest struct {
@@ -58,8 +58,8 @@ type SetCycleStartActionBudgetRequest struct {
 }
 
 type BudgetSetCycleStartActionArgsRequest struct {
-	procedure string // required
-	arguments string // required
+	Procedure string // required
+	Arguments string // required
 }
 
 type GetCycleStartActionBudgetRequest struct {

@@ -46,7 +46,7 @@ type SetSpendingLimitBudgetOptions struct {
 }
 
 type BudgetSetSpendingLimitArgs struct {
-	spendingLimit int `ddl:"parameter,no_equals"`
+	SpendingLimit int `ddl:"parameter,no_equals"`
 }
 
 // GetSpendingLimitBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/method/get_spending_limit.
@@ -66,8 +66,8 @@ type SetEmailNotificationsBudgetOptions struct {
 }
 
 type BudgetSetEmailNotificationsArgs struct {
-	notificationIntegration *string `ddl:"parameter,single_quotes,no_equals"`
-	emails                  string  `ddl:"parameter,single_quotes,no_equals"`
+	NotificationIntegration *string `ddl:"parameter,single_quotes,no_equals"`
+	Emails                  string  `ddl:"parameter,single_quotes,no_equals"`
 }
 
 // GetNotificationIntegrationsBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/method/get_notification_integrations.
@@ -99,8 +99,8 @@ type SetCycleStartActionBudgetOptions struct {
 }
 
 type BudgetSetCycleStartActionArgs struct {
-	procedure string `ddl:"parameter,single_quotes,no_equals"`
-	arguments string `ddl:"parameter,no_equals"`
+	Procedure string `ddl:"parameter,single_quotes,no_equals"`
+	Arguments string `ddl:"parameter,no_equals"`
 }
 
 // GetCycleStartActionBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_cycle_start_action.

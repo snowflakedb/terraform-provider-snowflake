@@ -108,7 +108,7 @@ func TestBudgets_SetSpendingLimit(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.args = BudgetSetSpendingLimitArgs{spendingLimit: 1000}
+		opts.args = BudgetSetSpendingLimitArgs{SpendingLimit: 1000}
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_SPENDING_LIMIT (1000)", id.FullyQualifiedName())
 	})
 
@@ -169,15 +169,15 @@ func TestBudgets_SetEmailNotifications(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		// manually adjusted
-		opts.args = BudgetSetEmailNotificationsArgs{emails: "test@example.com"}
+		opts.args = BudgetSetEmailNotificationsArgs{Emails: "test@example.com"}
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('test@example.com')", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.args = BudgetSetEmailNotificationsArgs{
-			notificationIntegration: String("my_integration"),
-			emails:                  "test@example.com",
+			NotificationIntegration: String("my_integration"),
+			Emails:                  "test@example.com",
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('my_integration', 'test@example.com')", id.FullyQualifiedName())
 	})
@@ -237,13 +237,13 @@ func TestBudgets_SetCycleStartAction(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		// manually adjusted
-		opts.args = BudgetSetCycleStartActionArgs{procedure: "myschema.myproc", arguments: "arg1"}
+		opts.args = BudgetSetCycleStartActionArgs{Procedure: "myschema.myproc", Arguments: "arg1"}
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION ('myschema.myproc', arg1)", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.args = BudgetSetCycleStartActionArgs{procedure: "mydb.myschema.myproc", arguments: "arg1, arg2"}
+		opts.args = BudgetSetCycleStartActionArgs{Procedure: "mydb.myschema.myproc", Arguments: "arg1, arg2"}
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION ('mydb.myschema.myproc', arg1, arg2)", id.FullyQualifiedName())
 	})
 }

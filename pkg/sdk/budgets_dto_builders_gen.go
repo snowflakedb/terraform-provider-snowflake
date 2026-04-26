@@ -52,7 +52,7 @@ func NewBudgetSetSpendingLimitArgsRequest(
 	spendingLimit int,
 ) *BudgetSetSpendingLimitArgsRequest {
 	s := BudgetSetSpendingLimitArgsRequest{}
-	s.spendingLimit = spendingLimit
+	s.SpendingLimit = spendingLimit
 	return &s
 }
 
@@ -78,12 +78,12 @@ func NewBudgetSetEmailNotificationsArgsRequest(
 	emails string,
 ) *BudgetSetEmailNotificationsArgsRequest {
 	s := BudgetSetEmailNotificationsArgsRequest{}
-	s.emails = emails
+	s.Emails = emails
 	return &s
 }
 
-func (s *BudgetSetEmailNotificationsArgsRequest) WithnotificationIntegration(notificationIntegration string) *BudgetSetEmailNotificationsArgsRequest {
-	s.notificationIntegration = &notificationIntegration
+func (s *BudgetSetEmailNotificationsArgsRequest) WithNotificationIntegration(notificationIntegration string) *BudgetSetEmailNotificationsArgsRequest {
+	s.NotificationIntegration = &notificationIntegration
 	return s
 }
 
@@ -110,8 +110,8 @@ func NewBudgetSetCycleStartActionArgsRequest(
 	arguments string,
 ) *BudgetSetCycleStartActionArgsRequest {
 	s := BudgetSetCycleStartActionArgsRequest{}
-	s.procedure = procedure
-	s.arguments = arguments
+	s.Procedure = procedure
+	s.Arguments = arguments
 	return &s
 }
 
