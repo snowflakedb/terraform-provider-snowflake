@@ -23,9 +23,11 @@ var InstanceMethodExamplesDef = g.NewInterface(
 	"ADD_NOTIFICATION_INTEGRATION",
 	addNotificationIntegrationArgs,
 	addNotificationIntegrationResult,
+	g.InstanceMethodKindSingleValue,
 ).InstanceMethodOperation(
 	"https://docs.snowflake.com/en/sql-reference/classes/budget/method/get_spending_limit",
 	"GET_SPENDING_LIMIT",
 	nil,
 	nil,
+	"",
 )

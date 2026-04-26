@@ -27,7 +27,13 @@ type {{ .Name }} interface {
 			Drop(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
 			DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error
 		{{- else if .InstanceMethodMapping }}
-			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodMapping.To.Name }}, error)
+			{{- if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}
+				{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .InstanceMethodMapping.To.Name }}, error)
+			{{- else }}
+				{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodMapping.To.Name }}, error)
+			{{- end }}
+		{{- else if .InstanceMethodKind }}
+			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ instance_method_kind_deref .InstanceMethodKind }}, error)
 		{{- else }}
 			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
 		{{- end -}}

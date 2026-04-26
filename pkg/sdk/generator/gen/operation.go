@@ -27,6 +27,13 @@ const (
 	ShowMappingKindSlice       ShowMappingKind = "slice"
 )
 
+type InstanceMethodKind string
+
+const (
+	InstanceMethodKindSingleValue InstanceMethodKind = "single_value"
+	InstanceMethodKindSlice       InstanceMethodKind = "slice"
+)
+
 // Operation defines a single operation for given object or objects family (e.g. CREATE DATABASE ROLE)
 type Operation struct {
 	// Name is the operation's name, e.g. "Create"
@@ -50,6 +57,11 @@ type Operation struct {
 	DescribeMapping *Mapping
 	// InstanceMethodMapping is a definition of mapping needed when an InstanceMethodOperation returns a result struct
 	InstanceMethodMapping *Mapping
+	// InstanceMethodKind defines the kind of result for an InstanceMethodOperation.
+	// For single_value/slice it is set to the matching named constant and InstanceMethodMapping is also set.
+	// For scalar, it is set to the Go return type name (e.g. "int", "string") and InstanceMethodMapping stays nil.
+	// For void operations it remains nil.
+	InstanceMethodKind *InstanceMethodKind
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
 
@@ -116,8 +128,11 @@ func addDescriptionMapping(op *Operation, from, to *Field) {
 	op.DescribeMapping = newMapping("convert", from, to)
 }
 
-func addInstanceMethodMapping(op *Operation, from, to *Field) {
-	op.InstanceMethodMapping = newMapping("convert", from, to)
+func instanceMethodMappingForKind(kind InstanceMethodKind) func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		op.InstanceMethodMapping = newMapping("convert", from, to)
+		op.InstanceMethodKind = &kind
+	}
 }
 
 func newNoSqlOperation(kind string) *Operation {

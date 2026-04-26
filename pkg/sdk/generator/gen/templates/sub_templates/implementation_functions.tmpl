@@ -77,13 +77,30 @@
             return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDrop{{ .ObjectInterface.NameSingular }}Request(id).WithIfExists(true)) }, ctx, id)
         }
     {{ else if .InstanceMethodMapping }}
-        func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodMapping.To.Name }}, error) {
-            opts := request.toOpts()
-            result, err := validateAndQueryOne[{{ .InstanceMethodMapping.From.Name }}](v.client, ctx, opts)
-            if err != nil {
-                return nil, err
+        {{ if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}
+            func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .InstanceMethodMapping.To.Name }}, error) {
+                opts := request.toOpts()
+                dbRows, err := validateAndQuery[{{ .InstanceMethodMapping.From.Name }}](v.client, ctx, opts)
+                if err != nil {
+                    return nil, err
+                }
+                return convertRows[{{ .InstanceMethodMapping.From.Name }}, {{ .InstanceMethodMapping.To.Name }}](dbRows)
             }
-            return conversionErrorWrapped(result.convert())
+        {{ else }}
+            func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodMapping.To.Name }}, error) {
+                opts := request.toOpts()
+                result, err := validateAndQueryOne[{{ .InstanceMethodMapping.From.Name }}](v.client, ctx, opts)
+                if err != nil {
+                    return nil, err
+                }
+                return conversionErrorWrapped(result.convert())
+            }
+        {{ end }}
+    {{ else if .InstanceMethodKind }}
+        func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ instance_method_kind_deref .InstanceMethodKind }}, error) {
+            // TODO: implement scalar result scanning
+            var result {{ instance_method_kind_deref .InstanceMethodKind }}
+            return &result, nil
         }
     {{ else }}
         func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error {
