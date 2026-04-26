@@ -22,26 +22,31 @@ func TestBudgets_Create(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.OrReplace = Bool(true)
+		opts.IfNotExists = Bool(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateBudgetOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		assertOptsValidAndSQLEquals(t, opts, "CREATE SNOWFLAKE.CORE.BUDGET %s ()", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		opts.OrReplace = Bool(true)
+		opts.comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SNOWFLAKE.CORE.BUDGET %s () COMMENT = 'test comment'", id.FullyQualifiedName())
 	})
 }
 
@@ -61,20 +66,22 @@ func TestBudgets_Drop(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		assertOptsValidAndSQLEquals(t, opts, "DROP SNOWFLAKE.CORE.BUDGET %s", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		opts.IfExists = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "DROP SNOWFLAKE.CORE.BUDGET IF EXISTS %s", id.FullyQualifiedName())
 	})
 }
 
@@ -94,21 +101,18 @@ func TestBudgets_SetSpendingLimit(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.args = BudgetSetSpendingLimitArgs{spendingLimit: 1000}
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_SPENDING_LIMIT (1000)", id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
-	})
+	// all options removed manually
 }
 
 func TestBudgets_GetSpendingLimit(t *testing.T) {
@@ -127,21 +131,18 @@ func TestBudgets_GetSpendingLimit(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!GET_SPENDING_LIMIT ()", id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
-	})
+	// all options removed manually
 }
 
 func TestBudgets_SetEmailNotifications(t *testing.T) {
@@ -160,20 +161,25 @@ func TestBudgets_SetEmailNotifications(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		opts.args = BudgetSetEmailNotificationsArgs{emails: "test@example.com"}
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('test@example.com')", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.args = BudgetSetEmailNotificationsArgs{
+			notificationIntegration: String("my_integration"),
+			emails:                  "test@example.com",
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('my_integration', 'test@example.com')", id.FullyQualifiedName())
 	})
 }
 
@@ -193,21 +199,18 @@ func TestBudgets_GetNotificationIntegrations(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!GET_NOTIFICATION_INTEGRATIONS ()", id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
-	})
+	// all options removed manually
 }
 
 func TestBudgets_SetCycleStartAction(t *testing.T) {
@@ -226,20 +229,22 @@ func TestBudgets_SetCycleStartAction(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		opts.args = BudgetSetCycleStartActionArgs{procedure: "myschema.myproc", arguments: "arg1"}
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION ('myschema.myproc', arg1)", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.args = BudgetSetCycleStartActionArgs{procedure: "mydb.myschema.myproc", arguments: "arg1, arg2"}
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION ('mydb.myschema.myproc', arg1, arg2)", id.FullyQualifiedName())
 	})
 }
 
@@ -259,19 +264,16 @@ func TestBudgets_GetCycleStartAction(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// manually adjusted
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		// manually adjusted
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!GET_CYCLE_START_ACTION ()", id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
-	})
+	// all options removed manually
 }
