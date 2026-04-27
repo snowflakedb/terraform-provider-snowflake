@@ -290,7 +290,7 @@ func (s *PostgresInstanceUnsetRequest) WithStorageIntegration(storageIntegration
 }
 
 func NewPostgresInstanceResetAccessRequest(
-	forRole string,
+	forRole PostgresInstanceResetAccessRole,
 ) *PostgresInstanceResetAccessRequest {
 	s := PostgresInstanceResetAccessRequest{}
 	s.For = forRole

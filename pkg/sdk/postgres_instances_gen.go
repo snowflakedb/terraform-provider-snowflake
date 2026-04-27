@@ -107,7 +107,7 @@ type PostgresInstanceUnset struct {
 }
 
 type PostgresInstanceResetAccess struct {
-	For string `ddl:"parameter,single_quotes,no_equals" sql:"FOR"`
+	For PostgresInstanceResetAccessRole `ddl:"parameter,single_quotes,no_equals" sql:"FOR"`
 }
 
 // DropPostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-postgres-instance.
