@@ -570,6 +570,48 @@ func TestBuilder_instanceMethodInvocation(t *testing.T) {
 	})
 }
 
+func TestBuilder_systemReferenceInvocation(t *testing.T) {
+	t.Run("system reference: schema object identifier with no arguments", func(t *testing.T) {
+		id := randomSchemaObjectIdentifierWithArguments()
+		s := &struct {
+			name SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+
+	t.Run("system reference: schema object identifier with one argument", func(t *testing.T) {
+		id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR)
+		s := &struct {
+			name SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+
+	t.Run("system reference: schema object identifier with more arguments", func(t *testing.T) {
+		id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
+		s := &struct {
+			name SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+
+	t.Run("system reference: account object identifier", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"TABLE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('TABLE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+}
+
 func TestBuilder_DataType(t *testing.T) {
 	type dataTypeTestHelper struct {
 		DataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
