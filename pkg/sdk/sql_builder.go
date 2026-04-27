@@ -437,7 +437,8 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			listClauses = append(listClauses, sqlIdentifierClause{
 				value: identifier,
 				em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
-				qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
+				// TODO [next PRs]: handle single quotes for identifier lists correctly
+				// qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 			})
 			continue
 		}
