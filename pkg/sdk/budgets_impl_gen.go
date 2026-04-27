@@ -31,15 +31,13 @@ func (v *budgets) DropSafely(ctx context.Context, id SchemaObjectIdentifier) err
 }
 
 func (v *budgets) SetSpendingLimit(ctx context.Context, request *SetSpendingLimitBudgetRequest) (*string, error) {
-	// TODO: implement scalar result scanning
-	var result string
-	return &result, nil
+	// adjusted manually
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
 }
 
 func (v *budgets) GetSpendingLimit(ctx context.Context, request *GetSpendingLimitBudgetRequest) (*int, error) {
-	// TODO: implement scalar result scanning
-	var result int
-	return &result, nil
+	// adjusted manually
+	return validateAndQueryOne[int](v.client, ctx, request.toOpts())
 }
 
 func (v *budgets) SetEmailNotifications(ctx context.Context, request *SetEmailNotificationsBudgetRequest) (*string, error) {
