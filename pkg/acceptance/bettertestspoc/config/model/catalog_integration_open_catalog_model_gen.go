@@ -14,6 +14,7 @@ import (
 type CatalogIntegrationOpenCatalogModel struct {
 	Name                   tfconfig.Variable `json:"name,omitempty"`
 	CatalogNamespace       tfconfig.Variable `json:"catalog_namespace,omitempty"`
+	CatalogSource          tfconfig.Variable `json:"catalog_source,omitempty"`
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -98,6 +99,11 @@ func (c *CatalogIntegrationOpenCatalogModel) WithCatalogNamespace(catalogNamespa
 	return c
 }
 
+func (c *CatalogIntegrationOpenCatalogModel) WithCatalogSource(catalogSource string) *CatalogIntegrationOpenCatalogModel {
+	c.CatalogSource = tfconfig.StringVariable(catalogSource)
+	return c
+}
+
 func (c *CatalogIntegrationOpenCatalogModel) WithComment(comment string) *CatalogIntegrationOpenCatalogModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -133,6 +139,11 @@ func (c *CatalogIntegrationOpenCatalogModel) WithNameValue(value tfconfig.Variab
 
 func (c *CatalogIntegrationOpenCatalogModel) WithCatalogNamespaceValue(value tfconfig.Variable) *CatalogIntegrationOpenCatalogModel {
 	c.CatalogNamespace = value
+	return c
+}
+
+func (c *CatalogIntegrationOpenCatalogModel) WithCatalogSourceValue(value tfconfig.Variable) *CatalogIntegrationOpenCatalogModel {
+	c.CatalogSource = value
 	return c
 }
 
