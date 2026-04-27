@@ -27,7 +27,7 @@ type CreateBudgetOptions struct {
 	IfNotExists         *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                SchemaObjectIdentifier `ddl:"identifier"`
 	constructor         bool                   `ddl:"static" sql:"()"`
-	comment             *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Comment             *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // DropBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/commands/drop-budget.

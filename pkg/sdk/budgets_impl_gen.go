@@ -69,7 +69,7 @@ func (r *CreateBudgetRequest) toOpts() *CreateBudgetOptions {
 		OrReplace:   r.OrReplace,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		comment:     r.comment,
+		Comment:     r.Comment,
 	}
 	return opts
 }

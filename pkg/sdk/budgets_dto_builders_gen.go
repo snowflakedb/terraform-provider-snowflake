@@ -20,8 +20,8 @@ func (s *CreateBudgetRequest) WithIfNotExists(ifNotExists bool) *CreateBudgetReq
 	return s
 }
 
-func (s *CreateBudgetRequest) Withcomment(comment string) *CreateBudgetRequest {
-	s.comment = &comment
+func (s *CreateBudgetRequest) WithComment(comment string) *CreateBudgetRequest {
+	s.Comment = &comment
 	return s
 }
 

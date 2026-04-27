@@ -17,7 +17,7 @@ type CreateBudgetRequest struct {
 	OrReplace   *bool
 	IfNotExists *bool
 	name        SchemaObjectIdentifier // required
-	comment     *string
+	Comment     *string
 }
 
 type DropBudgetRequest struct {

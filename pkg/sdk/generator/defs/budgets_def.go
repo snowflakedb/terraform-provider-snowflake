@@ -50,7 +50,7 @@ var budgetsDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		PredefinedQueryStructField("constructor", "bool", g.StaticOptions().SQL("()")).
-		PredefinedQueryStructField("comment", "*string", g.ParameterOptions().SQL("COMMENT").SingleQuotes()).
+		PredefinedQueryStructField("Comment", "*string", g.ParameterOptions().SQL("COMMENT").SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).DropOperation(

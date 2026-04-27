@@ -45,7 +45,7 @@ func TestBudgets_Create(t *testing.T) {
 		opts := defaultOpts()
 		// manually adjusted
 		opts.OrReplace = Bool(true)
-		opts.comment = String("test comment")
+		opts.Comment = String("test comment")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SNOWFLAKE.CORE.BUDGET %s () COMMENT = 'test comment'", id.FullyQualifiedName())
 	})
 }
