@@ -345,6 +345,16 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 						return sqlInstanceMethodClause{object: objectID, method: sqlTag}, nil
 					}
 				}
+				// system_reference classifier: render as SYSTEM$REFERENCE('<objectType>', '<fqn>')
+				for _, part := range ddlTagParts {
+					if strings.TrimSpace(part) == "system_reference" {
+						objectID, ok := reflectedValue.(ObjectIdentifier)
+						if !ok {
+							return nil, fmt.Errorf("system_reference classifier requires ObjectIdentifier, got %T", reflectedValue)
+						}
+						return sqlSystemReferenceClause{objectType: sqlTag, object: objectID}, nil
+					}
+				}
 				return sqlIdentifierClause{
 					key:   sqlTag,
 					value: reflectedValue.(Identifier),
@@ -694,4 +704,13 @@ type sqlInstanceMethodClause struct {
 
 func (v sqlInstanceMethodClause) String() string {
 	return fmt.Sprintf("%s!%s", v.object.FullyQualifiedName(), v.method)
+}
+
+type sqlSystemReferenceClause struct {
+	objectType string
+	object     ObjectIdentifier
+}
+
+func (v sqlSystemReferenceClause) String() string {
+	return fmt.Sprintf("SYSTEM$REFERENCE('%s', '%s')", v.objectType, v.object.FullyQualifiedName())
 }

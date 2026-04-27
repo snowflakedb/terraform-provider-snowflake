@@ -240,18 +240,17 @@ func TestBudgets_SetCycleStartAction(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	// TODO [next PRs]: identifier additionally in single quotes
 	t.Run("one arg", func(t *testing.T) {
 		opts := defaultOpts()
 		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (%s, arg1)", id.FullyQualifiedName(), procedureId.SchemaObjectId().FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1)", id.FullyQualifiedName(), procedureId.SchemaObjectId().FullyQualifiedName())
 	})
 
 	t.Run("more args", func(t *testing.T) {
 		procedureId2 := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeVARCHAR)
 		opts := defaultOpts()
 		opts.args = BudgetSetCycleStartActionArgs{Procedure: procedureId2.SchemaObjectId(), Arguments: []string{"arg1", "arg2"}}
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (%s, arg1, arg2)", id.FullyQualifiedName(), procedureId2.SchemaObjectId().FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1, arg2)", id.FullyQualifiedName(), procedureId2.SchemaObjectId().FullyQualifiedName())
 	})
 }
 

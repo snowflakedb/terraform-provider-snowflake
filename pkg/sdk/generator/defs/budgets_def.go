@@ -25,7 +25,7 @@ var getNotificationIntegrationsResult = g.StructPair(
 	Time("added_date")
 
 var setCycleStartActionArgs = g.NewQueryStruct("SetCycleStartActionArgs").
-	Identifier("Procedure", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+	Identifier("Procedure", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("PROCEDURE")).
 	List("Arguments", "string", g.ListOptions().Required())
 
 var getCycleStartActionResult = g.StructPair(

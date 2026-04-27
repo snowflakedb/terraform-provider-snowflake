@@ -103,7 +103,7 @@ type SetCycleStartActionBudgetOptions struct {
 }
 
 type BudgetSetCycleStartActionArgs struct {
-	Procedure SchemaObjectIdentifier `ddl:"identifier"`
+	Procedure SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"PROCEDURE"`
 	Arguments []string               `ddl:"list"`
 }
 
