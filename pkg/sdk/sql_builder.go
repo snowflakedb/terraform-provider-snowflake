@@ -370,11 +370,10 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 			if err != nil {
 				return nil, err
 			}
-			if len(fieldStructClauses) < 1 {
+			if len(fieldStructClauses) == 0 {
 				// handle the case where the list is empty and parentheses are a must
-				modifier := b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier)
-				switch modifier {
-				case MustParentheses:
+				pm := b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier)
+				if pm == MustParentheses {
 					fieldStructClauses = append(fieldStructClauses, sqlStaticClause(""))
 				}
 			}
