@@ -98,9 +98,7 @@
         {{ end }}
     {{ else if .InstanceMethodScalarReturnType }}
         func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodScalarReturnType }}, error) {
-            // TODO: implement scalar result scanning
-            var result {{ .InstanceMethodScalarReturnType }}
-            return &result, nil
+            return validateAndQueryOne[{{ .InstanceMethodScalarReturnType }}](v.client, ctx, request.toOpts())
         }
     {{ else }}
         func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error {
