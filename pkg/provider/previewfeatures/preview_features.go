@@ -13,6 +13,7 @@ type feature string
 const (
 	AccountAuthenticationPolicyAttachmentResource feature = "snowflake_account_authentication_policy_attachment_resource"
 	AccountPasswordPolicyAttachmentResource       feature = "snowflake_account_password_policy_attachment_resource"
+	AccountSessionPolicyAttachmentResource        feature = "snowflake_account_session_policy_attachment_resource"
 	AlertResource                                 feature = "snowflake_alert_resource"
 	AlertsDatasource                              feature = "snowflake_alerts_datasource"
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
@@ -85,6 +86,7 @@ const (
 	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
 	SemanticViewResource                          feature = "snowflake_semantic_view_resource"
 	SemanticViewDatasource                        feature = "snowflake_semantic_views_datasource"
+	SessionPoliciesDatasource                     feature = "snowflake_session_policies_datasource"
 	SessionPolicyResource                         feature = "snowflake_session_policy_resource"
 	ServiceResource                               feature = "snowflake_service_resource"
 	ServicesDatasource                            feature = "snowflake_services_datasource"
@@ -112,6 +114,7 @@ const (
 	UserPublicKeysResource                        feature = "snowflake_user_public_keys_resource"
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
 	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
+	UserSessionPolicyAttachmentResource           feature = "snowflake_user_session_policy_attachment_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
 	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
 )
@@ -119,6 +122,7 @@ const (
 var allPreviewFeatures = []feature{
 	AccountAuthenticationPolicyAttachmentResource,
 	AccountPasswordPolicyAttachmentResource,
+	AccountSessionPolicyAttachmentResource,
 	AlertResource,
 	AlertsDatasource,
 	ApiIntegrationResource,
@@ -177,6 +181,7 @@ var allPreviewFeatures = []feature{
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,
+	SessionPoliciesDatasource,
 	SessionPolicyResource,
 	SequenceResource,
 	SequencesDatasource,
@@ -205,8 +210,9 @@ var allPreviewFeatures = []feature{
 	TableResource,
 	TablesDatasource,
 	UserAuthenticationPolicyAttachmentResource,
-	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+	UserPublicKeysResource,
+	UserSessionPolicyAttachmentResource,
 	WarehouseAdaptiveResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)

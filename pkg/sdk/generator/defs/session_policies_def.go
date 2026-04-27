@@ -81,28 +81,18 @@ var sessionPoliciesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-session-policies",
-		g.DbStruct("showSessionPolicyDBRow").
-			Field("created_on", "string").
-			Field("name", "string").
-			Field("database_name", "string").
-			Field("schema_name", "string").
-			Field("kind", "string").
-			Field("owner", "string").
-			Field("comment", "string").
-			Field("owner_role_type", "string").
-			Field("options", "string"),
-		g.PlainStruct("SessionPolicy").
-			Field("CreatedOn", "string").
-			Field("Name", "string").
-			Field("DatabaseName", "string").
-			Field("SchemaName", "string").
-			Field("Kind", "string").
-			Field("Owner", "string").
-			Field("Comment", "string").
-			Field("OwnerRoleType", "string").
-			Field("Options", "string"),
+		g.StructPair("showSessionPolicyDBRow", "SessionPolicy").
+			Text("created_on").
+			Text("name").
+			Text("database_name").
+			Text("schema_name").
+			Text("kind").
+			Text("owner").
+			Text("comment").
+			Text("owner_role_type").
+			Text("options"),
 		g.NewQueryStruct("ShowSessionPolicies").
 			Show().
 			SQL("SESSION POLICIES").
@@ -111,21 +101,17 @@ var sessionPoliciesDef = g.NewInterface(
 			OptionalOn().
 			OptionalStartsWith().
 			OptionalLimit(),
+		g.ShowByIDLikeFiltering,
+		g.ShowByIDExtendedInFiltering,
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering, g.ShowByIDExtendedInFiltering).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-session-policy",
-		g.DbStruct("describeSessionPolicyDBRow").
+		g.StructPair("describeSessionPolicyDBRow", "SessionPolicyProperty").
 			Text("property").
 			Text("value").
 			Text("default").
 			Text("description"),
-		g.PlainStruct("SessionPolicyProperty").
-			Text("Property").
-			Text("Value").
-			Text("Default").
-			Text("Description"),
 		g.NewQueryStruct("DescribeSessionPolicy").
 			Describe().
 			SQL("SESSION POLICY").
@@ -140,4 +126,10 @@ var sessionPoliciesDef = g.NewInterface(
 			Number("SessionUiIdleTimeoutMins").
 			StringList("AllowedSecondaryRoles").
 			StringList("BlockedSecondaryRoles"),
+	).
+	WithCustomInterfaceMethod(
+		"DescribeDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*SessionPolicyDetails", "error",
 	)

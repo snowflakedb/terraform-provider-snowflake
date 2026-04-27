@@ -49,7 +49,7 @@ var externalVolumeSchema = map[string]*schema.Schema{
 					Required:         true,
 					ValidateDiagFunc: sdkValidation(sdk.ToStorageProvider),
 					DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToStorageProvider)),
-					Description:      fmt.Sprintf("Specifies the cloud storage provider that stores your data files. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllStorageProviderValues)),
+					Description:      fmt.Sprintf("Specifies the cloud storage provider that stores your data files. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllStorageProviders)),
 				},
 				"storage_base_url": {
 					Type:        schema.TypeString,
@@ -528,7 +528,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 
 		var storageLocation sdk.ExternalVolumeStorageLocation
 		switch storageProviderParsed {
-		case sdk.StorageProviderS3, sdk.StorageProviderS3GOV:
+		case sdk.StorageProviderS3, sdk.StorageProviderS3gov:
 			// Validate that provider-incompatible fields are not given
 			azureTenantId, ok := storageLocationConfig["azure_tenant_id"].(string)
 			if ok && len(azureTenantId) > 0 {
@@ -606,7 +606,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				Name:                    name,
 				S3StorageLocationParams: s3StorageLocation,
 			}
-		case sdk.StorageProviderGCS:
+		case sdk.StorageProviderGcs:
 			// Validate that provider-incompatible fields are not given
 			azureTenantId, ok := storageLocationConfig["azure_tenant_id"].(string)
 			if ok && len(azureTenantId) > 0 {
@@ -715,7 +715,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 					StorageBaseUrl: storageBaseUrl,
 				},
 			}
-		case sdk.StorageProviderS3Compatible:
+		case sdk.StorageProviderS3compat:
 			// Validate that provider-incompatible fields are not given
 			storageAwsRoleArn, ok := storageLocationConfig["storage_aws_role_arn"].(string)
 			if ok && len(storageAwsRoleArn) > 0 {
@@ -794,7 +794,7 @@ func addStorageLocation(
 
 	var newStorageLocationreq *sdk.ExternalVolumeStorageLocationRequest
 	switch storageProvider {
-	case sdk.StorageProviderS3, sdk.StorageProviderS3GOV:
+	case sdk.StorageProviderS3, sdk.StorageProviderS3gov:
 		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.S3StorageLocationParams
 		s3ParamsRequest := sdk.NewS3StorageLocationParamsRequest(
 			addedLocation.StorageProvider,
@@ -820,7 +820,7 @@ func addStorageLocation(
 		}
 
 		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithS3StorageLocationParams(*s3ParamsRequest)
-	case sdk.StorageProviderGCS:
+	case sdk.StorageProviderGcs:
 		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.GCSStorageLocationParams
 		gcsParamsRequest := sdk.NewGCSStorageLocationParamsRequest(
 			addedLocation.StorageBaseUrl,
@@ -844,7 +844,7 @@ func addStorageLocation(
 		)
 		// TODO(SNOW-2356128): handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
 		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithAzureStorageLocationParams(*azureParamsRequest)
-	case sdk.StorageProviderS3Compatible:
+	case sdk.StorageProviderS3compat:
 		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.S3CompatStorageLocationParams
 		s3CompatParamsRequest := sdk.NewS3CompatStorageLocationParamsRequest(
 			addedLocation.StorageBaseUrl,

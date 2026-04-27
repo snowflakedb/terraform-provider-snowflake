@@ -123,46 +123,32 @@ var apiIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-integrations",
-		g.DbStruct("showApiIntegrationsDbRow").
+		g.StructPair("showApiIntegrationsDbRow", "ApiIntegration").
 			Text("name").
-			Text("type").
+			Text("type", g.WithPlainFieldName("ApiType")).
 			Text("category").
 			Bool("enabled").
-			OptionalText("comment").
+			OptionalText("comment", g.WithRequiredInPlain()).
 			Time("created_on"),
-		g.PlainStruct("ApiIntegration").
-			Text("Name").
-			Text("ApiType").
-			Text("Category").
-			Bool("Enabled").
-			Text("Comment").
-			Time("CreatedOn"),
 		g.NewQueryStruct("ShowApiIntegrations").
 			Show().
 			SQL("API INTEGRATIONS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
-		g.DbStruct("descApiIntegrationsDbRow").
-			Text("property").
-			Text("property_type").
-			Text("property_value").
-			Text("property_default"),
-		g.PlainStruct("ApiIntegrationProperty").
-			Text("Name").
-			Text("Type").
-			Text("Value").
-			Text("Default"),
+		g.StructPair("descApiIntegrationsDbRow", "ApiIntegrationProperty").
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeApiIntegration").
 			Describe().
 			SQL("API INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithShowObjectType("Integration")

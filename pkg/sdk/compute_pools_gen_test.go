@@ -10,6 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ComputePoolState]{"ComputePoolState", AllComputePoolStates, ToComputePoolState})
+}
+
 func TestComputePools_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	// Minimal valid CreateComputePoolOptions
@@ -366,48 +370,6 @@ func Test_ComputePool_ToComputePoolInstanceFamily(t *testing.T) {
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToComputePoolInstanceFamily(tc.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-// Added manually
-func Test_ComputePool_ToComputePoolState(t *testing.T) {
-	type test struct {
-		input string
-		want  ComputePoolState
-	}
-
-	valid := []test{
-		// case insensitive.
-		{input: "idle", want: ComputePoolStateIdle},
-
-		// Supported Values
-		{input: "IDLE", want: ComputePoolStateIdle},
-		{input: "ACTIVE", want: ComputePoolStateActive},
-		{input: "SUSPENDED", want: ComputePoolStateSuspended},
-		{input: "STARTING", want: ComputePoolStateStarting},
-		{input: "STOPPING", want: ComputePoolStateStopping},
-		{input: "RESIZING", want: ComputePoolStateResizing},
-	}
-
-	invalid := []test{
-		// bad values
-		{input: ""},
-		{input: "foo"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToComputePoolState(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToComputePoolState(tc.input)
 			require.Error(t, err)
 		})
 	}

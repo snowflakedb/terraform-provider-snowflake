@@ -63,33 +63,3 @@ func ToComputePoolInstanceFamily(s string) (ComputePoolInstanceFamily, error) {
 	}
 	return ComputePoolInstanceFamily(s), nil
 }
-
-// See https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool#compute-pool-lifecycle.
-type ComputePoolState string
-
-const (
-	ComputePoolStateIdle      ComputePoolState = "IDLE"
-	ComputePoolStateActive    ComputePoolState = "ACTIVE"
-	ComputePoolStateSuspended ComputePoolState = "SUSPENDED"
-
-	ComputePoolStateStarting ComputePoolState = "STARTING"
-	ComputePoolStateStopping ComputePoolState = "STOPPING"
-	ComputePoolStateResizing ComputePoolState = "RESIZING"
-)
-
-var allComputePoolStates = []ComputePoolState{
-	ComputePoolStateIdle,
-	ComputePoolStateActive,
-	ComputePoolStateSuspended,
-	ComputePoolStateStarting,
-	ComputePoolStateStopping,
-	ComputePoolStateResizing,
-}
-
-func ToComputePoolState(s string) (ComputePoolState, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(allComputePoolStates, ComputePoolState(s)) {
-		return "", fmt.Errorf("invalid compute pool state: %s", s)
-	}
-	return ComputePoolState(s), nil
-}

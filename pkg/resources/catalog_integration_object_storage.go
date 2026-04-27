@@ -63,8 +63,8 @@ func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *schema.Resour
 	if err != nil {
 		return nil, err
 	}
-	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeObjectStorage {
-		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeObjectStorage, details.CatalogSource)
+	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeObjectStore {
+		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeObjectStore, details.CatalogSource)
 	}
 
 	return []*schema.ResourceData{d}, nil

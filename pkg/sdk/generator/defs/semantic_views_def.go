@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var semanticViewDbRow = g.DbStruct("semanticViewDBRow").
+var semanticViewPairs = g.StructPair("semanticViewDBRow", "SemanticView").
 	Time("created_on").
 	Text("name").
 	Text("database_name").
@@ -16,29 +16,12 @@ var semanticViewDbRow = g.DbStruct("semanticViewDBRow").
 	Text("owner_role_type").
 	OptionalText("extension")
 
-var semanticView = g.PlainStruct("SemanticView").
-	Time("CreatedOn").
-	Text("Name").
-	Text("DatabaseName").
-	Text("SchemaName").
-	OptionalText("Comment").
-	Text("Owner").
-	Text("OwnerRoleType").
-	OptionalText("Extension")
-
-var semanticViewDetailsDbRow = g.DbStruct("semanticViewDetailsRow").
+var semanticViewDetailsPairs = g.StructPair("semanticViewDetailsRow", "SemanticViewDetails").
 	OptionalText("object_kind").
 	OptionalText("object_name").
 	OptionalText("parent_entity").
 	Text("property").
 	Text("property_value")
-
-var semanticViewDetails = g.PlainStruct("SemanticViewDetails").
-	OptionalText("ObjectKind").
-	OptionalText("ObjectName").
-	OptionalText("ParentEntity").
-	Text("Property").
-	Text("PropertyValue")
 
 var semanticViewsDef = g.NewInterface(
 	"SemanticViews",
@@ -92,21 +75,19 @@ var semanticViewsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-semantic-view",
-		semanticViewDetailsDbRow,
-		semanticViewDetails,
+		semanticViewDetailsPairs,
 		g.NewQueryStruct("DescribeSemanticView").
 			Describe().
 			SQL("SEMANTIC VIEW").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views",
-		semanticViewDbRow,
-		semanticView,
+		semanticViewPairs,
 		g.NewQueryStruct("ShowSemanticViews").
 			Show().
 			Terse().
@@ -115,8 +96,15 @@ var semanticViewsDef = g.NewInterface(
 			OptionalIn().
 			OptionalStartsWith().
 			OptionalLimitFrom(),
+		g.ShowByIDInFiltering,
+		g.ShowByIDLikeFiltering,
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDInFiltering, g.ShowByIDLikeFiltering)
+	WithCustomInterfaceMethod(
+		"DescribeSemanticViewDetails",
+		"DescribeSemanticViewDetails returns converted describe output for semantic views.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*SemanticViewDescribeDetails", "error",
+	)
 
 var primaryKey = g.NewQueryStruct("PrimaryKeys").
 	ListAssignment("PRIMARY KEY", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals().Required())

@@ -54,35 +54,22 @@ var sessionPolicySchema = map[string]*schema.Schema{
 		ValidateFunc:     validation.IntAtLeast(1),
 	},
 	"allowed_secondary_roles": {
-		Type:     schema.TypeSet,
-		Optional: true,
-		Description: joinWithSpace("Specifies the allowed secondary roles for a session policy, if any.",
-			"Use a single-element set whose only value is `all` (case-insensitive) to allow all secondary roles, equivalent to `('ALL')` in Snowflake."),
-		DiffSuppressFunc: SuppressIfAny(
-			IgnoreChangeToCurrentSnowflakeValueInDescribe("allowed_secondary_roles"),
-			NormalizeAndCompareIdentifiersInSet("allowed_secondary_roles"),
-		),
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Specifies the allowed secondary roles for a session policy, if any.",
+		Elem: &schema.Resource{
+			Schema: sessionPolicySecondaryRolesSchema("allowed_secondary_roles"),
 		},
 	},
 	"blocked_secondary_roles": {
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Optional: true,
+		MaxItems: 1,
 		Description: joinWithSpace("Specifies the blocked secondary roles for a session policy, if any.",
-			"Blocked secondary roles take precedence over allowed secondary roles.",
-			"Use a single-element set whose only value is `all` (case-insensitive) to disallow all secondary roles, equivalent to `('ALL')` in Snowflake.",
-		),
-		DiffSuppressFunc: SuppressIfAny(
-			IgnoreChangeToCurrentSnowflakeValueInDescribe("blocked_secondary_roles"),
-			NormalizeAndCompareIdentifiersInSet("blocked_secondary_roles"),
-		),
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
+			"Blocked secondary roles take precedence over allowed secondary roles."),
+		Elem: &schema.Resource{
+			Schema: sessionPolicySecondaryRolesSchema("blocked_secondary_roles"),
 		},
 	},
 	"comment": {
@@ -109,6 +96,46 @@ var sessionPolicySchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
+func sessionPolicySecondaryRolesSchema(attrName string) map[string]*schema.Schema {
+	allDescription, noneDescription := "When true, allows all secondary roles.", "When true, disallows all secondary roles."
+	action := "allowed"
+	if attrName == "blocked_secondary_roles" {
+		allDescription, noneDescription = noneDescription, allDescription
+		action = "blocked"
+	}
+
+	exactlyOneOf := func(attrName string) []string {
+		return collections.Map([]string{"none", "all", "roles"}, func(elem string) string {
+			return fmt.Sprintf("%s.0.%s", attrName, elem)
+		})
+	}
+
+	return map[string]*schema.Schema{
+		"none": {
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Description:  noneDescription,
+			ExactlyOneOf: exactlyOneOf(attrName),
+		},
+		"all": {
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Description:  allDescription,
+			ExactlyOneOf: exactlyOneOf(attrName),
+		},
+		"roles": {
+			Type:         schema.TypeSet,
+			Optional:     true,
+			Description:  fmt.Sprintf("Specifies roles to be %s as secondary roles.", action),
+			ExactlyOneOf: exactlyOneOf(attrName),
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			},
+		},
+	}
+}
+
 func SessionPolicy() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
 		sdk.ParseSchemaObjectIdentifier,
@@ -131,7 +158,9 @@ func SessionPolicy() *schema.Resource {
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SessionPolicy, customdiff.All(
 			ComputedIfAnyAttributeChanged(sessionPolicySchema, ShowOutputAttributeName, "name", "schema", "database", "comment"),
-			ComputedIfAnyAttributeChanged(sessionPolicySchema, DescribeOutputAttributeName, "name", "schema", "database", "session_idle_timeout_mins", "session_ui_idle_timeout_mins", "allowed_secondary_roles", "blocked_secondary_roles", "comment"),
+			// For now, the set/list fields have to be excluded.
+			// TODO [SNOW-1648997]: address the above comment
+			ComputedIfAnyAttributeChanged(sessionPolicySchema, DescribeOutputAttributeName, "name", "schema", "database", "session_idle_timeout_mins", "session_ui_idle_timeout_mins", "comment"),
 			ComputedIfAnyAttributeChanged(sessionPolicySchema, FullyQualifiedNameAttributeName, "name", "schema", "database"),
 		)),
 	}
@@ -148,8 +177,8 @@ func CreateSessionPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	errs := errors.Join(
 		intAttributeCreateBuilder(d, "session_idle_timeout_mins", request.WithSessionIdleTimeoutMins),
 		intAttributeCreateBuilder(d, "session_ui_idle_timeout_mins", request.WithSessionUiIdleTimeoutMins),
-		secondaryRolesAttributeCreateBuilder(d, "allowed_secondary_roles", request.WithAllowedSecondaryRoles),
-		secondaryRolesAttributeCreateBuilder(d, "blocked_secondary_roles", request.WithBlockedSecondaryRoles),
+		attributeMappedValueCreateBuilder(d, "allowed_secondary_roles", request.WithAllowedSecondaryRoles, buildSessionPolicySecondaryRolesRequest),
+		attributeMappedValueCreateBuilder(d, "blocked_secondary_roles", request.WithBlockedSecondaryRoles, buildSessionPolicySecondaryRolesRequest),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
 	if errs != nil {
@@ -197,14 +226,14 @@ func ReadSessionPolicyFunc(withExternalChangesMarking bool) schema.ReadContextFu
 				return diag.FromErr(err)
 			}
 			normalizeStringList := func(v any) any {
-				if list, ok := v.([]interface{}); ok {
+				if list, ok := v.([]any); ok {
 					return expandStringList(list)
 				}
 				return v
 			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"allowed_secondary_roles", "allowed_secondary_roles", details.AllowedSecondaryRoles, details.AllowedSecondaryRoles, normalizeStringList},
-				outputMapping{"blocked_secondary_roles", "blocked_secondary_roles", details.BlockedSecondaryRoles, details.BlockedSecondaryRoles, normalizeStringList},
+				outputMapping{"allowed_secondary_roles", "allowed_secondary_roles", details.AllowedSecondaryRoles, secondaryRolesResourceStateFromDescribeOutput(details.AllowedSecondaryRoles), normalizeStringList},
+				outputMapping{"blocked_secondary_roles", "blocked_secondary_roles", details.BlockedSecondaryRoles, secondaryRolesResourceStateFromDescribeOutput(details.BlockedSecondaryRoles), normalizeStringList},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -245,8 +274,8 @@ func UpdateSessionPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err := errors.Join(
 		intAttributeUpdate(d, "session_idle_timeout_mins", &setRequest.SessionIdleTimeoutMins, &unsetRequest.SessionIdleTimeoutMins),
 		intAttributeUpdate(d, "session_ui_idle_timeout_mins", &setRequest.SessionUiIdleTimeoutMins, &unsetRequest.SessionUiIdleTimeoutMins),
-		secondaryRolesAttributeUpdate(d, "allowed_secondary_roles", &setRequest.AllowedSecondaryRoles, &unsetRequest.AllowedSecondaryRoles),
-		secondaryRolesAttributeUpdate(d, "blocked_secondary_roles", &setRequest.BlockedSecondaryRoles, &unsetRequest.BlockedSecondaryRoles),
+		attributeMappedValueUpdate(d, "allowed_secondary_roles", &setRequest.AllowedSecondaryRoles, &unsetRequest.AllowedSecondaryRoles, buildSessionPolicySecondaryRolesRequest),
+		attributeMappedValueUpdate(d, "blocked_secondary_roles", &setRequest.BlockedSecondaryRoles, &unsetRequest.BlockedSecondaryRoles, buildSessionPolicySecondaryRolesRequest),
 		stringAttributeUpdate(d, "comment", &setRequest.Comment, &unsetRequest.Comment),
 	); err != nil {
 		return diag.FromErr(err)
@@ -266,47 +295,48 @@ func UpdateSessionPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	return ReadSessionPolicyFunc(false)(ctx, d, meta)
 }
 
-func secondaryRolesAttributeCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(request sdk.SessionPolicySecondaryRolesRequest) *T) error {
-	if v, ok := d.GetOk(key); ok {
-		secondaryRolesRaw := v.(*schema.Set).List()
-		request, err := buildSessionPolicySecondaryRolesRequest(secondaryRolesRaw)
-		if err != nil {
-			return err
-		}
-		setValue(*request)
+func buildSessionPolicySecondaryRolesRequest(v any) (sdk.SessionPolicySecondaryRolesRequest, error) {
+	list := v.([]any)
+	if len(list) == 0 {
+		return sdk.SessionPolicySecondaryRolesRequest{}, fmt.Errorf("session policy secondary roles block is empty")
 	}
-	return nil
-}
-
-func secondaryRolesAttributeUpdate(d *schema.ResourceData, key string, setField **sdk.SessionPolicySecondaryRolesRequest, unsetField **bool) error {
-	if d.HasChange(key) {
-		if v, ok := d.GetOk(key); ok {
-			request, err := buildSessionPolicySecondaryRolesRequest(v.(*schema.Set).List())
-			if err != nil {
-				return err
-			}
-			*setField = request
-		} else {
-			*unsetField = sdk.Bool(true)
-		}
-	}
-	return nil
-}
-
-func buildSessionPolicySecondaryRolesRequest(rawRoles []any) (*sdk.SessionPolicySecondaryRolesRequest, error) {
-	roles := expandStringList(rawRoles)
+	block := list[0].(map[string]any)
 	request := sdk.NewSessionPolicySecondaryRolesRequest()
-	switch {
-	case len(roles) == 0:
-		request.WithNone(true)
-	case len(roles) == 1 && strings.EqualFold("ALL", roles[0]):
-		request.WithAll(true)
-	default:
-		mapped, err := collections.MapErr(roles, sdk.ParseAccountObjectIdentifier)
-		if err != nil {
-			return nil, err
-		}
-		request.WithRoles(mapped)
+	if block["none"].(bool) {
+		return *request.WithNone(true), nil
 	}
-	return request, nil
+	if block["all"].(bool) {
+		return *request.WithAll(true), nil
+	}
+	rawRoles := block["roles"].(*schema.Set).List()
+	roles := expandStringList(rawRoles)
+	ids, err := collections.MapErr(roles, sdk.ParseAccountObjectIdentifier)
+	if err != nil {
+		return sdk.SessionPolicySecondaryRolesRequest{}, err
+	}
+	return *request.WithRoles(ids), nil
+}
+
+// secondaryRolesResourceStateFromDescribeOutput converts DESCRIBE output (list of role names, empty list,
+// or a single ALL sentinel) into the nested block shape used by allowed_secondary_roles / blocked_secondary_roles.
+func secondaryRolesResourceStateFromDescribeOutput(roles []string) []any {
+	if len(roles) == 0 {
+		return []any{
+			map[string]any{"none": true},
+		}
+	}
+	if len(roles) == 1 && strings.EqualFold(roles[0], "ALL") {
+		return []any{
+			map[string]any{"all": true},
+		}
+	}
+	elems := make([]any, len(roles))
+	for i, r := range roles {
+		elems[i] = r
+	}
+	return []any{
+		map[string]any{
+			"roles": schema.NewSet(schema.HashString, elems),
+		},
+	}
 }

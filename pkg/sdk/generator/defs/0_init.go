@@ -36,6 +36,8 @@ func init() {
 		notebooksDef,
 		notificationIntegrationsDef,
 		organizationAccountsDef,
+		passwordPoliciesDef,
+		postgresInstancesDef,
 		proceduresDef,
 		rowAccessPoliciesDef,
 		secretsDef,

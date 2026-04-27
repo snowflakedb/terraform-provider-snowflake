@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"strings"
 	"text/template"
 
 	_ "embed"
@@ -22,6 +23,8 @@ var (
 	InterfaceTemplate, _     = template.New("interfaceTemplate").Funcs(template.FuncMap{
 		"describe_mapping_deref": deref[DescriptionMappingKind],
 		"show_mapping_deref":     deref[ShowMappingKind],
+		"join":                   strings.Join,
+		"splitLines":             func(s string) []string { return strings.Split(s, "\n") },
 	}).Parse(interfaceTemplateContent)
 
 	//go:embed templates/operation_struct.tmpl

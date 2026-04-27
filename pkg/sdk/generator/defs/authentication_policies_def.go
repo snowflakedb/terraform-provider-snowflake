@@ -175,28 +175,18 @@ var authenticationPoliciesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies",
-		g.DbStruct("showAuthenticationPolicyDBRow").
-			OptionalTime("created_on").
+		g.StructPair("showAuthenticationPolicyDBRow", "AuthenticationPolicy").
+			OptionalTime("created_on", g.WithRequiredInPlain()).
 			Text("name").
 			Text("comment").
-			OptionalText("database_name").
-			OptionalText("schema_name").
+			OptionalText("database_name", g.WithRequiredInPlain()).
+			OptionalText("schema_name", g.WithRequiredInPlain()).
 			Text("kind").
-			OptionalText("owner").
-			OptionalText("owner_role_type").
+			OptionalText("owner", g.WithRequiredInPlain()).
+			OptionalText("owner_role_type", g.WithRequiredInPlain()).
 			Text("options"),
-		g.PlainStruct("AuthenticationPolicy").
-			Time("CreatedOn").
-			Text("Name").
-			Text("Comment").
-			Text("DatabaseName").
-			Text("SchemaName").
-			Text("Kind").
-			Text("Owner").
-			Text("OwnerRoleType").
-			Text("Options"),
 		g.NewQueryStruct("ShowAuthenticationPolicies").
 			Show().
 			SQL("AUTHENTICATION POLICIES").
@@ -205,24 +195,17 @@ var authenticationPoliciesDef = g.NewInterface(
 			OptionalOn().
 			OptionalStartsWith().
 			OptionalLimit(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 		g.ShowByIDExtendedInFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-authentication-policy",
-		g.DbStruct("describeAuthenticationPolicyDBRow").
+		g.StructPair("describeAuthenticationPolicyDBRow", "AuthenticationPolicyDescription").
 			Text("property").
 			Text("value").
 			Text("default").
 			Text("description"),
-		g.PlainStruct("AuthenticationPolicyDescription").
-			Text("Property").
-			Text("Value").
-			Text("Default").
-			Text("Description"),
 		g.NewQueryStruct("DescribeAuthenticationPolicy").
 			Describe().
 			SQL("AUTHENTICATION POLICY").

@@ -69,6 +69,11 @@ func TestCurrentSessionDetails_AccountURL(t *testing.T) {
 		{region: "azure_australiaeast", expectedURL: "https://TESTACCOUNT.australia-east.azure.snowflakecomputing.com"},
 
 		{region: "AWS_US_WEST_2", expectedURL: "https://TESTACCOUNT.snowflakecomputing.com"}, // case insensitive
+
+		// prefixed forms returned by CURRENT_REGION() in newer Snowflake versions
+		{region: "PUBLIC.AWS_US_EAST_1", expectedURL: "https://TESTACCOUNT.us-east-1.snowflakecomputing.com"},
+		{region: "AWS_US_GOV_EAST_1_FHPLUS.AWS_US_GOV_EAST_1_FHPLUS", expectedURL: "https://TESTACCOUNT.fhplus.us-gov-east-1.aws.snowflakecomputing.com"},
+		{region: "PUBLIC.AZURE_EASTUS2", expectedURL: "https://TESTACCOUNT.east-us-2.azure.snowflakecomputing.com"},
 	}
 
 	for _, tc := range testCases {

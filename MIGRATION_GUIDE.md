@@ -26,13 +26,50 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.15.x ➞ v2.16.0
 
-### *(new feature)* New `snowflake_session_policy` resource
+### *(new feature)* New session policy resources and data source
 
-We have added a new preview resource for managing session policies: [snowflake_session_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy).
+#### Resources
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_session_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+We have added new preview resources for session policies: [snowflake_session_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy) for defining policies, [snowflake_user_session_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user_session_policy_attachment) for assigning a session policy to a user, and [snowflake_account_session_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_session_policy_attachment) for assigning a session policy to the current account.
 
-No changes are required for existing configurations unless you want to manage session policies with Terraform.
+These features will be marked as stable in future releases. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_session_policy_resource` for `snowflake_session_policy`;
+- `snowflake_user_session_policy_attachment_resource` for `snowflake_user_session_policy_attachment`;
+- `snowflake_account_session_policy_attachment_resource` for `snowflake_account_session_policy_attachment`.
+
+#### Data source
+
+We have added a new preview data source for session policies: [snowflake_session_policies](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/session_policies).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_session_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
+
+## v2.15.x ➞ v2.15.1
+
+### *(bug fix)* `snowflake_stream_on_table` and `snowflake_stream_on_view` import fix
+
+Previously, importing `snowflake_stream_on_table` or `snowflake_stream_on_view` with `terraform import` left the `show_initial_rows` attribute as `null` in state, because it cannot be read from Snowflake. On the next `terraform apply`, Terraform detected a diff and produced an "Update" plan. Because of it, the stream was recreated (see the [note](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stream_on_table)).
+
+To fix this, enable the `IMPORT_BOOLEAN_DEFAULT` experimental feature in the provider configuration and reimport the affected stream resources. When enabled, the `show_initial_rows` attribute is set to `"default"` during import, preventing the permadiff.
+
+References: [#3896](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896)
+
+### *(bugfix)* TABLE data type parsing with parametrized column types
+
+In v2.15.0, resources that accept a `TABLE(...)` data type (e.g. return type in `snowflake_function_sql` or `snowflake_procedure_sql`)
+failed with an error when column types inside the `TABLE` definition carried precision or scale parameters (e.g. `NUMBER(38,0)`, `VARCHAR(256)`).
+The comma inside the type parameter was incorrectly treated as a column separator, producing a parse error similar to:
+
+```
+number NUMBER(38 could not be parsed, use "NUMBER(precision, scale)" format
+```
+
+This release fixes the parser to correctly handle nested parentheses when splitting column definitions,
+so `TABLE(ARG1 NUMBER(38,0), ARG2 VARCHAR)` is now parsed correctly.
+
+No configuration changes are required.
 
 ### *(bug fix)* Improve handling of granting PUBLIC role
 
