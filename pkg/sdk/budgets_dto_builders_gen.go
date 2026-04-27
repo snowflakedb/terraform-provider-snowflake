@@ -75,7 +75,7 @@ func NewSetEmailNotificationsBudgetRequest(
 }
 
 func NewBudgetSetEmailNotificationsArgsRequest(
-	emails string,
+	emails []BudgetEmailRequest,
 ) *BudgetSetEmailNotificationsArgsRequest {
 	s := BudgetSetEmailNotificationsArgsRequest{}
 	s.Emails = emails
@@ -85,6 +85,14 @@ func NewBudgetSetEmailNotificationsArgsRequest(
 func (s *BudgetSetEmailNotificationsArgsRequest) WithNotificationIntegration(notificationIntegration AccountObjectIdentifier) *BudgetSetEmailNotificationsArgsRequest {
 	s.NotificationIntegration = &notificationIntegration
 	return s
+}
+
+func NewBudgetEmailRequest(
+	email string,
+) *BudgetEmailRequest {
+	s := BudgetEmailRequest{}
+	s.Email = email
+	return &s
 }
 
 func NewGetNotificationIntegrationsBudgetRequest(

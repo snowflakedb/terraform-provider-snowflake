@@ -113,7 +113,15 @@ func (r *SetEmailNotificationsBudgetRequest) toOpts() *SetEmailNotificationsBudg
 	}
 	opts.args = BudgetSetEmailNotificationsArgs{
 		NotificationIntegration: r.args.NotificationIntegration,
-		Emails:                  r.args.Emails,
+	}
+	if r.args.Emails != nil {
+		s := make([]BudgetEmail, len(r.args.Emails))
+		for i, v := range r.args.Emails {
+			s[i] = BudgetEmail{
+				Email: v.Email,
+			}
+		}
+		opts.args.Emails = s
 	}
 	return opts
 }

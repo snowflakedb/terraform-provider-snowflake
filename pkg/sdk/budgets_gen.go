@@ -67,7 +67,11 @@ type SetEmailNotificationsBudgetOptions struct {
 
 type BudgetSetEmailNotificationsArgs struct {
 	NotificationIntegration *AccountObjectIdentifier `ddl:"identifier"`
-	Emails                  string                   `ddl:"parameter,single_quotes,no_equals"`
+	Emails                  []BudgetEmail            `ddl:"list"`
+}
+
+type BudgetEmail struct {
+	Email string `ddl:"keyword,single_quotes"`
 }
 
 // GetNotificationIntegrationsBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/method/get_notification_integrations.

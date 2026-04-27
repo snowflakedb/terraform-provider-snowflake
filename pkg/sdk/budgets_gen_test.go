@@ -153,7 +153,7 @@ func TestBudgets_SetEmailNotifications(t *testing.T) {
 		return &SetEmailNotificationsBudgetOptions{
 			name: id,
 			args: BudgetSetEmailNotificationsArgs{
-				Emails: "test@example.com",
+				Emails: []BudgetEmail{{Email: "test@example.com"}},
 			},
 		}
 	}
@@ -173,17 +173,13 @@ func TestBudgets_SetEmailNotifications(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		// manually adjusted
-		opts.args = BudgetSetEmailNotificationsArgs{Emails: "test@example.com"}
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('test@example.com')", id.FullyQualifiedName())
 	})
 
 	// TODO [next PRs]: identifier additionally in single quotes
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.args = BudgetSetEmailNotificationsArgs{
-			NotificationIntegration: &notificationIntegrationId,
-			Emails:                  "test@example.com",
-		}
+		opts.args.NotificationIntegration = &notificationIntegrationId
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS (%s, 'test@example.com')", id.FullyQualifiedName(), notificationIntegrationId.FullyQualifiedName())
 	})
 }
@@ -253,7 +249,6 @@ func TestBudgets_SetCycleStartAction(t *testing.T) {
 
 	t.Run("more args", func(t *testing.T) {
 		procedureId2 := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeVARCHAR)
-
 		opts := defaultOpts()
 		opts.args = BudgetSetCycleStartActionArgs{Procedure: procedureId2.SchemaObjectId(), Arguments: []string{"arg1", "arg2"}}
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (%s, arg1, arg2)", id.FullyQualifiedName(), procedureId2.SchemaObjectId().FullyQualifiedName())

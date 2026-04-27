@@ -45,7 +45,11 @@ type SetEmailNotificationsBudgetRequest struct {
 
 type BudgetSetEmailNotificationsArgsRequest struct {
 	NotificationIntegration *AccountObjectIdentifier
-	Emails                  string // required
+	Emails                  []BudgetEmailRequest // required
+}
+
+type BudgetEmailRequest struct {
+	Email string // required
 }
 
 type GetNotificationIntegrationsBudgetRequest struct {

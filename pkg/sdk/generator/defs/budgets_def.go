@@ -10,9 +10,12 @@ import (
 var setSpendingLimitArgs = g.NewQueryStruct("SetSpendingLimitArgs").
 	PredefinedQueryStructField("SpendingLimit", "int", g.ParameterOptions().Required().NoEquals())
 
+var budgetEmail = g.NewQueryStruct("BudgetEmail").
+	Text("Email", g.KeywordOptions().SingleQuotes().Required())
+
 var setEmailNotificationsArgs = g.NewQueryStruct("SetEmailNotificationsArgs").
 	OptionalIdentifier("NotificationIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
-	PredefinedQueryStructField("Emails", "string", g.ParameterOptions().Required().NoEquals().SingleQuotes())
+	ListQueryStructField("Emails", budgetEmail, g.ListOptions().Required())
 
 var getNotificationIntegrationsResult = g.StructPair(
 	"getNotificationIntegrationsRow",
