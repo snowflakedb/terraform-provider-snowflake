@@ -49,8 +49,8 @@ var budgetsDef = g.NewInterface(
 		SQLWithCustomFieldName("snowflakeCoreBudget", "SNOWFLAKE.CORE.BUDGET").
 		IfNotExists().
 		Name().
-		PredefinedQueryStructField("constructor", "bool", g.StaticOptions().SQL("()")).
-		PredefinedQueryStructField("Comment", "*string", g.ParameterOptions().SQL("COMMENT").SingleQuotes()).
+		SQLWithCustomFieldName("parens", "()").
+		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).DropOperation(

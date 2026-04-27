@@ -26,7 +26,7 @@ type CreateBudgetOptions struct {
 	snowflakeCoreBudget bool                   `ddl:"static" sql:"SNOWFLAKE.CORE.BUDGET"`
 	IfNotExists         *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                SchemaObjectIdentifier `ddl:"identifier"`
-	constructor         bool                   `ddl:"static" sql:"()"`
+	parens              bool                   `ddl:"static" sql:"()"`
 	Comment             *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
