@@ -525,6 +525,7 @@ func TestAcc_CatalogIntegrationAwsGlue_NewCatalogSourceComputedField(t *testing.
 					},
 				},
 				Config: config.FromModels(t, catalogIntegrationAwsGlue),
+				Check:  resource.TestCheckResourceAttrSet("snowflake_catalog_integration_aws_glue.t", "catalog_source"),
 			},
 		},
 	})
