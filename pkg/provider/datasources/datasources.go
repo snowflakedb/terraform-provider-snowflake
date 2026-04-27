@@ -44,6 +44,7 @@ const (
 	SemanticViews                  datasource = "snowflake_semantic_views"
 	Services                       datasource = "snowflake_services"
 	Sequences                      datasource = "snowflake_sequences"
+	SessionPolicies                datasource = "snowflake_session_policies"
 	Shares                         datasource = "snowflake_shares"
 	Stages                         datasource = "snowflake_stages"
 	StorageIntegrations            datasource = "snowflake_storage_integrations"

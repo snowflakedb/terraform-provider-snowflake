@@ -93,6 +93,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_current_role_datasource", want: CurrentRoleDatasource},
 		{input: "snowflake_semantic_view_resource", want: SemanticViewResource},
 		{input: "snowflake_semantic_views_datasource", want: SemanticViewDatasource},
+		{input: "snowflake_session_policies_datasource", want: SessionPoliciesDatasource},
 		{input: "snowflake_session_policy_resource", want: SessionPolicyResource},
 		{input: "snowflake_service_resource", want: ServiceResource},
 		{input: "snowflake_services_datasource", want: ServicesDatasource},

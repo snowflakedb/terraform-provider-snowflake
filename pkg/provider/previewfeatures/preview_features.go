@@ -86,6 +86,7 @@ const (
 	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
 	SemanticViewResource                          feature = "snowflake_semantic_view_resource"
 	SemanticViewDatasource                        feature = "snowflake_semantic_views_datasource"
+	SessionPoliciesDatasource                     feature = "snowflake_session_policies_datasource"
 	SessionPolicyResource                         feature = "snowflake_session_policy_resource"
 	ServiceResource                               feature = "snowflake_service_resource"
 	ServicesDatasource                            feature = "snowflake_services_datasource"
@@ -180,6 +181,7 @@ var allPreviewFeatures = []feature{
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,
+	SessionPoliciesDatasource,
 	SessionPolicyResource,
 	SequenceResource,
 	SequencesDatasource,

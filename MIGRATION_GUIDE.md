@@ -39,7 +39,9 @@ It reflects the active catalog source type Snowflake reports for the integration
 
 No configuration changes are required.
 
-### *(new feature)* New session policy resources
+### *(new feature)* New session policy resources and data source
+
+#### Resources
 
 We have added new preview resources for session policies: [snowflake_session_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy) for defining policies, [snowflake_user_session_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user_session_policy_attachment) for assigning a session policy to a user, and [snowflake_account_session_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_session_policy_attachment) for assigning a session policy to the current account.
 
@@ -49,7 +51,13 @@ These features will be marked as stable in future releases. To use them, add the
 - `snowflake_user_session_policy_attachment_resource` for `snowflake_user_session_policy_attachment`;
 - `snowflake_account_session_policy_attachment_resource` for `snowflake_account_session_policy_attachment`.
 
-No changes are required for existing configurations unless you want to manage session policies or their user or account attachments with Terraform.
+#### Data source
+
+We have added a new preview data source for session policies: [snowflake_session_policies](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/session_policies).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_session_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
 ## v2.15.x ➞ v2.15.1
 

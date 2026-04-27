@@ -177,7 +177,6 @@ var secretsDef = g.NewInterface(
 		SQL("SECRETS").
 		OptionalLike().
 		OptionalExtendedIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDExtendedInFiltering,
 ).DescribeOperationWithPairedStructs(

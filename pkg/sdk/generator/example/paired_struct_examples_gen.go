@@ -10,6 +10,8 @@ import (
 
 type PairedStructExamples interface {
 	Show(ctx context.Context, request *ShowPairedStructExampleRequest) ([]PairedStructExample, error)
+	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error)
+	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExampleDetail, error)
 }
 
@@ -21,6 +23,7 @@ type ShowPairedStructExampleOptions struct {
 }
 
 type pairedStructExampleRow struct {
+	Name                         string         `db:"name"`
 	ObjectName                   string         `db:"object_name"`
 	BothNonNullableStrings       string         `db:"both_non_nullable_strings"`
 	StorageTypeDb                string         `db:"type"`
@@ -50,6 +53,7 @@ type pairedStructExampleRow struct {
 }
 
 type PairedStructExample struct {
+	Name                                 string
 	ObjectName                           string
 	OverriddenNonNullableStringPlainName string
 	StorageTypePlain                     string
@@ -78,6 +82,10 @@ type PairedStructExample struct {
 	OverriddenDatabaseObjectId           DatabaseObjectIdentifier
 }
 
+func (v *PairedStructExample) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}
+
 func (v *PairedStructExample) ObjectType() ObjectType {
 	return ObjectTypePairedStructExample
 }
@@ -90,6 +98,7 @@ type DescribePairedStructExampleOptions struct {
 }
 
 type pairedStructExampleDetailRow struct {
+	Name                         string         `db:"name"`
 	ObjectName                   string         `db:"object_name"`
 	BothNonNullableStrings       string         `db:"both_non_nullable_strings"`
 	StorageTypeDb                string         `db:"type"`
@@ -119,6 +128,7 @@ type pairedStructExampleDetailRow struct {
 }
 
 type PairedStructExampleDetail struct {
+	Name                                 string
 	ObjectName                           string
 	OverriddenNonNullableStringPlainName string
 	StorageTypePlain                     string

@@ -200,18 +200,16 @@ type ViewUnsetProjectionPolicy struct {
 }
 
 type ViewSetColumnTags struct {
-	alter  bool   `ddl:"static" sql:"ALTER"`
-	column bool   `ddl:"static" sql:"COLUMN"`
-	Name   string `ddl:"keyword,double_quotes"`
-	// adjusted manually
+	alter   bool             `ddl:"static" sql:"ALTER"`
+	column  bool             `ddl:"static" sql:"COLUMN"`
+	Name    string           `ddl:"keyword,double_quotes"`
 	SetTags []TagAssociation `ddl:"keyword" sql:"SET TAG"`
 }
 
 type ViewUnsetColumnTags struct {
-	alter  bool   `ddl:"static" sql:"ALTER"`
-	column bool   `ddl:"static" sql:"COLUMN"`
-	Name   string `ddl:"keyword,double_quotes"`
-	// adjusted manually
+	alter     bool               `ddl:"static" sql:"ALTER"`
+	column    bool               `ddl:"static" sql:"COLUMN"`
+	Name      string             `ddl:"keyword,double_quotes"`
 	UnsetTags []ObjectIdentifier `ddl:"keyword" sql:"UNSET TAG"`
 }
 

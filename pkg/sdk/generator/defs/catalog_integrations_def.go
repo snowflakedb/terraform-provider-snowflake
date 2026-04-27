@@ -206,9 +206,6 @@ var catalogIntegrationsDef = g.NewInterface(
 			SQL("CATALOG INTEGRATIONS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-catalog-integration",

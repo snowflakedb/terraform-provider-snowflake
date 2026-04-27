@@ -112,7 +112,6 @@ var organizationAccountsDef = g.NewInterface(
 			SQL("ORGANIZATION ACCOUNTS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering).
 	WithCustomInterfaceMethod("ShowParameters", "", nil, "[]*Parameter", "error").
 	WithCustomInterfaceMethod("UnsetAllParameters", "", nil, "error").
 	WithCustomInterfaceMethod(
@@ -133,4 +132,5 @@ var organizationAccountsDef = g.NewInterface(
 	WithCustomInterfaceMethod("UnsetAll", "", nil, "error").
 	WithEnums(
 		OrganizationAccountEditionEnumDef,
-	)
+	).
+	WithShowObjectType("Account")
