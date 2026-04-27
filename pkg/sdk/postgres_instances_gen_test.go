@@ -257,6 +257,41 @@ func TestPostgresInstances_Alter(t *testing.T) {
 			id.FullyQualifiedName(), comment)
 	})
 
+	t.Run("set with apply immediately", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &PostgresInstanceSet{
+			ComputeFamily: Pointer("STANDARD_L"),
+			Apply: &PostgresInstanceApply{
+				Immediately: Pointer(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`ALTER POSTGRES INSTANCE %s SET COMPUTE_FAMILY = 'STANDARD_L' APPLY IMMEDIATELY`,
+			id.FullyQualifiedName())
+	})
+
+	t.Run("set with apply on timestamp", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &PostgresInstanceSet{
+			PostgresVersion: Pointer(18),
+			Apply: &PostgresInstanceApply{
+				On: Pointer("2026-03-01 12:00:00"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`ALTER POSTGRES INSTANCE %s SET POSTGRES_VERSION = 18 APPLY ON '2026-03-01 12:00:00'`,
+			id.FullyQualifiedName())
+	})
+
+	t.Run("validation: exactly one of Apply.Immediately or Apply.On should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &PostgresInstanceSet{
+			ComputeFamily: Pointer("STANDARD_L"),
+			Apply:         &PostgresInstanceApply{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPostgresInstanceOptions.Set.Apply", "Immediately", "On"))
+	})
+
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &PostgresInstanceUnset{

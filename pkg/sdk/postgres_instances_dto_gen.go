@@ -72,6 +72,12 @@ type PostgresInstanceSetRequest struct {
 	PostgresVersion         *int
 	MaintenanceWindowStart  *int
 	PostgresSettings        *string
+	Apply                   *PostgresInstanceApplyRequest
+}
+
+type PostgresInstanceApplyRequest struct {
+	Immediately *bool
+	On          *string
 }
 
 type PostgresInstanceUnsetRequest struct {

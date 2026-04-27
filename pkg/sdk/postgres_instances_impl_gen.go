@@ -131,20 +131,26 @@ func (r *AlterPostgresInstanceRequest) toOpts() *AlterPostgresInstanceOptions {
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,
 	}
-	if r.Set != nil {
-		opts.Set = &PostgresInstanceSet{
-			NetworkPolicy:           r.Set.NetworkPolicy,
-			AuthenticationAuthority: r.Set.AuthenticationAuthority,
-			Comment:                 r.Set.Comment,
-			HighAvailability:        r.Set.HighAvailability,
-			ComputeFamily:           r.Set.ComputeFamily,
-			StorageSizeGb:           r.Set.StorageSizeGb,
-			StorageIntegration:      r.Set.StorageIntegration,
-			PostgresVersion:         r.Set.PostgresVersion,
-			MaintenanceWindowStart:  r.Set.MaintenanceWindowStart,
-			PostgresSettings:        r.Set.PostgresSettings,
-		}
-	}
+  if r.Set != nil {
+    opts.Set = &PostgresInstanceSet{
+      NetworkPolicy:           r.Set.NetworkPolicy,
+      AuthenticationAuthority: r.Set.AuthenticationAuthority,
+      Comment:                 r.Set.Comment,
+      HighAvailability:        r.Set.HighAvailability,
+      ComputeFamily:           r.Set.ComputeFamily,
+      StorageSizeGb:           r.Set.StorageSizeGb,
+      StorageIntegration:      r.Set.StorageIntegration,
+      PostgresVersion:         r.Set.PostgresVersion,
+      MaintenanceWindowStart:  r.Set.MaintenanceWindowStart,
+      PostgresSettings:        r.Set.PostgresSettings,
+    }
+    if r.Set.Apply != nil {
+      opts.Set.Apply = &PostgresInstanceApply{
+        Immediately: r.Set.Apply.Immediately,
+        On:          r.Set.Apply.On,
+      }
+    }
+  }
 	if r.Unset != nil {
 		opts.Unset = &PostgresInstanceUnset{
 			Comment:                r.Unset.Comment,

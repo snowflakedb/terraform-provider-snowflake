@@ -239,6 +239,26 @@ func (s *PostgresInstanceSetRequest) WithPostgresSettings(postgresSettings strin
 	return s
 }
 
+func (s *PostgresInstanceSetRequest) WithApply(apply PostgresInstanceApplyRequest) *PostgresInstanceSetRequest {
+	s.Apply = &apply
+	return s
+}
+
+func NewPostgresInstanceApplyRequest() *PostgresInstanceApplyRequest {
+	s := PostgresInstanceApplyRequest{}
+	return &s
+}
+
+func (s *PostgresInstanceApplyRequest) WithImmediately(immediately bool) *PostgresInstanceApplyRequest {
+	s.Immediately = &immediately
+	return s
+}
+
+func (s *PostgresInstanceApplyRequest) WithOn(on string) *PostgresInstanceApplyRequest {
+	s.On = &on
+	return s
+}
+
 func NewPostgresInstanceUnsetRequest() *PostgresInstanceUnsetRequest {
 	s := PostgresInstanceUnsetRequest{}
 	return &s

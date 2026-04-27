@@ -90,6 +90,12 @@ type PostgresInstanceSet struct {
 	PostgresVersion         *int                                     `ddl:"parameter" sql:"POSTGRES_VERSION"`
 	MaintenanceWindowStart  *int                                     `ddl:"parameter" sql:"MAINTENANCE_WINDOW_START"`
 	PostgresSettings        *string                                  `ddl:"parameter,single_quotes" sql:"POSTGRES_SETTINGS"`
+	Apply                   *PostgresInstanceApply                   `ddl:"keyword" sql:"APPLY"`
+}
+
+type PostgresInstanceApply struct {
+	Immediately *bool   `ddl:"keyword" sql:"IMMEDIATELY"`
+	On          *string `ddl:"parameter,single_quotes,no_equals" sql:"ON"`
 }
 
 type PostgresInstanceUnset struct {
