@@ -100,18 +100,18 @@ var postgresInstancesDef = g.NewInterface(
 				OptionalTextAssignment("STORAGE_INTEGRATION", g.ParameterOptions().SingleQuotes()).
 				OptionalNumberAssignment("POSTGRES_VERSION", g.ParameterOptions()).
 				OptionalNumberAssignment("MAINTENANCE_WINDOW_START", g.ParameterOptions()).
-        OptionalTextAssignment("POSTGRES_SETTINGS", g.ParameterOptions().SingleQuotes()).
-        OptionalQueryStructField(
-          "Apply",
-          g.NewQueryStruct("PostgresInstanceApply").
-            OptionalSQL("IMMEDIATELY").
-            OptionalTextAssignment("ON", g.KeywordOptions().SingleQuotes()).
-            WithValidation(g.ExactlyOneValueSet, "Immediately", "On"),
-          g.KeywordOptions().SQL("APPLY"),
-        ).
-        WithValidation(g.AtLeastOneValueSet, "NetworkPolicy", "AuthenticationAuthority", "Comment", "HighAvailability", "ComputeFamily", "StorageSizeGb", "StorageIntegration", "PostgresVersion", "MaintenanceWindowStart", "PostgresSettings"),
-      g.KeywordOptions().SQL("SET"),
-    ).
+				OptionalTextAssignment("POSTGRES_SETTINGS", g.ParameterOptions().SingleQuotes()).
+				OptionalQueryStructField(
+					"Apply",
+					g.NewQueryStruct("PostgresInstanceApply").
+						OptionalSQL("IMMEDIATELY").
+						OptionalTextAssignment("ON", g.KeywordOptions().SingleQuotes()).
+						WithValidation(g.ExactlyOneValueSet, "Immediately", "On"),
+					g.KeywordOptions().SQL("APPLY"),
+				).
+				WithValidation(g.AtLeastOneValueSet, "NetworkPolicy", "AuthenticationAuthority", "Comment", "HighAvailability", "ComputeFamily", "StorageSizeGb", "StorageIntegration", "PostgresVersion", "MaintenanceWindowStart", "PostgresSettings"),
+			g.KeywordOptions().SQL("SET"),
+		).
 		OptionalQueryStructField(
 			"Unset",
 			g.NewQueryStruct("PostgresInstanceUnset").

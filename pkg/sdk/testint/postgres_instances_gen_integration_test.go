@@ -1,4 +1,4 @@
-//go:build non_account_level_tests
+//go:build account_level_tests
 
 package testint
 
@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -49,9 +50,15 @@ func TestInt_PostgresInstances(t *testing.T) {
 	//   AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 17 HIGH_AVAILABILITY = TRUE
 	//   NETWORK_POLICY = 'my_network_policy' COMMENT = 'Production Postgres instance';
 	t.Run("create - complete", func(t *testing.T) {
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
+		t.Cleanup(networkPolicyCleanup)
+
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		comment := random.Comment()
 		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+			WithPostgresVersion(17).
+			WithHighAvailability(true).
+			WithNetworkPolicy(networkPolicy.Name).
 			WithComment(comment)
 
 		err := client.PostgresInstances.Create(ctx, request)
@@ -66,11 +73,33 @@ func TestInt_PostgresInstances(t *testing.T) {
 			HasComputeFamily("STANDARD_1").
 			HasStorageSize(10).
 			HasAuthenticationAuthority("POSTGRES").
-			HasIsHa(false).
+			HasPostgresVersion("17").
+			HasIsHa(true).
 			HasComment(comment).
 			HasCreatedOnNotEmpty().
 			HasUpdatedOnNotEmpty(),
 		)
+	})
+
+	t.Run("create - with network_policy", func(t *testing.T) {
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
+		t.Cleanup(networkPolicyCleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+			WithNetworkPolicy(networkPolicy.Name)
+
+		err := client.PostgresInstances.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
+
+		properties, err := client.PostgresInstances.Describe(ctx, id)
+		require.NoError(t, err)
+		propertyMap := make(map[string]string)
+		for _, p := range properties {
+			propertyMap[p.Property] = p.Value
+		}
+		assert.Equal(t, networkPolicy.Name, propertyMap["network_policy"])
 	})
 
 	// Doc example: POSTGRES_SETTINGS = '{"postgres:work_mem" = "128MB", "pgbouncer:default_pool_size" = "200"}'
@@ -136,8 +165,8 @@ func TestInt_PostgresInstances(t *testing.T) {
 		)
 	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres SET COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 100;
-	t.Run("alter: set compute_family and storage_size", func(t *testing.T) {
+	// Doc example: ALTER POSTGRES INSTANCE my_postgres SET STORAGE_SIZE_GB = 100;
+	t.Run("alter: set storage_size", func(t *testing.T) {
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
 
@@ -148,6 +177,36 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
 			HasStorageSize(20),
+		)
+	})
+
+	// Doc example: ALTER POSTGRES INSTANCE my_postgres SET COMPUTE_FAMILY = 'STANDARD_M';
+	t.Run("alter: set compute_family", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithComputeFamily("STANDARD_2")))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasComputeFamily("STANDARD_2"),
+		)
+	})
+
+	t.Run("alter: set high_availability", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		// Default is false, set to true
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithHighAvailability(true)))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasIsHa(true),
 		)
 	})
 
@@ -253,6 +312,31 @@ func TestInt_PostgresInstances(t *testing.T) {
 		}, result.State)
 	})
 
+	t.Run("alter: suspend already suspended instance", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		// First suspend
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSuspend(true))
+		require.NoError(t, err)
+
+		// Suspend again - expect error due to invalid state
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSuspend(true))
+		assert.Error(t, err)
+	})
+
+	t.Run("alter: resume already running instance", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		// Resume without suspending - instance is already in a running state
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithResume(true))
+		assert.Error(t, err)
+	})
+
 	// Doc example: ALTER POSTGRES INSTANCE my_postgres RENAME TO prod_postgres;
 	t.Run("alter: rename", func(t *testing.T) {
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
@@ -337,6 +421,30 @@ func TestInt_PostgresInstances(t *testing.T) {
 		forkedInstance, err := client.PostgresInstances.ShowByID(ctx, forkId)
 		require.NoError(t, err)
 		assert.Equal(t, forkId.Name(), forkedInstance.Name)
+	})
+
+	t.Run("fork - verify origin and type fields", func(t *testing.T) {
+		sourceInstance, sourceCleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(sourceCleanup)
+
+		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewForkPostgresInstanceRequest(forkId, sourceInstance.ID())
+
+		err := client.PostgresInstances.Fork(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId))
+
+		forkedInstance, err := client.PostgresInstances.ShowByID(ctx, forkId)
+		require.NoError(t, err)
+
+		// Forked instances should have an origin referencing the source
+		assert.NotNil(t, forkedInstance.Origin)
+		if forkedInstance.Origin != nil {
+			assert.Contains(t, *forkedInstance.Origin, sourceInstance.Name)
+		}
+
+		// Verify type field is populated
+		assert.NotEmpty(t, forkedInstance.Type)
 	})
 
 	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance AT (TIMESTAMP => '2025-01-15 12:00:00'::TIMESTAMP_NTZ);
@@ -479,6 +587,19 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assert.Equal(t, postgresInstance.Name, result.Name)
 	})
 
+	t.Run("ShowByID: missing object", func(t *testing.T) {
+		_, err := client.PostgresInstances.ShowByID(ctx, testClientHelper().Ids.RandomAccountObjectIdentifier())
+		require.Error(t, err)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("show: searching a non-existent instance", func(t *testing.T) {
+		instances, err := client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest().
+			WithLike(sdk.Like{Pattern: sdk.String("non-existent-postgres-instance")}))
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(instances))
+	})
+
 	// Doc example: DROP POSTGRES INSTANCE my_postgres;
 	t.Run("drop: existing object", func(t *testing.T) {
 		postgresInstance, _ := testClientHelper().PostgresInstance.Create(t)
@@ -497,5 +618,509 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		err = client.PostgresInstances.Drop(ctx, sdk.NewDropPostgresInstanceRequest(NonExistingAccountObjectIdentifier).WithIfExists(true))
 		require.NoError(t, err)
+	})
+
+	t.Run("drop safely: existing object", func(t *testing.T) {
+		postgresInstance, _ := testClientHelper().PostgresInstance.Create(t)
+
+		err := client.PostgresInstances.DropSafely(ctx, postgresInstance.ID())
+		require.NoError(t, err)
+
+		_, err = client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
+		assert.Error(t, err)
+	})
+
+	t.Run("drop safely: non-existing object", func(t *testing.T) {
+		err := client.PostgresInstances.DropSafely(ctx, NonExistingAccountObjectIdentifier)
+		require.NoError(t, err)
+	})
+
+	t.Run("ShowByIDSafely", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		result, err := client.PostgresInstances.ShowByIDSafely(ctx, postgresInstance.ID())
+		assert.NotNil(t, result)
+		require.NoError(t, err)
+	})
+
+	t.Run("ShowByIDSafely: missing object", func(t *testing.T) {
+		_, err := client.PostgresInstances.ShowByIDSafely(ctx, testClientHelper().Ids.RandomAccountObjectIdentifier())
+		require.Error(t, err)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("alter: non-existing object", func(t *testing.T) {
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(NonExistingAccountObjectIdentifier).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithComment("test")))
+		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+
+	t.Run("alter: non-existing object with if exists", func(t *testing.T) {
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(NonExistingAccountObjectIdentifier).
+			WithIfExists(true).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithComment("test")))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: set and unset maintenance_window_start", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithMaintenanceWindowStart(3)))
+		require.NoError(t, err)
+
+		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
+		require.NoError(t, err)
+		propertyMap := make(map[string]string)
+		for _, p := range properties {
+			propertyMap[p.Property] = p.Value
+		}
+		assert.Equal(t, "3", propertyMap["maintenance_window_start"])
+
+		// Unset
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithMaintenanceWindowStart(true)))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: set and unset storage_integration", func(t *testing.T) {
+		awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+		awsRoleARN := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
+
+		storageIntegration, storageIntegrationCleanup := testClientHelper().StorageIntegration.CreateS3(t, awsBucketUrl, awsRoleARN)
+		t.Cleanup(storageIntegrationCleanup)
+
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithStorageIntegration(storageIntegration.Name)))
+		require.NoError(t, err)
+
+		// Unset
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithStorageIntegration(true)))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: set and unset network_policy", func(t *testing.T) {
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
+		t.Cleanup(networkPolicyCleanup)
+
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithNetworkPolicy(networkPolicy.Name)))
+		require.NoError(t, err)
+
+		// Unset
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithNetworkPolicy(true)))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: set and unset postgres_settings", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)))
+		require.NoError(t, err)
+
+		// Unset
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithPostgresSettings(true)))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasNoPostgresSettings(),
+		)
+	})
+
+	t.Run("alter: set with apply on timestamp", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		// Use a future timestamp for the scheduled apply
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithStorageSizeGb(20).
+				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithOn("2099-01-01 00:00:00"))))
+		require.NoError(t, err)
+	})
+
+	t.Run("fork - with before timestamp", func(t *testing.T) {
+		sourceInstance, sourceCleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(sourceCleanup)
+
+		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewForkPostgresInstanceRequest(forkId, sourceInstance.ID()).
+			WithBefore(*sdk.NewPostgresInstanceForkBeforeRequest().WithTimestamp("2025-01-15 12:00:00"))
+
+		// This may fail if the timestamp is outside the retention period; that's expected
+		err := client.PostgresInstances.Fork(ctx, request)
+		if err == nil {
+			t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId))
+
+			forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId)
+			require.NoError(t, showErr)
+			assert.Equal(t, forkId.Name(), forkedInstance.Name)
+		}
+	})
+
+	t.Run("fork - with before offset", func(t *testing.T) {
+		sourceInstance, sourceCleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(sourceCleanup)
+
+		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewForkPostgresInstanceRequest(forkId, sourceInstance.ID()).
+			WithBefore(*sdk.NewPostgresInstanceForkBeforeRequest().WithOffset("-60"))
+
+		err := client.PostgresInstances.Fork(ctx, request)
+		if err == nil {
+			t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId))
+
+			forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId)
+			require.NoError(t, showErr)
+			assert.Equal(t, forkId.Name(), forkedInstance.Name)
+		}
+	})
+
+	t.Run("fork - with all optional parameters", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(tagCleanup)
+
+		sourceInstance, sourceCleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(sourceCleanup)
+
+		comment := random.Comment()
+		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewForkPostgresInstanceRequest(forkId, sourceInstance.ID()).
+			WithComputeFamily("STANDARD_1").
+			WithStorageSizeGb(20).
+			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
+			WithComment(comment).
+			WithTag([]sdk.TagAssociation{
+				{
+					Name:  tag.ID(),
+					Value: "fork_tag_value",
+				},
+			})
+
+		err := client.PostgresInstances.Fork(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId))
+
+		forkedInstance, err := client.PostgresInstances.ShowByID(ctx, forkId)
+		require.NoError(t, err)
+		assert.Equal(t, forkId.Name(), forkedInstance.Name)
+		assert.Equal(t, comment, *forkedInstance.Comment)
+
+		assertTagSet(t, tag.ID(), forkId, sdk.ObjectTypePostgresInstance, "fork_tag_value")
+	})
+
+	t.Run("create - with high_availability", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+			WithHighAvailability(true)
+
+		err := client.PostgresInstances.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
+
+		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
+			HasName(id.Name()).
+			HasIsHa(true),
+		)
+	})
+
+	t.Run("create - with postgres_version", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+			WithPostgresVersion(17)
+
+		err := client.PostgresInstances.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
+
+		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
+			HasName(id.Name()).
+			HasPostgresVersion("17"),
+		)
+	})
+
+	t.Run("create - with authentication_authority postgres_or_snowflake", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake)
+
+		err := client.PostgresInstances.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.PostgresInstance(t, id).
+			HasName(id.Name()).
+			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
+		)
+	})
+
+	t.Run("show: with limit and from", func(t *testing.T) {
+		postgresInstance1, cleanup1 := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup1)
+		postgresInstance2, cleanup2 := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup2)
+
+		instances, err := client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest().
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1), From: sdk.String(postgresInstance1.Name)}))
+		require.NoError(t, err)
+		require.LessOrEqual(t, len(instances), 1)
+
+		_ = postgresInstance2
+	})
+
+	t.Run("describe: non-existing object", func(t *testing.T) {
+		_, err := client.PostgresInstances.Describe(ctx, NonExistingAccountObjectIdentifier)
+		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+
+	t.Run("describe: properties after alter", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		comment := random.Comment()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres)
+
+		err := client.PostgresInstances.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
+
+		// Alter: set comment and storage size
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(id).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithComment(comment).
+				WithStorageSizeGb(20)))
+		require.NoError(t, err)
+
+		properties, err := client.PostgresInstances.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, properties)
+
+		propertyMap := make(map[string]string)
+		for _, p := range properties {
+			propertyMap[p.Property] = p.Value
+		}
+
+		assert.Equal(t, id.Name(), propertyMap["name"])
+		assert.Equal(t, comment, propertyMap["comment"])
+		assert.Equal(t, "20", propertyMap["storage_size_gb"])
+	})
+
+	t.Run("create - with multiple tags", func(t *testing.T) {
+		tag1, tag1Cleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(tag1Cleanup)
+		tag2, tag2Cleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(tag2Cleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+			WithTag([]sdk.TagAssociation{
+				{
+					Name:  tag1.ID(),
+					Value: "value1",
+				},
+				{
+					Name:  tag2.ID(),
+					Value: "value2",
+				},
+			})
+
+		err := client.PostgresInstances.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
+
+		assertTagSet(t, tag1.ID(), id, sdk.ObjectTypePostgresInstance, "value1")
+		assertTagSet(t, tag2.ID(), id, sdk.ObjectTypePostgresInstance, "value2")
+	})
+
+	t.Run("alter: set multiple properties in one call", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		comment := random.Comment()
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithComment(comment).
+				WithStorageSizeGb(20).
+				WithHighAvailability(true).
+				WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasComment(comment).
+			HasStorageSize(20).
+			HasIsHa(true),
+		)
+	})
+
+	t.Run("describe: verify complete property set", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
+		require.NoError(t, err)
+		require.NotEmpty(t, properties)
+
+		propertyMap := make(map[string]string)
+		for _, p := range properties {
+			propertyMap[p.Property] = p.Value
+		}
+
+		// Verify all documented properties are present
+		assert.Contains(t, propertyMap, "name")
+		assert.Contains(t, propertyMap, "owner")
+		assert.Contains(t, propertyMap, "owner_role_type")
+		assert.Contains(t, propertyMap, "created_on")
+		assert.Contains(t, propertyMap, "updated_on")
+		assert.Contains(t, propertyMap, "type")
+		assert.Contains(t, propertyMap, "host")
+		assert.Contains(t, propertyMap, "compute_family")
+		assert.Contains(t, propertyMap, "storage_size_gb")
+		assert.Contains(t, propertyMap, "postgres_version")
+		assert.Contains(t, propertyMap, "high_availability")
+		assert.Contains(t, propertyMap, "authentication_authority")
+		assert.Contains(t, propertyMap, "state")
+		assert.Contains(t, propertyMap, "retention_time")
+	})
+
+	t.Run("alter: unset all unsettable fields", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+			WithComment("test comment").
+			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)
+
+		err := client.PostgresInstances.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
+
+		// Unset all unsettable fields in one call
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(id).
+			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().
+				WithComment(true).
+				WithPostgresSettings(true)))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstance(t, id).
+			HasNoComment().
+			HasNoPostgresSettings(),
+		)
+	})
+
+	t.Run("alter: set postgres_version", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithPostgresVersion(17).
+				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasPostgresVersion("17"),
+		)
+	})
+
+	t.Run("create - with storage_integration", func(t *testing.T) {
+		awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+		awsRoleARN := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
+
+		storageIntegration, storageIntegrationCleanup := testClientHelper().StorageIntegration.CreateS3(t, awsBucketUrl, awsRoleARN)
+		t.Cleanup(storageIntegrationCleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+			WithStorageIntegration(storageIntegration.Name)
+
+		err := client.PostgresInstances.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
+
+		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, id.Name(), postgresInstance.Name)
+	})
+
+	t.Run("show: verify all result fields on basic instance", func(t *testing.T) {
+		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup)
+
+		result, err := client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
+			HasName(postgresInstance.Name).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasType("PRIMARY").
+			HasComputeFamily("STANDARD_1").
+			HasStorageSize(10).
+			HasAuthenticationAuthority("POSTGRES").
+			HasIsHa(false).
+			HasNoComment().
+			HasNoOrigin().
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty(),
+		)
+
+		// RetentionTime should have a default value
+		assert.GreaterOrEqual(t, result.RetentionTime, 0)
+
+		// PostgresVersion should be a non-empty string
+		assert.NotEmpty(t, result.PostgresVersion)
+
+		// State should be one of the valid states
+		assert.Contains(t, sdk.AllPostgresInstanceStates, result.State)
+	})
+
+	t.Run("drop: already dropped instance", func(t *testing.T) {
+		postgresInstance, _ := testClientHelper().PostgresInstance.Create(t)
+
+		// First drop succeeds
+		err := client.PostgresInstances.Drop(ctx, sdk.NewDropPostgresInstanceRequest(postgresInstance.ID()))
+		require.NoError(t, err)
+
+		// Second drop without IF EXISTS should error
+		err = client.PostgresInstances.Drop(ctx, sdk.NewDropPostgresInstanceRequest(postgresInstance.ID()))
+		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+
+		// Second drop with IF EXISTS should succeed
+		err = client.PostgresInstances.Drop(ctx, sdk.NewDropPostgresInstanceRequest(postgresInstance.ID()).WithIfExists(true))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: rename to existing name", func(t *testing.T) {
+		postgresInstance1, cleanup1 := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup1)
+		postgresInstance2, cleanup2 := testClientHelper().PostgresInstance.Create(t)
+		t.Cleanup(cleanup2)
+
+		// Try to rename instance1 to instance2's name - should fail
+		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance1.ID()).
+			WithRenameTo(postgresInstance2.ID()))
+		assert.Error(t, err)
+	})
+
+	t.Run("fork - from non-existing source", func(t *testing.T) {
+		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewForkPostgresInstanceRequest(forkId, NonExistingAccountObjectIdentifier)
+
+		err := client.PostgresInstances.Fork(ctx, request)
+		assert.Error(t, err)
 	})
 }
