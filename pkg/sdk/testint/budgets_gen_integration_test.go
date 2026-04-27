@@ -39,14 +39,14 @@ func TestInt_Budgets(t *testing.T) {
 	})
 
 	t.Run("SetEmailNotifications and GetNotificationIntegrations", func(t *testing.T) {
-		t.Skip("TODO: implement once notification integration setup is available")
+		t.Skip("TODO [next PR]: implement")
 		budgetId, budgetCleanup := testClientHelper().Budget.Create(t)
 		t.Cleanup(budgetCleanup)
 		_ = budgetId
 	})
 
 	t.Run("SetCycleStartAction and GetCycleStartAction", func(t *testing.T) {
-		t.Skip("TODO: implement once scalar result scanning and procedure reference setup is available")
+		t.Skip("TODO [next PR]: implement")
 		budgetId, budgetCleanup := testClientHelper().Budget.Create(t)
 		t.Cleanup(budgetCleanup)
 		_ = budgetId
