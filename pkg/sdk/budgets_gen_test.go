@@ -176,11 +176,10 @@ func TestBudgets_SetEmailNotifications(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('test@example.com')", id.FullyQualifiedName())
 	})
 
-	// TODO [next PRs]: identifier additionally in single quotes
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.args.NotificationIntegration = &notificationIntegrationId
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS (%s, 'test@example.com')", id.FullyQualifiedName(), notificationIntegrationId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('\\\"%s\\\"', 'test@example.com')", id.FullyQualifiedName(), notificationIntegrationId.Name())
 	})
 }
 

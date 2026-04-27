@@ -612,6 +612,59 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 	})
 }
 
+func TestBuilder_singleQuotedIdentifier(t *testing.T) {
+	t.Run("standalone account object identifier without quotes renders as-is", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName(), sql)
+	})
+
+	t.Run("standalone schema object identifier without quotes renders as-is", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName(), sql)
+	})
+
+	t.Run("standalone account object identifier with single_quotes is wrapped", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,single_quotes"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "'\\\""+id.Name()+"\\\"'", sql)
+	})
+
+	t.Run("standalone schema object identifier with single_quotes is wrapped", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "'\\\""+id.DatabaseName()+"\\\".\\\""+id.SchemaName()+"\\\".\\\""+id.Name()+"\\\"'", sql)
+	})
+
+	t.Run("identifier in list with single_quotes wraps each element", func(t *testing.T) {
+		id1 := randomAccountObjectIdentifier()
+		id2 := randomAccountObjectIdentifier()
+		s := &struct {
+			names []AccountObjectIdentifier `ddl:"list,single_quotes"`
+		}{names: []AccountObjectIdentifier{id1, id2}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "'\\\""+id1.Name()+"\\\"', '\\\""+id2.Name()+"\\\"'", sql)
+	})
+}
+
 func TestBuilder_DataType(t *testing.T) {
 	type dataTypeTestHelper struct {
 		DataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`

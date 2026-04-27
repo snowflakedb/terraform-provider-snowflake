@@ -14,7 +14,7 @@ var budgetEmail = g.NewQueryStruct("BudgetEmail").
 	Text("Email", g.KeywordOptions().SingleQuotes().Required())
 
 var setEmailNotificationsArgs = g.NewQueryStruct("SetEmailNotificationsArgs").
-	OptionalIdentifier("NotificationIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
+	OptionalIdentifier("NotificationIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SingleQuotes()).
 	ListQueryStructField("Emails", budgetEmail, g.ListOptions().Required())
 
 var getNotificationIntegrationsResult = g.StructPair(

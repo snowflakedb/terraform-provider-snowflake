@@ -66,7 +66,7 @@ type SetEmailNotificationsBudgetOptions struct {
 }
 
 type BudgetSetEmailNotificationsArgs struct {
-	NotificationIntegration *AccountObjectIdentifier `ddl:"identifier"`
+	NotificationIntegration *AccountObjectIdentifier `ddl:"identifier,single_quotes"`
 	Emails                  []BudgetEmail            `ddl:"list"`
 }
 

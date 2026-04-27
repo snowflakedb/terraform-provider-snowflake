@@ -359,6 +359,7 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 					key:   sqlTag,
 					value: reflectedValue.(Identifier),
 					em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+					qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 				}, nil
 			}
 		case "list":
@@ -437,6 +438,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			listClauses = append(listClauses, sqlIdentifierClause{
 				value: identifier,
 				em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+				qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 			})
 			continue
 		}
@@ -569,6 +571,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 			key:   sqlTag,
 			value: reflectedValue.(Identifier),
 			em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+			qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 		}
 	case "parameter":
 		if _, ok := reflectedValue.(ObjectType); ok {
@@ -640,6 +643,7 @@ type sqlIdentifierClause struct {
 	key   string
 	value Identifier
 	em    equalsModifier
+	qm    quoteModifier
 }
 
 func (v sqlIdentifierClause) String() string {
@@ -650,6 +654,7 @@ func (v sqlIdentifierClause) String() string {
 	} else {
 		name = DoubleQuotes.Modify(v.value.Name())
 	}
+	name = v.qm.Modify(name)
 	// else try to get the string value
 	if v.key != "" {
 		return v.em.Modify(v.key) + name
