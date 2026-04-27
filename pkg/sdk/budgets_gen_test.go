@@ -147,10 +147,14 @@ func TestBudgets_GetSpendingLimit(t *testing.T) {
 
 func TestBudgets_SetEmailNotifications(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
+	notificationIntegrationId := randomAccountObjectIdentifier()
 	// Minimal valid SetEmailNotificationsBudgetOptions
 	defaultOpts := func() *SetEmailNotificationsBudgetOptions {
 		return &SetEmailNotificationsBudgetOptions{
 			name: id,
+			args: BudgetSetEmailNotificationsArgs{
+				Emails: "test@example.com",
+			},
 		}
 	}
 
@@ -173,13 +177,14 @@ func TestBudgets_SetEmailNotifications(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('test@example.com')", id.FullyQualifiedName())
 	})
 
+	// TODO [next PRs]: identifier additionally in single quotes
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.args = BudgetSetEmailNotificationsArgs{
-			NotificationIntegration: String("my_integration"),
+			NotificationIntegration: &notificationIntegrationId,
 			Emails:                  "test@example.com",
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('my_integration', 'test@example.com')", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS (%s, 'test@example.com')", id.FullyQualifiedName(), notificationIntegrationId.FullyQualifiedName())
 	})
 }
 
@@ -215,10 +220,15 @@ func TestBudgets_GetNotificationIntegrations(t *testing.T) {
 
 func TestBudgets_SetCycleStartAction(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
+	procedureId := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR)
 	// Minimal valid SetCycleStartActionBudgetOptions
 	defaultOpts := func() *SetCycleStartActionBudgetOptions {
 		return &SetCycleStartActionBudgetOptions{
 			name: id,
+			args: BudgetSetCycleStartActionArgs{
+				Procedure: procedureId.SchemaObjectId(),
+				Arguments: []string{"arg1"},
+			},
 		}
 	}
 
@@ -234,17 +244,19 @@ func TestBudgets_SetCycleStartAction(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	// TODO [next PRs]: identifier additionally in single quotes
+	t.Run("one arg", func(t *testing.T) {
 		opts := defaultOpts()
 		// manually adjusted
-		opts.args = BudgetSetCycleStartActionArgs{Procedure: "myschema.myproc", Arguments: "arg1"}
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION ('myschema.myproc', arg1)", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (%s, arg1)", id.FullyQualifiedName(), procedureId.SchemaObjectId().FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
+	t.Run("more args", func(t *testing.T) {
+		procedureId2 := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeVARCHAR)
+
 		opts := defaultOpts()
-		opts.args = BudgetSetCycleStartActionArgs{Procedure: "mydb.myschema.myproc", Arguments: "arg1, arg2"}
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION ('mydb.myschema.myproc', arg1, arg2)", id.FullyQualifiedName())
+		opts.args = BudgetSetCycleStartActionArgs{Procedure: procedureId2.SchemaObjectId(), Arguments: []string{"arg1", "arg2"}}
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (%s, arg1, arg2)", id.FullyQualifiedName(), procedureId2.SchemaObjectId().FullyQualifiedName())
 	})
 }
 

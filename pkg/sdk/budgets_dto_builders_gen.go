@@ -82,7 +82,7 @@ func NewBudgetSetEmailNotificationsArgsRequest(
 	return &s
 }
 
-func (s *BudgetSetEmailNotificationsArgsRequest) WithNotificationIntegration(notificationIntegration string) *BudgetSetEmailNotificationsArgsRequest {
+func (s *BudgetSetEmailNotificationsArgsRequest) WithNotificationIntegration(notificationIntegration AccountObjectIdentifier) *BudgetSetEmailNotificationsArgsRequest {
 	s.NotificationIntegration = &notificationIntegration
 	return s
 }
@@ -106,8 +106,8 @@ func NewSetCycleStartActionBudgetRequest(
 }
 
 func NewBudgetSetCycleStartActionArgsRequest(
-	procedure string,
-	arguments string,
+	procedure SchemaObjectIdentifier,
+	arguments []string,
 ) *BudgetSetCycleStartActionArgsRequest {
 	s := BudgetSetCycleStartActionArgsRequest{}
 	s.Procedure = procedure

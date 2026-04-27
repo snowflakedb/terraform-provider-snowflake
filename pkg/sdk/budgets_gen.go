@@ -66,8 +66,8 @@ type SetEmailNotificationsBudgetOptions struct {
 }
 
 type BudgetSetEmailNotificationsArgs struct {
-	NotificationIntegration *string `ddl:"parameter,single_quotes,no_equals"`
-	Emails                  string  `ddl:"parameter,single_quotes,no_equals"`
+	NotificationIntegration *AccountObjectIdentifier `ddl:"identifier"`
+	Emails                  string                   `ddl:"parameter,single_quotes,no_equals"`
 }
 
 // GetNotificationIntegrationsBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/method/get_notification_integrations.
@@ -99,8 +99,8 @@ type SetCycleStartActionBudgetOptions struct {
 }
 
 type BudgetSetCycleStartActionArgs struct {
-	Procedure string `ddl:"parameter,single_quotes,no_equals"`
-	Arguments string `ddl:"parameter,no_equals"`
+	Procedure SchemaObjectIdentifier `ddl:"identifier"`
+	Arguments []string               `ddl:"list"`
 }
 
 // GetCycleStartActionBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_cycle_start_action.

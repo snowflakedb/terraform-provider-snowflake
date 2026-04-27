@@ -44,7 +44,7 @@ type SetEmailNotificationsBudgetRequest struct {
 }
 
 type BudgetSetEmailNotificationsArgsRequest struct {
-	NotificationIntegration *string
+	NotificationIntegration *AccountObjectIdentifier
 	Emails                  string // required
 }
 
@@ -58,8 +58,8 @@ type SetCycleStartActionBudgetRequest struct {
 }
 
 type BudgetSetCycleStartActionArgsRequest struct {
-	Procedure string // required
-	Arguments string // required
+	Procedure SchemaObjectIdentifier // required
+	Arguments []string               // required
 }
 
 type GetCycleStartActionBudgetRequest struct {
