@@ -4,7 +4,6 @@ package sdk
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -186,6 +185,7 @@ func (r *ShowPostgresInstanceRequest) toOpts() *ShowPostgresInstanceOptions {
 }
 
 func (r postgresInstancesRow) convert() (*PostgresInstance, error) {
+	// adjusted manually
 	pi := &PostgresInstance{
 		Name:                    r.Name,
 		Owner:                   r.Owner,
@@ -200,26 +200,12 @@ func (r postgresInstancesRow) convert() (*PostgresInstance, error) {
 		IsHa:                    r.IsHa == "true",
 		RetentionTime:           r.RetentionTime,
 	}
-	if r.Origin.Valid {
-		pi.Origin = &r.Origin.String
-	}
-	if r.Host.Valid {
-		pi.Host = &r.Host.String
-	}
-	if r.PrivatelinkServiceIdentifier.Valid {
-		pi.PrivatelinkServiceIdentifier = &r.PrivatelinkServiceIdentifier.String
-	}
-	if r.PostgresSettings.Valid {
-		pi.PostgresSettings = &r.PostgresSettings.String
-	}
-	if r.Comment.Valid {
-		pi.Comment = &r.Comment.String
-	}
-	state, err := ToPostgresInstanceState(r.State)
-	if err != nil {
-		return nil, fmt.Errorf("error converting postgres instance state: %w", err)
-	}
-	pi.State = state
+	mapNullString(&pi.Origin, r.Origin)
+	mapNullString(&pi.Host, r.Host)
+	mapNullString(&pi.PrivatelinkServiceIdentifier, r.PrivatelinkServiceIdentifier)
+	mapNullString(&pi.PostgresSettings, r.PostgresSettings)
+	mapNullString(&pi.Comment, r.Comment)
+	mapStringWithMapping(&pi.State, r.State, ToPostgresInstanceState)
 	return pi, nil
 }
 
@@ -231,6 +217,7 @@ func (r *DescribePostgresInstanceRequest) toOpts() *DescribePostgresInstanceOpti
 }
 
 func (r postgresInstanceDetailsRow) convert() (*PostgresInstanceProperty, error) {
+	// adjusted manually
 	return &PostgresInstanceProperty{
 		Property: r.Property,
 		Value:    r.Value,
