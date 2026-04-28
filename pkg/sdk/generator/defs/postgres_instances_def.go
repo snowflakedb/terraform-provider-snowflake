@@ -193,8 +193,6 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalLike().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).ShowByIdOperationWithFiltering(
-	g.ShowByIDLikeFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-postgres-instance",
