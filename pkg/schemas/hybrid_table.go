@@ -46,4 +46,3 @@ func HybridTableDetailsListToSchema(details []sdk.HybridTableDetails) []map[stri
 	}
 	return result
 }
-
