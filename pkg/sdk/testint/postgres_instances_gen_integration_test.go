@@ -291,31 +291,33 @@ func TestInt_PostgresInstances(t *testing.T) {
 	// ==================
 
 	t.Run("alter: set and unset properties", func(t *testing.T) {
+		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
+		t.Cleanup(networkPolicyCleanup)
+
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
 
-		// Set and unset comment
+		// Set all properties in one call
 		comment := random.Comment()
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().WithComment(comment)))
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithComment(comment).
+				WithMaintenanceWindowStart(3).
+				WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
+				WithStorageSizeGb(20).
+				WithComputeFamily("STANDARD_2").
+				WithHighAvailability(true).
+				WithAuthenticationAuthority(sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake).
+				WithNetworkPolicy(networkPolicy.Name)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasComment(comment),
+			HasComment(comment).
+			HasStorageSize(20).
+			HasComputeFamily("STANDARD_2").
+			HasIsHa(true).
+			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
 		)
-
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithComment(true)))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasNoComment(),
-		)
-
-		// Set and unset maintenance_window_start
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().WithMaintenanceWindowStart(3)))
-		require.NoError(t, err)
 
 		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
 		require.NoError(t, err)
@@ -325,61 +327,18 @@ func TestInt_PostgresInstances(t *testing.T) {
 		}
 		assert.Equal(t, "3", propertyMap["maintenance_window_start"])
 
+		// Unset all unsettable properties in one call
 		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithMaintenanceWindowStart(true)))
-		require.NoError(t, err)
-
-		// Set and unset postgres_settings
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)))
-		require.NoError(t, err)
-
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithPostgresSettings(true)))
+			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().
+				WithComment(true).
+				WithPostgresSettings(true).
+				WithMaintenanceWindowStart(true).
+				WithNetworkPolicy(true)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasNoComment().
 			HasNoPostgresSettings(),
-		)
-
-		// Set storage_size
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithStorageSizeGb(20)))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasStorageSize(20),
-		)
-
-		// Set compute_family
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithComputeFamily("STANDARD_2")))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasComputeFamily("STANDARD_2"),
-		)
-
-		// Set high_availability
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithHighAvailability(true)))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasIsHa(true),
-		)
-
-		// Set authentication_authority
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithAuthenticationAuthority(sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake)))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
 		)
 
 		// Set with apply immediately
@@ -410,20 +369,6 @@ func TestInt_PostgresInstances(t *testing.T) {
 				WithStorageSizeGb(40).
 				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithOn("2099-01-01 00:00:00"))))
 		require.NoError(t, err)
-
-		// Set multiple properties in one call
-		comment = random.Comment()
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithComment(comment).
-				WithStorageSizeGb(50).
-				WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasComment(comment).
-			HasStorageSize(50),
-		)
 	})
 
 	t.Run("alter: suspend and resume", func(t *testing.T) {
@@ -545,35 +490,24 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertTagUnset(t, tag.ID(), postgresInstance.ID(), sdk.ObjectTypePostgresInstance)
 	})
 
-	t.Run("alter: set and unset storage_integration and network_policy", func(t *testing.T) {
+	t.Run("alter: set and unset storage_integration", func(t *testing.T) {
 		awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 		awsRoleARN := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
 
 		storageIntegration, storageIntegrationCleanup := testClientHelper().StorageIntegration.CreateS3(t, awsBucketUrl, awsRoleARN)
 		t.Cleanup(storageIntegrationCleanup)
 
-		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
-		t.Cleanup(networkPolicyCleanup)
-
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
 
-		// Set and unset storage_integration
+		// Set storage_integration
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().WithStorageIntegration(storageIntegration.Name)))
 		require.NoError(t, err)
 
+		// Unset storage_integration
 		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithStorageIntegration(true)))
-		require.NoError(t, err)
-
-		// Set and unset network_policy
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().WithNetworkPolicy(networkPolicy.Name)))
-		require.NoError(t, err)
-
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithNetworkPolicy(true)))
 		require.NoError(t, err)
 	})
 
