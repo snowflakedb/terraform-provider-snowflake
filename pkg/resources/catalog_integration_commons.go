@@ -44,6 +44,12 @@ func catalogIntegrationCommonSchema(describeSchema map[string]*schema.Schema) ma
 			Default:     "",
 			Description: "Specifies a comment for the catalog integration.",
 		},
+		"catalog_source": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Description: joinWithSpace("Specifies the type of catalog source.",
+				"This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens."),
+		},
 		ShowOutputAttributeName: {
 			Type:        schema.TypeList,
 			Computed:    true,

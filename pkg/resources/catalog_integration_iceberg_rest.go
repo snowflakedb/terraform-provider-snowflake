@@ -193,6 +193,7 @@ func CatalogIntegrationIcebergRest() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(catalogIntegrationIcebergRestSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(catalogIntegrationIcebergRestSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
+			RecreateWhenCatalogSourceChangedExternally(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest),
 		),
 	}
 }
@@ -297,6 +298,7 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) sche
 			d.Set("name", details.Id.Name()),
 			d.Set("enabled", details.Enabled),
 			d.Set("comment", details.Comment),
+			d.Set("catalog_source", string(details.CatalogSource)),
 			d.Set("catalog_namespace", details.CatalogNamespace),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(s)}),

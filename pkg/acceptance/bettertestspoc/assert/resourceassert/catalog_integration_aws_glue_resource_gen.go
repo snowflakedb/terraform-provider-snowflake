@@ -42,6 +42,11 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogNamespace(expected s
 	return c
 }
 
+func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSource(expected string) *CatalogIntegrationAwsGlueResourceAssert {
+	c.StringValueSet("catalog_source", expected)
+	return c
+}
+
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasComment(expected string) *CatalogIntegrationAwsGlueResourceAssert {
 	c.StringValueSet("comment", expected)
 	return c
@@ -88,6 +93,11 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasNameString(expected string)
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogNamespaceString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
 	c.AddAssertion(assert.ValueSet("catalog_namespace", expected))
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSourceString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
+	c.AddAssertion(assert.ValueSet("catalog_source", expected))
 	return c
 }
 
@@ -140,6 +150,11 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoCatalogNamespace() *Catal
 	return c
 }
 
+func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoCatalogSource() *CatalogIntegrationAwsGlueResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("catalog_source"))
+	return c
+}
+
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoComment() *CatalogIntegrationAwsGlueResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("comment"))
 	return c
@@ -184,6 +199,11 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogNamespaceEmpty() *Ca
 	return c
 }
 
+func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSourceEmpty() *CatalogIntegrationAwsGlueResourceAssert {
+	c.AddAssertion(assert.ValueSet("catalog_source", ""))
+	return c
+}
+
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCommentEmpty() *CatalogIntegrationAwsGlueResourceAssert {
 	c.AddAssertion(assert.ValueSet("comment", ""))
 	return c
@@ -215,6 +235,11 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasNameNotEmpty() *CatalogInte
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogNamespaceNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
 	c.AddAssertion(assert.ValuePresent("catalog_namespace"))
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSourceNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
+	c.AddAssertion(assert.ValuePresent("catalog_source"))
 	return c
 }
 
