@@ -18,11 +18,12 @@ const (
 	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
 	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
-	ParametersReducedOutput     ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
-	TagsAllowEmptyAllowedValues ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
-	ImportBooleanDefault        ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
-	GrantsSafeDestroy           ExperimentalFeature = "GRANTS_SAFE_DESTROY"
-	TagAssociationSafeDestroy   ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
+	ParametersReducedOutput        ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	TagsAllowEmptyAllowedValues    ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
+	ImportBooleanDefault           ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
+	GrantsSafeDestroy              ExperimentalFeature = "GRANTS_SAFE_DESTROY"
+	TagAssociationSafeDestroy      ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
+	GrantAccountRoleSafePublicRole ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
 )
 
 type experimentalFeatureState string
@@ -136,6 +137,15 @@ var allExperiments = []Experiment{
 			"Currently supported by: `snowflake_tag_association`.",
 			"This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.",
 			"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
+		),
+	},
+	{
+		GrantAccountRoleSafePublicRole,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.",
+			"Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.",
+			"With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.",
 		),
 	},
 }
