@@ -25,6 +25,7 @@ var SdkShowResultStructs = []any{
 	sdk.Function{},
 	sdk.GitRepository{},
 	sdk.Grant{},
+	sdk.HybridTable{},
 	sdk.ImageRepository{},
 	sdk.Listing{},
 	sdk.ManagedAccount{},

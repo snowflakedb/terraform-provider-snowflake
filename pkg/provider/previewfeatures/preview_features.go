@@ -58,6 +58,7 @@ const (
 	FunctionsDatasource                           feature = "snowflake_functions_datasource"
 	GitRepositoryResource                         feature = "snowflake_git_repository_resource"
 	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
+	HybridTableResource                           feature = "snowflake_hybrid_table_resource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	InternalStageResource                         feature = "snowflake_stage_internal_resource"
@@ -162,6 +163,7 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
+	HybridTableResource,
 	InternalStageResource,
 	JobServiceResource,
 	ListingsDatasource,
