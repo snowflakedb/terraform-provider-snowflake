@@ -37,8 +37,18 @@ func TestInt_PasswordPolicies(t *testing.T) {
 			WithPasswordHistory(15).
 			WithComment(comment)
 
-		_, cleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicyWithOptions(t, request)
+		passwordPolicy, cleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicyWithOptions(t, request)
 		t.Cleanup(cleanup)
+
+		assertThatObject(t, objectassert.PasswordPolicyFromObject(t, passwordPolicy).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasKind("PASSWORD_POLICY").
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE").
+			HasOptions(""))
 
 		assertThatObject(t, objectassert.PasswordPolicyDetails(t, id).
 			HasName(id.Name()).
@@ -60,8 +70,19 @@ func TestInt_PasswordPolicies(t *testing.T) {
 	t.Run("create password_policy: no optionals", func(t *testing.T) {
 		passwordPolicy, cleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
 		t.Cleanup(cleanup)
+		id := passwordPolicy.ID()
 
-		assertThatObject(t, objectassert.PasswordPolicyDetails(t, passwordPolicy.ID()).
+		assertThatObject(t, objectassert.PasswordPolicyFromObject(t, passwordPolicy).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasKind("PASSWORD_POLICY").
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment("").
+			HasOwnerRoleType("ROLE").
+			HasOptions(""))
+
+		assertThatObject(t, objectassert.PasswordPolicyDetails(t, id).
 			HasName(passwordPolicy.Name).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
@@ -97,6 +118,16 @@ func TestInt_PasswordPolicies(t *testing.T) {
 			HasPasswordMinLength(10).
 			HasPasswordMaxLength(20).
 			HasPasswordMinUpperCaseChars(5))
+
+		// Creating again with IF NOT EXISTS should succeed without error
+		err := client.PasswordPolicies.Create(ctx, sdk.NewCreatePasswordPolicyRequest(id).
+			WithIfNotExists(true).
+			WithPasswordMinLength(99))
+		require.NoError(t, err)
+
+		// Original values should remain unchanged
+		assertThatObject(t, objectassert.PasswordPolicyDetails(t, id).
+			HasPasswordMinLength(10))
 	})
 
 	t.Run("drop password_policy: existing", func(t *testing.T) {
@@ -208,15 +239,22 @@ func TestInt_PasswordPolicies(t *testing.T) {
 		_, err = client.PasswordPolicies.ShowByID(ctx, id)
 		assert.ErrorIs(t, err, collections.ErrObjectNotFound)
 
-		_, err = client.PasswordPolicies.ShowByID(ctx, newId)
-		require.NoError(t, err)
+		assertThatObject(t, objectassert.PasswordPolicy(t, newId).
+			HasName(newId.Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
+			HasKind("PASSWORD_POLICY").
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment("").
+			HasOwnerRoleType("ROLE").
+			HasOptions(""))
 	})
 
 	t.Run("show password policies", func(t *testing.T) {
 		db, dbCleanup := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(dbCleanup)
 
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("test_password_policyzzz")
+		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("test_password_policy_1_")
 		id2 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("test_password_policy_2_")
 		id3 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("test_password_policy_3_")
 		id4 := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(sdk.NewDatabaseObjectIdentifier(db.Name, "PUBLIC"))
@@ -262,27 +300,6 @@ func TestInt_PasswordPolicies(t *testing.T) {
 			require.NoError(t, err)
 			assert.Len(t, passwordPolicies, 1)
 		})
-	})
-
-	t.Run("describe password_policy", func(t *testing.T) {
-		passwordPolicy, cleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
-		t.Cleanup(cleanup)
-
-		assertThatObject(t, objectassert.PasswordPolicyDetails(t, passwordPolicy.ID()).
-			HasName(passwordPolicy.Name).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment("").
-			HasPasswordMinLength(14).
-			HasPasswordMaxLength(256).
-			HasPasswordMinUpperCaseChars(1).
-			HasPasswordMinLowerCaseChars(1).
-			HasPasswordMinNumericChars(1).
-			HasPasswordMinSpecialChars(0).
-			HasPasswordMinAgeDays(0).
-			HasPasswordMaxAgeDays(90).
-			HasPasswordMaxRetries(5).
-			HasPasswordLockoutTimeMins(15).
-			HasPasswordHistory(5))
 	})
 
 	t.Run("describe password_policy: non-existing", func(t *testing.T) {

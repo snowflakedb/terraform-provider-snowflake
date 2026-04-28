@@ -261,6 +261,10 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.PasswordPolicy{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.HybridTable{},
 	},
 }
