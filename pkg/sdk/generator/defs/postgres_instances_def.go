@@ -16,6 +16,10 @@ var (
 		"PostgresInstanceAuthenticationAuthority", "PostgresInstanceAuthenticationAuthorities",
 		"POSTGRES", "POSTGRES_OR_SNOWFLAKE",
 	)
+	PostgresInstanceResetAccessRoleEnumDef = g.NewEnum(
+		"PostgresInstanceResetAccessRole", "PostgresInstanceResetAccessRoles",
+		"snowflake_admin", "application",
+	)
 )
 
 var postgresInstancesDef = g.NewInterface(
@@ -208,4 +212,5 @@ var postgresInstancesDef = g.NewInterface(
 ).WithEnums(
 	PostgresInstanceStateEnumDef,
 	PostgresInstanceAuthenticationAuthorityEnumDef,
+	PostgresInstanceResetAccessRoleEnumDef,
 )
