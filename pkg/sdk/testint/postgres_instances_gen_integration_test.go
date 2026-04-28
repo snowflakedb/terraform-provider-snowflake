@@ -179,6 +179,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		// Verify type field is populated
 		assert.NotEmpty(t, forkedInstance.Type)
+		assert.Equal(t, "FORK", forkedInstance.Type)
 	})
 
 	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance AT (TIMESTAMP => '2025-01-15 12:00:00'::TIMESTAMP_NTZ);
