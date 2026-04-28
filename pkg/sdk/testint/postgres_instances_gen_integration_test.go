@@ -48,7 +48,8 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 	// Doc example: CREATE POSTGRES INSTANCE prod_postgres COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 500
 	//   AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 17 HIGH_AVAILABILITY = TRUE
-	//   NETWORK_POLICY = 'my_network_policy' COMMENT = 'Production Postgres instance';
+	//   NETWORK_POLICY = 'my_network_policy' POSTGRES_SETTINGS = '{"postgres:work_mem" = "128MB"}'
+	//   COMMENT = 'Production Postgres instance';
 	t.Run("create - complete", func(t *testing.T) {
 		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
 		t.Cleanup(networkPolicyCleanup)
@@ -59,6 +60,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 			WithPostgresVersion(17).
 			WithHighAvailability(true).
 			WithNetworkPolicy(networkPolicy.Name).
+			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
 			WithComment(comment)
 
 		err := client.PostgresInstances.Create(ctx, request)
@@ -76,47 +78,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 			HasPostgresVersion("17").
 			HasIsHa(true).
 			HasComment(comment).
+			HasPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
 			HasCreatedOnNotEmpty().
 			HasUpdatedOnNotEmpty(),
-		)
-	})
-
-	t.Run("create - with network_policy", func(t *testing.T) {
-		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
-		t.Cleanup(networkPolicyCleanup)
-
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithNetworkPolicy(networkPolicy.Name)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		properties, err := client.PostgresInstances.Describe(ctx, id)
-		require.NoError(t, err)
-		propertyMap := make(map[string]string)
-		for _, p := range properties {
-			propertyMap[p.Property] = p.Value
-		}
-		assert.Equal(t, networkPolicy.Name, propertyMap["network_policy"])
-	})
-
-	// Doc example: POSTGRES_SETTINGS = '{"postgres:work_mem" = "128MB", "pgbouncer:default_pool_size" = "200"}'
-	t.Run("create - with postgres settings", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
-			HasName(id.Name()),
 		)
 	})
 
@@ -752,42 +716,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertTagSet(t, tag.ID(), forkId, sdk.ObjectTypePostgresInstance, "fork_tag_value")
 	})
 
-	t.Run("create - with high_availability", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithHighAvailability(true)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
-			HasName(id.Name()).
-			HasIsHa(true),
-		)
-	})
-
-	t.Run("create - with postgres_version", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithPostgresVersion(17)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
-			HasName(id.Name()).
-			HasPostgresVersion("17"),
-		)
-	})
-
+  // Doc example: CREATE POSTGRES INSTANCE <name> COMPUTE_FAMILY = 'STANDARD_S' ... AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE
 	t.Run("create - with authentication_authority postgres_or_snowflake", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake)
