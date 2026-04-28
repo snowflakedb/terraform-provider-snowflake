@@ -143,7 +143,7 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 
 	// PUBLIC is always implicitly granted; SHOW GRANTS won't list it as an explicit grant.
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
-		strings.EqualFold(roleIdentifier.Name(), snowflakeroles.Public.Name()) {
+		roleIdentifier.Name() == snowflakeroles.Public.Name() {
 		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", d.Id(), experimentalfeatures.GrantAccountRoleSafePublicRole)
 		return nil
 	}
@@ -192,7 +192,7 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 
 	// PUBLIC is always implicitly granted and cannot be explicitly revoked.
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
-		strings.EqualFold(id.Name(), snowflakeroles.Public.Name()) {
+		id.Name() == snowflakeroles.Public.Name() {
 		log.Printf("[DEBUG] skipping REVOKE for PUBLIC role grant (%s) — experiment %s enabled", d.Id(), experimentalfeatures.GrantAccountRoleSafePublicRole)
 		d.SetId("")
 		return nil
