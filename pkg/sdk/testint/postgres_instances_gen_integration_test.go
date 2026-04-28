@@ -141,11 +141,11 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertTagSet(t, tag.ID(), id, sdk.ObjectTypePostgresInstance, "value1")
 	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres SET COMMENT = '...'
-	t.Run("alter: set and unset comment", func(t *testing.T) {
+	t.Run("alter: set and unset individual properties", func(t *testing.T) {
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
 
+		// Set and unset comment
 		comment := random.Comment()
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().WithComment(comment)))
@@ -155,7 +155,6 @@ func TestInt_PostgresInstances(t *testing.T) {
 			HasComment(comment),
 		)
 
-		// Unset
 		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithComment(true)))
 		require.NoError(t, err)
@@ -163,13 +162,43 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
 			HasNoComment(),
 		)
+
+		// Set and unset maintenance_window_start
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithMaintenanceWindowStart(3)))
+		require.NoError(t, err)
+
+		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
+		require.NoError(t, err)
+		propertyMap := make(map[string]string)
+		for _, p := range properties {
+			propertyMap[p.Property] = p.Value
+		}
+		assert.Equal(t, "3", propertyMap["maintenance_window_start"])
+
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithMaintenanceWindowStart(true)))
+		require.NoError(t, err)
+
+		// Set and unset postgres_settings
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)))
+		require.NoError(t, err)
+
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithPostgresSettings(true)))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasNoPostgresSettings(),
+		)
 	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres SET STORAGE_SIZE_GB = 100;
-	t.Run("alter: set storage_size", func(t *testing.T) {
+	t.Run("alter: set individual properties", func(t *testing.T) {
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
 
+		// Set storage_size
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().
 				WithStorageSizeGb(20)))
@@ -178,14 +207,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
 			HasStorageSize(20),
 		)
-	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres SET COMPUTE_FAMILY = 'STANDARD_M';
-	t.Run("alter: set compute_family", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+		// Set compute_family
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().
 				WithComputeFamily("STANDARD_2")))
 		require.NoError(t, err)
@@ -193,14 +217,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
 			HasComputeFamily("STANDARD_2"),
 		)
-	})
 
-	t.Run("alter: set high_availability", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		// Default is false, set to true
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+		// Set high_availability
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().
 				WithHighAvailability(true)))
 		require.NoError(t, err)
@@ -208,14 +227,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
 			HasIsHa(true),
 		)
-	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres SET AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE
-	t.Run("alter: set authentication_authority", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+		// Set authentication_authority
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().
 				WithAuthenticationAuthority(sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake)))
 		require.NoError(t, err)
@@ -223,53 +237,62 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
 			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
 		)
-	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres SET COMPUTE_FAMILY = 'STANDARD_L' APPLY IMMEDIATELY;
-	t.Run("alter: set with apply immediately", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+		// Set with apply immediately
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithStorageSizeGb(20).
+				WithStorageSizeGb(30).
 				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasStorageSize(20),
+			HasStorageSize(30),
 		)
-	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres UNSET COMMENT, POSTGRES_SETTINGS, NETWORK_POLICY
-	t.Run("alter: unset", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		// Set postgres_version
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithPostgresVersion(17).
+				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasPostgresVersion("17"),
+		)
+
+		// Set with apply on timestamp
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithStorageSizeGb(40).
+				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithOn("2099-01-01 00:00:00"))))
+		require.NoError(t, err)
+
+		// Set multiple properties in one call
 		comment := random.Comment()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithComment(comment).
-			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(id).
-			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().
-				WithComment(true).
-				WithPostgresSettings(true)))
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithSet(*sdk.NewPostgresInstanceSetRequest().
+				WithComment(comment).
+				WithStorageSizeGb(50).
+				WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstance(t, id).
-			HasNoComment(),
+		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+			HasComment(comment).
+			HasStorageSize(50),
 		)
 	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres SUSPEND;
-	t.Run("alter: suspend", func(t *testing.T) {
+	t.Run("alter: suspend and resume", func(t *testing.T) {
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
 
+		// Resume without suspending - instance is already in a running state
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+			WithResume(true))
+		assert.Error(t, err)
+
+		// Suspend
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSuspend(true))
 		require.NoError(t, err)
 
@@ -280,28 +303,18 @@ func TestInt_PostgresInstances(t *testing.T) {
 			sdk.PostgresInstanceStateSuspending,
 			sdk.PostgresInstanceStateSuspended,
 		}, result.State)
-	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres RESUME;
-	t.Run("alter: resume", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		// Suspend first
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(id).
+		// Suspend again - expect error due to invalid state
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithSuspend(true))
-		require.NoError(t, err)
+		assert.Error(t, err)
 
 		// Resume
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(id).
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithResume(true))
 		require.NoError(t, err)
 
-		result, err := client.PostgresInstances.ShowByID(ctx, id)
+		result, err = client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
 		require.NoError(t, err)
 		// State may be RESUMING, STARTING, CREATING, or READY depending on timing
 		assert.Contains(t, []sdk.PostgresInstanceState{
@@ -310,31 +323,6 @@ func TestInt_PostgresInstances(t *testing.T) {
 			sdk.PostgresInstanceStateCreating,
 			sdk.PostgresInstanceStateReady,
 		}, result.State)
-	})
-
-	t.Run("alter: suspend already suspended instance", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		// First suspend
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSuspend(true))
-		require.NoError(t, err)
-
-		// Suspend again - expect error due to invalid state
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSuspend(true))
-		assert.Error(t, err)
-	})
-
-	t.Run("alter: resume already running instance", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		// Resume without suspending - instance is already in a running state
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithResume(true))
-		assert.Error(t, err)
 	})
 
 	// Doc example: ALTER POSTGRES INSTANCE my_postgres RENAME TO prod_postgres;
@@ -359,22 +347,17 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assert.Equal(t, newId.Name(), result.Name)
 	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres RESET ACCESS FOR 'snowflake_admin'
-	t.Run("alter: reset access for snowflake_admin", func(t *testing.T) {
+	t.Run("alter: reset access", func(t *testing.T) {
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
 
+		// Reset access for snowflake_admin
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithResetAccess(*sdk.NewPostgresInstanceResetAccessRequest(sdk.PostgresInstanceResetAccessRoleSnowflakeAdmin)))
 		require.NoError(t, err)
-	})
 
-	// Doc example: ALTER POSTGRES INSTANCE my_postgres RESET ACCESS FOR 'application'
-	t.Run("alter: reset access for application", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+		// Reset access for application
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithResetAccess(*sdk.NewPostgresInstanceResetAccessRequest(sdk.PostgresInstanceResetAccessRoleApplication)))
 		require.NoError(t, err)
 	})
@@ -654,34 +637,11 @@ func TestInt_PostgresInstances(t *testing.T) {
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(NonExistingAccountObjectIdentifier).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().WithComment("test")))
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
-	})
 
-	t.Run("alter: non-existing object with if exists", func(t *testing.T) {
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(NonExistingAccountObjectIdentifier).
+		// With IF EXISTS should succeed
+		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(NonExistingAccountObjectIdentifier).
 			WithIfExists(true).
 			WithSet(*sdk.NewPostgresInstanceSetRequest().WithComment("test")))
-		require.NoError(t, err)
-	})
-
-	t.Run("alter: set and unset maintenance_window_start", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().WithMaintenanceWindowStart(3)))
-		require.NoError(t, err)
-
-		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
-		require.NoError(t, err)
-		propertyMap := make(map[string]string)
-		for _, p := range properties {
-			propertyMap[p.Property] = p.Value
-		}
-		assert.Equal(t, "3", propertyMap["maintenance_window_start"])
-
-		// Unset
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithMaintenanceWindowStart(true)))
 		require.NoError(t, err)
 	})
 
@@ -719,36 +679,6 @@ func TestInt_PostgresInstances(t *testing.T) {
 		// Unset
 		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithNetworkPolicy(true)))
-		require.NoError(t, err)
-	})
-
-	t.Run("alter: set and unset postgres_settings", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)))
-		require.NoError(t, err)
-
-		// Unset
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().WithPostgresSettings(true)))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasNoPostgresSettings(),
-		)
-	})
-
-	t.Run("alter: set with apply on timestamp", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		// Use a future timestamp for the scheduled apply
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithStorageSizeGb(20).
-				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithOn("2099-01-01 00:00:00"))))
 		require.NoError(t, err)
 	})
 
@@ -948,26 +878,6 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assertTagSet(t, tag2.ID(), id, sdk.ObjectTypePostgresInstance, "value2")
 	})
 
-	t.Run("alter: set multiple properties in one call", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		comment := random.Comment()
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithComment(comment).
-				WithStorageSizeGb(20).
-				WithHighAvailability(true).
-				WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasComment(comment).
-			HasStorageSize(20).
-			HasIsHa(true),
-		)
-	})
-
 	t.Run("describe: verify complete property set", func(t *testing.T) {
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
@@ -996,44 +906,6 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assert.Contains(t, propertyMap, "authentication_authority")
 		assert.Contains(t, propertyMap, "state")
 		assert.Contains(t, propertyMap, "retention_time")
-	})
-
-	t.Run("alter: unset all unsettable fields", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithComment("test comment").
-			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		// Unset all unsettable fields in one call
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(id).
-			WithUnset(*sdk.NewPostgresInstanceUnsetRequest().
-				WithComment(true).
-				WithPostgresSettings(true)))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, id).
-			HasNoComment().
-			HasNoPostgresSettings(),
-		)
-	})
-
-	t.Run("alter: set postgres_version", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithPostgresVersion(17).
-				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasPostgresVersion("17"),
-		)
 	})
 
 	t.Run("create - with storage_integration", func(t *testing.T) {
