@@ -94,7 +94,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
 
 	safePublicRole := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole, providerCtx.EnabledExperiments) &&
-		strings.EqualFold(roleIdentifier.Name(), snowflakeroles.Public.Name())
+		roleIdentifier.Name() == snowflakeroles.Public.Name()
 
 	// format of snowflakeResourceID is <role_identifier>|<object type>|<target_identifier>
 	var snowflakeResourceID string
