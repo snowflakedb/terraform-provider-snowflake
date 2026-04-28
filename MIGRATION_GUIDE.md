@@ -70,6 +70,14 @@ We have added a new preview data source for password policies: [snowflake_passwo
 
 This feature will be marked as stable in future releases. To use it, add `snowflake_password_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
 
+### *(new feature)* New hybrid table resource
+
+We have added a new preview resource for hybrid tables: `snowflake_hybrid_table`.
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_hybrid_table_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt hybrid table management with Terraform.
+
 ### *(improvement)* Catalog integration resources: computed `catalog_source`
 
 A new **computed** attribute **`catalog_source`** is now available on these resources:
