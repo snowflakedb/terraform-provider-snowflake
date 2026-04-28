@@ -105,7 +105,7 @@ var postgresInstancesDef = g.NewInterface(
 					"Apply",
 					g.NewQueryStruct("PostgresInstanceApply").
 						OptionalSQL("IMMEDIATELY").
-						OptionalTextAssignment("ON", g.KeywordOptions().SingleQuotes()).
+						OptionalTextAssignment("ON", g.ParameterOptions().SingleQuotes()).
 						WithValidation(g.ExactlyOneValueSet, "Immediately", "On"),
 					g.KeywordOptions().SQL("APPLY"),
 				).
