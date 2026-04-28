@@ -169,17 +169,12 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		forkedInstance, err := client.PostgresInstances.ShowByID(ctx, forkId)
 		require.NoError(t, err)
-		assert.Equal(t, forkId.Name(), forkedInstance.Name)
 
-		// Forked instances should have an origin referencing the source
-		assert.NotNil(t, forkedInstance.Origin)
-		if forkedInstance.Origin != nil {
-			assert.Contains(t, *forkedInstance.Origin, sourceInstance.Name)
-		}
-
-		// Verify type field is populated
-		assert.NotEmpty(t, forkedInstance.Type)
-		assert.Equal(t, "FORK", forkedInstance.Type)
+		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
+			HasName(forkId.Name()).
+			HasOriginContaining(sourceInstance.Name).
+			HasType("FORK"),
+		)
 	})
 
 	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance AT (TIMESTAMP => '2025-01-15 12:00:00'::TIMESTAMP_NTZ);
@@ -274,8 +269,11 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		forkedInstance, err := client.PostgresInstances.ShowByID(ctx, forkId)
 		require.NoError(t, err)
-		assert.Equal(t, forkId.Name(), forkedInstance.Name)
-		assert.Equal(t, comment, *forkedInstance.Comment)
+
+		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
+			HasName(forkId.Name()).
+			HasComment(comment),
+		)
 
 		assertTagSet(t, tag.ID(), forkId, sdk.ObjectTypePostgresInstance, "fork_tag_value")
 	})
@@ -445,10 +443,12 @@ func TestInt_PostgresInstances(t *testing.T) {
 		result, err := client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
 		require.NoError(t, err)
 		// State may be SUSPENDING or SUSPENDED depending on timing
-		assert.Contains(t, []sdk.PostgresInstanceState{
-			sdk.PostgresInstanceStateSuspending,
-			sdk.PostgresInstanceStateSuspended,
-		}, result.State)
+		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
+			HasStateOneOf(
+				sdk.PostgresInstanceStateSuspending,
+				sdk.PostgresInstanceStateSuspended,
+			),
+		)
 
 		// Suspend again - expect error due to invalid state
 		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
@@ -463,12 +463,14 @@ func TestInt_PostgresInstances(t *testing.T) {
 		result, err = client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
 		require.NoError(t, err)
 		// State may be RESUMING, STARTING, CREATING, or READY depending on timing
-		assert.Contains(t, []sdk.PostgresInstanceState{
-			sdk.PostgresInstanceStateResuming,
-			sdk.PostgresInstanceStateStarting,
-			sdk.PostgresInstanceStateCreating,
-			sdk.PostgresInstanceStateReady,
-		}, result.State)
+		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
+			HasStateOneOf(
+				sdk.PostgresInstanceStateResuming,
+				sdk.PostgresInstanceStateStarting,
+				sdk.PostgresInstanceStateCreating,
+				sdk.PostgresInstanceStateReady,
+			),
+		)
 	})
 
 	// Doc example: ALTER POSTGRES INSTANCE my_postgres RENAME TO prod_postgres;
@@ -637,20 +639,18 @@ func TestInt_PostgresInstances(t *testing.T) {
 			HasStorageSize(10).
 			HasAuthenticationAuthority("POSTGRES").
 			HasIsHa(false).
+			HasRetentionTime(1).
+			HasPostgresVersionNotEmpty().
+			HasStateOneOf(
+				sdk.PostgresInstanceStateCreating,
+				sdk.PostgresInstanceStateStarting,
+				sdk.PostgresInstanceStateReady,
+			).
 			HasNoComment().
 			HasNoOrigin().
 			HasCreatedOnNotEmpty().
 			HasUpdatedOnNotEmpty(),
 		)
-
-		// RetentionTime should have a default value
-		assert.GreaterOrEqual(t, result.RetentionTime, 0)
-
-		// PostgresVersion should be a non-empty string
-		assert.NotEmpty(t, result.PostgresVersion)
-
-		// State should be one of the valid states
-		assert.Contains(t, sdk.AllPostgresInstanceStates, result.State)
 	})
 
 	t.Run("ShowByID and ShowByIDSafely", func(t *testing.T) {
@@ -660,13 +660,13 @@ func TestInt_PostgresInstances(t *testing.T) {
 		// ShowByID
 		result, err := client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
 		require.NoError(t, err)
-		assert.Equal(t, postgresInstance.ID(), result.ID())
 		assert.Equal(t, postgresInstance.Name, result.Name)
 
 		// ShowByIDSafely
 		result, err = client.PostgresInstances.ShowByIDSafely(ctx, postgresInstance.ID())
-		assert.NotNil(t, result)
 		require.NoError(t, err)
+		require.NotNil(t, result)
+		assert.Equal(t, postgresInstance.Name, result.Name)
 	})
 
 	t.Run("ShowByID: missing object", func(t *testing.T) {
@@ -715,9 +715,21 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assert.Contains(t, propertyMap, "state")
 		assert.Contains(t, propertyMap, "retention_time")
 
+		// Verify property values match expected defaults
 		assert.Equal(t, postgresInstance.ID().Name(), propertyMap["name"])
+		assert.Equal(t, snowflakeroles.Accountadmin.Name(), propertyMap["owner"])
+		assert.Equal(t, "ROLE", propertyMap["owner_role_type"])
+		assert.NotEmpty(t, propertyMap["created_on"])
+		assert.NotEmpty(t, propertyMap["updated_on"])
+		assert.Equal(t, "PRIMARY", propertyMap["type"])
+		assert.NotEmpty(t, propertyMap["host"])
 		assert.Equal(t, "STANDARD_1", propertyMap["compute_family"])
+		assert.Equal(t, "10", propertyMap["storage_size_gb"])
+		assert.NotEmpty(t, propertyMap["postgres_version"])
+		assert.Equal(t, "false", propertyMap["high_availability"])
 		assert.Equal(t, "POSTGRES", propertyMap["authentication_authority"])
+		assert.NotEmpty(t, propertyMap["state"])
+		assert.Equal(t, "1", propertyMap["retention_time"])
 	})
 
 	// ==================
