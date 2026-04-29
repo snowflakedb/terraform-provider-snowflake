@@ -199,6 +199,20 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, modelBasic),
 				Check:  assertThat(t, assertAfterUnset...),
 			},
+			// External deletion — resource dropped outside Terraform; Read detects absence
+			// (ErrObjectNotFound → d.SetId("")) and the next plan recreates it.
+			{
+				PreConfig: func() {
+					testClient().HybridTable.DropFunc(t, id)()
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, modelBasic),
+				Check:  assertThat(t, assertBasic...),
+			},
 			// Destroy
 			{
 				Destroy: true,
