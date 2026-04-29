@@ -6,18 +6,25 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+// HybridTableColumnDefaultConfig represents the default value block of a column.
+// At most one of Constant, Expression, or Sequence should be set.
+type HybridTableColumnDefaultConfig struct {
+	Constant *string
+}
+
 // HybridTableColumnConfig is a richer column definition used in tests that need
-// column fields beyond name and type (e.g. comment, nullable, collate).
+// column fields beyond name and type (e.g. comment, nullable, collate, default).
 type HybridTableColumnConfig struct {
 	Name     string
 	Type     string
 	Comment  string
 	Nullable *bool
 	Collate  string
+	Default  *HybridTableColumnDefaultConfig
 }
 
 // WithColumnConfigs sets the column list from richer column definitions.
-// Use instead of WithColumn when tests require comment, nullable, or collate.
+// Use instead of WithColumn when tests require comment, nullable, collate, or default.
 func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) *HybridTableModel {
 	maps := make([]tfconfig.Variable, len(columns))
 	for i, col := range columns {
@@ -33,6 +40,13 @@ func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) 
 		}
 		if col.Collate != "" {
 			m["collate"] = tfconfig.StringVariable(col.Collate)
+		}
+		if col.Default != nil {
+			defMap := map[string]tfconfig.Variable{}
+			if col.Default.Constant != nil {
+				defMap["constant"] = tfconfig.StringVariable(*col.Default.Constant)
+			}
+			m["default"] = tfconfig.ListVariable(tfconfig.MapVariable(defMap))
 		}
 		maps[i] = tfconfig.MapVariable(m)
 	}
@@ -72,6 +86,46 @@ func (h *HybridTableModel) WithPrimaryKey(primaryKey []sdk.TableColumnSignature)
 	h.PrimaryKey = tfconfig.SetVariable(
 		tfconfig.MapVariable(map[string]tfconfig.Variable{
 			"keys": tfconfig.ListVariable(keys...),
+		}),
+	)
+	return h
+}
+
+// WithUniqueConstraint sets a single unique constraint on the given columns.
+func (h *HybridTableModel) WithUniqueConstraint(columns []string) *HybridTableModel {
+	colVars := make([]tfconfig.Variable, len(columns))
+	for i, c := range columns {
+		colVars[i] = tfconfig.StringVariable(c)
+	}
+	h.UniqueConstraint = tfconfig.ListVariable(
+		tfconfig.MapVariable(map[string]tfconfig.Variable{
+			"columns": tfconfig.ListVariable(colVars...),
+		}),
+	)
+	return h
+}
+
+// WithForeignKey sets a single foreign key constraint. localColumns are the columns
+// in this table, refTableId is the fully-qualified name of the referenced table,
+// and refColumns are the columns in the referenced table.
+func (h *HybridTableModel) WithForeignKey(localColumns []string, refTableId string, refColumns []string) *HybridTableModel {
+	lcVars := make([]tfconfig.Variable, len(localColumns))
+	for i, c := range localColumns {
+		lcVars[i] = tfconfig.StringVariable(c)
+	}
+	rcVars := make([]tfconfig.Variable, len(refColumns))
+	for i, c := range refColumns {
+		rcVars[i] = tfconfig.StringVariable(c)
+	}
+	h.ForeignKey = tfconfig.ListVariable(
+		tfconfig.MapVariable(map[string]tfconfig.Variable{
+			"columns": tfconfig.ListVariable(lcVars...),
+			"references": tfconfig.ListVariable(
+				tfconfig.MapVariable(map[string]tfconfig.Variable{
+					"table_id": tfconfig.StringVariable(refTableId),
+					"columns":  tfconfig.ListVariable(rcVars...),
+				}),
+			),
 		}),
 	)
 	return h

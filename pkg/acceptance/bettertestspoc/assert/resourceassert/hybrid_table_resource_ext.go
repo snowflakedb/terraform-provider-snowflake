@@ -39,3 +39,24 @@ func (h *HybridTableResourceAssert) HasPrimaryKeyKeys(expected ...string) *Hybri
 	}
 	return h
 }
+
+func (h *HybridTableResourceAssert) HasUniqueConstraintCount(expected int) *HybridTableResourceAssert {
+	h.AddAssertion(assert.ValueSet("unique_constraint.#", strconv.Itoa(expected)))
+	return h
+}
+
+func (h *HybridTableResourceAssert) HasForeignKeyCount(expected int) *HybridTableResourceAssert {
+	h.AddAssertion(assert.ValueSet("foreign_key.#", strconv.Itoa(expected)))
+	return h
+}
+
+func (h *HybridTableResourceAssert) HasColumnDefaultConstant(index int, expected string) *HybridTableResourceAssert {
+	h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.default.#", index), "1"))
+	h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.default.0.constant", index), expected))
+	return h
+}
+
+func (h *HybridTableResourceAssert) HasColumnNoDefault(index int) *HybridTableResourceAssert {
+	h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.default.#", index), "0"))
+	return h
+}

@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -337,6 +338,265 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(changedComment),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_HybridTable_InvalidConfig verifies that schema-level validators reject
+// out-of-range values before a Snowflake connection is needed.
+func TestAcc_HybridTable_InvalidConfig(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+	cols := []sdk.TableColumnSignature{{Name: "ID", Type: testdatatypes.DataTypeInteger}}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, model.HybridTableFromId("test", id, cols, pk).WithDataRetentionTimeInDays(-2)),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`to be in the range \(-1 - 90\)`),
+			},
+			{
+				Config:      accconfig.FromModels(t, model.HybridTableFromId("test", id, cols, pk).WithDataRetentionTimeInDays(91)),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`to be in the range \(-1 - 90\)`),
+			},
+			{
+				Config:      accconfig.FromModels(t, model.HybridTableFromId("test", id, cols, pk).WithMaxDataExtensionTimeInDays(-2)),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`to be at least`),
+			},
+			{
+				Config: accconfig.FromModels(t,
+					model.HybridTableFromId("test", id, cols, pk).WithColumnConfigs([]model.HybridTableColumnConfig{
+						{Name: "ID", Type: "INVALIDTYPE"},
+					}),
+				),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid data type`),
+			},
+		},
+	})
+}
+
+func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	cols := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
+	}
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+
+	// Single-column unique constraint
+	model1 := model.HybridTableFromId("test", id, cols, pk).
+		WithUniqueConstraint([]string{"NAME"})
+
+	// Change the unique constraint to span two columns — forces recreation
+	model2 := model.HybridTableFromId("test", id, cols, pk).
+		WithUniqueConstraint([]string{"NAME", "EMAIL"})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with a single-column unique constraint
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(3).
+						HasPrimaryKeyKeys("ID").
+						HasUniqueConstraintCount(1),
+				),
+			},
+			// Change the unique constraint columns — any diff on unique_constraint forces recreation
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(3).
+						HasPrimaryKeyKeys("ID").
+						HasUniqueConstraintCount(1),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_HybridTable_ForeignKey(t *testing.T) {
+	// Create parent hybrid table externally — it is not managed by Terraform in this test.
+	parentId := testClient().Ids.RandomSchemaObjectIdentifier()
+	testClient().HybridTable.CreateWithRequest(t, parentId, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+		Columns: []sdk.HybridTableColumnRequest{
+			*sdk.NewHybridTableColumnRequest("ID", sdk.DataType("INTEGER")).
+				WithInlineConstraint(sdk.ColumnInlineConstraint{PrimaryKey: sdk.Bool(true)}),
+		},
+	})
+	t.Cleanup(testClient().HybridTable.DropFunc(t, parentId))
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	cols := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "PARENT_ID", Type: testdatatypes.DataTypeInteger},
+	}
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+
+	// Child table with FK → parent.ID
+	model1 := model.HybridTableFromId("test", id, cols, pk).
+		WithForeignKey([]string{"PARENT_ID"}, parentId.FullyQualifiedName(), []string{"ID"})
+
+	// Child table without FK
+	model2 := model.HybridTableFromId("test", id, cols, pk)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with a foreign key referencing the parent table
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(2).
+						HasPrimaryKeyKeys("ID").
+						HasForeignKeyCount(1),
+				),
+			},
+			// Remove the foreign key — any diff on foreign_key forces recreation
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(2).
+						HasPrimaryKeyKeys("ID").
+						HasForeignKeyCount(0),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_HybridTable_ColumnDefault(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+	baseCols := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "SCORE", Type: testdatatypes.DataTypeInteger},
+	}
+
+	zero := "0"
+
+	// SCORE has a constant default of 0
+	model1 := model.HybridTableFromId("test", id, baseCols, pk).
+		WithColumnConfigs([]model.HybridTableColumnConfig{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "SCORE", Type: testdatatypes.DataTypeInteger.ToSql(), Default: &model.HybridTableColumnDefaultConfig{Constant: &zero}},
+		})
+
+	// SCORE has no default
+	model2 := model.HybridTableFromId("test", id, baseCols, pk)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with a constant default on SCORE
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "SCORE").
+						HasColumnDefaultConstant(1, "0"),
+				),
+			},
+			// Drop the default → in-place update, no recreation
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnName(1, "SCORE").
+						HasColumnNoDefault(1),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_HybridTable_PrimaryKeyForceNew(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	cols := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	// Single-column PK
+	model1 := model.HybridTableFromId("test", id, cols, []sdk.TableColumnSignature{{Name: "ID"}})
+
+	// Composite PK — any change to primary_key forces recreation
+	model2 := model.HybridTableFromId("test", id, cols, []sdk.TableColumnSignature{{Name: "ID"}, {Name: "NAME"}})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with single-column PK
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(2).
+						HasPrimaryKeyKeys("ID"),
+				),
+			},
+			// Change to composite PK → ForceNew (DestroyBeforeCreate)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(2).
+						HasPrimaryKeyKeys("ID", "NAME"),
 				),
 			},
 		},
