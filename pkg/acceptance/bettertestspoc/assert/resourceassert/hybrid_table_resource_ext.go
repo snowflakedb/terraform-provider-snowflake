@@ -27,6 +27,11 @@ func (h *HybridTableResourceAssert) HasColumnNullable(index int, expected bool) 
 	return h
 }
 
+func (h *HybridTableResourceAssert) HasColumnComment(index int, expected string) *HybridTableResourceAssert {
+	h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.comment", index), expected))
+	return h
+}
+
 func (h *HybridTableResourceAssert) HasPrimaryKeyKeys(expected ...string) *HybridTableResourceAssert {
 	h.AddAssertion(assert.ValueSet("primary_key.0.keys.#", strconv.Itoa(len(expected))))
 	for i, k := range expected {

@@ -343,6 +343,368 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_HybridTable_ColumnAdd(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+
+	model1 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+	}, pk)
+
+	model2 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}, pk)
+
+	model3 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
+		{Name: "AGE", Type: testdatatypes.DataTypeInteger},
+	}, pk)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with single column
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(1).
+						HasColumnName(0, "ID").
+						HasPrimaryKeyKeys("ID"),
+				),
+			},
+			// Add one column
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME").
+						HasPrimaryKeyKeys("ID"),
+				),
+			},
+			// Add two more columns in one apply
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model3.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model3),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model3.ResourceReference()).
+						HasColumnCount(4).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME").
+						HasColumnName(2, "EMAIL").
+						HasColumnName(3, "AGE").
+						HasPrimaryKeyKeys("ID"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_HybridTable_ColumnDrop(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+
+	model1 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
+		{Name: "AGE", Type: testdatatypes.DataTypeInteger},
+	}, pk)
+
+	model2 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
+	}, pk)
+
+	model3 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+	}, pk)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with four columns
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(4).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME").
+						HasColumnName(2, "EMAIL").
+						HasColumnName(3, "AGE").
+						HasPrimaryKeyKeys("ID"),
+				),
+			},
+			// Drop one column
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(3).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME").
+						HasColumnName(2, "EMAIL").
+						HasPrimaryKeyKeys("ID"),
+				),
+			},
+			// Drop two more columns in one apply
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model3.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model3),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model3.ResourceReference()).
+						HasColumnCount(1).
+						HasColumnName(0, "ID").
+						HasPrimaryKeyKeys("ID"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_HybridTable_ColumnAlterComment(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+	baseCols := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	// No comment on NAME
+	model1 := model.HybridTableFromId("test", id, baseCols, pk)
+
+	// Set comment on NAME
+	model2 := model.HybridTableFromId("test", id, baseCols, pk).
+		WithColumnConfigs([]model.HybridTableColumnConfig{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Comment: "this is a name column"},
+		})
+
+	// Change comment on NAME
+	model3 := model.HybridTableFromId("test", id, baseCols, pk).
+		WithColumnConfigs([]model.HybridTableColumnConfig{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Comment: "updated comment"},
+		})
+
+	// Unset comment on NAME (back to no comment)
+	model4 := model.HybridTableFromId("test", id, baseCols, pk)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with two columns, NAME has no comment
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME").
+						HasColumnComment(1, ""),
+				),
+			},
+			// Set comment on NAME
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnComment(1, "this is a name column"),
+				),
+			},
+			// Change comment on NAME
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model3.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model3),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model3.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnComment(1, "updated comment"),
+				),
+			},
+			// Unset comment on NAME
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model4.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model4),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model4.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnComment(1, ""),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_HybridTable_ColumnNullableForceNew(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+	baseCols := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	// NAME is explicitly nullable=true
+	model1 := model.HybridTableFromId("test", id, baseCols, pk).
+		WithColumnConfigs([]model.HybridTableColumnConfig{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Nullable: sdk.Bool(true)},
+		})
+
+	// NAME changed to nullable=false — must force recreation
+	model2 := model.HybridTableFromId("test", id, baseCols, pk).
+		WithColumnConfigs([]model.HybridTableColumnConfig{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Nullable: sdk.Bool(false)},
+		})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with NAME nullable=true
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME").
+						HasColumnNullable(1, true),
+				),
+			},
+			// Change NAME nullable=false — expect DestroyBeforeCreate (ForceNew)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME").
+						HasColumnNullable(1, false),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_HybridTable_ColumnCollateForceNew(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+	baseCols := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	// NAME with collate='en'
+	model1 := model.HybridTableFromId("test", id, baseCols, pk).
+		WithColumnConfigs([]model.HybridTableColumnConfig{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Collate: "en"},
+		})
+
+	// NAME collate changed to 'fr' — must force recreation
+	model2 := model.HybridTableFromId("test", id, baseCols, pk).
+		WithColumnConfigs([]model.HybridTableColumnConfig{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Collate: "fr"},
+		})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create with NAME collate='en'
+			{
+				Config: accconfig.FromModels(t, model1),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model1.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME"),
+				),
+			},
+			// Change NAME collate='fr' — expect DestroyBeforeCreate (ForceNew)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumnCount(2).
+						HasColumnName(0, "ID").
+						HasColumnName(1, "NAME"),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_HybridTable_Rename(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	schemaId := sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName())
