@@ -5,6 +5,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+func boolToYN(b bool) string {
+	if b {
+		return "Y"
+	}
+	return "N"
+}
+
 var DescribeHybridTableSchema = map[string]*schema.Schema{
 	"name":                    {Type: schema.TypeString, Computed: true},
 	"type":                    {Type: schema.TypeString, Computed: true},
@@ -26,10 +33,10 @@ func HybridTableDetailsToSchema(detail sdk.HybridTableDetails) map[string]any {
 		"name":                    detail.Name,
 		"type":                    detail.Type,
 		"kind":                    detail.Kind,
-		"is_nullable":             detail.IsNullable,
+		"is_nullable":             boolToYN(detail.IsNullable),
 		"default":                 detail.Default,
-		"primary_key":             detail.PrimaryKey,
-		"unique_key":              detail.UniqueKey,
+		"primary_key":             boolToYN(detail.PrimaryKey),
+		"unique_key":              boolToYN(detail.UniqueKey),
 		"check":                   detail.Check,
 		"expression":              detail.Expression,
 		"comment":                 detail.Comment,

@@ -870,7 +870,7 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 func buildPrimaryKeyStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) []map[string]any {
 	pkKeys := make([]string, 0)
 	for _, detail := range details {
-		if strings.EqualFold(detail.PrimaryKey, "Y") {
+		if detail.PrimaryKey {
 			pkKeys = append(pkKeys, detail.Name)
 		}
 	}
