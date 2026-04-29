@@ -668,9 +668,28 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			return diag.FromErr(fmt.Errorf("error setting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
-	if unset.Comment != nil || unset.DataRetentionTimeInDays != nil || unset.MaxDataExtensionTimeInDays != nil {
-		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*unset)); err != nil {
-			return diag.FromErr(fmt.Errorf("error unsetting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
+	// Snowflake hybrid tables only support UNSET for one property at a time,
+	// unlike regular tables which accept space-separated properties.
+	// Issue separate ALTER ... UNSET for each property.
+	if unset.Comment != nil {
+		u := sdk.NewHybridTableUnsetPropertiesRequest()
+		u.Comment = unset.Comment
+		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*u)); err != nil {
+			return diag.FromErr(fmt.Errorf("error unsetting hybrid table comment %v: %w", id.FullyQualifiedName(), err))
+		}
+	}
+	if unset.DataRetentionTimeInDays != nil {
+		u := sdk.NewHybridTableUnsetPropertiesRequest()
+		u.DataRetentionTimeInDays = unset.DataRetentionTimeInDays
+		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*u)); err != nil {
+			return diag.FromErr(fmt.Errorf("error unsetting hybrid table data_retention_time_in_days %v: %w", id.FullyQualifiedName(), err))
+		}
+	}
+	if unset.MaxDataExtensionTimeInDays != nil {
+		u := sdk.NewHybridTableUnsetPropertiesRequest()
+		u.MaxDataExtensionTimeInDays = unset.MaxDataExtensionTimeInDays
+		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*u)); err != nil {
+			return diag.FromErr(fmt.Errorf("error unsetting hybrid table max_data_extension_time_in_days %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
 
@@ -779,15 +798,35 @@ func ImportHybridTable(ctx context.Context, d *schema.ResourceData, meta any) ([
 func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) []any {
 	flattened := make([]any, 0)
 
-	// Build collate lookup from config (DESCRIBE does not return collation)
-	collateByName := make(map[string]string)
+	// Build lookups from config for fields where DESCRIBE returns a normalized/different value
+	// that would cause permanent drift against the user's config:
+	// - type: DESCRIBE normalizes e.g. INTEGER -> NUMBER(38,0), which triggers HasChange("column")
+	//   and cascading ComputedIfAnyAttributeChanged drift on describe_output/show_output.
+	//   DiffSuppressDataTypes handles this at plan level but not for the non-refresh plan check.
+	// - collate: DESCRIBE does not return collation at all.
+	// - nullable: DESCRIBE returns NOT NULL for PK columns even when config says nullable=true.
+	//   Preserve the config value since Snowflake silently enforces NOT NULL on PK columns.
+	type configColumnInfo struct {
+		dataType string
+		collate  string
+		nullable bool
+	}
+	configByName := make(map[string]configColumnInfo)
 	if configCols, ok := d.GetOk("column"); ok {
 		for _, rawCol := range configCols.([]interface{}) {
 			colMap := rawCol.(map[string]interface{})
 			if colName, ok := colMap["name"].(string); ok {
-				if collate, ok := colMap["collate"].(string); ok {
-					collateByName[strings.ToUpper(colName)] = collate
+				info := configColumnInfo{}
+				if dt, ok := colMap["type"].(string); ok {
+					info.dataType = dt
 				}
+				if collate, ok := colMap["collate"].(string); ok {
+					info.collate = collate
+				}
+				if nullable, ok := colMap["nullable"].(bool); ok {
+					info.nullable = nullable
+				}
+				configByName[strings.ToUpper(colName)] = info
 			}
 		}
 	}
@@ -797,12 +836,23 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			continue
 		}
 
+		colInfo := configByName[strings.ToUpper(td.Name)]
+		// Use the config type if it's semantically equivalent to the DESCRIBE type,
+		// to avoid spurious diffs (e.g. config "INTEGER" vs DESCRIBE "NUMBER(38,0)").
+		colType := td.Type
+		if colInfo.dataType != "" {
+			configDT, configErr := datatypes.ParseDataType(colInfo.dataType)
+			describeDT, describeErr := datatypes.ParseDataType(td.Type)
+			if configErr == nil && describeErr == nil && datatypes.AreTheSame(configDT, describeDT) {
+				colType = colInfo.dataType
+			}
+		}
 		flat := map[string]any{
 			"name":     td.Name,
-			"type":     td.Type,
-			"nullable": strings.EqualFold(td.IsNullable, "Y"),
+			"type":     colType,
+			"nullable": colInfo.nullable,
 			"comment":  td.Comment,
-			"collate":  collateByName[strings.ToUpper(td.Name)],
+			"collate":  colInfo.collate,
 		}
 
 		def := toHybridColumnDefaultConfig(td)
