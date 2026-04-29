@@ -77,6 +77,8 @@ type AlterHybridTableOptions struct {
 	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
+	// NOTE: Hybrid tables only support UNSET for one property per ALTER statement. Use separate Alter calls per property.
+	Unset             *HybridTableUnsetProperties    `ddl:"keyword"`
 }
 
 type HybridTableAddColumnAction struct {
@@ -157,6 +159,13 @@ type HybridTableSetProperties struct {
 	DataRetentionTimeInDays    *int    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+// NOTE: Each field generates its own UNSET keyword; populate only one field per Alter call (Snowflake rejects multi-property UNSET for hybrid tables).
+type HybridTableUnsetProperties struct {
+	Comment                    *bool `ddl:"keyword" sql:"UNSET COMMENT"`
+	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"UNSET DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"UNSET MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 }
 
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.

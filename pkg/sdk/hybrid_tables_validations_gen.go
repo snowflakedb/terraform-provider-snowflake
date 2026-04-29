@@ -35,8 +35,8 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set) {
-		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"))
+	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
 	}
 	if valueSet(opts.ConstraintAction) {
 		if !exactlyOneValueSet(opts.ConstraintAction.Rename, opts.ConstraintAction.Drop) {
@@ -66,6 +66,11 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment"))
+		}
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.Comment, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays) {
+			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Unset", "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays"))
 		}
 	}
 	return JoinErrors(errs...)

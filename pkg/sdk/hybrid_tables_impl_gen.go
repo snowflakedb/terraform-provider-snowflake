@@ -228,6 +228,13 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 			Comment:                    r.Set.Comment,
 		}
 	}
+	if r.Unset != nil {
+		opts.Unset = &HybridTableUnsetProperties{
+			Comment:                    r.Unset.Comment,
+			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
+		}
+	}
 	return opts
 }
 

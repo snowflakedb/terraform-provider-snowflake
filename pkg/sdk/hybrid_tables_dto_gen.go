@@ -61,6 +61,13 @@ type AlterHybridTableRequest struct {
 	DropIndexAction   *HybridTableDropIndexActionRequest
 	ClusteringAction  *HybridTableClusteringActionRequest
 	Set               *HybridTableSetPropertiesRequest
+	Unset             *HybridTableUnsetPropertiesRequest
+}
+
+type HybridTableUnsetPropertiesRequest struct {
+	Comment                    *bool
+	DataRetentionTimeInDays    *bool
+	MaxDataExtensionTimeInDays *bool
 }
 
 type HybridTableAddColumnActionRequest struct {
