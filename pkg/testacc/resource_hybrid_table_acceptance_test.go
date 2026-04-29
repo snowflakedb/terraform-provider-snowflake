@@ -121,8 +121,16 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 	}
 
 	importStateVerifyIgnore := []string{
+		// DESCRIBE normalizes types (e.g. INTEGER -> NUMBER(38,0)); DiffSuppressDataTypes
+		// handles this at plan time, but the raw state values differ after import.
 		"column",
+		// Constraint name may differ between config (empty) and what DESCRIBE returns.
 		"primary_key",
+		// These fields are not exposed in SHOW or DESCRIBE output for hybrid tables.
+		// setStateToValuesFromConfig preserves them during normal reads but has no config
+		// to read from during import, so the imported state lands at -1 (the default).
+		// A subsequent terraform apply will re-set them to the configured values (no-op
+		// in Snowflake, but syncs Terraform state).
 		"data_retention_time_in_days",
 		"max_data_extension_time_in_days",
 	}
@@ -233,8 +241,16 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 		WithMaxDataExtensionTimeInDays(20)
 
 	importStateVerifyIgnore := []string{
+		// DESCRIBE normalizes types (e.g. INTEGER -> NUMBER(38,0)); DiffSuppressDataTypes
+		// handles this at plan time, but the raw state values differ after import.
 		"column",
+		// Constraint name may differ between config (empty) and what DESCRIBE returns.
 		"primary_key",
+		// These fields are not exposed in SHOW or DESCRIBE output for hybrid tables.
+		// setStateToValuesFromConfig preserves them during normal reads but has no config
+		// to read from during import, so the imported state lands at -1 (the default).
+		// A subsequent terraform apply will re-set them to the configured values (no-op
+		// in Snowflake, but syncs Terraform state).
 		"data_retention_time_in_days",
 		"max_data_extension_time_in_days",
 	}
