@@ -47,6 +47,18 @@ func (c *PasswordPolicyClient) CreatePasswordPolicyWithOptions(t *testing.T, req
 	return passwordPolicy, c.DropPasswordPolicyFunc(t, req.GetName())
 }
 
+func (c *PasswordPolicyClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PasswordPolicy, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
+}
+
+func (c *PasswordPolicyClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PasswordPolicyDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeDetails(ctx, id)
+}
+
 func (c *PasswordPolicyClient) DropPasswordPolicyFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
