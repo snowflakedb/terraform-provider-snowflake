@@ -1,6 +1,10 @@
 package sdk
 
-import "strconv"
+import (
+	"context"
+	"errors"
+	"strconv"
+)
 
 func (r *CreatePostgresInstanceRequest) GetName() AccountObjectIdentifier {
 	return r.name
@@ -34,6 +38,7 @@ type PostgresInstanceDetails struct {
 // ParsePostgresInstanceDetails parses []PostgresInstanceProperty into PostgresInstanceDetails
 func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*PostgresInstanceDetails, error) {
 	details := &PostgresInstanceDetails{}
+	var errs []error
 	for _, prop := range properties {
 		switch prop.Property {
 		case "name":
@@ -57,8 +62,11 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 		case "compute_family":
 			details.ComputeFamily = prop.Value
 		case "storage_size_gb":
-			val, _ := strconv.Atoi(prop.Value)
-			details.StorageSizeGb = val
+			if val, err := strconv.Atoi(prop.Value); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.StorageSizeGb = val
+			}
 		case "postgres_version":
 			details.PostgresVersion = prop.Value
 		case "high_availability":
@@ -68,11 +76,17 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 		case "state":
 			details.State = prop.Value
 		case "retention_time":
-			val, _ := strconv.Atoi(prop.Value)
-			details.RetentionTime = val
+			if val, err := strconv.Atoi(prop.Value); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.RetentionTime = val
+			}
 		case "maintenance_window_start":
-			val, _ := strconv.Atoi(prop.Value)
-			details.MaintenanceWindowStart = val
+			if val, err := strconv.Atoi(prop.Value); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.MaintenanceWindowStart = val
+			}
 		case "comment":
 			details.Comment = String(prop.Value)
 		case "network_policy":
@@ -83,7 +97,15 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 			details.StorageIntegration = String(prop.Value)
 		}
 	}
-	return details, nil
+	return details, errors.Join(errs...)
+}
+
+func (v *postgresInstances) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstanceDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostgresInstanceDetails(properties)
 }
 
 func (r postgresInstancesRow) convert() (*PostgresInstance, error) {

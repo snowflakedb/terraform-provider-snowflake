@@ -58,3 +58,9 @@ func (c *PostgresInstanceClient) Show(t *testing.T, id sdk.AccountObjectIdentifi
 	ctx := context.Background()
 	return c.client().ShowByID(ctx, id)
 }
+
+func (c *PostgresInstanceClient) DescribeDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.PostgresInstanceDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeDetails(ctx, id)
+}
