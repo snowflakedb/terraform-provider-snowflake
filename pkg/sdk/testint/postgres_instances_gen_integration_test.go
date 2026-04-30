@@ -304,13 +304,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 			HasPostgresVersion("17"),
 		)
 
-		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
-		require.NoError(t, err)
-		propertyMap := make(map[string]string)
-		for _, p := range properties {
-			propertyMap[p.Property] = p.Value
-		}
-		assert.Equal(t, "3", propertyMap["maintenance_window_start"])
+		assertThatObject(t, objectassert.PostgresInstanceDetails(t, postgresInstance.ID()).
+			HasMaintenanceWindowStart(3),
+		)
 
 		// Unset all unsettable properties in one call
 		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
@@ -599,46 +595,28 @@ func TestInt_PostgresInstances(t *testing.T) {
 		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
 		t.Cleanup(cleanup)
 
+		// Verify raw describe returns properties
 		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
 		require.NoError(t, err)
 		require.NotEmpty(t, properties)
 
-		// Verify all documented properties are present
-		propertyMap := make(map[string]string)
-		for _, p := range properties {
-			propertyMap[p.Property] = p.Value
-		}
-
-		assert.Contains(t, propertyMap, "name")
-		assert.Contains(t, propertyMap, "owner")
-		assert.Contains(t, propertyMap, "owner_role_type")
-		assert.Contains(t, propertyMap, "created_on")
-		assert.Contains(t, propertyMap, "updated_on")
-		assert.Contains(t, propertyMap, "type")
-		assert.Contains(t, propertyMap, "host")
-		assert.Contains(t, propertyMap, "compute_family")
-		assert.Contains(t, propertyMap, "storage_size_gb")
-		assert.Contains(t, propertyMap, "postgres_version")
-		assert.Contains(t, propertyMap, "high_availability")
-		assert.Contains(t, propertyMap, "authentication_authority")
-		assert.Contains(t, propertyMap, "state")
-		assert.Contains(t, propertyMap, "retention_time")
-
-		// Verify property values match expected defaults
-		assert.Equal(t, postgresInstance.ID().Name(), propertyMap["name"])
-		assert.Equal(t, snowflakeroles.Accountadmin.Name(), propertyMap["owner"])
-		assert.Equal(t, "ROLE", propertyMap["owner_role_type"])
-		assert.NotEmpty(t, propertyMap["created_on"])
-		assert.NotEmpty(t, propertyMap["updated_on"])
-		assert.Equal(t, "PRIMARY", propertyMap["type"])
-		assert.NotEmpty(t, propertyMap["host"])
-		assert.Equal(t, "STANDARD_1", propertyMap["compute_family"])
-		assert.Equal(t, "10", propertyMap["storage_size_gb"])
-		assert.NotEmpty(t, propertyMap["postgres_version"])
-		assert.Equal(t, "false", propertyMap["high_availability"])
-		assert.Equal(t, "POSTGRES", propertyMap["authentication_authority"])
-		assert.NotEmpty(t, propertyMap["state"])
-		assert.Equal(t, "1", propertyMap["retention_time"])
+		// Verify parsed details via DescribeDetails
+		assertThatObject(t, objectassert.PostgresInstanceDetails(t, postgresInstance.ID()).
+			HasName(postgresInstance.ID().Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasType("PRIMARY").
+			HasHostNotEmpty().
+			HasComputeFamily("STANDARD_1").
+			HasStorageSizeGb(10).
+			HasPostgresVersionNotEmpty().
+			HasHighAvailability(false).
+			HasAuthenticationAuthority("POSTGRES").
+			HasStateNotEmpty().
+			HasRetentionTime(1),
+		)
 	})
 
 	// ==================
