@@ -64,3 +64,11 @@ func (c *PostgresInstanceClient) DescribeDetails(t *testing.T, id sdk.AccountObj
 	ctx := context.Background()
 	return c.client().DescribeDetails(ctx, id)
 }
+
+func (c *PostgresInstanceClient) Alter(t *testing.T, req *sdk.AlterPostgresInstanceRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}

@@ -37,6 +37,7 @@
 - [snowflake_object_parameter](./docs/resources/object_parameter)
 - [snowflake_password_policy](./docs/resources/password_policy)
 - [snowflake_pipe](./docs/resources/pipe)
+- [snowflake_postgres_instance](./docs/resources/postgres_instance)
 - [snowflake_procedure_java](./docs/resources/procedure_java)
 - [snowflake_procedure_javascript](./docs/resources/procedure_javascript)
 - [snowflake_procedure_python](./docs/resources/procedure_python)
