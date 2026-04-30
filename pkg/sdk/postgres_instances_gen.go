@@ -18,6 +18,7 @@ type PostgresInstances interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstance, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstance, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]PostgresInstanceProperty, error)
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstanceDetails, error)
 }
 
 // CreatePostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance.
