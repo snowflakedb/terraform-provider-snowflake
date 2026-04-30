@@ -186,6 +186,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.OauthIntegrationForPartnerApplications().Schema,
 	},
 	{
+		name:   "PasswordPolicy",
+		schema: resources.PasswordPolicy().Schema,
+	},
+	{
 		name:   "PrimaryConnection",
 		schema: resources.PrimaryConnection().Schema,
 	},
