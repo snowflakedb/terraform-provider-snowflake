@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.15.x ➞ v2.16.0
 
+### *(new feature)* Postgres instance preview feature
+
+Added a new preview resource for managing Postgres instances. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_postgres_instance_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(improvement)* Catalog integration resources: computed `catalog_source`
 
 A new **computed** attribute **`catalog_source`** is now available on these resources:
