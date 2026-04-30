@@ -78,7 +78,7 @@ type AlterHybridTableOptions struct {
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
 	// NOTE: Hybrid tables only support UNSET for one property per ALTER statement. Use separate Alter calls per property.
-	Unset             *HybridTableUnsetProperties    `ddl:"keyword"`
+	Unset *HybridTableUnsetProperties `ddl:"keyword"`
 }
 
 type HybridTableAddColumnAction struct {
