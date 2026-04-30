@@ -458,7 +458,7 @@ func TestAcc_HybridTable_ForeignKey(t *testing.T) {
 	testClient().HybridTable.CreateWithRequest(t, parentId, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 		Columns: []sdk.HybridTableColumnRequest{
 			*sdk.NewHybridTableColumnRequest("ID", sdk.DataType("INTEGER")).
-				WithInlineConstraint(sdk.ColumnInlineConstraint{PrimaryKey: sdk.Bool(true)}),
+				WithInlineConstraint(sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}),
 		},
 	})
 	t.Cleanup(testClient().HybridTable.DropFunc(t, parentId))
