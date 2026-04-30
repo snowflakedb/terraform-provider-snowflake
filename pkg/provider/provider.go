@@ -646,6 +646,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_object_parameter":                                             resources.ObjectParameter(),
 		"snowflake_password_policy":                                              resources.PasswordPolicy(),
 		"snowflake_pipe":                                                         resources.Pipe(),
+		"snowflake_postgres_fork":                                                resources.PostgresFork(),
 		"snowflake_postgres_instance":                                            resources.PostgresInstance(),
 		"snowflake_primary_connection":                                           resources.PrimaryConnection(),
 		"snowflake_procedure_java":                                               resources.ProcedureJava(),

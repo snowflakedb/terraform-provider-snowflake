@@ -79,6 +79,7 @@ const (
 	ObjectParameter                                        resource = "snowflake_object_parameter"
 	PasswordPolicy                                         resource = "snowflake_password_policy"
 	Pipe                                                   resource = "snowflake_pipe"
+	PostgresFork                                           resource = "snowflake_postgres_fork"
 	PostgresInstance                                       resource = "snowflake_postgres_instance"
 	PrimaryConnection                                      resource = "snowflake_primary_connection"
 	ProcedureJava                                          resource = "snowflake_procedure_java"
