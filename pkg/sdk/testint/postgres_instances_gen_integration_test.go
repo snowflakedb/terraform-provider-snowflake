@@ -266,6 +266,12 @@ func TestInt_PostgresInstances(t *testing.T) {
 	// ==================
 
 	t.Run("alter: set and unset properties", func(t *testing.T) {
+		awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+		awsRoleARN := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
+
+		storageIntegration, storageIntegrationCleanup := testClientHelper().StorageIntegration.CreateS3(t, awsBucketUrl, awsRoleARN)
+		t.Cleanup(storageIntegrationCleanup)
+
 		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
 		t.Cleanup(networkPolicyCleanup)
 
@@ -283,7 +289,10 @@ func TestInt_PostgresInstances(t *testing.T) {
 				WithComputeFamily("STANDARD_2").
 				WithHighAvailability(true).
 				WithAuthenticationAuthority(sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake).
-				WithNetworkPolicy(networkPolicy.Name)))
+				WithNetworkPolicy(networkPolicy.Name).
+				WithStorageIntegration(storageIntegration.Name).
+				WithPostgresVersion(17).
+				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
@@ -291,7 +300,8 @@ func TestInt_PostgresInstances(t *testing.T) {
 			HasStorageSize(20).
 			HasComputeFamily("STANDARD_2").
 			HasIsHa(true).
-			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
+			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE").
+			HasPostgresVersion("17"),
 		)
 
 		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
@@ -308,7 +318,8 @@ func TestInt_PostgresInstances(t *testing.T) {
 				WithComment(true).
 				WithPostgresSettings(true).
 				WithMaintenanceWindowStart(true).
-				WithNetworkPolicy(true)))
+				WithNetworkPolicy(true).
+				WithStorageIntegration(true)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
@@ -325,17 +336,6 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
 			HasStorageSize(30),
-		)
-
-		// Set postgres_version
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithPostgresVersion(17).
-				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasPostgresVersion("17"),
 		)
 
 		// Set with apply on timestamp
