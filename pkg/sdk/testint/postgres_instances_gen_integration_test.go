@@ -51,52 +51,26 @@ func TestInt_PostgresInstances(t *testing.T) {
 	})
 
 	// Doc example: CREATE POSTGRES INSTANCE prod_postgres COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 500
-	//   AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 17 HIGH_AVAILABILITY = TRUE
+	//   AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE POSTGRES_VERSION = 17 HIGH_AVAILABILITY = TRUE
 	//   NETWORK_POLICY = 'my_network_policy' POSTGRES_SETTINGS = '{"postgres:work_mem" = "128MB"}'
-	//   COMMENT = 'Production Postgres instance';
+	//   COMMENT = 'Production Postgres instance' TAG (tag1 = 'value1');
 	t.Run("create - complete", func(t *testing.T) {
 		networkPolicy, networkPolicyCleanup := testClientHelper().NetworkPolicy.CreateNetworkPolicy(t)
 		t.Cleanup(networkPolicyCleanup)
 
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		comment := random.Comment()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithPostgresVersion(17).
-			WithHighAvailability(true).
-			WithNetworkPolicy(networkPolicy.Name).
-			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
-			WithComment(comment)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
-			HasName(id.Name()).
-			HasComputeFamily("STANDARD_1").
-			HasStorageSize(10).
-			HasAuthenticationAuthority("POSTGRES").
-			HasPostgresVersion("17").
-			HasIsHa(true).
-			HasComment(comment).
-			HasPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty(),
-		)
-	})
-
-	// Doc example: TAG (tag1 = 'value1')
-	t.Run("create - with tags", func(t *testing.T) {
 		tag1, tag1Cleanup := testClientHelper().Tag.CreateTag(t)
 		t.Cleanup(tag1Cleanup)
 		tag2, tag2Cleanup := testClientHelper().Tag.CreateTag(t)
 		t.Cleanup(tag2Cleanup)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+		comment := random.Comment()
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake).
+			WithPostgresVersion(17).
+			WithHighAvailability(true).
+			WithNetworkPolicy(networkPolicy.Name).
+			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
+			WithComment(comment).
 			WithTag([]sdk.TagAssociation{
 				{
 					Name:  tag1.ID(),
@@ -112,23 +86,24 @@ func TestInt_PostgresInstances(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
 
+		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
+			HasName(id.Name()).
+			HasComputeFamily("STANDARD_1").
+			HasStorageSize(10).
+			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE").
+			HasPostgresVersion("17").
+			HasIsHa(true).
+			HasComment(comment).
+			HasPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty(),
+		)
+
 		assertTagSet(t, tag1.ID(), id, sdk.ObjectTypePostgresInstance, "value1")
 		assertTagSet(t, tag2.ID(), id, sdk.ObjectTypePostgresInstance, "value2")
-	})
-
-	// Doc example: CREATE POSTGRES INSTANCE <name> COMPUTE_FAMILY = 'STANDARD_S' ... AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE
-	t.Run("create - with authentication_authority postgres_or_snowflake", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake)
-
-		err := client.PostgresInstances.Create(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
-
-		assertThatObject(t, objectassert.PostgresInstance(t, id).
-			HasName(id.Name()).
-			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
-		)
 	})
 
 	t.Run("create - with storage_integration", func(t *testing.T) {
