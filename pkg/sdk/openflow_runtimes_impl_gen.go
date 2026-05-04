@@ -61,20 +61,6 @@ func (v *openflowRuntimes) ShowByIDSafely(ctx context.Context, id SchemaObjectId
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *openflowRuntimes) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntime, error) {
-	request := NewShowOpenflowRuntimeRequest().
-		WithLike(Like{Pattern: String(id.Name())})
-	openflowRuntimes, err := v.Show(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return collections.FindFirst(openflowRuntimes, func(r OpenflowRuntime) bool { return r.Name == id.Name() })
-}
-
-func (v *openflowRuntimes) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntime, error) {
-	return SafeShowById(v.client, v.ShowByID, ctx, id)
-}
-
 func (v *openflowRuntimes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntimeDetails, error) {
 	opts := &DescribeOpenflowRuntimeOptions{
 		name: id,

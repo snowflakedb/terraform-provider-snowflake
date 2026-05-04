@@ -16,8 +16,6 @@ type OpenflowConnectors interface {
 	Show(ctx context.Context, request *ShowOpenflowConnectorRequest) ([]OpenflowConnector, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error)
-	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error)
-	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnectorDetails, error)
 }
 
@@ -95,6 +93,7 @@ type openflowConnectorRow struct {
 }
 
 type OpenflowConnector struct {
+	Name                            string
 	Status                          OpenflowConnectorStatus
 	Runtime                         string
 	ConnectorDefinition             *string
@@ -111,6 +110,10 @@ type OpenflowConnector struct {
 	Comment                         *string
 	CreatedOn                       time.Time
 	UpdatedOn                       time.Time
+}
+
+func (v *OpenflowConnector) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
 
 func (v *OpenflowConnector) ObjectType() ObjectType {
@@ -155,6 +158,7 @@ type openflowConnectorDetailsRow struct {
 }
 
 type OpenflowConnectorDetails struct {
+	Name                            string
 	Status                          OpenflowConnectorStatus
 	Runtime                         string
 	ConnectorDefinition             *string

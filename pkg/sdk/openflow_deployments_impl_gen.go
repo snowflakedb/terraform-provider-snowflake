@@ -61,20 +61,6 @@ func (v *openflowDeployments) ShowByIDSafely(ctx context.Context, id AccountObje
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *openflowDeployments) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error) {
-	request := NewShowOpenflowDeploymentRequest().
-		WithLike(Like{Pattern: String(id.Name())})
-	openflowDeployments, err := v.Show(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return collections.FindFirst(openflowDeployments, func(r OpenflowDeployment) bool { return r.Name == id.Name() })
-}
-
-func (v *openflowDeployments) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error) {
-	return SafeShowById(v.client, v.ShowByID, ctx, id)
-}
-
 func (v *openflowDeployments) Describe(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeploymentDetails, error) {
 	opts := &DescribeOpenflowDeploymentOptions{
 		name: id,

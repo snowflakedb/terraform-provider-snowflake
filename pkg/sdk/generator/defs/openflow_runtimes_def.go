@@ -100,6 +100,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Time("created_on").
 		Time("updated_on"),
 	g.PlainStruct("OpenflowRuntime").
+		Text("Name").
 		Field("Status", "OpenflowRuntimeStatus").
 		Text("Deployment").
 		Number("MinNodes").
@@ -120,7 +121,6 @@ var openflowRuntimesDef = g.NewInterface(
 		Show().
 		SQL("OPENFLOW RUNTIMES").
 		OptionalLike(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSingleValue,
@@ -146,6 +146,7 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalText("error_code").
 		OptionalText("status_message"),
 	g.PlainStruct("OpenflowRuntimeDetails").
+		Text("Name").
 		Field("Status", "OpenflowRuntimeStatus").
 		Text("Deployment").
 		Number("MinNodes").

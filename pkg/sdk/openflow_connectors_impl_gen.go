@@ -49,20 +49,6 @@ func (v *openflowConnectors) Show(ctx context.Context, request *ShowOpenflowConn
 
 func (v *openflowConnectors) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error) {
 	request := NewShowOpenflowConnectorRequest().
-		WithLike(Like{Pattern: String(id.Name())})
-	openflowConnectors, err := v.Show(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return collections.FindFirst(openflowConnectors, func(r OpenflowConnector) bool { return r.Name == id.Name() })
-}
-
-func (v *openflowConnectors) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error) {
-	return SafeShowById(v.client, v.ShowByID, ctx, id)
-}
-
-func (v *openflowConnectors) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error) {
-	request := NewShowOpenflowConnectorRequest().
 		WithIn(In{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	openflowConnectors, err := v.Show(ctx, request)

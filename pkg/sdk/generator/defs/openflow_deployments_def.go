@@ -82,6 +82,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		Time("created_on").
 		Time("updated_on"),
 	g.PlainStruct("OpenflowDeployment").
+		Text("Name").
 		Field("DeploymentType", "OpenflowDeploymentType").
 		Field("Status", "OpenflowDeploymentStatus").
 		Field("VpcType", "*OpenflowVpcType").
@@ -98,7 +99,6 @@ var openflowDeploymentsDef = g.NewInterface(
 		Show().
 		SQL("OPENFLOW DEPLOYMENTS").
 		OptionalLike(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSingleValue,
@@ -120,6 +120,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		OptionalText("error_code").
 		OptionalText("status_message"),
 	g.PlainStruct("OpenflowDeploymentDetails").
+		Text("Name").
 		Field("DeploymentType", "OpenflowDeploymentType").
 		Field("Status", "OpenflowDeploymentStatus").
 		Field("VpcType", "*OpenflowVpcType").

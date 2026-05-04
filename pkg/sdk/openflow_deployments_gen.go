@@ -16,8 +16,6 @@ type OpenflowDeployments interface {
 	Show(ctx context.Context, request *ShowOpenflowDeploymentRequest) ([]OpenflowDeployment, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error)
-	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error)
-	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeploymentDetails, error)
 }
 
@@ -93,6 +91,7 @@ type openflowDeploymentRow struct {
 }
 
 type OpenflowDeployment struct {
+	Name                       string
 	DeploymentType             OpenflowDeploymentType
 	Status                     OpenflowDeploymentStatus
 	VpcType                    *OpenflowVpcType
@@ -105,6 +104,10 @@ type OpenflowDeployment struct {
 	Comment                    *string
 	CreatedOn                  time.Time
 	UpdatedOn                  time.Time
+}
+
+func (v *OpenflowDeployment) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
 }
 
 func (v *OpenflowDeployment) ObjectType() ObjectType {
@@ -137,6 +140,7 @@ type openflowDeploymentDetailsRow struct {
 }
 
 type OpenflowDeploymentDetails struct {
+	Name                       string
 	DeploymentType             OpenflowDeploymentType
 	Status                     OpenflowDeploymentStatus
 	VpcType                    *OpenflowVpcType

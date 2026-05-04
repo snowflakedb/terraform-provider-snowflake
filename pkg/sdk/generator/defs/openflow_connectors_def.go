@@ -82,6 +82,7 @@ var openflowConnectorsDef = g.NewInterface(
 		Time("created_on").
 		Time("updated_on"),
 	g.PlainStruct("OpenflowConnector").
+		Text("Name").
 		Field("Status", "OpenflowConnectorStatus").
 		Text("Runtime").
 		OptionalText("ConnectorDefinition").
@@ -103,7 +104,6 @@ var openflowConnectorsDef = g.NewInterface(
 		SQL("OPENFLOW CONNECTORS").
 		OptionalLike().
 		OptionalIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).DescribeOperation(
@@ -138,6 +138,7 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalText("error_code").
 		OptionalText("status_message"),
 	g.PlainStruct("OpenflowConnectorDetails").
+		Text("Name").
 		Field("Status", "OpenflowConnectorStatus").
 		Text("Runtime").
 		OptionalText("ConnectorDefinition").

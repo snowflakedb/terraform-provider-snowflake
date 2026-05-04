@@ -16,8 +16,6 @@ type OpenflowRuntimes interface {
 	Show(ctx context.Context, request *ShowOpenflowRuntimeRequest) ([]OpenflowRuntime, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntime, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntime, error)
-	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntime, error)
-	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntime, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntimeDetails, error)
 }
 
@@ -112,6 +110,7 @@ type openflowRuntimeRow struct {
 }
 
 type OpenflowRuntime struct {
+	Name                       string
 	Status                     OpenflowRuntimeStatus
 	Deployment                 string
 	MinNodes                   int
@@ -128,6 +127,10 @@ type OpenflowRuntime struct {
 	ServerUrl                  *string
 	CreatedOn                  time.Time
 	UpdatedOn                  time.Time
+}
+
+func (v *OpenflowRuntime) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
 
 func (v *OpenflowRuntime) ObjectType() ObjectType {
@@ -164,6 +167,7 @@ type openflowRuntimeDetailsRow struct {
 }
 
 type OpenflowRuntimeDetails struct {
+	Name                       string
 	Status                     OpenflowRuntimeStatus
 	Deployment                 string
 	MinNodes                   int
