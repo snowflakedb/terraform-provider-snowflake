@@ -18,7 +18,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		SQL("OPENFLOW DEPLOYMENT").
 		IfNotExists().
 		Name().
-		OptionalAssignment("DEPLOYMENT_TYPE", g.KindOfT[sdkcommons.OpenflowDeploymentType](), g.ParameterOptions().SingleQuotes()).
+		Assignment("DEPLOYMENT_TYPE", g.KindOfT[sdkcommons.OpenflowDeploymentType](), g.ParameterOptions().SingleQuotes().Required()).
 		OptionalAssignment("VPC_TYPE", g.KindOfT[sdkcommons.OpenflowVpcType](), g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("CUSTOM_INGRESS_HOSTNAME", g.ParameterOptions().SingleQuotes()).
 		OptionalBooleanAssignment("USE_PRIVATE_LINK", g.ParameterOptions()).
@@ -33,6 +33,9 @@ var openflowDeploymentsDef = g.NewInterface(
 		Alter().
 		SQL("OPENFLOW DEPLOYMENT").
 		Name().
+		OptionalSQL("UPGRADE").
+		OptionalSQL("TERMINATE").
+		OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("OpenflowDeploymentSet").
@@ -52,7 +55,8 @@ var openflowDeploymentsDef = g.NewInterface(
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Set", "Unset"),
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
+		WithValidation(g.ExactlyOneValueSet, "Upgrade", "Terminate", "RenameTo", "Set", "Unset"),
 ).DropOperation(
 	"TODO: add link when public docs are available",
 	g.NewQueryStruct("DropOpenflowDeployment").
@@ -70,8 +74,9 @@ var openflowDeploymentsDef = g.NewInterface(
 		OptionalText("vpc_type").
 		OptionalText("display_name").
 		Bool("use_private_link").
-		Bool("use_user_auth_over_private_link").
+		Bool("use_user_auth_over_privatelink").
 		OptionalText("custom_ingress_hostname").
+		OptionalText("openflow_key").
 		Text("owner").
 		OptionalText("comment").
 		Time("created_on").
@@ -84,6 +89,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		Bool("UsePrivateLink").
 		Bool("UseUserAuthOverPrivatelink").
 		OptionalText("CustomIngressHostname").
+		OptionalText("OpenflowKey").
 		Text("Owner").
 		OptionalText("Comment").
 		Time("CreatedOn").
@@ -104,8 +110,9 @@ var openflowDeploymentsDef = g.NewInterface(
 		OptionalText("vpc_type").
 		OptionalText("display_name").
 		Bool("use_private_link").
-		Bool("use_user_auth_over_private_link").
+		Bool("use_user_auth_over_privatelink").
 		OptionalText("custom_ingress_hostname").
+		OptionalText("openflow_key").
 		Text("owner").
 		OptionalText("comment").
 		Time("created_on").
@@ -120,6 +127,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		Bool("UsePrivateLink").
 		Bool("UseUserAuthOverPrivatelink").
 		OptionalText("CustomIngressHostname").
+		OptionalText("OpenflowKey").
 		Text("Owner").
 		OptionalText("Comment").
 		Time("CreatedOn").

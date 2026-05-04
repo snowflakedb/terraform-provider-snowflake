@@ -7,6 +7,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var openflowRuntimesExternalAccessIntegrationsDef = g.NewQueryStruct("OpenflowRuntimeExternalAccessIntegrations").
+	List("ExternalAccessIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
+
 var openflowRuntimesDef = g.NewInterface(
 	"OpenflowRuntimes",
 	"OpenflowRuntime",
@@ -23,6 +26,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Assignment("NODE_TYPE", g.KindOfT[sdkcommons.OpenflowRuntimeNodeType](), g.ParameterOptions().SingleQuotes().Required()).
 		NumberAssignment("MIN_NODES", g.ParameterOptions().Required()).
 		NumberAssignment("MAX_NODES", g.ParameterOptions().Required()).
+		OptionalQueryStructField("ExternalAccessIntegrations", openflowRuntimesExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 		OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name"),
@@ -34,29 +38,34 @@ var openflowRuntimesDef = g.NewInterface(
 		Name().
 		OptionalSQL("SUSPEND").
 		OptionalSQL("RESUME").
+		OptionalSQL("RESTART").
 		OptionalSQL("TERMINATE").
 		OptionalSQL("TERMINATE CASCADE").
+		OptionalSQL("UPGRADE").
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("OpenflowRuntimeSet").
 				OptionalNumberAssignment("MIN_NODES", g.ParameterOptions()).
 				OptionalNumberAssignment("MAX_NODES", g.ParameterOptions()).
 				OptionalTextAssignment("EXECUTE_AS_ROLE", g.ParameterOptions().NoQuotes()).
+				OptionalQueryStructField("ExternalAccessIntegrations", openflowRuntimesExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-				WithValidation(g.AtLeastOneValueSet, "MinNodes", "MaxNodes", "ExecuteAsRole", "DisplayName", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "MinNodes", "MaxNodes", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
 			"Unset",
 			g.NewQueryStruct("OpenflowRuntimeUnset").
+				OptionalSQL("EXECUTE_AS_ROLE").
+				OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
 				OptionalSQL("DISPLAY_NAME").
 				OptionalSQL("COMMENT").
-				WithValidation(g.AtLeastOneValueSet, "DisplayName", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "Terminate", "TerminateCascade", "Set", "Unset"),
+		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "Restart", "Terminate", "TerminateCascade", "Upgrade", "Set", "Unset"),
 ).DropOperation(
 	"TODO: add link when public docs are available",
 	g.NewQueryStruct("DropOpenflowRuntime").
@@ -83,6 +92,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Text("execute_as_role").
 		Text("owner").
 		OptionalText("comment").
+		OptionalText("server_url").
 		Time("created_on").
 		Time("updated_on"),
 	g.PlainStruct("OpenflowRuntime").
@@ -98,6 +108,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Text("ExecuteAsRole").
 		Text("Owner").
 		OptionalText("Comment").
+		OptionalText("ServerUrl").
 		Time("CreatedOn").
 		Time("UpdatedOn"),
 	g.NewQueryStruct("ShowOpenflowRuntimes").
@@ -124,6 +135,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Text("execute_as_role").
 		Text("owner").
 		OptionalText("comment").
+		OptionalText("server_url").
 		Time("created_on").
 		Time("updated_on").
 		OptionalText("error_code").
@@ -136,11 +148,13 @@ var openflowRuntimesDef = g.NewInterface(
 		Field("NodeType", "OpenflowRuntimeNodeType").
 		OptionalText("DisplayName").
 		OptionalText("ExternalAccessIntegrations").
+		Bool("InitiallySuspended").
 		Text("DatabaseName").
 		Text("SchemaName").
 		Text("ExecuteAsRole").
 		Text("Owner").
 		OptionalText("Comment").
+		OptionalText("ServerUrl").
 		Time("CreatedOn").
 		Time("UpdatedOn").
 		OptionalText("ErrorCode").
