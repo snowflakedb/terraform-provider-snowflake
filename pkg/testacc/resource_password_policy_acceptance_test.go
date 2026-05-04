@@ -97,7 +97,7 @@ func TestAcc_PasswordPolicy_BasicUseCase(t *testing.T) {
 			HasPasswordHistory(5),
 	}
 
-	basicAssertionsWithZeros := append([]assert.TestCheckFuncProvider{
+	basicAssertionsWithDefaults := append([]assert.TestCheckFuncProvider{
 		resourceassert.PasswordPolicyResource(t, ref).
 			HasName(id.Name()).
 			HasDatabase(id.DatabaseName()).
@@ -319,7 +319,7 @@ func TestAcc_PasswordPolicy_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertionsWithZeros...),
+				Check:  assertThat(t, basicAssertionsWithDefaults...),
 			},
 		},
 	})

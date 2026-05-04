@@ -29,14 +29,12 @@ var passwordPolicySchema = map[string]*schema.Schema{
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema this password policy belongs to."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The database this password policy belongs to."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -66,14 +64,14 @@ var passwordPolicySchema = map[string]*schema.Schema{
 		Type:             schema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		Description:      "Specifies the minimum number of characters the password must contain. Supported range: 8 to 256, inclusive. Default: 14",
+		Description:      "Specifies the minimum number of characters the password must contain.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_min_length"),
 	},
 	"max_length": {
 		Type:             schema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		Description:      "Specifies the maximum number of characters the password must contain. This number must be greater than or equal to the sum of PASSWORD_MIN_LENGTH, PASSWORD_MIN_UPPER_CASE_CHARS, and PASSWORD_MIN_LOWER_CASE_CHARS. Supported range: 8 to 256, inclusive. Default: 256",
+		Description:      "Specifies the maximum number of characters the password must contain. This number must be greater than or equal to the sum of PASSWORD_MIN_LENGTH, PASSWORD_MIN_UPPER_CASE_CHARS, and PASSWORD_MIN_LOWER_CASE_CHARS.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_max_length"),
 	},
 	"min_upper_case_chars": {
@@ -81,7 +79,7 @@ var passwordPolicySchema = map[string]*schema.Schema{
 		Optional:         true,
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Specifies the minimum number of uppercase characters the password must contain. Supported range: 0 to 256, inclusive. Default: 1",
+		Description:      "Specifies the minimum number of uppercase characters the password must contain.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_min_upper_case_chars"),
 	},
 	"min_lower_case_chars": {
@@ -89,7 +87,7 @@ var passwordPolicySchema = map[string]*schema.Schema{
 		Optional:         true,
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Specifies the minimum number of lowercase characters the password must contain. Supported range: 0 to 256, inclusive. Default: 1",
+		Description:      "Specifies the minimum number of lowercase characters the password must contain.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_min_lower_case_chars"),
 	},
 	"min_numeric_chars": {
@@ -97,7 +95,7 @@ var passwordPolicySchema = map[string]*schema.Schema{
 		Optional:         true,
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Specifies the minimum number of numeric characters the password must contain. Supported range: 0 to 256, inclusive. Default: 1",
+		Description:      "Specifies the minimum number of numeric characters the password must contain.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_min_numeric_chars"),
 	},
 	"min_special_chars": {
@@ -105,7 +103,7 @@ var passwordPolicySchema = map[string]*schema.Schema{
 		Optional:         true,
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Specifies the minimum number of special characters the password must contain. Supported range: 0 to 256, inclusive. Default: 0",
+		Description:      "Specifies the minimum number of special characters the password must contain.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_min_special_chars"),
 	},
 	"min_age_days": {
@@ -113,7 +111,7 @@ var passwordPolicySchema = map[string]*schema.Schema{
 		Optional:         true,
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Specifies the number of days the user must wait before a recently changed password can be changed again. Supported range: 0 to 999, inclusive. Default: 0",
+		Description:      "Specifies the number of days the user must wait before a recently changed password can be changed again.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_min_age_days"),
 	},
 	"max_age_days": {
@@ -121,21 +119,21 @@ var passwordPolicySchema = map[string]*schema.Schema{
 		Optional:         true,
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Specifies the maximum number of days before the password must be changed. Supported range: 0 to 999, inclusive. A value of zero (i.e. 0) indicates that the password does not need to be changed. Default: 90",
+		Description:      "Specifies the maximum number of days before the password must be changed. A value of zero (i.e. 0) indicates that the password does not need to be changed.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_max_age_days"),
 	},
 	"max_retries": {
 		Type:             schema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		Description:      "Specifies the maximum number of attempts to enter a password before being locked out. Supported range: 1 to 10, inclusive. Default: 5",
+		Description:      "Specifies the maximum number of attempts to enter a password before being locked out.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_max_retries"),
 	},
 	"lockout_time_mins": {
 		Type:             schema.TypeInt,
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-		Description:      "Specifies the number of minutes the user account will be locked after exhausting the designated number of password retries (i.e. PASSWORD_MAX_RETRIES). Supported range: 1 to 999, inclusive. Default: 15",
+		Description:      "Specifies the number of minutes the user account will be locked after exhausting the designated number of password retries (i.e. PASSWORD_MAX_RETRIES).",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_lockout_time_mins"),
 	},
 	"history": {
@@ -143,7 +141,7 @@ var passwordPolicySchema = map[string]*schema.Schema{
 		Optional:         true,
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-		Description:      "Specifies the number of the most recent passwords that Snowflake stores. These stored passwords cannot be repeated when a user updates their password value. The current password value does not count towards the history. When you increase the history value, Snowflake saves the previous values. When you decrease the value, Snowflake saves the stored values up to that value that is set. For example, if the history value is 8 and you change the history value to 3, Snowflake stores the most recent 3 passwords and deletes the 5 older password values from the history. Default: 5. Max: 24",
+		Description:      "Specifies the number of the most recent passwords that Snowflake stores. These stored passwords cannot be repeated when a user updates their password value. The current password value does not count towards the history. When you increase the history value, Snowflake saves the previous values. When you decrease the value, Snowflake saves the stored values up to that value that is set. For example, if the history value is 8 and you change the history value to 3, Snowflake stores the most recent 3 passwords and deletes the 5 older password values from the history.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("password_history"),
 	},
 	"comment": {
@@ -202,12 +200,12 @@ func PasswordPolicy() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.PasswordPolicy, customdiff.All(
-			ComputedIfAnyAttributeChanged(passwordPolicySchema, ShowOutputAttributeName, "name", "comment"),
+			ComputedIfAnyAttributeChanged(passwordPolicySchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
 			ComputedIfAnyAttributeChanged(passwordPolicySchema, DescribeOutputAttributeName, "name", "comment",
 				"min_length", "max_length", "min_upper_case_chars", "min_lower_case_chars",
 				"min_numeric_chars", "min_special_chars", "min_age_days", "max_age_days",
 				"max_retries", "lockout_time_mins", "history"),
-			ComputedIfAnyAttributeChanged(passwordPolicySchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(passwordPolicySchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 		)),
 	}
 }
@@ -293,7 +291,7 @@ func ReadPasswordPolicyFunc(withExternalChangesMarking bool) schema.ReadContextF
 		}
 
 		errs := errors.Join(
-			// Not reading int fields here — they are handled by handleExternalChangesToObjectInFlatDescribe + setStateToValuesFromConfig above
+			// Not reading int fields here — they are handled by handleExternalChangesToObjectInFlatDescribe
 			d.Set("comment", passwordPolicy.Comment),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PasswordPolicyToSchema(passwordPolicy)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PasswordPolicyDetailsToSchema(details)}),
@@ -311,10 +309,10 @@ func UpdatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("name") {
-		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+	if d.HasChange("database") || d.HasChange("schema") || d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string))
 		if err := client.PasswordPolicies.Alter(ctx, sdk.NewAlterPasswordPolicyRequest(id).WithNewName(newId)); err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("error renaming password policy from %v to %v, err = %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))
 		}
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
