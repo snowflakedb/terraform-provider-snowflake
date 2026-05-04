@@ -19,7 +19,7 @@ var openflowRuntimesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		OptionalIdentifier("InDeployment", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN DEPLOYMENT")).
-		Assignment("EXECUTE_AS_ROLE", g.KindOfT[sdkcommons.NoQuotesString](), g.ParameterOptions().NoQuotes().Required()).
+		TextAssignment("EXECUTE_AS_ROLE", g.ParameterOptions().NoQuotes().Required()).
 		Assignment("NODE_TYPE", g.KindOfT[sdkcommons.OpenflowRuntimeNodeType](), g.ParameterOptions().SingleQuotes().Required()).
 		NumberAssignment("MIN_NODES", g.ParameterOptions().Required()).
 		NumberAssignment("MAX_NODES", g.ParameterOptions().Required()).

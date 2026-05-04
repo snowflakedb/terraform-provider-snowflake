@@ -17,6 +17,9 @@ type (
 	ClientPolicyDriverType                                              string
 	ClientTypesOption                                                   string
 	ComputePoolInstanceFamily                                           string
+	OpenflowDeploymentType                                              string
+	OpenflowVpcType                                                     string
+	OpenflowRuntimeNodeType                                             string
 	CsvCompression                                                      string
 	CsvEncoding                                                         string
 	DataMetricFunctionRefEntityDomainOption                             string
