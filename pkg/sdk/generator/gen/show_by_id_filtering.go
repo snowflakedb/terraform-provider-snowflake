@@ -13,6 +13,9 @@ const (
 	ShowByIDExtendedInFiltering
 	ShowByIDApplicationNameFiltering
 	ShowByIDServiceInFiltering
+
+	// ShowByIDNoFiltering causes the auto-generated ShowByID to use no filtering when passed as the sole filtering argument to ShowOperation
+	ShowByIDNoFiltering ShowByIDFilteringKind = 100
 )
 
 type idPrefix string

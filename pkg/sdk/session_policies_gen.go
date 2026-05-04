@@ -15,8 +15,6 @@ type SessionPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SessionPolicyProperty, error)
-
-	// DescribeDetails is added manually
 	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicyDetails, error)
 }
 

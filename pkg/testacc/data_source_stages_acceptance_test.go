@@ -96,12 +96,12 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 
 	azureModel := model.ExternalAzureStage("test", azureStageId.DatabaseName(), azureStageId.SchemaName(), azureStageId.Name(), azureBucketUrl).
 		WithFileFormatCsv(sdk.FileFormatCsvOptions{
-			Compression: sdk.Pointer(sdk.CSVCompressionGzip),
+			Compression: sdk.Pointer(sdk.CsvCompressionGzip),
 		}).
 		WithComment(comment)
 	externalS3Model := model.ExternalS3Stage("test", s3StageId.DatabaseName(), s3StageId.SchemaName(), s3StageId.Name(), awsBucketUrl).
 		WithFileFormatJson(sdk.FileFormatJsonOptions{
-			Compression: sdk.Pointer(sdk.JSONCompressionGzip),
+			Compression: sdk.Pointer(sdk.JsonCompressionGzip),
 		}).
 		WithComment(comment)
 	externalGcsModel := model.ExternalGcsStage("test", gcsStageId.DatabaseName(), gcsStageId.SchemaName(), gcsStageId.Name(), ids.PrecreatedGcpStorageIntegration.FullyQualifiedName(), gcsBucketUrl).

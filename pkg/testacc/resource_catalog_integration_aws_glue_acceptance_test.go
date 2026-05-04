@@ -85,7 +85,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -129,7 +129,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasComment(newComment),
 		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(true).
 			HasRefreshIntervalSeconds(newRefreshIntervalSeconds).
@@ -158,7 +158,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -187,7 +187,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -216,7 +216,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -459,7 +459,7 @@ func TestAcc_CatalogIntegrationAwsGlue_ImportValidation(t *testing.T) {
 				ResourceName:  catalogIntegrationAwsGlue2.ResourceReference(),
 				ImportState:   true,
 				ImportStateId: catalogIntegrationObjectStorage.Name(),
-				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypeAWSGlue, sdk.CatalogIntegrationCatalogSourceTypeObjectStorage)),
+				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypeGlue, sdk.CatalogIntegrationCatalogSourceTypeObjectStore)),
 			},
 		},
 	})

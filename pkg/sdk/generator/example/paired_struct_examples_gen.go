@@ -10,6 +10,8 @@ import (
 
 type PairedStructExamples interface {
 	Show(ctx context.Context, request *ShowPairedStructExampleRequest) ([]PairedStructExample, error)
+	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error)
+	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExampleDetail, error)
 }
 
@@ -21,27 +23,37 @@ type ShowPairedStructExampleOptions struct {
 }
 
 type pairedStructExampleRow struct {
-	ObjectName                string         `db:"object_name"`
-	BothNonNullableStrings    string         `db:"both_non_nullable_strings"`
-	StorageTypeDb             string         `db:"type"`
-	BothNullableStrings       sql.NullString `db:"both_nullable_strings"`
-	OrganizationName          sql.NullString `db:"organization_name"`
-	IsPrimary                 bool           `db:"is_primary"`
-	IsDefault                 sql.NullBool   `db:"is_default"`
-	Enabled                   sql.NullBool   `db:"enabled"`
-	NextValue                 int            `db:"next_value"`
-	Port                      sql.NullInt64  `db:"port"`
-	RetryLimit                sql.NullInt64  `db:"retry_limit"`
-	CreatedOn                 time.Time      `db:"created_on"`
-	UpdatedAt                 sql.NullTime   `db:"updated_at"`
-	Primary                   string         `db:"primary"`
-	FailoverAllowedToAccounts string         `db:"failover_allowed_to_accounts"`
-	Tags                      string         `db:"tags"`
-	AccountId                 string         `db:"account_id"`
-	SecondAccountId           string         `db:"second_account_id"`
+	Name                         string         `db:"name"`
+	ObjectName                   string         `db:"object_name"`
+	BothNonNullableStrings       string         `db:"both_non_nullable_strings"`
+	StorageTypeDb                string         `db:"type"`
+	BothNullableStrings          sql.NullString `db:"both_nullable_strings"`
+	OrganizationName             sql.NullString `db:"organization_name"`
+	IsPrimary                    bool           `db:"is_primary"`
+	IsDefault                    sql.NullBool   `db:"is_default"`
+	Enabled                      sql.NullBool   `db:"enabled"`
+	NextValue                    int            `db:"next_value"`
+	Port                         sql.NullInt64  `db:"port"`
+	RetryLimit                   sql.NullInt64  `db:"retry_limit"`
+	CreatedOn                    time.Time      `db:"created_on"`
+	UpdatedAt                    sql.NullTime   `db:"updated_at"`
+	Primary                      string         `db:"primary"`
+	FailoverAllowedToAccounts    string         `db:"failover_allowed_to_accounts"`
+	Tags                         string         `db:"tags"`
+	AccountId                    string         `db:"account_id"`
+	SecondAccountId              string         `db:"second_account_id"`
+	OptionalAccountId            sql.NullString `db:"optional_account_id"`
+	OptionalSecondAccountId      sql.NullString `db:"optional_second_account_id"`
+	SchemaObjectId               string         `db:"schema_object_id"`
+	SecondSchemaObjectId         string         `db:"second_schema_object_id"`
+	OptionalSchemaObjectId       sql.NullString `db:"optional_schema_object_id"`
+	OptionalSecondSchemaObjectId sql.NullString `db:"optional_second_schema_object_id"`
+	DatabaseObjectId             string         `db:"database_object_id"`
+	SecondDatabaseObjectId       string         `db:"second_database_object_id"`
 }
 
 type PairedStructExample struct {
+	Name                                 string
 	ObjectName                           string
 	OverriddenNonNullableStringPlainName string
 	StorageTypePlain                     string
@@ -60,6 +72,18 @@ type PairedStructExample struct {
 	Tags                                 []string
 	Id                                   AccountObjectIdentifier
 	OverriddenSecondAccountId            AccountObjectIdentifier
+	OptionalAccountId                    *AccountObjectIdentifier
+	OverriddenOptionalAccountId          *AccountObjectIdentifier
+	SchemaObjectId                       SchemaObjectIdentifier
+	OverriddenSchemaObjectId             SchemaObjectIdentifier
+	OptionalSchemaObjectId               *SchemaObjectIdentifier
+	OverriddenOptionalSchemaObjectId     *SchemaObjectIdentifier
+	DatabaseObjectId                     DatabaseObjectIdentifier
+	OverriddenDatabaseObjectId           DatabaseObjectIdentifier
+}
+
+func (v *PairedStructExample) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
 }
 
 func (v *PairedStructExample) ObjectType() ObjectType {
@@ -74,27 +98,37 @@ type DescribePairedStructExampleOptions struct {
 }
 
 type pairedStructExampleDetailRow struct {
-	ObjectName                string         `db:"object_name"`
-	BothNonNullableStrings    string         `db:"both_non_nullable_strings"`
-	StorageTypeDb             string         `db:"type"`
-	BothNullableStrings       sql.NullString `db:"both_nullable_strings"`
-	OrganizationName          sql.NullString `db:"organization_name"`
-	IsPrimary                 bool           `db:"is_primary"`
-	IsDefault                 sql.NullBool   `db:"is_default"`
-	Enabled                   sql.NullBool   `db:"enabled"`
-	NextValue                 int            `db:"next_value"`
-	Port                      sql.NullInt64  `db:"port"`
-	RetryLimit                sql.NullInt64  `db:"retry_limit"`
-	CreatedOn                 time.Time      `db:"created_on"`
-	UpdatedAt                 sql.NullTime   `db:"updated_at"`
-	Primary                   string         `db:"primary"`
-	FailoverAllowedToAccounts string         `db:"failover_allowed_to_accounts"`
-	Tags                      string         `db:"tags"`
-	AccountId                 string         `db:"account_id"`
-	SecondAccountId           string         `db:"second_account_id"`
+	Name                         string         `db:"name"`
+	ObjectName                   string         `db:"object_name"`
+	BothNonNullableStrings       string         `db:"both_non_nullable_strings"`
+	StorageTypeDb                string         `db:"type"`
+	BothNullableStrings          sql.NullString `db:"both_nullable_strings"`
+	OrganizationName             sql.NullString `db:"organization_name"`
+	IsPrimary                    bool           `db:"is_primary"`
+	IsDefault                    sql.NullBool   `db:"is_default"`
+	Enabled                      sql.NullBool   `db:"enabled"`
+	NextValue                    int            `db:"next_value"`
+	Port                         sql.NullInt64  `db:"port"`
+	RetryLimit                   sql.NullInt64  `db:"retry_limit"`
+	CreatedOn                    time.Time      `db:"created_on"`
+	UpdatedAt                    sql.NullTime   `db:"updated_at"`
+	Primary                      string         `db:"primary"`
+	FailoverAllowedToAccounts    string         `db:"failover_allowed_to_accounts"`
+	Tags                         string         `db:"tags"`
+	AccountId                    string         `db:"account_id"`
+	SecondAccountId              string         `db:"second_account_id"`
+	OptionalAccountId            sql.NullString `db:"optional_account_id"`
+	OptionalSecondAccountId      sql.NullString `db:"optional_second_account_id"`
+	SchemaObjectId               string         `db:"schema_object_id"`
+	SecondSchemaObjectId         string         `db:"second_schema_object_id"`
+	OptionalSchemaObjectId       sql.NullString `db:"optional_schema_object_id"`
+	OptionalSecondSchemaObjectId sql.NullString `db:"optional_second_schema_object_id"`
+	DatabaseObjectId             string         `db:"database_object_id"`
+	SecondDatabaseObjectId       string         `db:"second_database_object_id"`
 }
 
 type PairedStructExampleDetail struct {
+	Name                                 string
 	ObjectName                           string
 	OverriddenNonNullableStringPlainName string
 	StorageTypePlain                     string
@@ -113,4 +147,12 @@ type PairedStructExampleDetail struct {
 	Tags                                 []string
 	Id                                   AccountObjectIdentifier
 	OverriddenSecondAccountId            AccountObjectIdentifier
+	OptionalAccountId                    *AccountObjectIdentifier
+	OverriddenOptionalAccountId          *AccountObjectIdentifier
+	SchemaObjectId                       SchemaObjectIdentifier
+	OverriddenSchemaObjectId             SchemaObjectIdentifier
+	OptionalSchemaObjectId               *SchemaObjectIdentifier
+	OverriddenOptionalSchemaObjectId     *SchemaObjectIdentifier
+	DatabaseObjectId                     DatabaseObjectIdentifier
+	OverriddenDatabaseObjectId           DatabaseObjectIdentifier
 }

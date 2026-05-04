@@ -176,17 +176,17 @@ func Test_NormalizeAndCompareEnumsSet(t *testing.T) {
 	})
 
 	t.Run(`change suppressed from lowercase to uppercase in state`, func(t *testing.T) {
-		resourceData := rawDataWithValues([]any{string(acchelpers.EnumToLower(sdk.AuthenticationMethodsPassword))})
-		assert.True(t, resources.NormalizeAndCompareEnumsInSet("value", sdk.ToAuthenticationMethodsOption)("value.doesnt_matter", string(sdk.AuthenticationMethodsPassword), "", resourceData))
+		resourceData := rawDataWithValues([]any{string(acchelpers.EnumToLower(sdk.AuthenticationMethodsOptionPassword))})
+		assert.True(t, resources.NormalizeAndCompareEnumsInSet("value", sdk.ToAuthenticationMethodsOption)("value.doesnt_matter", string(sdk.AuthenticationMethodsOptionPassword), "", resourceData))
 		// TODO(SNOW-1511594): Cannot be tested with schema.TestResourceDataRaw because it doesn't populate raw state which is used in the cases below
-		// assert.True(t, resources.NormalizeAndCompareIdentifiersInSet("value")("value.doesnt_matter", "", string(sdk.AuthenticationMethodsPassword), resourceData))
+		// assert.True(t, resources.NormalizeAndCompareIdentifiersInSet("value")("value.doesnt_matter", "", string(sdk.AuthenticationMethodsOptionPassword), resourceData))
 	})
 
 	t.Run(`change suppressed from uppercase to lowercase in state`, func(t *testing.T) {
-		resourceData := rawDataWithValues([]any{string(sdk.AuthenticationMethodsPassword)})
-		assert.True(t, resources.NormalizeAndCompareEnumsInSet("value", sdk.ToAuthenticationMethodsOption)("value.doesnt_matter", string(acchelpers.EnumToLower(sdk.AuthenticationMethodsPassword)), "", resourceData))
+		resourceData := rawDataWithValues([]any{string(sdk.AuthenticationMethodsOptionPassword)})
+		assert.True(t, resources.NormalizeAndCompareEnumsInSet("value", sdk.ToAuthenticationMethodsOption)("value.doesnt_matter", string(acchelpers.EnumToLower(sdk.AuthenticationMethodsOptionPassword)), "", resourceData))
 		// TODO(SNOW-1511594): Cannot be tested with schema.TestResourceDataRaw because it doesn't populate raw state which is used in the cases below
-		// assert.True(t, resources.NormalizeAndCompareIdentifiersInSet("value")("value.doesnt_matter", "", string(sdk.AuthenticationMethodsPassword), resourceData))
+		// assert.True(t, resources.NormalizeAndCompareIdentifiersInSet("value")("value.doesnt_matter", "", string(sdk.AuthenticationMethodsOptionPassword), resourceData))
 	})
 }
 

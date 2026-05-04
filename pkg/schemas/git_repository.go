@@ -60,9 +60,7 @@ func GitRepositoryDetailsToSchema(gitRepository sdk.GitRepository) map[string]an
 	gitRepositorySchema["database_name"] = gitRepository.DatabaseName
 	gitRepositorySchema["schema_name"] = gitRepository.SchemaName
 	gitRepositorySchema["origin"] = gitRepository.Origin
-	if gitRepository.ApiIntegration != nil {
-		gitRepositorySchema["api_integration"] = gitRepository.ApiIntegration.Name()
-	}
+	gitRepositorySchema["api_integration"] = gitRepository.ApiIntegration.Name()
 	if gitRepository.GitCredentials != nil {
 		gitRepositorySchema["git_credentials"] = gitRepository.GitCredentials.FullyQualifiedName()
 	}

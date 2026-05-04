@@ -1184,7 +1184,13 @@ func Test_ParseDataType_Table(t *testing.T) {
 		{input: "TABLE(arg_name NUMBER(38), arg_name_2 VARCHAR)", expectedColumns: []column{{"arg_name", "NUMBER(38)"}, {"arg_name_2", "VARCHAR"}}},
 		{input: "TABLE(arg_name number, second float, third GEOGRAPHY)", expectedColumns: []column{{"arg_name", "number"}, {"second", "float"}, {"third", "GEOGRAPHY"}}},
 		{input: "TABLE  (		arg_name 		varchar, 		second 	date, third TIME 			)", expectedColumns: []column{{"arg_name", "varchar"}, {"second", "date"}, {"third", "time"}}},
-		// TODO [SNOW-2054316]: Support types with parameters (for now, only legacy types are supported because Snowflake returns only with this output), e.g. TABLE(ARG NUMBER(38, 0))
+		// parametrized column types
+		{input: "TABLE(A NUMBER(38,0))", expectedColumns: []column{{"A", "NUMBER(38,0)"}}},
+		{input: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedColumns: []column{{"A", "NUMBER(38,0)"}, {"B", "VARCHAR"}}},
+		{input: "TABLE(O_ERR_CODE NUMBER(38,0), O_ERR_SEVERITY VARCHAR)", expectedColumns: []column{{"O_ERR_CODE", "NUMBER(38,0)"}, {"O_ERR_SEVERITY", "VARCHAR"}}},
+		{input: "TABLE(A NUMBER(10,2), B NUMBER(38,0), C TEXT)", expectedColumns: []column{{"A", "NUMBER(10,2)"}, {"B", "NUMBER(38,0)"}, {"C", "TEXT"}}},
+		{input: "TABLE(A VARCHAR(100), B NUMBER(5,2))", expectedColumns: []column{{"A", "VARCHAR(100)"}, {"B", "NUMBER(5,2)"}}},
+		{input: "TABLE(A VECTOR(FLOAT, 256), B NUMBER)", expectedColumns: []column{{"A", "VECTOR(FLOAT, 256)"}, {"B", "NUMBER"}}},
 		// TODO [SNOW-2054316]: Support nested tables, e.g. TABLE(ARG NUMBER, NESTED TABLE(A VARCHAR, B GEOMETRY))
 		// TODO [SNOW-2054316]: Support complex argument names (with quotes / spaces / special characters / etc)
 	}
@@ -1239,7 +1245,7 @@ func Test_ParseDataType_Table(t *testing.T) {
 			columns := strings.Join(collections.Map(tc.expectedColumns, func(col column) string {
 				parsedType, err := ParseDataType(col.Type)
 				require.NoError(t, err)
-				return fmt.Sprintf("%s %s", col.Name, parsedType.ToLegacyDataTypeSql())
+				return fmt.Sprintf("%s %s", col.Name, parsedType.ToSql())
 			}), ", ")
 			assert.Equal(t, fmt.Sprintf("TABLE(%s)", columns), parsed.ToSql())
 		})
@@ -1317,6 +1323,11 @@ func Test_AreTheSame(t *testing.T) {
 		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
 		{d1: "TABLE(A NUMBER, B NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: false},
 		{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(24,2), B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR(100))", d2: "TABLE(A NUMBER(24,2), B VARCHAR(200))", expectedOutcome: false},
 	}
 
 	for _, tc := range testCases {
@@ -1406,6 +1417,11 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: true},
 		{d1: "TABLE(B CHAR)", d2: "TABLE()", expectedOutcome: true},
 		{d1: "TABLE(A NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(24,2), B VARCHAR)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR(100))", d2: "TABLE(A NUMBER(24,2), B VARCHAR(200))", expectedOutcome: true},
 	}
 
 	for _, tc := range testCases {

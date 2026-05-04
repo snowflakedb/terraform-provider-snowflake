@@ -73,7 +73,7 @@ func (e *ExternalVolumeDescribeOutputAssert) HasStorageLocations(expected []sdk.
 		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".storage_allowed_locations.#", "1"))
 		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".storage_allowed_locations.0", fmt.Sprintf("%s*", loc.StorageBaseUrl)))
 
-		if loc.StorageProvider == string(sdk.StorageProviderS3) || loc.StorageProvider == string(sdk.StorageProviderS3GOV) {
+		if loc.StorageProvider == string(sdk.StorageProviderS3) || loc.StorageProvider == string(sdk.StorageProviderS3gov) {
 			s3Prefix := prefix + ".s3_storage_location.0"
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".s3_storage_location.#", "1"))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".storage_aws_role_arn", loc.S3StorageLocation.StorageAwsRoleArn))
@@ -91,7 +91,7 @@ func (e *ExternalVolumeDescribeOutputAssert) HasStorageLocations(expected []sdk.
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".s3_storage_location.#", "0"))
 		}
 
-		if loc.StorageProvider == string(sdk.StorageProviderGCS) {
+		if loc.StorageProvider == string(sdk.StorageProviderGcs) {
 			gcsPrefix := prefix + ".gcs_storage_location.0"
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".gcs_storage_location.#", "1"))
 			// StorageGcpServiceAccount is Snowflake-generated - assert presence only
@@ -116,7 +116,7 @@ func (e *ExternalVolumeDescribeOutputAssert) HasStorageLocations(expected []sdk.
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".azure_storage_location.#", "0"))
 		}
 
-		if loc.StorageProvider == string(sdk.StorageProviderS3Compatible) {
+		if loc.StorageProvider == string(sdk.StorageProviderS3compat) {
 			s3cPrefix := prefix + ".s3_compat_storage_location.0"
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".s3_compat_storage_location.#", "1"))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3cPrefix+".endpoint", loc.S3CompatStorageLocation.Endpoint))

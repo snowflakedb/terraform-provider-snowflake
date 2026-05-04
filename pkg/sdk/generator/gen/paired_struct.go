@@ -212,6 +212,48 @@ func (p *PairedStructs) AccountObjectIdentifier(dbColumnName string, opts ...Pai
 	return p.addField(dbColumnName, "string", "AccountObjectIdentifier", allOpts)
 }
 
+// OptionalAccountObjectIdentifier adds a nullable AccountObjectIdentifier field. The db kind is string
+// and the plain kind is *AccountObjectIdentifier. The plain field name defaults to "Id", but can be
+// overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: Id *AccountObjectIdentifier
+func (p *PairedStructs) OptionalAccountObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
+	return p.addField(dbColumnName, "sql.NullString", "*AccountObjectIdentifier", allOpts)
+}
+
+// DatabaseObjectIdentifier adds a DatabaseObjectIdentifier field. The db kind is string and the plain kind
+// is DatabaseObjectIdentifier. The plain field name defaults to "Id", but can be overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: Id DatabaseObjectIdentifier
+func (p *PairedStructs) DatabaseObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
+	return p.addField(dbColumnName, "string", "DatabaseObjectIdentifier", allOpts)
+}
+
+// SchemaObjectIdentifier adds a SchemaObjectIdentifier field. The db kind is string and the plain kind
+// is SchemaObjectIdentifier. The plain field name defaults to "Id", but can be overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: Id SchemaObjectIdentifier
+func (p *PairedStructs) SchemaObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
+	return p.addField(dbColumnName, "string", "SchemaObjectIdentifier", allOpts)
+}
+
+// OptionalSchemaObjectIdentifier adds a nullable SchemaObjectIdentifier field. The db kind is string
+// and the plain kind is *SchemaObjectIdentifier. The plain field name defaults to "Id", but can be
+// overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: Id *SchemaObjectIdentifier
+func (p *PairedStructs) OptionalSchemaObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
+	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifier", allOpts)
+}
+
 // asDbStruct materializes the definition as a *dbStruct following the old implementation.
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
@@ -233,8 +275,8 @@ func (p *PairedStructs) asPlainStruct() *plainStruct {
 // ShowOperationWithPairedStructs is equivalent to ShowOperation but accepts a single PairedStructs
 // definition instead of separate DbStruct and PlainStruct arguments. The PairedStructs is
 // materialized into both structs and forwarded to the existing ShowOperation unchanged.
-func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct) *Interface {
-	return i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct)
+func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
+	return i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, filtering...)
 }
 
 // DescribeOperationWithPairedStructs is equivalent to DescribeOperation but accepts a single
@@ -242,4 +284,10 @@ func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *Pa
 // PairedStructs is materialized into both structs and forwarded to the existing DescribeOperation.
 func (i *Interface) DescribeOperationWithPairedStructs(describeKind DescriptionMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	return i.DescribeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, helperStructs...)
+}
+
+// CustomShowOperationWithPairedStructs is equivalent to CustomShowOperation but accepts a
+// single PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
+func (i *Interface) CustomShowOperationWithPairedStructs(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct) *Interface {
+	return i.CustomShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct)
 }

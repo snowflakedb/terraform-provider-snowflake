@@ -361,7 +361,6 @@ var functionsDef = g.NewInterface(
 		SQL("USER FUNCTIONS").
 		OptionalLike().
 		OptionalExtendedIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDExtendedInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(
@@ -378,4 +377,14 @@ var functionsDef = g.NewInterface(
 		SQL("FUNCTION").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+).WithCustomInterfaceMethod(
+	"DescribeDetails",
+	"DescribeDetails returns aggregated describe results for the given function.",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
+	"*FunctionDetails", "error",
+).WithCustomInterfaceMethod(
+	"ShowParameters",
+	"",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
+	"[]*Parameter", "error",
 )

@@ -94,7 +94,7 @@ type GitRepository struct {
 	DatabaseName   string
 	SchemaName     string
 	Origin         string
-	ApiIntegration *AccountObjectIdentifier
+	ApiIntegration AccountObjectIdentifier
 	GitCredentials *SchemaObjectIdentifier
 	Owner          string
 	OwnerRoleType  string
