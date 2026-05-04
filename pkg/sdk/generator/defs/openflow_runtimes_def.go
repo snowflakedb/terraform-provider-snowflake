@@ -21,7 +21,7 @@ var openflowRuntimesDef = g.NewInterface(
 		SQL("OPENFLOW RUNTIME").
 		IfNotExists().
 		Name().
-		OptionalIdentifier("InDeployment", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN DEPLOYMENT")).
+		Identifier("InDeployment", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN DEPLOYMENT").Required()).
 		TextAssignment("EXECUTE_AS_ROLE", g.ParameterOptions().NoQuotes().Required()).
 		Assignment("NODE_TYPE", g.KindOfT[sdkcommons.OpenflowRuntimeNodeType](), g.ParameterOptions().SingleQuotes().Required()).
 		NumberAssignment("MIN_NODES", g.ParameterOptions().Required()).
@@ -38,10 +38,13 @@ var openflowRuntimesDef = g.NewInterface(
 		Name().
 		OptionalSQL("SUSPEND").
 		OptionalSQL("RESUME").
+		OptionalSQL("RESUME RECOVERY").
 		OptionalSQL("RESTART").
+		OptionalSQL("RESTART RECOVERY").
 		OptionalSQL("TERMINATE").
 		OptionalSQL("TERMINATE CASCADE").
 		OptionalSQL("UPGRADE").
+		OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("OpenflowRuntimeSet").
@@ -65,7 +68,8 @@ var openflowRuntimesDef = g.NewInterface(
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "Restart", "Terminate", "TerminateCascade", "Upgrade", "Set", "Unset"),
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
+		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset"),
 ).DropOperation(
 	"TODO: add link when public docs are available",
 	g.NewQueryStruct("DropOpenflowRuntime").
@@ -103,6 +107,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Field("NodeType", "OpenflowRuntimeNodeType").
 		OptionalText("DisplayName").
 		OptionalText("ExternalAccessIntegrations").
+		Bool("InitiallySuspended").
 		Text("DatabaseName").
 		Text("SchemaName").
 		Text("ExecuteAsRole").

@@ -69,7 +69,7 @@ var openflowDeploymentsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.DbStruct("openflowDeploymentRow").
 		Text("name").
-		Text("type").
+		Text("deployment_type").
 		Text("status").
 		OptionalText("vpc_type").
 		OptionalText("display_name").
@@ -105,7 +105,7 @@ var openflowDeploymentsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.DbStruct("openflowDeploymentDetailsRow").
 		Text("name").
-		Text("type").
+		Text("deployment_type").
 		Text("status").
 		OptionalText("vpc_type").
 		OptionalText("display_name").
