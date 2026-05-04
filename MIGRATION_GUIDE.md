@@ -24,6 +24,46 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.16.x ➞ v2.17.0
+
+### *(improvement)* snowflake_password_policy resource rework
+
+The [snowflake_password_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/password_policy) resource has been reworked to follow the modern resource patterns used in this provider.
+
+#### New computed attributes
+
+The resource now exposes `show_output` and `describe_output` computed attributes that provide the raw results from Snowflake's `SHOW PASSWORD POLICIES` and `DESCRIBE PASSWORD POLICY` commands, respectively. This allows users to access all server-side values without needing additional data sources.
+
+#### Integer fields no longer have hardcoded defaults
+
+Previously, all integer fields (`min_length`, `max_length`, etc.) had hardcoded `Default` values in the schema. These have been removed in favor of Snowflake-managed defaults. When a field is not specified in the Terraform configuration, the resource will not send that parameter to Snowflake, allowing it to use its own default value.
+
+Fields where 0 is a valid value (`min_upper_case_chars`, `min_lower_case_chars`, `min_numeric_chars`, `min_special_chars`, `min_age_days`, `max_age_days`, `history`) now use `-1` as the default sentinel. Setting one of these fields to `-1` explicitly (or omitting it from config) means "use the Snowflake default".
+
+Fields where 0 is not a valid value (`min_length`, `max_length`, `max_retries`, `lockout_time_mins`) are now plain optional fields with no default. Omitting them means "use the Snowflake default".
+
+After importing the state, the plan may be not empty for the fields missing from the configuration due to this change. You can either apply the plan, or set the specific values in the configuration.
+
+#### Removed client-side validation
+
+Client-side `ValidateFunc` constraints (e.g., `IntBetween(8, 256)` for `min_length`) have been removed from all integer fields. Validation is now delegated to Snowflake, which will return an error if a value is out of range. This avoids drift between the provider's hardcoded ranges and Snowflake's actual limits.
+
+#### `or_replace` and `if_not_exists` fields deprecated
+
+The `or_replace` and `if_not_exists` fields are now deprecated as noops. They will be removed in a future version.
+
+#### ID format change
+
+During [identifiers rework](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#identifiers-rework) the internal resource ID format has changed from pipe-separated (`database|schema|name`) to fully qualified name format (`"database"."schema"."name"`). This is handled automatically by a state upgrader — no manual action is required. Read more in the [design decisions](./docs/guides/identifiers_rework_design_decisions.md).
+
+#### Identifier fields now support quoting
+
+The `database`, `schema`, and `name` fields now support quoted identifiers and suppress diffs caused by identifier quoting differences (read more in the [design decisions](./docs/guides/identifiers_rework_design_decisions.md)). Additionally, certain characters are blocklisted from these fields — see the resource documentation for details.
+
+#### Import behavior
+
+The import now uses `ImportName` for `SchemaObjectIdentifier`, which properly sets `database`, `schema`, and `name` fields. The import ID should be the fully qualified name of the password policy (e.g., `"my_database"."my_schema"."my_policy"`).
+
 ## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* Catalog integration resources: computed `catalog_source`

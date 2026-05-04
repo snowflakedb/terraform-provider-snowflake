@@ -59,6 +59,13 @@ func (c *PasswordPolicyClient) Describe(t *testing.T, id sdk.SchemaObjectIdentif
 	return c.client().DescribeDetails(ctx, id)
 }
 
+func (c *PasswordPolicyClient) Alter(t *testing.T, request *sdk.AlterPasswordPolicyRequest) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.client().Alter(ctx, request)
+	require.NoError(t, err)
+}
+
 func (c *PasswordPolicyClient) DropPasswordPolicyFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
