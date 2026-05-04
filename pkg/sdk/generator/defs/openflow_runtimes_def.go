@@ -12,7 +12,7 @@ var openflowRuntimesDef = g.NewInterface(
 	"OpenflowRuntime",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/create-openflow-runtime",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("CreateOpenflowRuntime").
 		Create().
 		SQL("OPENFLOW RUNTIME").
@@ -27,7 +27,7 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name"),
 ).AlterOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/alter-openflow-runtime",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("AlterOpenflowRuntime").
 		Alter().
 		SQL("OPENFLOW RUNTIME").
@@ -58,7 +58,7 @@ var openflowRuntimesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "Terminate", "TerminateCascade", "Set", "Unset"),
 ).DropOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/drop-openflow-runtime",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("DropOpenflowRuntime").
 		Drop().
 		SQL("OPENFLOW RUNTIME").
@@ -67,7 +67,7 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalSQL("CASCADE").
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/show-openflow-runtimes",
+	"TODO: add link when public docs are available",
 	g.DbStruct("openflowRuntimeRow").
 		Text("name").
 		Text("status").
@@ -108,7 +108,7 @@ var openflowRuntimesDef = g.NewInterface(
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSingleValue,
-	"https://docs.snowflake.com/en/sql-reference/sql/desc-openflow-runtime",
+	"TODO: add link when public docs are available",
 	g.DbStruct("openflowRuntimeDetailsRow").
 		Text("name").
 		Text("status").

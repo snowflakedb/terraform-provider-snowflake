@@ -12,7 +12,7 @@ var openflowConnectorsDef = g.NewInterface(
 	"OpenflowConnector",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/create-openflow-connector",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("CreateOpenflowConnector").
 		Create().
 		SQL("OPENFLOW CONNECTOR").
@@ -25,7 +25,7 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name"),
 ).AlterOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/alter-openflow-connector",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("AlterOpenflowConnector").
 		Alter().
 		SQL("OPENFLOW CONNECTOR").
@@ -51,7 +51,7 @@ var openflowConnectorsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Start", "Stop", "Set", "Unset"),
 ).DropOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/drop-openflow-connector",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("DropOpenflowConnector").
 		Drop().
 		SQL("OPENFLOW CONNECTOR").
@@ -59,7 +59,7 @@ var openflowConnectorsDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/show-openflow-connectors",
+	"TODO: add link when public docs are available",
 	g.DbStruct("openflowConnectorRow").
 		Text("name").
 		Text("status").
@@ -91,7 +91,7 @@ var openflowConnectorsDef = g.NewInterface(
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSingleValue,
-	"https://docs.snowflake.com/en/sql-reference/sql/desc-openflow-connector",
+	"TODO: add link when public docs are available",
 	g.DbStruct("openflowConnectorDetailsRow").
 		Text("name").
 		Text("status").

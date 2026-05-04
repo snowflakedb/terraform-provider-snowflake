@@ -12,7 +12,7 @@ var openflowDeploymentsDef = g.NewInterface(
 	"OpenflowDeployment",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).CreateOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/create-openflow-deployment",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("CreateOpenflowDeployment").
 		Create().
 		SQL("OPENFLOW DEPLOYMENT").
@@ -28,7 +28,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name"),
 ).AlterOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/alter-openflow-deployment",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("AlterOpenflowDeployment").
 		Alter().
 		SQL("OPENFLOW DEPLOYMENT").
@@ -54,7 +54,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset"),
 ).DropOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/drop-openflow-deployment",
+	"TODO: add link when public docs are available",
 	g.NewQueryStruct("DropOpenflowDeployment").
 		Drop().
 		SQL("OPENFLOW DEPLOYMENT").
@@ -62,7 +62,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowOperation(
-	"https://docs.snowflake.com/en/sql-reference/sql/show-openflow-deployments",
+	"TODO: add link when public docs are available",
 	g.DbStruct("openflowDeploymentRow").
 		Text("name").
 		Text("type").
@@ -96,7 +96,7 @@ var openflowDeploymentsDef = g.NewInterface(
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSingleValue,
-	"https://docs.snowflake.com/en/sql-reference/sql/desc-openflow-deployment",
+	"TODO: add link when public docs are available",
 	g.DbStruct("openflowDeploymentDetailsRow").
 		Text("name").
 		Text("type").
