@@ -64,6 +64,12 @@ The `database`, `schema`, and `name` fields now support quoted identifiers and s
 
 The import now uses `ImportName` for `SchemaObjectIdentifier`, which properly sets `database`, `schema`, and `name` fields. The import ID should be the fully qualified name of the password policy (e.g., `"my_database"."my_schema"."my_policy"`).
 
+### *(new feature)* snowflake_password_policies data source
+
+We have added a new preview data source for password policies: [snowflake_password_policies](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/password_policies). It supports filtering with `like`, `in`, and `limit`, and optionally runs `DESCRIBE PASSWORD POLICY` for each result (controlled by the `with_describe` attribute, enabled by default).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_password_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
+
 ## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* Catalog integration resources: computed `catalog_source`
