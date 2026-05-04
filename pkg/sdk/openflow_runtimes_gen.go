@@ -27,7 +27,7 @@ type CreateOpenflowRuntimeOptions struct {
 	openflowRuntime            bool                                       `ddl:"static" sql:"OPENFLOW RUNTIME"`
 	IfNotExists                *bool                                      `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                       SchemaObjectIdentifier                     `ddl:"identifier"`
-	InDeployment               *AccountObjectIdentifier                   `ddl:"identifier" sql:"IN DEPLOYMENT"`
+	InDeployment               AccountObjectIdentifier                    `ddl:"identifier" sql:"IN DEPLOYMENT"`
 	ExecuteAsRole              string                                     `ddl:"parameter,no_quotes" sql:"EXECUTE_AS_ROLE"`
 	NodeType                   OpenflowRuntimeNodeType                    `ddl:"parameter,single_quotes" sql:"NODE_TYPE"`
 	MinNodes                   int                                        `ddl:"parameter" sql:"MIN_NODES"`
@@ -43,17 +43,20 @@ type OpenflowRuntimeExternalAccessIntegrations struct {
 
 // AlterOpenflowRuntimeOptions is based on TODO: add link when public docs are available.
 type AlterOpenflowRuntimeOptions struct {
-	alter            bool                   `ddl:"static" sql:"ALTER"`
-	openflowRuntime  bool                   `ddl:"static" sql:"OPENFLOW RUNTIME"`
-	name             SchemaObjectIdentifier `ddl:"identifier"`
-	Suspend          *bool                  `ddl:"keyword" sql:"SUSPEND"`
-	Resume           *bool                  `ddl:"keyword" sql:"RESUME"`
-	Restart          *bool                  `ddl:"keyword" sql:"RESTART"`
-	Terminate        *bool                  `ddl:"keyword" sql:"TERMINATE"`
-	TerminateCascade *bool                  `ddl:"keyword" sql:"TERMINATE CASCADE"`
-	Upgrade          *bool                  `ddl:"keyword" sql:"UPGRADE"`
-	Set              *OpenflowRuntimeSet    `ddl:"keyword" sql:"SET"`
-	Unset            *OpenflowRuntimeUnset  `ddl:"list,no_parentheses" sql:"UNSET"`
+	alter            bool                    `ddl:"static" sql:"ALTER"`
+	openflowRuntime  bool                    `ddl:"static" sql:"OPENFLOW RUNTIME"`
+	name             SchemaObjectIdentifier  `ddl:"identifier"`
+	Suspend          *bool                   `ddl:"keyword" sql:"SUSPEND"`
+	Resume           *bool                   `ddl:"keyword" sql:"RESUME"`
+	ResumeRecovery   *bool                   `ddl:"keyword" sql:"RESUME RECOVERY"`
+	Restart          *bool                   `ddl:"keyword" sql:"RESTART"`
+	RestartRecovery  *bool                   `ddl:"keyword" sql:"RESTART RECOVERY"`
+	Terminate        *bool                   `ddl:"keyword" sql:"TERMINATE"`
+	TerminateCascade *bool                   `ddl:"keyword" sql:"TERMINATE CASCADE"`
+	Upgrade          *bool                   `ddl:"keyword" sql:"UPGRADE"`
+	RenameTo         *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	Set              *OpenflowRuntimeSet     `ddl:"keyword" sql:"SET"`
+	Unset            *OpenflowRuntimeUnset   `ddl:"list,no_parentheses" sql:"UNSET"`
 }
 
 type OpenflowRuntimeSet struct {
@@ -116,6 +119,7 @@ type OpenflowRuntime struct {
 	NodeType                   OpenflowRuntimeNodeType
 	DisplayName                *string
 	ExternalAccessIntegrations *string
+	InitiallySuspended         bool
 	DatabaseName               string
 	SchemaName                 string
 	ExecuteAsRole              string

@@ -12,8 +12,8 @@ var (
 
 type CreateOpenflowRuntimeRequest struct {
 	IfNotExists                *bool
-	name                       SchemaObjectIdentifier // required
-	InDeployment               *AccountObjectIdentifier
+	name                       SchemaObjectIdentifier  // required
+	InDeployment               AccountObjectIdentifier // required
 	ExecuteAsRole              string                  // required
 	NodeType                   OpenflowRuntimeNodeType // required
 	MinNodes                   int                     // required
@@ -31,10 +31,13 @@ type AlterOpenflowRuntimeRequest struct {
 	name             SchemaObjectIdentifier // required
 	Suspend          *bool
 	Resume           *bool
+	ResumeRecovery   *bool
 	Restart          *bool
+	RestartRecovery  *bool
 	Terminate        *bool
 	TerminateCascade *bool
 	Upgrade          *bool
+	RenameTo         *SchemaObjectIdentifier
 	Set              *OpenflowRuntimeSetRequest
 	Unset            *OpenflowRuntimeUnsetRequest
 }

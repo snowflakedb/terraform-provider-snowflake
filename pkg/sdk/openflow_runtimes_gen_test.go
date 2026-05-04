@@ -59,10 +59,16 @@ func TestOpenflowRuntimes_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.Suspend opts.Resume opts.Restart opts.Terminate opts.TerminateCascade opts.Upgrade opts.Set opts.Unset] should be present", func(t *testing.T) {
+	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "Restart", "Terminate", "TerminateCascade", "Upgrade", "Set", "Unset"))
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.Suspend opts.Resume opts.ResumeRecovery opts.Restart opts.RestartRecovery opts.Terminate opts.TerminateCascade opts.Upgrade opts.RenameTo opts.Set opts.Unset] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		// TODO: fill me
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.MinNodes opts.Set.MaxNodes opts.Set.ExecuteAsRole opts.Set.ExternalAccessIntegrations opts.Set.DisplayName opts.Set.Comment] should be set", func(t *testing.T) {

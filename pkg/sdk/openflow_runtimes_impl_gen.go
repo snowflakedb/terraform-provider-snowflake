@@ -111,10 +111,13 @@ func (r *AlterOpenflowRuntimeRequest) toOpts() *AlterOpenflowRuntimeOptions {
 		name:             r.name,
 		Suspend:          r.Suspend,
 		Resume:           r.Resume,
+		ResumeRecovery:   r.ResumeRecovery,
 		Restart:          r.Restart,
+		RestartRecovery:  r.RestartRecovery,
 		Terminate:        r.Terminate,
 		TerminateCascade: r.TerminateCascade,
 		Upgrade:          r.Upgrade,
+		RenameTo:         r.RenameTo,
 	}
 	if r.Set != nil {
 		opts.Set = &OpenflowRuntimeSet{

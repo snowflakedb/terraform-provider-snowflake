@@ -29,8 +29,11 @@ func (opts *AlterOpenflowRuntimeOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.Restart, opts.Terminate, opts.TerminateCascade, opts.Upgrade, opts.Set, opts.Unset) {
-		errs = append(errs, errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "Restart", "Terminate", "TerminateCascade", "Upgrade", "Set", "Unset"))
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.ResumeRecovery, opts.Restart, opts.RestartRecovery, opts.Terminate, opts.TerminateCascade, opts.Upgrade, opts.RenameTo, opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset"))
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.ExecuteAsRole, opts.Set.ExternalAccessIntegrations, opts.Set.DisplayName, opts.Set.Comment) {

@@ -4,6 +4,7 @@ package sdk
 
 func NewCreateOpenflowRuntimeRequest(
 	name SchemaObjectIdentifier,
+	inDeployment AccountObjectIdentifier,
 	executeAsRole string,
 	nodeType OpenflowRuntimeNodeType,
 	minNodes int,
@@ -11,6 +12,7 @@ func NewCreateOpenflowRuntimeRequest(
 ) *CreateOpenflowRuntimeRequest {
 	s := CreateOpenflowRuntimeRequest{}
 	s.name = name
+	s.InDeployment = inDeployment
 	s.ExecuteAsRole = executeAsRole
 	s.NodeType = nodeType
 	s.MinNodes = minNodes
@@ -20,11 +22,6 @@ func NewCreateOpenflowRuntimeRequest(
 
 func (s *CreateOpenflowRuntimeRequest) WithIfNotExists(ifNotExists bool) *CreateOpenflowRuntimeRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOpenflowRuntimeRequest) WithInDeployment(inDeployment AccountObjectIdentifier) *CreateOpenflowRuntimeRequest {
-	s.InDeployment = &inDeployment
 	return s
 }
 
@@ -69,8 +66,18 @@ func (s *AlterOpenflowRuntimeRequest) WithResume(resume bool) *AlterOpenflowRunt
 	return s
 }
 
+func (s *AlterOpenflowRuntimeRequest) WithResumeRecovery(resumeRecovery bool) *AlterOpenflowRuntimeRequest {
+	s.ResumeRecovery = &resumeRecovery
+	return s
+}
+
 func (s *AlterOpenflowRuntimeRequest) WithRestart(restart bool) *AlterOpenflowRuntimeRequest {
 	s.Restart = &restart
+	return s
+}
+
+func (s *AlterOpenflowRuntimeRequest) WithRestartRecovery(restartRecovery bool) *AlterOpenflowRuntimeRequest {
+	s.RestartRecovery = &restartRecovery
 	return s
 }
 
@@ -86,6 +93,11 @@ func (s *AlterOpenflowRuntimeRequest) WithTerminateCascade(terminateCascade bool
 
 func (s *AlterOpenflowRuntimeRequest) WithUpgrade(upgrade bool) *AlterOpenflowRuntimeRequest {
 	s.Upgrade = &upgrade
+	return s
+}
+
+func (s *AlterOpenflowRuntimeRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterOpenflowRuntimeRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

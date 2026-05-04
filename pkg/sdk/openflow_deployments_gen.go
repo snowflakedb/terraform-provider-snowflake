@@ -78,7 +78,7 @@ type ShowOpenflowDeploymentOptions struct {
 
 type openflowDeploymentRow struct {
 	Name                       string         `db:"name"`
-	Type                       string         `db:"type"`
+	DeploymentType             string         `db:"deployment_type"`
 	Status                     string         `db:"status"`
 	VpcType                    sql.NullString `db:"vpc_type"`
 	DisplayName                sql.NullString `db:"display_name"`
@@ -120,7 +120,7 @@ type DescribeOpenflowDeploymentOptions struct {
 
 type openflowDeploymentDetailsRow struct {
 	Name                       string         `db:"name"`
-	Type                       string         `db:"type"`
+	DeploymentType             string         `db:"deployment_type"`
 	Status                     string         `db:"status"`
 	VpcType                    sql.NullString `db:"vpc_type"`
 	DisplayName                sql.NullString `db:"display_name"`
