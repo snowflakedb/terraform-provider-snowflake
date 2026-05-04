@@ -2,6 +2,7 @@ package datasources
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -22,9 +23,11 @@ var passwordPoliciesSchema = map[string]*schema.Schema{
 		Default:     true,
 		Description: "Runs DESC PASSWORD POLICY for each password policy returned by SHOW PASSWORD POLICIES. The output of describe is saved to the describe_output field. By default this value is set to true.",
 	},
-	"like":  likeSchema,
-	"in":    inSchema,
-	"limit": limitFromSchema,
+	"like":        likeSchema,
+	"starts_with": startsWithSchema,
+	"limit":       limitFromSchema,
+	"in":          extendedInSchema,
+	"on":          onSchema,
 	"password_policies": {
 		Type:        schema.TypeList,
 		Computed:    true,
@@ -66,8 +69,12 @@ func ReadPasswordPolicies(ctx context.Context, d *schema.ResourceData, meta any)
 	req := sdk.ShowPasswordPolicyRequest{}
 
 	handleLike(d, &req.Like)
+	handleStartsWith(d, &req.StartsWith)
 	handleLimitFrom(d, &req.Limit)
-	if err := handleIn(d, &req.In); err != nil {
+	if err := errors.Join(
+		handleExtendedIn(d, &req.In),
+		handleOn(d, &req.On),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 

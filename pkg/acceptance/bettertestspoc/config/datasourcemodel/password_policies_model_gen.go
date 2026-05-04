@@ -14,7 +14,9 @@ type PasswordPoliciesModel struct {
 	In               tfconfig.Variable `json:"in,omitempty"`
 	Like             tfconfig.Variable `json:"like,omitempty"`
 	Limit            tfconfig.Variable `json:"limit,omitempty"`
+	On               tfconfig.Variable `json:"on,omitempty"`
 	PasswordPolicies tfconfig.Variable `json:"password_policies,omitempty"`
+	StartsWith       tfconfig.Variable `json:"starts_with,omitempty"`
 	WithDescribe     tfconfig.Variable `json:"with_describe,omitempty"`
 
 	*config.DatasourceModelMeta
@@ -71,7 +73,14 @@ func (p *PasswordPoliciesModel) WithLike(like string) *PasswordPoliciesModel {
 
 // limit attribute type is not yet supported, so WithLimit can't be generated
 
+// on attribute type is not yet supported, so WithOn can't be generated
+
 // password_policies attribute type is not yet supported, so WithPasswordPolicies can't be generated
+
+func (p *PasswordPoliciesModel) WithStartsWith(startsWith string) *PasswordPoliciesModel {
+	p.StartsWith = tfconfig.StringVariable(startsWith)
+	return p
+}
 
 func (p *PasswordPoliciesModel) WithWithDescribe(withDescribe bool) *PasswordPoliciesModel {
 	p.WithDescribe = tfconfig.BoolVariable(withDescribe)
@@ -97,8 +106,18 @@ func (p *PasswordPoliciesModel) WithLimitValue(value tfconfig.Variable) *Passwor
 	return p
 }
 
+func (p *PasswordPoliciesModel) WithOnValue(value tfconfig.Variable) *PasswordPoliciesModel {
+	p.On = value
+	return p
+}
+
 func (p *PasswordPoliciesModel) WithPasswordPoliciesValue(value tfconfig.Variable) *PasswordPoliciesModel {
 	p.PasswordPolicies = value
+	return p
+}
+
+func (p *PasswordPoliciesModel) WithStartsWithValue(value tfconfig.Variable) *PasswordPoliciesModel {
+	p.StartsWith = value
 	return p
 }
 

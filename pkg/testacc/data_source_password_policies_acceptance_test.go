@@ -12,9 +12,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -113,6 +115,9 @@ func TestAcc_PasswordPolicies_Filtering(t *testing.T) {
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id3 := testClient().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
 
+	testUser, testUserCleanup := testClient().User.CreateUser(t)
+	t.Cleanup(testUserCleanup)
+
 	model1 := model.PasswordPolicy("test1", id1.DatabaseName(), id1.SchemaName(), id1.Name())
 	model2 := model.PasswordPolicy("test2", id2.DatabaseName(), id2.SchemaName(), id2.Name())
 	model3 := model.PasswordPolicy("test3", id3.DatabaseName(), id3.SchemaName(), id3.Name())
@@ -127,9 +132,22 @@ func TestAcc_PasswordPolicies_Filtering(t *testing.T) {
 		WithInDatabase(id1.DatabaseId()).
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
+	passwordPoliciesModelStartsWith := datasourcemodel.PasswordPolicies("test").
+		WithStartsWith(prefix).
+		WithInDatabase(id1.DatabaseId()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+
 	passwordPoliciesModelLimit := datasourcemodel.PasswordPolicies("test").
 		WithRowsAndFrom(1, prefix).
 		WithInDatabase(id1.DatabaseId()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+
+	passwordPoliciesModelOnUser := datasourcemodel.PasswordPolicies("test").
+		WithOnUser(testUser.ID()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+
+	passwordPoliciesModelOnAccount := datasourcemodel.PasswordPolicies("test").
+		WithOnAccount().
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	passwordPoliciesModelInSchema := datasourcemodel.PasswordPolicies("test").
@@ -155,9 +173,42 @@ func TestAcc_PasswordPolicies_Filtering(t *testing.T) {
 				),
 			},
 			{
+				Config: accconfig.FromModels(t, model1, model2, model3, passwordPoliciesModelStartsWith),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(passwordPoliciesModelStartsWith.DatasourceReference(), "password_policies.#", "2"),
+				),
+			},
+			{
 				Config: accconfig.FromModels(t, model1, model2, model3, passwordPoliciesModelLimit),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(passwordPoliciesModelLimit.DatasourceReference(), "password_policies.#", "1"),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().User.Alter(t, testUser.ID(), &sdk.AlterUserOptions{
+						Set: &sdk.UserSet{PasswordPolicy: sdk.Pointer(id3)},
+					})
+				},
+				Config: accconfig.FromModels(t, model1, model2, model3, passwordPoliciesModelOnUser),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(passwordPoliciesModelOnUser.DatasourceReference(), "password_policies.#", "1"),
+				),
+				// Unset the password policy from the user.
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						planchecks.Execute(func() {
+							testClient().User.Alter(t, testUser.ID(), &sdk.AlterUserOptions{
+								Unset: &sdk.UserUnset{PasswordPolicy: sdk.Bool(true)},
+							})
+						}),
+					},
+				},
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, passwordPoliciesModelOnAccount),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(passwordPoliciesModelOnAccount.DatasourceReference(), "password_policies.#", "0"),
 				),
 			},
 			{
@@ -165,6 +216,22 @@ func TestAcc_PasswordPolicies_Filtering(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(passwordPoliciesModelInSchema.DatasourceReference(), "password_policies.#", "2"),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_PasswordPolicies_emptyOn(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, datasourcemodel.PasswordPolicies("test").WithEmptyOn()),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
 			},
 		},
 	})

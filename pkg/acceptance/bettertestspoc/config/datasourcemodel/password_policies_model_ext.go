@@ -38,3 +38,27 @@ func (p *PasswordPoliciesModel) WithInSchema(schemaId sdk.DatabaseObjectIdentifi
 		}),
 	)
 }
+
+func (p *PasswordPoliciesModel) WithEmptyOn() *PasswordPoliciesModel {
+	return p.WithOnValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+		}),
+	)
+}
+
+func (p *PasswordPoliciesModel) WithOnUser(userId sdk.AccountObjectIdentifier) *PasswordPoliciesModel {
+	return p.WithOnValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"user": tfconfig.StringVariable(userId.Name()),
+		}),
+	)
+}
+
+func (p *PasswordPoliciesModel) WithOnAccount() *PasswordPoliciesModel {
+	return p.WithOnValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}

@@ -7,6 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+!> **Warning** When using `on.account` or `on.user` filtering option without having any user-defined authentication policy, the data source skips the output of the Snowflake's BUILT-IN authentication policy.
+
 # snowflake_password_policies (Data Source)
 
 Data source used to get details of filtered password policies. Filtering is aligned with the current possibilities for [SHOW PASSWORD POLICIES](https://docs.snowflake.com/en/sql-reference/sql/show-password-policies) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `password_policies`.
@@ -40,6 +42,62 @@ output "like_prefix_output" {
   value = data.snowflake_password_policies.like_prefix.password_policies
 }
 
+# Filtering (starts_with)
+data "snowflake_password_policies" "starts_with" {
+  starts_with = "prefix-"
+}
+
+output "starts_with_output" {
+  value = data.snowflake_password_policies.starts_with.password_policies
+}
+
+# Filtering (in)
+data "snowflake_password_policies" "in_account" {
+  in {
+    account = true
+  }
+}
+
+data "snowflake_password_policies" "in_database" {
+  in {
+    database = "<database_name>"
+  }
+}
+
+data "snowflake_password_policies" "in_schema" {
+  in {
+    schema = "\"<database_name>\".\"<schema_name>\""
+  }
+}
+
+output "in_filtered" {
+  value = {
+    "account" : data.snowflake_password_policies.in_account.password_policies,
+    "database" : data.snowflake_password_policies.in_database.password_policies,
+    "schema" : data.snowflake_password_policies.in_schema.password_policies,
+  }
+}
+
+# Filtering (on)
+data "snowflake_password_policies" "on_account" {
+  on {
+    account = true
+  }
+}
+
+data "snowflake_password_policies" "on_user" {
+  on {
+    user = "<user_name>"
+  }
+}
+
+output "on_filtered" {
+  value = {
+    "account" : data.snowflake_password_policies.on_account.password_policies,
+    "user" : data.snowflake_password_policies.on_user.password_policies,
+  }
+}
+
 # Filtering (limit)
 data "snowflake_password_policies" "limit" {
   limit {
@@ -50,17 +108,6 @@ data "snowflake_password_policies" "limit" {
 
 output "limit_output" {
   value = data.snowflake_password_policies.limit.password_policies
-}
-
-# Filtering (in)
-data "snowflake_password_policies" "in" {
-  in {
-    database = "database"
-  }
-}
-
-output "in_output" {
-  value = data.snowflake_password_policies.in.password_policies
 }
 
 # Without additional data (to limit the number of calls make for every found password policy)
@@ -107,6 +154,8 @@ check "password_policy_check" {
 - `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
 - `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
+- `on` (Block List, Max: 1) Lists the policies that are effective on the specified object. (see [below for nested schema](#nestedblock--on))
+- `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
 - `with_describe` (Boolean) (Default: `true`) Runs DESC PASSWORD POLICY for each password policy returned by SHOW PASSWORD POLICIES. The output of describe is saved to the describe_output field. By default this value is set to true.
 
 ### Read-Only
@@ -120,6 +169,8 @@ check "password_policy_check" {
 Optional:
 
 - `account` (Boolean) Returns records for the entire account.
+- `application` (String) Returns records for the specified application.
+- `application_package` (String) Returns records for the specified application package.
 - `database` (String) Returns records for the current database in use or for a specified database.
 - `schema` (String) Returns records for the current schema in use or a specified schema. Use fully qualified name.
 
@@ -134,6 +185,15 @@ Required:
 Optional:
 
 - `from` (String) Specifies a **case-sensitive** pattern that is used to match object name. After the first match, the limit on the number of rows will be applied.
+
+
+<a id="nestedblock--on"></a>
+### Nested Schema for `on`
+
+Optional:
+
+- `account` (Boolean) Returns records for the entire account.
+- `user` (String) Returns records for the specified user.
 
 
 <a id="nestedatt--password_policies"></a>

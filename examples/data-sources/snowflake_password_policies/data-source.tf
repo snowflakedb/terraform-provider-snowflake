@@ -24,6 +24,62 @@ output "like_prefix_output" {
   value = data.snowflake_password_policies.like_prefix.password_policies
 }
 
+# Filtering (starts_with)
+data "snowflake_password_policies" "starts_with" {
+  starts_with = "prefix-"
+}
+
+output "starts_with_output" {
+  value = data.snowflake_password_policies.starts_with.password_policies
+}
+
+# Filtering (in)
+data "snowflake_password_policies" "in_account" {
+  in {
+    account = true
+  }
+}
+
+data "snowflake_password_policies" "in_database" {
+  in {
+    database = "<database_name>"
+  }
+}
+
+data "snowflake_password_policies" "in_schema" {
+  in {
+    schema = "\"<database_name>\".\"<schema_name>\""
+  }
+}
+
+output "in_filtered" {
+  value = {
+    "account" : data.snowflake_password_policies.in_account.password_policies,
+    "database" : data.snowflake_password_policies.in_database.password_policies,
+    "schema" : data.snowflake_password_policies.in_schema.password_policies,
+  }
+}
+
+# Filtering (on)
+data "snowflake_password_policies" "on_account" {
+  on {
+    account = true
+  }
+}
+
+data "snowflake_password_policies" "on_user" {
+  on {
+    user = "<user_name>"
+  }
+}
+
+output "on_filtered" {
+  value = {
+    "account" : data.snowflake_password_policies.on_account.password_policies,
+    "user" : data.snowflake_password_policies.on_user.password_policies,
+  }
+}
+
 # Filtering (limit)
 data "snowflake_password_policies" "limit" {
   limit {
@@ -34,17 +90,6 @@ data "snowflake_password_policies" "limit" {
 
 output "limit_output" {
   value = data.snowflake_password_policies.limit.password_policies
-}
-
-# Filtering (in)
-data "snowflake_password_policies" "in" {
-  in {
-    database = "database"
-  }
-}
-
-output "in_output" {
-  value = data.snowflake_password_policies.in.password_policies
 }
 
 # Without additional data (to limit the number of calls make for every found password policy)

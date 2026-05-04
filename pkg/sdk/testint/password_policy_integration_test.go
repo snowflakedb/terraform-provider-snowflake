@@ -267,28 +267,28 @@ func TestInt_PasswordPolicies(t *testing.T) {
 		t.Run("like", func(t *testing.T) {
 			passwordPolicies, err := client.PasswordPolicies.Show(ctx, sdk.NewShowPasswordPolicyRequest().
 				WithLike(sdk.Like{Pattern: sdk.String("test_password_policy_2_%")}).
-				WithIn(sdk.In{Schema: id1.SchemaId()}))
+				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
 			require.NoError(t, err)
 			assert.Len(t, passwordPolicies, 1)
 		})
 
 		t.Run("in_account", func(t *testing.T) {
 			passwordPolicies, err := client.PasswordPolicies.Show(ctx, sdk.NewShowPasswordPolicyRequest().
-				WithIn(sdk.In{Account: sdk.Bool(true)}))
+				WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
 			require.NoError(t, err)
 			assert.GreaterOrEqual(t, len(passwordPolicies), 4)
 		})
 
 		t.Run("in_database", func(t *testing.T) {
 			passwordPolicies, err := client.PasswordPolicies.Show(ctx, sdk.NewShowPasswordPolicyRequest().
-				WithIn(sdk.In{Database: id1.DatabaseId()}))
+				WithIn(sdk.ExtendedIn{In: sdk.In{Database: id1.DatabaseId()}}))
 			require.NoError(t, err)
 			assert.Len(t, passwordPolicies, 3)
 		})
 
 		t.Run("in_schema", func(t *testing.T) {
 			passwordPolicies, err := client.PasswordPolicies.Show(ctx, sdk.NewShowPasswordPolicyRequest().
-				WithIn(sdk.In{Schema: id1.SchemaId()}))
+				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
 			require.NoError(t, err)
 			assert.Len(t, passwordPolicies, 3)
 		})
@@ -296,7 +296,7 @@ func TestInt_PasswordPolicies(t *testing.T) {
 		t.Run("limit", func(t *testing.T) {
 			passwordPolicies, err := client.PasswordPolicies.Show(ctx, sdk.NewShowPasswordPolicyRequest().
 				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}).
-				WithIn(sdk.In{Schema: id1.SchemaId()}))
+				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
 			require.NoError(t, err)
 			assert.Len(t, passwordPolicies, 1)
 		})
