@@ -167,10 +167,10 @@ func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
 		details.DefaultVersionName = &r.DefaultVersionName.String
 	}
 	if r.Versions.Valid {
-		details.DefaultVersionName = &r.Versions.String
+		details.Versions = &r.Versions.String
 	}
 	if r.Aliases.Valid {
-		details.DefaultVersionName = &r.Aliases.String
+		details.Aliases = &r.Aliases.String
 	}
 	return details, nil
 }
