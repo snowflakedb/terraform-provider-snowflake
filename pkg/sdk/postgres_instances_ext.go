@@ -135,6 +135,6 @@ func (r postgresInstancesRow) convert() (*PostgresInstance, error) {
 func (r postgresInstanceDetailsRow) convert() (*PostgresInstanceProperty, error) {
 	return &PostgresInstanceProperty{
 		Property: r.Property,
-		Value:    r.Value,
+		Value:    r.Value.String,
 	}, nil
 }
