@@ -9,6 +9,7 @@ import (
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceState]{"PostgresInstanceState", AllPostgresInstanceStates, ToPostgresInstanceState})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceAuthenticationAuthority]{"PostgresInstanceAuthenticationAuthority", AllPostgresInstanceAuthenticationAuthorities, ToPostgresInstanceAuthenticationAuthority})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceResetAccessRole]{"PostgresInstanceResetAccessRole", AllPostgresInstanceResetAccessRoles, ToPostgresInstanceResetAccessRole})
 }
 
 func TestPostgresInstances_Create(t *testing.T) {
@@ -257,6 +258,41 @@ func TestPostgresInstances_Alter(t *testing.T) {
 			id.FullyQualifiedName(), comment)
 	})
 
+	t.Run("set with apply immediately", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &PostgresInstanceSet{
+			ComputeFamily: Pointer("STANDARD_L"),
+			Apply: &PostgresInstanceApply{
+				Immediately: Pointer(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`ALTER POSTGRES INSTANCE %s SET COMPUTE_FAMILY = 'STANDARD_L' APPLY IMMEDIATELY`,
+			id.FullyQualifiedName())
+	})
+
+	t.Run("set with apply on timestamp", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &PostgresInstanceSet{
+			PostgresVersion: Pointer(18),
+			Apply: &PostgresInstanceApply{
+				On: Pointer("2026-03-01 12:00:00"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`ALTER POSTGRES INSTANCE %s SET POSTGRES_VERSION = 18 APPLY ON '2026-03-01 12:00:00'`,
+			id.FullyQualifiedName())
+	})
+
+	t.Run("validation: exactly one of Apply.Immediately or Apply.On should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &PostgresInstanceSet{
+			ComputeFamily: Pointer("STANDARD_L"),
+			Apply:         &PostgresInstanceApply{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPostgresInstanceOptions.Set.Apply", "Immediately", "On"))
+	})
+
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &PostgresInstanceUnset{
@@ -279,12 +315,20 @@ func TestPostgresInstances_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE %s RESUME`, id.FullyQualifiedName())
 	})
 
-	t.Run("reset access", func(t *testing.T) {
+	t.Run("reset access for snowflake_admin", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ResetAccess = &PostgresInstanceResetAccess{
-			For: "snowflake_admin",
+			For: PostgresInstanceResetAccessRoleSnowflakeAdmin,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE %s RESET ACCESS FOR 'snowflake_admin'`, id.FullyQualifiedName())
+	})
+
+	t.Run("reset access for application", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ResetAccess = &PostgresInstanceResetAccess{
+			For: PostgresInstanceResetAccessRoleApplication,
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE %s RESET ACCESS FOR 'application'`, id.FullyQualifiedName())
 	})
 
 	t.Run("if exists", func(t *testing.T) {

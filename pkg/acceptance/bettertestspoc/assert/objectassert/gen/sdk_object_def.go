@@ -267,6 +267,10 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.HybridTable{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.PostgresInstance{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

@@ -64,6 +64,11 @@ func (opts *AlterPostgresInstanceOptions) validate() error {
 		if !anyValueSet(opts.Set.NetworkPolicy, opts.Set.AuthenticationAuthority, opts.Set.Comment, opts.Set.HighAvailability, opts.Set.ComputeFamily, opts.Set.StorageSizeGb, opts.Set.StorageIntegration, opts.Set.PostgresVersion, opts.Set.MaintenanceWindowStart, opts.Set.PostgresSettings) {
 			errs = append(errs, errAtLeastOneOf("AlterPostgresInstanceOptions.Set", "NetworkPolicy", "AuthenticationAuthority", "Comment", "HighAvailability", "ComputeFamily", "StorageSizeGb", "StorageIntegration", "PostgresVersion", "MaintenanceWindowStart", "PostgresSettings"))
 		}
+		if valueSet(opts.Set.Apply) {
+			if !exactlyOneValueSet(opts.Set.Apply.Immediately, opts.Set.Apply.On) {
+				errs = append(errs, errExactlyOneOf("AlterPostgresInstanceOptions.Set.Apply", "Immediately", "On"))
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Comment, opts.Unset.PostgresSettings, opts.Unset.NetworkPolicy, opts.Unset.MaintenanceWindowStart, opts.Unset.StorageIntegration) {

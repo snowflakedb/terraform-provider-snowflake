@@ -86,3 +86,27 @@ func ToPostgresInstanceAuthenticationAuthority(s string) (PostgresInstanceAuthen
 		return "", fmt.Errorf("invalid postgres instance authentication authority: %s", s)
 	}
 }
+
+type PostgresInstanceResetAccessRole string
+
+const (
+	PostgresInstanceResetAccessRoleSnowflakeAdmin PostgresInstanceResetAccessRole = "snowflake_admin"
+	PostgresInstanceResetAccessRoleApplication    PostgresInstanceResetAccessRole = "application"
+)
+
+var AllPostgresInstanceResetAccessRoles = []PostgresInstanceResetAccessRole{
+	PostgresInstanceResetAccessRoleSnowflakeAdmin,
+	PostgresInstanceResetAccessRoleApplication,
+}
+
+func ToPostgresInstanceResetAccessRole(s string) (PostgresInstanceResetAccessRole, error) {
+	s = strings.ToLower(s)
+	switch s {
+	case string(PostgresInstanceResetAccessRoleSnowflakeAdmin):
+		return PostgresInstanceResetAccessRoleSnowflakeAdmin, nil
+	case string(PostgresInstanceResetAccessRoleApplication):
+		return PostgresInstanceResetAccessRoleApplication, nil
+	default:
+		return "", fmt.Errorf("invalid postgres instance reset access role: %s", s)
+	}
+}

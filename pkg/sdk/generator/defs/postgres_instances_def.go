@@ -16,6 +16,10 @@ var (
 		"PostgresInstanceAuthenticationAuthority", "PostgresInstanceAuthenticationAuthorities",
 		"POSTGRES", "POSTGRES_OR_SNOWFLAKE",
 	)
+	PostgresInstanceResetAccessRoleEnumDef = g.NewEnum(
+		"PostgresInstanceResetAccessRole", "PostgresInstanceResetAccessRoles",
+		"snowflake_admin", "application",
+	)
 )
 
 var postgresInstancesDef = g.NewInterface(
@@ -101,6 +105,14 @@ var postgresInstancesDef = g.NewInterface(
 				OptionalNumberAssignment("POSTGRES_VERSION", g.ParameterOptions()).
 				OptionalNumberAssignment("MAINTENANCE_WINDOW_START", g.ParameterOptions()).
 				OptionalTextAssignment("POSTGRES_SETTINGS", g.ParameterOptions().SingleQuotes()).
+				OptionalQueryStructField(
+					"Apply",
+					g.NewQueryStruct("PostgresInstanceApply").
+						OptionalSQL("IMMEDIATELY").
+						OptionalTextAssignment("ON", g.ParameterOptions().SingleQuotes()).
+						WithValidation(g.ExactlyOneValueSet, "Immediately", "On"),
+					g.KeywordOptions().SQL("APPLY"),
+				).
 				WithValidation(g.AtLeastOneValueSet, "NetworkPolicy", "AuthenticationAuthority", "Comment", "HighAvailability", "ComputeFamily", "StorageSizeGb", "StorageIntegration", "PostgresVersion", "MaintenanceWindowStart", "PostgresSettings"),
 			g.KeywordOptions().SQL("SET"),
 		).
@@ -181,8 +193,6 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalLike().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).ShowByIdOperationWithFiltering(
-	g.ShowByIDLikeFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-postgres-instance",
@@ -200,4 +210,5 @@ var postgresInstancesDef = g.NewInterface(
 ).WithEnums(
 	PostgresInstanceStateEnumDef,
 	PostgresInstanceAuthenticationAuthorityEnumDef,
+	PostgresInstanceResetAccessRoleEnumDef,
 )

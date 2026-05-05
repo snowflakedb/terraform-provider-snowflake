@@ -90,6 +90,12 @@ type PostgresInstanceSet struct {
 	PostgresVersion         *int                                     `ddl:"parameter" sql:"POSTGRES_VERSION"`
 	MaintenanceWindowStart  *int                                     `ddl:"parameter" sql:"MAINTENANCE_WINDOW_START"`
 	PostgresSettings        *string                                  `ddl:"parameter,single_quotes" sql:"POSTGRES_SETTINGS"`
+	Apply                   *PostgresInstanceApply                   `ddl:"keyword" sql:"APPLY"`
+}
+
+type PostgresInstanceApply struct {
+	Immediately *bool   `ddl:"keyword" sql:"IMMEDIATELY"`
+	On          *string `ddl:"parameter,single_quotes,no_equals" sql:"ON"`
 }
 
 type PostgresInstanceUnset struct {
@@ -101,7 +107,7 @@ type PostgresInstanceUnset struct {
 }
 
 type PostgresInstanceResetAccess struct {
-	For string `ddl:"parameter,single_quotes,no_equals" sql:"FOR"`
+	For PostgresInstanceResetAccessRole `ddl:"parameter,single_quotes,no_equals" sql:"FOR"`
 }
 
 // DropPostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-postgres-instance.
