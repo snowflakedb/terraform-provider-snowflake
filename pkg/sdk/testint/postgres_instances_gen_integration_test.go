@@ -25,7 +25,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 	// Doc example: CREATE POSTGRES INSTANCE my_postgres COMPUTE_FAMILY = 'STANDARD_S' STORAGE_SIZE_GB = 50 AUTHENTICATION_AUTHORITY = POSTGRES;
 	t.Run("create - basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres)
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres)
 
 		err := client.PostgresInstances.Create(ctx, request)
 		require.NoError(t, err)
@@ -36,7 +36,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
 			HasName(id.Name()).
-			HasComputeFamily("STANDARD_1").
+			HasComputeFamily("STANDARD_M").
 			HasStorageSize(10).
 			HasAuthenticationAuthority("POSTGRES").
 			HasIsHa(false).
@@ -60,7 +60,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		comment := random.Comment()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
 			WithPostgresVersion(17).
 			WithHighAvailability(true).
 			WithNetworkPolicy(networkPolicy.Name).
@@ -76,7 +76,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
 			HasName(id.Name()).
-			HasComputeFamily("STANDARD_1").
+			HasComputeFamily("STANDARD_M").
 			HasStorageSize(10).
 			HasAuthenticationAuthority("POSTGRES").
 			HasPostgresVersion("17").
@@ -96,7 +96,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		t.Cleanup(tag2Cleanup)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
 			WithTag([]sdk.TagAssociation{
 				{
 					Name:  tag1.ID(),
@@ -119,7 +119,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 	// Doc example: CREATE POSTGRES INSTANCE <name> COMPUTE_FAMILY = 'STANDARD_S' ... AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE
 	t.Run("create - with authentication_authority postgres_or_snowflake", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake)
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake)
 
 		err := client.PostgresInstances.Create(ctx, request)
 		require.NoError(t, err)
@@ -139,7 +139,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		t.Cleanup(storageIntegrationCleanup)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
+		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
 			WithStorageIntegration(storageIntegration.Name)
 
 		err := client.PostgresInstances.Create(ctx, request)
@@ -252,7 +252,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		comment := random.Comment()
 		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewForkPostgresInstanceRequest(forkId, sourceInstance.ID()).
-			WithComputeFamily("STANDARD_1").
+			WithComputeFamily("STANDARD_M").
 			WithStorageSizeGb(20).
 			WithPostgresSettings(`{"postgres:work_mem" = "128MB"}`).
 			WithComment(comment).
@@ -569,7 +569,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
 			HasType("PRIMARY").
-			HasComputeFamily("STANDARD_1").
+			HasComputeFamily("STANDARD_M").
 			HasStorageSize(10).
 			HasAuthenticationAuthority("POSTGRES").
 			HasIsHa(false).
@@ -657,7 +657,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assert.NotEmpty(t, propertyMap["updated_on"])
 		assert.Equal(t, "PRIMARY", propertyMap["type"])
 		assert.NotEmpty(t, propertyMap["host"])
-		assert.Equal(t, "STANDARD_1", propertyMap["compute_family"])
+		assert.Equal(t, "STANDARD_M", propertyMap["compute_family"])
 		assert.Equal(t, "10", propertyMap["storage_size_gb"])
 		assert.NotEmpty(t, propertyMap["postgres_version"])
 		assert.Equal(t, "false", propertyMap["high_availability"])
