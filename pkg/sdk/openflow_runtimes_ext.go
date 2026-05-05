@@ -54,7 +54,7 @@ const (
 	OpenflowRuntimeStatusInactive                   OpenflowRuntimeStatus = "INACTIVE"
 )
 
-var allOpenflowRuntimeStatuses = []OpenflowRuntimeStatus{
+var AllOpenflowRuntimeStatuses = []OpenflowRuntimeStatus{
 	OpenflowRuntimeStatusCreating,
 	OpenflowRuntimeStatusCreateFailed,
 	OpenflowRuntimeStatusUpdating,
@@ -80,7 +80,7 @@ var allOpenflowRuntimeStatuses = []OpenflowRuntimeStatus{
 
 func ToOpenflowRuntimeStatus(s string) (OpenflowRuntimeStatus, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(allOpenflowRuntimeStatuses, OpenflowRuntimeStatus(s)) {
+	if !slices.Contains(AllOpenflowRuntimeStatuses, OpenflowRuntimeStatus(s)) {
 		return "", fmt.Errorf("invalid openflow runtime status: %s", s)
 	}
 	return OpenflowRuntimeStatus(s), nil

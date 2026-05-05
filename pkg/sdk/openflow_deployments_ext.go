@@ -64,7 +64,7 @@ const (
 	OpenflowDeploymentStatusDeleteFailed         OpenflowDeploymentStatus = "DELETE_FAILED"
 )
 
-var allOpenflowDeploymentStatuses = []OpenflowDeploymentStatus{
+var AllOpenflowDeploymentStatuses = []OpenflowDeploymentStatus{
 	OpenflowDeploymentStatusCreating,
 	OpenflowDeploymentStatusActive,
 	OpenflowDeploymentStatusInactive,
@@ -82,7 +82,7 @@ var allOpenflowDeploymentStatuses = []OpenflowDeploymentStatus{
 
 func ToOpenflowDeploymentStatus(s string) (OpenflowDeploymentStatus, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(allOpenflowDeploymentStatuses, OpenflowDeploymentStatus(s)) {
+	if !slices.Contains(AllOpenflowDeploymentStatuses, OpenflowDeploymentStatus(s)) {
 		return "", fmt.Errorf("invalid openflow deployment status: %s", s)
 	}
 	return OpenflowDeploymentStatus(s), nil

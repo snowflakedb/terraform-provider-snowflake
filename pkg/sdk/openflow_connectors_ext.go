@@ -24,7 +24,7 @@ const (
 	OpenflowConnectorStatusDeleted      OpenflowConnectorStatus = "DELETED"
 )
 
-var allOpenflowConnectorStatuses = []OpenflowConnectorStatus{
+var AllOpenflowConnectorStatuses = []OpenflowConnectorStatus{
 	OpenflowConnectorStatusCreating,
 	OpenflowConnectorStatusCreateFailed,
 	OpenflowConnectorStatusStarting,
@@ -42,7 +42,7 @@ var allOpenflowConnectorStatuses = []OpenflowConnectorStatus{
 
 func ToOpenflowConnectorStatus(s string) (OpenflowConnectorStatus, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(allOpenflowConnectorStatuses, OpenflowConnectorStatus(s)) {
+	if !slices.Contains(AllOpenflowConnectorStatuses, OpenflowConnectorStatus(s)) {
 		return "", fmt.Errorf("invalid openflow connector status: %s", s)
 	}
 	return OpenflowConnectorStatus(s), nil
