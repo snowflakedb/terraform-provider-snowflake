@@ -58,7 +58,7 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"At",
 			g.NewQueryStruct("PostgresInstanceForkAt").
-				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().NoQuotes().ArrowEquals()).
+				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().SingleQuotes().ArrowEquals()).
 				OptionalTextAssignment("OFFSET", g.ParameterOptions().NoQuotes().ArrowEquals()).
 				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset"),
 			g.KeywordOptions().SQL("AT").MustParentheses(),
@@ -66,7 +66,7 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"Before",
 			g.NewQueryStruct("PostgresInstanceForkBefore").
-				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().NoQuotes().ArrowEquals()).
+				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().SingleQuotes().ArrowEquals()).
 				OptionalTextAssignment("OFFSET", g.ParameterOptions().NoQuotes().ArrowEquals()).
 				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset"),
 			g.KeywordOptions().SQL("BEFORE").MustParentheses(),
@@ -198,7 +198,7 @@ var postgresInstancesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-postgres-instance",
 	g.DbStruct("postgresInstanceDetailsRow").
 		Text("property").
-		Text("value"),
+		OptionalText("value"),
 	g.PlainStruct("PostgresInstanceProperty").
 		Text("Property").
 		Text("Value"),

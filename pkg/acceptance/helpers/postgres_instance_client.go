@@ -2,7 +2,9 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -57,4 +59,22 @@ func (c *PostgresInstanceClient) Show(t *testing.T, id sdk.AccountObjectIdentifi
 	t.Helper()
 	ctx := context.Background()
 	return c.client().ShowByID(ctx, id)
+}
+
+func (c *PostgresInstanceClient) WaitForReady(t *testing.T, id sdk.AccountObjectIdentifier, timeout time.Duration) *sdk.PostgresInstance {
+	t.Helper()
+	ctx := context.Background()
+
+	deadline := time.Now().Add(timeout)
+	for {
+		instance, err := c.client().ShowByID(ctx, id)
+		require.NoError(t, err)
+		if instance.State == sdk.PostgresInstanceStateReady {
+			return instance
+		}
+		if time.Now().After(deadline) {
+			require.Fail(t, fmt.Sprintf("postgres instance %s did not reach READY state within %v (current state: %s)", id.Name(), timeout, instance.State))
+		}
+		time.Sleep(5 * time.Second)
+	}
 }
