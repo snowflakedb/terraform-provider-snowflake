@@ -199,6 +199,11 @@ func (s *ShowOpenflowRuntimeRequest) WithLike(like Like) *ShowOpenflowRuntimeReq
 	return s
 }
 
+func (s *ShowOpenflowRuntimeRequest) WithIn(in In) *ShowOpenflowRuntimeRequest {
+	s.In = &in
+	return s
+}
+
 func NewDescribeOpenflowRuntimeRequest(
 	name SchemaObjectIdentifier,
 ) *DescribeOpenflowRuntimeRequest {

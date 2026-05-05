@@ -87,6 +87,7 @@ type ShowOpenflowRuntimeOptions struct {
 	show             bool  `ddl:"static" sql:"SHOW"`
 	openflowRuntimes bool  `ddl:"static" sql:"OPENFLOW RUNTIMES"`
 	Like             *Like `ddl:"keyword" sql:"LIKE"`
+	In               *In   `ddl:"keyword" sql:"IN"`
 }
 
 type openflowRuntimeRow struct {

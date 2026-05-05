@@ -254,6 +254,13 @@ func TestOpenflowRuntimes_Show(t *testing.T) {
 		opts.Like = &Like{Pattern: String("my-runtime%")}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW OPENFLOW RUNTIMES LIKE 'my-runtime%%'")
 	})
+
+	t.Run("in schema", func(t *testing.T) {
+		schemaId := randomDatabaseObjectIdentifier()
+		opts := defaultOpts()
+		opts.In = &In{Schema: schemaId}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW OPENFLOW RUNTIMES IN SCHEMA %s", schemaId.FullyQualifiedName())
+	})
 }
 
 func TestOpenflowRuntimes_Describe(t *testing.T) {

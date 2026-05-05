@@ -49,6 +49,7 @@ func (v *openflowRuntimes) Show(ctx context.Context, request *ShowOpenflowRuntim
 
 func (v *openflowRuntimes) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowRuntime, error) {
 	request := NewShowOpenflowRuntimeRequest().
+		WithIn(In{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	openflowRuntimes, err := v.Show(ctx, request)
 	if err != nil {
@@ -142,6 +143,7 @@ func (r *DropOpenflowRuntimeRequest) toOpts() *DropOpenflowRuntimeOptions {
 func (r *ShowOpenflowRuntimeRequest) toOpts() *ShowOpenflowRuntimeOptions {
 	opts := &ShowOpenflowRuntimeOptions{
 		Like: r.Like,
+		In:   r.In,
 	}
 	return opts
 }

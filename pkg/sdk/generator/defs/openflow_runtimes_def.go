@@ -118,8 +118,10 @@ var openflowRuntimesDef = g.NewInterface(
 	g.NewQueryStruct("ShowOpenflowRuntimes").
 		Show().
 		SQL("OPENFLOW RUNTIMES").
-		OptionalLike(),
+		OptionalLike().
+		OptionalIn(),
 	g.ShowByIDLikeFiltering,
+	g.ShowByIDInFiltering,
 ).DescribeOperation(
 	g.DescriptionMappingKindSingleValue,
 	"TODO: add link when public docs are available",

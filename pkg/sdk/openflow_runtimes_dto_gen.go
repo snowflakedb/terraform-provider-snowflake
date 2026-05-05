@@ -66,6 +66,7 @@ type DropOpenflowRuntimeRequest struct {
 
 type ShowOpenflowRuntimeRequest struct {
 	Like *Like
+	In   *In
 }
 
 type DescribeOpenflowRuntimeRequest struct {
