@@ -21,7 +21,8 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalTextAssignment("FROM", g.ParameterOptions().SingleQuotes().NoEquals()).
 		OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "FromDefinition", "From"),
 ).AlterOperation(
 	"TODO: add link when public docs are available",
 	g.NewQueryStruct("AlterOpenflowConnector").

@@ -31,6 +31,13 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: FromDefinition and From are conflicting fields", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromDefinition = String("mydef")
+		opts.From = String("@MY_STAGE/path/")
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOpenflowConnectorOptions", "FromDefinition", "From"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OPENFLOW CONNECTOR %s IN RUNTIME %s",
