@@ -28,7 +28,7 @@ func (c *PostgresInstanceClient) Create(t *testing.T) (*sdk.PostgresInstance, fu
 	t.Helper()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	return c.CreateWithRequest(t, sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
+	return c.CreateWithRequest(t, sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
 }
 
 func (c *PostgresInstanceClient) CreateWithRequest(t *testing.T, req *sdk.CreatePostgresInstanceRequest) (*sdk.PostgresInstance, func()) {
