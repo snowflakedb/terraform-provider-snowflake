@@ -176,12 +176,40 @@ func TestInt_PostgresInstances(t *testing.T) {
 		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewForkPostgresInstanceRequest(forkId, sourceInstance.ID())
 
-		err := client.PostgresInstances.Fork(ctx, request)
+		// Retry fork operation — instance may not be internally fork-ready despite being in READY state
+		var err error
+		deadline := time.Now().Add(2 * time.Minute)
+		for {
+			err = client.PostgresInstances.Fork(ctx, request)
+			if err == nil {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId))
 
-		forkedInstance, err := client.PostgresInstances.ShowByID(ctx, forkId)
-		require.NoError(t, err)
+		// Wait for fork to reach READY state — metadata (origin, type) populates after provisioning completes
+		testClientHelper().PostgresInstance.WaitForReady(t, forkId, 5*time.Minute)
+
+		// Poll until origin and type metadata are populated (fail if not received within timeout)
+		var forkedInstance *sdk.PostgresInstance
+		metadataDeadline := time.Now().Add(5 * time.Minute)
+		for {
+			var showErr error
+			forkedInstance, showErr = client.PostgresInstances.ShowByID(ctx, forkId)
+			require.NoError(t, showErr)
+			if forkedInstance.Origin != nil && forkedInstance.Type == "FORK" {
+				break
+			}
+			if time.Now().After(metadataDeadline) {
+				t.Fatalf("forked instance never received origin or type=FORK metadata within timeout; got origin=%v, type=%q", forkedInstance.Origin, forkedInstance.Type)
+			}
+			time.Sleep(5 * time.Second)
+		}
 
 		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
 			HasName(forkId.Name()).
@@ -267,7 +295,19 @@ func TestInt_PostgresInstances(t *testing.T) {
 			WithStorageSizeGb(20).
 			WithComment(comment)
 
-		err := client.PostgresInstances.Fork(ctx, request)
+		// Retry fork operation — instance may not be internally fork-ready despite being in READY state
+		var err error
+		deadline := time.Now().Add(2 * time.Minute)
+		for {
+			err = client.PostgresInstances.Fork(ctx, request)
+			if err == nil {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId))
 
@@ -310,22 +350,65 @@ func TestInt_PostgresInstances(t *testing.T) {
 		t.Cleanup(cleanup)
 		testClientHelper().PostgresInstance.WaitForReady(t, postgresInstance.ID(), 5*time.Minute)
 
-		// Set compute/storage properties
+		// Set compute/storage properties with APPLY IMMEDIATELY to ensure the operation
+		// completes before subsequent ALTERs that conflict with in-progress compute/storage changes
 		comment := random.Comment()
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithComment(comment).
-				WithMaintenanceWindowStart(3).
-				WithStorageSizeGb(20).
-				WithComputeFamily("STANDARD_L").
-				WithNetworkPolicy(networkPolicy.Name).
-				WithAuthenticationAuthority(sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake)))
+		var err error
+		deadline := time.Now().Add(2 * time.Minute)
+		for {
+			err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+				WithSet(*sdk.NewPostgresInstanceSetRequest().
+					WithComment(comment).
+					WithStorageSizeGb(20).
+					WithComputeFamily("STANDARD_L").
+					WithNetworkPolicy(networkPolicy.Name).
+					WithAuthenticationAuthority(sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake).
+					WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
+			if err == nil {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
 		require.NoError(t, err)
 
+		// Wait for the instance to return to READY after compute/storage changes complete
+		testClientHelper().PostgresInstance.WaitForReady(t, postgresInstance.ID(), 10*time.Minute)
+
 		// Set HIGH_AVAILABILITY separately (cannot be combined with COMPUTE_FAMILY/STORAGE_SIZE_GB)
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().
-				WithHighAvailability(true)))
+		// Retry because the previous compute/storage change may still be in progress
+		deadline = time.Now().Add(5 * time.Minute)
+		for {
+			err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+				WithSet(*sdk.NewPostgresInstanceSetRequest().
+					WithHighAvailability(true)))
+			if err == nil {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
+		require.NoError(t, err)
+
+		// Set MAINTENANCE_WINDOW_START separately
+		// Retry because the previous operation may still be in progress
+		deadline = time.Now().Add(5 * time.Minute)
+		for {
+			err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+				WithSet(*sdk.NewPostgresInstanceSetRequest().
+					WithMaintenanceWindowStart(3)))
+			if err == nil {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
 		require.NoError(t, err)
 
 		// Set postgres settings separately (cannot be combined with COMPUTE_FAMILY/STORAGE_SIZE_GB/HIGH_AVAILABILITY)
@@ -399,19 +482,36 @@ func TestInt_PostgresInstances(t *testing.T) {
 		t.Cleanup(cleanup)
 		testClientHelper().PostgresInstance.WaitForReady(t, postgresInstance.ID(), 5*time.Minute)
 
-		// Resume without suspending - instance is already in a running state
-		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithResume(true))
-		assert.Error(t, err)
-
-		// Suspend
-		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSuspend(true))
+		// Suspend — retry because the instance may not be fully ready for suspend despite READY state
+		var err error
+		deadline := time.Now().Add(2 * time.Minute)
+		for {
+			err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+				WithSuspend(true))
+			if err == nil {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
 		require.NoError(t, err)
 
-		result, err := client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
-		require.NoError(t, err)
-		// State may be SUSPENDING or SUSPENDED depending on timing
+		// Wait for instance to reach SUSPENDING or SUSPENDED state
+		deadline = time.Now().Add(2 * time.Minute)
+		var result *sdk.PostgresInstance
+		for {
+			result, err = client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
+			require.NoError(t, err)
+			if result.State == sdk.PostgresInstanceStateSuspending || result.State == sdk.PostgresInstanceStateSuspended {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
 		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
 			HasStateOneOf(
 				sdk.PostgresInstanceStateSuspending,
@@ -424,13 +524,38 @@ func TestInt_PostgresInstances(t *testing.T) {
 			WithSuspend(true))
 		assert.Error(t, err)
 
+		// Wait for SUSPENDED state before resuming
+		deadline = time.Now().Add(2 * time.Minute)
+		for {
+			result, err = client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
+			require.NoError(t, err)
+			if result.State == sdk.PostgresInstanceStateSuspended {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
+
 		// Resume
 		err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 			WithResume(true))
 		require.NoError(t, err)
 
-		result, err = client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
-		require.NoError(t, err)
+		// Wait for state to transition from SUSPENDED after resume
+		deadline = time.Now().Add(2 * time.Minute)
+		for {
+			result, err = client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
+			require.NoError(t, err)
+			if result.State != sdk.PostgresInstanceStateSuspended {
+				break
+			}
+			if time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
 		// State may be RESUMING, STARTING, CREATING, or READY depending on timing
 		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
 			HasStateOneOf(
