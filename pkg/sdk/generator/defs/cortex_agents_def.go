@@ -66,8 +66,8 @@ var cortexAgentsDef = g.NewInterface(
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
-			Text("comment").
-			Text("profile"),
+			OptionalText("comment").
+			OptionalText("profile"),
 		g.NewQueryStruct("ShowCortexAgents").
 			Show().
 			SQL("AGENTS").
@@ -86,13 +86,13 @@ var cortexAgentsDef = g.NewInterface(
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
-			Text("comment").
-			Text("profile").
+			OptionalText("comment").
+			OptionalText("profile").
 			Text("agent_spec").
 			Time("created_on").
-			Text("default_version_name").
-			Text("versions").
-			Text("aliases"),
+			OptionalText("default_version_name").
+			OptionalText("versions").
+			OptionalText("aliases"),
 		g.NewQueryStruct("DescribeCortexAgent").
 			Describe().
 			SQL("AGENT").

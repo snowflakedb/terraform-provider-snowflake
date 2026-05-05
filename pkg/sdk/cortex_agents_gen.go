@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -68,13 +69,13 @@ type ShowCortexAgentOptions struct {
 }
 
 type showCortexAgentDBRow struct {
-	CreatedOn    time.Time `db:"created_on"`
-	Name         string    `db:"name"`
-	DatabaseName string    `db:"database_name"`
-	SchemaName   string    `db:"schema_name"`
-	Owner        string    `db:"owner"`
-	Comment      string    `db:"comment"`
-	Profile      string    `db:"profile"`
+	CreatedOn    time.Time      `db:"created_on"`
+	Name         string         `db:"name"`
+	DatabaseName string         `db:"database_name"`
+	SchemaName   string         `db:"schema_name"`
+	Owner        string         `db:"owner"`
+	Comment      sql.NullString `db:"comment"`
+	Profile      sql.NullString `db:"profile"`
 }
 
 type CortexAgent struct {
@@ -83,8 +84,8 @@ type CortexAgent struct {
 	DatabaseName string
 	SchemaName   string
 	Owner        string
-	Comment      string
-	Profile      string
+	Comment      *string
+	Profile      *string
 }
 
 func (v *CortexAgent) ID() SchemaObjectIdentifier {
@@ -103,17 +104,17 @@ type DescribeCortexAgentOptions struct {
 }
 
 type cortexAgentDetailsRow struct {
-	Name               string    `db:"name"`
-	DatabaseName       string    `db:"database_name"`
-	SchemaName         string    `db:"schema_name"`
-	Owner              string    `db:"owner"`
-	Comment            string    `db:"comment"`
-	Profile            string    `db:"profile"`
-	AgentSpec          string    `db:"agent_spec"`
-	CreatedOn          time.Time `db:"created_on"`
-	DefaultVersionName string    `db:"default_version_name"`
-	Versions           string    `db:"versions"`
-	Aliases            string    `db:"aliases"`
+	Name               string         `db:"name"`
+	DatabaseName       string         `db:"database_name"`
+	SchemaName         string         `db:"schema_name"`
+	Owner              string         `db:"owner"`
+	Comment            sql.NullString `db:"comment"`
+	Profile            sql.NullString `db:"profile"`
+	AgentSpec          string         `db:"agent_spec"`
+	CreatedOn          time.Time      `db:"created_on"`
+	DefaultVersionName sql.NullString `db:"default_version_name"`
+	Versions           sql.NullString `db:"versions"`
+	Aliases            sql.NullString `db:"aliases"`
 }
 
 type CortexAgentDetails struct {
@@ -121,11 +122,11 @@ type CortexAgentDetails struct {
 	DatabaseName       string
 	SchemaName         string
 	Owner              string
-	Comment            string
-	Profile            string
+	Comment            *string
+	Profile            *string
 	AgentSpec          string
 	CreatedOn          time.Time
-	DefaultVersionName string
-	Versions           string
-	Aliases            string
+	DefaultVersionName *string
+	Versions           *string
+	Aliases            *string
 }

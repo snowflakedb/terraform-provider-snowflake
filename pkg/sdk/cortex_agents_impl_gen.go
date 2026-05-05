@@ -124,15 +124,20 @@ func (r *ShowCortexAgentRequest) toOpts() *ShowCortexAgentOptions {
 
 func (r showCortexAgentDBRow) convert() (*CortexAgent, error) {
 	// adjusted manually
-	return &CortexAgent{
+	cortexAgent := &CortexAgent{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		Comment:      r.Comment,
-		Profile:      r.Profile,
-	}, nil
+	}
+	if r.Comment.Valid {
+		cortexAgent.Comment = &r.Comment.String
+	}
+	if r.Profile.Valid {
+		cortexAgent.Profile = &r.Profile.String
+	}
+	return cortexAgent, nil
 }
 
 func (r *DescribeCortexAgentRequest) toOpts() *DescribeCortexAgentOptions {
@@ -144,17 +149,28 @@ func (r *DescribeCortexAgentRequest) toOpts() *DescribeCortexAgentOptions {
 
 func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
 	// adjusted manually
-	return &CortexAgentDetails{
-		Name:               r.Name,
-		DatabaseName:       r.DatabaseName,
-		SchemaName:         r.SchemaName,
-		Owner:              r.Owner,
-		Comment:            r.Comment,
-		Profile:            r.Profile,
-		AgentSpec:          r.AgentSpec,
-		CreatedOn:          r.CreatedOn,
-		DefaultVersionName: r.DefaultVersionName,
-		Versions:           r.Versions,
-		Aliases:            r.Aliases,
-	}, nil
+	details := &CortexAgentDetails{
+		Name:         r.Name,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+		Owner:        r.Owner,
+		AgentSpec:    r.AgentSpec,
+		CreatedOn:    r.CreatedOn,
+	}
+	if r.Comment.Valid {
+		details.Comment = &r.Comment.String
+	}
+	if r.Profile.Valid {
+		details.Profile = &r.Profile.String
+	}
+	if r.DefaultVersionName.Valid {
+		details.DefaultVersionName = &r.DefaultVersionName.String
+	}
+	if r.Versions.Valid {
+		details.DefaultVersionName = &r.Versions.String
+	}
+	if r.Aliases.Valid {
+		details.DefaultVersionName = &r.Aliases.String
+	}
+	return details, nil
 }
