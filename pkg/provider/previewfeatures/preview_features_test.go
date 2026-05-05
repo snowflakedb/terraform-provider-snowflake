@@ -81,6 +81,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_notebooks_datasource", want: NotebooksDatasource},
 		{input: "snowflake_notification_integration_resource", want: NotificationIntegrationResource},
 		{input: "snowflake_object_parameter_resource", want: ObjectParameterResource},
+		{input: "snowflake_password_policies_datasource", want: PasswordPoliciesDatasource},
 		{input: "snowflake_password_policy_resource", want: PasswordPolicyResource},
 		{input: "snowflake_pipe_resource", want: PipeResource},
 		{input: "snowflake_pipes_datasource", want: PipesDatasource},

@@ -91,6 +91,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.NetworkPolicies().Schema,
 	},
 	{
+		name:   "PasswordPolicies",
+		schema: datasources.PasswordPolicies().Schema,
+	},
+	{
 		name:   "NetworkRules",
 		schema: datasources.NetworkRules().Schema,
 	},

@@ -72,9 +72,11 @@ type DropPasswordPolicyRequest struct {
 }
 
 type ShowPasswordPolicyRequest struct {
-	Like  *Like
-	In    *In
-	Limit *LimitFrom
+	Like       *Like
+	In         *ExtendedIn
+	On         *On
+	StartsWith *string
+	Limit      *LimitFrom
 }
 
 type DescribePasswordPolicyRequest struct {
