@@ -77,15 +77,15 @@ var openflowRuntimesDef = g.NewInterface(
 		Name().
 		OptionalSQL("CASCADE").
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"TODO: add link when public docs are available",
-	g.DbStruct("openflowRuntimeRow").
+	g.StructPair("openflowRuntimeRow", "OpenflowRuntime").
 		Text("name").
-		Text("status").
+		PlainField("status", "OpenflowRuntimeStatus").
 		Text("deployment").
 		Number("min_nodes").
 		Number("max_nodes").
-		Text("node_type").
+		PlainField("node_type", "OpenflowRuntimeNodeType").
 		OptionalText("display_name").
 		OptionalText("external_access_integrations").
 		Bool("initially_suspended").
@@ -97,24 +97,6 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalText("server_url").
 		Time("created_on").
 		Time("updated_on"),
-	g.PlainStruct("OpenflowRuntime").
-		Text("Name").
-		Field("Status", "OpenflowRuntimeStatus").
-		Text("Deployment").
-		Number("MinNodes").
-		Number("MaxNodes").
-		Field("NodeType", "OpenflowRuntimeNodeType").
-		OptionalText("DisplayName").
-		OptionalText("ExternalAccessIntegrations").
-		Bool("InitiallySuspended").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("ExecuteAsRole").
-		Text("Owner").
-		OptionalText("Comment").
-		OptionalText("ServerUrl").
-		Time("CreatedOn").
-		Time("UpdatedOn"),
 	g.NewQueryStruct("ShowOpenflowRuntimes").
 		Show().
 		SQL("OPENFLOW RUNTIMES").
@@ -122,16 +104,16 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalIn(),
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"TODO: add link when public docs are available",
-	g.DbStruct("openflowRuntimeDetailsRow").
+	g.StructPair("openflowRuntimeDetailsRow", "OpenflowRuntimeDetails").
 		Text("name").
-		Text("status").
+		PlainField("status", "OpenflowRuntimeStatus").
 		Text("deployment").
 		Number("min_nodes").
 		Number("max_nodes").
-		Text("node_type").
+		PlainField("node_type", "OpenflowRuntimeNodeType").
 		OptionalText("display_name").
 		OptionalText("external_access_integrations").
 		Bool("initially_suspended").
@@ -145,26 +127,6 @@ var openflowRuntimesDef = g.NewInterface(
 		Time("updated_on").
 		OptionalText("error_code").
 		OptionalText("status_message"),
-	g.PlainStruct("OpenflowRuntimeDetails").
-		Text("Name").
-		Field("Status", "OpenflowRuntimeStatus").
-		Text("Deployment").
-		Number("MinNodes").
-		Number("MaxNodes").
-		Field("NodeType", "OpenflowRuntimeNodeType").
-		OptionalText("DisplayName").
-		OptionalText("ExternalAccessIntegrations").
-		Bool("InitiallySuspended").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("ExecuteAsRole").
-		Text("Owner").
-		OptionalText("Comment").
-		OptionalText("ServerUrl").
-		Time("CreatedOn").
-		Time("UpdatedOn").
-		OptionalText("ErrorCode").
-		OptionalText("StatusMessage"),
 	g.NewQueryStruct("DescribeOpenflowRuntime").
 		Describe().
 		SQL("OPENFLOW RUNTIME").

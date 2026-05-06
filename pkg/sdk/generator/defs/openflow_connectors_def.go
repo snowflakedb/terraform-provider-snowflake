@@ -60,11 +60,11 @@ var openflowConnectorsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"TODO: add link when public docs are available",
-	g.DbStruct("openflowConnectorRow").
+	g.StructPair("openflowConnectorRow", "OpenflowConnector").
 		Text("name").
-		Text("status").
+		PlainField("status", "OpenflowConnectorStatus").
 		Text("runtime").
 		OptionalText("connector_definition").
 		OptionalText("display_name").
@@ -80,24 +80,6 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalText("comment").
 		Time("created_on").
 		Time("updated_on"),
-	g.PlainStruct("OpenflowConnector").
-		Text("Name").
-		Field("Status", "OpenflowConnectorStatus").
-		Text("Runtime").
-		OptionalText("ConnectorDefinition").
-		OptionalText("DisplayName").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("Owner").
-		OptionalText("DefaultVersion").
-		OptionalText("DefaultVersionName").
-		OptionalText("DefaultVersionAlias").
-		OptionalText("DefaultVersionLocationUri").
-		OptionalText("DefaultVersionSourceLocationUri").
-		OptionalText("LiveVersionLocationUri").
-		OptionalText("Comment").
-		Time("CreatedOn").
-		Time("UpdatedOn"),
 	g.NewQueryStruct("ShowOpenflowConnectors").
 		Show().
 		SQL("OPENFLOW CONNECTORS").
@@ -105,12 +87,12 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalIn(),
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"TODO: add link when public docs are available",
-	g.DbStruct("openflowConnectorDetailsRow").
+	g.StructPair("openflowConnectorDetailsRow", "OpenflowConnectorDetails").
 		Text("name").
-		Text("status").
+		PlainField("status", "OpenflowConnectorStatus").
 		Text("runtime").
 		OptionalText("connector_definition").
 		OptionalText("definition_version_name").
@@ -136,34 +118,6 @@ var openflowConnectorsDef = g.NewInterface(
 		Time("updated_on").
 		OptionalText("error_code").
 		OptionalText("status_message"),
-	g.PlainStruct("OpenflowConnectorDetails").
-		Text("Name").
-		Field("Status", "OpenflowConnectorStatus").
-		Text("Runtime").
-		OptionalText("ConnectorDefinition").
-		OptionalText("DefinitionVersionName").
-		OptionalText("Provider").
-		OptionalText("DisplayName").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("Owner").
-		OptionalText("DefaultVersion").
-		OptionalText("DefaultVersionName").
-		OptionalText("DefaultVersionAlias").
-		OptionalText("DefaultVersionLocationUri").
-		OptionalText("DefaultVersionSourceLocationUri").
-		OptionalText("DefaultVersionGitCommitHash").
-		OptionalText("LastVersionName").
-		OptionalText("LastVersionAlias").
-		OptionalText("LastVersionLocationUri").
-		OptionalText("LastVersionSourceLocationUri").
-		OptionalText("LastVersionGitCommitHash").
-		OptionalText("LiveVersionLocationUri").
-		OptionalText("Comment").
-		Time("CreatedOn").
-		Time("UpdatedOn").
-		OptionalText("ErrorCode").
-		OptionalText("StatusMessage"),
 	g.NewQueryStruct("DescribeOpenflowConnector").
 		Describe().
 		SQL("OPENFLOW CONNECTOR").

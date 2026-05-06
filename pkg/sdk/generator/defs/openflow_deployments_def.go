@@ -63,13 +63,13 @@ var openflowDeploymentsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"TODO: add link when public docs are available",
-	g.DbStruct("openflowDeploymentRow").
+	g.StructPair("openflowDeploymentRow", "OpenflowDeployment").
 		Text("name").
-		Text("deployment_type").
-		Text("status").
-		OptionalText("vpc_type").
+		PlainField("deployment_type", "OpenflowDeploymentType").
+		PlainField("status", "OpenflowDeploymentStatus").
+		Field("vpc_type", "sql.NullString", "*OpenflowVpcType").
 		OptionalText("display_name").
 		Bool("use_private_link").
 		Bool("use_user_auth_over_privatelink").
@@ -79,33 +79,19 @@ var openflowDeploymentsDef = g.NewInterface(
 		OptionalText("comment").
 		Time("created_on").
 		Time("updated_on"),
-	g.PlainStruct("OpenflowDeployment").
-		Text("Name").
-		Field("DeploymentType", "OpenflowDeploymentType").
-		Field("Status", "OpenflowDeploymentStatus").
-		Field("VpcType", "*OpenflowVpcType").
-		OptionalText("DisplayName").
-		Bool("UsePrivateLink").
-		Bool("UseUserAuthOverPrivatelink").
-		OptionalText("CustomIngressHostname").
-		OptionalText("OpenflowKey").
-		Text("Owner").
-		OptionalText("Comment").
-		Time("CreatedOn").
-		Time("UpdatedOn"),
 	g.NewQueryStruct("ShowOpenflowDeployments").
 		Show().
 		SQL("OPENFLOW DEPLOYMENTS").
 		OptionalLike(),
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"TODO: add link when public docs are available",
-	g.DbStruct("openflowDeploymentDetailsRow").
+	g.StructPair("openflowDeploymentDetailsRow", "OpenflowDeploymentDetails").
 		Text("name").
-		Text("deployment_type").
-		Text("status").
-		OptionalText("vpc_type").
+		PlainField("deployment_type", "OpenflowDeploymentType").
+		PlainField("status", "OpenflowDeploymentStatus").
+		Field("vpc_type", "sql.NullString", "*OpenflowVpcType").
 		OptionalText("display_name").
 		Bool("use_private_link").
 		Bool("use_user_auth_over_privatelink").
@@ -117,22 +103,6 @@ var openflowDeploymentsDef = g.NewInterface(
 		Time("updated_on").
 		OptionalText("error_code").
 		OptionalText("status_message"),
-	g.PlainStruct("OpenflowDeploymentDetails").
-		Text("Name").
-		Field("DeploymentType", "OpenflowDeploymentType").
-		Field("Status", "OpenflowDeploymentStatus").
-		Field("VpcType", "*OpenflowVpcType").
-		OptionalText("DisplayName").
-		Bool("UsePrivateLink").
-		Bool("UseUserAuthOverPrivatelink").
-		OptionalText("CustomIngressHostname").
-		OptionalText("OpenflowKey").
-		Text("Owner").
-		OptionalText("Comment").
-		Time("CreatedOn").
-		Time("UpdatedOn").
-		OptionalText("ErrorCode").
-		OptionalText("StatusMessage"),
 	g.NewQueryStruct("DescribeOpenflowDeployment").
 		Describe().
 		SQL("OPENFLOW DEPLOYMENT").
