@@ -14,11 +14,12 @@ func init() {
 func TestOpenflowRuntimes_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	deploymentId := randomAccountObjectIdentifier()
+	roleId := randomAccountObjectIdentifier()
 	defaultOpts := func() *CreateOpenflowRuntimeOptions {
 		return &CreateOpenflowRuntimeOptions{
 			name:          id,
 			InDeployment:  deploymentId,
-			ExecuteAsRole: "SYSADMIN",
+			ExecuteAsRole: roleId,
 			NodeType:      OpenflowRuntimeNodeTypeSmall,
 			MinNodes:      1,
 			MaxNodes:      3,
@@ -39,8 +40,8 @@ func TestOpenflowRuntimes_Create(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts,
-			"CREATE OPENFLOW RUNTIME %s IN DEPLOYMENT %s EXECUTE_AS_ROLE = SYSADMIN NODE_TYPE = 'SMALL' MIN_NODES = 1 MAX_NODES = 3",
-			id.FullyQualifiedName(), deploymentId.FullyQualifiedName())
+			"CREATE OPENFLOW RUNTIME %s IN DEPLOYMENT %s EXECUTE_AS_ROLE = %s NODE_TYPE = 'SMALL' MIN_NODES = 1 MAX_NODES = 3",
+			id.FullyQualifiedName(), deploymentId.FullyQualifiedName(), roleId.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -50,7 +51,7 @@ func TestOpenflowRuntimes_Create(t *testing.T) {
 			IfNotExists:   Bool(true),
 			name:          id,
 			InDeployment:  deploymentId,
-			ExecuteAsRole: "MYROLE",
+			ExecuteAsRole: roleId,
 			NodeType:      OpenflowRuntimeNodeTypeLarge,
 			MinNodes:      2,
 			MaxNodes:      5,
@@ -61,9 +62,9 @@ func TestOpenflowRuntimes_Create(t *testing.T) {
 			Comment:     &comment,
 		}
 		assertOptsValidAndSQLEquals(t, opts,
-			"CREATE OPENFLOW RUNTIME IF NOT EXISTS %s IN DEPLOYMENT %s EXECUTE_AS_ROLE = MYROLE NODE_TYPE = 'LARGE' MIN_NODES = 2 MAX_NODES = 5"+
+			"CREATE OPENFLOW RUNTIME IF NOT EXISTS %s IN DEPLOYMENT %s EXECUTE_AS_ROLE = %s NODE_TYPE = 'LARGE' MIN_NODES = 2 MAX_NODES = 5"+
 				" EXTERNAL_ACCESS_INTEGRATIONS = (%s) DISPLAY_NAME = 'My Runtime' COMMENT = '%s'",
-			id.FullyQualifiedName(), deploymentId.FullyQualifiedName(), eaiId.FullyQualifiedName(), comment)
+			id.FullyQualifiedName(), deploymentId.FullyQualifiedName(), roleId.FullyQualifiedName(), eaiId.FullyQualifiedName(), comment)
 	})
 }
 
@@ -167,12 +168,13 @@ func TestOpenflowRuntimes_Alter(t *testing.T) {
 
 	t.Run("set", func(t *testing.T) {
 		comment := random.Comment()
+		roleId := randomAccountObjectIdentifier()
 		eaiId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.Set = &OpenflowRuntimeSet{
 			MinNodes:      Int(2),
 			MaxNodes:      Int(5),
-			ExecuteAsRole: String("MYROLE"),
+			ExecuteAsRole: &roleId,
 			ExternalAccessIntegrations: &OpenflowRuntimeExternalAccessIntegrations{
 				ExternalAccessIntegrations: []AccountObjectIdentifier{eaiId},
 			},
@@ -180,8 +182,8 @@ func TestOpenflowRuntimes_Alter(t *testing.T) {
 			Comment:     &comment,
 		}
 		assertOptsValidAndSQLEquals(t, opts,
-			"ALTER OPENFLOW RUNTIME %s SET MIN_NODES = 2 MAX_NODES = 5 EXECUTE_AS_ROLE = MYROLE EXTERNAL_ACCESS_INTEGRATIONS = (%s) DISPLAY_NAME = 'Updated Runtime' COMMENT = '%s'",
-			id.FullyQualifiedName(), eaiId.FullyQualifiedName(), comment)
+			"ALTER OPENFLOW RUNTIME %s SET MIN_NODES = 2 MAX_NODES = 5 EXECUTE_AS_ROLE = %s EXTERNAL_ACCESS_INTEGRATIONS = (%s) DISPLAY_NAME = 'Updated Runtime' COMMENT = '%s'",
+			id.FullyQualifiedName(), roleId.FullyQualifiedName(), eaiId.FullyQualifiedName(), comment)
 	})
 
 	t.Run("unset", func(t *testing.T) {

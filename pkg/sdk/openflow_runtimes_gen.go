@@ -26,7 +26,7 @@ type CreateOpenflowRuntimeOptions struct {
 	IfNotExists                *bool                                      `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                       SchemaObjectIdentifier                     `ddl:"identifier"`
 	InDeployment               AccountObjectIdentifier                    `ddl:"identifier" sql:"IN DEPLOYMENT"`
-	ExecuteAsRole              string                                     `ddl:"parameter,no_quotes" sql:"EXECUTE_AS_ROLE"`
+	ExecuteAsRole              AccountObjectIdentifier                    `ddl:"identifier,equals" sql:"EXECUTE_AS_ROLE"`
 	NodeType                   OpenflowRuntimeNodeType                    `ddl:"parameter,single_quotes" sql:"NODE_TYPE"`
 	MinNodes                   int                                        `ddl:"parameter" sql:"MIN_NODES"`
 	MaxNodes                   int                                        `ddl:"parameter" sql:"MAX_NODES"`
@@ -60,7 +60,7 @@ type AlterOpenflowRuntimeOptions struct {
 type OpenflowRuntimeSet struct {
 	MinNodes                   *int                                       `ddl:"parameter" sql:"MIN_NODES"`
 	MaxNodes                   *int                                       `ddl:"parameter" sql:"MAX_NODES"`
-	ExecuteAsRole              *string                                    `ddl:"parameter,no_quotes" sql:"EXECUTE_AS_ROLE"`
+	ExecuteAsRole              *AccountObjectIdentifier                   `ddl:"identifier,equals" sql:"EXECUTE_AS_ROLE"`
 	ExternalAccessIntegrations *OpenflowRuntimeExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	DisplayName                *string                                    `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
 	Comment                    *string                                    `ddl:"parameter,single_quotes" sql:"COMMENT"`

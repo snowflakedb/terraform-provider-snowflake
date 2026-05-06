@@ -36,7 +36,7 @@ var openflowRuntimesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		Identifier("InDeployment", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN DEPLOYMENT").Required()).
-		TextAssignment("EXECUTE_AS_ROLE", g.ParameterOptions().NoQuotes().Required()).
+		Identifier("ExecuteAsRole", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXECUTE_AS_ROLE").Equals().Required()).
 		Assignment("NODE_TYPE", OpenflowRuntimeNodeTypeEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required()).
 		NumberAssignment("MIN_NODES", g.ParameterOptions().Required()).
 		NumberAssignment("MAX_NODES", g.ParameterOptions().Required()).
@@ -64,7 +64,7 @@ var openflowRuntimesDef = g.NewInterface(
 			g.NewQueryStruct("OpenflowRuntimeSet").
 				OptionalNumberAssignment("MIN_NODES", g.ParameterOptions()).
 				OptionalNumberAssignment("MAX_NODES", g.ParameterOptions()).
-				OptionalTextAssignment("EXECUTE_AS_ROLE", g.ParameterOptions().NoQuotes()).
+				OptionalIdentifier("ExecuteAsRole", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXECUTE_AS_ROLE").Equals()).
 				OptionalQueryStructField("ExternalAccessIntegrations", openflowRuntimesExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).

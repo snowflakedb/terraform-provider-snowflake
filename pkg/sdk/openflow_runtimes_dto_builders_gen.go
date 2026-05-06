@@ -5,7 +5,7 @@ package sdk
 func NewCreateOpenflowRuntimeRequest(
 	name SchemaObjectIdentifier,
 	inDeployment AccountObjectIdentifier,
-	executeAsRole string,
+	executeAsRole AccountObjectIdentifier,
 	nodeType OpenflowRuntimeNodeType,
 	minNodes int,
 	maxNodes int,
@@ -126,7 +126,7 @@ func (s *OpenflowRuntimeSetRequest) WithMaxNodes(maxNodes int) *OpenflowRuntimeS
 	return s
 }
 
-func (s *OpenflowRuntimeSetRequest) WithExecuteAsRole(executeAsRole string) *OpenflowRuntimeSetRequest {
+func (s *OpenflowRuntimeSetRequest) WithExecuteAsRole(executeAsRole AccountObjectIdentifier) *OpenflowRuntimeSetRequest {
 	s.ExecuteAsRole = &executeAsRole
 	return s
 }

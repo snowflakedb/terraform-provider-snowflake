@@ -14,7 +14,7 @@ type CreateOpenflowRuntimeRequest struct {
 	IfNotExists                *bool
 	name                       SchemaObjectIdentifier  // required
 	InDeployment               AccountObjectIdentifier // required
-	ExecuteAsRole              string                  // required
+	ExecuteAsRole              AccountObjectIdentifier // required
 	NodeType                   OpenflowRuntimeNodeType // required
 	MinNodes                   int                     // required
 	MaxNodes                   int                     // required
@@ -45,7 +45,7 @@ type AlterOpenflowRuntimeRequest struct {
 type OpenflowRuntimeSetRequest struct {
 	MinNodes                   *int
 	MaxNodes                   *int
-	ExecuteAsRole              *string
+	ExecuteAsRole              *AccountObjectIdentifier
 	ExternalAccessIntegrations *OpenflowRuntimeExternalAccessIntegrationsRequest
 	DisplayName                *string
 	Comment                    *string
