@@ -34,6 +34,7 @@ type Client struct {
 	Comments                     Comments
 	ComputePools                 ComputePools
 	Connections                  Connections
+	CortexAgents                 CortexAgents
 	CortexSearchServices         CortexSearchServices
 	DatabaseRoles                DatabaseRoles
 	Databases                    Databases
@@ -169,6 +170,7 @@ func (c *Client) initialize() {
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
+	c.CortexAgents = &cortexAgents{client: c}
 	c.CortexSearchServices = &cortexSearchServices{client: c}
 	c.DatabaseRoles = &databaseRoles{client: c}
 	c.Databases = &databases{client: c}

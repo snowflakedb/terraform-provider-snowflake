@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -21,6 +20,10 @@ func NewAgentClient(context *TestClientContext, idsGenerator *IdsGenerator) *Age
 	}
 }
 
+func (c *AgentClient) client() sdk.CortexAgents {
+	return c.context.client.CortexAgents
+}
+
 func (c *AgentClient) Create(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
@@ -32,14 +35,32 @@ func (c *AgentClient) Create(t *testing.T, id sdk.SchemaObjectIdentifier) func()
 instructions:
   response: "Test agent for acceptance tests"
 `
-	createSQL := fmt.Sprintf("CREATE OR REPLACE AGENT %s FROM SPECIFICATION $$%s$$", id.FullyQualifiedName(), spec)
-	_, err := c.context.client.ExecForTests(ctx, createSQL)
+	err := c.client().Create(ctx, sdk.NewCreateCortexAgentRequest(id, spec))
 	require.NoError(t, err)
 
-	cleanup := func() {
-		dropSQL := fmt.Sprintf("DROP AGENT IF EXISTS %s", id.FullyQualifiedName())
-		_, dropErr := c.context.client.ExecForTests(context.Background(), dropSQL)
-		require.NoError(t, dropErr)
+	return c.DropFunc(t, id)
+}
+
+func (c *AgentClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	return func() {
+		err := c.client().Drop(ctx, sdk.NewDropCortexAgentRequest(id).WithIfExists(true))
+		require.NoError(t, err)
 	}
-	return cleanup
+}
+
+func (c *AgentClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.CortexAgent, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByID(ctx, id)
+}
+
+func (c *AgentClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.CortexAgentDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Describe(ctx, id)
 }

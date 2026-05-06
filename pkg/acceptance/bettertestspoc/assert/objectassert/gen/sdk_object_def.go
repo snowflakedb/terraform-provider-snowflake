@@ -271,6 +271,15 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.PostgresInstance{},
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.CortexAgent{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.CortexAgentDetails{},
+		IsDataSourceOutput: true,
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

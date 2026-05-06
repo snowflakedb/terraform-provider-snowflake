@@ -35,10 +35,10 @@ var cortexAgentsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("CortexAgentSet").
-					OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+					OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
 					OptionalTextAssignment("PROFILE", g.ParameterOptions().SingleQuotes()).
 					WithValidation(g.AtLeastOneValueSet, "Comment", "Profile"),
-				g.KeywordOptions().SQL("SET"),
+				g.ListOptions().NoParentheses().SQL("SET"),
 			).
 			OptionalQueryStructField(
 				"ModifyLiveVersionSet",
