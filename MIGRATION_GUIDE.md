@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.16.x ➞ v2.17.0
+## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* snowflake_password_policy resource rework
 
@@ -69,8 +69,6 @@ The import now uses `ImportName` for `SchemaObjectIdentifier`, which properly se
 We have added a new preview data source for password policies: [snowflake_password_policies](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/password_policies). It supports filtering with `like`, `in`, and `limit`, and optionally runs `DESCRIBE PASSWORD POLICY` for each result (controlled by the `with_describe` attribute, enabled by default).
 
 This feature will be marked as stable in future releases. To use it, add `snowflake_password_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
-
-## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* Catalog integration resources: computed `catalog_source`
 
