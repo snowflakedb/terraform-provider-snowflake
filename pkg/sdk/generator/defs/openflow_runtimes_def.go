@@ -105,12 +105,9 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalText("display_name").
 		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Bool("initially_suspended").
-		Text("database_name").
-		Text("schema_name").
 		Text("execute_as_role").
 		Text("owner").
 		OptionalText("comment").
-		OptionalText("server_url").
 		Time("created_on").
 		Time("updated_on"),
 	g.NewQueryStruct("ShowOpenflowRuntimes").
@@ -133,8 +130,6 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalText("display_name").
 		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Bool("initially_suspended").
-		Text("database_name").
-		Text("schema_name").
 		Text("execute_as_role").
 		Text("owner").
 		OptionalText("comment").

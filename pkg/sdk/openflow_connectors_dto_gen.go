@@ -13,7 +13,7 @@ var (
 type CreateOpenflowConnectorRequest struct {
 	IfNotExists    *bool
 	name           SchemaObjectIdentifier // required
-	InRuntime      *SchemaObjectIdentifier
+	InRuntime      SchemaObjectIdentifier // required
 	FromDefinition *string
 	From           *Location
 	DisplayName    *string

@@ -18,7 +18,7 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 	defaultOpts := func() *CreateOpenflowConnectorOptions {
 		return &CreateOpenflowConnectorOptions{
 			name:      id,
-			InRuntime: &runtimeId,
+			InRuntime: runtimeId,
 		}
 	}
 
@@ -30,6 +30,12 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.InRuntime]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.InRuntime = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
@@ -49,7 +55,7 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 	t.Run("from definition", func(t *testing.T) {
 		opts := &CreateOpenflowConnectorOptions{
 			name:           id,
-			InRuntime:      &runtimeId,
+			InRuntime:      runtimeId,
 			FromDefinition: String("mydef"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OPENFLOW CONNECTOR %s IN RUNTIME %s FROM DEFINITION mydef",
@@ -59,7 +65,7 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 	t.Run("from stage", func(t *testing.T) {
 		opts := &CreateOpenflowConnectorOptions{
 			name:      id,
-			InRuntime: &runtimeId,
+			InRuntime: runtimeId,
 			From:      &stageLocation,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OPENFLOW CONNECTOR %s IN RUNTIME %s FROM '@\"%s\".\"%s\".\"%s\"/path/'`,
@@ -71,7 +77,7 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 		opts := &CreateOpenflowConnectorOptions{
 			IfNotExists:    Bool(true),
 			name:           id,
-			InRuntime:      &runtimeId,
+			InRuntime:      runtimeId,
 			FromDefinition: String("mydef"),
 			DisplayName:    String("My Connector"),
 			Comment:        &comment,

@@ -76,34 +76,30 @@ type ShowOpenflowDeploymentOptions struct {
 
 type openflowDeploymentRow struct {
 	Name                       string         `db:"name"`
-	DeploymentType             string         `db:"deployment_type"`
+	DeploymentType             string         `db:"type"`
 	Status                     string         `db:"status"`
 	VpcType                    sql.NullString `db:"vpc_type"`
 	DisplayName                sql.NullString `db:"display_name"`
 	UsePrivateLink             bool           `db:"use_private_link"`
-	UseUserAuthOverPrivatelink bool           `db:"use_user_auth_over_privatelink"`
+	UseUserAuthOverPrivateLink bool           `db:"use_user_auth_over_private_link"`
 	CustomIngressHostname      sql.NullString `db:"custom_ingress_hostname"`
 	OpenflowKey                sql.NullString `db:"openflow_key"`
 	Owner                      string         `db:"owner"`
 	Comment                    sql.NullString `db:"comment"`
-	CreatedOn                  time.Time      `db:"created_on"`
-	UpdatedOn                  time.Time      `db:"updated_on"`
 }
 
 type OpenflowDeployment struct {
 	Name                       string
-	DeploymentType             OpenflowDeploymentType
+	Type                       OpenflowDeploymentType
 	Status                     OpenflowDeploymentStatus
 	VpcType                    *OpenflowVpcType
 	DisplayName                *string
 	UsePrivateLink             bool
-	UseUserAuthOverPrivatelink bool
+	UseUserAuthOverPrivateLink bool
 	CustomIngressHostname      *string
 	OpenflowKey                *string
 	Owner                      string
 	Comment                    *string
-	CreatedOn                  time.Time
-	UpdatedOn                  time.Time
 }
 
 func (v *OpenflowDeployment) ID() AccountObjectIdentifier {
@@ -123,12 +119,12 @@ type DescribeOpenflowDeploymentOptions struct {
 
 type openflowDeploymentDetailsRow struct {
 	Name                       string         `db:"name"`
-	DeploymentType             string         `db:"deployment_type"`
+	DeploymentType             string         `db:"type"`
 	Status                     string         `db:"status"`
 	VpcType                    sql.NullString `db:"vpc_type"`
 	DisplayName                sql.NullString `db:"display_name"`
 	UsePrivateLink             bool           `db:"use_private_link"`
-	UseUserAuthOverPrivatelink bool           `db:"use_user_auth_over_privatelink"`
+	UseUserAuthOverPrivateLink bool           `db:"use_user_auth_over_private_link"`
 	CustomIngressHostname      sql.NullString `db:"custom_ingress_hostname"`
 	OpenflowKey                sql.NullString `db:"openflow_key"`
 	Owner                      string         `db:"owner"`
@@ -141,12 +137,12 @@ type openflowDeploymentDetailsRow struct {
 
 type OpenflowDeploymentDetails struct {
 	Name                       string
-	DeploymentType             OpenflowDeploymentType
+	Type                       OpenflowDeploymentType
 	Status                     OpenflowDeploymentStatus
 	VpcType                    *OpenflowVpcType
 	DisplayName                *string
 	UsePrivateLink             bool
-	UseUserAuthOverPrivatelink bool
+	UseUserAuthOverPrivateLink bool
 	CustomIngressHostname      *string
 	OpenflowKey                *string
 	Owner                      string

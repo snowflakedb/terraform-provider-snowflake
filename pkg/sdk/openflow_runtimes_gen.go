@@ -100,12 +100,9 @@ type openflowRuntimeRow struct {
 	DisplayName                sql.NullString `db:"display_name"`
 	ExternalAccessIntegrations sql.NullString `db:"external_access_integrations"`
 	InitiallySuspended         bool           `db:"initially_suspended"`
-	DatabaseName               string         `db:"database_name"`
-	SchemaName                 string         `db:"schema_name"`
 	ExecuteAsRole              string         `db:"execute_as_role"`
 	Owner                      string         `db:"owner"`
 	Comment                    sql.NullString `db:"comment"`
-	ServerUrl                  sql.NullString `db:"server_url"`
 	CreatedOn                  time.Time      `db:"created_on"`
 	UpdatedOn                  time.Time      `db:"updated_on"`
 }
@@ -120,18 +117,11 @@ type OpenflowRuntime struct {
 	DisplayName                *string
 	ExternalAccessIntegrations []AccountObjectIdentifier
 	InitiallySuspended         bool
-	DatabaseName               string
-	SchemaName                 string
 	ExecuteAsRole              string
 	Owner                      string
 	Comment                    *string
-	ServerUrl                  *string
 	CreatedOn                  time.Time
 	UpdatedOn                  time.Time
-}
-
-func (v *OpenflowRuntime) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
 
 func (v *OpenflowRuntime) ObjectType() ObjectType {
@@ -155,8 +145,6 @@ type openflowRuntimeDetailsRow struct {
 	DisplayName                sql.NullString `db:"display_name"`
 	ExternalAccessIntegrations sql.NullString `db:"external_access_integrations"`
 	InitiallySuspended         bool           `db:"initially_suspended"`
-	DatabaseName               string         `db:"database_name"`
-	SchemaName                 string         `db:"schema_name"`
 	ExecuteAsRole              string         `db:"execute_as_role"`
 	Owner                      string         `db:"owner"`
 	Comment                    sql.NullString `db:"comment"`
@@ -177,8 +165,6 @@ type OpenflowRuntimeDetails struct {
 	DisplayName                *string
 	ExternalAccessIntegrations []AccountObjectIdentifier
 	InitiallySuspended         bool
-	DatabaseName               string
-	SchemaName                 string
 	ExecuteAsRole              string
 	Owner                      string
 	Comment                    *string

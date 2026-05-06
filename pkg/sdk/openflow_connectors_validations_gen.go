@@ -18,6 +18,9 @@ func (opts *CreateOpenflowConnectorOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !ValidObjectIdentifier(opts.InRuntime) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if everyValueSet(opts.FromDefinition, opts.From) {
 		errs = append(errs, errOneOf("CreateOpenflowConnectorOptions", "FromDefinition", "From"))
 	}

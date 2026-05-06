@@ -26,12 +26,13 @@ var openflowConnectorsDef = g.NewInterface(
 		SQL("OPENFLOW CONNECTOR").
 		IfNotExists().
 		Name().
-		OptionalIdentifier("InRuntime", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("IN RUNTIME")).
+		Identifier("InRuntime", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("IN RUNTIME").Required()).
 		OptionalTextAssignment("FROM DEFINITION", g.ParameterOptions().NoQuotes().NoEquals()).
 		PredefinedQueryStructField("From", "*Location", g.ParameterOptions().SQL("FROM").SingleQuotes().NoEquals()).
 		OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "InRuntime").
 		WithValidation(g.ConflictingFields, "FromDefinition", "From"),
 ).AlterOperation(
 	"TODO: add link when public docs are available",

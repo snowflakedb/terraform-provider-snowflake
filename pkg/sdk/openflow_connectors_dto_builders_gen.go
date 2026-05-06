@@ -4,19 +4,16 @@ package sdk
 
 func NewCreateOpenflowConnectorRequest(
 	name SchemaObjectIdentifier,
+	inRuntime SchemaObjectIdentifier,
 ) *CreateOpenflowConnectorRequest {
 	s := CreateOpenflowConnectorRequest{}
 	s.name = name
+	s.InRuntime = inRuntime
 	return &s
 }
 
 func (s *CreateOpenflowConnectorRequest) WithIfNotExists(ifNotExists bool) *CreateOpenflowConnectorRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOpenflowConnectorRequest) WithInRuntime(inRuntime SchemaObjectIdentifier) *CreateOpenflowConnectorRequest {
-	s.InRuntime = &inRuntime
 	return s
 }
 

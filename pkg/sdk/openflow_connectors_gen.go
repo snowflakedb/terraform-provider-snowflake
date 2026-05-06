@@ -21,15 +21,15 @@ type OpenflowConnectors interface {
 
 // CreateOpenflowConnectorOptions is based on TODO: add link when public docs are available.
 type CreateOpenflowConnectorOptions struct {
-	create            bool                    `ddl:"static" sql:"CREATE"`
-	openflowConnector bool                    `ddl:"static" sql:"OPENFLOW CONNECTOR"`
-	IfNotExists       *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name              SchemaObjectIdentifier  `ddl:"identifier"`
-	InRuntime         *SchemaObjectIdentifier `ddl:"identifier" sql:"IN RUNTIME"`
-	FromDefinition    *string                 `ddl:"parameter,no_quotes,no_equals" sql:"FROM DEFINITION"`
-	From              *Location               `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
-	DisplayName       *string                 `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
-	Comment           *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create            bool                   `ddl:"static" sql:"CREATE"`
+	openflowConnector bool                   `ddl:"static" sql:"OPENFLOW CONNECTOR"`
+	IfNotExists       *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name              SchemaObjectIdentifier `ddl:"identifier"`
+	InRuntime         SchemaObjectIdentifier `ddl:"identifier" sql:"IN RUNTIME"`
+	FromDefinition    *string                `ddl:"parameter,no_quotes,no_equals" sql:"FROM DEFINITION"`
+	From              *Location              `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
+	DisplayName       *string                `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
+	Comment           *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterOpenflowConnectorOptions is based on TODO: add link when public docs are available.
