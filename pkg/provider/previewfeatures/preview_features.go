@@ -74,6 +74,7 @@ const (
 	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
+	PasswordPoliciesDatasource                    feature = "snowflake_password_policies_datasource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
 	PipeResource                                  feature = "snowflake_pipe_resource"
 	PipesDatasource                               feature = "snowflake_pipes_datasource"
@@ -177,6 +178,7 @@ var allPreviewFeatures = []feature{
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
+	PasswordPoliciesDatasource,
 	PasswordPolicyResource,
 	PipeResource,
 	PipesDatasource,

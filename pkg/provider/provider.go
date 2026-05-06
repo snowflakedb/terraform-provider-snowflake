@@ -731,6 +731,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_network_rules":                      datasources.NetworkRules(),
 		"snowflake_notebooks":                          datasources.Notebooks(),
 		"snowflake_parameters":                         datasources.Parameters(),
+		"snowflake_password_policies":                  datasources.PasswordPolicies(),
 		"snowflake_pipes":                              datasources.Pipes(),
 		"snowflake_procedures":                         datasources.Procedures(),
 		"snowflake_resource_monitors":                  datasources.ResourceMonitors(),

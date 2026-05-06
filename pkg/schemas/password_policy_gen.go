@@ -41,6 +41,10 @@ var ShowPasswordPolicySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"options": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var _ = ShowPasswordPolicySchema
@@ -55,6 +59,7 @@ func PasswordPolicyToSchema(passwordPolicy *sdk.PasswordPolicy) map[string]any {
 	passwordPolicySchema["owner"] = passwordPolicy.Owner
 	passwordPolicySchema["comment"] = passwordPolicy.Comment
 	passwordPolicySchema["owner_role_type"] = passwordPolicy.OwnerRoleType
+	passwordPolicySchema["options"] = passwordPolicy.Options
 	return passwordPolicySchema
 }
 

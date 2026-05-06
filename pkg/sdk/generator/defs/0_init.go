@@ -18,6 +18,7 @@ func init() {
 		catalogIntegrationsDef,
 		computePoolsDef,
 		connectionsDef,
+		cortexAgentsDef,
 		cortexSearchServicesDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
