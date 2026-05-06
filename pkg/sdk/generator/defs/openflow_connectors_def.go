@@ -18,7 +18,7 @@ var openflowConnectorsDef = g.NewInterface(
 		Name().
 		OptionalIdentifier("InRuntime", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("IN RUNTIME")).
 		OptionalTextAssignment("FROM DEFINITION", g.ParameterOptions().NoQuotes().NoEquals()).
-		OptionalTextAssignment("FROM", g.ParameterOptions().SingleQuotes().NoEquals()).
+		PredefinedQueryStructField("From", "*Location", g.ParameterOptions().SQL("FROM").SingleQuotes().NoEquals()).
 		OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name").

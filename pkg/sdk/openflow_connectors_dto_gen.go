@@ -15,7 +15,7 @@ type CreateOpenflowConnectorRequest struct {
 	name           SchemaObjectIdentifier // required
 	InRuntime      *SchemaObjectIdentifier
 	FromDefinition *string
-	From           *string
+	From           *Location
 	DisplayName    *string
 	Comment        *string
 }

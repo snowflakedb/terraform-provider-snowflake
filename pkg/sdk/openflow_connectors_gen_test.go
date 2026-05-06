@@ -13,6 +13,8 @@ func init() {
 func TestOpenflowConnectors_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	runtimeId := randomSchemaObjectIdentifier()
+	stageId := randomSchemaObjectIdentifier()
+	var stageLocation Location = &StageLocation{stage: stageId, path: "path/"}
 	defaultOpts := func() *CreateOpenflowConnectorOptions {
 		return &CreateOpenflowConnectorOptions{
 			name:      id,
@@ -34,7 +36,7 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 	t.Run("validation: FromDefinition and From are conflicting fields", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromDefinition = String("mydef")
-		opts.From = String("@MY_STAGE/path/")
+		opts.From = &stageLocation
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOpenflowConnectorOptions", "FromDefinition", "From"))
 	})
 
@@ -58,10 +60,10 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 		opts := &CreateOpenflowConnectorOptions{
 			name:      id,
 			InRuntime: &runtimeId,
-			From:      String("@MY_STAGE/path/"),
+			From:      &stageLocation,
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OPENFLOW CONNECTOR %s IN RUNTIME %s FROM '@MY_STAGE/path/'",
-			id.FullyQualifiedName(), runtimeId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OPENFLOW CONNECTOR %s IN RUNTIME %s FROM '@\"%s\".\"%s\".\"%s\"/path/'`,
+			id.FullyQualifiedName(), runtimeId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("all options", func(t *testing.T) {

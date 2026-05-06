@@ -25,7 +25,7 @@ func (s *CreateOpenflowConnectorRequest) WithFromDefinition(fromDefinition strin
 	return s
 }
 
-func (s *CreateOpenflowConnectorRequest) WithFrom(from string) *CreateOpenflowConnectorRequest {
+func (s *CreateOpenflowConnectorRequest) WithFrom(from Location) *CreateOpenflowConnectorRequest {
 	s.From = &from
 	return s
 }
