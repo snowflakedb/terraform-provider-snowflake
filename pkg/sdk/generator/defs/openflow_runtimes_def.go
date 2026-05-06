@@ -43,7 +43,9 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalQueryStructField("ExternalAccessIntegrations", openflowRuntimesExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 		OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "InDeployment").
+		WithValidation(g.ValidIdentifier, "ExecuteAsRole"),
 ).AlterOperation(
 	"TODO: add link when public docs are available",
 	g.NewQueryStruct("AlterOpenflowRuntime").

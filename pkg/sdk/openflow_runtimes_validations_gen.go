@@ -18,6 +18,12 @@ func (opts *CreateOpenflowRuntimeOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !ValidObjectIdentifier(opts.InDeployment) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !ValidObjectIdentifier(opts.ExecuteAsRole) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	return JoinErrors(errs...)
 }
 

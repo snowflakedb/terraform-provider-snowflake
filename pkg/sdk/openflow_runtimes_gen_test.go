@@ -37,6 +37,18 @@ func TestOpenflowRuntimes_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: valid identifier for [opts.InDeployment]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.InDeployment = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.ExecuteAsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExecuteAsRole = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts,
