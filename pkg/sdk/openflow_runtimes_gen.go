@@ -118,7 +118,7 @@ type OpenflowRuntime struct {
 	MaxNodes                   int
 	NodeType                   OpenflowRuntimeNodeType
 	DisplayName                *string
-	ExternalAccessIntegrations *string
+	ExternalAccessIntegrations []AccountObjectIdentifier
 	InitiallySuspended         bool
 	DatabaseName               string
 	SchemaName                 string
@@ -175,7 +175,7 @@ type OpenflowRuntimeDetails struct {
 	MaxNodes                   int
 	NodeType                   OpenflowRuntimeNodeType
 	DisplayName                *string
-	ExternalAccessIntegrations *string
+	ExternalAccessIntegrations []AccountObjectIdentifier
 	InitiallySuspended         bool
 	DatabaseName               string
 	SchemaName                 string

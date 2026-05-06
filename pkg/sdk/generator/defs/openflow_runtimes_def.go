@@ -103,7 +103,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Number("max_nodes").
 		PlainField("node_type", OpenflowRuntimeNodeTypeEnumDef.Kind()).
 		OptionalText("display_name").
-		OptionalText("external_access_integrations").
+		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Bool("initially_suspended").
 		Text("database_name").
 		Text("schema_name").
@@ -131,7 +131,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Number("max_nodes").
 		PlainField("node_type", OpenflowRuntimeNodeTypeEnumDef.Kind()).
 		OptionalText("display_name").
-		OptionalText("external_access_integrations").
+		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Bool("initially_suspended").
 		Text("database_name").
 		Text("schema_name").
