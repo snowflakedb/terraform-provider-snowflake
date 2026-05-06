@@ -10,7 +10,7 @@ type (
 	LogLevel                                                 string
 	MetricLevel                                              string
 	NullInputBehavior                                        string
-ReclusterState                                           string
+	ReclusterState                                           string
 	ReturnNullValues                                         string
 	ReturnResultsBehavior                                    string
 	S3Protocol                                               string
