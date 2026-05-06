@@ -10,10 +10,7 @@ type (
 	LogLevel                                                 string
 	MetricLevel                                              string
 	NullInputBehavior                                        string
-	OpenflowDeploymentType                                   string
-	OpenflowRuntimeNodeType                                  string
-	OpenflowVpcType                                          string
-	ReclusterState                                           string
+ReclusterState                                           string
 	ReturnNullValues                                         string
 	ReturnResultsBehavior                                    string
 	S3Protocol                                               string

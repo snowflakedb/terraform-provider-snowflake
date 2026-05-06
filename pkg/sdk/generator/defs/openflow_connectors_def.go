@@ -5,6 +5,16 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var OpenflowConnectorStatusEnumDef = g.NewEnum(
+	"OpenflowConnectorStatus", "OpenflowConnectorStatuses",
+	"CREATING", "CREATE_FAILED",
+	"STARTING", "START_FAILED",
+	"RUNNING",
+	"STOPPING", "STOP_FAILED", "STOPPED",
+	"UPDATING", "UPDATE_FAILED",
+	"DELETING", "DELETE_FAILED", "DELETED",
+)
+
 var openflowConnectorsDef = g.NewInterface(
 	"OpenflowConnectors",
 	"OpenflowConnector",
@@ -64,7 +74,7 @@ var openflowConnectorsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowConnectorRow", "OpenflowConnector").
 		Text("name").
-		PlainField("status", "OpenflowConnectorStatus").
+		PlainField("status", OpenflowConnectorStatusEnumDef.Kind()).
 		Text("runtime").
 		OptionalText("connector_definition").
 		OptionalText("display_name").
@@ -92,7 +102,7 @@ var openflowConnectorsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowConnectorDetailsRow", "OpenflowConnectorDetails").
 		Text("name").
-		PlainField("status", "OpenflowConnectorStatus").
+		PlainField("status", OpenflowConnectorStatusEnumDef.Kind()).
 		Text("runtime").
 		OptionalText("connector_definition").
 		OptionalText("definition_version_name").
@@ -123,4 +133,6 @@ var openflowConnectorsDef = g.NewInterface(
 		SQL("OPENFLOW CONNECTOR").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+).WithEnums(
+	OpenflowConnectorStatusEnumDef,
 )

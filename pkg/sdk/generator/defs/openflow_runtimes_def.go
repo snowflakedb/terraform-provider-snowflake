@@ -5,6 +5,22 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var OpenflowRuntimeNodeTypeEnumDef = g.NewEnum(
+	"OpenflowRuntimeNodeType", "OpenflowRuntimeNodeTypes",
+	"SMALL", "MEDIUM", "LARGE",
+)
+
+var OpenflowRuntimeStatusEnumDef = g.NewEnum(
+	"OpenflowRuntimeStatus", "OpenflowRuntimeStatuses",
+	"CREATING", "CREATE_FAILED", "UPDATING", "UPDATE_FAILED",
+	"SUSPENDING", "SUSPENDED", "SUSPEND_FAILED",
+	"ACTIVATING", "ACTIVE", "ACTIVATE_FAILED",
+	"DELETING", "DELETED", "DELETE_FAILED",
+	"CANCEL_REQUESTED", "RESTARTING", "RESTART_FAILED",
+	"UPGRADING", "UPGRADE_FAILED",
+	"GENERATING_DIAGNOSTIC_BUNDLE", "CLEANING_UP", "INACTIVE",
+)
+
 var openflowRuntimesExternalAccessIntegrationsDef = g.NewQueryStruct("OpenflowRuntimeExternalAccessIntegrations").
 	List("ExternalAccessIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
 
@@ -21,7 +37,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Name().
 		Identifier("InDeployment", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN DEPLOYMENT").Required()).
 		TextAssignment("EXECUTE_AS_ROLE", g.ParameterOptions().NoQuotes().Required()).
-		Assignment("NODE_TYPE", g.KindOfT[sdkcommons.OpenflowRuntimeNodeType](), g.ParameterOptions().SingleQuotes().Required()).
+		Assignment("NODE_TYPE", OpenflowRuntimeNodeTypeEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required()).
 		NumberAssignment("MIN_NODES", g.ParameterOptions().Required()).
 		NumberAssignment("MAX_NODES", g.ParameterOptions().Required()).
 		OptionalQueryStructField("ExternalAccessIntegrations", openflowRuntimesExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
@@ -81,11 +97,11 @@ var openflowRuntimesDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowRuntimeRow", "OpenflowRuntime").
 		Text("name").
-		PlainField("status", "OpenflowRuntimeStatus").
+		PlainField("status", OpenflowRuntimeStatusEnumDef.Kind()).
 		Text("deployment").
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("node_type", "OpenflowRuntimeNodeType").
+		PlainField("node_type", OpenflowRuntimeNodeTypeEnumDef.Kind()).
 		OptionalText("display_name").
 		OptionalText("external_access_integrations").
 		Bool("initially_suspended").
@@ -109,11 +125,11 @@ var openflowRuntimesDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowRuntimeDetailsRow", "OpenflowRuntimeDetails").
 		Text("name").
-		PlainField("status", "OpenflowRuntimeStatus").
+		PlainField("status", OpenflowRuntimeStatusEnumDef.Kind()).
 		Text("deployment").
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("node_type", "OpenflowRuntimeNodeType").
+		PlainField("node_type", OpenflowRuntimeNodeTypeEnumDef.Kind()).
 		OptionalText("display_name").
 		OptionalText("external_access_integrations").
 		Bool("initially_suspended").
@@ -132,4 +148,7 @@ var openflowRuntimesDef = g.NewInterface(
 		SQL("OPENFLOW RUNTIME").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+).WithEnums(
+	OpenflowRuntimeNodeTypeEnumDef,
+	OpenflowRuntimeStatusEnumDef,
 )

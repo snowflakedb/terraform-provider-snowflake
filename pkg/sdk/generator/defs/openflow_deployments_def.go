@@ -5,6 +5,23 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var OpenflowDeploymentTypeEnumDef = g.NewEnum(
+	"OpenflowDeploymentType", "OpenflowDeploymentTypes",
+	"SNOWFLAKE", "BYOC",
+)
+
+var OpenflowVpcTypeEnumDef = g.NewEnum(
+	"OpenflowVpcType", "OpenflowVpcTypes",
+	"MANAGED", "PROVIDED",
+)
+
+var OpenflowDeploymentStatusEnumDef = g.NewEnum(
+	"OpenflowDeploymentStatus", "OpenflowDeploymentStatuses",
+	"CREATING", "ACTIVE", "INACTIVE", "PROVISIONING", "NOT_REPORTING",
+	"NOT_HEALTHY", "UPGRADING", "UPGRADE_FAILED", "DEACTIVATION_REQUIRED",
+	"DELETING", "DELETED", "CREATE_FAILED", "DELETE_FAILED",
+)
+
 var openflowDeploymentsDef = g.NewInterface(
 	"OpenflowDeployments",
 	"OpenflowDeployment",
@@ -16,8 +33,8 @@ var openflowDeploymentsDef = g.NewInterface(
 		SQL("OPENFLOW DEPLOYMENT").
 		IfNotExists().
 		Name().
-		Assignment("DEPLOYMENT_TYPE", g.KindOfT[sdkcommons.OpenflowDeploymentType](), g.ParameterOptions().SingleQuotes().Required()).
-		OptionalAssignment("VPC_TYPE", g.KindOfT[sdkcommons.OpenflowVpcType](), g.ParameterOptions().SingleQuotes()).
+		Assignment("DEPLOYMENT_TYPE", OpenflowDeploymentTypeEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required()).
+		OptionalAssignment("VPC_TYPE", OpenflowVpcTypeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("CUSTOM_INGRESS_HOSTNAME", g.ParameterOptions().SingleQuotes()).
 		OptionalBooleanAssignment("USE_PRIVATE_LINK", g.ParameterOptions()).
 		OptionalBooleanAssignment("USE_USER_AUTH_OVER_PRIVATELINK", g.ParameterOptions()).
@@ -67,9 +84,9 @@ var openflowDeploymentsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowDeploymentRow", "OpenflowDeployment").
 		Text("name").
-		PlainField("deployment_type", "OpenflowDeploymentType").
-		PlainField("status", "OpenflowDeploymentStatus").
-		Field("vpc_type", "sql.NullString", "*OpenflowVpcType").
+		PlainField("deployment_type", OpenflowDeploymentTypeEnumDef.Kind()).
+		PlainField("status", OpenflowDeploymentStatusEnumDef.Kind()).
+		Field("vpc_type", "sql.NullString", OpenflowVpcTypeEnumDef.KindPtr()).
 		OptionalText("display_name").
 		Bool("use_private_link").
 		Bool("use_user_auth_over_privatelink").
@@ -89,9 +106,9 @@ var openflowDeploymentsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowDeploymentDetailsRow", "OpenflowDeploymentDetails").
 		Text("name").
-		PlainField("deployment_type", "OpenflowDeploymentType").
-		PlainField("status", "OpenflowDeploymentStatus").
-		Field("vpc_type", "sql.NullString", "*OpenflowVpcType").
+		PlainField("deployment_type", OpenflowDeploymentTypeEnumDef.Kind()).
+		PlainField("status", OpenflowDeploymentStatusEnumDef.Kind()).
+		Field("vpc_type", "sql.NullString", OpenflowVpcTypeEnumDef.KindPtr()).
 		OptionalText("display_name").
 		Bool("use_private_link").
 		Bool("use_user_auth_over_privatelink").
@@ -108,4 +125,8 @@ var openflowDeploymentsDef = g.NewInterface(
 		SQL("OPENFLOW DEPLOYMENT").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+).WithEnums(
+	OpenflowDeploymentTypeEnumDef,
+	OpenflowVpcTypeEnumDef,
+	OpenflowDeploymentStatusEnumDef,
 )
