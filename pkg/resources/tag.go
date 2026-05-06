@@ -85,7 +85,7 @@ var tagSchema = map[string]*schema.Schema{
 	"on_conflict": {
 		Type:         schema.TypeList,
 		Optional:     true,
-		Description:  "Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). External changes are detected when the `ON_CONFLICT` column is available in `SHOW TAGS` (requires BCR-2291 to be enabled).",
+		Description:  "Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation).",
 		MaxItems:     1,
 		RequiredWith: []string{"propagate"},
 		Elem: &schema.Resource{
@@ -322,22 +322,15 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		func() error {
 			// on_conflict is only available when BCR-2291 is enabled. When the column is absent,
 			// tag.OnConflict is nil and we leave the state unchanged to avoid spurious diffs.
-			if tag.OnConflict == nil {
-				return nil
+			onConflict := make(map[string]any)
+			if tag.OnConflict != nil {
+				if *tag.OnConflict == "ALLOWED_VALUES_SEQUENCE" {
+					onConflict["allowed_values_sequence"] = true
+				} else {
+					onConflict["custom_value"] = *tag.OnConflict
+				}
 			}
-			if *tag.OnConflict == "" {
-				return d.Set("on_conflict", []map[string]any{})
-			}
-			entry := map[string]any{
-				"allowed_values_sequence": false,
-				"custom_value":            "",
-			}
-			if *tag.OnConflict == "ALLOWED_VALUES_SEQUENCE" {
-				entry["allowed_values_sequence"] = true
-			} else {
-				entry["custom_value"] = *tag.OnConflict
-			}
-			return d.Set("on_conflict", []map[string]any{entry})
+			return d.Set("on_conflict", []map[string]any{onConflict})
 		}(),
 		func() error {
 			// Use ordered_allowed_values by default (including import where rawConfig is null).

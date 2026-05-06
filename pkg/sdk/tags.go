@@ -110,8 +110,7 @@ type Tag struct {
 	AllowedValues []string
 	OwnerRoleType string
 	Propagate     TagPropagation
-	// OnConflict is only populated when the BCR-2291 behavior change bundle is enabled.
-	OnConflict *string
+	OnConflict    *string
 }
 
 func (v *Tag) ID() SchemaObjectIdentifier {
@@ -128,9 +127,7 @@ type tagRow struct {
 	AllowedValues sql.NullString `db:"allowed_values"`
 	OwnerRoleType string         `db:"owner_role_type"`
 	Propagate     string         `db:"propagate"`
-	// OnConflict is only present when the BCR-2291 behavior change bundle is enabled.
-	// Using db.Unsafe() on the client means this field will be left at zero value when the column is absent.
-	OnConflict sql.NullString `db:"on_conflict"`
+	OnConflict    sql.NullString `db:"on_conflict"`
 }
 
 func (tr tagRow) convert() (*Tag, error) {
@@ -147,9 +144,7 @@ func (tr tagRow) convert() (*Tag, error) {
 		t.AllowedValues = ParseCommaSeparatedStringArray(tr.AllowedValues.String, true)
 	}
 	mapStringWithMapping(&t.Propagate, tr.Propagate, ToTagPropagation)
-	if tr.OnConflict.Valid {
-		t.OnConflict = &tr.OnConflict.String
-	}
+	mapNullString(&t.OnConflict, tr.OnConflict)
 	return t, nil
 }
 
