@@ -61,10 +61,12 @@ func (c *CatalogIntegrationObjectStorageModel) MarshalJSON() ([]byte, error) {
 	type Alias CatalogIntegrationObjectStorageModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
+		Timeouts:  c.Timeouts(),
 	})
 }
 
@@ -75,6 +77,26 @@ func (c *CatalogIntegrationObjectStorageModel) WithDependsOn(values ...string) *
 
 func (c *CatalogIntegrationObjectStorageModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *CatalogIntegrationObjectStorageModel {
 	c.DynamicBlock = dynamicBlock
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageModel) WithTimeoutCreate(duration string) *CatalogIntegrationObjectStorageModel {
+	c.SetTimeoutCreate(duration)
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageModel) WithTimeoutRead(duration string) *CatalogIntegrationObjectStorageModel {
+	c.SetTimeoutRead(duration)
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageModel) WithTimeoutUpdate(duration string) *CatalogIntegrationObjectStorageModel {
+	c.SetTimeoutUpdate(duration)
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageModel) WithTimeoutDelete(duration string) *CatalogIntegrationObjectStorageModel {
+	c.SetTimeoutDelete(duration)
 	return c
 }
 

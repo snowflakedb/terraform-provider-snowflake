@@ -61,10 +61,12 @@ func (o *OauthIntegrationForPartnerApplicationsModel) MarshalJSON() ([]byte, err
 	type Alias OauthIntegrationForPartnerApplicationsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(o),
 		DependsOn: o.DependsOn(),
+		Timeouts:  o.Timeouts(),
 	})
 }
 
@@ -75,6 +77,26 @@ func (o *OauthIntegrationForPartnerApplicationsModel) WithDependsOn(values ...st
 
 func (o *OauthIntegrationForPartnerApplicationsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *OauthIntegrationForPartnerApplicationsModel {
 	o.DynamicBlock = dynamicBlock
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsModel) WithTimeoutCreate(duration string) *OauthIntegrationForPartnerApplicationsModel {
+	o.SetTimeoutCreate(duration)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsModel) WithTimeoutRead(duration string) *OauthIntegrationForPartnerApplicationsModel {
+	o.SetTimeoutRead(duration)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsModel) WithTimeoutUpdate(duration string) *OauthIntegrationForPartnerApplicationsModel {
+	o.SetTimeoutUpdate(duration)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsModel) WithTimeoutDelete(duration string) *OauthIntegrationForPartnerApplicationsModel {
+	o.SetTimeoutDelete(duration)
 	return o
 }
 

@@ -78,10 +78,12 @@ func (p *ProcedureJavascriptModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedureJavascriptModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -92,6 +94,26 @@ func (p *ProcedureJavascriptModel) WithDependsOn(values ...string) *ProcedureJav
 
 func (p *ProcedureJavascriptModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedureJavascriptModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithTimeoutCreate(duration string) *ProcedureJavascriptModel {
+	p.SetTimeoutCreate(duration)
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithTimeoutRead(duration string) *ProcedureJavascriptModel {
+	p.SetTimeoutRead(duration)
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithTimeoutUpdate(duration string) *ProcedureJavascriptModel {
+	p.SetTimeoutUpdate(duration)
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithTimeoutDelete(duration string) *ProcedureJavascriptModel {
+	p.SetTimeoutDelete(duration)
 	return p
 }
 

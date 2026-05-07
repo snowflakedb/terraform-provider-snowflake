@@ -74,10 +74,12 @@ func (v *ViewModel) MarshalJSON() ([]byte, error) {
 	type Alias ViewModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(v),
 		DependsOn: v.DependsOn(),
+		Timeouts:  v.Timeouts(),
 	})
 }
 
@@ -88,6 +90,26 @@ func (v *ViewModel) WithDependsOn(values ...string) *ViewModel {
 
 func (v *ViewModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ViewModel {
 	v.DynamicBlock = dynamicBlock
+	return v
+}
+
+func (v *ViewModel) WithTimeoutCreate(duration string) *ViewModel {
+	v.SetTimeoutCreate(duration)
+	return v
+}
+
+func (v *ViewModel) WithTimeoutRead(duration string) *ViewModel {
+	v.SetTimeoutRead(duration)
+	return v
+}
+
+func (v *ViewModel) WithTimeoutUpdate(duration string) *ViewModel {
+	v.SetTimeoutUpdate(duration)
+	return v
+}
+
+func (v *ViewModel) WithTimeoutDelete(duration string) *ViewModel {
+	v.SetTimeoutDelete(duration)
 	return v
 }
 

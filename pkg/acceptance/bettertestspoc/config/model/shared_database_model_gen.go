@@ -68,10 +68,12 @@ func (s *SharedDatabaseModel) MarshalJSON() ([]byte, error) {
 	type Alias SharedDatabaseModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -82,6 +84,26 @@ func (s *SharedDatabaseModel) WithDependsOn(values ...string) *SharedDatabaseMod
 
 func (s *SharedDatabaseModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SharedDatabaseModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *SharedDatabaseModel) WithTimeoutCreate(duration string) *SharedDatabaseModel {
+	s.SetTimeoutCreate(duration)
+	return s
+}
+
+func (s *SharedDatabaseModel) WithTimeoutRead(duration string) *SharedDatabaseModel {
+	s.SetTimeoutRead(duration)
+	return s
+}
+
+func (s *SharedDatabaseModel) WithTimeoutUpdate(duration string) *SharedDatabaseModel {
+	s.SetTimeoutUpdate(duration)
+	return s
+}
+
+func (s *SharedDatabaseModel) WithTimeoutDelete(duration string) *SharedDatabaseModel {
+	s.SetTimeoutDelete(duration)
 	return s
 }
 

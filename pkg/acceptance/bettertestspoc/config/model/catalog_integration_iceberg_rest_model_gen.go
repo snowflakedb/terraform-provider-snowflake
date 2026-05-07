@@ -66,10 +66,12 @@ func (c *CatalogIntegrationIcebergRestModel) MarshalJSON() ([]byte, error) {
 	type Alias CatalogIntegrationIcebergRestModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
+		Timeouts:  c.Timeouts(),
 	})
 }
 
@@ -80,6 +82,26 @@ func (c *CatalogIntegrationIcebergRestModel) WithDependsOn(values ...string) *Ca
 
 func (c *CatalogIntegrationIcebergRestModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *CatalogIntegrationIcebergRestModel {
 	c.DynamicBlock = dynamicBlock
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestModel) WithTimeoutCreate(duration string) *CatalogIntegrationIcebergRestModel {
+	c.SetTimeoutCreate(duration)
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestModel) WithTimeoutRead(duration string) *CatalogIntegrationIcebergRestModel {
+	c.SetTimeoutRead(duration)
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestModel) WithTimeoutUpdate(duration string) *CatalogIntegrationIcebergRestModel {
+	c.SetTimeoutUpdate(duration)
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestModel) WithTimeoutDelete(duration string) *CatalogIntegrationIcebergRestModel {
+	c.SetTimeoutDelete(duration)
 	return c
 }
 

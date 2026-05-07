@@ -76,10 +76,12 @@ func (m *MaskingPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias MaskingPolicyModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(m),
 		DependsOn: m.DependsOn(),
+		Timeouts:  m.Timeouts(),
 	})
 }
 
@@ -90,6 +92,26 @@ func (m *MaskingPolicyModel) WithDependsOn(values ...string) *MaskingPolicyModel
 
 func (m *MaskingPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *MaskingPolicyModel {
 	m.DynamicBlock = dynamicBlock
+	return m
+}
+
+func (m *MaskingPolicyModel) WithTimeoutCreate(duration string) *MaskingPolicyModel {
+	m.SetTimeoutCreate(duration)
+	return m
+}
+
+func (m *MaskingPolicyModel) WithTimeoutRead(duration string) *MaskingPolicyModel {
+	m.SetTimeoutRead(duration)
+	return m
+}
+
+func (m *MaskingPolicyModel) WithTimeoutUpdate(duration string) *MaskingPolicyModel {
+	m.SetTimeoutUpdate(duration)
+	return m
+}
+
+func (m *MaskingPolicyModel) WithTimeoutDelete(duration string) *MaskingPolicyModel {
+	m.SetTimeoutDelete(duration)
 	return m
 }
 

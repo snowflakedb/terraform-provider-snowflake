@@ -70,10 +70,12 @@ func (s *SecretWithClientCredentialsModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithClientCredentialsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -84,6 +86,26 @@ func (s *SecretWithClientCredentialsModel) WithDependsOn(values ...string) *Secr
 
 func (s *SecretWithClientCredentialsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecretWithClientCredentialsModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithTimeoutCreate(duration string) *SecretWithClientCredentialsModel {
+	s.SetTimeoutCreate(duration)
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithTimeoutRead(duration string) *SecretWithClientCredentialsModel {
+	s.SetTimeoutRead(duration)
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithTimeoutUpdate(duration string) *SecretWithClientCredentialsModel {
+	s.SetTimeoutUpdate(duration)
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithTimeoutDelete(duration string) *SecretWithClientCredentialsModel {
+	s.SetTimeoutDelete(duration)
 	return s
 }
 

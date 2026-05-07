@@ -89,10 +89,12 @@ func (f *FunctionScalaModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionScalaModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
+		Timeouts:  f.Timeouts(),
 	})
 }
 
@@ -103,6 +105,26 @@ func (f *FunctionScalaModel) WithDependsOn(values ...string) *FunctionScalaModel
 
 func (f *FunctionScalaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionScalaModel {
 	f.DynamicBlock = dynamicBlock
+	return f
+}
+
+func (f *FunctionScalaModel) WithTimeoutCreate(duration string) *FunctionScalaModel {
+	f.SetTimeoutCreate(duration)
+	return f
+}
+
+func (f *FunctionScalaModel) WithTimeoutRead(duration string) *FunctionScalaModel {
+	f.SetTimeoutRead(duration)
+	return f
+}
+
+func (f *FunctionScalaModel) WithTimeoutUpdate(duration string) *FunctionScalaModel {
+	f.SetTimeoutUpdate(duration)
+	return f
+}
+
+func (f *FunctionScalaModel) WithTimeoutDelete(duration string) *FunctionScalaModel {
+	f.SetTimeoutDelete(duration)
 	return f
 }
 

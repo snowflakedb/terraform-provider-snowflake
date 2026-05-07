@@ -89,10 +89,12 @@ func (f *FunctionPythonModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionPythonModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
+		Timeouts:  f.Timeouts(),
 	})
 }
 
@@ -103,6 +105,26 @@ func (f *FunctionPythonModel) WithDependsOn(values ...string) *FunctionPythonMod
 
 func (f *FunctionPythonModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionPythonModel {
 	f.DynamicBlock = dynamicBlock
+	return f
+}
+
+func (f *FunctionPythonModel) WithTimeoutCreate(duration string) *FunctionPythonModel {
+	f.SetTimeoutCreate(duration)
+	return f
+}
+
+func (f *FunctionPythonModel) WithTimeoutRead(duration string) *FunctionPythonModel {
+	f.SetTimeoutRead(duration)
+	return f
+}
+
+func (f *FunctionPythonModel) WithTimeoutUpdate(duration string) *FunctionPythonModel {
+	f.SetTimeoutUpdate(duration)
+	return f
+}
+
+func (f *FunctionPythonModel) WithTimeoutDelete(duration string) *FunctionPythonModel {
+	f.SetTimeoutDelete(duration)
 	return f
 }
 

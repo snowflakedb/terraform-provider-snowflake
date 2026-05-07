@@ -60,10 +60,12 @@ func (i *ImageRepositoryModel) MarshalJSON() ([]byte, error) {
 	type Alias ImageRepositoryModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(i),
 		DependsOn: i.DependsOn(),
+		Timeouts:  i.Timeouts(),
 	})
 }
 
@@ -74,6 +76,26 @@ func (i *ImageRepositoryModel) WithDependsOn(values ...string) *ImageRepositoryM
 
 func (i *ImageRepositoryModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ImageRepositoryModel {
 	i.DynamicBlock = dynamicBlock
+	return i
+}
+
+func (i *ImageRepositoryModel) WithTimeoutCreate(duration string) *ImageRepositoryModel {
+	i.SetTimeoutCreate(duration)
+	return i
+}
+
+func (i *ImageRepositoryModel) WithTimeoutRead(duration string) *ImageRepositoryModel {
+	i.SetTimeoutRead(duration)
+	return i
+}
+
+func (i *ImageRepositoryModel) WithTimeoutUpdate(duration string) *ImageRepositoryModel {
+	i.SetTimeoutUpdate(duration)
+	return i
+}
+
+func (i *ImageRepositoryModel) WithTimeoutDelete(duration string) *ImageRepositoryModel {
+	i.SetTimeoutDelete(duration)
 	return i
 }
 

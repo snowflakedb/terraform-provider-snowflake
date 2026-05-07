@@ -84,10 +84,12 @@ func (e *ExternalOauthSecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias ExternalOauthSecurityIntegrationModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(e),
 		DependsOn: e.DependsOn(),
+		Timeouts:  e.Timeouts(),
 	})
 }
 
@@ -98,6 +100,26 @@ func (e *ExternalOauthSecurityIntegrationModel) WithDependsOn(values ...string) 
 
 func (e *ExternalOauthSecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalOauthSecurityIntegrationModel {
 	e.DynamicBlock = dynamicBlock
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationModel) WithTimeoutCreate(duration string) *ExternalOauthSecurityIntegrationModel {
+	e.SetTimeoutCreate(duration)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationModel) WithTimeoutRead(duration string) *ExternalOauthSecurityIntegrationModel {
+	e.SetTimeoutRead(duration)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationModel) WithTimeoutUpdate(duration string) *ExternalOauthSecurityIntegrationModel {
+	e.SetTimeoutUpdate(duration)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationModel) WithTimeoutDelete(duration string) *ExternalOauthSecurityIntegrationModel {
+	e.SetTimeoutDelete(duration)
 	return e
 }
 

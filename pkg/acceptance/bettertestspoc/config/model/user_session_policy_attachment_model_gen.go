@@ -52,10 +52,12 @@ func (u *UserSessionPolicyAttachmentModel) MarshalJSON() ([]byte, error) {
 	type Alias UserSessionPolicyAttachmentModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(u),
 		DependsOn: u.DependsOn(),
+		Timeouts:  u.Timeouts(),
 	})
 }
 
@@ -66,6 +68,26 @@ func (u *UserSessionPolicyAttachmentModel) WithDependsOn(values ...string) *User
 
 func (u *UserSessionPolicyAttachmentModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *UserSessionPolicyAttachmentModel {
 	u.DynamicBlock = dynamicBlock
+	return u
+}
+
+func (u *UserSessionPolicyAttachmentModel) WithTimeoutCreate(duration string) *UserSessionPolicyAttachmentModel {
+	u.SetTimeoutCreate(duration)
+	return u
+}
+
+func (u *UserSessionPolicyAttachmentModel) WithTimeoutRead(duration string) *UserSessionPolicyAttachmentModel {
+	u.SetTimeoutRead(duration)
+	return u
+}
+
+func (u *UserSessionPolicyAttachmentModel) WithTimeoutUpdate(duration string) *UserSessionPolicyAttachmentModel {
+	u.SetTimeoutUpdate(duration)
+	return u
+}
+
+func (u *UserSessionPolicyAttachmentModel) WithTimeoutDelete(duration string) *UserSessionPolicyAttachmentModel {
+	u.SetTimeoutDelete(duration)
 	return u
 }
 
