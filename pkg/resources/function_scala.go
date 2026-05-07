@@ -125,7 +125,7 @@ func ReadContextFunctionScala(ctx context.Context, d *schema.ResourceData, meta 
 	errs := errors.Join(
 		// not reading is_secure on purpose (handled as external change to show output)
 		readFunctionOrProcedureArguments(d, allFunctionDetails.functionDetails.NormalizedArguments),
-		d.Set("return_type", allFunctionDetails.functionDetails.ReturnDataType.ToSql()),
+		HandleDatatypeSet(d, "return_type", allFunctionDetails.functionDetails.ReturnDataType),
 		// not reading null_input_behavior on purpose (handled as external change to show output)
 		// not reading return_results_behavior on purpose (handled as external change to show output)
 		setOptionalFromStringPtr(d, "runtime_version", allFunctionDetails.functionDetails.RuntimeVersion),

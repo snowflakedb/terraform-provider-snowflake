@@ -36,17 +36,17 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 			"comment":                                         config.StringVariable("foo"),
 			"enabled":                                         config.BoolVariable(true),
 			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable(role.ID().Name())),
-			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
+			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
 			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_issuer":                           config.StringVariable(issuer),
 			"external_oauth_rsa_public_key":                   config.StringVariable(rsaKey),
 			"external_oauth_rsa_public_key_2":                 config.StringVariable(rsaKey),
 			"external_oauth_scope_delimiter":                  config.StringVariable("."),
 			"external_oauth_scope_mapping_attribute":          config.StringVariable("foo"),
-			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
+			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)),
 			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
 			"name":                config.StringVariable(id.Name()),
-			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 		}
 	}
 	resource.Test(t, resource.TestCase{
@@ -63,16 +63,16 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 						HasComment("foo").
 						HasEnabled(true).
 						HasExternalOauthBlockedRolesList(role.ID().Name()).
-						HasExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+						HasExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 						HasExternalOauthAudienceList("foo").
 						HasExternalOauthIssuer(issuer).
 						HasExternalOauthRsaPublicKey(rsaKey).
 						HasExternalOauthScopeDelimiter(".").
 						HasExternalOauthScopeMappingAttribute("foo").
-						HasExternalOauthSnowflakeUserMappingAttribute(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
+						HasExternalOauthSnowflakeUserMappingAttribute(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
 						HasExternalOauthTokenUserMappingClaim("foo").
 						HasName(id.Name()).
-						HasExternalOauthType(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+						HasExternalOauthType(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 					resourceshowoutputassert.SecurityIntegrationShowOutput(t, "snowflake_external_oauth_integration.test").
 						HasName(id.Name()).
 						HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
@@ -84,14 +84,14 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 						HasEnabled("true").
 						HasExternalOauthIssuer(issuer).
 						HasExternalOauthJwsKeysUrl("").
-						HasExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+						HasExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 						HasExternalOauthRsaPublicKey(rsaKey).
 						HasExternalOauthRsaPublicKey2(rsaKey).
 						HasExternalOauthBlockedRolesList(strings.Join(expectedRoles, ",")).
 						HasExternalOauthAllowedRolesList("").
 						HasExternalOauthAudienceList("foo").
 						HasExternalOauthTokenUserMappingClaim("['foo']").
-						HasExternalOauthSnowflakeUserMappingAttribute(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
+						HasExternalOauthSnowflakeUserMappingAttribute(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
 						HasExternalOauthScopeDelimiter(".").
 						HasComment("foo"),
 				),
@@ -106,15 +106,15 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 						HasCommentString("foo").
 						HasEnabledString("true").
 						HasExternalOauthBlockedRolesList(expectedRoles[0], expectedRoles[1], expectedRoles[2]).
-						HasExternalOauthAnyRoleModeString(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+						HasExternalOauthAnyRoleModeString(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 						HasExternalOauthAudienceList("foo").
 						HasExternalOauthIssuerString(issuer).
 						HasExternalOauthRsaPublicKeyString(rsaKey).
 						HasExternalOauthScopeDelimiterString(".").
-						HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
+						HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
 						HasExternalOauthTokenUserMappingClaim("foo").
 						HasNameString(id.Name()).
-						HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+						HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 				),
 			},
 		},
@@ -137,17 +137,17 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 			"comment":                                         config.StringVariable("foo"),
 			"enabled":                                         config.BoolVariable(true),
 			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable(role.ID().Name())),
-			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
+			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
 			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_issuer":                           config.StringVariable(issuer),
 			"external_oauth_rsa_public_key":                   config.StringVariable(rsaKey),
 			"external_oauth_rsa_public_key_2":                 config.StringVariable(rsaKey),
 			"external_oauth_scope_delimiter":                  config.StringVariable("."),
 			"external_oauth_scope_mapping_attribute":          config.StringVariable("foo"),
-			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
+			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)),
 			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
 			"name":                config.StringVariable(id.Name()),
-			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 		}
 	}
 	resource.Test(t, resource.TestCase{
@@ -164,16 +164,16 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 						HasComment("foo").
 						HasEnabled(true).
 						HasExternalOauthBlockedRolesList(role.ID().Name()).
-						HasExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+						HasExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 						HasExternalOauthAudienceList("foo").
 						HasExternalOauthIssuer(issuer).
 						HasExternalOauthRsaPublicKey(rsaKey).
 						HasExternalOauthScopeDelimiter(".").
 						HasExternalOauthScopeMappingAttribute("foo").
-						HasExternalOauthSnowflakeUserMappingAttribute(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
+						HasExternalOauthSnowflakeUserMappingAttribute(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
 						HasExternalOauthTokenUserMappingClaim("foo").
 						HasName(id.Name()).
-						HasExternalOauthType(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+						HasExternalOauthType(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 					resourceshowoutputassert.SecurityIntegrationShowOutput(t, "snowflake_external_oauth_integration.test").
 						HasName(id.Name()).
 						HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
@@ -185,14 +185,14 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 						HasEnabled("true").
 						HasExternalOauthIssuer(issuer).
 						HasExternalOauthJwsKeysUrl("").
-						HasExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+						HasExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 						HasExternalOauthRsaPublicKey(rsaKey).
 						HasExternalOauthRsaPublicKey2(rsaKey).
 						HasExternalOauthBlockedRolesList(role.ID().Name()).
 						HasExternalOauthAllowedRolesList("").
 						HasExternalOauthAudienceList("foo").
 						HasExternalOauthTokenUserMappingClaim("['foo']").
-						HasExternalOauthSnowflakeUserMappingAttribute(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)).
+						HasExternalOauthSnowflakeUserMappingAttribute(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
 						HasExternalOauthScopeDelimiter(".").
 						HasComment("foo"),
 				),

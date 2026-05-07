@@ -6,6 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var DataMetricFunctionRefEntityDomainOptionEnumDef = g.NewEnum(
+	"DataMetricFunctionRefEntityDomainOption", "DataMetricFunctionRefEntityDomainOptions",
+	"VIEW",
+)
+
 var dataMetricFunctionReferenceParametersDef = g.NewQueryStruct("dataMetricFunctionReferenceParameters").
 	SQLWithCustomFieldName("functionFullyQualifiedName", "SNOWFLAKE.INFORMATION_SCHEMA.DATA_METRIC_FUNCTION_REFERENCES").
 	OptionalQueryStructField(
@@ -18,7 +23,7 @@ var dataMetricFunctionReferenceFunctionArgumentsDef = g.NewQueryStruct("dataMetr
 	PredefinedQueryStructField("refEntityName", "[]ObjectIdentifier", g.ParameterOptions().ArrowEquals().SingleQuotes().SQL("REF_ENTITY_NAME").Required()).
 	OptionalAssignment(
 		"REF_ENTITY_DOMAIN",
-		g.KindOfT[sdkcommons.DataMetricFunctionRefEntityDomainOption](),
+		DataMetricFunctionRefEntityDomainOptionEnumDef.Kind(),
 		g.ParameterOptions().SingleQuotes().ArrowEquals().Required(),
 	).WithValidation(g.ValidateValueSet, "RefEntityDomain").
 	WithValidation(g.ValidateValueSet, "refEntityName")
@@ -67,4 +72,6 @@ var dataMetricFunctionReferencesDef = g.NewInterface(
 		Text("RefId").
 		Text("Schedule").
 		Text("ScheduleStatus"),
+).WithEnums(
+	DataMetricFunctionRefEntityDomainOptionEnumDef,
 )

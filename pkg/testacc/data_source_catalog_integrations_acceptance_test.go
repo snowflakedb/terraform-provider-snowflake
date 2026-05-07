@@ -162,7 +162,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasComment(""),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceAwsGlueDescribeOutput(t, glueWithDescribe.DatasourceReference()).
 						HasId(glueId).
-						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 						HasEnabled(false).
 						HasRefreshIntervalSeconds(30).
@@ -185,7 +185,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasComment(""),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceObjectStorageDescribeOutput(t, objectStorageWithDescribe.DatasourceReference()).
 						HasId(objectStorageId).
-						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 						HasEnabled(true).
 						HasRefreshIntervalSeconds(30).
@@ -235,7 +235,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasComment(""),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceIcebergRestDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
 						HasId(icebergId).
-						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 						HasEnabled(false).
 						HasRefreshIntervalSeconds(refreshIntervalSeconds).

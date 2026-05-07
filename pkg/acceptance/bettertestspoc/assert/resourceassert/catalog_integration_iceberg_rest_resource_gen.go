@@ -44,6 +44,11 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespace(expect
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSource(expected string) *CatalogIntegrationIcebergRestResourceAssert {
+	c.StringValueSet("catalog_source", expected)
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasComment(expected string) *CatalogIntegrationIcebergRestResourceAssert {
 	c.StringValueSet("comment", expected)
 	return c
@@ -84,6 +89,11 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespaceString(
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSourceString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
+	c.AddAssertion(assert.ValueSet("catalog_source", expected))
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCommentString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
 	c.AddAssertion(assert.ValueSet("comment", expected))
 	return c
@@ -118,6 +128,11 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoCatalogNamespace() *C
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoCatalogSource() *CatalogIntegrationIcebergRestResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("catalog_source"))
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoComment() *CatalogIntegrationIcebergRestResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("comment"))
 	return c
@@ -149,6 +164,11 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasBearerRestAuthenticatio
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespaceEmpty() *CatalogIntegrationIcebergRestResourceAssert {
 	c.AddAssertion(assert.ValueSet("catalog_namespace", ""))
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSourceEmpty() *CatalogIntegrationIcebergRestResourceAssert {
+	c.AddAssertion(assert.ValueSet("catalog_source", ""))
 	return c
 }
 
@@ -188,6 +208,11 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasNameNotEmpty() *Catalog
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespaceNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
 	c.AddAssertion(assert.ValuePresent("catalog_namespace"))
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSourceNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
+	c.AddAssertion(assert.ValuePresent("catalog_source"))
 	return c
 }
 

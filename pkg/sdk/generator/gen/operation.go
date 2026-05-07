@@ -191,11 +191,22 @@ func (i *Interface) RevokeOperation(doc string, queryStruct *QueryStruct) *Inter
 	return i.newSimpleOperation(string(OperationKindRevoke), doc, queryStruct)
 }
 
-func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
+func (i *Interface) appendShowByID(filtering []ShowByIDFilteringKind) *Interface {
+	if len(filtering) == 1 && filtering[0] == ShowByIDNoFiltering {
+		return i.ShowByIdOperationWithNoFiltering()
+	}
+	if len(filtering) == 0 {
+		return i.ShowByIdOperationWithFiltering(ShowByIDLikeFiltering)
+	}
+	return i.ShowByIdOperationWithFiltering(filtering[0], filtering[1:]...)
+}
+
+func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
 	op := i.newOperationWithDBMapping(string(OperationKindShow), doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
 	kind := ShowMappingKindSlice
+	i.ShowObjectName = op.ShowMapping.To.Name
 	op.ShowKind = &kind
-	return i
+	return i.appendShowByID(filtering)
 }
 
 func (i *Interface) CustomShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {

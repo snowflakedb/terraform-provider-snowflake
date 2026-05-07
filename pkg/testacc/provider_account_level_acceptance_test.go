@@ -42,10 +42,10 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 		sdk.NewCreateExternalOauthSecurityIntegrationRequest(
 			securityIntegrationId,
 			true,
-			sdk.ExternalOauthSecurityIntegrationTypeOkta,
+			sdk.ExternalOauthSecurityIntegrationTypeOptionOkta,
 			oauthIssuerUrl,
 			[]sdk.TokenUserMappingClaim{{Claim: "sub"}},
-			sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
+			sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName,
 		).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: oauthJwsKeysUrl}}).
 			WithExternalOauthAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{snowflakeroles.Restricted}}).
 			WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: url}}}),

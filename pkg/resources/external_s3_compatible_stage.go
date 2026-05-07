@@ -109,7 +109,7 @@ func ExternalS3CompatibleStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3CompatibleStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, ShowOutputAttributeName, "name", "comment", "url", "endpoint"),
-			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "file_format"),
+			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),

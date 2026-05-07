@@ -363,7 +363,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	switch opts.Type {
-	case sdk.FileFormatTypeCSV:
+	case sdk.FileFormatTypeCsv:
 		if v, ok := d.GetOk("compression"); ok {
 			comp := sdk.CsvCompression(v.(string))
 			opts.CSVCompression = &comp
@@ -425,7 +425,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			enc := sdk.CsvEncoding(v.(string))
 			opts.CSVEncoding = &enc
 		}
-	case sdk.FileFormatTypeJSON:
+	case sdk.FileFormatTypeJson:
 		if v, ok := d.GetOk("compression"); ok {
 			comp := sdk.JsonCompression(v.(string))
 			opts.JSONCompression = &comp
@@ -484,7 +484,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 			opts.AvroNullIf = &nullIf
 		}
-	case sdk.FileFormatTypeORC:
+	case sdk.FileFormatTypeOrc:
 		opts.ORCTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
 			nullIf := []sdk.NullString{}
@@ -517,7 +517,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 			opts.ParquetNullIf = &nullIf
 		}
-	case sdk.FileFormatTypeXML:
+	case sdk.FileFormatTypeXml:
 		if v, ok := d.GetOk("compression"); ok {
 			comp := sdk.XmlCompression(v.(string))
 			opts.XMLCompression = &comp
@@ -599,7 +599,7 @@ func ReadFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	switch fileFormat.Type {
-	case sdk.FileFormatTypeCSV:
+	case sdk.FileFormatTypeCsv:
 		if err := d.Set("compression", fileFormat.Options.CSVCompression); err != nil {
 			return diag.FromErr(err)
 		}
@@ -667,7 +667,7 @@ func ReadFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		if err := d.Set("encoding", fileFormat.Options.CSVEncoding); err != nil {
 			return diag.FromErr(err)
 		}
-	case sdk.FileFormatTypeJSON:
+	case sdk.FileFormatTypeJson:
 		if err := d.Set("compression", fileFormat.Options.JSONCompression); err != nil {
 			return diag.FromErr(err)
 		}
@@ -731,7 +731,7 @@ func ReadFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		if err := d.Set("null_if", nullIf); err != nil {
 			return diag.FromErr(err)
 		}
-	case sdk.FileFormatTypeORC:
+	case sdk.FileFormatTypeOrc:
 		if err := d.Set("trim_space", fileFormat.Options.ORCTrimSpace); err != nil {
 			return diag.FromErr(err)
 		}
@@ -759,7 +759,7 @@ func ReadFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		if err := d.Set("null_if", nullIf); err != nil {
 			return diag.FromErr(err)
 		}
-	case sdk.FileFormatTypeXML:
+	case sdk.FileFormatTypeXml:
 		if err := d.Set("compression", fileFormat.Options.XMLCompression); err != nil {
 			return diag.FromErr(err)
 		}
@@ -823,7 +823,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	opts := sdk.AlterFileFormatOptions{Set: &sdk.LegacyFileFormatTypeOptions{}}
 
 	switch sdk.FileFormatType(d.Get("format_type").(string)) {
-	case sdk.FileFormatTypeCSV:
+	case sdk.FileFormatTypeCsv:
 		if d.HasChange("compression") {
 			v := sdk.CsvCompression(d.Get("compression").(string))
 			opts.Set.CSVCompression = &v
@@ -937,7 +937,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.Set.CSVEncoding = &v
 			runSet = true
 		}
-	case sdk.FileFormatTypeJSON:
+	case sdk.FileFormatTypeJson:
 		if d.HasChange("compression") {
 			comp := sdk.JsonCompression(d.Get("compression").(string))
 			opts.Set.JSONCompression = &comp
@@ -1045,7 +1045,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.Set.AvroNullIf = &nullIf
 			runSet = true
 		}
-	case sdk.FileFormatTypeORC:
+	case sdk.FileFormatTypeOrc:
 		if d.HasChange("trim_space") {
 			v := d.Get("trim_space").(bool)
 			opts.Set.ORCTrimSpace = &v
@@ -1093,7 +1093,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.Set.ParquetNullIf = &nullIf
 			runSet = true
 		}
-	case sdk.FileFormatTypeXML:
+	case sdk.FileFormatTypeXml:
 		if d.HasChange("compression") {
 			comp := sdk.XmlCompression(d.Get("compression").(string))
 			opts.Set.XMLCompression = &comp

@@ -28,7 +28,7 @@ func v093ScimIntegrationStateUpgrader(ctx context.Context, rawState map[string]a
 		return rawState, nil
 	}
 
-	if v, ok := rawState["scim_client"]; ok && strings.EqualFold(strings.TrimSpace(v.(string)), string(sdk.ScimSecurityIntegrationScimClientAzure)) {
+	if v, ok := rawState["scim_client"]; ok && strings.EqualFold(strings.TrimSpace(v.(string)), string(sdk.ScimSecurityIntegrationScimClientOptionAzure)) {
 		rawState["sync_password"] = BooleanDefault
 	}
 

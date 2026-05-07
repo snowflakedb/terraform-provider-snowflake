@@ -57,7 +57,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", "null")
-		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly))
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentOptionOptional))
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
 		assertProperty(t, desc, "CLIENT_POLICY", "{}")
@@ -76,36 +76,36 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		err := client.AuthenticationPolicies.Create(ctx, sdk.NewCreateAuthenticationPolicyRequest(id).
 			WithComment(comment).
-			WithMfaEnrollment(sdk.MfaEnrollmentOptional).
+			WithMfaEnrollment(sdk.MfaEnrollmentOptionOptional).
 			WithSecurityIntegrations(*sdk.NewSecurityIntegrationsOptionRequest().
 				WithSecurityIntegrations([]sdk.AccountObjectIdentifier{
 					samlIntegration.ID(),
 				}),
 			).
 			WithClientTypes([]sdk.ClientTypes{
-				{ClientType: sdk.ClientTypesDrivers},
-				{ClientType: sdk.ClientTypesSnowSql},
+				{ClientType: sdk.ClientTypesOptionDrivers},
+				{ClientType: sdk.ClientTypesOptionSnowsql},
 			}).
 			WithAuthenticationMethods([]sdk.AuthenticationMethods{
-				{Method: sdk.AuthenticationMethodsPassword},
-				{Method: sdk.AuthenticationMethodsSaml},
+				{Method: sdk.AuthenticationMethodsOptionPassword},
+				{Method: sdk.AuthenticationMethodsOptionSaml},
 			}).
 			WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
 				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: sdk.MfaPolicyAllowedMethodPassKey},
-					{Method: sdk.MfaPolicyAllowedMethodDuo},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
 				}),
 			).
 			WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
 				WithDefaultExpiryInDays(1).
 				WithMaxExpiryInDays(30).
 				WithRequireRoleRestrictionForServiceUsers(false).
-				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
+				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 			).
 			WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
 				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-					{Provider: sdk.AllowedProviderAll},
+					{Provider: sdk.AllowedProviderOptionAll},
 				}).
 				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 					{Value: "111122223333"},
@@ -136,7 +136,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", comment)
-		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly))
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentOptionOptional))
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL]")
 		assertProperty(t, desc, "CLIENT_POLICY", "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}")
@@ -150,7 +150,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		// Snowflake allows CLIENT_POLICY only when CLIENT_TYPES is empty, includes ALL, or includes DRIVERS.
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.AuthenticationPolicies.Create(ctx, sdk.NewCreateAuthenticationPolicyRequest(id).
-			WithClientTypes([]sdk.ClientTypes{{ClientType: sdk.ClientTypesSnowflakeUi}}).
+			WithClientTypes([]sdk.ClientTypes{{ClientType: sdk.ClientTypesOptionSnowflakeUi}}).
 			WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyEntry{
 				{
 					ClientType: sdk.ClientPolicyDriverTypeGoDriver,
@@ -174,36 +174,36 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		err := client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicy.ID()).
 			WithSet(*sdk.NewAuthenticationPolicySetRequest().
 				WithComment(comment).
-				WithMfaEnrollment(sdk.MfaEnrollmentRequired).
+				WithMfaEnrollment(sdk.MfaEnrollmentOptionRequired).
 				WithSecurityIntegrations(*sdk.NewSecurityIntegrationsOptionRequest().
 					WithSecurityIntegrations([]sdk.AccountObjectIdentifier{
 						samlIntegration.ID(),
 					}),
 				).
 				WithClientTypes([]sdk.ClientTypes{
-					{ClientType: sdk.ClientTypesDrivers},
-					{ClientType: sdk.ClientTypesSnowSql},
-					{ClientType: sdk.ClientTypesSnowflakeUi},
+					{ClientType: sdk.ClientTypesOptionDrivers},
+					{ClientType: sdk.ClientTypesOptionSnowsql},
+					{ClientType: sdk.ClientTypesOptionSnowflakeUi},
 				}).
 				WithAuthenticationMethods([]sdk.AuthenticationMethods{
-					{Method: sdk.AuthenticationMethodsPassword},
-					{Method: sdk.AuthenticationMethodsSaml},
+					{Method: sdk.AuthenticationMethodsOptionPassword},
+					{Method: sdk.AuthenticationMethodsOptionSaml},
 				}).
 				WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-					WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
+					WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
 					WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-						{Method: sdk.MfaPolicyAllowedMethodPassKey},
-						{Method: sdk.MfaPolicyAllowedMethodDuo},
+						{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+						{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
 					}),
 				).
 				WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
 					WithDefaultExpiryInDays(1).
 					WithMaxExpiryInDays(30).
-					WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
+					WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 				).
 				WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
 					WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-						{Provider: sdk.AllowedProviderAll},
+						{Provider: sdk.AllowedProviderOptionAll},
 					}).
 					WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 						{Value: "111122223333"},
@@ -226,7 +226,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", comment)
-		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentRequired))
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentOptionRequired))
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL, SNOWFLAKE_UI]")
 		assertProperty(t, desc, "CLIENT_POLICY", "{SQL_ALCHEMY={MINIMUM_VERSION=2.0.0}}")
@@ -253,7 +253,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", "null")
-		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly))
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentOptionOptional))
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
 		assertProperty(t, desc, "CLIENT_POLICY", "{}")

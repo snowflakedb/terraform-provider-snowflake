@@ -1,15 +1,40 @@
 package defs
 
 import (
-	"fmt"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	StorageProviderEnumDef = g.NewEnum(
+		"StorageProvider", "StorageProviders",
+		"GCS", "AZURE", "S3", "S3GOV", "S3COMPAT",
+	)
+	S3StorageProviderEnumDef = g.NewEnum(
+		"S3StorageProvider", "S3StorageProviders",
+		"S3", "S3GOV",
+	)
+	S3EncryptionTypeEnumDef = g.NewEnum(
+		"S3EncryptionType", "S3EncryptionTypes",
+		"AWS_SSE_S3", "AWS_SSE_KMS", "NONE",
+	)
+	GCSEncryptionTypeEnumDef = g.NewEnum(
+		"GCSEncryptionType", "GCSEncryptionTypes",
+		"GCS_SSE_KMS", "NONE",
+	)
+	AzureEncryptionTypeEnumDef = g.NewEnum(
+		"AzureEncryptionType", "AzureEncryptionTypes",
+		"NONE",
+	)
+	S3CompatEncryptionTypeEnumDef = g.NewEnum(
+		"S3CompatEncryptionType", "S3CompatEncryptionTypes",
+		"NONE",
+	)
+)
+
 var externalS3StorageLocationDef = g.NewQueryStruct("S3StorageLocationParams").
-	Assignment("STORAGE_PROVIDER", g.KindOfT[sdkcommons.S3StorageProvider](), g.ParameterOptions().SingleQuotes().Required()).
+	Assignment("STORAGE_PROVIDER", S3StorageProviderEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
@@ -18,24 +43,24 @@ var externalS3StorageLocationDef = g.NewQueryStruct("S3StorageLocationParams").
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalVolumeS3Encryption").
-			AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.S3EncryptionType](), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
+			AssignmentWithFieldName("TYPE", S3EncryptionTypeEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 	)
 
 var externalGCSStorageLocationDef = g.NewQueryStruct("GCSStorageLocationParams").
-	PredefinedQueryStructField("StorageProviderGcs", "string", g.StaticOptions().SQL(fmt.Sprintf("STORAGE_PROVIDER = '%s'", sdkcommons.StorageProviderGCS))).
+	PredefinedQueryStructField("StorageProviderGcs", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'GCS'")).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalVolumeGCSEncryption").
-			AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.GCSEncryptionType](), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
+			AssignmentWithFieldName("TYPE", GCSEncryptionTypeEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 	)
 
 var externalAzureStorageLocationDef = g.NewQueryStruct("AzureStorageLocationParams").
-	PredefinedQueryStructField("StorageProviderAzure", "string", g.StaticOptions().SQL(fmt.Sprintf("STORAGE_PROVIDER = '%s'", sdkcommons.StorageProviderAzure))).
+	PredefinedQueryStructField("StorageProviderAzure", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'AZURE'")).
 	TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions())
@@ -150,42 +175,37 @@ var externalVolumesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-external-volume",
-		g.DbStruct("externalVolumeDescRow").
-			Text("parent_property").
-			Text("property").
-			Text("property_type").
-			Text("property_value").
-			Text("property_default"),
-		g.PlainStruct("ExternalVolumeProperty").
-			Text("Parent").
-			Text("Name").
-			Text("Type").
-			Text("Value").
-			Text("Default"),
+		g.StructPair("externalVolumeDescRow", "ExternalVolumeProperty").
+			Text("parent_property", g.WithPlainFieldName("Parent")).
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescExternalVolume").
 			Describe().
 			SQL("EXTERNAL VOLUME").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes",
-		g.DbStruct("externalVolumeShowRow").
+		g.StructPair("externalVolumeShowRow", "ExternalVolume").
 			Text("name").
 			Bool("allow_writes").
-			OptionalText("comment"),
-		g.PlainStruct("ExternalVolume").
-			Text("Name").
-			Bool("AllowWrites").
-			Text("Comment"),
+			OptionalText("comment", g.WithRequiredInPlain()),
 		g.NewQueryStruct("ShowExternalVolumes").
 			Show().
 			SQL("EXTERNAL VOLUMES").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
+	WithEnums(
+		StorageProviderEnumDef,
+		S3StorageProviderEnumDef,
+		S3EncryptionTypeEnumDef,
+		GCSEncryptionTypeEnumDef,
+		AzureEncryptionTypeEnumDef,
+		S3CompatEncryptionTypeEnumDef,
 	)

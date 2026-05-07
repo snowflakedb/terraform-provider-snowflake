@@ -365,7 +365,7 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAut
 		k, v, _ := strings.Cut(part, "=")
 		if k == "TYPE" {
 			switch v {
-			case string(CatalogIntegrationRestAuthenticationTypeOAuth):
+			case string(CatalogIntegrationRestAuthenticationTypeOauth):
 				if restAuth, err := parseOAuthRestAuthenticationProperty(parts); err != nil {
 					errs = append(errs, err)
 				} else {
@@ -377,7 +377,7 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAut
 				} else {
 					bearerRestAuthentication = restAuth
 				}
-			case string(CatalogIntegrationRestAuthenticationTypeSigV4):
+			case string(CatalogIntegrationRestAuthenticationTypeSigv4):
 				if restAuth, err := parseSigV4RestAuthenticationProperty(parts); err != nil {
 					errs = append(errs, err)
 				} else {
@@ -432,11 +432,4 @@ func parseCommaSeparatedEnumMap(property CatalogIntegrationProperty) []string {
 	s := strings.TrimPrefix(property.Value, "{")
 	s = strings.TrimSuffix(s, "}")
 	return ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
-}
-
-func emptyIfNull(s string) string {
-	if s == "null" {
-		return ""
-	}
-	return s
 }

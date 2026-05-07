@@ -48,6 +48,11 @@ var jobServiceFromSpecificationTemplateDef = g.NewQueryStruct("JobServiceFromSpe
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
 	WithValidation(g.ExactlyOneValueSet, "Location", "SpecificationTemplate")
 
+var ServiceStatusEnumDef = g.NewEnum(
+	"ServiceStatus", "ServiceStatuses",
+	"PENDING", "RUNNING", "FAILED", "DONE", "SUSPENDING", "SUSPENDED", "DELETING", "DELETED", "INTERNAL_ERROR",
+)
+
 var servicesDef = g.NewInterface(
 	"Services",
 	"Service",
@@ -141,15 +146,15 @@ var servicesDef = g.NewInterface(
 		Name().
 		OptionalSQL("FORCE").
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-services",
-	g.DbStruct("servicesRow").
+	g.StructPair("servicesRow", "Service").
 		Text("name").
-		Text("status").
+		PlainField("status", ServiceStatusEnumDef.Kind()).
 		Text("database_name").
 		Text("schema_name").
 		Text("owner").
-		Text("compute_pool").
+		AccountObjectIdentifier("compute_pool", g.WithPlainFieldName("ComputePool")).
 		Text("dns_name").
 		Number("current_instances").
 		Number("target_instances").
@@ -157,7 +162,7 @@ var servicesDef = g.NewInterface(
 		Number("min_instances").
 		Number("max_instances").
 		Bool("auto_resume").
-		OptionalText("external_access_integrations").
+		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Time("created_on").
 		Time("updated_on").
 		OptionalTime("resumed_on").
@@ -165,42 +170,13 @@ var servicesDef = g.NewInterface(
 		Number("auto_suspend_secs").
 		OptionalText("comment").
 		Text("owner_role_type").
-		OptionalText("query_warehouse").
+		Field("query_warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("QueryWarehouse")).
 		Bool("is_job").
 		Bool("is_async_job").
 		Text("spec_digest").
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
 		OptionalText("managing_object_name"),
-	g.PlainStruct("Service").
-		Text("Name").
-		Field("Status", "ServiceStatus").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("Owner").
-		Field("ComputePool", "AccountObjectIdentifier").
-		Text("DnsName").
-		Number("CurrentInstances").
-		Number("TargetInstances").
-		Number("MinReadyInstances").
-		Number("MinInstances").
-		Number("MaxInstances").
-		Bool("AutoResume").
-		Field("ExternalAccessIntegrations", "[]AccountObjectIdentifier").
-		Time("CreatedOn").
-		Time("UpdatedOn").
-		OptionalTime("ResumedOn").
-		OptionalTime("SuspendedOn").
-		Number("AutoSuspendSecs").
-		OptionalText("Comment").
-		Text("OwnerRoleType").
-		Field("QueryWarehouse", "*AccountObjectIdentifier").
-		Bool("IsJob").
-		Bool("IsAsyncJob").
-		Text("SpecDigest").
-		Bool("IsUpgrading").
-		OptionalText("ManagingObjectDomain").
-		OptionalText("ManagingObjectName"),
 	g.NewQueryStruct("ShowServices").
 		Show().
 		OptionalSQL("JOB").
@@ -211,19 +187,18 @@ var servicesDef = g.NewInterface(
 		OptionalStartsWith().
 		OptionalLimitFrom().
 		WithValidation(g.ConflictingFields, "Job", "ExcludeJobs"),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDServiceInFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-service",
-	g.DbStruct("serviceDescRow").
+	g.StructPair("serviceDescRow", "ServiceDetails").
 		Text("name").
-		Text("status").
+		PlainField("status", ServiceStatusEnumDef.Kind()).
 		Text("database_name").
 		Text("schema_name").
 		Text("owner").
-		Text("compute_pool").
+		AccountObjectIdentifier("compute_pool", g.WithPlainFieldName("ComputePool")).
 		Text("spec").
 		Text("dns_name").
 		Number("current_instances").
@@ -232,7 +207,7 @@ var servicesDef = g.NewInterface(
 		Number("min_instances").
 		Number("max_instances").
 		Bool("auto_resume").
-		OptionalText("external_access_integrations").
+		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Time("created_on").
 		Time("updated_on").
 		OptionalTime("resumed_on").
@@ -240,43 +215,13 @@ var servicesDef = g.NewInterface(
 		Number("auto_suspend_secs").
 		OptionalText("comment").
 		Text("owner_role_type").
-		OptionalText("query_warehouse").
+		Field("query_warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("QueryWarehouse")).
 		Bool("is_job").
 		Bool("is_async_job").
 		Text("spec_digest").
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
 		OptionalText("managing_object_name"),
-	g.PlainStruct("ServiceDetails").
-		Text("Name").
-		Field("Status", "ServiceStatus").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("Owner").
-		Field("ComputePool", "AccountObjectIdentifier").
-		Text("Spec").
-		Text("DnsName").
-		Number("CurrentInstances").
-		Number("TargetInstances").
-		Number("MinReadyInstances").
-		Number("MinInstances").
-		Number("MaxInstances").
-		Bool("AutoResume").
-		Field("ExternalAccessIntegrations", "[]AccountObjectIdentifier").
-		Time("CreatedOn").
-		Time("UpdatedOn").
-		OptionalTime("ResumedOn").
-		OptionalTime("SuspendedOn").
-		Number("AutoSuspendSecs").
-		OptionalText("Comment").
-		Text("OwnerRoleType").
-		Field("QueryWarehouse", "*AccountObjectIdentifier").
-		Bool("IsJob").
-		Bool("IsAsyncJob").
-		Text("SpecDigest").
-		Bool("IsUpgrading").
-		OptionalText("ManagingObjectDomain").
-		OptionalText("ManagingObjectName"),
 	g.NewQueryStruct("DescService").
 		Describe().
 		SQL("SERVICE").
@@ -300,4 +245,6 @@ var servicesDef = g.NewInterface(
 		WithValidation(g.ExactlyOneValueSet, "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate").
 		WithValidation(g.ValidIdentifier, "InComputePool").
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
+).WithEnums(
+	ServiceStatusEnumDef,
 )

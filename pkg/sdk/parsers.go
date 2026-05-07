@@ -103,3 +103,10 @@ func splitOuter(value string) []string {
 	}
 	return append(parts, value[idx:])
 }
+
+func emptyIfNull(s string) string {
+	if s == "null" {
+		return ""
+	}
+	return s
+}

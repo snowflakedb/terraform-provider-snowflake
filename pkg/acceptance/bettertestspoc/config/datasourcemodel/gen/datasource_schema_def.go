@@ -91,6 +91,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.NetworkPolicies().Schema,
 	},
 	{
+		name:   "PasswordPolicies",
+		schema: datasources.PasswordPolicies().Schema,
+	},
+	{
 		name:   "NetworkRules",
 		schema: datasources.NetworkRules().Schema,
 	},
@@ -125,6 +129,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "SemanticViews",
 		schema: datasources.SemanticViews().Schema,
+	},
+	{
+		name:   "SessionPolicies",
+		schema: datasources.SessionPolicies().Schema,
 	},
 	{
 		name:   "Services",

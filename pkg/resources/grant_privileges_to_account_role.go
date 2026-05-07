@@ -752,7 +752,8 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 }
 
 func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
 	if err != nil {
@@ -770,13 +771,13 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	err = client.Grants.RevokePrivilegesFromAccountRole(
-		ctx,
-		getAccountRolePrivilegesFromSchema(d),
-		grantOn,
-		id.RoleName,
-		&sdk.RevokePrivilegesFromAccountRoleOptions{},
-	)
+	privileges := getAccountRolePrivilegesFromSchema(d)
+	opts := &sdk.RevokePrivilegesFromAccountRoleOptions{}
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		err = client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, privileges, grantOn, id.RoleName, opts)
+	} else {
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, grantOn, id.RoleName, opts)
+	}
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{

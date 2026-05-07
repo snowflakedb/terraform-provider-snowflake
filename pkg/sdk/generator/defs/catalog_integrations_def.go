@@ -6,18 +6,41 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	CatalogIntegrationCatalogSourceTypeEnumDef = g.NewEnum(
+		"CatalogIntegrationCatalogSourceType", "CatalogIntegrationCatalogSourceTypes",
+		"GLUE", "OBJECT_STORE", "POLARIS", "ICEBERG_REST", "SAP_BDC",
+	)
+	CatalogIntegrationTableFormatEnumDef = g.NewEnum(
+		"CatalogIntegrationTableFormat", "CatalogIntegrationTableFormats",
+		"ICEBERG", "DELTA",
+	)
+	CatalogIntegrationRestAuthenticationTypeEnumDef = g.NewEnum(
+		"CatalogIntegrationRestAuthenticationType", "CatalogIntegrationRestAuthenticationTypes",
+		"OAUTH", "BEARER", "SIGV4",
+	)
+	CatalogIntegrationAccessDelegationModeEnumDef = g.NewEnum(
+		"CatalogIntegrationAccessDelegationMode", "CatalogIntegrationAccessDelegationModes",
+		"VENDED_CREDENTIALS", "EXTERNAL_VOLUME_CREDENTIALS",
+	)
+	CatalogIntegrationCatalogApiTypeEnumDef = g.NewEnum(
+		"CatalogIntegrationCatalogApiType", "CatalogIntegrationCatalogApiTypes",
+		"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE",
+	)
+)
+
 var openCatalogRestConfigDef = g.NewQueryStruct("OpenCatalogRestConfig").
 	TextAssignment("CATALOG_URI", g.ParameterOptions().SingleQuotes().Required()).
-	OptionalAssignment("CATALOG_API_TYPE", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType](), g.ParameterOptions().NoQuotes()).
+	OptionalAssignment("CATALOG_API_TYPE", CatalogIntegrationCatalogApiTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
 	TextAssignment("CATALOG_NAME", g.ParameterOptions().SingleQuotes().Required()).
-	OptionalAssignment("ACCESS_DELEGATION_MODE", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode](), g.ParameterOptions().NoQuotes())
+	OptionalAssignment("ACCESS_DELEGATION_MODE", CatalogIntegrationAccessDelegationModeEnumDef.Kind(), g.ParameterOptions().NoQuotes())
 
 var icebergRestRestConfigDef = g.NewQueryStruct("IcebergRestRestConfig").
 	TextAssignment("CATALOG_URI", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("PREFIX", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("CATALOG_NAME", g.ParameterOptions().SingleQuotes()).
-	OptionalAssignment("CATALOG_API_TYPE", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType](), g.ParameterOptions().NoQuotes()).
-	OptionalAssignment("ACCESS_DELEGATION_MODE", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode](), g.ParameterOptions().NoQuotes())
+	OptionalAssignment("CATALOG_API_TYPE", CatalogIntegrationCatalogApiTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
+	OptionalAssignment("ACCESS_DELEGATION_MODE", CatalogIntegrationAccessDelegationModeEnumDef.Kind(), g.ParameterOptions().NoQuotes())
 
 var sapBdcRestConfigDef = g.NewQueryStruct("SapBdcRestConfig").
 	TextAssignment("SAP_BDC_INVITATION_LINK", g.ParameterOptions().SingleQuotes().Required()).
@@ -68,7 +91,7 @@ var catalogIntegrationsDef = g.NewInterface(
 				"ObjectStorageCatalogSourceParams",
 				g.NewQueryStruct("ObjectStorageParams").
 					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = OBJECT_STORE").
-					Assignment("TABLE_FORMAT", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat](), g.ParameterOptions().NoQuotes().Required()),
+					Assignment("TABLE_FORMAT", CatalogIntegrationTableFormatEnumDef.Kind(), g.ParameterOptions().NoQuotes().Required()),
 				g.KeywordOptions()).
 			OptionalQueryStructField(
 				"OpenCatalogCatalogSourceParams",
@@ -169,43 +192,28 @@ var catalogIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-catalog-integrations",
-		g.DbStruct("showCatalogIntegrationsDbRow").
+		g.StructPair("showCatalogIntegrationsDbRow", "CatalogIntegration").
 			Text("name").
 			Bool("enabled").
 			Text("type").
 			Text("category").
-			OptionalText("comment").
+			OptionalText("comment", g.WithRequiredInPlain()).
 			Time("created_on"),
-		g.PlainStruct("CatalogIntegration").
-			Text("Name").
-			Bool("Enabled").
-			Text("Type").
-			Text("Category").
-			Text("Comment").
-			Time("CreatedOn"),
 		g.NewQueryStruct("ShowCatalogIntegration").
 			Show().
 			SQL("CATALOG INTEGRATIONS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-catalog-integration",
-		g.DbStruct("descCatalogIntegrationsDbRow").
-			Text("property").
-			Text("property_type").
-			Text("property_value").
-			Text("property_default"),
-		g.PlainStruct("CatalogIntegrationProperty").
-			Text("Name").
-			Text("Type").
-			Text("Value").
-			Text("Default"),
+		g.StructPair("descCatalogIntegrationsDbRow", "CatalogIntegrationProperty").
+			Text("property", g.WithPlainFieldName("Name")).
+			Text("property_type", g.WithPlainFieldName("Type")).
+			Text("property_value", g.WithPlainFieldName("Value")).
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeCatalogIntegration").
 			Describe().
 			SQL("CATALOG INTEGRATION").
@@ -213,8 +221,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name"),
 		g.PlainStruct("CatalogIntegrationAwsGlueDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
-			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
+			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
@@ -224,15 +232,15 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("CatalogNamespace"),
 		g.PlainStruct("CatalogIntegrationObjectStorageDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
-			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
+			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment"),
 		g.PlainStruct("CatalogIntegrationOpenCatalogDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
-			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
+			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
@@ -241,8 +249,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			Field("RestAuthentication", "OAuthRestAuthenticationDetails"),
 		g.PlainStruct("CatalogIntegrationIcebergRestDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
-			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
+			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
@@ -253,15 +261,15 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
 		g.PlainStruct("CatalogIntegrationSapBdcDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
-			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
+			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment"),
 		g.PlainStruct("CatalogIntegrationAllDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
-			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
+			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
@@ -276,15 +284,15 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
 		g.PlainStruct("OpenCatalogRestConfigDetails").
 			Text("CatalogUri").
-			Field("CatalogApiType", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType]()).
+			Field("CatalogApiType", CatalogIntegrationCatalogApiTypeEnumDef.Kind()).
 			Text("CatalogName").
-			Field("AccessDelegationMode", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode]()),
+			Field("AccessDelegationMode", CatalogIntegrationAccessDelegationModeEnumDef.Kind()),
 		g.PlainStruct("IcebergRestRestConfigDetails").
 			Text("CatalogUri").
 			Text("Prefix").
 			Text("CatalogName").
-			Field("CatalogApiType", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType]()).
-			Field("AccessDelegationMode", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode]()),
+			Field("CatalogApiType", CatalogIntegrationCatalogApiTypeEnumDef.Kind()).
+			Field("AccessDelegationMode", CatalogIntegrationAccessDelegationModeEnumDef.Kind()),
 		g.PlainStruct("OAuthRestAuthenticationDetails").
 			Text("OauthTokenUri").
 			Text("OauthClientId").
@@ -296,4 +304,47 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("Sigv4IamRole").
 			Text("Sigv4SigningRegion").
 			Text("Sigv4ExternalId"),
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAwsGlueDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationAwsGlueDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeObjectStorageDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationObjectStorageDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeOpenCatalogDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationOpenCatalogDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeIcebergRestDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationIcebergRestDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeSapBdcDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationSapBdcDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeDetails",
+		"DescribeDetails returns combined describe output for all types of catalog integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationAllDetails", "error",
+	).
+	WithEnums(
+		CatalogIntegrationCatalogSourceTypeEnumDef,
+		CatalogIntegrationTableFormatEnumDef,
+		CatalogIntegrationRestAuthenticationTypeEnumDef,
+		CatalogIntegrationAccessDelegationModeEnumDef,
+		CatalogIntegrationCatalogApiTypeEnumDef,
 	)

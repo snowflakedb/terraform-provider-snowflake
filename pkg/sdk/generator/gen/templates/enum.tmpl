@@ -1,0 +1,49 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
+
+import (
+	"fmt"
+	"strings"
+)
+
+{{ range .Enums }}
+type {{ .Name }} string
+
+const (
+	{{ $enumTypeName := .Name }}
+	{{- range .ValueRepresentations }}
+	{{ .Name }} {{ $enumTypeName }} = "{{ .Value }}"
+	{{- end }}
+)
+
+var All{{ .NamePlural }} = []{{ .Name }}{
+	{{- range .ValueRepresentations }}
+	{{ .Name }},
+	{{- end }}
+}
+
+{{- if .HasAliases }}
+var All{{ .NamePlural }}String = []string{
+	{{- range .ValueRepresentations }}
+	string({{ .Name }}),
+	{{- range .Aliases }}
+	"{{ . }}",
+	{{- end }}
+	{{- end }}
+}
+{{ end }}
+func To{{ .Name }}(s string) ({{ .Name }}, error) {
+  {{- if .IsLowercase }}
+  s = strings.ToLower(s)
+  {{- else }}
+  s = strings.ToUpper(s)
+  {{- end }}
+	switch s {
+	{{- range .ValueRepresentations }}
+	case string({{ .Name }}){{ range .Aliases }}, "{{ . }}"{{ end }}:
+		return {{ .Name }}, nil
+	{{- end }}
+	default:
+		return "", fmt.Errorf("invalid {{ CamelToWords .Name }}: %s", s)
+	}
+}
+{{ end }}

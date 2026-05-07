@@ -253,6 +253,28 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
 		IsDataSourceOutput: true,
 	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.SessionPolicyDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.PasswordPolicyDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.PasswordPolicy{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.HybridTable{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.PostgresInstance{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"strings"
 	"text/template"
 
 	_ "embed"
@@ -22,6 +23,8 @@ var (
 	InterfaceTemplate, _     = template.New("interfaceTemplate").Funcs(template.FuncMap{
 		"describe_mapping_deref": deref[DescriptionMappingKind],
 		"show_mapping_deref":     deref[ShowMappingKind],
+		"join":                   strings.Join,
+		"splitLines":             func(s string) []string { return strings.Split(s, "\n") },
 	}).Parse(interfaceTemplateContent)
 
 	//go:embed templates/operation_struct.tmpl
@@ -58,6 +61,10 @@ var (
 
 	//go:embed templates/dto_builder.tmpl
 	dtoBuilderTemplateContent string
+
+	//go:embed templates/enum.tmpl
+	enumTemplateContent string
+	EnumTemplate        *template.Template
 
 	//go:embed templates/implementation.tmpl
 	implementationTemplateContent string
@@ -128,4 +135,7 @@ func init() {
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)
+	EnumTemplate, _ = subTemplates.New("enumTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
+		genhelpers.CamelToWords,
+	)).Parse(enumTemplateContent)
 }

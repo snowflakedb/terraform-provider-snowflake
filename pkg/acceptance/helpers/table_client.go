@@ -101,6 +101,14 @@ func (c *TableClient) CreateWithRequest(t *testing.T, req *sdk.CreateTableReques
 	return table, c.DropFunc(t, req.GetName())
 }
 
+func (c *TableClient) AlterWithRequest(t *testing.T, req *sdk.AlterTableRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *TableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
@@ -144,6 +152,20 @@ func (c *TableClient) GetTableColumnsFor(t *testing.T, tableId sdk.SchemaObjectI
 	require.NoError(t, err)
 
 	return columns
+}
+
+func (c *TableClient) CreateAsSelectFrom(t *testing.T, sourceTableId sdk.SchemaObjectIdentifier) (*sdk.Table, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("CREATE TABLE %s AS SELECT * FROM %s", id.FullyQualifiedName(), sourceTableId.FullyQualifiedName()))
+	require.NoError(t, err)
+
+	table, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return table, c.DropFunc(t, id)
 }
 
 func (c *TableClient) InsertInt(t *testing.T, tableId sdk.SchemaObjectIdentifier) {

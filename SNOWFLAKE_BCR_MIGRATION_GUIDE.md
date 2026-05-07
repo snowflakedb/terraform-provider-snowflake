@@ -32,6 +32,16 @@ To use the provider with the bundles containing this change:
 
 Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
 
+## [Bundle 2026_02](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02_bundle)
+
+### External OAuth security integrations: `EXTERNAL_OAUTH_JWS_KEYS_URL` requires HTTPS
+
+The `EXTERNAL_OAUTH_JWS_KEYS_URL` parameter specifies the endpoint from which Snowflake retrieves public keys to validate OAuth access tokens. After this change, only HTTPS URLs are accepted; HTTP URLs are rejected.
+
+If you manage External OAuth security integrations with the [`snowflake_external_oauth_integration`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_oauth_integration) resource, ensure `external_oauth_jws_keys_url` and `jws_keys_urls` use `https://` URLs before the bundle is active on your account.
+
+Reference: [BCR-2218](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02/bcr-2218)
+
 ## [Bundle 2025_07](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07_bundle)
 
 ### USAGE privilege on CATALOG INTEGRATION and EXTERNAL VOLUME required for database owner role for all operations

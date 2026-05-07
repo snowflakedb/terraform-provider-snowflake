@@ -63,6 +63,7 @@ type Client struct {
 	PasswordPolicies             PasswordPolicies
 	Pipes                        Pipes
 	PolicyReferences             PolicyReferences
+	PostgresInstances            PostgresInstances
 	Procedures                   Procedures
 	ResourceMonitors             ResourceMonitors
 	Roles                        Roles
@@ -197,6 +198,7 @@ func (c *Client) initialize() {
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
 	c.PolicyReferences = &policyReference{client: c}
+	c.PostgresInstances = &postgresInstances{client: c}
 	c.Procedures = &procedures{client: c}
 	c.ReplicationFunctions = &replicationFunctions{client: c}
 	c.ResourceMonitors = &resourceMonitors{client: c}

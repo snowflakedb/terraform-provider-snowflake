@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -76,7 +77,8 @@ func StreamOnTable() *schema.Resource {
 
 func ImportStreamOnTable(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	log.Printf("[DEBUG] Starting stream import")
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
@@ -89,8 +91,14 @@ func ImportStreamOnTable(ctx context.Context, d *schema.ResourceData, meta any) 
 	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
 		return nil, err
 	}
-	if err := d.Set("append_only", booleanStringFromBool(v.IsAppendOnly())); err != nil {
-		return nil, err
+	errs := errors.Join(
+		d.Set("append_only", booleanStringFromBool(v.IsAppendOnly())),
+	)
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments) {
+		errs = errors.Join(errs, d.Set("show_initial_rows", BooleanDefault))
+	}
+	if errs != nil {
+		return nil, errs
 	}
 	return []*schema.ResourceData{d}, nil
 }
