@@ -23,7 +23,7 @@ type PostgresInstanceDetails struct {
 	PrivatelinkServiceIdentifier *string
 	ComputeFamily                string
 	StorageSizeGb                int
-	PostgresVersion              string
+	PostgresVersion              int
 	HighAvailability             bool
 	AuthenticationAuthority      string
 	State                        string
@@ -62,13 +62,21 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 		case "compute_family":
 			details.ComputeFamily = prop.Value
 		case "storage_size_gb":
-			if val, err := strconv.Atoi(prop.Value); err != nil {
-				errs = append(errs, err)
-			} else {
-				details.StorageSizeGb = val
+			if prop.Value != "" {
+				if val, err := strconv.Atoi(prop.Value); err != nil {
+					errs = append(errs, err)
+				} else {
+					details.StorageSizeGb = val
+				}
 			}
 		case "postgres_version":
-			details.PostgresVersion = prop.Value
+			if prop.Value != "" {
+				if val, err := strconv.Atoi(prop.Value); err != nil {
+					errs = append(errs, err)
+				} else {
+					details.PostgresVersion = val
+				}
+			}
 		case "high_availability":
 			details.HighAvailability = prop.Value == "true"
 		case "authentication_authority":
@@ -76,16 +84,20 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 		case "state":
 			details.State = prop.Value
 		case "retention_time":
-			if val, err := strconv.Atoi(prop.Value); err != nil {
-				errs = append(errs, err)
-			} else {
-				details.RetentionTime = val
+			if prop.Value != "" {
+				if val, err := strconv.Atoi(prop.Value); err != nil {
+					errs = append(errs, err)
+				} else {
+					details.RetentionTime = val
+				}
 			}
 		case "maintenance_window_start":
-			if val, err := strconv.Atoi(prop.Value); err != nil {
-				errs = append(errs, err)
-			} else {
-				details.MaintenanceWindowStart = val
+			if prop.Value != "" {
+				if val, err := strconv.Atoi(prop.Value); err != nil {
+					errs = append(errs, err)
+				} else {
+					details.MaintenanceWindowStart = val
+				}
 			}
 		case "comment":
 			details.Comment = String(prop.Value)

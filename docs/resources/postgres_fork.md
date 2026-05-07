@@ -59,7 +59,7 @@ resource "snowflake_postgres_fork" "complete" {
 - `before_offset` (String) Specifies the offset in seconds for the fork point-in-time (BEFORE OFFSET).
 - `before_timestamp` (String) Specifies the timestamp for the fork point-in-time (BEFORE TIMESTAMP).
 - `comment` (String) Specifies a comment for the Postgres instance.
-- `compute_family` (String) Specifies the compute family for the forked Postgres instance (e.g. STANDARD_1).
+- `compute_family` (String) Specifies the compute family for the forked Postgres instance (e.g. STANDARD_M).
 - `high_availability` (Boolean) Specifies whether the Postgres instance should be configured for high availability.
 - `postgres_settings` (String) Specifies custom Postgres settings as a JSON string.
 - `storage_size_gb` (Number) Specifies the storage size in GB for the forked Postgres instance.
@@ -101,7 +101,7 @@ Read-Only:
 - `owner` (String)
 - `owner_role_type` (String)
 - `postgres_settings` (String)
-- `postgres_version` (String)
+- `postgres_version` (Number)
 - `privatelink_service_identifier` (String)
 - `retention_time` (Number)
 - `state` (String)

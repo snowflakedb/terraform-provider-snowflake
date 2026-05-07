@@ -28,7 +28,7 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 	"compute_family": {
 		Type:        schema.TypeString,
 		Required:    true,
-		Description: "Specifies the compute family for the Postgres instance (e.g. STANDARD_1).",
+		Description: "Specifies the compute family for the Postgres instance (e.g. STANDARD_M).",
 	},
 	"storage_size_gb": {
 		Type:             schema.TypeInt,
@@ -146,6 +146,7 @@ func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		return nil, err
 	}
 
+	postgresSettings := normalizePostgresSettings(pi.PostgresSettings)
 	errs := errors.Join(
 		d.Set("name", pi.Name),
 		d.Set("compute_family", pi.ComputeFamily),
@@ -153,14 +154,19 @@ func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		d.Set("authentication_authority", pi.AuthenticationAuthority),
 		d.Set("high_availability", pi.IsHa),
 		setOptionalFromPtr(d, "comment", pi.Comment),
-		setOptionalFromPtr(d, "postgres_settings", pi.PostgresSettings),
+		setOptionalFromPtr(d, "postgres_settings", postgresSettings),
 		d.Set("postgres_version", details.PostgresVersion),
-		setOptionalFromPtr(d, "network_policy", details.NetworkPolicy),
-		setOptionalFromPtr(d, "storage_integration", details.StorageIntegration),
-		d.Set("maintenance_window_start", details.MaintenanceWindowStart),
+		setOptionalFromNonEmptyStringPtr(d, "network_policy", details.NetworkPolicy),
+		setOptionalFromNonEmptyStringPtr(d, "storage_integration", details.StorageIntegration),
 	)
 	if errs != nil {
 		return nil, errs
+	}
+
+	if details.MaintenanceWindowStart != 0 {
+		if err := d.Set("maintenance_window_start", details.MaintenanceWindowStart); err != nil {
+			return nil, err
+		}
 	}
 
 	return []*schema.ResourceData{d}, nil
@@ -266,6 +272,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			return diag.FromErr(err)
 		}
 
+		postgresSettings := normalizePostgresSettings(pi.PostgresSettings)
 		errs := errors.Join(
 			d.Set("name", pi.Name),
 			d.Set("compute_family", pi.ComputeFamily),
@@ -273,17 +280,22 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			d.Set("authentication_authority", pi.AuthenticationAuthority),
 			d.Set("high_availability", pi.IsHa),
 			setOptionalFromPtr(d, "comment", pi.Comment),
-			setOptionalFromPtr(d, "postgres_settings", pi.PostgresSettings),
+			setOptionalFromPtr(d, "postgres_settings", postgresSettings),
 			d.Set("postgres_version", details.PostgresVersion),
-			setOptionalFromPtr(d, "network_policy", details.NetworkPolicy),
-			setOptionalFromPtr(d, "storage_integration", details.StorageIntegration),
+			setOptionalFromNonEmptyStringPtr(d, "network_policy", details.NetworkPolicy),
+			setOptionalFromNonEmptyStringPtr(d, "storage_integration", details.StorageIntegration),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresInstanceDetailsToSchema(details)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			d.Set("maintenance_window_start", details.MaintenanceWindowStart),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
+		}
+
+		if details.MaintenanceWindowStart != 0 {
+			if err := d.Set("maintenance_window_start", details.MaintenanceWindowStart); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		return nil
@@ -344,4 +356,22 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	return ReadPostgresInstanceFunc(false)(ctx, d, meta)
+}
+
+// normalizePostgresSettings returns nil if the postgres_settings value is
+// an empty JSON object ("{}"), treating it as unset.
+func normalizePostgresSettings(s *string) *string {
+	if s == nil || *s == "{}" {
+		return nil
+	}
+	return s
+}
+
+// setOptionalFromNonEmptyStringPtr sets a key in resource data only if the
+// pointer is non-nil and the pointed-to string is non-empty.
+func setOptionalFromNonEmptyStringPtr(d *schema.ResourceData, key string, ptr *string) error {
+	if ptr != nil && *ptr != "" {
+		return d.Set(key, *ptr)
+	}
+	return nil
 }
