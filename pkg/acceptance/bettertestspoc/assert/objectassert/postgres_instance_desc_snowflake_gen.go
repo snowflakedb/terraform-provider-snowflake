@@ -158,7 +158,7 @@ func (p *PostgresInstanceDetailsAssert) HasStorageSizeGb(expected int) *Postgres
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasPostgresVersion(expected string) *PostgresInstanceDetailsAssert {
+func (p *PostgresInstanceDetailsAssert) HasPostgresVersion(expected int) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.PostgresVersion != expected {

@@ -316,6 +316,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.Pipe: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Pipes.ShowByID)
 	},
+	resources.PostgresFork: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.PostgresInstances.ShowByID)
+	},
 	resources.PostgresInstance: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.PostgresInstances.ShowByID)
 	},

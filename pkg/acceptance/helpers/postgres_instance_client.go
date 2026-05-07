@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -28,7 +29,7 @@ func (c *PostgresInstanceClient) Create(t *testing.T) (*sdk.PostgresInstance, fu
 	t.Helper()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	return c.CreateWithRequest(t, sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_1", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
+	return c.CreateWithRequest(t, sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
 }
 
 func (c *PostgresInstanceClient) CreateWithRequest(t *testing.T, req *sdk.CreatePostgresInstanceRequest) (*sdk.PostgresInstance, func()) {
@@ -57,6 +58,31 @@ func (c *PostgresInstanceClient) Show(t *testing.T, id sdk.AccountObjectIdentifi
 	t.Helper()
 	ctx := context.Background()
 	return c.client().ShowByID(ctx, id)
+}
+
+func (c *PostgresInstanceClient) WaitForReady(t *testing.T, id sdk.AccountObjectIdentifier, timeout time.Duration) *sdk.PostgresInstance {
+	t.Helper()
+	ctx := context.Background()
+
+	var instance *sdk.PostgresInstance
+	require.Eventually(t, func() bool {
+		var err error
+		instance, err = c.client().ShowByID(ctx, id)
+		require.NoError(t, err)
+		return instance.State == sdk.PostgresInstanceStateReady
+	}, timeout, 5*time.Second)
+	return instance
+}
+
+// WaitForForkReady waits for the instance to reach READY state and then adds
+// an additional settling period. Snowflake reports READY before the instance
+// is actually available for fork operations.
+func (c *PostgresInstanceClient) WaitForForkReady(t *testing.T, id sdk.AccountObjectIdentifier, timeout time.Duration) *sdk.PostgresInstance {
+	t.Helper()
+	instance := c.WaitForReady(t, id, timeout)
+	// The backend needs additional time after reporting READY before it accepts fork requests.
+	time.Sleep(30 * time.Second)
+	return instance
 }
 
 func (c *PostgresInstanceClient) DescribeDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.PostgresInstanceDetails, error) {
