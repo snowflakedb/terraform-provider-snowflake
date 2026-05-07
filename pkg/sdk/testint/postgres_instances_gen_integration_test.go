@@ -16,6 +16,10 @@ import (
 )
 
 func TestInt_PostgresInstances(t *testing.T) {
+	// Currently, almost all Postgres Instances tests are failing due to the following error:
+	// 604001 (0A000): Compute Family STANDARD_1 is not a supported compute family for Postgres
+	// This will be addressed in https://github.com/snowflakedb/terraform-provider-snowflake/pull/4704
+	t.Skip("Skipping all Postgres Instances tests")
 	client := testClient(t)
 	ctx := testContext(t)
 
