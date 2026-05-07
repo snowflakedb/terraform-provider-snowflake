@@ -46,6 +46,8 @@ The `propagate` field is now treated as nullable: when the column is absent from
 
 No changes in configuration are required. Users on standard accounts who experienced a crash on plan or apply should be able to use the `snowflake_tag` resource normally after upgrading.
 
+References: [#4651](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4651)
+
 ## v2.14.x ➞ v2.15.0
 
 ### **IMPORTANT** *(improvement)* Go driver bumped to v2
