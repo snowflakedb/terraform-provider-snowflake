@@ -9,7 +9,9 @@ import (
 // HybridTableColumnDefaultConfig represents the default value block of a column.
 // At most one of Constant, Expression, or Sequence should be set.
 type HybridTableColumnDefaultConfig struct {
-	Constant *string
+	Constant   *string
+	Expression *string
+	Sequence   *string
 }
 
 // HybridTableColumnConfig is a richer column definition used in tests that need
@@ -45,6 +47,12 @@ func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) 
 			defMap := map[string]tfconfig.Variable{}
 			if col.Default.Constant != nil {
 				defMap["constant"] = tfconfig.StringVariable(*col.Default.Constant)
+			}
+			if col.Default.Expression != nil {
+				defMap["expression"] = tfconfig.StringVariable(*col.Default.Expression)
+			}
+			if col.Default.Sequence != nil {
+				defMap["sequence"] = tfconfig.StringVariable(*col.Default.Sequence)
 			}
 			m["default"] = tfconfig.ListVariable(tfconfig.MapVariable(defMap))
 		}

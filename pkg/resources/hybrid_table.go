@@ -52,15 +52,15 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Type:             schema.TypeInt,
 		Optional:         true,
 		Default:          IntDefault,
-		Description:      "Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data. Set to -1 to use Snowflake default.",
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(-1, 90)),
+		Description:      "Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data.",
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 	},
 	"max_data_extension_time_in_days": {
 		Type:             schema.TypeInt,
 		Optional:         true,
 		Default:          IntDefault,
-		Description:      "Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period. Set to -1 to use Snowflake default.",
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(-1)),
+		Description:      "Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period.",
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 	},
 	"column": {
 		Type:        schema.TypeList,
@@ -858,9 +858,8 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			"collate":  colInfo.collate,
 		}
 
-		def := toHybridColumnDefaultConfig(td)
-		if def != nil {
-			flat["default"] = []any{def}
+		if def := toHybridColumnDefaultConfig(td); def != nil {
+			flat["default"] = def
 		}
 
 		flattened = append(flattened, flat)
@@ -902,9 +901,9 @@ func buildPrimaryKeyStateFromDescribe(details []sdk.HybridTableDetails, d *schem
 }
 
 // toHybridColumnDefaultConfig converts HybridTableDetails.Default (string, not *string)
-// into a config-compatible map. Empty string means no default.
+// into a config-compatible []any (single-element list or nil). Empty string means no default.
 // This is NOT the same as table.go's toColumnDefaultConfig which checks == nil.
-func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) map[string]any {
+func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) []any {
 	if td.Default == "" {
 		return nil
 	}
@@ -918,28 +917,28 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) map[string]any {
 		id, err := sdk.ParseSchemaObjectIdentifier(sequenceIdRaw)
 		if err != nil {
 			log.Printf("[WARN] hybrid_table Read: failed to parse sequence identifier %q: %v", sequenceIdRaw, err)
-			return map[string]any{"sequence": sequenceIdRaw}
+			return []any{map[string]any{"sequence": sequenceIdRaw}}
 		}
-		return map[string]any{"sequence": id.FullyQualifiedName()}
+		return []any{map[string]any{"sequence": id.FullyQualifiedName()}}
 	}
 
 	// Expression detection: contains parentheses
 	if strings.Contains(defaultRaw, "(") && strings.Contains(defaultRaw, ")") {
-		return map[string]any{
+		return []any{map[string]any{
 			"expression": defaultRaw,
-		}
+		}}
 	}
 
 	// Constant: unescape for string types
 	if sdk.IsStringType(td.Type) {
-		return map[string]any{
+		return []any{map[string]any{
 			"constant": snowflake.UnescapeSnowflakeString(defaultRaw),
-		}
+		}}
 	}
 
-	return map[string]any{
+	return []any{map[string]any{
 		"constant": defaultRaw,
-	}
+	}}
 }
 
 // ---------------------------------------------------------------------------

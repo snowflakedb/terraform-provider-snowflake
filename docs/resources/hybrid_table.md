@@ -89,9 +89,9 @@ resource "snowflake_hybrid_table" "complete" {
 ### Optional
 
 - `comment` (String) Specifies a comment for the hybrid table.
-- `data_retention_time_in_days` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data. Set to -1 to use Snowflake default.
+- `data_retention_time_in_days` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data.
 - `foreign_key` (Block List) Defines FOREIGN KEY constraints. Can only be set at creation time. Any change forces recreation. (see [below for nested schema](#nestedblock--foreign_key))
-- `max_data_extension_time_in_days` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period. Set to -1 to use Snowflake default.
+- `max_data_extension_time_in_days` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `unique_constraint` (Block List) Defines UNIQUE constraints. Can only be set at creation time. Any change forces recreation. (see [below for nested schema](#nestedblock--unique_constraint))
 
@@ -108,7 +108,7 @@ resource "snowflake_hybrid_table" "complete" {
 Required:
 
 - `name` (String) Column name.
-- `type` (String) Column type, e.g. VARCHAR(256), NUMBER(38,0).
+- `type` (String) Column type. See [Snowflake data types](https://docs.snowflake.com/en/sql-reference-data-types) for supported values. Example: VARCHAR(256), NUMBER(38,0).
 
 Optional:
 

@@ -365,12 +365,7 @@ func TestAcc_HybridTable_InvalidConfig(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, model.HybridTableFromId("test", id, cols, pk).WithDataRetentionTimeInDays(-2)),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`to be in the range \(-1 - 90\)`),
-			},
-			{
-				Config:      accconfig.FromModels(t, model.HybridTableFromId("test", id, cols, pk).WithDataRetentionTimeInDays(91)),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`to be in the range \(-1 - 90\)`),
+				ExpectError: regexp.MustCompile(`to be at least`),
 			},
 			{
 				Config:      accconfig.FromModels(t, model.HybridTableFromId("test", id, cols, pk).WithMaxDataExtensionTimeInDays(-2)),
