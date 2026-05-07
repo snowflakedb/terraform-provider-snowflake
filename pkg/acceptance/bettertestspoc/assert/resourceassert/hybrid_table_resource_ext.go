@@ -5,20 +5,15 @@ import (
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (h *HybridTableResourceAssert) HasColumnCount(expected int) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("column.#", strconv.Itoa(expected)))
-	return h
-}
-
-func (h *HybridTableResourceAssert) HasColumnName(index int, expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.name", index), expected))
-	return h
-}
-
-func (h *HybridTableResourceAssert) HasColumnType(index int, expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.type", index), expected))
+func (h *HybridTableResourceAssert) HasColumns(columns []sdk.TableColumnSignature) *HybridTableResourceAssert {
+	h.AddAssertion(assert.ValueSet("column.#", strconv.Itoa(len(columns))))
+	for i, col := range columns {
+		h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.name", i), col.Name))
+		h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type.ToSql()))
+	}
 	return h
 }
 

@@ -44,8 +44,7 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDaysString("-1").
 			HasMaxDataExtensionTimeInDaysString("-1").
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasColumnCount(1).
-			HasColumnName(0, "ID").
+			HasColumns(columns).
 			HasPrimaryKeyKeys("ID"),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelBasic.ResourceReference()).
 			HasName(id.Name()).
@@ -76,8 +75,7 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDaysString("1").
 			HasMaxDataExtensionTimeInDaysString("10").
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasColumnCount(1).
-			HasColumnName(0, "ID").
+			HasColumns(columns).
 			HasPrimaryKeyKeys("ID"),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelComplete.ResourceReference()).
 			HasName(id.Name()).
@@ -103,8 +101,7 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDaysString("-1").
 			HasMaxDataExtensionTimeInDaysString("-1").
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasColumnCount(1).
-			HasColumnName(0, "ID").
+			HasColumns(columns).
 			HasPrimaryKeyKeys("ID"),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelBasic.ResourceReference()).
 			HasName(id.Name()).
@@ -289,10 +286,7 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasDataRetentionTimeInDaysString("5").
 						HasMaxDataExtensionTimeInDaysString("10").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasColumnCount(3).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
-						HasColumnName(2, "EMAIL").
+						HasColumns(columns).
 						HasPrimaryKeyKeys("ID"),
 					resourceshowoutputassert.HybridTableShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -334,10 +328,7 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasDataRetentionTimeInDaysString("10").
 						HasMaxDataExtensionTimeInDaysString("20").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasColumnCount(3).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
-						HasColumnName(2, "EMAIL").
+						HasColumns(columns).
 						HasPrimaryKeyKeys("ID"),
 					resourceshowoutputassert.HybridTableShowOutput(t, modelChanged.ResourceReference()).
 						HasName(id.Name()).
@@ -428,7 +419,7 @@ func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(3).
+						HasColumns(cols).
 						HasPrimaryKeyKeys("ID").
 						HasUniqueConstraintCount(1),
 				),
@@ -443,7 +434,7 @@ func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(3).
+						HasColumns(cols).
 						HasPrimaryKeyKeys("ID").
 						HasUniqueConstraintCount(1),
 				),
@@ -489,7 +480,7 @@ func TestAcc_HybridTable_ForeignKey(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(2).
+						HasColumns(cols).
 						HasPrimaryKeyKeys("ID").
 						HasForeignKeyCount(1),
 				),
@@ -504,7 +495,7 @@ func TestAcc_HybridTable_ForeignKey(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(2).
+						HasColumns(cols).
 						HasPrimaryKeyKeys("ID").
 						HasForeignKeyCount(0),
 				),
@@ -545,9 +536,7 @@ func TestAcc_HybridTable_ColumnDefault(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(2).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "SCORE").
+						HasColumns(baseCols).
 						HasColumnDefaultConstant(1, "0"),
 				),
 			},
@@ -561,8 +550,7 @@ func TestAcc_HybridTable_ColumnDefault(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(2).
-						HasColumnName(1, "SCORE").
+						HasColumns(baseCols).
 						HasColumnNoDefault(1),
 				),
 			},
@@ -595,7 +583,7 @@ func TestAcc_HybridTable_PrimaryKeyForceNew(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(2).
+						HasColumns(cols).
 						HasPrimaryKeyKeys("ID"),
 				),
 			},
@@ -609,7 +597,7 @@ func TestAcc_HybridTable_PrimaryKeyForceNew(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(2).
+						HasColumns(cols).
 						HasPrimaryKeyKeys("ID", "NAME"),
 				),
 			},
@@ -621,21 +609,23 @@ func TestAcc_HybridTable_ColumnAdd(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	pk := []sdk.TableColumnSignature{{Name: "ID"}}
 
-	model1 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+	cols1 := []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeInteger},
-	}, pk)
-
-	model2 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+	}
+	cols2 := []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeInteger},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
-	}, pk)
-
-	model3 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+	}
+	cols3 := []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeInteger},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
 		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
 		{Name: "AGE", Type: testdatatypes.DataTypeInteger},
-	}, pk)
+	}
+
+	model1 := model.HybridTableFromId("test", id, cols1, pk)
+	model2 := model.HybridTableFromId("test", id, cols2, pk)
+	model3 := model.HybridTableFromId("test", id, cols3, pk)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -649,8 +639,7 @@ func TestAcc_HybridTable_ColumnAdd(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(1).
-						HasColumnName(0, "ID").
+						HasColumns(cols1).
 						HasPrimaryKeyKeys("ID"),
 				),
 			},
@@ -664,9 +653,7 @@ func TestAcc_HybridTable_ColumnAdd(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(2).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
+						HasColumns(cols2).
 						HasPrimaryKeyKeys("ID"),
 				),
 			},
@@ -680,11 +667,7 @@ func TestAcc_HybridTable_ColumnAdd(t *testing.T) {
 				Config: accconfig.FromModels(t, model3),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model3.ResourceReference()).
-						HasColumnCount(4).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
-						HasColumnName(2, "EMAIL").
-						HasColumnName(3, "AGE").
+						HasColumns(cols3).
 						HasPrimaryKeyKeys("ID"),
 				),
 			},
@@ -696,22 +679,24 @@ func TestAcc_HybridTable_ColumnDrop(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	pk := []sdk.TableColumnSignature{{Name: "ID"}}
 
-	model1 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+	cols1 := []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeInteger},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
 		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
 		{Name: "AGE", Type: testdatatypes.DataTypeInteger},
-	}, pk)
-
-	model2 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+	}
+	cols2 := []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeInteger},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
 		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
-	}, pk)
-
-	model3 := model.HybridTableFromId("test", id, []sdk.TableColumnSignature{
+	}
+	cols3 := []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeInteger},
-	}, pk)
+	}
+
+	model1 := model.HybridTableFromId("test", id, cols1, pk)
+	model2 := model.HybridTableFromId("test", id, cols2, pk)
+	model3 := model.HybridTableFromId("test", id, cols3, pk)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -725,11 +710,7 @@ func TestAcc_HybridTable_ColumnDrop(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(4).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
-						HasColumnName(2, "EMAIL").
-						HasColumnName(3, "AGE").
+						HasColumns(cols1).
 						HasPrimaryKeyKeys("ID"),
 				),
 			},
@@ -743,10 +724,7 @@ func TestAcc_HybridTable_ColumnDrop(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(3).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
-						HasColumnName(2, "EMAIL").
+						HasColumns(cols2).
 						HasPrimaryKeyKeys("ID"),
 				),
 			},
@@ -760,8 +738,7 @@ func TestAcc_HybridTable_ColumnDrop(t *testing.T) {
 				Config: accconfig.FromModels(t, model3),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model3.ResourceReference()).
-						HasColumnCount(1).
-						HasColumnName(0, "ID").
+						HasColumns(cols3).
 						HasPrimaryKeyKeys("ID"),
 				),
 			},
@@ -809,9 +786,7 @@ func TestAcc_HybridTable_ColumnAlterComment(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(2).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
+						HasColumns(baseCols).
 						HasColumnComment(1, ""),
 				),
 			},
@@ -825,7 +800,7 @@ func TestAcc_HybridTable_ColumnAlterComment(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(2).
+						HasColumns(baseCols).
 						HasColumnComment(1, "this is a name column"),
 				),
 			},
@@ -839,7 +814,7 @@ func TestAcc_HybridTable_ColumnAlterComment(t *testing.T) {
 				Config: accconfig.FromModels(t, model3),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model3.ResourceReference()).
-						HasColumnCount(2).
+						HasColumns(baseCols).
 						HasColumnComment(1, "updated comment"),
 				),
 			},
@@ -853,7 +828,7 @@ func TestAcc_HybridTable_ColumnAlterComment(t *testing.T) {
 				Config: accconfig.FromModels(t, model4),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model4.ResourceReference()).
-						HasColumnCount(2).
+						HasColumns(baseCols).
 						HasColumnComment(1, ""),
 				),
 			},
@@ -895,9 +870,7 @@ func TestAcc_HybridTable_ColumnNullableForceNew(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(2).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
+						HasColumns(baseCols).
 						HasColumnNullable(1, true),
 				),
 			},
@@ -911,9 +884,7 @@ func TestAcc_HybridTable_ColumnNullableForceNew(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(2).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME").
+						HasColumns(baseCols).
 						HasColumnNullable(1, false),
 				),
 			},
@@ -955,9 +926,7 @@ func TestAcc_HybridTable_ColumnCollateForceNew(t *testing.T) {
 				Config: accconfig.FromModels(t, model1),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnCount(2).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME"),
+						HasColumns(baseCols),
 				),
 			},
 			// Change NAME collate='fr' — expect DestroyBeforeCreate (ForceNew)
@@ -970,9 +939,7 @@ func TestAcc_HybridTable_ColumnCollateForceNew(t *testing.T) {
 				Config: accconfig.FromModels(t, model2),
 				Check: assertThat(t,
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnCount(2).
-						HasColumnName(0, "ID").
-						HasColumnName(1, "NAME"),
+						HasColumns(baseCols),
 				),
 			},
 		},
