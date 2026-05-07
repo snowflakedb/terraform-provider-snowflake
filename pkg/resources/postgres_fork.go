@@ -63,7 +63,7 @@ var postgresForkSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Computed:    true,
-		Description: "Specifies the compute family for the forked Postgres instance (e.g. STANDARD_1).",
+		Description: "Specifies the compute family for the forked Postgres instance (e.g. STANDARD_M).",
 	},
 	"storage_size_gb": {
 		Type:             schema.TypeInt,
@@ -160,7 +160,7 @@ func ImportPostgresFork(ctx context.Context, d *schema.ResourceData, meta any) (
 		d.Set("storage_size_gb", pi.StorageSize),
 		d.Set("high_availability", pi.IsHa),
 		setOptionalFromPtr(d, "comment", pi.Comment),
-		setOptionalFromPtr(d, "postgres_settings", pi.PostgresSettings),
+		setOptionalFromPtr(d, "postgres_settings", normalizePostgresSettings(pi.PostgresSettings)),
 	)
 	if errs != nil {
 		return nil, errs
@@ -273,7 +273,7 @@ func ReadPostgresForkFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			d.Set("storage_size_gb", pi.StorageSize),
 			d.Set("high_availability", pi.IsHa),
 			setOptionalFromPtr(d, "comment", pi.Comment),
-			setOptionalFromPtr(d, "postgres_settings", pi.PostgresSettings),
+			setOptionalFromPtr(d, "postgres_settings", normalizePostgresSettings(pi.PostgresSettings)),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresInstanceDetailsToSchema(details)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),

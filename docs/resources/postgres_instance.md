@@ -45,7 +45,7 @@ resource "snowflake_postgres_instance" "complete" {
 ### Required
 
 - `authentication_authority` (String) Specifies the authentication authority for the Postgres instance. Valid values are (case-insensitive): `POSTGRES` | `POSTGRES_OR_SNOWFLAKE`.
-- `compute_family` (String) Specifies the compute family for the Postgres instance (e.g. STANDARD_1).
+- `compute_family` (String) Specifies the compute family for the Postgres instance (e.g. STANDARD_M).
 - `name` (String) Specifies the identifier for the Postgres instance; must be unique for your account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `storage_size_gb` (Number) Specifies the storage size in GB for the Postgres instance.
 
@@ -96,7 +96,7 @@ Read-Only:
 - `owner` (String)
 - `owner_role_type` (String)
 - `postgres_settings` (String)
-- `postgres_version` (String)
+- `postgres_version` (Number)
 - `privatelink_service_identifier` (String)
 - `retention_time` (Number)
 - `state` (String)

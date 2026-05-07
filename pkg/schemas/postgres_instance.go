@@ -52,7 +52,7 @@ var DescribePostgresInstanceSchema = map[string]*schema.Schema{
 		Computed: true,
 	},
 	"postgres_version": {
-		Type:     schema.TypeString,
+		Type:     schema.TypeInt,
 		Computed: true,
 	},
 	"high_availability": {

@@ -897,6 +897,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_network_rules](./docs/data-sources/network_rules)
 - [snowflake_notebooks](./docs/data-sources/notebooks)
 - [snowflake_parameters](./docs/data-sources/parameters)
+- [snowflake_password_policies](./docs/data-sources/password_policies)
 - [snowflake_pipes](./docs/data-sources/pipes)
 - [snowflake_procedures](./docs/data-sources/procedures)
 - [snowflake_semantic_views](./docs/data-sources/semantic_views)

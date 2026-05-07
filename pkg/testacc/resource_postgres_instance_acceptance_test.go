@@ -25,13 +25,13 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	modelBasic := model.PostgresInstance("test", id.Name(), "STANDARD_1", 10, "POSTGRES").
+	modelBasic := model.PostgresInstance("test", id.Name(), "STANDARD_M", 10, "POSTGRES").
 		WithHighAvailability(false)
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		resourceassert.PostgresInstanceResource(t, modelBasic.ResourceReference()).
 			HasNameString(id.Name()).
-			HasComputeFamilyString("STANDARD_1").
+			HasComputeFamilyString("STANDARD_M").
 			HasStorageSizeGbString("10").
 			HasAuthenticationAuthorityString("POSTGRES").
 			HasNoComment().
@@ -43,20 +43,20 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasComputeFamily("STANDARD_1").
+			HasComputeFamily("STANDARD_M").
 			HasAuthenticationAuthority("POSTGRES").
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"),
 	}
 
-	modelComplete := model.PostgresInstance("test", id.Name(), "STANDARD_1", 10, "POSTGRES").
+	modelComplete := model.PostgresInstance("test", id.Name(), "STANDARD_M", 10, "POSTGRES").
 		WithComment(comment).
 		WithHighAvailability(false)
 
 	assertComplete := []assert.TestCheckFuncProvider{
 		resourceassert.PostgresInstanceResource(t, modelComplete.ResourceReference()).
 			HasNameString(id.Name()).
-			HasComputeFamilyString("STANDARD_1").
+			HasComputeFamilyString("STANDARD_M").
 			HasStorageSizeGbString("10").
 			HasAuthenticationAuthorityString("POSTGRES").
 			HasCommentString(comment).
@@ -64,7 +64,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelComplete.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasComputeFamily("STANDARD_1").
+			HasComputeFamily("STANDARD_M").
 			HasAuthenticationAuthority("POSTGRES").
 			HasComment(comment).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -74,7 +74,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 	assertAfterUnset := []assert.TestCheckFuncProvider{
 		resourceassert.PostgresInstanceResource(t, modelBasic.ResourceReference()).
 			HasNameString(id.Name()).
-			HasComputeFamilyString("STANDARD_1").
+			HasComputeFamilyString("STANDARD_M").
 			HasStorageSizeGbString("10").
 			HasAuthenticationAuthorityString("POSTGRES").
 			HasCommentString("").
@@ -82,7 +82,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasComputeFamily("STANDARD_1").
+			HasComputeFamily("STANDARD_M").
 			HasAuthenticationAuthority("POSTGRES").
 			HasComment("").
 			HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -108,6 +108,10 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				ResourceName:      modelBasic.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"show_output.0.updated_on",
+					"describe_output.0.updated_on",
+				},
 			},
 			// Update - set optionals
 			{
@@ -125,6 +129,10 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				ResourceName:      modelComplete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"show_output.0.updated_on",
+					"describe_output.0.updated_on",
+				},
 			},
 			// Update - unset optionals
 			{
@@ -177,9 +185,9 @@ func TestAcc_PostgresInstance_Rename(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	modelBasic := model.PostgresInstance("test", id.Name(), "STANDARD_1", 10, "POSTGRES").
+	modelBasic := model.PostgresInstance("test", id.Name(), "STANDARD_M", 10, "POSTGRES").
 		WithHighAvailability(false)
-	modelWithChangedName := model.PostgresInstance("test", newId.Name(), "STANDARD_1", 10, "POSTGRES").
+	modelWithChangedName := model.PostgresInstance("test", newId.Name(), "STANDARD_M", 10, "POSTGRES").
 		WithHighAvailability(false)
 
 	resource.Test(t, resource.TestCase{
@@ -195,40 +203,23 @@ func TestAcc_PostgresInstance_Rename(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.PostgresInstanceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
-						HasComputeFamilyString("STANDARD_1").
+						HasComputeFamilyString("STANDARD_M").
 						HasStorageSizeGbString("10").
 						HasAuthenticationAuthorityString("POSTGRES"),
 					resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
-						HasComputeFamily("STANDARD_1").
+						HasComputeFamily("STANDARD_M").
 						HasAuthenticationAuthority("POSTGRES").
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE"),
 				),
 			},
-			// rename object
+			// rename object - Snowflake backend does not currently support
+			// ALTER POSTGRES INSTANCE ... RENAME TO (returns SQL compilation error)
 			{
-				Config: accconfig.FromModels(t, modelWithChangedName),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithChangedName.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.PostgresInstanceResource(t, modelWithChangedName.ResourceReference()).
-						HasNameString(newId.Name()).
-						HasComputeFamilyString("STANDARD_1").
-						HasStorageSizeGbString("10").
-						HasAuthenticationAuthorityString("POSTGRES"),
-					resourceshowoutputassert.PostgresInstanceShowOutput(t, modelWithChangedName.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(newId.Name()).
-						HasComputeFamily("STANDARD_1").
-						HasAuthenticationAuthority("POSTGRES").
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE"),
-				),
+				Config:      accconfig.FromModels(t, modelWithChangedName),
+				ExpectError: regexp.MustCompile(`error renaming Postgres instance`),
 			},
 		},
 	})
@@ -237,7 +228,7 @@ func TestAcc_PostgresInstance_Rename(t *testing.T) {
 func TestAcc_PostgresInstance_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	modelInvalidStorageSizeGb := model.PostgresInstance("test", id.Name(), "STANDARD_1", 0, "POSTGRES")
+	modelInvalidStorageSizeGb := model.PostgresInstance("test", id.Name(), "STANDARD_M", 0, "POSTGRES")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
