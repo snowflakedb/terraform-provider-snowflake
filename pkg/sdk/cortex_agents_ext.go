@@ -5,6 +5,10 @@ import (
 	"strings"
 )
 
+func (r *CreateCortexAgentRequest) GetName() SchemaObjectIdentifier {
+	return r.name
+}
+
 type CortexAgentProfile struct {
 	DisplayName *string `json:"display_name"`
 	Avatar      *string `json:"avatar"`

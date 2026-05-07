@@ -3435,7 +3435,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnObject_Agent_v2_14_0_
 	t.Cleanup(roleCleanup)
 
 	agentId := testClient().Ids.RandomSchemaObjectIdentifier()
-	agentCleanup := testClient().CortexAgent.Create(t, agentId)
+	agentCleanup := testClient().CortexAgent.CreateWithId(t, agentId)
 	t.Cleanup(agentCleanup)
 
 	accountRoleName := role.ID().Name()

@@ -42,7 +42,7 @@ func (c *CortexAgentDetailsAssert) HasCreatedOnNotEmpty() *CortexAgentDetailsAss
 	return c
 }
 
-func (c *CortexAgentDetailsAssert) HasCortexAgentProfile(expected *sdk.CortexAgentProfile) *CortexAgentDetailsAssert {
+func (c *CortexAgentDetailsAssert) HasCortexAgentProfile(expected sdk.CortexAgentProfile) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
 		return assertCortexAgentProfileJsonEqual(o.Profile, expected)

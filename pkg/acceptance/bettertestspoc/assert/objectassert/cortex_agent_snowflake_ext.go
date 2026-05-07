@@ -42,7 +42,7 @@ func (c *CortexAgentAssert) HasCreatedOnNotEmpty() *CortexAgentAssert {
 	return c
 }
 
-func (c *CortexAgentAssert) HasCortexAgentProfile(expected *sdk.CortexAgentProfile) *CortexAgentAssert {
+func (c *CortexAgentAssert) HasCortexAgentProfile(expected sdk.CortexAgentProfile) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
 		return assertCortexAgentProfileJsonEqual(o.Profile, expected)
@@ -50,12 +50,7 @@ func (c *CortexAgentAssert) HasCortexAgentProfile(expected *sdk.CortexAgentProfi
 	return c
 }
 
-func assertCortexAgentProfileJsonEqual(profile *string, expected *sdk.CortexAgentProfile) error {
-	exp := expected
-	if exp == nil {
-		exp = &sdk.CortexAgentProfile{}
-	}
-
+func assertCortexAgentProfileJsonEqual(profile *string, expected sdk.CortexAgentProfile) error {
 	if profile == nil {
 		return fmt.Errorf("expected profile to be non-nil")
 	}
@@ -65,8 +60,8 @@ func assertCortexAgentProfileJsonEqual(profile *string, expected *sdk.CortexAgen
 		return fmt.Errorf("unmarshal cortex agent profile: %w", err)
 	}
 
-	if !reflect.DeepEqual(actual, exp) {
-		return fmt.Errorf("expected profile %+v; got %+v", exp, actual)
+	if !reflect.DeepEqual(actual, &expected) {
+		return fmt.Errorf("expected profile %+v; got %+v", &expected, actual)
 	}
 	return nil
 }

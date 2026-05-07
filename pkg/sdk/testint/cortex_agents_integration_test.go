@@ -19,15 +19,6 @@ func TestInt_CortexAgents(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	specForResponse := func(response string) string {
-		return "orchestration:\n" +
-			"  budget:\n" +
-			"    seconds: 30\n" +
-			"    tokens: 16000\n" +
-			"instructions:\n" +
-			"  response: \"" + response + "\"\n"
-	}
-
 	expectedSpecAsMap := func(response string) map[string]any {
 		return map[string]any{
 			"orchestration": map[string]any{
@@ -42,26 +33,14 @@ func TestInt_CortexAgents(t *testing.T) {
 		}
 	}
 
-	cleanupCortexAgentFunc := func(id sdk.SchemaObjectIdentifier) func() {
-		return func() {
-			err := client.CortexAgents.Drop(ctx, sdk.NewDropCortexAgentRequest(id).WithIfExists(true))
-			require.NoError(t, err)
-		}
-	}
-
-	createCortexAgent := func(t *testing.T) *sdk.CortexAgent {
+	createCortexAgent := func(t *testing.T) sdk.SchemaObjectIdentifier {
 		t.Helper()
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		spec := specForResponse("Test agent for integration tests")
 
-		err := client.CortexAgents.Create(ctx, sdk.NewCreateCortexAgentRequest(id, spec))
-		require.NoError(t, err)
-		t.Cleanup(cleanupCortexAgentFunc(id))
+		cleanup := testClientHelper().CortexAgent.CreateWithId(t, id)
+		t.Cleanup(cleanup)
 
-		agent, err := client.CortexAgents.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		return agent
+		return id
 	}
 
 	t.Run("create cortex agent: complete case", func(t *testing.T) {
@@ -69,15 +48,15 @@ func TestInt_CortexAgents(t *testing.T) {
 		comment := random.Comment()
 		profile := `{"display_name":"My Business Assistant","avatar":"business-icon.png","color":"blue"}`
 		response := "Complete integration test"
+		spec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, response)
 
-		err := client.CortexAgents.Create(ctx, sdk.NewCreateCortexAgentRequest(id, specForResponse(response)).
+		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, spec).
 			WithIfNotExists(true).
 			WithComment(comment).
 			WithProfile(profile))
-		require.NoError(t, err)
-		t.Cleanup(cleanupCortexAgentFunc(id))
+		t.Cleanup(cleanup)
 
-		expectedProfile := &sdk.CortexAgentProfile{
+		expectedProfile := sdk.CortexAgentProfile{
 			DisplayName: sdk.String("My Business Assistant"),
 			Avatar:      sdk.String("business-icon.png"),
 			Color:       sdk.String("blue"),
@@ -109,10 +88,10 @@ func TestInt_CortexAgents(t *testing.T) {
 	t.Run("create cortex agent: no optionals", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		response := "Without optionals"
+		spec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, response)
 
-		err := client.CortexAgents.Create(ctx, sdk.NewCreateCortexAgentRequest(id, specForResponse(response)))
-		require.NoError(t, err)
-		t.Cleanup(cleanupCortexAgentFunc(id))
+		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, spec))
+		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.CortexAgent(t, id).
 			HasCreatedOnNotEmpty().
@@ -139,8 +118,7 @@ func TestInt_CortexAgents(t *testing.T) {
 	})
 
 	t.Run("alter cortex agent: set comment and profile", func(t *testing.T) {
-		agent := createCortexAgent(t)
-		id := agent.ID()
+		id := createCortexAgent(t)
 		comment := random.Comment()
 		profile := `{"display_name":"Renamed Assistant"}`
 
@@ -150,7 +128,7 @@ func TestInt_CortexAgents(t *testing.T) {
 				WithProfile(profile)))
 		require.NoError(t, err)
 
-		expectedProfile := &sdk.CortexAgentProfile{
+		expectedProfile := sdk.CortexAgentProfile{
 			DisplayName: sdk.String("Renamed Assistant"),
 		}
 		assertThatObject(t, objectassert.CortexAgent(t, id).
@@ -167,7 +145,7 @@ func TestInt_CortexAgents(t *testing.T) {
 				WithProfile("{}")))
 		require.NoError(t, err)
 
-		expectedEmptyProfile := &sdk.CortexAgentProfile{}
+		expectedEmptyProfile := sdk.CortexAgentProfile{}
 		assertThatObject(t, objectassert.CortexAgent(t, id).
 			HasComment("").
 			HasCortexAgentProfile(expectedEmptyProfile),
@@ -178,12 +156,12 @@ func TestInt_CortexAgents(t *testing.T) {
 	})
 
 	t.Run("alter cortex agent: modify live version set", func(t *testing.T) {
-		agent := createCortexAgent(t)
-		id := agent.ID()
+		id := createCortexAgent(t)
 		newResponse := "Updated live version"
+		newSpec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, newResponse)
 
 		err := client.CortexAgents.Alter(ctx, sdk.NewAlterCortexAgentRequest(id).
-			WithModifyLiveVersionSet(*sdk.NewCortexAgentModifyLiveVersionSetRequest(specForResponse(newResponse))))
+			WithModifyLiveVersionSet(*sdk.NewCortexAgentModifyLiveVersionSetRequest(newSpec)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
@@ -191,7 +169,7 @@ func TestInt_CortexAgents(t *testing.T) {
 	})
 
 	t.Run("drop cortex agent: existing", func(t *testing.T) {
-		id := createCortexAgent(t).ID()
+		id := createCortexAgent(t)
 
 		err := client.CortexAgents.Drop(ctx, sdk.NewDropCortexAgentRequest(id))
 		require.NoError(t, err)
@@ -215,10 +193,8 @@ func TestInt_CortexAgents(t *testing.T) {
 		id4 := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(sdk.NewDatabaseObjectIdentifier(db.Name, "PUBLIC"))
 		ids := []sdk.SchemaObjectIdentifier{id1, id2, id3, id4}
 		for _, id := range ids {
-			spec := specForResponse("show test " + id.Name())
-			err := client.CortexAgents.Create(ctx, sdk.NewCreateCortexAgentRequest(id, spec))
-			require.NoError(t, err)
-			t.Cleanup(cleanupCortexAgentFunc(id))
+			cleanup := testClientHelper().CortexAgent.CreateWithId(t, id)
+			t.Cleanup(cleanup)
 		}
 
 		t.Run("like", func(t *testing.T) {
