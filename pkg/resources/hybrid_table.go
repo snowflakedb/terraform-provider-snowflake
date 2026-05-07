@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -75,7 +77,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 				"type": {
 					Type:             schema.TypeString,
 					Required:         true,
-					Description:      "Column type, e.g. VARCHAR(256), NUMBER(38,0).",
+					Description:      "Column type. See [Snowflake data types](https://docs.snowflake.com/en/sql-reference-data-types) for supported values. Example: VARCHAR(256), NUMBER(38,0).",
 					ValidateDiagFunc: IsDataTypeValid,
 					DiffSuppressFunc: DiffSuppressDataTypes,
 				},
@@ -304,12 +306,12 @@ type changedHybridColumn struct {
 	changedComment  bool
 }
 
-func parseHybridColumn(from interface{}) hybridTableColumn {
-	c := from.(map[string]interface{})
+func parseHybridColumn(from any) hybridTableColumn {
+	c := from.(map[string]any)
 	var cd *columnDefault
 
-	if defaultList, ok := c["default"].([]interface{}); ok && len(defaultList) == 1 {
-		cd = getColumnDefault(defaultList[0].(map[string]interface{}))
+	if defaultList, ok := c["default"].([]any); ok && len(defaultList) == 1 {
+		cd = getColumnDefault(defaultList[0].(map[string]any))
 	}
 
 	return hybridTableColumn{
@@ -322,8 +324,8 @@ func parseHybridColumn(from interface{}) hybridTableColumn {
 	}
 }
 
-func parseHybridColumns(from interface{}) hybridTableColumns {
-	cols := from.([]interface{})
+func parseHybridColumns(from any) hybridTableColumns {
+	cols := from.([]any)
 	result := make(hybridTableColumns, len(cols))
 	for i, c := range cols {
 		result[i] = parseHybridColumn(c)
@@ -333,16 +335,11 @@ func parseHybridColumns(from interface{}) hybridTableColumns {
 
 func (c hybridTableColumns) getNewIn(other hybridTableColumns) hybridTableColumns {
 	added := hybridTableColumns{}
-	for _, cO := range c {
-		found := false
-		for _, cN := range other {
-			if cO.name == cN.name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			added = append(added, cO)
+	for _, oldColumn := range c {
+		if _, err := collections.FindFirst(other, func(newColumn hybridTableColumn) bool {
+			return oldColumn.name == newColumn.name
+		}); err != nil {
+			added = append(added, oldColumn)
 		}
 	}
 	return added
@@ -350,19 +347,19 @@ func (c hybridTableColumns) getNewIn(other hybridTableColumns) hybridTableColumn
 
 func (c hybridTableColumns) getChangedColumnProperties(new hybridTableColumns) []changedHybridColumn {
 	changed := make([]changedHybridColumn, 0)
-	for _, cO := range c {
-		for _, cN := range new {
-			if cO.name != cN.name {
+	for _, oldColumn := range c {
+		for _, newColumn := range new {
+			if oldColumn.name != newColumn.name {
 				continue
 			}
-			ch := changedHybridColumn{newColumn: cN}
-			if cO.dataType != cN.dataType {
+			ch := changedHybridColumn{newColumn: newColumn}
+			if oldColumn.dataType != newColumn.dataType {
 				ch.changedDataType = true
 			}
-			if cO._default != nil && cN._default == nil {
+			if oldColumn._default != nil && newColumn._default == nil {
 				ch.droppedDefault = true
 			}
-			if cO.comment != cN.comment {
+			if oldColumn.comment != newColumn.comment {
 				ch.changedComment = true
 			}
 			// NOTE: collate changes are not detected here because the SDK's
@@ -385,10 +382,10 @@ func (c hybridTableColumns) diffs(new hybridTableColumns) (removed hybridTableCo
 // Create helpers
 // ---------------------------------------------------------------------------
 
-func buildHybridTableColumnRequests(cols []interface{}) ([]sdk.HybridTableColumnRequest, error) {
+func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest, error) {
 	requests := make([]sdk.HybridTableColumnRequest, len(cols))
 	for i, rawCol := range cols {
-		c := rawCol.(map[string]interface{})
+		c := rawCol.(map[string]any)
 		colType := c["type"].(string)
 		dataType, err := datatypes.ParseDataType(colType)
 		if err != nil {
@@ -401,8 +398,8 @@ func buildHybridTableColumnRequests(cols []interface{}) ([]sdk.HybridTableColumn
 			req.WithNotNull(true)
 		}
 
-		if defaultList, ok := c["default"].([]interface{}); ok && len(defaultList) == 1 {
-			defMap := defaultList[0].(map[string]interface{})
+		if defaultList, ok := c["default"].([]any); ok && len(defaultList) == 1 {
+			defMap := defaultList[0].(map[string]any)
 			if defaultValue := buildHybridColumnDefaultValue(defMap, dataType); defaultValue != nil {
 				req.WithDefaultValue(*defaultValue)
 			}
@@ -426,7 +423,7 @@ func buildHybridTableColumnRequests(cols []interface{}) ([]sdk.HybridTableColumn
 // buildHybridColumnDefaultValue builds a ColumnDefaultValue from a default block map.
 // Mutual exclusivity of constant/expression/sequence is not validated here;
 // invalid combinations are rejected by Snowflake (matches table.go approach).
-func buildHybridColumnDefaultValue(defMap map[string]interface{}, dataType datatypes.DataType) *sdk.ColumnDefaultValue {
+func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.DataType) *sdk.ColumnDefaultValue {
 	constant, hasConstant := defMap["constant"].(string)
 	hasConstant = hasConstant && len(constant) > 0
 
@@ -459,10 +456,10 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 	constraints := make([]sdk.HybridTableOutOfLineConstraintRequest, 0)
 
 	// Primary key (required)
-	pkList := d.Get("primary_key").([]interface{})
-	pkMap := pkList[0].(map[string]interface{})
+	pkList := d.Get("primary_key").([]any)
+	pkMap := pkList[0].(map[string]any)
 	pkConstraint := sdk.NewHybridTableOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).
-		WithColumns(expandStringList(pkMap["keys"].([]interface{})))
+		WithColumns(expandStringList(pkMap["keys"].([]any)))
 	if pkName, ok := pkMap["name"].(string); ok && pkName != "" {
 		pkConstraint.WithName(pkName)
 	}
@@ -470,10 +467,10 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 
 	// Unique constraints (optional)
 	if v, ok := d.GetOk("unique_constraint"); ok {
-		for _, ucRaw := range v.([]interface{}) {
-			ucMap := ucRaw.(map[string]interface{})
+		for _, ucRaw := range v.([]any) {
+			ucMap := ucRaw.(map[string]any)
 			ucConstraint := sdk.NewHybridTableOutOfLineConstraintRequest(sdk.ColumnConstraintTypeUnique).
-				WithColumns(expandStringList(ucMap["columns"].([]interface{})))
+				WithColumns(expandStringList(ucMap["columns"].([]any)))
 			if ucName, ok := ucMap["name"].(string); ok && ucName != "" {
 				ucConstraint.WithName(ucName)
 			}
@@ -483,22 +480,22 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 
 	// Foreign keys (optional)
 	if v, ok := d.GetOk("foreign_key"); ok {
-		for _, fkRaw := range v.([]interface{}) {
-			fkMap := fkRaw.(map[string]interface{})
+		for _, fkRaw := range v.([]any) {
+			fkMap := fkRaw.(map[string]any)
 			fkConstraint := sdk.NewHybridTableOutOfLineConstraintRequest(sdk.ColumnConstraintTypeForeignKey).
-				WithColumns(expandStringList(fkMap["columns"].([]interface{})))
+				WithColumns(expandStringList(fkMap["columns"].([]any)))
 			if fkName, ok := fkMap["name"].(string); ok && fkName != "" {
 				fkConstraint.WithName(fkName)
 			}
-			refList := fkMap["references"].([]interface{})
-			refMap := refList[0].(map[string]interface{})
+			refList := fkMap["references"].([]any)
+			refMap := refList[0].(map[string]any)
 			refTableId, err := sdk.ParseSchemaObjectIdentifier(refMap["table_id"].(string))
 			if err != nil {
 				return nil, fmt.Errorf("invalid references.table_id identifier: %w", err)
 			}
 			fkConstraint.WithForeignKey(sdk.OutOfLineForeignKey{
 				TableName:   refTableId,
-				ColumnNames: expandStringList(refMap["columns"].([]interface{})),
+				ColumnNames: expandStringList(refMap["columns"].([]any)),
 			})
 			constraints = append(constraints, *fkConstraint)
 		}
@@ -518,7 +515,7 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	databaseName := d.Get("database").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	columnRequests, err := buildHybridTableColumnRequests(d.Get("column").([]interface{}))
+	columnRequests, err := buildHybridTableColumnRequests(d.Get("column").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -724,7 +721,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 				addReq.WithComment(col.comment)
 			}
 			if col._default != nil {
-				defMap := map[string]interface{}{}
+				defMap := map[string]any{}
 				if col._default.constant != nil {
 					defMap["constant"] = *col._default.constant
 				}
@@ -813,8 +810,8 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 	}
 	configByName := make(map[string]configColumnInfo)
 	if configCols, ok := d.GetOk("column"); ok {
-		for _, rawCol := range configCols.([]interface{}) {
-			colMap := rawCol.(map[string]interface{})
+		for _, rawCol := range configCols.([]any) {
+			colMap := rawCol.(map[string]any)
 			if colName, ok := colMap["name"].(string); ok {
 				info := configColumnInfo{}
 				if dt, ok := colMap["type"].(string); ok {
@@ -881,9 +878,9 @@ func buildPrimaryKeyStateFromDescribe(details []sdk.HybridTableDetails, d *schem
 	// Preserve constraint name from config if available
 	pkName := ""
 	if configPK, ok := d.GetOk("primary_key"); ok {
-		pkList := configPK.([]interface{})
+		pkList := configPK.([]any)
 		if len(pkList) > 0 {
-			pkMap := pkList[0].(map[string]interface{})
+			pkMap := pkList[0].(map[string]any)
 			if n, ok := pkMap["name"].(string); ok {
 				pkName = n
 			}
@@ -911,9 +908,12 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) map[string]any {
 	// Sequence detection: ends with .NEXTVAL
 	if strings.HasSuffix(defaultRaw, ".NEXTVAL") {
 		sequenceIdRaw := strings.TrimSuffix(defaultRaw, ".NEXTVAL")
-		return map[string]any{
-			"sequence": sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(sequenceIdRaw).FullyQualifiedName(),
+		id, err := sdk.ParseSchemaObjectIdentifier(sequenceIdRaw)
+		if err != nil {
+			log.Printf("[WARN] hybrid_table Read: failed to parse sequence identifier %q: %v", sequenceIdRaw, err)
+			return map[string]any{"sequence": sequenceIdRaw}
 		}
+		return map[string]any{"sequence": id.FullyQualifiedName()}
 	}
 
 	// Expression detection: contains parentheses
