@@ -11,10 +11,12 @@ func ({{ $modelVar }} *{{ $modelName }}) MarshalJSON() ([]byte, error) {
     type Alias {{ $modelName }}
     return json.Marshal(&struct {
         *Alias
-        DependsOn []string `json:"depends_on,omitempty"`
+        DependsOn []string          `json:"depends_on,omitempty"`
+        Timeouts  map[string]string `json:"timeouts,omitempty"`
     }{
         Alias:     (*Alias)({{ $modelVar }}),
         DependsOn: {{ $modelVar }}.DependsOn(),
+        Timeouts:  {{ $modelVar }}.Timeouts(),
     })
 }
 
@@ -25,5 +27,25 @@ func ({{ $modelVar }} *{{ $modelName }}) WithDependsOn(values ...string) *{{ $mo
 
 func ({{ $modelVar }} *{{ $modelName }}) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *{{ $modelName }} {
     {{ $modelVar }}.DynamicBlock = dynamicBlock
+    return {{ $modelVar }}
+}
+
+func ({{ $modelVar }} *{{ $modelName }}) WithTimeoutCreate(duration string) *{{ $modelName }} {
+    {{ $modelVar }}.SetTimeoutCreate(duration)
+    return {{ $modelVar }}
+}
+
+func ({{ $modelVar }} *{{ $modelName }}) WithTimeoutRead(duration string) *{{ $modelName }} {
+    {{ $modelVar }}.SetTimeoutRead(duration)
+    return {{ $modelVar }}
+}
+
+func ({{ $modelVar }} *{{ $modelName }}) WithTimeoutUpdate(duration string) *{{ $modelName }} {
+    {{ $modelVar }}.SetTimeoutUpdate(duration)
+    return {{ $modelVar }}
+}
+
+func ({{ $modelVar }} *{{ $modelName }}) WithTimeoutDelete(duration string) *{{ $modelName }} {
+    {{ $modelVar }}.SetTimeoutDelete(duration)
     return {{ $modelVar }}
 }

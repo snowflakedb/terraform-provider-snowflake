@@ -26,6 +26,7 @@ type ResourceModelMeta struct {
 	name      string
 	resource  resources.Resource
 	dependsOn []string
+	timeouts  map[string]string
 }
 
 func (m *ResourceModelMeta) Resource() resources.Resource {
@@ -50,6 +51,33 @@ func (m *ResourceModelMeta) DependsOn() []string {
 
 func (m *ResourceModelMeta) SetDependsOn(values ...string) {
 	m.dependsOn = values
+}
+
+func (m *ResourceModelMeta) Timeouts() map[string]string {
+	return m.timeouts
+}
+
+func (m *ResourceModelMeta) SetTimeoutCreate(duration string) {
+	m.setTimeoutKey("create", duration)
+}
+
+func (m *ResourceModelMeta) SetTimeoutRead(duration string) {
+	m.setTimeoutKey("read", duration)
+}
+
+func (m *ResourceModelMeta) SetTimeoutUpdate(duration string) {
+	m.setTimeoutKey("update", duration)
+}
+
+func (m *ResourceModelMeta) SetTimeoutDelete(duration string) {
+	m.setTimeoutKey("delete", duration)
+}
+
+func (m *ResourceModelMeta) setTimeoutKey(key, duration string) {
+	if m.timeouts == nil {
+		m.timeouts = make(map[string]string)
+	}
+	m.timeouts[key] = duration
 }
 
 // DefaultResourceName is exported to allow assertions against the resources using the default name.
