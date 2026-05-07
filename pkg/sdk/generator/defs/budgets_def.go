@@ -1,5 +1,3 @@
-//go:build sdk_generation
-
 package defs
 
 import (
@@ -24,6 +22,7 @@ var getNotificationIntegrationsResult = g.StructPair(
 	Number("last_notification_time").
 	Time("added_date")
 
+// stored_procedure_reference and array_construct_statement are omitted as they are duplicated ways of setting the same input
 var setCycleStartActionArgs = g.NewQueryStruct("SetCycleStartActionArgs").
 	Identifier("Procedure", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("PROCEDURE")).
 	List("Arguments", "string", g.ListOptions().Required())
@@ -33,7 +32,7 @@ var getCycleStartActionResult = g.StructPair(
 	"BudgetCycleStartAction",
 ).Text("action_uuid").
 	Text("procedure_fqn").
-	Text("procedure_args").
+	StringList("procedure_args").
 	Time("added_timestamp").
 	Time("last_triggered_timestamp")
 

@@ -32,7 +32,6 @@ type InstanceMethodKind string
 const (
 	InstanceMethodKindSingleValue InstanceMethodKind = "single_value"
 	InstanceMethodKindSlice       InstanceMethodKind = "slice"
-	InstanceMethodKindScalar      InstanceMethodKind = "scalar"
 )
 
 // Operation defines a single operation for given object or objects family (e.g. CREATE DATABASE ROLE)

@@ -125,7 +125,7 @@ type getCycleStartActionRow struct {
 type BudgetCycleStartAction struct {
 	ActionUuid             string
 	ProcedureFqn           string
-	ProcedureArgs          string
+	ProcedureArgs          []string
 	AddedTimestamp         time.Time
 	LastTriggeredTimestamp time.Time
 }
