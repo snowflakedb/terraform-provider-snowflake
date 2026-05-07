@@ -127,8 +127,8 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
-						HasEnableQueryAcceleration(true).
-						HasQueryAccelerationMaxScaleFactor(2),
+						HasEnableQueryAcceleration(false).
+						HasQueryAccelerationMaxScaleFactor(8),
 					resourceparametersassert.WarehouseResourceParameters(t, warehouseModel.ResourceReference()).
 						HasMaxConcurrencyLevel(8).
 						HasStatementQueuedTimeoutInSeconds(0).
@@ -149,8 +149,8 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
-						HasEnableQueryAcceleration(true).
-						HasQueryAccelerationMaxScaleFactor(2),
+						HasEnableQueryAcceleration(false).
+						HasQueryAccelerationMaxScaleFactor(8),
 					objectparametersassert.WarehouseParameters(t, warehouseId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -177,8 +177,8 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 						HasAutoResumeString("true").
 						HasResourceMonitorString("").
 						HasCommentString(comment).
-						HasEnableQueryAccelerationString("true").
-						HasQueryAccelerationMaxScaleFactorString("2").
+						HasEnableQueryAccelerationString("false").
+						HasQueryAccelerationMaxScaleFactorString("8").
 						HasDefaultMaxConcurrencyLevel().
 						HasDefaultStatementQueuedTimeoutInSeconds().
 						HasDefaultStatementTimeoutInSeconds(),
@@ -202,8 +202,8 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
-						HasEnableQueryAcceleration(true).
-						HasQueryAccelerationMaxScaleFactor(2),
+						HasEnableQueryAcceleration(false).
+						HasQueryAccelerationMaxScaleFactor(8),
 					objectparametersassert.WarehouseParameters(t, warehouseId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -257,8 +257,8 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 					resource.TestCheckNoResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "initially_suspended"),
 					resource.TestCheckNoResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "resource_monitor"),
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "comment", comment),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "enable_query_acceleration", "true"),
-					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "query_acceleration_max_scale_factor", "2"),
+					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "enable_query_acceleration", "false"),
+					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "query_acceleration_max_scale_factor", "8"),
 
 					// parameters have the same values...
 					resource.TestCheckResourceAttr(warehouseModelRenamedFullWithParameters.ResourceReference(), "max_concurrency_level", "8"),
@@ -2456,7 +2456,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						HasNoResourceConstraint(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2506,7 +2506,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						HasNoResourceConstraint(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2522,7 +2522,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						plancheck.ExpectNonEmptyPlan(),
 						planchecks.PrintPlanDetails(warehouseModelStandard.ResourceReference(), "warehouse_type", r.ShowOutputAttributeName),
 						planchecks.ExpectDrift(warehouseModelStandard.ResourceReference(), "generation", nil, sdk.String(string(sdk.WarehouseGenerationStandardGen2))),
-						planchecks.ExpectDrift(warehouseModelStandard.ResourceReference(), "show_output.0.generation", sdk.String(string(sdk.WarehouseGenerationStandardGen2)), sdk.String(string(sdk.WarehouseGenerationStandardGen2))),
+						planchecks.ExpectDrift(warehouseModelStandard.ResourceReference(), "show_output.0.generation", sdk.String(string(sdk.WarehouseGenerationStandardGen1)), sdk.String(string(sdk.WarehouseGenerationStandardGen2))),
 						planchecks.ExpectChange(warehouseModelStandard.ResourceReference(), "generation", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseGenerationStandardGen2)), nil),
 						planchecks.ExpectComputed(warehouseModelStandard.ResourceReference(), r.ShowOutputAttributeName, true),
 						planchecks.ExpectNoChangeOnField(warehouseModelStandard.ResourceReference(), "resource_constraint"),
@@ -2535,7 +2535,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						HasNoResourceConstraint(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2547,11 +2547,11 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
-						HasGenerationString(string(sdk.WarehouseGenerationStandardGen2)).
+						HasGenerationString(string(sdk.WarehouseGenerationStandardGen1)).
 						HasNoResourceConstraint(),
 					resourceshowoutputassert.ImportedWarehouseShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2616,7 +2616,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						HasNoResourceConstraint(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2664,7 +2664,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						HasResourceConstraintEmpty(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2680,7 +2680,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						plancheck.ExpectNonEmptyPlan(),
 						planchecks.PrintPlanDetails(warehouseModelStandard.ResourceReference(), "resource_constraint", r.ShowOutputAttributeName),
 						planchecks.ExpectDrift(warehouseModelStandard.ResourceReference(), "resource_constraint", nil, sdk.String(string(sdk.WarehouseResourceConstraintMemory16X))),
-						planchecks.ExpectDrift(warehouseModelStandard.ResourceReference(), "show_output.0.generation", sdk.String(string(sdk.WarehouseGenerationStandardGen2)), nil),
+						planchecks.ExpectDrift(warehouseModelStandard.ResourceReference(), "show_output.0.generation", sdk.String(string(sdk.WarehouseGenerationStandardGen1)), nil),
 						planchecks.ExpectDrift(warehouseModelStandard.ResourceReference(), "show_output.0.resource_constraint", nil, sdk.String(string(sdk.WarehouseResourceConstraintMemory16X))),
 						planchecks.ExpectChange(warehouseModelStandard.ResourceReference(), "resource_constraint", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseResourceConstraintMemory16X)), nil),
 						planchecks.ExpectChange(warehouseModelStandard.ResourceReference(), "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeSnowparkOptimized)), sdk.String(string(sdk.WarehouseTypeStandard))),
@@ -2695,7 +2695,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						HasResourceConstraintEmpty(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2724,7 +2724,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						HasResourceConstraintEmpty(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelDefault.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2740,7 +2740,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						plancheck.ExpectNonEmptyPlan(),
 						planchecks.PrintPlanDetails(warehouseModelDefault.ResourceReference(), "resource_constraint", r.ShowOutputAttributeName),
 						planchecks.ExpectDrift(warehouseModelDefault.ResourceReference(), "resource_constraint", nil, sdk.String(string(sdk.WarehouseResourceConstraintMemory16X))),
-						planchecks.ExpectDrift(warehouseModelDefault.ResourceReference(), "show_output.0.generation", sdk.String(string(sdk.WarehouseGenerationStandardGen2)), nil),
+						planchecks.ExpectDrift(warehouseModelDefault.ResourceReference(), "show_output.0.generation", sdk.String(string(sdk.WarehouseGenerationStandardGen1)), nil),
 						planchecks.ExpectDrift(warehouseModelDefault.ResourceReference(), "show_output.0.resource_constraint", nil, sdk.String(string(sdk.WarehouseResourceConstraintMemory16X))),
 						planchecks.ExpectChange(warehouseModelDefault.ResourceReference(), "resource_constraint", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseResourceConstraintMemory16X)), nil),
 						planchecks.ExpectChange(warehouseModelDefault.ResourceReference(), "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeSnowparkOptimized)), nil),
@@ -2755,7 +2755,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						HasResourceConstraintEmpty(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelDefault.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2861,7 +2861,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						HasResourceConstraintEmpty(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelDefault.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -2932,7 +2932,7 @@ func TestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T) {
 		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
 
 	warehouseModelStandardAndGeneration := model.Warehouse("test", id.Name()).
-		WithGenerationEnum(sdk.WarehouseGenerationStandardGen2).
+		WithGenerationEnum(sdk.WarehouseGenerationStandardGen1).
 		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
 
 	resource.Test(t, resource.TestCase{
@@ -2970,7 +2970,7 @@ func TestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T) {
 						HasNoResourceConstraint(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandardAndGeneration.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},
@@ -3124,7 +3124,7 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T)
 						HasNoResourceConstraint(),
 					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
 						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
+						HasGeneration(sdk.WarehouseGenerationStandardGen1).
 						HasResourceConstraintEmpty(),
 				),
 			},

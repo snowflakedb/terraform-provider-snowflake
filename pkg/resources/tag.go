@@ -322,15 +322,16 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		func() error {
 			// on_conflict is only available when BCR-2291 is enabled. When the column is absent,
 			// tag.OnConflict is nil and we leave the state unchanged to avoid spurious diffs.
-			onConflict := make(map[string]any)
 			if tag.OnConflict != nil {
+				onConflict := make(map[string]any)
 				if *tag.OnConflict == "ALLOWED_VALUES_SEQUENCE" {
 					onConflict["allowed_values_sequence"] = true
 				} else {
 					onConflict["custom_value"] = *tag.OnConflict
 				}
+				return d.Set("on_conflict", []map[string]any{onConflict})
 			}
-			return d.Set("on_conflict", []map[string]any{onConflict})
+			return nil
 		}(),
 		func() error {
 			// Use ordered_allowed_values by default (including import where rawConfig is null).

@@ -38,6 +38,7 @@ func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
 			// Step 1: disable the 2026_03 bundle and create the tag with propagate + on_conflict.
 			// Creating with `on_conflict` works regardless of the bundle; only SHOW TAGS is affected by BCR-2291.
 			{
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				PreConfig: func() {
 					secondaryTestClient().BcrBundles.DisableBcrBundle(t, "2026_03")
 				},
@@ -51,6 +52,7 @@ func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
 			// Step 2: with the bundle disabled, externally change ON_CONFLICT. The column is
 			// absent from SHOW TAGS, so Read cannot see the drift and the plan is a no-op.
 			{
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				PreConfig: func() {
 					secondaryTestClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).
 						WithSet(*sdk.NewTagSetRequest().WithPropagate(
@@ -73,6 +75,7 @@ func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
 			// Step 3: enable the 2026_03 bundle. Read now observes the external value set in
 			// step 2 and the plan reconciles the resource back to the configured value.
 			{
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				PreConfig: func() {
 					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2026_03")
 				},
@@ -90,6 +93,7 @@ func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
 			// Step 4: with the bundle still enabled, externally set a different ON_CONFLICT while
 			// the config drops the attribute. The drift is detected and the value is cleared.
 			{
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				PreConfig: func() {
 					secondaryTestClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).
 						WithSet(*sdk.NewTagSetRequest().WithPropagate(
