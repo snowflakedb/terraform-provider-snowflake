@@ -29,7 +29,7 @@ func TestExternalTablesCreate(t *testing.T) {
 			Location: "@s1/logs/",
 			FileFormat: []ExternalTableFileFormat{
 				{
-					Type: &ExternalTableFileFormatTypeJSON,
+					Type: &ExternalTableFileFormatTypeJson,
 				},
 			},
 		}
@@ -59,7 +59,7 @@ func TestExternalTablesCreate(t *testing.T) {
 			Location: "@s1/logs/",
 			FileFormat: []ExternalTableFileFormat{
 				{
-					Type: &ExternalTableFileFormatTypeJSON,
+					Type: &ExternalTableFileFormatTypeJson,
 				},
 			},
 			AwsSnsTopic: String("aws_sns_topic"),
@@ -166,7 +166,7 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 			Location: "@s1/logs/",
 			FileFormat: []ExternalTableFileFormat{
 				{
-					Type: &ExternalTableFileFormatTypeJSON,
+					Type: &ExternalTableFileFormatTypeJson,
 				},
 			},
 			CopyGrants: Bool(true),

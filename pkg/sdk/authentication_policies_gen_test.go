@@ -4,10 +4,21 @@ package sdk
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationMethodsOption]{"AuthenticationMethodsOption", AllAuthenticationMethodsOptions, ToAuthenticationMethodsOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsOption]{"MfaAuthenticationMethodsOption", AllMfaAuthenticationMethodsOptions, ToMfaAuthenticationMethodsOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsReadOption]{"MfaAuthenticationMethodsReadOption", AllMfaAuthenticationMethodsReadOptions, ToMfaAuthenticationMethodsReadOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentOption]{"MfaEnrollmentOption", AllMfaEnrollmentOptions, ToMfaEnrollmentOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentReadOption]{"MfaEnrollmentReadOption", AllMfaEnrollmentReadOptions, ToMfaEnrollmentReadOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientTypesOption]{"ClientTypesOption", AllClientTypesOptions, ToClientTypesOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientPolicyDriverType]{"ClientPolicyDriverType", AllClientPolicyDriverTypes, ToClientPolicyDriverType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AllowedProviderOption]{"AllowedProviderOption", AllAllowedProviderOptions, ToAllowedProviderOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkPolicyEvaluationOption]{"NetworkPolicyEvaluationOption", AllNetworkPolicyEvaluationOptions, ToNetworkPolicyEvaluationOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaPolicyAllowedMethodsOption]{"MfaPolicyAllowedMethodsOption", AllMfaPolicyAllowedMethodsOptions, ToMfaPolicyAllowedMethodsOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[EnforceMfaOnExternalAuthenticationOption]{"EnforceMfaOnExternalAuthenticationOption", AllEnforceMfaOnExternalAuthenticationOptions, ToEnforceMfaOnExternalAuthenticationOption})
+}
 
 func TestAuthenticationPolicies_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
@@ -57,10 +68,10 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.PatPolicy.DefaultExpiryInDays opts.PatPolicy.MaxExpiryInDays opts.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.PatPolicy.DefaultExpiryInDays opts.PatPolicy.MaxExpiryInDays opts.PatPolicy.RequireRoleRestrictionForServiceUsers opts.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.WorkloadIdentityPolicy.AllowedProviders opts.WorkloadIdentityPolicy.AllowedAwsAccounts opts.WorkloadIdentityPolicy.AllowedAzureIssuers opts.WorkloadIdentityPolicy.AllowedOidcIssuers] should be set", func(t *testing.T) {
@@ -72,7 +83,7 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AuthenticationMethods = []AuthenticationMethods{
-			{Method: AuthenticationMethodsAll},
+			{Method: AuthenticationMethodsOptionAll},
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE AUTHENTICATION POLICY %s AUTHENTICATION_METHODS = ('ALL') COMMENT = 'some comment'", id.FullyQualifiedName())
@@ -91,30 +102,35 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.AuthenticationMethods = []AuthenticationMethods{
-			{Method: AuthenticationMethodsSaml},
-			{Method: AuthenticationMethodsPassword},
+			{Method: AuthenticationMethodsOptionSaml},
+			{Method: AuthenticationMethodsOptionPassword},
 		}
-		opts.MfaEnrollment = Pointer(MfaEnrollmentOptional)
+		opts.MfaEnrollment = Pointer(MfaEnrollmentOptionOptional)
 		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
-			EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationAll),
+			EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationOptionAll),
 			AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-				{Method: MfaPolicyAllowedMethodPassKey},
+				{Method: MfaPolicyAllowedMethodsOptionPasskey},
 			},
 		}
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
-			DefaultExpiryInDays:     Int(30),
-			MaxExpiryInDays:         Int(90),
-			NetworkPolicyEvaluation: Pointer(NetworkPolicyEvaluationEnforcedRequired),
+			DefaultExpiryInDays:                   Int(30),
+			MaxExpiryInDays:                       Int(90),
+			RequireRoleRestrictionForServiceUsers: Bool(true),
+			NetworkPolicyEvaluation:               Pointer(NetworkPolicyEvaluationOptionEnforcedRequired),
 		}
 		opts.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{
-			AllowedProviders:    []AuthenticationPolicyAllowedProviderListItem{{Provider: AllowedProviderAll}},
+			AllowedProviders:    []AuthenticationPolicyAllowedProviderListItem{{Provider: AllowedProviderOptionAll}},
 			AllowedAwsAccounts:  []StringListItemWrapper{{Value: "1234567890"}},
 			AllowedAzureIssuers: []StringListItemWrapper{{Value: "https://login.microsoftonline.com/1234567890/v2.0"}},
 			AllowedOidcIssuers:  []StringListItemWrapper{{Value: "https://oidc.example.com"}},
 		}
 		opts.ClientTypes = []ClientTypes{
-			{ClientType: ClientTypesDrivers},
-			{ClientType: ClientTypesSnowSql},
+			{ClientType: ClientTypesOptionDrivers},
+			{ClientType: ClientTypesOptionSnowsql},
+		}
+		opts.ClientPolicy = []AuthenticationPolicyClientPolicyEntry{
+			{ClientType: ClientPolicyDriverTypeGoDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: String("1.14.1")}},
+			{ClientType: ClientPolicyDriverTypeJdbcDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: String("3.25.0")}},
 		}
 		opts.SecurityIntegrations = &SecurityIntegrationsOption{
 			SecurityIntegrations: []AccountObjectIdentifier{
@@ -124,7 +140,8 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE AUTHENTICATION POLICY %s AUTHENTICATION_METHODS = ('SAML', 'PASSWORD')"+
 			" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY'))"+
-			" CLIENT_TYPES = ('DRIVERS', 'SNOWSQL') SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)"+
+			" CLIENT_TYPES = ('DRIVERS', 'SNOWSQL') CLIENT_POLICY = (GO_DRIVER = (MINIMUM_VERSION = '1.14.1'), JDBC_DRIVER = (MINIMUM_VERSION = '3.25.0'))"+
+			" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)"+
 			" WORKLOAD_IDENTITY_POLICY = (ALLOWED_PROVIDERS = ('ALL') ALLOWED_AWS_ACCOUNTS = ('1234567890') ALLOWED_AZURE_ISSUERS = ('https://login.microsoftonline.com/1234567890/v2.0')"+
 			" ALLOWED_OIDC_ISSUERS = ('https://oidc.example.com')) COMMENT = 'some comment'", id.FullyQualifiedName())
 	})
@@ -168,10 +185,10 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.AuthenticationMethods opts.Set.MfaEnrollment opts.Set.ClientTypes opts.Set.SecurityIntegrations opts.Set.Comment opts.Set.MfaPolicy opts.Set.PatPolicy opts.Set.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.AuthenticationMethods opts.Set.MfaEnrollment opts.Set.ClientTypes opts.Set.ClientPolicy opts.Set.SecurityIntegrations opts.Set.Comment opts.Set.MfaPolicy opts.Set.PatPolicy opts.Set.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AuthenticationPolicySet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaEnrollment", "ClientTypes", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaEnrollment", "ClientTypes", "ClientPolicy", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.MfaPolicy.EnforceMfaOnExternalAuthentication opts.Set.MfaPolicy.AllowedMethods] should be set", func(t *testing.T) {
@@ -201,12 +218,12 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.PatPolicy.DefaultExpiryInDays opts.Set.PatPolicy.MaxExpiryInDays opts.Set.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.PatPolicy.DefaultExpiryInDays opts.Set.PatPolicy.MaxExpiryInDays opts.Set.PatPolicy.RequireRoleRestrictionForServiceUsers opts.Set.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AuthenticationPolicySet{
 			PatPolicy: &AuthenticationPolicyPatPolicy{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.WorkloadIdentityPolicy.AllowedProviders opts.Set.WorkloadIdentityPolicy.AllowedAwsAccounts opts.Set.WorkloadIdentityPolicy.AllowedAzureIssuers opts.Set.WorkloadIdentityPolicy.AllowedOidcIssuers] should be set", func(t *testing.T) {
@@ -217,10 +234,10 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.ClientTypes opts.Unset.AuthenticationMethods opts.Unset.Comment opts.Unset.SecurityIntegrations opts.Unset.MfaEnrollment opts.Unset.MfaPolicy opts.Unset.PatPolicy opts.Unset.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Unset.ClientTypes opts.Unset.ClientPolicy opts.Unset.AuthenticationMethods opts.Unset.Comment opts.Unset.SecurityIntegrations opts.Unset.MfaEnrollment opts.Unset.MfaPolicy opts.Unset.PatPolicy opts.Unset.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &AuthenticationPolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "ClientPolicy", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
 	})
 
 	// all variants added manually
@@ -228,7 +245,7 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AuthenticationPolicySet{
 			AuthenticationMethods: []AuthenticationMethods{
-				{Method: AuthenticationMethodsSaml},
+				{Method: AuthenticationMethodsOptionSaml},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY %s SET AUTHENTICATION_METHODS = ('SAML')", id.FullyQualifiedName())
@@ -239,29 +256,34 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		opts.IfExists = Bool(true)
 		opts.Set = &AuthenticationPolicySet{
 			AuthenticationMethods: []AuthenticationMethods{
-				{Method: AuthenticationMethodsSaml},
+				{Method: AuthenticationMethodsOptionSaml},
 			},
-			MfaEnrollment: Pointer(MfaEnrollmentOptional),
+			MfaEnrollment: Pointer(MfaEnrollmentOptionOptional),
 			MfaPolicy: &AuthenticationPolicyMfaPolicy{
-				EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationAll),
+				EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationOptionAll),
 				AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-					{Method: MfaPolicyAllowedMethodPassKey},
+					{Method: MfaPolicyAllowedMethodsOptionPasskey},
 				},
 			},
 			PatPolicy: &AuthenticationPolicyPatPolicy{
-				DefaultExpiryInDays:     Int(30),
-				MaxExpiryInDays:         Int(90),
-				NetworkPolicyEvaluation: Pointer(NetworkPolicyEvaluationEnforcedRequired),
+				DefaultExpiryInDays:                   Int(30),
+				MaxExpiryInDays:                       Int(90),
+				RequireRoleRestrictionForServiceUsers: Bool(true),
+				NetworkPolicyEvaluation:               Pointer(NetworkPolicyEvaluationOptionEnforcedRequired),
 			},
 			WorkloadIdentityPolicy: &AuthenticationPolicyWorkloadIdentityPolicy{
-				AllowedProviders:    []AuthenticationPolicyAllowedProviderListItem{{Provider: AllowedProviderAll}},
+				AllowedProviders:    []AuthenticationPolicyAllowedProviderListItem{{Provider: AllowedProviderOptionAll}},
 				AllowedAwsAccounts:  []StringListItemWrapper{{Value: "1234567890"}},
 				AllowedAzureIssuers: []StringListItemWrapper{{Value: "https://login.microsoftonline.com/1234567890/v2.0"}},
 				AllowedOidcIssuers:  []StringListItemWrapper{{Value: "https://oidc.example.com"}},
 			},
 			ClientTypes: []ClientTypes{
-				{ClientType: ClientTypesDrivers},
-				{ClientType: ClientTypesSnowSql},
+				{ClientType: ClientTypesOptionDrivers},
+				{ClientType: ClientTypesOptionSnowsql},
+			},
+			ClientPolicy: []AuthenticationPolicyClientPolicyEntry{
+				{ClientType: ClientPolicyDriverTypeGoDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: String("1.14.1")}},
+				{ClientType: ClientPolicyDriverTypeJdbcDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: String("3.25.0")}},
 			},
 			SecurityIntegrations: &SecurityIntegrationsOption{
 				SecurityIntegrations: []AccountObjectIdentifier{
@@ -272,7 +294,8 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s SET AUTHENTICATION_METHODS = ('SAML')"+
 			" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY')) CLIENT_TYPES = ('DRIVERS', 'SNOWSQL')"+
-			" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)"+
+			" CLIENT_POLICY = (GO_DRIVER = (MINIMUM_VERSION = '1.14.1'), JDBC_DRIVER = (MINIMUM_VERSION = '3.25.0'))"+
+			" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)"+
 			" WORKLOAD_IDENTITY_POLICY = (ALLOWED_PROVIDERS = ('ALL') ALLOWED_AWS_ACCOUNTS = ('1234567890') ALLOWED_AZURE_ISSUERS = ('https://login.microsoftonline.com/1234567890/v2.0')"+
 			" ALLOWED_OIDC_ISSUERS = ('https://oidc.example.com')) COMMENT = 'some comment'", id.FullyQualifiedName())
 	})
@@ -290,6 +313,7 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		opts.IfExists = Bool(true)
 		opts.Unset = &AuthenticationPolicyUnset{
 			ClientTypes:            Bool(true),
+			ClientPolicy:           Bool(true),
 			AuthenticationMethods:  Bool(true),
 			SecurityIntegrations:   Bool(true),
 			MfaEnrollment:          Bool(true),
@@ -298,7 +322,7 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 			WorkloadIdentityPolicy: Bool(true),
 			Comment:                Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s UNSET CLIENT_TYPES, AUTHENTICATION_METHODS, SECURITY_INTEGRATIONS, MFA_ENROLLMENT, MFA_POLICY, PAT_POLICY, WORKLOAD_IDENTITY_POLICY, COMMENT", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s UNSET CLIENT_TYPES, CLIENT_POLICY, AUTHENTICATION_METHODS, SECURITY_INTEGRATIONS, MFA_ENROLLMENT, MFA_POLICY, PAT_POLICY, WORKLOAD_IDENTITY_POLICY, COMMENT", id.FullyQualifiedName())
 	})
 
 	t.Run("alter: renameTo", func(t *testing.T) {
@@ -422,347 +446,4 @@ func TestAuthenticationPolicies_Describe(t *testing.T) {
 	})
 
 	// all options removed manually
-}
-
-func Test_ToAuthenticationMethodsOption(t *testing.T) {
-	type test struct {
-		input string
-		want  AuthenticationMethodsOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "all", want: AuthenticationMethodsAll},
-
-		// supported values.
-		{input: "ALL", want: AuthenticationMethodsAll},
-		{input: "SAML", want: AuthenticationMethodsSaml},
-		{input: "PASSWORD", want: AuthenticationMethodsPassword},
-		{input: "OAUTH", want: AuthenticationMethodsOauth},
-		{input: "KEYPAIR", want: AuthenticationMethodsKeyPair},
-		{input: "PROGRAMMATIC_ACCESS_TOKEN", want: AuthenticationMethodsProgrammaticAccessToken},
-		{input: "WORKLOAD_IDENTITY", want: AuthenticationMethodsWorkloadIdentity},
-	}
-	invalid := []test{
-		{input: "foo"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToAuthenticationMethodsOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToAuthenticationMethodsOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToMfaAuthenticationMethodsOption(t *testing.T) {
-	type test struct {
-		input string
-		want  MfaAuthenticationMethodsOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "all", want: MfaAuthenticationMethodsAll},
-
-		// supported values.
-		{input: "ALL", want: MfaAuthenticationMethodsAll},
-		{input: "SAML", want: MfaAuthenticationMethodsSaml},
-		{input: "PASSWORD", want: MfaAuthenticationMethodsPassword},
-	}
-	invalid := []test{
-		{input: "foo"},
-		{input: "OAUTH"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToMfaAuthenticationMethodsOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToMfaAuthenticationMethodsOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToMfaAuthenticationMethodsReadOption(t *testing.T) {
-	type test struct {
-		input string
-		want  MfaAuthenticationMethodsReadOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "all", want: MfaAuthenticationMethodsReadAll},
-
-		// supported values.
-		{input: "ALL", want: MfaAuthenticationMethodsReadAll},
-		{input: "SAML", want: MfaAuthenticationMethodsReadSaml},
-		{input: "PASSWORD", want: MfaAuthenticationMethodsReadPassword},
-		{input: "OIDC", want: MfaAuthenticationMethodsReadOidc},
-	}
-	invalid := []test{
-		{input: "foo"},
-		{input: "OAUTH"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToMfaAuthenticationMethodsReadOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToMfaAuthenticationMethodsReadOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToMfaEnrollmentOption(t *testing.T) {
-	type test struct {
-		input string
-		want  MfaEnrollmentOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "required", want: MfaEnrollmentRequired},
-		{input: "required_password_only", want: MfaEnrollmentRequiredPasswordOnly},
-		{input: "optional", want: MfaEnrollmentOptional},
-
-		// supported values.
-		{input: "REQUIRED", want: MfaEnrollmentRequired},
-		{input: "REQUIRED_PASSWORD_ONLY", want: MfaEnrollmentRequiredPasswordOnly},
-		{input: "OPTIONAL", want: MfaEnrollmentOptional},
-	}
-	invalid := []test{
-		{input: "foo"},
-		{input: "ALL"},
-		{input: "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToMfaEnrollmentOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToMfaEnrollmentOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToMfaEnrollmentReadOption(t *testing.T) {
-	type test struct {
-		input string
-		want  MfaEnrollmentReadOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "required", want: MfaEnrollmentReadRequired},
-
-		// supported values.
-		{input: "REQUIRED", want: MfaEnrollmentReadRequired},
-		{input: "REQUIRED_PASSWORD_ONLY", want: MfaEnrollmentReadRequiredPasswordOnly},
-		{input: "OPTIONAL", want: MfaEnrollmentReadOptional},
-		{input: "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY", want: MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly},
-	}
-	invalid := []test{
-		{input: "foo"},
-		{input: "ALL"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToMfaEnrollmentReadOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToMfaEnrollmentReadOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToClientTypesOption(t *testing.T) {
-	type test struct {
-		input string
-		want  ClientTypesOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "all", want: ClientTypesAll},
-		{input: "snowflake_ui", want: ClientTypesSnowflakeUi},
-		{input: "drivers", want: ClientTypesDrivers},
-		{input: "snowsql", want: ClientTypesSnowSql},
-		{input: "snowflake_cli", want: ClientTypesSnowflakeCli},
-
-		// supported values.
-		{input: "ALL", want: ClientTypesAll},
-		{input: "SNOWFLAKE_UI", want: ClientTypesSnowflakeUi},
-		{input: "DRIVERS", want: ClientTypesDrivers},
-		{input: "SNOWSQL", want: ClientTypesSnowSql},
-		{input: "SNOWFLAKE_CLI", want: ClientTypesSnowflakeCli},
-	}
-	invalid := []test{
-		{input: "foo"},
-		{input: "PASSWORD"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToClientTypesOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToClientTypesOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToAllowedProviderOption(t *testing.T) {
-	type test struct {
-		input string
-		want  AllowedProviderOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "all", want: AllowedProviderAll},
-
-		// supported values.
-		{input: "ALL", want: AllowedProviderAll},
-		{input: "AWS", want: AllowedProviderAws},
-		{input: "AZURE", want: AllowedProviderAzure},
-		{input: "GCP", want: AllowedProviderGcp},
-		{input: "OIDC", want: AllowedProviderOidc},
-	}
-
-	invalid := []test{
-		{input: "foo"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToAllowedProviderOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToAllowedProviderOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToNetworkPolicyEvaluationOption(t *testing.T) {
-	type test struct {
-		input string
-		want  NetworkPolicyEvaluationOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "enforced_required", want: NetworkPolicyEvaluationEnforcedRequired},
-
-		// supported values.
-		{input: "ENFORCED_REQUIRED", want: NetworkPolicyEvaluationEnforcedRequired},
-		{input: "ENFORCED_NOT_REQUIRED", want: NetworkPolicyEvaluationEnforcedNotRequired},
-		{input: "NOT_ENFORCED", want: NetworkPolicyEvaluationNotEnforced},
-	}
-	invalid := []test{
-		{input: "foo"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToNetworkPolicyEvaluationOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToNetworkPolicyEvaluationOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToEnforceMfaOnExternalAuthenticationOption(t *testing.T) {
-	type test struct {
-		input string
-		want  EnforceMfaOnExternalAuthenticationOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "all", want: EnforceMfaOnExternalAuthenticationAll},
-
-		// supported values.
-		{input: "ALL", want: EnforceMfaOnExternalAuthenticationAll},
-		{input: "NONE", want: EnforceMfaOnExternalAuthenticationNone},
-	}
-	invalid := []test{
-		{input: "foo"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToEnforceMfaOnExternalAuthenticationOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToEnforceMfaOnExternalAuthenticationOption(tt.input)
-			require.Error(t, err)
-		})
-	}
-}
-
-func Test_ToMfaPolicyAllowedMethodsOption(t *testing.T) {
-	type test struct {
-		input string
-		want  MfaPolicyAllowedMethodsOption
-	}
-	valid := []test{
-		// case insensitive.
-		{input: "all", want: MfaPolicyAllowedMethodAll},
-
-		// supported values.
-		{input: "ALL", want: MfaPolicyAllowedMethodAll},
-		{input: "PASSKEY", want: MfaPolicyAllowedMethodPassKey},
-		{input: "TOTP", want: MfaPolicyAllowedMethodTotp},
-		{input: "DUO", want: MfaPolicyAllowedMethodDuo},
-	}
-	invalid := []test{
-		{input: "foo"},
-	}
-	for _, tt := range valid {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := ToMfaPolicyAllowedMethodsOption(tt.input)
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-	for _, tt := range invalid {
-		t.Run(tt.input, func(t *testing.T) {
-			_, err := ToMfaPolicyAllowedMethodsOption(tt.input)
-			require.Error(t, err)
-		})
-	}
 }

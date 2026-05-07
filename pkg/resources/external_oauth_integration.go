@@ -31,7 +31,7 @@ var externalOauthIntegrationSchema = map[string]*schema.Schema{
 	"external_oauth_type": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      fmt.Sprintf("Specifies the OAuth 2.0 authorization server to be Okta, Microsoft Azure AD, Ping Identity PingFederate, or a Custom OAuth 2.0 authorization server. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllExternalOauthSecurityIntegrationTypes))),
+		Description:      fmt.Sprintf("Specifies the OAuth 2.0 authorization server to be Okta, Microsoft Azure AD, Ping Identity PingFederate, or a Custom OAuth 2.0 authorization server. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllExternalOauthSecurityIntegrationTypeOptions))),
 		ValidateDiagFunc: sdkValidation(sdk.ToExternalOauthSecurityIntegrationTypeOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToExternalOauthSecurityIntegrationTypeOption),
 	},
@@ -54,7 +54,7 @@ var externalOauthIntegrationSchema = map[string]*schema.Schema{
 	"external_oauth_snowflake_user_mapping_attribute": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      fmt.Sprintf("Indicates which Snowflake user record attribute should be used to map the access token to a Snowflake user record. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllExternalOauthSecurityIntegrationSnowflakeUserMappingAttributes))),
+		Description:      fmt.Sprintf("Indicates which Snowflake user record attribute should be used to map the access token to a Snowflake user record. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptions))),
 		ValidateDiagFunc: sdkValidation(sdk.ToExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption),
 	},
@@ -108,7 +108,7 @@ var externalOauthIntegrationSchema = map[string]*schema.Schema{
 	"external_oauth_any_role_mode": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      fmt.Sprintf("Specifies whether the OAuth client or user can use a role that is not defined in the OAuth access token. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AsStringList(sdk.AllExternalOauthSecurityIntegrationAnyRoleModes)))),
+		Description:      fmt.Sprintf("Specifies whether the OAuth client or user can use a role that is not defined in the OAuth access token. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AsStringList(sdk.AllExternalOauthSecurityIntegrationAnyRoleModeOptions)))),
 		ValidateDiagFunc: sdkValidation(sdk.ToExternalOauthSecurityIntegrationAnyRoleModeOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToExternalOauthSecurityIntegrationAnyRoleModeOption),
 	},
@@ -609,7 +609,7 @@ func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 			set.WithExternalOauthAnyRoleMode(value)
 		} else {
 			// TODO(SNOW-1515781): use UNSET
-			set.WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)
+			set.WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)
 		}
 	}
 

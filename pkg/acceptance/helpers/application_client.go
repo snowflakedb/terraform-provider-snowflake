@@ -37,6 +37,18 @@ func (c *ApplicationClient) CreateApplication(t *testing.T, packageId sdk.Accoun
 	return application, c.DropApplicationFunc(t, id)
 }
 
+func (c *ApplicationClient) CreateApplicationWithIdentifier(t *testing.T, id sdk.AccountObjectIdentifier, packageId sdk.AccountObjectIdentifier, version string) (*sdk.Application, func()) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.client().Create(ctx, sdk.NewCreateApplicationRequest(id, packageId).WithVersion(*sdk.NewApplicationVersionRequest().WithVersionAndPatch(*sdk.NewVersionAndPatchRequest(version, nil))))
+	require.NoError(t, err)
+
+	application, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return application, c.DropApplicationFunc(t, id)
+}
+
 func (c *ApplicationClient) DropApplicationFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

@@ -23,25 +23,25 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 	comment := random.Comment()
 
 	completeModel := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithAuthenticationMethods(sdk.AuthenticationMethodsPassword).
-		WithMfaEnrollmentEnum(sdk.MfaEnrollmentRequired).
-		WithClientTypes(sdk.ClientTypesSnowflakeUi).
+		WithAuthenticationMethods(sdk.AuthenticationMethodsOptionPassword).
+		WithMfaEnrollmentEnum(sdk.MfaEnrollmentOptionRequired).
+		WithClientTypes(sdk.ClientTypesOptionSnowflakeUi).
 		WithSecurityIntegrations("ALL").
 		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
+			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
 			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodPassKey},
-				{Method: sdk.MfaPolicyAllowedMethodDuo},
+				{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+				{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
 			}),
 		).
 		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
 			WithDefaultExpiryInDays(1).
 			WithMaxExpiryInDays(30).
-			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
+			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 		).
 		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
 			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderAll},
+				{Provider: sdk.AllowedProviderOptionAll},
 			}).
 			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 				{Value: "111122223333"},
@@ -94,9 +94,9 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.client_types", "[SNOWFLAKE_UI]")),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.security_integrations", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.mfa_enrollment", "REQUIRED")),
-					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.mfa_authentication_methods", "[PASSWORD, SAML, OIDC]")),
+
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.mfa_policy", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")),
-					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")),
+					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")),
 				),
 			},

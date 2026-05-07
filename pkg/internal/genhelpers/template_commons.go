@@ -55,6 +55,7 @@ func CamelToWords(camel string) string {
 	return strings.ReplaceAll(ToSnakeCase(camel), "_", " ")
 }
 
+// SnakeCaseToCamel converts a snake_case string to a camelCase string.
 func SnakeCaseToCamel(snake string) string {
 	var suffix string
 	if strings.HasSuffix(snake, "_") {
@@ -64,6 +65,9 @@ func SnakeCaseToCamel(snake string) string {
 	snake = strings.ToLower(snake)
 	parts := strings.Split(snake, "_")
 	for idx, p := range parts {
+		if p == "" {
+			continue
+		}
 		parts[idx] = strings.ToUpper(p[:1]) + p[1:]
 	}
 	return strings.Join(parts, "") + suffix

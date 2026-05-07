@@ -309,7 +309,7 @@ func ToReturnResultsBehavior(value string) (ReturnResultsBehavior, error) {
 	}
 }
 
-var AllAllowedReturnResultsBehaviors = []ReturnResultsBehavior{
+var AllReturnResultsBehaviors = []ReturnResultsBehavior{
 	ReturnResultsBehaviorVolatile,
 	ReturnResultsBehaviorImmutable,
 }

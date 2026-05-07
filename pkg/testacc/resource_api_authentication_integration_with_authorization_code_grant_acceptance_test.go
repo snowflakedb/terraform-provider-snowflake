@@ -230,7 +230,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_CompleteUseC
 		WithComment(comment).
 		WithOauthAccessTokenValidity(42).
 		WithOauthAuthorizationEndpoint("https://example.com").
-		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)).
 		WithOauthRefreshTokenValidity(12345).
 		WithOauthTokenEndpoint("https://example.com").
 		WithOauthAllowedScopesValue(config.SetVariable(config.StringVariable("foo")))
@@ -263,7 +263,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_CompleteUseC
 						HasCommentString(comment).
 						HasOauthAccessTokenValidityString("42").
 						HasOauthAuthorizationEndpointString("https://example.com").
-						HasOauthClientAuthMethodString(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+						HasOauthClientAuthMethodString(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)).
 						HasOauthRefreshTokenValidityString("12345").
 						HasOauthTokenEndpointString("https://example.com").
 						HasOauthAllowedScopes("foo"),
@@ -281,7 +281,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_CompleteUseC
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_validity.0.value", "42")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "12345")),
 					assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
-					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost))),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost))),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_authorization_endpoint.0.value", "https://example.com")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "https://example.com")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "[foo]")),

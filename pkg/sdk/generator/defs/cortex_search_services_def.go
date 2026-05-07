@@ -56,21 +56,14 @@ var cortexSearchServicesDef = g.NewInterface(
 		// Validations
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Set"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/show-cortex-search",
-	// Fields
-	g.DbStruct("cortexSearchServiceRow").
-		Field("created_on", "time.Time").
-		Field("name", "string").
-		Field("database_name", "string").
-		Field("schema_name", "string").
-		OptionalText("comment"),
-	g.PlainStruct("CortexSearchService").
-		Field("CreatedOn", "time.Time").
-		Field("Name", "string").
-		Field("DatabaseName", "string").
-		Field("SchemaName", "string").
-		Field("Comment", "string"),
+	g.StructPair("cortexSearchServiceRow", "CortexSearchService").
+		Time("created_on").
+		Text("name").
+		Text("database_name").
+		Text("schema_name").
+		OptionalText("comment", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowCortexSearchService").
 		Show().
 		SQL("CORTEX SEARCH SERVICES").
@@ -78,13 +71,12 @@ var cortexSearchServicesDef = g.NewInterface(
 		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/desc-cortex-search",
-	g.DbStruct("cortexSearchServiceDetailsRow").
+	g.StructPair("cortexSearchServiceDetailsRow", "CortexSearchServiceDetails").
 		Text("created_on").
 		Text("name").
 		Text("database_name").
@@ -92,8 +84,8 @@ var cortexSearchServicesDef = g.NewInterface(
 		Text("target_lag").
 		Text("warehouse").
 		OptionalText("search_column").
-		OptionalText("attribute_columns").
-		OptionalText("columns").
+		Field("attribute_columns", "sql.NullString", "[]string").
+		Field("columns", "sql.NullString", "[]string").
 		OptionalText("definition").
 		OptionalText("comment").
 		Text("service_query_url").
@@ -102,24 +94,6 @@ var cortexSearchServicesDef = g.NewInterface(
 		Text("indexing_state").
 		OptionalText("indexing_error").
 		OptionalText("embedding_model"),
-	g.PlainStruct("CortexSearchServiceDetails").
-		Text("CreatedOn").
-		Text("Name").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("TargetLag").
-		Text("Warehouse").
-		OptionalText("SearchColumn").
-		Field("AttributeColumns", "[]string").
-		Field("Columns", "[]string").
-		OptionalText("Definition").
-		OptionalText("Comment").
-		Text("ServiceQueryUrl").
-		Text("DataTimestamp").
-		Number("SourceDataNumRows").
-		Text("IndexingState").
-		OptionalText("IndexingError").
-		OptionalText("EmbeddingModel"),
 	g.NewQueryStruct("DescribeCortexSearchService").
 		Describe().
 		SQL("CORTEX SEARCH SERVICE").

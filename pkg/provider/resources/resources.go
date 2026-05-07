@@ -8,6 +8,7 @@ const (
 	AccountParameter                                       resource = "snowflake_account_parameter"
 	AccountPasswordPolicyAttachment                        resource = "snowflake_account_password_policy_attachment"
 	AccountRole                                            resource = "snowflake_account_role"
+	AccountSessionPolicyAttachment                         resource = "snowflake_account_session_policy_attachment"
 	Alert                                                  resource = "snowflake_alert"
 	ApiAuthenticationIntegrationWithAuthorizationCodeGrant resource = "snowflake_api_authentication_integration_with_authorization_code_grant"
 	ApiAuthenticationIntegrationWithClientCredentials      resource = "snowflake_api_authentication_integration_with_client_credentials"
@@ -16,6 +17,8 @@ const (
 	AuthenticationPolicy                                   resource = "snowflake_authentication_policy"
 	CatalogIntegrationAwsGlue                              resource = "snowflake_catalog_integration_aws_glue"
 	CatalogIntegrationObjectStorage                        resource = "snowflake_catalog_integration_object_storage"
+	CatalogIntegrationOpenCatalog                          resource = "snowflake_catalog_integration_open_catalog"
+	CatalogIntegrationIcebergRest                          resource = "snowflake_catalog_integration_iceberg_rest"
 	ComputePool                                            resource = "snowflake_compute_pool"
 	CortexSearchService                                    resource = "snowflake_cortex_search_service"
 	CurrentAccount                                         resource = "snowflake_current_account"
@@ -87,6 +90,7 @@ const (
 	SecretWithGenericString                                resource = "snowflake_secret_with_generic_string"
 	SemanticView                                           resource = "snowflake_semantic_view"
 	SessionParameter                                       resource = "snowflake_session_parameter"
+	SessionPolicy                                          resource = "snowflake_session_policy"
 	Sequence                                               resource = "snowflake_sequence"
 	Service                                                resource = "snowflake_service"
 	ServiceUser                                            resource = "snowflake_service_user"
@@ -114,8 +118,10 @@ const (
 	UserPasswordPolicyAttachment                           resource = "snowflake_user_password_policy_attachment"
 	UserPublicKeys                                         resource = "snowflake_user_public_keys"
 	UserProgrammaticAccessToken                            resource = "snowflake_user_programmatic_access_token"
+	UserSessionPolicyAttachment                            resource = "snowflake_user_session_policy_attachment"
 	View                                                   resource = "snowflake_view"
 	Warehouse                                              resource = "snowflake_warehouse"
+	WarehouseAdaptive                                      resource = "snowflake_warehouse_adaptive"
 )
 
 type Resource interface {

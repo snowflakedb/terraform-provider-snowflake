@@ -20,6 +20,7 @@ func Test_StringToFeature(t *testing.T) {
 		// Supported Values.
 		{input: "snowflake_account_authentication_policy_attachment_resource", want: AccountAuthenticationPolicyAttachmentResource},
 		{input: "snowflake_account_password_policy_attachment_resource", want: AccountPasswordPolicyAttachmentResource},
+		{input: "snowflake_account_session_policy_attachment_resource", want: AccountSessionPolicyAttachmentResource},
 		{input: "snowflake_alert_resource", want: AlertResource},
 		{input: "snowflake_alerts_datasource", want: AlertsDatasource},
 		{input: "snowflake_api_integration_resource", want: ApiIntegrationResource},
@@ -27,6 +28,9 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_authentication_policies_datasource", want: AuthenticationPoliciesDatasource},
 		{input: "snowflake_catalog_integration_aws_glue_resource", want: CatalogIntegrationAwsGlueResource},
 		{input: "snowflake_catalog_integration_object_storage_resource", want: CatalogIntegrationObjectStorageResource},
+		{input: "snowflake_catalog_integration_open_catalog_resource", want: CatalogIntegrationOpenCatalogResource},
+		{input: "snowflake_catalog_integration_iceberg_rest_resource", want: CatalogIntegrationIcebergRestResource},
+		{input: "snowflake_catalog_integrations_datasource", want: CatalogIntegrationsDatasource},
 		{input: "snowflake_compute_pool_resource", want: ComputePoolResource},
 		{input: "snowflake_compute_pools_datasource", want: ComputePoolsDatasource},
 		{input: "snowflake_cortex_search_service_resource", want: CortexSearchServiceResource},
@@ -77,6 +81,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_notebooks_datasource", want: NotebooksDatasource},
 		{input: "snowflake_notification_integration_resource", want: NotificationIntegrationResource},
 		{input: "snowflake_object_parameter_resource", want: ObjectParameterResource},
+		{input: "snowflake_password_policies_datasource", want: PasswordPoliciesDatasource},
 		{input: "snowflake_password_policy_resource", want: PasswordPolicyResource},
 		{input: "snowflake_pipe_resource", want: PipeResource},
 		{input: "snowflake_pipes_datasource", want: PipesDatasource},
@@ -89,6 +94,8 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_current_role_datasource", want: CurrentRoleDatasource},
 		{input: "snowflake_semantic_view_resource", want: SemanticViewResource},
 		{input: "snowflake_semantic_views_datasource", want: SemanticViewDatasource},
+		{input: "snowflake_session_policies_datasource", want: SessionPoliciesDatasource},
+		{input: "snowflake_session_policy_resource", want: SessionPolicyResource},
 		{input: "snowflake_service_resource", want: ServiceResource},
 		{input: "snowflake_services_datasource", want: ServicesDatasource},
 		{input: "snowflake_sequence_resource", want: SequenceResource},
@@ -114,8 +121,10 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_user_authentication_policy_attachment_resource", want: UserAuthenticationPolicyAttachmentResource},
 		{input: "snowflake_user_public_keys_resource", want: UserPublicKeysResource},
 		{input: "snowflake_user_password_policy_attachment_resource", want: UserPasswordPolicyAttachmentResource},
+		{input: "snowflake_user_session_policy_attachment_resource", want: UserSessionPolicyAttachmentResource},
 		{input: "snowflake_user_programmatic_access_token_resource", want: UserProgrammaticAccessTokenResource},
 		{input: "snowflake_user_programmatic_access_tokens_datasource", want: UserProgrammaticAccessTokensDatasource},
+		{input: "snowflake_warehouse_adaptive_resource", want: WarehouseAdaptiveResource},
 	}
 
 	invalid := []test{

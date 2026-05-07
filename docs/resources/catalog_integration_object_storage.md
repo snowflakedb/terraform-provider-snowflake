@@ -43,7 +43,7 @@ resource "snowflake_catalog_integration_object_storage" "complete" {
 
 - `enabled` (Boolean) Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.
 - `name` (String) Specifies the identifier (i.e. name) of the catalog integration; must be unique in your account.
-- `table_format` (String) Specifies the table format. Supported values: ICEBERG, DELTA.
+- `table_format` (String) Specifies the table format. Valid values are (case-insensitive): `ICEBERG` | `DELTA`.
 
 ### Optional
 
@@ -53,6 +53,7 @@ resource "snowflake_catalog_integration_object_storage" "complete" {
 
 ### Read-Only
 
+- `catalog_source` (String) Specifies the type of catalog source. This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens.
 - `describe_output` (List of Object) Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.

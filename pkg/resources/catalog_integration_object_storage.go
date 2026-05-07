@@ -23,7 +23,7 @@ var catalogIntegrationObjectStorageSchema = func() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
-			Description:      "Specifies the table format. Supported values: ICEBERG, DELTA.",
+			Description:      "Specifies the table format. " + enumValuesDescription(sdk.AllCatalogIntegrationTableFormats),
 			DiffSuppressFunc: NormalizeAndCompare(sdk.ToCatalogIntegrationTableFormat),
 			ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationTableFormat),
 		},
@@ -48,6 +48,7 @@ func CatalogIntegrationObjectStorage() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(catalogIntegrationObjectStorageSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(catalogIntegrationObjectStorageSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
+			RecreateWhenCatalogSourceChangedExternally(sdk.CatalogIntegrationCatalogSourceTypeObjectStore),
 		),
 	}
 }
@@ -63,8 +64,8 @@ func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *schema.Resour
 	if err != nil {
 		return nil, err
 	}
-	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeObjectStorage {
-		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeObjectStorage, details.CatalogSource)
+	if details.CatalogSource != sdk.CatalogIntegrationCatalogSourceTypeObjectStore {
+		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeObjectStore, details.CatalogSource)
 	}
 
 	return []*schema.ResourceData{d}, nil
@@ -142,6 +143,7 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) sc
 			d.Set("enabled", details.Enabled),
 			// not reading refresh_interval_seconds on purpose (handled as external change to describe output)
 			d.Set("comment", details.Comment),
+			d.Set("catalog_source", string(details.CatalogSource)),
 			d.Set("table_format", string(details.TableFormat)),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(s)}),

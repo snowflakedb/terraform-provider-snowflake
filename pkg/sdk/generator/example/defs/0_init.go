@@ -13,6 +13,10 @@ func init() {
 		DatabaseRoles,
 		ToOptsOptionalExample,
 		SequencesDef,
+		PartialGenerationExample,
+		PairedStructExample,
+		EnumExamplesDef,
+		CustomInterfaceMethodExamplesDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

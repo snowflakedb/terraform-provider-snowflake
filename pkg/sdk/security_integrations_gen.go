@@ -562,6 +562,5 @@ func (v *SecurityIntegration) ID() AccountObjectIdentifier {
 }
 
 func (v *SecurityIntegration) ObjectType() ObjectType {
-	// adjusted manually
 	return ObjectTypeIntegration
 }

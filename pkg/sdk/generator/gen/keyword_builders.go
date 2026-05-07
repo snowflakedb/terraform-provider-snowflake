@@ -89,7 +89,7 @@ func (v *QueryStruct) OptionalTags() *QueryStruct {
 }
 
 func (v *QueryStruct) SetTags() *QueryStruct {
-	return v.setTags(KeywordOptions().Required())
+	return v.setTags(KeywordOptions().Required().SQL("SET TAG"))
 }
 
 func (v *QueryStruct) OptionalSetTags() *QueryStruct {
@@ -101,7 +101,7 @@ func (v *QueryStruct) setTags(transformer *KeywordTransformer) *QueryStruct {
 }
 
 func (v *QueryStruct) UnsetTags() *QueryStruct {
-	return v.unsetTags(KeywordOptions().Required())
+	return v.unsetTags(KeywordOptions().Required().SQL("UNSET TAG"))
 }
 
 func (v *QueryStruct) OptionalUnsetTags() *QueryStruct {
@@ -126,6 +126,10 @@ func (v *QueryStruct) OptionalExtendedIn() *QueryStruct {
 
 func (v *QueryStruct) OptionalServiceIn() *QueryStruct {
 	return v.PredefinedQueryStructField("In", "*ServiceIn", KeywordOptions().SQL("IN"))
+}
+
+func (v *QueryStruct) OptionalTableIn() *QueryStruct {
+	return v.PredefinedQueryStructField("In", "*TableIn", KeywordOptions().SQL("IN"))
 }
 
 func (v *QueryStruct) OptionalOn() *QueryStruct {

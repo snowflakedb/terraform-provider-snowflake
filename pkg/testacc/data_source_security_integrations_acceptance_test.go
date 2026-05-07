@@ -31,9 +31,9 @@ func TestAcc_SecurityIntegrations_BasicUseCase_DifferentFiltering(t *testing.T) 
 	idThree := testClient().Ids.RandomAccountObjectIdentifier()
 	role := snowflakeroles.GenericScimProvisioner
 
-	scimModel1 := model.ScimSecurityIntegration("test1", idOne.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModel2 := model.ScimSecurityIntegration("test2", idTwo.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
-	scimModel3 := model.ScimSecurityIntegration("test3", idThree.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModel1 := model.ScimSecurityIntegration("test1", idOne.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
+	scimModel2 := model.ScimSecurityIntegration("test2", idTwo.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
+	scimModel3 := model.ScimSecurityIntegration("test3", idThree.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
 
 	securityIntegrationsModelLikeFirst := datasourcemodel.SecurityIntegrations("test").
 		WithWithDescribe(false).
@@ -106,34 +106,34 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 	apiAuthPass1 := random.Password()
 	apiAuthPass2 := random.Password()
 
-	scimModel := model.ScimSecurityIntegration("test", scimIntegrationId.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
+	scimModel := model.ScimSecurityIntegration("test", scimIntegrationId.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric)).
 		WithComment(comment)
 
-	saml2Model := model.Saml2SecurityIntegrationVar("test1", saml2IntegrationId.Name(), saml2Issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), saml2ValidUrl, saml2TemporaryVariableName).
+	saml2Model := model.Saml2SecurityIntegrationVar("test1", saml2IntegrationId.Name(), saml2Issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), saml2ValidUrl, saml2TemporaryVariableName).
 		WithComment(comment).
 		WithEnabled(datasources.BooleanTrue)
 
-	oauthPartnerModel := model.OauthIntegrationForPartnerApplications("test2", oauthPartnerIntegrationId.Name(), string(sdk.OauthSecurityIntegrationClientTableauServer)).
+	oauthPartnerModel := model.OauthIntegrationForPartnerApplications("test2", oauthPartnerIntegrationId.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauServer)).
 		WithComment(comment).
 		WithEnabled(datasources.BooleanTrue).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN").
 		WithOauthIssueRefreshTokens(datasources.BooleanFalse).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit))
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit))
 
-	oauthCustomModel := model.OauthIntegrationForCustomClients("test3", oauthCustomIntegrationId.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), "https://example.com").
+	oauthCustomModel := model.OauthIntegrationForCustomClients("test3", oauthCustomIntegrationId.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), "https://example.com").
 		WithComment(comment).
 		WithEnabled(datasources.BooleanTrue).
 		WithOauthClientRsaPublicKey(oauthCustomKey).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesNone)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
 		WithNetworkPolicy(networkPolicy.ID().Name())
 
-	externalOauthModel := model.ExternalOauthSecurityIntegration("test4", externalOauthIntegrationId.Name(), true, externalOauthIssuer, string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress), []string{externalOauthClaim}, string(sdk.ExternalOauthSecurityIntegrationTypeCustom)).
+	externalOauthModel := model.ExternalOauthSecurityIntegration("test4", externalOauthIntegrationId.Name(), true, externalOauthIssuer, string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress), []string{externalOauthClaim}, string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)).
 		WithComment(comment).
 		WithExternalOauthAllowedRoles(externalOauthRole.ID()).
-		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)).
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 		WithExternalOauthAudiences(externalOauthAudience).
 		WithExternalOauthJwsKeysUrls("https://example.com").
 		WithExternalOauthScopeDelimiter(".").
@@ -143,7 +143,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 		WithComment(comment).
 		WithOauthAccessTokenValidity(42).
 		WithOauthAuthorizationEndpoint("https://example.com").
-		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)).
 		WithOauthRefreshTokenValidity(12345).
 		WithOauthTokenEndpoint("https://example.com").
 		WithOauthAllowedScopesValue(config.SetVariable(config.StringVariable("foo")))
@@ -151,7 +151,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 	apiAuthClientCredsModel := model.ApiAuthenticationIntegrationWithClientCredentials("test6", apiAuthClientCredentialsIntegrationId.Name(), true, apiAuthPass1, apiAuthPass2).
 		WithComment(comment).
 		WithOauthAccessTokenValidity(42).
-		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)).
 		WithOauthRefreshTokenValidity(12345).
 		WithOauthTokenEndpoint("https://example.com").
 		WithOauthAllowedScopesValue(config.SetVariable(config.StringVariable("foo")))
@@ -250,9 +250,9 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypePublic))),
+					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic))),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true")),
-					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit))),
+					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit))),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_issue_refresh_tokens.0.value", "false")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
@@ -276,9 +276,9 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeConfidential))),
+					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential))),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true")),
-					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesNone))),
+					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone))),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.network_policy.0.value", networkPolicy.ID().Name())),
@@ -304,11 +304,11 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true")),
 					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_issuer.0.value", externalOauthIssuer)),
 					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
-					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable))),
+					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))),
 					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_allowed_roles_list.0.value", externalOauthRole.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_audience_list.0.value", externalOauthAudience)),
 					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_token_user_mapping_claim.0.value", fmt.Sprintf("['%s']", externalOauthClaim))),
-					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress))),
+					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress))),
 					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.external_oauth_scope_delimiter.0.value", ".")),
 					assert.Check(resource.TestCheckResourceAttr(externalOauthWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.comment.0.value", comment)),
 				),
@@ -349,7 +349,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(apiAuthAuthCodeWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true")),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthAuthCodeWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_access_token_validity.0.value", "42")),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthAuthCodeWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "12345")),
-					assert.Check(resource.TestCheckResourceAttr(apiAuthAuthCodeWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost))),
+					assert.Check(resource.TestCheckResourceAttr(apiAuthAuthCodeWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost))),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthAuthCodeWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_authorization_endpoint.0.value", "https://example.com")),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthAuthCodeWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_token_endpoint.0.value", "https://example.com")),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthAuthCodeWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_allowed_scopes.0.value", "[foo]")),
@@ -374,7 +374,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(apiAuthClientCredentialsWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true")),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthClientCredentialsWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_access_token_validity.0.value", "42")),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthClientCredentialsWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "12345")),
-					assert.Check(resource.TestCheckResourceAttr(apiAuthClientCredentialsWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost))),
+					assert.Check(resource.TestCheckResourceAttr(apiAuthClientCredentialsWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost))),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthClientCredentialsWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_token_endpoint.0.value", "https://example.com")),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthClientCredentialsWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_allowed_scopes.0.value", "[foo]")),
 					assert.Check(resource.TestCheckResourceAttr(apiAuthClientCredentialsWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials)),
@@ -398,8 +398,8 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	saml2Model := model.Saml2SecurityIntegrationVar("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
-	scimModel := model.ScimSecurityIntegration("test", idTwo.Name(), true, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	saml2Model := model.Saml2SecurityIntegrationVar("test", idOne.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
+	scimModel := model.ScimSecurityIntegration("test", idTwo.Name(), true, role.Name(), string(sdk.ScimSecurityIntegrationScimClientOptionGeneric))
 	securityIntegrationsModel := datasourcemodel.SecurityIntegrations("test").
 		WithLike(prefix+"%").
 		WithDependsOn(saml2Model.ResourceReference(), scimModel.ResourceReference())

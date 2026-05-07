@@ -90,11 +90,8 @@ func (g *GitRepositoryAssert) HasOrigin(expected string) *GitRepositoryAssert {
 func (g *GitRepositoryAssert) HasApiIntegration(expected sdk.AccountObjectIdentifier) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
-		if o.ApiIntegration == nil {
-			return fmt.Errorf("expected api integration to have value; got: nil")
-		}
-		if (*o.ApiIntegration).Name() != expected.Name() {
-			return fmt.Errorf("expected api integration: %v; got: %v", expected.Name(), (*o.ApiIntegration).Name())
+		if o.ApiIntegration.Name() != expected.Name() {
+			return fmt.Errorf("expected api integration: %v; got: %v", expected.Name(), o.ApiIntegration.Name())
 		}
 		return nil
 	})

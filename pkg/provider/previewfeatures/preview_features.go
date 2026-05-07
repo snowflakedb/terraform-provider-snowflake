@@ -13,6 +13,7 @@ type feature string
 const (
 	AccountAuthenticationPolicyAttachmentResource feature = "snowflake_account_authentication_policy_attachment_resource"
 	AccountPasswordPolicyAttachmentResource       feature = "snowflake_account_password_policy_attachment_resource"
+	AccountSessionPolicyAttachmentResource        feature = "snowflake_account_session_policy_attachment_resource"
 	AlertResource                                 feature = "snowflake_alert_resource"
 	AlertsDatasource                              feature = "snowflake_alerts_datasource"
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
@@ -20,6 +21,9 @@ const (
 	AuthenticationPoliciesDatasource              feature = "snowflake_authentication_policies_datasource"
 	CatalogIntegrationAwsGlueResource             feature = "snowflake_catalog_integration_aws_glue_resource"
 	CatalogIntegrationObjectStorageResource       feature = "snowflake_catalog_integration_object_storage_resource"
+	CatalogIntegrationOpenCatalogResource         feature = "snowflake_catalog_integration_open_catalog_resource"
+	CatalogIntegrationIcebergRestResource         feature = "snowflake_catalog_integration_iceberg_rest_resource"
+	CatalogIntegrationsDatasource                 feature = "snowflake_catalog_integrations_datasource"
 	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
@@ -70,6 +74,7 @@ const (
 	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
+	PasswordPoliciesDatasource                    feature = "snowflake_password_policies_datasource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
 	PipeResource                                  feature = "snowflake_pipe_resource"
 	PipesDatasource                               feature = "snowflake_pipes_datasource"
@@ -82,6 +87,8 @@ const (
 	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
 	SemanticViewResource                          feature = "snowflake_semantic_view_resource"
 	SemanticViewDatasource                        feature = "snowflake_semantic_views_datasource"
+	SessionPoliciesDatasource                     feature = "snowflake_session_policies_datasource"
+	SessionPolicyResource                         feature = "snowflake_session_policy_resource"
 	ServiceResource                               feature = "snowflake_service_resource"
 	ServicesDatasource                            feature = "snowflake_services_datasource"
 	SequenceResource                              feature = "snowflake_sequence_resource"
@@ -108,12 +115,15 @@ const (
 	UserPublicKeysResource                        feature = "snowflake_user_public_keys_resource"
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
 	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
+	UserSessionPolicyAttachmentResource           feature = "snowflake_user_session_policy_attachment_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
+	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
 )
 
 var allPreviewFeatures = []feature{
 	AccountAuthenticationPolicyAttachmentResource,
 	AccountPasswordPolicyAttachmentResource,
+	AccountSessionPolicyAttachmentResource,
 	AlertResource,
 	AlertsDatasource,
 	ApiIntegrationResource,
@@ -121,6 +131,9 @@ var allPreviewFeatures = []feature{
 	AuthenticationPoliciesDatasource,
 	CatalogIntegrationAwsGlueResource,
 	CatalogIntegrationObjectStorageResource,
+	CatalogIntegrationOpenCatalogResource,
+	CatalogIntegrationIcebergRestResource,
+	CatalogIntegrationsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -163,12 +176,15 @@ var allPreviewFeatures = []feature{
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
+	PasswordPoliciesDatasource,
 	PasswordPolicyResource,
 	PipeResource,
 	PipesDatasource,
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,
+	SessionPoliciesDatasource,
+	SessionPolicyResource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,
@@ -196,8 +212,10 @@ var allPreviewFeatures = []feature{
 	TableResource,
 	TablesDatasource,
 	UserAuthenticationPolicyAttachmentResource,
-	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+	UserPublicKeysResource,
+	UserSessionPolicyAttachmentResource,
+	WarehouseAdaptiveResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 

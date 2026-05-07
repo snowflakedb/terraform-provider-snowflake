@@ -60,8 +60,8 @@ var secretCommonSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-func handleSecretImport(d *schema.ResourceData) error {
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
+func handleSecretImport(ctx context.Context, d *schema.ResourceData) error {
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
 		return err
 	}
 	return nil

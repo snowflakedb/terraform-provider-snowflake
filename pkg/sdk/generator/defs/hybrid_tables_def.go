@@ -19,19 +19,11 @@ var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConst
 	OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.ColumnConstraintType](), g.KeywordOptions().Required()).
 	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
-	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions()).
-	OptionalSQL("ENFORCED").
-	OptionalSQL("NOT ENFORCED").
-	OptionalSQL("DEFERRABLE").
-	OptionalSQL("NOT DEFERRABLE").
-	OptionalSQL("INITIALLY DEFERRED").
-	OptionalSQL("INITIALLY IMMEDIATE").
-	OptionalSQL("ENABLE").
-	OptionalSQL("DISABLE").
-	OptionalSQL("VALIDATE").
-	OptionalSQL("NOVALIDATE").
-	OptionalSQL("RELY").
-	OptionalSQL("NORELY")
+	// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
+	// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
+	// are not supported on hybrid tables — Snowflake returns "invalid constraint property".
+	// Removed from the SDK per PR #4461 review feedback.
+	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions())
 
 var hybridTableOutOfLineIndex = g.NewQueryStruct("HybridTableOutOfLineIndex").
 	SQL("INDEX").
@@ -55,14 +47,10 @@ var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
+// NOTE: Hybrid tables do not support ALTER TABLE ADD UNIQUE or ADD FOREIGN KEY constraints
+// (Snowflake returns: "Unique and foreign-key constraints can only be defined at table creation time").
+// The Add action is omitted; only Rename and Drop are supported.
 var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction").
-	OptionalQueryStructField(
-		"Add",
-		g.NewQueryStruct("HybridTableConstraintActionAdd").
-			SQL("ADD").
-			QueryStructField("OutOfLineConstraint", hybridTableOutOfLineConstraint, g.KeywordOptions()),
-		g.KeywordOptions(),
-	).
 	OptionalQueryStructField(
 		"Rename",
 		g.NewQueryStruct("HybridTableConstraintActionRename").
@@ -73,39 +61,33 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 	).
 	OptionalQueryStructField(
 		"Drop",
+		// NOTE: PRIMARY KEY is not included here — DROP PRIMARY KEY is unsupported on hybrid tables.
+		// Snowflake returns an error at runtime; removed per PR #4461 review feedback.
 		g.NewQueryStruct("HybridTableConstraintActionDrop").
 			SQL("DROP").
 			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "ConstraintName").
-			OptionalSQL("PRIMARY KEY").
 			OptionalSQL("UNIQUE").
 			OptionalSQL("FOREIGN KEY").
 			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
 			OptionalSQL("CASCADE").
 			OptionalSQL("RESTRICT").
-			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey").
+			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "Unique", "ForeignKey").
 			WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
 		g.KeywordOptions(),
 	).
-	WithValidation(g.ExactlyOneValueSet, "Add", "Rename", "Drop")
+	WithValidation(g.ExactlyOneValueSet, "Rename", "Drop")
 
+// NOTE: Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL.
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
 	SQL("ALTER").
 	SQL("COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("DROP DEFAULT").
 	PredefinedQueryStructField("SetDefault", g.KindOfTPointer[sdkcommons.SequenceName](), g.ParameterOptions().NoEquals().SQL("SET DEFAULT")).
-	OptionalQueryStructField(
-		"NotNullConstraint",
-		g.NewQueryStruct("HybridTableColumnNotNullConstraint").
-			OptionalSQL("SET NOT NULL").
-			OptionalSQL("DROP NOT NULL").
-			WithValidation(g.ExactlyOneValueSet, "SetNotNull", "DropNotNull"),
-		g.KeywordOptions(),
-	).
 	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
 	OptionalSQL("UNSET COMMENT").
-	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "NotNullConstraint", "Type", "Comment", "UnsetComment")
+	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment")
 
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
@@ -137,27 +119,22 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 	OptionalSQL("DROP CLUSTERING KEY").
 	WithValidation(g.ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
 
+// NOTE: Hybrid tables do not support CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION,
+// CONTACT, or ROW_TIMESTAMP in ALTER TABLE SET (per Snowflake documentation and runtime behavior).
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
-	OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
-	OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
-	OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
-	PredefinedQueryStructField("Contact", g.KindOfTSlice[sdkcommons.TableContact](), g.KeywordOptions().SQL("CONTACT")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	OptionalBooleanAssignment("ROW_TIMESTAMP", g.ParameterOptions()).
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Contact", "Comment", "RowTimestamp")
+	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment")
 
-var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
-	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
-	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
-	OptionalSQL("CHANGE_TRACKING").
-	OptionalSQL("DEFAULT_DDL_COLLATION").
-	OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
-	OptionalAssignmentWithFieldName("CONTACT", "*string", g.ParameterOptions().NoEquals(), "ContactPurpose").
-	OptionalSQL("COMMENT").
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "ContactPurpose", "Comment")
+// NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
+// Snowflake docs may suggest otherwise but the operation errors at runtime.
 
+// NOTE: After running make generate-sdk, the hybridTableDetailsRow.Null field in
+// hybrid_tables_gen.go will have tag db:"null" (the generator strips '?'). It must
+// be manually corrected back to db:"null?" because the DESCRIBE TABLE output column
+// is literally named "null?" in Snowflake. The convert() method in hybrid_tables_impl_gen.go
+// uses r.Null == "Y" to derive the IsNullable bool.
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
 	"HybridTable",
@@ -217,13 +194,8 @@ var hybridTablesDef = g.NewInterface(
 			hybridTableSetProperties,
 			g.KeywordOptions().SQL("SET"),
 		).
-		OptionalQueryStructField(
-			"Unset",
-			hybridTableUnsetProperties,
-			g.KeywordOptions().SQL("UNSET"),
-		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
@@ -235,70 +207,45 @@ var hybridTablesDef = g.NewInterface(
 		OptionalSQL("RESTRICT").
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-hybrid-tables",
-	g.DbStruct("hybridTableRow").
+	g.StructPair("hybridTableRow", "HybridTable").
 		Time("created_on").
 		Text("name").
 		Text("database_name").
 		Text("schema_name").
-		OptionalText("owner").
+		OptionalText("owner", g.WithRequiredInPlain()).
 		OptionalNumber("rows").
 		OptionalNumber("bytes").
-		OptionalText("comment").
-		OptionalText("owner_role_type"),
-	g.PlainStruct("HybridTable").
-		Time("CreatedOn").
-		Text("Name").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("Owner").
-		OptionalNumber("Rows").
-		OptionalNumber("Bytes").
-		Text("Comment").
-		Text("OwnerRoleType"),
+		OptionalText("comment", g.WithRequiredInPlain()).
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowHybridTables").
 		Show().
 		Terse().
 		SQL("HYBRID TABLES").
 		OptionalLike().
-		OptionalIn().
+		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
-	g.DbStruct("hybridTableDetailsRow").
+	g.StructPair("hybridTableDetailsRow", "HybridTableDetails").
 		Text("name").
 		Text("type").
 		Text("kind").
-		Text("null").
-		OptionalText("default").
-		Text("primary key").
-		Text("unique key").
-		OptionalText("check").
-		OptionalText("expression").
-		OptionalText("comment").
-		OptionalText("policy name").
-		OptionalText("privacy domain").
-		OptionalText("schema_evolution_record"),
-	g.PlainStruct("HybridTableDetails").
-		Text("Name").
-		Text("Type").
-		Text("Kind").
-		Text("IsNullable").
-		Text("Default").
-		Text("PrimaryKey").
-		Text("UniqueKey").
-		Text("Check").
-		Text("Expression").
-		Text("Comment").
-		Text("PolicyName").
-		Text("PrivacyDomain").
-		Text("SchemaEvolutionRecord"),
+		Text("null", g.WithPlainFieldName("IsNullable")).
+		OptionalText("default", g.WithRequiredInPlain()).
+		Text("primary key", g.WithPlainFieldName("PrimaryKey")).
+		Text("unique key", g.WithPlainFieldName("UniqueKey")).
+		OptionalText("check", g.WithRequiredInPlain()).
+		OptionalText("expression", g.WithRequiredInPlain()).
+		OptionalText("comment", g.WithRequiredInPlain()).
+		OptionalText("policy name", g.WithPlainFieldName("PolicyName"), g.WithRequiredInPlain()).
+		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"), g.WithRequiredInPlain()).
+		OptionalText("schema_evolution_record", g.WithRequiredInPlain()),
 	g.NewQueryStruct("DescribeHybridTable").
 		Describe().
 		SQL("TABLE").
@@ -329,37 +276,26 @@ var hybridTablesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"ShowIndexes",
 	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-indexes",
-	g.DbStruct("hybridTableIndexRow").
+	g.StructPair("hybridTableIndexRow", "HybridTableIndex").
 		Time("created_on").
 		Text("name").
-		OptionalText("is_unique").
+		Field("is_unique", "sql.NullString", "*bool").
 		OptionalText("columns").
-		OptionalText("included_columns").
-		Text("table").
+		OptionalText("included_columns", g.WithRequiredInPlain()).
+		Text("table", g.WithPlainFieldName("TableName")).
 		Text("database_name").
 		Text("schema_name").
-		OptionalText("owner").
-		OptionalText("owner_role_type"),
-	g.PlainStruct("HybridTableIndex").
-		Time("CreatedOn").
-		Text("Name").
-		OptionalBool("IsUnique").
-		OptionalText("Columns").
-		Text("IncludedColumns").
-		Text("TableName").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("Owner").
-		Text("OwnerRoleType"),
+		OptionalText("owner", g.WithRequiredInPlain()).
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowHybridTableIndexes").
 		Show().
 		SQL("INDEXES").
 		OptionalLike().
-		OptionalIn().
+		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
 )

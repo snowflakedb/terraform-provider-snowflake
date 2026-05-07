@@ -1,0 +1,31 @@
+package defs
+
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
+
+var PartialGenerationExample = g.NewInterface(
+	"PartialGenerationExamples",
+	"PartialGenerationExample",
+	g.KindOfT[sdkcommons.DatabaseObjectIdentifier](),
+).
+	WithAllowedGenerationParts("default", "dto", "impl", "validations").
+	CreateOperation("https://example.com",
+		g.NewQueryStruct("Alter").
+			Alter().
+			IfExists().
+			Name(),
+	).AlterOperation("https://example.com",
+	g.NewQueryStruct("Alter").
+		Alter().
+		IfExists().
+		Name().
+		QueryStructField(
+			"RequiredField",
+			g.NewQueryStruct("PartialGenerationExampleRequiredField").
+				List("SomeRequiredList", "DatabaseObjectIdentifier", g.ListOptions().Required()),
+			g.KeywordOptions().Required(),
+		),
+)

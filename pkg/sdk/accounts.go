@@ -688,6 +688,7 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 			DisableUserPrivilegeGrants:                    Bool(true),
 			EnableAutomaticSensitiveDataClassificationLog: Bool(true),
 			EnableBudgetEventLogging:                      Bool(true),
+			EnableCortexAnalyst:                           Bool(true),
 			EnableDataCompaction:                          Bool(true),
 			EnableEgressCostOptimizer:                     Bool(true),
 			EnableGetDdlUseDataTypeAlias:                  Bool(true),

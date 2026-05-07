@@ -56,7 +56,7 @@ func ImportSecretWithGenericString(ctx context.Context, d *schema.ResourceData, 
 		return nil, err
 	}
 
-	if err := handleSecretImport(d); err != nil {
+	if err := handleSecretImport(ctx, d); err != nil {
 		return nil, err
 	}
 

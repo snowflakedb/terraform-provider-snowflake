@@ -279,9 +279,36 @@ func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) sc
 	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)
 }
 
+// RecreateWhenCatalogSourceChangedExternally recreates a catalog integration when argument catalogSource is different
+// than in the state.
+func RecreateWhenCatalogSourceChangedExternally(catalogSource sdk.CatalogIntegrationCatalogSourceType) schema.CustomizeDiffFunc {
+	return RecreateWhenResourceTypeChangedExternally("catalog_source", catalogSource, sdk.ToCatalogIntegrationCatalogSourceType)
+}
+
 // RecreateWhenStageCloudChangedExternally recreates a stage when argument stageCloud is different than in the state.
 func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.CustomizeDiffFunc {
 	return RecreateWhenResourceTypeChangedExternally("cloud", stageCloud, sdk.ToStageCloud)
+}
+
+// HandleWarehouseExternalTypeChange detects when the warehouse type has been changed externally
+// and plans an update to restore it to warehouseType (without forcing recreation).
+func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		if n := diff.Get("warehouse_type"); n != nil {
+			gotTypeRaw := n.(string)
+			if gotTypeRaw == "" {
+				return nil
+			}
+			gotType, err := sdk.ToWarehouseType(gotTypeRaw)
+			if err != nil {
+				return fmt.Errorf("unknown warehouse type: %w", err)
+			}
+			if gotType != warehouseType {
+				return diff.SetNew("warehouse_type", string(warehouseType))
+			}
+		}
+		return nil
+	}
 }
 
 // RecreateWhenResourceTypeChangedExternally recreates a resource when argument wantType is different than the value in typeField.

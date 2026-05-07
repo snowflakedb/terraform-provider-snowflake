@@ -59,6 +59,10 @@ func (v *roles) Revoke(ctx context.Context, req *RevokeRoleRequest) error {
 	return validateAndExec(v.client, ctx, req.toOpts())
 }
 
+func (v *roles) RevokeSafely(ctx context.Context, req *RevokeRoleRequest) error {
+	return SafeRevokePrivileges(func() error { return v.Revoke(ctx, req) })
+}
+
 func (v *roles) Use(ctx context.Context, req *UseRoleRequest) error {
 	return v.client.Sessions.UseRole(ctx, req.id)
 }
