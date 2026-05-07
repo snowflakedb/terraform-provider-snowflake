@@ -34,6 +34,7 @@ const (
 	NetworkRules                   datasource = "snowflake_network_rules"
 	Notebooks                      datasource = "snowflake_notebooks"
 	Parameters                     datasource = "snowflake_parameters"
+	PasswordPolicies               datasource = "snowflake_password_policies"
 	Pipes                          datasource = "snowflake_pipes"
 	Procedures                     datasource = "snowflake_procedures"
 	ResourceMonitors               datasource = "snowflake_resource_monitors"

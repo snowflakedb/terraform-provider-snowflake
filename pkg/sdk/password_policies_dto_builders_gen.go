@@ -261,8 +261,18 @@ func (s *ShowPasswordPolicyRequest) WithLike(like Like) *ShowPasswordPolicyReque
 	return s
 }
 
-func (s *ShowPasswordPolicyRequest) WithIn(in In) *ShowPasswordPolicyRequest {
+func (s *ShowPasswordPolicyRequest) WithIn(in ExtendedIn) *ShowPasswordPolicyRequest {
 	s.In = &in
+	return s
+}
+
+func (s *ShowPasswordPolicyRequest) WithOn(on On) *ShowPasswordPolicyRequest {
+	s.On = &on
+	return s
+}
+
+func (s *ShowPasswordPolicyRequest) WithStartsWith(startsWith string) *ShowPasswordPolicyRequest {
+	s.StartsWith = &startsWith
 	return s
 }
 

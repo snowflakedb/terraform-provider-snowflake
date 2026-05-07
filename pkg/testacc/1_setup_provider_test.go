@@ -56,6 +56,7 @@ var (
 	s3StageProviderFactory                           = providerFactoryUsingCache("StageExternalS3")
 	grantsSafeDestroyProviderFactory                 = providerFactoryUsingCache("GrantsSafeDestroy")
 	tagAssociationSafeDestroyProviderFactory         = providerFactoryUsingCache("TagAssociationSafeDestroy")
+	grantAccountRoleSafePublicRoleProviderFactory    = providerFactoryUsingCache("GrantAccountRoleSafePublicRole")
 	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
 )
 

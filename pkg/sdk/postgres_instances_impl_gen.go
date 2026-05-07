@@ -4,7 +4,6 @@ package sdk
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -144,6 +143,12 @@ func (r *AlterPostgresInstanceRequest) toOpts() *AlterPostgresInstanceOptions {
 			MaintenanceWindowStart:  r.Set.MaintenanceWindowStart,
 			PostgresSettings:        r.Set.PostgresSettings,
 		}
+		if r.Set.Apply != nil {
+			opts.Set.Apply = &PostgresInstanceApply{
+				Immediately: r.Set.Apply.Immediately,
+				On:          r.Set.Apply.On,
+			}
+		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &PostgresInstanceUnset{
@@ -179,54 +184,9 @@ func (r *ShowPostgresInstanceRequest) toOpts() *ShowPostgresInstanceOptions {
 	return opts
 }
 
-func (r postgresInstancesRow) convert() (*PostgresInstance, error) {
-	pi := &PostgresInstance{
-		Name:                    r.Name,
-		Owner:                   r.Owner,
-		OwnerRoleType:           r.OwnerRoleType,
-		CreatedOn:               r.CreatedOn,
-		UpdatedOn:               r.UpdatedOn,
-		Type:                    r.Type,
-		ComputeFamily:           r.ComputeFamily,
-		AuthenticationAuthority: r.AuthenticationAuthority,
-		StorageSize:             r.StorageSize,
-		PostgresVersion:         r.PostgresVersion,
-		IsHa:                    r.IsHa == "true",
-		RetentionTime:           r.RetentionTime,
-	}
-	if r.Origin.Valid {
-		pi.Origin = &r.Origin.String
-	}
-	if r.Host.Valid {
-		pi.Host = &r.Host.String
-	}
-	if r.PrivatelinkServiceIdentifier.Valid {
-		pi.PrivatelinkServiceIdentifier = &r.PrivatelinkServiceIdentifier.String
-	}
-	if r.PostgresSettings.Valid {
-		pi.PostgresSettings = &r.PostgresSettings.String
-	}
-	if r.Comment.Valid {
-		pi.Comment = &r.Comment.String
-	}
-	state, err := ToPostgresInstanceState(r.State)
-	if err != nil {
-		return nil, fmt.Errorf("error converting postgres instance state: %w", err)
-	}
-	pi.State = state
-	return pi, nil
-}
-
 func (r *DescribePostgresInstanceRequest) toOpts() *DescribePostgresInstanceOptions {
 	opts := &DescribePostgresInstanceOptions{
 		name: r.name,
 	}
 	return opts
-}
-
-func (r postgresInstanceDetailsRow) convert() (*PostgresInstanceProperty, error) {
-	return &PostgresInstanceProperty{
-		Property: r.Property,
-		Value:    r.Value,
-	}, nil
 }

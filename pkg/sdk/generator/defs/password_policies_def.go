@@ -95,23 +95,25 @@ var passwordPoliciesDef = g.NewInterface(
 	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-password-policies",
 		g.StructPair("passwordPolicyDBRow", "PasswordPolicy").
-			Time("created_on").
+			OptionalTime("created_on", g.WithRequiredInPlain()).
 			Text("name").
-			Text("database_name").
-			Text("schema_name").
+			OptionalText("database_name", g.WithRequiredInPlain()).
+			OptionalText("schema_name", g.WithRequiredInPlain()).
 			Text("kind").
-			Text("owner").
+			OptionalText("owner", g.WithRequiredInPlain()).
 			Text("comment").
-			Text("owner_role_type").
+			OptionalText("owner_role_type", g.WithRequiredInPlain()).
 			Text("options"),
 		g.NewQueryStruct("ShowPasswordPolicies").
 			Show().
 			SQL("PASSWORD POLICIES").
 			OptionalLike().
-			OptionalIn().
+			OptionalExtendedIn().
+			OptionalOn().
+			OptionalStartsWith().
 			OptionalLimit(),
 		g.ShowByIDLikeFiltering,
-		g.ShowByIDInFiltering,
+		g.ShowByIDExtendedInFiltering,
 	).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,

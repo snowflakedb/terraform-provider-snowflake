@@ -189,14 +189,14 @@ func TestPasswordPolicies_Show(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{Pattern: String(id.Name())}
-		opts.In = &In{Schema: id.SchemaId()}
+		opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW PASSWORD POLICIES LIKE '%s' IN SCHEMA %s", id.Name(), id.SchemaId().FullyQualifiedName())
 	})
 
 	t.Run("with like and in account", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{Pattern: String(id.Name())}
-		opts.In = &In{Account: Bool(true)}
+		opts.In = &ExtendedIn{In: In{Account: Bool(true)}}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW PASSWORD POLICIES LIKE '%s' IN ACCOUNT", id.Name())
 	})
 
@@ -204,7 +204,7 @@ func TestPasswordPolicies_Show(t *testing.T) {
 		databaseIdentifier := NewAccountObjectIdentifier(id.DatabaseName())
 		opts := defaultOpts()
 		opts.Like = &Like{Pattern: String(id.Name())}
-		opts.In = &In{Database: databaseIdentifier}
+		opts.In = &ExtendedIn{In: In{Database: databaseIdentifier}}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW PASSWORD POLICIES LIKE '%s' IN DATABASE %s", id.Name(), databaseIdentifier.FullyQualifiedName())
 	})
 
