@@ -445,6 +445,15 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 
 	query := fmt.Sprintf(`with temp as (select "id" from %v) select * from temp`, tableId.FullyQualifiedName())
 
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+	}).WithChangeTracking(true)
+
+	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithDependsOn(tableModel.ResourceReference()).
+		WithTimeoutCreate("50ms")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -453,7 +462,7 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.DynamicTable),
 		Steps: []resource.TestStep{
 			{
-				Config: dynamicTableConfigWithTimeout(tableId.Name(), dynamicTableId.Name(), TestDatabaseName, TestSchemaName, TestWarehouseName, query),
+				Config: accconfig.FromModels(t, tableModel, dtModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", query),
@@ -462,35 +471,4 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 			},
 		},
 	})
-}
-
-func dynamicTableConfigWithTimeout(tableName, name, database, schema, warehouse, query string) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "t" {
-  database        = %q
-  schema          = %q
-  name            = %q
-  change_tracking = true
-  column {
-    name = "id"
-    type = "NUMBER(38,0)"
-  }
-}
-
-resource "snowflake_dynamic_table" "dt" {
-  depends_on = [snowflake_table.t]
-  name       = %q
-  database   = %q
-  schema     = %q
-  target_lag {
-    maximum_duration = "2 minutes"
-  }
-  warehouse = %q
-  query     = %q
-
-  timeouts {
-    create = "50ms"
-  }
-}
-`, database, schema, tableName, name, database, schema, warehouse, query)
 }
