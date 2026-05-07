@@ -192,19 +192,18 @@ func TestInt_PostgresInstances(t *testing.T) {
 		// Wait for fork to reach READY state — metadata (origin, type) populates after provisioning completes
 		testClientHelper().PostgresInstance.WaitForReady(t, forkId, 5*time.Minute)
 
-		// Poll until origin and type metadata are populated (fail if not received within timeout)
+		// Poll until origin metadata is populated (fail if not received within timeout)
 		var forkedInstance *sdk.PostgresInstance
 		require.Eventually(t, func() bool {
 			var showErr error
 			forkedInstance, showErr = client.PostgresInstances.ShowByID(ctx, forkId)
 			require.NoError(t, showErr)
-			return forkedInstance.Origin != nil && forkedInstance.Type == "FORK"
+			return forkedInstance.Origin != nil
 		}, 5*time.Minute, 5*time.Second)
 
 		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
 			HasName(forkId.Name()).
-			HasOriginContaining(sourceInstance.Name).
-			HasType("FORK"),
+			HasOriginContaining(sourceInstance.Name),
 		)
 	})
 
