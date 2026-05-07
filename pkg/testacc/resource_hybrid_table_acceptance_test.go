@@ -958,8 +958,9 @@ func TestAcc_HybridTable_Rename(t *testing.T) {
 		{Name: "ID"},
 	}
 
+	renamedComment := random.Comment()
 	modelBasic := model.HybridTableFromId("test", id, columns, pk)
-	modelRenamed := model.HybridTableFromId("test", newId, columns, pk)
+	modelRenamed := model.HybridTableFromId("test", newId, columns, pk).WithComment(renamedComment)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -994,11 +995,13 @@ func TestAcc_HybridTable_Rename(t *testing.T) {
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
 						HasSchemaString(newId.SchemaName()).
-						HasFullyQualifiedNameString(newId.FullyQualifiedName()),
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasCommentString(renamedComment),
 					objectassert.HybridTable(t, newId).
 						HasName(newId.Name()).
 						HasDatabaseName(newId.DatabaseName()).
-						HasSchemaName(newId.SchemaName()),
+						HasSchemaName(newId.SchemaName()).
+						HasComment(renamedComment),
 				),
 			},
 		},

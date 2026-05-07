@@ -840,6 +840,12 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 		if colInfo.dataType != "" {
 			configDT, configErr := datatypes.ParseDataType(colInfo.dataType)
 			describeDT, describeErr := datatypes.ParseDataType(td.Type)
+			if configErr != nil {
+				log.Printf("[WARN] hybrid_table Read: failed to parse config data type %q for column %q: %v", colInfo.dataType, td.Name, configErr)
+			}
+			if describeErr != nil {
+				log.Printf("[WARN] hybrid_table Read: failed to parse describe data type %q for column %q: %v", td.Type, td.Name, describeErr)
+			}
 			if configErr == nil && describeErr == nil && datatypes.AreTheSame(configDT, describeDT) {
 				colType = colInfo.dataType
 			}
@@ -905,9 +911,10 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) map[string]any {
 
 	defaultRaw := td.Default
 
-	// Sequence detection: ends with .NEXTVAL
-	if strings.HasSuffix(defaultRaw, ".NEXTVAL") {
-		sequenceIdRaw := strings.TrimSuffix(defaultRaw, ".NEXTVAL")
+	// Sequence detection: ends with .NEXTVAL (case-insensitive)
+	const nextvalSuffix = ".NEXTVAL"
+	if strings.HasSuffix(strings.ToUpper(defaultRaw), nextvalSuffix) {
+		sequenceIdRaw := defaultRaw[:len(defaultRaw)-len(nextvalSuffix)]
 		id, err := sdk.ParseSchemaObjectIdentifier(sequenceIdRaw)
 		if err != nil {
 			log.Printf("[WARN] hybrid_table Read: failed to parse sequence identifier %q: %v", sequenceIdRaw, err)
