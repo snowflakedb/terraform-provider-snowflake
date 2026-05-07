@@ -34,6 +34,18 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to manage session policies with Terraform.
 
+### *(bugfix)* Fixed `snowflake_tag` crash on Standard accounts
+
+In v2.15.0 we added the `propagate` field to the `snowflake_tag` resource. On [Standard accounts](https://docs.snowflake.com/en/user-guide/intro-editions#standard-edition), Snowflake does not return a `propagate` column in `SHOW TAGS`. The provider attempted to scan a SQL `NULL` into a non-nullable Go string, resulting in a fatal error whenever any `snowflake_tag` resource was refreshed on such accounts:
+
+```text
+│ Error: sql: Scan error on column index 8, name "propagate": converting NULL to string is unsupported
+```
+
+The `propagate` field is now treated as nullable: when the column is absent from `SHOW TAGS`, the field is `nil` and the state attribute is left unchanged.
+
+No changes in configuration are required. Users on standard accounts who experienced a crash on plan or apply should be able to use the `snowflake_tag` resource normally after upgrading.
+
 ## v2.14.x ➞ v2.15.0
 
 ### **IMPORTANT** *(improvement)* Go driver bumped to v2
