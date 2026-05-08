@@ -54,13 +54,25 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
-			HasComment(""),
+			HasComment("").
+			HasRows(0).
+			HasBytes(0),
 		objectassert.HybridTable(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(""),
+			HasComment("").
+			HasRows(0).
+			HasBytes(0),
+		// DESC-level assertions (is_nullable/default/primary_key/unique_key/check/
+		// expression/comment/policy_name/privacy_domain/schema_evolution_record) are
+		// not yet exposed as typed helpers on resourceassert.HybridTableResource (the
+		// generator does not emit HasDescribeOutput* methods for nested-list fields).
+		// HasColumns + HasPrimaryKeyKeys above cover the column-list shape; raw
+		// TestCheckResourceAttr on describe_output.N.* would be fragile against the
+		// DESC column ordering. Typed DESC helpers are a follow-up for the assert
+		// generator, tracked under review thread 3188821668.
 	}
 
 	modelComplete := model.HybridTableFromId("test", id, columns, pk).
@@ -90,13 +102,17 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
-			HasComment(comment),
+			HasComment(comment).
+			HasRows(0).
+			HasBytes(0),
 		objectassert.HybridTable(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(comment),
+			HasComment(comment).
+			HasRows(0).
+			HasBytes(0),
 	}
 
 	assertAfterUnset := []assert.TestCheckFuncProvider{
@@ -117,13 +133,17 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
-			HasComment(""),
+			HasComment("").
+			HasRows(0).
+			HasBytes(0),
 		objectassert.HybridTable(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(""),
+			HasComment("").
+			HasRows(0).
+			HasBytes(0),
 	}
 
 	importStateVerifyIgnore := []string{
@@ -305,13 +325,17 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(comment),
+						HasComment(comment).
+						HasRows(0).
+						HasBytes(0),
 					objectassert.HybridTable(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasComment(comment),
+						HasComment(comment).
+						HasRows(0).
+						HasBytes(0),
 				),
 			},
 			// Import
@@ -352,13 +376,17 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasComment(changedComment),
+						HasComment(changedComment).
+						HasRows(0).
+						HasBytes(0),
 					objectassert.HybridTable(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasComment(changedComment),
+						HasComment(changedComment).
+						HasRows(0).
+						HasBytes(0),
 				),
 			},
 		},
