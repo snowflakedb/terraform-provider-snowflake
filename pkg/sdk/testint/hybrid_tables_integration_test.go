@@ -435,23 +435,35 @@ func TestInt_HybridTables(t *testing.T) {
 			require.NoError(t, err, "single-property UNSET COMMENT must succeed")
 			assertThatObject(t, objectassert.HybridTable(t, id).HasComment(""))
 
-			// Disputed: multi-property UNSET in a single ALTER statement.
-			//
-			// hybrid_tables_gen.go:167 (at the time of writing) claims Snowflake rejects this.
-			// jcieslak's review comment (PR #4689 thread 3195260281) reports a successful manual test.
-			// This assertion establishes the ground truth.
+			// Multi-property UNSET is rejected by Snowflake with a syntax error
+			// (observed: "001003 (42000): SQL compilation error: syntax error line 1
+			// at position <n> unexpected 'UNSET'"). This is why HybridTableUnsetProperties
+			// emits one UNSET keyword per field and the resource Update path issues a
+			// separate ALTER per property. Keep this assertion as a regression guard:
+			// if Snowflake ever starts accepting multi-property UNSET, this test will
+			// flip green and the NOTE in hybrid_tables_gen.go should be revisited.
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().
 					WithDataRetentionTimeInDays(true).
 					WithMaxDataExtensionTimeInDays(true)))
-			if err != nil {
-				t.Logf("multi-property UNSET failed: %v", err)
-				t.Fatalf("multi-property UNSET should succeed per jcieslak's manual test — if Snowflake's behavior reverted, update hybrid_tables_gen.go NOTE and keep separate UNSET blocks in the resource")
+			require.Error(t, err, "multi-property UNSET must be rejected; single-field UNSET is the only supported shape")
+			require.ErrorContains(t, err, "unexpected 'UNSET'", "error must be the syntax-error form (guards against unrelated failures masking as success)")
+
+			// Clean up the retention properties one-at-a-time (the supported shape).
+			// Verify the TABLE-level override is cleared afterwards by fetching SHOW PARAMETERS
+			// and checking Level is no longer TABLE (the fallback level — ACCOUNT/DATABASE/SCHEMA/default —
+			// is environment-dependent, so we only assert what we changed, not the inherited level).
+			require.NoError(t, client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().WithDataRetentionTimeInDays(true))))
+			require.NoError(t, client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().WithMaxDataExtensionTimeInDays(true))))
+			parametersAfterUnset, err := client.HybridTables.ShowParameters(ctx, id)
+			require.NoError(t, err)
+			for _, p := range parametersAfterUnset {
+				if p.Key == string(sdk.ObjectParameterDataRetentionTimeInDays) || p.Key == string(sdk.ObjectParameterMaxDataExtensionTimeInDays) {
+					require.NotEqual(t, sdk.ParameterTypeHybridTable, p.Level, "TABLE-level override for %s must be cleared after UNSET", p.Key)
+				}
 			}
-			// Post-UNSET, both parameters should be back at SnowflakeDefault level.
-			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).
-				HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault).
-				HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault))
 
 			// UNSET with IfExists — ensures the ALTER wrapper works for UNSET too.
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithIfExists(true).
