@@ -417,6 +417,48 @@ func TestInt_HybridTables(t *testing.T) {
 				"expected Level=%q (SHOW PARAMETERS returns TABLE for hybrid tables)", sdk.ParameterTypeHybridTable)
 		})
 
+		t.Run("unset properties", func(t *testing.T) {
+			id, cleanup := testClientHelper().HybridTable.Create(t)
+			t.Cleanup(cleanup)
+
+			// Arrange: set all three unsettable properties so there is something to unset.
+			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().
+					WithComment("to be unset").
+					WithDataRetentionTimeInDays(3).
+					WithMaxDataExtensionTimeInDays(7)))
+			require.NoError(t, err, "SET must succeed so UNSET has non-default values to target")
+
+			// Single-property UNSET — baseline (expected to succeed regardless of multi-property capability).
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().WithComment(true)))
+			require.NoError(t, err, "single-property UNSET COMMENT must succeed")
+			assertThatObject(t, objectassert.HybridTable(t, id).HasComment(""))
+
+			// Disputed: multi-property UNSET in a single ALTER statement.
+			//
+			// hybrid_tables_gen.go:167 (at the time of writing) claims Snowflake rejects this.
+			// jcieslak's review comment (PR #4689 thread 3195260281) reports a successful manual test.
+			// This assertion establishes the ground truth.
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().
+					WithDataRetentionTimeInDays(true).
+					WithMaxDataExtensionTimeInDays(true)))
+			if err != nil {
+				t.Logf("multi-property UNSET failed: %v", err)
+				t.Fatalf("multi-property UNSET should succeed per jcieslak's manual test — if Snowflake's behavior reverted, update hybrid_tables_gen.go NOTE and keep separate UNSET blocks in the resource")
+			}
+			// Post-UNSET, both parameters should be back at SnowflakeDefault level.
+			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).
+				HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault).
+				HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault))
+
+			// UNSET with IfExists — ensures the ALTER wrapper works for UNSET too.
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithIfExists(true).
+				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().WithComment(true)))
+			require.NoError(t, err, "UNSET with IfExists must succeed on existing table")
+		})
+
 		// NOTE: The following ALTER TABLE SET properties are NOT supported on hybrid tables and are
 		// therefore absent from HybridTableSetProperties in the SDK — no tests are added for them:
 		//   - CHANGE_TRACKING: hybrid tables use an internal mechanism for change tracking; this
