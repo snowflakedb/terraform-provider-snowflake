@@ -89,9 +89,9 @@ resource "snowflake_hybrid_table" "complete" {
 ### Optional
 
 - `comment` (String) Specifies a comment for the hybrid table.
-- `data_retention_time_in_days` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data.
+- `data_retention_time_in_days` (Number) Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data. For more information, check [DATA_RETENTION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#data-retention-time-in-days).
 - `foreign_key` (Block List) Defines FOREIGN KEY constraints. Can only be set at creation time. Any change forces recreation. (see [below for nested schema](#nestedblock--foreign_key))
-- `max_data_extension_time_in_days` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period.
+- `max_data_extension_time_in_days` (Number) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for the hybrid table to prevent streams on it from becoming stale. For more information, check [MAX_DATA_EXTENSION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#max-data-extension-time-in-days).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `unique_constraint` (Block List) Defines UNIQUE constraints. Can only be set at creation time. Any change forces recreation. (see [below for nested schema](#nestedblock--unique_constraint))
 
@@ -194,15 +194,15 @@ Read-Only:
 - `comment` (String)
 - `default` (String)
 - `expression` (String)
-- `is_nullable` (String)
+- `is_nullable` (Boolean)
 - `kind` (String)
 - `name` (String)
 - `policy_name` (String)
-- `primary_key` (String)
+- `primary_key` (Boolean)
 - `privacy_domain` (String)
 - `schema_evolution_record` (String)
 - `type` (String)
-- `unique_key` (String)
+- `unique_key` (Boolean)
 
 
 <a id="nestedatt--show_output"></a>
