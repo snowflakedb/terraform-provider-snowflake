@@ -435,19 +435,21 @@ func TestInt_HybridTables(t *testing.T) {
 			require.NoError(t, err, "single-property UNSET COMMENT must succeed")
 			assertThatObject(t, objectassert.HybridTable(t, id).HasComment(""))
 
-			// Multi-property UNSET is rejected by Snowflake with a syntax error
-			// (observed: "001003 (42000): SQL compilation error: syntax error line 1
-			// at position <n> unexpected 'UNSET'"). This is why HybridTableUnsetProperties
-			// emits one UNSET keyword per field and the resource Update path issues a
-			// separate ALTER per property. Keep this assertion as a regression guard:
-			// if Snowflake ever starts accepting multi-property UNSET, this test will
-			// flip green and the NOTE in hybrid_tables_gen.go should be revisited.
+			// Multi-property UNSET is rejected by the SDK validator (exactly-one-of in
+			// AlterHybridTableOptions.validate). The validator mirrors Snowflake's own
+			// rejection — a live run against Snowflake produced
+			// "001003 (42000): SQL compilation error: syntax error line 1 at position <n>
+			// unexpected 'UNSET'" — which is why HybridTableUnsetProperties emits one
+			// UNSET keyword per field and the resource Update path issues a separate
+			// ALTER per property. Keep this assertion as a regression guard: if the
+			// validator is ever loosened, this test will fail and the NOTE in
+			// hybrid_tables_gen.go and hybrid_tables_validations_gen.go should be revisited.
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().
 					WithDataRetentionTimeInDays(true).
 					WithMaxDataExtensionTimeInDays(true)))
 			require.Error(t, err, "multi-property UNSET must be rejected; single-field UNSET is the only supported shape")
-			require.ErrorContains(t, err, "unexpected 'UNSET'", "error must be the syntax-error form (guards against unrelated failures masking as success)")
+			require.ErrorContains(t, err, "exactly one", "error must be the client-side validator form (guards against unrelated failures masking as success)")
 
 			// Clean up the retention properties one-at-a-time (the supported shape).
 			// Verify the TABLE-level override is cleared afterwards by fetching SHOW PARAMETERS
