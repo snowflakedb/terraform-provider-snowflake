@@ -531,18 +531,12 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
 	// Set properties not available on CREATE (data_retention, max_data_extension).
-	// CreateHybridTableOptions only has Comment *string.
-	needsSet := false
+	// CreateHybridTableOptions only has Comment *string, so apply parameters via a follow-up ALTER.
 	set := sdk.NewHybridTableSetPropertiesRequest()
-	if v := d.Get("data_retention_time_in_days").(int); v != IntDefault {
-		set.WithDataRetentionTimeInDays(v)
-		needsSet = true
+	if diags := handleHybridTableParametersCreate(d, set); diags.HasError() {
+		return diags
 	}
-	if v := d.Get("max_data_extension_time_in_days").(int); v != IntDefault {
-		set.WithMaxDataExtensionTimeInDays(v)
-		needsSet = true
-	}
-	if needsSet {
+	if set.DataRetentionTimeInDays != nil || set.MaxDataExtensionTimeInDays != nil {
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
@@ -579,19 +573,20 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 			return diag.FromErr(err)
 		}
 
+		parameters, err := client.HybridTables.ShowParameters(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if diags := handleHybridTableParameterRead(d, parameters); diags.HasError() {
+			return diags
+		}
+
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"comment", "comment", hybridTable.Comment, hybridTable.Comment, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
-		}
-
-		if err = setStateToValuesFromConfig(d, hybridTableSchema, []string{
-			"data_retention_time_in_days",
-			"max_data_extension_time_in_days",
-		}); err != nil {
-			return diag.FromErr(err)
 		}
 
 		errs := errors.Join(
@@ -639,11 +634,8 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	if err := stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := intAttributeWithSpecialDefaultUpdate(d, "data_retention_time_in_days", &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := intAttributeWithSpecialDefaultUpdate(d, "max_data_extension_time_in_days", &set.MaxDataExtensionTimeInDays, &unset.MaxDataExtensionTimeInDays); err != nil {
-		return diag.FromErr(err)
+	if diags := handleHybridTableParametersChanges(d, set, unset); diags.HasError() {
+		return diags
 	}
 
 	if set.Comment != nil || set.DataRetentionTimeInDays != nil || set.MaxDataExtensionTimeInDays != nil {
