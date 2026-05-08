@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var hybridTableSchema = map[string]*schema.Schema{
@@ -47,20 +46,6 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Description: "Specifies a comment for the hybrid table.",
-	},
-	"data_retention_time_in_days": {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Default:          IntDefault,
-		Description:      "Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data.",
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
-	},
-	"max_data_extension_time_in_days": {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Default:          IntDefault,
-		Description:      "Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period.",
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 	},
 	"column": {
 		Type:        schema.TypeList,
@@ -268,6 +253,7 @@ func HybridTable() *schema.Resource {
 		Description:   "Resource used to manage hybrid tables. For more information, check [hybrid tables documentation](https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.HybridTable, customdiff.All(
+			hybridTableParametersCustomDiff,
 			ComputedIfAnyAttributeChanged(hybridTableSchema, ShowOutputAttributeName, "name", "comment"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, DescribeOutputAttributeName, "name", "comment", "column"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
@@ -275,7 +261,7 @@ func HybridTable() *schema.Resource {
 			forceNewIfColumnCollateChanged(),
 		)),
 
-		Schema: hybridTableSchema,
+		Schema: collections.MergeMaps(hybridTableSchema, hybridTableParametersSchema),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.HybridTable, ImportHybridTable),
 		},
