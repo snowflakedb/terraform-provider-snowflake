@@ -5,21 +5,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func boolToYN(b bool) string {
-	if b {
-		return "Y"
-	}
-	return "N"
-}
-
 var DescribeHybridTableSchema = map[string]*schema.Schema{
 	"name":                    {Type: schema.TypeString, Computed: true},
 	"type":                    {Type: schema.TypeString, Computed: true},
 	"kind":                    {Type: schema.TypeString, Computed: true},
-	"is_nullable":             {Type: schema.TypeString, Computed: true},
+	"is_nullable":             {Type: schema.TypeBool, Computed: true},
 	"default":                 {Type: schema.TypeString, Computed: true},
-	"primary_key":             {Type: schema.TypeString, Computed: true},
-	"unique_key":              {Type: schema.TypeString, Computed: true},
+	"primary_key":             {Type: schema.TypeBool, Computed: true},
+	"unique_key":              {Type: schema.TypeBool, Computed: true},
 	"check":                   {Type: schema.TypeString, Computed: true},
 	"expression":              {Type: schema.TypeString, Computed: true},
 	"comment":                 {Type: schema.TypeString, Computed: true},
@@ -33,10 +26,10 @@ func HybridTableDetailsToSchema(detail sdk.HybridTableDetails) map[string]any {
 		"name":                    detail.Name,
 		"type":                    detail.Type,
 		"kind":                    detail.Kind,
-		"is_nullable":             boolToYN(detail.IsNullable),
+		"is_nullable":             detail.IsNullable,
 		"default":                 detail.Default,
-		"primary_key":             boolToYN(detail.PrimaryKey),
-		"unique_key":              boolToYN(detail.UniqueKey),
+		"primary_key":             detail.PrimaryKey,
+		"unique_key":              detail.UniqueKey,
 		"check":                   detail.Check,
 		"expression":              detail.Expression,
 		"comment":                 detail.Comment,
