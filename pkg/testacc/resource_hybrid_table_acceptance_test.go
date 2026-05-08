@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -41,11 +42,12 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
 			HasCommentString("").
-			HasDataRetentionTimeInDaysString("-1").
-			HasMaxDataExtensionTimeInDaysString("-1").
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasColumns(columns).
 			HasPrimaryKeyKeys("ID"),
+		objectparametersassert.HybridTableParameters(t, id).
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault).
+			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelBasic.ResourceReference()).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -77,6 +79,11 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasColumns(columns).
 			HasPrimaryKeyKeys("ID"),
+		objectparametersassert.HybridTableParameters(t, id).
+			HasDataRetentionTimeInDays(1).
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeHybridTable).
+			HasMaxDataExtensionTimeInDays(10).
+			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeHybridTable),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelComplete.ResourceReference()).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -98,11 +105,12 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
 			HasCommentString("").
-			HasDataRetentionTimeInDaysString("-1").
-			HasMaxDataExtensionTimeInDaysString("-1").
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasColumns(columns).
 			HasPrimaryKeyKeys("ID"),
+		objectparametersassert.HybridTableParameters(t, id).
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault).
+			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelBasic.ResourceReference()).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -124,11 +132,10 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 		"column",
 		// Constraint name may differ between config (empty) and what DESCRIBE returns.
 		"primary_key",
-		// These fields are not exposed in SHOW or DESCRIBE output for hybrid tables.
-		// setStateToValuesFromConfig preserves them during normal reads but has no config
-		// to read from during import, so the imported state lands at -1 (the default).
-		// A subsequent terraform apply will re-set them to the configured values (no-op
-		// in Snowflake, but syncs Terraform state).
+		// Computed + Optional parameter fields: import reads the live Snowflake value via
+		// ShowParameters (e.g. the account default), which can differ from a config that
+		// omits the field. Ignoring during ImportStateVerify is standard for
+		// Computed + Optional fields.
 		"data_retention_time_in_days",
 		"max_data_extension_time_in_days",
 	}
@@ -258,11 +265,10 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 		"column",
 		// Constraint name may differ between config (empty) and what DESCRIBE returns.
 		"primary_key",
-		// These fields are not exposed in SHOW or DESCRIBE output for hybrid tables.
-		// setStateToValuesFromConfig preserves them during normal reads but has no config
-		// to read from during import, so the imported state lands at -1 (the default).
-		// A subsequent terraform apply will re-set them to the configured values (no-op
-		// in Snowflake, but syncs Terraform state).
+		// Computed + Optional parameter fields: import reads the live Snowflake value via
+		// ShowParameters (e.g. the account default), which can differ from a config that
+		// omits the field. Ignoring during ImportStateVerify is standard for
+		// Computed + Optional fields.
 		"data_retention_time_in_days",
 		"max_data_extension_time_in_days",
 	}
@@ -288,6 +294,11 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasColumns(columns).
 						HasPrimaryKeyKeys("ID"),
+					objectparametersassert.HybridTableParameters(t, id).
+						HasDataRetentionTimeInDays(5).
+						HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeHybridTable).
+						HasMaxDataExtensionTimeInDays(10).
+						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeHybridTable),
 					resourceshowoutputassert.HybridTableShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -330,6 +341,11 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasColumns(columns).
 						HasPrimaryKeyKeys("ID"),
+					objectparametersassert.HybridTableParameters(t, id).
+						HasDataRetentionTimeInDays(10).
+						HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeHybridTable).
+						HasMaxDataExtensionTimeInDays(20).
+						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeHybridTable),
 					resourceshowoutputassert.HybridTableShowOutput(t, modelChanged.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -362,16 +378,6 @@ func TestAcc_HybridTable_InvalidConfig(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
-			{
-				Config:      accconfig.FromModels(t, model.HybridTableFromId("test", id, cols, pk).WithDataRetentionTimeInDays(-2)),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`to be at least`),
-			},
-			{
-				Config:      accconfig.FromModels(t, model.HybridTableFromId("test", id, cols, pk).WithMaxDataExtensionTimeInDays(-2)),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`to be at least`),
-			},
 			{
 				Config: accconfig.FromModels(t,
 					model.HybridTableFromId("test", id, cols, pk).WithColumnConfigs([]model.HybridTableColumnConfig{
