@@ -747,6 +747,119 @@ func TestAcc_HybridTable_ColumnDrop(t *testing.T) {
 	})
 }
 
+func TestAcc_HybridTable_ExternalColumnChanges(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	pk := []sdk.TableColumnSignature{{Name: "ID"}}
+
+	cols2 := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+	cols3WithEmail := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	model2 := model.HybridTableFromId("test", id, cols2, pk)
+	model3 := model.HybridTableFromId("test", id, cols3WithEmail, pk)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// 1. Create with 2 columns via Terraform.
+			{
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumns(cols2).
+						HasPrimaryKeyKeys("ID"),
+				),
+			},
+			// 2. Externally ADD a column (EMAIL). Config at cols2; expect Update to drop EMAIL.
+			{
+				PreConfig: func() {
+					testClient().HybridTable.Alter(t, sdk.NewAlterHybridTableRequest(id).WithAddColumnAction(
+						*sdk.NewHybridTableAddColumnActionRequest("EMAIL", sdk.DataType("VARCHAR")),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumns(cols2),
+				),
+			},
+			// 3. Externally DROP a column (NAME). Config at cols2; expect Update to re-add NAME.
+			{
+				PreConfig: func() {
+					testClient().HybridTable.Alter(t, sdk.NewAlterHybridTableRequest(id).WithDropColumnAction(
+						*sdk.NewHybridTableDropColumnActionRequest([]string{"NAME"}),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumns(cols2),
+				),
+			},
+			// 4. Externally MODIFY a column comment (non-ForceNew). Config at cols2;
+			//    expect Update to reset the comment.
+			{
+				PreConfig: func() {
+					newComment := "external comment"
+					testClient().HybridTable.Alter(t, sdk.NewAlterHybridTableRequest(id).WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{
+						*sdk.NewHybridTableAlterColumnActionRequest("NAME").WithComment(newComment),
+					}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model2),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model2.ResourceReference()).
+						HasColumns(cols2),
+				),
+			},
+			// 5. Config moves to cols3WithEmail (adds EMAIL) while externally a column comment
+			//    is changed — complex combined-change scenario from jmichalak's review comment.
+			{
+				PreConfig: func() {
+					newComment := "external comment 2"
+					testClient().HybridTable.Alter(t, sdk.NewAlterHybridTableRequest(id).WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{
+						*sdk.NewHybridTableAlterColumnActionRequest("NAME").WithComment(newComment),
+					}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model3.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, model3),
+				Check: assertThat(t,
+					resourceassert.HybridTableResource(t, model3.ResourceReference()).
+						HasColumns(cols3WithEmail),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_HybridTable_ColumnAlterComment(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	pk := []sdk.TableColumnSignature{{Name: "ID"}}
