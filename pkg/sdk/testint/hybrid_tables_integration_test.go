@@ -384,6 +384,39 @@ func TestInt_HybridTables(t *testing.T) {
 			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).HasMaxDataExtensionTimeInDays(28))
 		})
 
+		t.Run("show parameters", func(t *testing.T) {
+			id, cleanup := testClientHelper().HybridTable.Create(t)
+			t.Cleanup(cleanup)
+
+			// Parity: client.Parameters.ShowParameters with ParametersIn{Table: id} returns the same
+			// payload as the HybridTables extension method.
+			parametersDirect, err := client.Parameters.ShowParameters(ctx, &sdk.ShowParametersOptions{
+				In: &sdk.ParametersIn{Table: id},
+			})
+			require.NoError(t, err)
+			require.NotEmpty(t, parametersDirect)
+
+			parametersExt, err := client.HybridTables.ShowParameters(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, parametersDirect, parametersExt)
+
+			// After SET, the TABLE-level Level value is returned for that parameter.
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithDataRetentionTimeInDays(3)))
+			require.NoError(t, err)
+
+			parametersAfterSet, err := client.HybridTables.ShowParameters(ctx, id)
+			require.NoError(t, err)
+
+			retention, err := collections.FindFirst(parametersAfterSet, func(p *sdk.Parameter) bool {
+				return p.Key == string(sdk.ObjectParameterDataRetentionTimeInDays)
+			})
+			require.NoError(t, err, "DATA_RETENTION_TIME_IN_DAYS parameter must be present after SET")
+			require.Equal(t, "3", (*retention).Value)
+			require.Equal(t, sdk.ParameterTypeHybridTable, (*retention).Level,
+				"expected Level=%q (SHOW PARAMETERS returns TABLE for hybrid tables)", sdk.ParameterTypeHybridTable)
+		})
+
 		// NOTE: The following ALTER TABLE SET properties are NOT supported on hybrid tables and are
 		// therefore absent from HybridTableSetProperties in the SDK — no tests are added for them:
 		//   - CHANGE_TRACKING: hybrid tables use an internal mechanism for change tracking; this
