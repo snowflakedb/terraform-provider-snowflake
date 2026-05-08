@@ -42,13 +42,13 @@ var materializedViewUnset = g.NewQueryStruct("MaterializedViewUnset").
 	OptionalSQL("COMMENT").
 	WithValidation(g.ExactlyOneValueSet, "Secure", "Comment")
 
-var materializedViewDbRow = g.DbStruct("materializedViewDBRow").
+var materializedViewPairs = g.StructPair("materializedViewDBRow", "MaterializedView").
 	Text("created_on").
 	Text("name").
 	OptionalText("reserved").
 	Text("database_name").
 	Text("schema_name").
-	OptionalText("cluster_by").
+	OptionalText("cluster_by", g.WithRequiredInPlain()).
 	Number("rows").
 	Number("bytes").
 	Text("source_database_name").
@@ -58,63 +58,26 @@ var materializedViewDbRow = g.DbStruct("materializedViewDBRow").
 	Time("compacted_on").
 	Text("owner").
 	Bool("invalid").
-	OptionalText("invalid_reason").
+	OptionalText("invalid_reason", g.WithRequiredInPlain()).
 	Text("behind_by").
-	OptionalText("comment").
+	OptionalText("comment", g.WithRequiredInPlain()).
 	Text("text").
 	Bool("is_secure").
-	Text("automatic_clustering").
-	OptionalText("owner_role_type").
-	OptionalText("budget")
+	Field("automatic_clustering", "string", "bool").
+	OptionalText("owner_role_type", g.WithRequiredInPlain()).
+	OptionalText("budget", g.WithRequiredInPlain())
 
-var materializedView = g.PlainStruct("MaterializedView").
-	Text("CreatedOn").
-	Text("Name").
-	OptionalText("Reserved").
-	Text("DatabaseName").
-	Text("SchemaName").
-	Text("ClusterBy").
-	Number("Rows").
-	Number("Bytes").
-	Text("SourceDatabaseName").
-	Text("SourceSchemaName").
-	Text("SourceTableName").
-	Time("RefreshedOn").
-	Time("CompactedOn").
-	Text("Owner").
-	Bool("Invalid").
-	Text("InvalidReason").
-	Text("BehindBy").
-	Text("Comment").
-	Text("Text").
-	Bool("IsSecure").
-	Bool("AutomaticClustering").
-	Text("OwnerRoleType").
-	Text("Budget")
-
-var materializedViewDetailsDbRow = g.DbStruct("materializedViewDetailsRow").
+var materializedViewDetailsPairs = g.StructPair("materializedViewDetailsRow", "MaterializedViewDetails").
 	Text("name").
-	Field("type", "DataType").
+	Field("type", "DataType", "DataType").
 	Text("kind").
-	Text("null").
+	Field("null?", "string", "bool", g.WithDbFieldName("Null"), g.WithPlainFieldName("IsNullable")).
 	OptionalText("default").
-	Text("primary key").
-	Text("unique key").
-	OptionalText("check").
+	Field("primary key", "string", "bool", g.WithPlainFieldName("IsPrimary")).
+	Field("unique key", "string", "bool", g.WithPlainFieldName("IsUnique")).
+	Field("check", "sql.NullString", "*bool").
 	OptionalText("expression").
 	OptionalText("comment")
-
-var materializedViewDetails = g.PlainStruct("MaterializedViewDetails").
-	Text("Name").
-	Field("Type", "DataType").
-	Text("Kind").
-	Bool("IsNullable").
-	OptionalText("Default").
-	Bool("IsPrimary").
-	Bool("IsUnique").
-	OptionalBool("Check").
-	OptionalText("Expression").
-	OptionalText("Comment")
 
 var materializedViewsDef = g.NewInterface(
 	"MaterializedViews",
@@ -169,25 +132,21 @@ var materializedViewsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-materialized-views",
-		materializedViewDbRow,
-		materializedView,
+		materializedViewPairs,
 		g.NewQueryStruct("ShowMaterializedViews").
 			Show().
 			SQL("MATERIALIZED VIEWS").
 			OptionalLike().
 			OptionalIn(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-materialized-view",
-		materializedViewDetailsDbRow,
-		materializedViewDetails,
+		materializedViewDetailsPairs,
 		g.NewQueryStruct("DescribeMaterializedView").
 			Describe().
 			SQL("MATERIALIZED VIEW").

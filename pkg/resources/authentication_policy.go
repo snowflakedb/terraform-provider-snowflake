@@ -49,7 +49,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		},
 		Optional:         true,
 		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("authentication_methods", sdk.ToAuthenticationMethodsOption),
-		Description:      fmt.Sprintf("A list of authentication methods that are allowed during login. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllAuthenticationMethods)),
+		Description:      fmt.Sprintf("A list of authentication methods that are allowed during login. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllAuthenticationMethodsOptions)),
 	},
 	"mfa_authentication_methods": {
 		Type: schema.TypeSet,
@@ -59,7 +59,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		},
 		Optional:         true,
 		DiffSuppressFunc: ignoreAlwaysSuppressFunc,
-		Description:      fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethods)),
+		Description:      fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethodsOptions)),
 		Deprecated:       "This field is deprecated and will be removed in the future. Currently, it has no effect. Use the new `enforce_mfa_on_external_authentication` field instead. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
 	},
 	"mfa_enrollment": {
@@ -82,7 +82,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 				if err != nil {
 					return false
 				}
-				return old == sdk.MfaEnrollmentReadRequiredPasswordOnly && new == sdk.MfaEnrollmentOptional
+				return old == sdk.MfaEnrollmentReadOptionRequiredPasswordOnly && new == sdk.MfaEnrollmentOptionOptional
 			}),
 	},
 	"client_types": {
@@ -93,7 +93,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		},
 		Optional:         true,
 		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("client_types", sdk.ToClientTypesOption),
-		Description:      fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): %s. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypes)),
+		Description:      fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): %s. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypesOptions)),
 	},
 	"client_policy": {
 		Type:        schema.TypeSet,
@@ -142,7 +142,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 				"allowed_methods": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: fmt.Sprintf("Specifies the allowed methods for the MFA policy. Valid values are: %s. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.", possibleValuesListed(sdk.AllMfaPolicyOptions)),
+					Description: fmt.Sprintf("Specifies the allowed methods for the MFA policy. Valid values are: %s. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.", possibleValuesListed(sdk.AllMfaPolicyAllowedMethodsOptions)),
 					Elem: &schema.Schema{
 						Type:             schema.TypeString,
 						ValidateDiagFunc: sdkValidation(sdk.ToMfaPolicyAllowedMethodsOption),
@@ -683,7 +683,7 @@ func ToMfaPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 			allowedMethods = values
 		} else {
 			allowedMethods = []sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodAll},
+				{Method: sdk.MfaPolicyAllowedMethodsOptionAll},
 			}
 		}
 		req.WithAllowedMethods(allowedMethods)
@@ -697,7 +697,7 @@ func ToMfaPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 			}
 			enforceMfaOnExternalAuthentication = v
 		} else {
-			enforceMfaOnExternalAuthentication = sdk.EnforceMfaOnExternalAuthenticationNone
+			enforceMfaOnExternalAuthentication = sdk.EnforceMfaOnExternalAuthenticationOptionNone
 		}
 		req.WithEnforceMfaOnExternalAuthentication(enforceMfaOnExternalAuthentication)
 	}
@@ -742,7 +742,7 @@ func ToPatPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 			}
 			req.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
 		} else {
-			req.WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationEnforcedRequired)
+			req.WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionEnforcedRequired)
 		}
 	}
 	if d.HasChange("pat_policy.0.require_role_restriction_for_service_users") {
@@ -791,7 +791,7 @@ func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.Aut
 			allowedProviders = values
 		} else {
 			allowedProviders = []sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderAll},
+				{Provider: sdk.AllowedProviderOptionAll},
 			}
 		}
 		req.WithAllowedProviders(allowedProviders)

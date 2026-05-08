@@ -288,8 +288,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasNoEnableQueryAcceleration().
 			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
-			HasQueryThroughputMultiplier(0),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
+			HasQueryThroughputMultiplier(2),
 		)
 		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
 			HasStatementQueuedTimeoutInSeconds(0).
@@ -459,8 +459,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasNoEnableQueryAcceleration().
 			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
-			HasQueryThroughputMultiplier(0),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+			HasQueryThroughputMultiplier(2),
 		)
 
 		// Change warehouse type back from adaptive to standard
@@ -494,8 +494,8 @@ func TestInt_Warehouses(t *testing.T) {
 		t.Cleanup(warehouseCleanup)
 
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
-			HasQueryThroughputMultiplier(0),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
+			HasQueryThroughputMultiplier(2),
 		)
 		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
 			HasStatementQueuedTimeoutInSeconds(0).
@@ -532,7 +532,9 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+			// NOTE: The expected behavior is to reset to the default value, which is XLarge.
+			// However, the actual behavior is to reset to Small.
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelSmall).
 			HasQueryThroughputMultiplier(2),
 		)
 		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).

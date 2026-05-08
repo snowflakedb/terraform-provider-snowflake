@@ -23,6 +23,18 @@ func (c *TestClient) EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx context.C
 	return nil
 }
 
+func (c *TestClient) EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx context.Context) error {
+	log.Printf("[DEBUG] Making sure ENABLE_IDENTIFIER_FIRST_LOGIN parameter is set correctly")
+	param, err := c.context.client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterEnableIdentifierFirstLogin)
+	if err != nil {
+		return fmt.Errorf("checking ENABLE_IDENTIFIER_FIRST_LOGIN resulted in error: %w", err)
+	}
+	if param.Value != "true" {
+		return fmt.Errorf("parameter ENABLE_IDENTIFIER_FIRST_LOGIN has value %s, expected: true", param.Value)
+	}
+	return nil
+}
+
 func (c *TestClient) EnsureEssentialRolesExist(ctx context.Context) error {
 	log.Printf("[DEBUG] Making sure essential roles exist")
 	type RoleGrant struct {

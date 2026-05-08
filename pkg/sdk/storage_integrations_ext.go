@@ -17,8 +17,8 @@ const (
 )
 
 var (
-	AllS3Protocols      = []S3Protocol{RegularS3Protocol, GovS3Protocol, ChinaS3Protocol}
-	AllStorageProviders = append(AsStringList(AllS3Protocols), "GCS", "AZURE")
+	AllS3Protocols                 = []S3Protocol{RegularS3Protocol, GovS3Protocol, ChinaS3Protocol}
+	AllStorageIntegrationProviders = append(AsStringList(AllS3Protocols), "GCS", "AZURE")
 )
 
 func ToS3Protocol(s string) (S3Protocol, error) {

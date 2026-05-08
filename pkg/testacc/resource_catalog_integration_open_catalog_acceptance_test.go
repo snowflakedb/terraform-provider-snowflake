@@ -117,6 +117,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	basicAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypePolaris)).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
@@ -162,6 +163,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 		[]assert.TestCheckFuncProvider{
 			resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
 				HasName(id.Name()).
+				HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypePolaris)).
 				HasEnabledString(r.BooleanFalse).
 				HasCommentEmpty().
 				HasRefreshIntervalSeconds(0).
@@ -185,6 +187,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	alteredProperties := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypePolaris)).
 			HasEnabledString(r.BooleanTrue).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -229,6 +232,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	completeAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypePolaris)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -273,6 +277,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	forceNewAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypePolaris)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -317,6 +322,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	moreForceNewAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypePolaris)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -362,6 +368,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 		[]assert.TestCheckFuncProvider{
 			resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
 				HasName(id.Name()).
+				HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypePolaris)).
 				HasEnabledString(r.BooleanFalse).
 				HasComment(comment).
 				HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -385,6 +392,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	evenMoreForceNewAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypePolaris)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -634,6 +642,22 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, withChangedRestAuth),
 				Check:  assertThat(t, evenMoreForceNewAssertions...),
 			},
+			// Change "catalog_source" externally
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithOrReplace(true).
+						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, withChangedRestAuth),
+				Check:  assertThat(t, evenMoreForceNewAssertions...),
+			},
 		},
 	})
 }
@@ -720,12 +744,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, invalidCatalogApiType),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid catalog api type: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid catalog integration catalog api type: INVALID`),
 			},
 			{
 				Config:      config.FromModels(t, invalidAccessDelegationMode),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid access delegation mode: INVALID`),
+				ExpectError: regexp.MustCompile(`invalid catalog integration access delegation mode: INVALID`),
 			},
 			{
 				Config:      config.FromModels(t, emptyOAuthTokenUri),
@@ -787,7 +811,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_ImportValidation(t *testing.T) {
 				ResourceName:  catalogIntegrationOpenCatalog2.ResourceReference(),
 				ImportState:   true,
 				ImportStateId: catalogIntegrationObjectStorageId.Name(),
-				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypePolaris, sdk.CatalogIntegrationCatalogSourceTypeObjectStorage)),
+				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypePolaris, sdk.CatalogIntegrationCatalogSourceTypeObjectStore)),
 			},
 		},
 	})

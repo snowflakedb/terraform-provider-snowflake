@@ -30,7 +30,7 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 		case v.GCSStorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
 				"storage_location_name": tfconfig.StringVariable(v.Name),
-				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderGCS)),
+				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderGcs)),
 				"storage_base_url":      tfconfig.StringVariable(v.GCSStorageLocationParams.StorageBaseUrl),
 			}
 			if v.GCSStorageLocationParams.Encryption != nil {
@@ -51,7 +51,7 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 		case v.S3CompatStorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
 				"storage_location_name": tfconfig.StringVariable(v.Name),
-				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderS3Compatible)),
+				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderS3compat)),
 				"storage_base_url":      tfconfig.StringVariable(v.S3CompatStorageLocationParams.StorageBaseUrl),
 				"storage_endpoint":      tfconfig.StringVariable(v.S3CompatStorageLocationParams.StorageEndpoint),
 			}

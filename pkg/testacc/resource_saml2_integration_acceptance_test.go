@@ -38,9 +38,9 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 	_, configVariables2 := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert2)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
-	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer2, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl2, temporaryVariableName).
+	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer2, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl2, temporaryVariableName).
 		WithEnabled(r.BooleanTrue).
 		WithComment(comment).
 		WithSaml2SsoUrl(validUrl2).
@@ -55,7 +55,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 	// TODO(SNOW-3200188): allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
 	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
 	// WithAllowedUserDomains("example.com")
-	recreatesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	recreatesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("foo")
@@ -78,7 +78,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "enabled", r.BooleanDefault),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_issuer", issuer),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_sso_url", validUrl),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_x509_cert", cert),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "saml2_sp_initiated_login_page_label"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_enable_sp_initiated", r.BooleanDefault),
@@ -95,7 +95,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", ""),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "false"),
@@ -133,7 +133,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_issuer", issuer),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sso_url", validUrl),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_x509_cert", cert),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sp_initiated_login_page_label", ""),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_enable_sp_initiated", "false"),
@@ -157,7 +157,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_issuer", issuer2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sso_url", validUrl2),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_x509_cert", cert2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_enable_sp_initiated", "true"),
@@ -176,7 +176,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl2),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "true"),
@@ -214,7 +214,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_issuer", issuer2),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sso_url", validUrl2),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_x509_cert", cert2),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sp_initiated_login_page_label", "foo"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_enable_sp_initiated", "true"),
@@ -261,7 +261,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_issuer", issuer2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sso_url", validUrl2),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_x509_cert", cert2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_enable_sp_initiated", "true"),
@@ -280,7 +280,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl2),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "true"),
@@ -316,7 +316,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "enabled", r.BooleanDefault),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_issuer", issuer),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_sso_url", validUrl),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_x509_cert", cert),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "foo"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_enable_sp_initiated", r.BooleanDefault),
@@ -335,7 +335,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "false"),
@@ -375,10 +375,10 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
-	saml2ConfigForceAuthnTrueModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
+	saml2ConfigForceAuthnTrueModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2ForceAuthn(r.BooleanTrue)
-	saml2ConfigForceAuthnFalseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	saml2ConfigForceAuthnFalseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2ForceAuthn(r.BooleanFalse)
 
 	resource.Test(t, resource.TestCase{
@@ -548,7 +548,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
-	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithEnabled(r.BooleanTrue).
 		WithComment(comment).
 		WithSaml2EnableSpInitiated(r.BooleanTrue).
@@ -580,7 +580,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_issuer", issuer),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sso_url", validUrl),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_x509_cert", cert),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_enable_sp_initiated", "true"),
@@ -599,7 +599,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "true"),
@@ -637,7 +637,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_issuer", issuer),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sso_url", validUrl),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_x509_cert", cert),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sp_initiated_login_page_label", "foo"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_enable_sp_initiated", "true"),
@@ -667,7 +667,7 @@ func TestAcc_Saml2Integration_InvalidNameIdFormat(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2RequestedNameidFormat("invalid")
 
 	resource.Test(t, resource.TestCase{
@@ -709,7 +709,7 @@ func TestAcc_Saml2Integration_InvalidProvider(t *testing.T) {
 				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: invalid Saml2SecurityIntegrationSaml2ProviderOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid saml2 security integration saml2 provider option: INVALID"),
 			},
 		},
 	})
@@ -726,39 +726,39 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	baseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	baseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("label")
 	// TODO(SNOW-3200188): allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
 	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
 	// WithAllowedUserDomains("example.com")
-	withoutLoginPageLabelModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	withoutLoginPageLabelModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("")
 	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
 	// WithAllowedUserDomains("example.com")
-	withoutSnowflakeIssuerUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	withoutSnowflakeIssuerUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl("").
 		WithSaml2SpInitiatedLoginPageLabel("label")
 	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
 	// WithAllowedUserDomains("example.com")
-	withoutAcsUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	withoutAcsUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl("").
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("label")
 	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
 	// WithAllowedUserDomains("example.com")
 	// TODO(SNOW-3200188): Re-enable once allowed_email_patterns and allowed_user_domains are fixed
-	// withoutAllowedEmailPatternsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	// withoutAllowedEmailPatternsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 	// 	WithSaml2SnowflakeAcsUrl(acsURL).
 	// 	WithSaml2SnowflakeIssuerUrl(issuerURL).
 	// 	WithSaml2SpInitiatedLoginPageLabel("label").
 	// 	WithAllowedEmailPatternsValue(accconfig.EmptyListVariable()).
 	// 	WithAllowedUserDomains("example.com")
-	// withoutAllowedUserDomainsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	// withoutAllowedUserDomainsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 	// 	WithSaml2SnowflakeAcsUrl(acsURL).
 	// 	WithSaml2SnowflakeIssuerUrl(issuerURL).
 	// 	WithSaml2SpInitiatedLoginPageLabel("label").
@@ -926,12 +926,12 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
-	withZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
+	withZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithEnabled(r.BooleanFalse).
 		WithSaml2ForceAuthn(r.BooleanFalse).
 		WithSaml2PostLogoutRedirectUrl("")
-	withNonZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	withNonZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithEnabled(r.BooleanTrue).
 		WithSaml2ForceAuthn(r.BooleanTrue).
 		WithSaml2PostLogoutRedirectUrl(validUrl)
@@ -1070,7 +1070,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1111,7 +1111,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", quotedId, issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
+	basicModel := model.Saml2SecurityIntegrationVar("test", quotedId, issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{

@@ -3,6 +3,7 @@ package gen
 import (
 	"log"
 	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
@@ -44,9 +45,31 @@ func (e *Enum) HasAliases() bool {
 	return false
 }
 
+// IsLowercase returns true if all enum values are lowercase.
+// When true, the generated conversion function uses strings.ToLower instead of strings.ToUpper.
+func (e *Enum) IsLowercase() bool {
+	for _, v := range e.Values {
+		if v != strings.ToLower(v) {
+			return false
+		}
+	}
+	return true
+}
+
+// Kind should be used in SDK object definitions instead of KindOfT
+func (e *Enum) Kind() string {
+	return e.Name
+}
+
+// KindPtr should be used in SDK object definitions instead of KindOfTPointer
+func (e *Enum) KindPtr() string {
+	return KindOfPointer(e.Kind())
+}
+
 // valueName returns the constant name for a given enum value.
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
 func (e *Enum) valueName(value string) string {
+	value = strings.ReplaceAll(value, " ", "_")
 	return e.Name + genhelpers.SnakeCaseToCamel(value)
 }
 

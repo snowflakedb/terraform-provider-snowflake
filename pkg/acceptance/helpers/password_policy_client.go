@@ -31,27 +31,39 @@ func (c *PasswordPolicyClient) CreatePasswordPolicy(t *testing.T) (*sdk.Password
 
 func (c *PasswordPolicyClient) CreatePasswordPolicyInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.PasswordPolicy, func()) {
 	t.Helper()
-	return c.CreatePasswordPolicyInSchemaWithOptions(t, schemaId, nil)
+	return c.CreatePasswordPolicyWithOptions(t, sdk.NewCreatePasswordPolicyRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId)))
 }
 
-func (c *PasswordPolicyClient) CreatePasswordPolicyWithOptions(t *testing.T, options *sdk.CreatePasswordPolicyOptions) (*sdk.PasswordPolicy, func()) {
-	t.Helper()
-	return c.CreatePasswordPolicyInSchemaWithOptions(t, c.ids.SchemaId(), options)
-}
-
-func (c *PasswordPolicyClient) CreatePasswordPolicyInSchemaWithOptions(t *testing.T, schemaId sdk.DatabaseObjectIdentifier, options *sdk.CreatePasswordPolicyOptions) (*sdk.PasswordPolicy, func()) {
+func (c *PasswordPolicyClient) CreatePasswordPolicyWithOptions(t *testing.T, req *sdk.CreatePasswordPolicyRequest) (*sdk.PasswordPolicy, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	id := c.ids.RandomSchemaObjectIdentifierInSchema(schemaId)
-
-	err := c.client().Create(ctx, id, options)
+	err := c.client().Create(ctx, req)
 	require.NoError(t, err)
 
-	passwordPolicy, err := c.client().ShowByID(ctx, id)
+	passwordPolicy, err := c.client().ShowByID(ctx, req.GetName())
 	require.NoError(t, err)
 
-	return passwordPolicy, c.DropPasswordPolicyFunc(t, id)
+	return passwordPolicy, c.DropPasswordPolicyFunc(t, req.GetName())
+}
+
+func (c *PasswordPolicyClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PasswordPolicy, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
+}
+
+func (c *PasswordPolicyClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PasswordPolicyDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeDetails(ctx, id)
+}
+
+func (c *PasswordPolicyClient) Alter(t *testing.T, request *sdk.AlterPasswordPolicyRequest) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.client().Alter(ctx, request)
+	require.NoError(t, err)
 }
 
 func (c *PasswordPolicyClient) DropPasswordPolicyFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
@@ -59,7 +71,7 @@ func (c *PasswordPolicyClient) DropPasswordPolicyFunc(t *testing.T, id sdk.Schem
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropPasswordPolicyOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, sdk.NewDropPasswordPolicyRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

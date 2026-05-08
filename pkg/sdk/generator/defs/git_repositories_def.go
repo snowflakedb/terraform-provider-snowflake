@@ -6,31 +6,31 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var gitRepositoryDbRow = g.DbStruct("gitRepositoriesRow").
+var gitRepositoryPairs = g.StructPair("gitRepositoriesRow", "GitRepository").
 	Time("created_on").
 	Text("name").
 	Text("database_name").
 	Text("schema_name").
 	Text("origin").
-	Text("api_integration").
-	OptionalText("git_credentials").
+	AccountObjectIdentifier("api_integration", g.WithPlainFieldName("ApiIntegration")).
+	Field("git_credentials", "sql.NullString", "*SchemaObjectIdentifier", g.WithPlainFieldName("GitCredentials")).
 	Text("owner").
 	Text("owner_role_type").
 	OptionalText("comment").
 	OptionalTime("last_fetched_at")
 
-var gitRepository = g.PlainStruct("GitRepository").
-	Time("CreatedOn").
-	Text("Name").
-	Text("DatabaseName").
-	Text("SchemaName").
-	Text("Origin").
-	Field("ApiIntegration", "*AccountObjectIdentifier").
-	Field("GitCredentials", "*SchemaObjectIdentifier").
-	Text("Owner").
-	Text("OwnerRoleType").
-	OptionalText("Comment").
-	OptionalTime("LastFetchedAt")
+var gitBranchesPairs = g.StructPair("gitBranchesRow", "GitBranch").
+	Text("name").
+	Text("path").
+	Text("checkouts").
+	Text("commit_hash")
+
+var gitTagsPairs = g.StructPair("gitTagsRow", "GitTag").
+	Text("name").
+	Text("path").
+	Text("commit_hash").
+	Text("author").
+	Text("message")
 
 var gitRepositoriesDef = g.NewInterface(
 	"GitRepositories",
@@ -90,65 +90,42 @@ var gitRepositoriesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-git-repository",
-	gitRepositoryDbRow,
-	gitRepository,
+	gitRepositoryPairs,
 	g.NewQueryStruct("DescribeGitRepository").
 		Describe().
 		SQL("GIT REPOSITORY").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-git-repositories",
-	gitRepositoryDbRow,
-	gitRepository,
+	gitRepositoryPairs,
 	g.NewQueryStruct("ShowGitRepositories").
 		Show().
 		SQL("GIT REPOSITORIES").
 		OptionalLike().
 		OptionalIn().
 		OptionalLimit(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"ShowGitBranches",
 	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-git-branches",
-	g.DbStruct("gitBranchesRow").
-		Text("name").
-		Text("path").
-		Text("checkouts").
-		Text("commit_hash"),
-	g.PlainStruct("GitBranch").
-		Text("Name").
-		Text("Path").
-		Text("Checkouts").
-		Text("CommitHash"),
+	gitBranchesPairs,
 	g.NewQueryStruct("ShowGitBranches").
 		SQL("SHOW GIT BRANCHES").
 		OptionalLike().
 		SQL("IN").
 		OptionalSQL("GIT REPOSITORY").
 		Name(),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"ShowGitTags",
 	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-git-tags",
-	g.DbStruct("gitTagsRow").
-		Text("name").
-		Text("path").
-		Text("commit_hash").
-		Text("author").
-		Text("message"),
-	g.PlainStruct("GitTag").
-		Text("Name").
-		Text("Path").
-		Text("CommitHash").
-		Text("Author").
-		Text("Message"),
+	gitTagsPairs,
 	g.NewQueryStruct("ShowGitTags").
 		SQL("SHOW GIT TAGS").
 		OptionalLike().

@@ -57,9 +57,9 @@ var imageRepositoriesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-image-repositories",
-	g.DbStruct("imageRepositoriesRow").
+	g.StructPair("imageRepositoriesRow", "ImageRepository").
 		Time("created_on").
 		Text("name").
 		Text("database_name").
@@ -68,25 +68,13 @@ var imageRepositoriesDef = g.NewInterface(
 		Text("owner").
 		Text("owner_role_type").
 		Text("comment").
-		Text("encryption").
+		PlainField("encryption", "ImageRepositoryEncryptionType").
 		Text("privatelink_repository_url"),
-	g.PlainStruct("ImageRepository").
-		Time("CreatedOn").
-		Text("Name").
-		Text("DatabaseName").
-		Text("SchemaName").
-		Text("RepositoryUrl").
-		Text("Owner").
-		Text("OwnerRoleType").
-		Text("Comment").
-		Field("Encryption", g.KindOfT[sdkcommons.ImageRepositoryEncryptionType]()).
-		Text("PrivatelinkRepositoryUrl"),
 	g.NewQueryStruct("ShowImageRepositories").
 		Show().
 		SQL("IMAGE REPOSITORIES").
 		OptionalLike().
 		OptionalIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).WithEnums(ImageRepositoryEncryptionTypeDef)

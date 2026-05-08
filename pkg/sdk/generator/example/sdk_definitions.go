@@ -42,6 +42,7 @@ type (
 type (
 	ValuesBehavior = sdk.ValuesBehavior
 	ObjectType     = sdk.ObjectType
+	Parameter      = sdk.Parameter
 )
 
 const (
@@ -157,4 +158,20 @@ func String(s string) *string {
 
 func conversionErrorWrapped[U any](_ *U, _ error) (*U, error) {
 	return nil, nil
+}
+
+var allEnumConversionTests []enumTestProvider
+
+type enumTestProvider interface {
+	RunTest(t *testing.T)
+}
+
+type typedEnumTestProvider[T ~string] struct {
+	enumName       string
+	allValues      []T
+	conversionFunc func(string) (T, error)
+}
+
+func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
+	t.Helper()
 }

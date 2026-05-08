@@ -5,12 +5,6 @@ import (
 	"strings"
 )
 
-type DataMetricFunctionRefEntityDomainOption string
-
-const (
-	DataMetricFunctionRefEntityDomainView DataMetricFunctionRefEntityDomainOption = "VIEW"
-)
-
 type DataMetricScheduleStatusOption string
 
 const (

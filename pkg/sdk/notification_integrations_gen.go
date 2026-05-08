@@ -201,7 +201,6 @@ func (v *NotificationIntegration) ID() AccountObjectIdentifier {
 }
 
 func (v *NotificationIntegration) ObjectType() ObjectType {
-	// adjusted manually
 	return ObjectTypeIntegration
 }
 

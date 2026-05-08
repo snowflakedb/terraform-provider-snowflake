@@ -58,7 +58,12 @@ type CurrentSessionDetails struct {
 }
 
 func (acc *CurrentSessionDetails) AccountURL() (string, error) {
-	if regionID, ok := regionMapping[strings.ToLower(acc.Region)]; ok {
+	region := acc.Region
+	// CURRENT_REGION() may return a prefixed form like "PUBLIC.AWS_US_EAST_1"; use the last segment.
+	if idx := strings.LastIndex(region, "."); idx >= 0 {
+		region = region[idx+1:]
+	}
+	if regionID, ok := regionMapping[strings.ToLower(region)]; ok {
 		accountID := acc.Account
 		if len(regionID) > 0 {
 			accountID = fmt.Sprintf("%s.%s", accountID, regionID)
