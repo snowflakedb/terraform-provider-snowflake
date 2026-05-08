@@ -559,6 +559,89 @@ func TestAcc_HybridTable_ColumnDefault(t *testing.T) {
 	})
 }
 
+// TestAcc_HybridTable_ColumnDefaultVariants exercises each mutually-exclusive variant
+// of the column `default` block with its own model. The `default` block has three
+// sub-variants (constant, expression, sequence) and ConflictsWith enforces that at
+// most one is set per column. One subtest per variant per jmichalak's review comment
+// (thread 3188827027): separate models for mutually-exclusive field sets.
+func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
+	t.Run("constant", func(t *testing.T) {
+		id := testClient().Ids.RandomSchemaObjectIdentifier()
+		pk := []sdk.TableColumnSignature{{Name: "ID"}}
+		cols := []sdk.TableColumnSignature{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger},
+			{Name: "SCORE", Type: testdatatypes.DataTypeInteger},
+		}
+		zero := "0"
+		m := model.HybridTableFromId("test", id, cols, pk).
+			WithColumnConfigs([]model.HybridTableColumnConfig{
+				{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+				{Name: "SCORE", Type: testdatatypes.DataTypeInteger.ToSql(), Default: &model.HybridTableColumnDefaultConfig{Constant: &zero}},
+			})
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+			TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+				tfversion.RequireAbove(tfversion.Version1_5_0),
+			},
+			CheckDestroy: CheckDestroy(t, resources.HybridTable),
+			Steps: []resource.TestStep{
+				{
+					Config: accconfig.FromModels(t, m),
+					Check: assertThat(t,
+						resourceassert.HybridTableResource(t, m.ResourceReference()).
+							HasColumns(cols).
+							HasColumnDefaultConstant(1, "0"),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("expression", func(t *testing.T) {
+		id := testClient().Ids.RandomSchemaObjectIdentifier()
+		pk := []sdk.TableColumnSignature{{Name: "ID"}}
+		cols := []sdk.TableColumnSignature{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger},
+			{Name: "CREATED_AT", Type: testdatatypes.DataTypeTimestampLTZ},
+		}
+		expr := "CURRENT_TIMESTAMP()"
+		m := model.HybridTableFromId("test", id, cols, pk).
+			WithColumnConfigs([]model.HybridTableColumnConfig{
+				{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+				{Name: "CREATED_AT", Type: testdatatypes.DataTypeTimestampLTZ.ToSql(), Default: &model.HybridTableColumnDefaultConfig{Expression: &expr}},
+			})
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+			TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+				tfversion.RequireAbove(tfversion.Version1_5_0),
+			},
+			CheckDestroy: CheckDestroy(t, resources.HybridTable),
+			Steps: []resource.TestStep{
+				{
+					Config: accconfig.FromModels(t, m),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(m.ResourceReference(), "column.1.default.0.expression", expr),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("sequence", func(t *testing.T) {
+		// Deferred: a sequence default needs a fixture (CREATE SEQUENCE + cleanup)
+		// and a fully-qualified sequence identifier threaded into the model. The
+		// existing helpers.SequenceClient exposes only DropFunc; a Create helper
+		// would need to be added, which is out of scope for the F2 split.
+		// Tracking: the sequence variant is covered at the SDK/integration-test
+		// level (see pkg/sdk/testint/hybrid_tables_integration_test.go) — this
+		// acceptance-level coverage is a follow-up once helpers.SequenceClient
+		// grows a Create helper.
+		t.Skip("sequence default variant deferred: needs helpers.SequenceClient.Create (see test comment)")
+	})
+}
+
 func TestAcc_HybridTable_PrimaryKeyForceNew(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	cols := []sdk.TableColumnSignature{
