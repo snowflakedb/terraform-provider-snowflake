@@ -80,6 +80,7 @@ type StorageLocationAzureDetails struct {
 	AzureTenantId           string
 	AzureMultiTenantAppName string
 	AzureConsentUrl         string
+	UsePrivatelinkEndpoint  *bool
 }
 
 type StorageLocationS3CompatDetails struct {
@@ -151,6 +152,7 @@ func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (Extern
 			AzureTenantId:           e.AzureTenantId,
 			AzureMultiTenantAppName: e.AzureMultiTenantAppName,
 			AzureConsentUrl:         e.AzureConsentUrl,
+			UsePrivatelinkEndpoint:  e.UsePrivatelinkEndpoint,
 		}
 	case StorageProviderS3compat:
 		details.S3CompatStorageLocation = &StorageLocationS3CompatDetails{

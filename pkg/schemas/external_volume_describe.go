@@ -58,6 +58,10 @@ var azureStorageLocationDescribeSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"use_privatelink_endpoint": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var s3CompatStorageLocationDescribeSchema = map[string]*schema.Schema{
@@ -187,11 +191,15 @@ func ExternalVolumeDetailsToSchema(details sdk.ExternalVolumeDetails) map[string
 				"encryption_kms_key_id":       loc.GCSStorageLocation.EncryptionKmsKeyId,
 			}}
 		case loc.AzureStorageLocation != nil:
-			locMap["azure_storage_location"] = []any{map[string]any{
+			m := map[string]any{
 				"azure_tenant_id":             loc.AzureStorageLocation.AzureTenantId,
 				"azure_multi_tenant_app_name": loc.AzureStorageLocation.AzureMultiTenantAppName,
 				"azure_consent_url":           loc.AzureStorageLocation.AzureConsentUrl,
-			}}
+			}
+			if loc.AzureStorageLocation.UsePrivatelinkEndpoint != nil {
+				m["use_privatelink_endpoint"] = fmt.Sprintf("%t", *loc.AzureStorageLocation.UsePrivatelinkEndpoint)
+			}
+			locMap["azure_storage_location"] = []any{m}
 		case loc.S3CompatStorageLocation != nil:
 			locMap["s3_compat_storage_location"] = []any{map[string]any{
 				"endpoint":              loc.S3CompatStorageLocation.Endpoint,
