@@ -791,7 +791,7 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 		for _, rawCol := range configCols.([]any) {
 			colMap := rawCol.(map[string]any)
 			if colName, ok := colMap["name"].(string); ok {
-				info := configColumnInfo{}
+				info := configColumnInfo{nullable: true}
 				if dt, ok := colMap["type"].(string); ok {
 					info.dataType = dt
 				}
@@ -811,7 +811,13 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			continue
 		}
 
-		colInfo := configByName[strings.ToUpper(td.Name)]
+		colInfo, found := configByName[strings.ToUpper(td.Name)]
+		if !found {
+			// Externally added column not in config: schema default is nullable=true.
+			// Without this, zero-value would set nullable=false, which is ForceNew and
+			// would produce a spurious delete+create plan instead of the desired Update.
+			colInfo = configColumnInfo{nullable: true}
+		}
 		// Use the config type if it's semantically equivalent to the DESCRIBE type,
 		// to avoid spurious diffs (e.g. config "INTEGER" vs DESCRIBE "NUMBER(38,0)").
 		colType := td.Type
