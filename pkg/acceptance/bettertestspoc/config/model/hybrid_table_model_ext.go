@@ -27,8 +27,12 @@ type HybridTableColumnConfig struct {
 
 // WithColumnConfigs sets the column list from richer column definitions.
 // Use instead of WithColumn when tests require comment, nullable, collate, or default.
+//
+// Uses ObjectVariable rather than MapVariable for both column maps and the default
+// block, because terraform-plugin-testing's MapVariable.MarshalJSON requires every
+// value to be the same underlying type, and these blocks mix string + bool + list.
 func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) *HybridTableModel {
-	maps := make([]tfconfig.Variable, len(columns))
+	objs := make([]tfconfig.Variable, len(columns))
 	for i, col := range columns {
 		m := map[string]tfconfig.Variable{
 			"name": tfconfig.StringVariable(col.Name),
@@ -54,11 +58,11 @@ func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) 
 			if col.Default.Sequence != nil {
 				defMap["sequence"] = tfconfig.StringVariable(*col.Default.Sequence)
 			}
-			m["default"] = tfconfig.ListVariable(tfconfig.MapVariable(defMap))
+			m["default"] = tfconfig.ListVariable(tfconfig.ObjectVariable(defMap))
 		}
-		maps[i] = tfconfig.MapVariable(m)
+		objs[i] = tfconfig.ObjectVariable(m)
 	}
-	h.Column = tfconfig.SetVariable(maps...)
+	h.Column = tfconfig.SetVariable(objs...)
 	return h
 }
 
@@ -116,6 +120,10 @@ func (h *HybridTableModel) WithUniqueConstraint(columns []string) *HybridTableMo
 // WithForeignKey sets a single foreign key constraint. localColumns are the columns
 // in this table, refTableId is the fully-qualified name of the referenced table,
 // and refColumns are the columns in the referenced table.
+//
+// Uses ObjectVariable instead of MapVariable for both the outer foreign-key block
+// and the inner references block, because each mixes string and list values, which
+// MapVariable's MarshalJSON rejects ("maps must contain the same type").
 func (h *HybridTableModel) WithForeignKey(localColumns []string, refTableId string, refColumns []string) *HybridTableModel {
 	lcVars := make([]tfconfig.Variable, len(localColumns))
 	for i, c := range localColumns {
@@ -126,10 +134,10 @@ func (h *HybridTableModel) WithForeignKey(localColumns []string, refTableId stri
 		rcVars[i] = tfconfig.StringVariable(c)
 	}
 	h.ForeignKey = tfconfig.ListVariable(
-		tfconfig.MapVariable(map[string]tfconfig.Variable{
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"columns": tfconfig.ListVariable(lcVars...),
 			"references": tfconfig.ListVariable(
-				tfconfig.MapVariable(map[string]tfconfig.Variable{
+				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 					"table_id": tfconfig.StringVariable(refTableId),
 					"columns":  tfconfig.ListVariable(rcVars...),
 				}),
