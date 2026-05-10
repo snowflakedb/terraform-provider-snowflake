@@ -46,8 +46,8 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasColumns(columns).
 			HasPrimaryKeyKeys("ID"),
 		objectparametersassert.HybridTableParameters(t, id).
-			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault).
-			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault),
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeDatabase).
+			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeDatabase),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelBasic.ResourceReference()).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -125,8 +125,8 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasColumns(columns).
 			HasPrimaryKeyKeys("ID"),
 		objectparametersassert.HybridTableParameters(t, id).
-			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault).
-			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault),
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeDatabase).
+			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeDatabase),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelBasic.ResourceReference()).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
