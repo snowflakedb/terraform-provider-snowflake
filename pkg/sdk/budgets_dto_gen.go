@@ -3,14 +3,16 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateBudgetOptions]                      = new(CreateBudgetRequest)
-	_ optionsProvider[DropBudgetOptions]                        = new(DropBudgetRequest)
-	_ optionsProvider[SetSpendingLimitBudgetOptions]            = new(SetSpendingLimitBudgetRequest)
-	_ optionsProvider[GetSpendingLimitBudgetOptions]            = new(GetSpendingLimitBudgetRequest)
-	_ optionsProvider[SetEmailNotificationsBudgetOptions]       = new(SetEmailNotificationsBudgetRequest)
-	_ optionsProvider[GetNotificationIntegrationsBudgetOptions] = new(GetNotificationIntegrationsBudgetRequest)
-	_ optionsProvider[SetCycleStartActionBudgetOptions]         = new(SetCycleStartActionBudgetRequest)
-	_ optionsProvider[GetCycleStartActionBudgetOptions]         = new(GetCycleStartActionBudgetRequest)
+	_ optionsProvider[CreateBudgetOptions]                         = new(CreateBudgetRequest)
+	_ optionsProvider[DropBudgetOptions]                           = new(DropBudgetRequest)
+	_ optionsProvider[SetSpendingLimitBudgetOptions]               = new(SetSpendingLimitBudgetRequest)
+	_ optionsProvider[GetSpendingLimitBudgetOptions]               = new(GetSpendingLimitBudgetRequest)
+	_ optionsProvider[SetEmailNotificationsBudgetOptions]          = new(SetEmailNotificationsBudgetRequest)
+	_ optionsProvider[GetNotificationIntegrationsBudgetOptions]    = new(GetNotificationIntegrationsBudgetRequest)
+	_ optionsProvider[GetNotificationEmailBudgetOptions]           = new(GetNotificationEmailBudgetRequest)
+	_ optionsProvider[GetNotificationIntegrationNameBudgetOptions] = new(GetNotificationIntegrationNameBudgetRequest)
+	_ optionsProvider[SetCycleStartActionBudgetOptions]            = new(SetCycleStartActionBudgetRequest)
+	_ optionsProvider[GetCycleStartActionBudgetOptions]            = new(GetCycleStartActionBudgetRequest)
 )
 
 type CreateBudgetRequest struct {
@@ -53,6 +55,14 @@ type BudgetEmailRequest struct {
 }
 
 type GetNotificationIntegrationsBudgetRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type GetNotificationEmailBudgetRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type GetNotificationIntegrationNameBudgetRequest struct {
 	name SchemaObjectIdentifier // required
 }
 

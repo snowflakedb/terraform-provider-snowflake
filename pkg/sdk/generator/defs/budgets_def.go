@@ -82,6 +82,16 @@ var budgetsDef = g.NewInterface(
 	getNotificationIntegrationsResult,
 	g.InstanceMethodKindSlice,
 ).InstanceMethodOperationScalar(
+	"https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_notification_email",
+	"GET_NOTIFICATION_EMAIL",
+	nil,
+	"string",
+).InstanceMethodOperationScalar(
+	"https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_notification_integration_name",
+	"GET_NOTIFICATION_INTEGRATION_NAME",
+	nil,
+	"string",
+).InstanceMethodOperationScalar(
 	"https://docs.snowflake.com/en/sql-reference/classes/budget/methods/set_cycle_start_action",
 	"SET_CYCLE_START_ACTION",
 	setCycleStartActionArgs,

@@ -38,17 +38,51 @@ func TestInt_Budgets(t *testing.T) {
 		require.Equal(t, 500, *spendingLimit)
 	})
 
-	t.Run("SetEmailNotifications and GetNotificationIntegrations", func(t *testing.T) {
-		t.Skip("TODO [next PR]: implement")
+	t.Run("SetEmailNotifications, GetNotificationEmail, and GetNotificationIntegrationName", func(t *testing.T) {
 		budgetId, budgetCleanup := testClientHelper().Budget.Create(t)
 		t.Cleanup(budgetCleanup)
-		_ = budgetId
+
+		integration, integrationCleanup := testClientHelper().NotificationIntegration.Create(t)
+		t.Cleanup(integrationCleanup)
+
+		revokePrivilege := testClientHelper().Grant.GrantUsageOnIntegrationToSnowflakeApplication(t, integration.ID())
+		t.Cleanup(revokePrivilege)
+
+		result, err := client.Budgets.SetEmailNotifications(ctx, sdk.NewSetEmailNotificationsBudgetRequest(
+			budgetId,
+			*sdk.NewBudgetSetEmailNotificationsArgsRequestFromEmails("artur.sawicki@snowflake.com").
+				WithNotificationIntegration(integration.ID()),
+		))
+		require.NoError(t, err)
+		require.NotNil(t, result)
+
+		email, err := client.Budgets.GetNotificationEmail(ctx, sdk.NewGetNotificationEmailBudgetRequest(budgetId))
+		require.NoError(t, err)
+		require.NotNil(t, email)
+		require.Equal(t, *email, "artur.sawicki@snowflake.com")
+
+		integrationName, err := client.Budgets.GetNotificationIntegrationName(ctx, sdk.NewGetNotificationIntegrationNameBudgetRequest(budgetId))
+		require.NoError(t, err)
+		require.NotNil(t, integrationName)
+		require.Equal(t, integration.ID().Name(), *integrationName)
 	})
 
 	t.Run("SetCycleStartAction and GetCycleStartAction", func(t *testing.T) {
-		t.Skip("TODO [next PR]: implement")
 		budgetId, budgetCleanup := testClientHelper().Budget.Create(t)
 		t.Cleanup(budgetCleanup)
-		_ = budgetId
+
+		procedureId, procCleanup := testClientHelper().Procedure.Create(t)
+		t.Cleanup(procCleanup)
+
+		result, err := client.Budgets.SetCycleStartAction(ctx, sdk.NewSetCycleStartActionBudgetRequest(
+			budgetId, *sdk.NewBudgetSetCycleStartActionArgsRequest(procedureId.ID().SchemaObjectId(), []string{}),
+		))
+		require.NoError(t, err)
+		require.NotNil(t, result)
+
+		action, err := client.Budgets.GetCycleStartAction(ctx, sdk.NewGetCycleStartActionBudgetRequest(budgetId))
+		require.NoError(t, err)
+		require.NotNil(t, action)
+		require.Equal(t, procedureId.ID().SchemaObjectId().FullyQualifiedName(), action.ProcedureFqn)
 	})
 }

@@ -571,6 +571,28 @@ func (c *GrantClient) RevokePrivilegeOnDatabaseFromShare(
 	require.NoError(t, err)
 }
 
+func (c *GrantClient) GrantUsageOnIntegrationToSnowflakeApplication(t *testing.T, integrationId sdk.AccountObjectIdentifier) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`GRANT USAGE ON INTEGRATION %s TO APPLICATION SNOWFLAKE`, integrationId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+
+	return func() {
+		c.RevokeUsageOnIntegrationToSnowflakeApplication(t, integrationId)
+	}
+}
+
+func (c *GrantClient) RevokeUsageOnIntegrationToSnowflakeApplication(t *testing.T, integrationId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`REVOKE USAGE ON INTEGRATION %s FROM APPLICATION SNOWFLAKE`, integrationId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) ShowGrantsToShare(t *testing.T, shareId sdk.AccountObjectIdentifier) ([]sdk.Grant, error) {
 	t.Helper()
 	ctx := context.Background()

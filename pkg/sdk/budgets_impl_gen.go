@@ -51,6 +51,14 @@ func (v *budgets) GetNotificationIntegrations(ctx context.Context, request *GetN
 	return convertRows[getNotificationIntegrationsRow, BudgetNotificationIntegration](dbRows)
 }
 
+func (v *budgets) GetNotificationEmail(ctx context.Context, request *GetNotificationEmailBudgetRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *budgets) GetNotificationIntegrationName(ctx context.Context, request *GetNotificationIntegrationNameBudgetRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
 func (v *budgets) SetCycleStartAction(ctx context.Context, request *SetCycleStartActionBudgetRequest) (*string, error) {
 	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
 }
@@ -126,8 +134,26 @@ func (r *GetNotificationIntegrationsBudgetRequest) toOpts() *GetNotificationInte
 }
 
 func (r getNotificationIntegrationsRow) convert() (*BudgetNotificationIntegration, error) {
-	// TODO: Mapping
-	return &BudgetNotificationIntegration{}, nil
+	// added manually
+	return &BudgetNotificationIntegration{
+		IntegrationName:      r.IntegrationName,
+		LastNotificationTime: r.LastNotificationTime,
+		AddedDate:            r.AddedDate,
+	}, nil
+}
+
+func (r *GetNotificationEmailBudgetRequest) toOpts() *GetNotificationEmailBudgetOptions {
+	opts := &GetNotificationEmailBudgetOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r *GetNotificationIntegrationNameBudgetRequest) toOpts() *GetNotificationIntegrationNameBudgetOptions {
+	opts := &GetNotificationIntegrationNameBudgetOptions{
+		name: r.name,
+	}
+	return opts
 }
 
 func (r *SetCycleStartActionBudgetRequest) toOpts() *SetCycleStartActionBudgetOptions {
@@ -149,6 +175,12 @@ func (r *GetCycleStartActionBudgetRequest) toOpts() *GetCycleStartActionBudgetOp
 }
 
 func (r getCycleStartActionRow) convert() (*BudgetCycleStartAction, error) {
-	// TODO: Mapping
-	return &BudgetCycleStartAction{}, nil
+	// added manually
+	return &BudgetCycleStartAction{
+		ActionUuid:             r.ActionUuid,
+		ProcedureFqn:           r.ProcedureFqn,
+		ProcedureArgs:          ParseCommaSeparatedStringArray(r.ProcedureArgs, false),
+		AddedTimestamp:         r.AddedTimestamp,
+		LastTriggeredTimestamp: r.LastTriggeredTimestamp,
+	}, nil
 }
