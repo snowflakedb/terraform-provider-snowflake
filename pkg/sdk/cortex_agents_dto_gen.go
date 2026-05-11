@@ -27,7 +27,7 @@ type AlterCortexAgentRequest struct {
 }
 
 type CortexAgentSetRequest struct {
-	Comment *string
+	Comment *StringAllowEmpty
 	Profile *string
 }
 
