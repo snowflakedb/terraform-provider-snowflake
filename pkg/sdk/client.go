@@ -60,6 +60,9 @@ type Client struct {
 	NetworkRules                 NetworkRules
 	Notebooks                    Notebooks
 	NotificationIntegrations     NotificationIntegrations
+	OpenflowConnectors           OpenflowConnectors
+	OpenflowDeployments          OpenflowDeployments
+	OpenflowRuntimes             OpenflowRuntimes
 	OrganizationAccounts         OrganizationAccounts
 	Parameters                   Parameters
 	PasswordPolicies             PasswordPolicies
@@ -197,6 +200,9 @@ func (c *Client) initialize() {
 	c.NetworkRules = &networkRules{client: c}
 	c.Notebooks = &notebooks{client: c}
 	c.NotificationIntegrations = &notificationIntegrations{client: c}
+	c.OpenflowConnectors = &openflowConnectors{client: c}
+	c.OpenflowDeployments = &openflowDeployments{client: c}
+	c.OpenflowRuntimes = &openflowRuntimes{client: c}
 	c.OrganizationAccounts = &organizationAccounts{client: c}
 	c.Parameters = &parameters{client: c}
 	c.PasswordPolicies = &passwordPolicies{client: c}
