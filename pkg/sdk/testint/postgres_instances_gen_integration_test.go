@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -16,12 +17,88 @@ import (
 )
 
 func TestInt_PostgresInstances(t *testing.T) {
-	// Currently, almost all Postgres Instances tests are failing due to the following error:
-	// 604001 (0A000): Compute Family STANDARD_1 is not a supported compute family for Postgres
-	// This will be addressed in https://github.com/snowflakedb/terraform-provider-snowflake/pull/4704
-	t.Skip("Skipping all Postgres Instances tests")
 	client := testClient(t)
 	ctx := testContext(t)
+
+	// Pre-provision shared instances in parallel to minimize total wait time.
+	// sharedInstance: used by read-only tests (show, describe, ShowByID) and as fork source.
+	// alterInstance: used by "alter: set and unset properties" (destructive).
+	// suspendInstance: used by "alter: suspend and resume" (destructive).
+	// resetAccessInstance: used by "alter: reset access" (destructive).
+	// forkSourceInstance: used exclusively by "fork - basic" — forked during setup so the fork is
+	//   already provisioning by the time the test runs, saving ~8 minutes of in-test waiting.
+	type provisionedInstance struct {
+		instance *sdk.PostgresInstance
+		cleanup  func()
+	}
+	var (
+		sharedInstance      provisionedInstance
+		alterInstance       provisionedInstance
+		suspendInstance     provisionedInstance
+		resetAccessInstance provisionedInstance
+		forkSourceInstance  provisionedInstance
+		preForkedInstance   provisionedInstance
+		wg                  sync.WaitGroup
+		forkWg              sync.WaitGroup
+	)
+
+	wg.Add(5)
+	go func() {
+		defer wg.Done()
+		instance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		instance = testClientHelper().PostgresInstance.WaitForReady(t, instance.ID(), 6*time.Minute)
+		sharedInstance = provisionedInstance{instance, cleanup}
+	}()
+	go func() {
+		defer wg.Done()
+		instance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		instance = testClientHelper().PostgresInstance.WaitForReady(t, instance.ID(), 6*time.Minute)
+		alterInstance = provisionedInstance{instance, cleanup}
+	}()
+	go func() {
+		defer wg.Done()
+		instance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		instance = testClientHelper().PostgresInstance.WaitForReady(t, instance.ID(), 6*time.Minute)
+		suspendInstance = provisionedInstance{instance, cleanup}
+	}()
+	go func() {
+		defer wg.Done()
+		instance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		instance = testClientHelper().PostgresInstance.WaitForReady(t, instance.ID(), 6*time.Minute)
+		resetAccessInstance = provisionedInstance{instance, cleanup}
+	}()
+	// Pre-provision fork source and initiate fork during setup so the forked instance
+	// is already provisioning by the time the "fork - basic" test runs.
+	forkWg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer forkWg.Done()
+		instance, cleanup := testClientHelper().PostgresInstance.Create(t)
+		instance = testClientHelper().PostgresInstance.WaitForReady(t, instance.ID(), 6*time.Minute)
+		forkSourceInstance = provisionedInstance{instance, cleanup}
+
+		// Fork from the source instance
+		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewForkPostgresInstanceRequest(forkId, instance.ID())
+		var err error
+		require.Eventually(t, func() bool {
+			err = client.PostgresInstances.Fork(ctx, request)
+			return err == nil
+		}, 2*time.Minute, 3*time.Second)
+		require.NoError(t, err)
+
+		forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId)
+		require.NoError(t, showErr)
+		preForkedInstance = provisionedInstance{forkedInstance, testClientHelper().PostgresInstance.DropFunc(t, forkId)}
+	}()
+	wg.Wait()
+
+	t.Cleanup(sharedInstance.cleanup)
+	t.Cleanup(alterInstance.cleanup)
+	t.Cleanup(suspendInstance.cleanup)
+	t.Cleanup(resetAccessInstance.cleanup)
+	t.Cleanup(forkSourceInstance.cleanup)
+	t.Cleanup(preForkedInstance.cleanup)
 
 	// ==================
 	// Create
@@ -173,44 +250,32 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance;
 	t.Run("fork - basic", func(t *testing.T) {
-		sourceInstance, sourceCleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(sourceCleanup)
-		testClientHelper().PostgresInstance.WaitForReady(t, sourceInstance.ID(), 5*time.Minute)
-
-		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		request := sdk.NewForkPostgresInstanceRequest(forkId, sourceInstance.ID())
-
-		// Retry fork operation — instance may not be internally fork-ready despite being in READY state
-		var err error
-		require.Eventually(t, func() bool {
-			err = client.PostgresInstances.Fork(ctx, request)
-			return err == nil
-		}, 2*time.Minute, 5*time.Second)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId))
+		// Uses the pre-forked instance created during setup to avoid ~8 minutes of in-test waiting.
+		// The fork was initiated in parallel with other instance provisioning.
+		forkWg.Wait() // Ensure the fork goroutine has completed its Fork call
+		forkedId := preForkedInstance.instance.ID()
 
 		// Wait for fork to reach READY state — metadata (origin, type) populates after provisioning completes
-		testClientHelper().PostgresInstance.WaitForReady(t, forkId, 5*time.Minute)
+		testClientHelper().PostgresInstance.WaitForReady(t, forkedId, 5*time.Minute)
 
 		// Poll until origin metadata is populated (fail if not received within timeout)
 		var forkedInstance *sdk.PostgresInstance
 		require.Eventually(t, func() bool {
 			var showErr error
-			forkedInstance, showErr = client.PostgresInstances.ShowByID(ctx, forkId)
+			forkedInstance, showErr = client.PostgresInstances.ShowByID(ctx, forkedId)
 			require.NoError(t, showErr)
 			return forkedInstance.Origin != nil
-		}, 5*time.Minute, 5*time.Second)
+		}, 5*time.Minute, 3*time.Second)
 
 		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
-			HasName(forkId.Name()).
-			HasOriginContaining(sourceInstance.Name),
+			HasName(forkedId.Name()).
+			HasOriginContaining(forkSourceInstance.instance.Name),
 		)
 	})
 
 	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance AT (TIMESTAMP => '2025-01-15 12:00:00'::TIMESTAMP_NTZ);
 	t.Run("fork - with time travel options", func(t *testing.T) {
-		sourceInstance, sourceCleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(sourceCleanup)
+		sourceInstance := sharedInstance.instance
 
 		// AT with timestamp
 		forkId1 := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -273,9 +338,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 	})
 
 	t.Run("fork - with all optional parameters", func(t *testing.T) {
-		sourceInstance, sourceCleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(sourceCleanup)
-		testClientHelper().PostgresInstance.WaitForReady(t, sourceInstance.ID(), 5*time.Minute)
+		sourceInstance := sharedInstance.instance
 
 		comment := random.Comment()
 		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -328,9 +391,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 				WithAllowedNetworkRuleList([]sdk.SchemaObjectIdentifier{networkRule.ID()}))
 		t.Cleanup(networkPolicyCleanup)
 
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-		testClientHelper().PostgresInstance.WaitForReady(t, postgresInstance.ID(), 5*time.Minute)
+		postgresInstance := alterInstance.instance
 
 		// Set compute/storage properties with APPLY IMMEDIATELY to ensure the operation
 		// completes before subsequent ALTERs that conflict with in-progress compute/storage changes
@@ -450,9 +511,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 	})
 
 	t.Run("alter: suspend and resume", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-		testClientHelper().PostgresInstance.WaitForReady(t, postgresInstance.ID(), 5*time.Minute)
+		postgresInstance := suspendInstance.instance
 
 		// Suspend — retry because the instance may not be fully ready for suspend despite READY state
 		var err error
@@ -543,9 +602,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 	})
 
 	t.Run("alter: reset access", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
-		testClientHelper().PostgresInstance.WaitForReady(t, postgresInstance.ID(), 5*time.Minute)
+		postgresInstance := resetAccessInstance.instance
 
 		// Reset access for snowflake_admin
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
@@ -625,8 +682,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 	// Doc example: SHOW POSTGRES INSTANCES;
 	t.Run("show: all, like, starts_with, and verify fields", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
+		postgresInstance := sharedInstance.instance
 
 		// Show all
 		instances, err := client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest())
@@ -684,8 +740,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 	})
 
 	t.Run("ShowByID and ShowByIDSafely", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
+		postgresInstance := sharedInstance.instance
 
 		// ShowByID
 		result, err := client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
@@ -717,8 +772,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 	// Doc example: DESCRIBE POSTGRES INSTANCE my_postgres;
 	t.Run("describe", func(t *testing.T) {
-		postgresInstance, cleanup := testClientHelper().PostgresInstance.Create(t)
-		t.Cleanup(cleanup)
+		postgresInstance := sharedInstance.instance
 
 		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
 		require.NoError(t, err)

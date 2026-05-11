@@ -70,6 +70,13 @@ func (c *PostgresInstanceClient) WaitForReady(t *testing.T, id sdk.AccountObject
 		instance, err = c.client().ShowByID(ctx, id)
 		require.NoError(t, err)
 		return instance.State == sdk.PostgresInstanceStateReady
-	}, timeout, 5*time.Second)
+	}, timeout, 3*time.Second)
 	return instance
+}
+
+func (c *PostgresInstanceClient) CreateAndWaitForReady(t *testing.T) (*sdk.PostgresInstance, func()) {
+	t.Helper()
+	instance, cleanup := c.Create(t)
+	instance = c.WaitForReady(t, instance.ID(), 5*time.Minute)
+	return instance, cleanup
 }
