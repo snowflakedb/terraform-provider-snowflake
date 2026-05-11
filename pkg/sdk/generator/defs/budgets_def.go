@@ -24,17 +24,19 @@ var getNotificationIntegrationsResult = g.StructPair(
 
 // stored_procedure_reference and array_construct_statement are omitted as they are duplicated ways of setting the same input
 var setCycleStartActionArgs = g.NewQueryStruct("SetCycleStartActionArgs").
-	Identifier("Procedure", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("PROCEDURE")).
+	Identifier("Procedure", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments](), g.IdentifierOptions().Required().SystemReference("PROCEDURE")).
 	List("Arguments", "string", g.ListOptions().Required())
 
 var getCycleStartActionResult = g.StructPair(
 	"getCycleStartActionRow",
 	"BudgetCycleStartAction",
-).Text("action_uuid").
-	Text("procedure_fqn").
-	StringList("procedure_args").
-	Time("added_timestamp").
-	Time("last_triggered_timestamp")
+).
+	// uppercase column names used on purpose
+	Text("ACTION_UUID").
+	SchemaObjectIdentifierWithArguments("PROCEDURE_FQN", g.WithPlainFieldName("ProcedureId")).
+	StringList("PROCEDURE_ARGS").
+	Time("ADDED_TIMESTAMP").
+	Time("LAST_TRIGGERED_TIMESTAMP")
 
 var budgetsDef = g.NewInterface(
 	"Budgets",
