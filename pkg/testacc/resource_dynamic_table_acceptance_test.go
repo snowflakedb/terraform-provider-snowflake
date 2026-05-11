@@ -7,10 +7,12 @@ import (
 	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -24,30 +26,37 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 	comment := random.Comment()
 	newComment := random.Comment()
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":       config.StringVariable(dynamicTableId.Name()),
-			"database":   config.StringVariable(TestDatabaseName),
-			"schema":     config.StringVariable(TestSchemaName),
-			"warehouse":  config.StringVariable(TestWarehouseName),
-			"query":      config.StringVariable(fmt.Sprintf(`select "id" from "%v"."%v"."%v"`, TestDatabaseName, TestSchemaName, tableId.Name())),
-			"comment":    config.StringVariable(comment),
-			"table_name": config.StringVariable(tableId.Name()),
-		}
-	}
-	variableSet2 := m()
-	variableSet2["warehouse"] = config.StringVariable(newWarehouse.ID().Name())
-	variableSet2["comment"] = config.StringVariable(newComment)
-
-	variableSet3 := m()
-	variableSet3["initialize"] = config.StringVariable(string(sdk.DynamicTableInitializeOnSchedule))
-
-	variableSet4 := m()
-	variableSet4["initialize"] = config.StringVariable(string(sdk.DynamicTableInitializeOnSchedule)) // keep the same setting from set 3
-	variableSet4["refresh_mode"] = config.StringVariable(string(sdk.DynamicTableRefreshModeFull))
+	query := fmt.Sprintf(`select "id" from %s`, tableId.FullyQualifiedName())
 
 	// used to check whether a dynamic table was replaced
 	var createdOn string
+
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+	}).WithChangeTracking(true)
+
+	modelBasic := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithComment(comment).
+		WithDependsOn(tableModel.ResourceReference())
+
+	modelWithDownstreamLag := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
+		[]sdk.TargetLag{{Downstream: sdk.Bool(true)}}, newWarehouse.ID().Name()).
+		WithComment(newComment).
+		WithDependsOn(tableModel.ResourceReference())
+
+	modelWithInitialize := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
+		[]sdk.TargetLag{{Downstream: sdk.Bool(true)}}, TestWarehouseName).
+		WithComment(comment).
+		WithInitialize(string(sdk.DynamicTableInitializeOnSchedule)).
+		WithDependsOn(tableModel.ResourceReference())
+
+	modelWithRefreshMode := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
+		[]sdk.TargetLag{{Downstream: sdk.Bool(true)}}, TestWarehouseName).
+		WithComment(comment).
+		WithInitialize(string(sdk.DynamicTableInitializeOnSchedule)).
+		WithRefreshMode(string(sdk.DynamicTableRefreshModeFull)).
+		WithDependsOn(tableModel.ResourceReference())
 
 	resourceName := "snowflake_dynamic_table.dt"
 	resource.Test(t, resource.TestCase{
@@ -58,8 +67,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.DynamicTable),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tableModel, modelBasic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", dynamicTableId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", dynamicTableId.FullyQualifiedName()),
@@ -95,10 +103,8 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 				),
 			},
 			// test target lag to downstream and change comment
-
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: variableSet2,
+				Config: accconfig.FromModels(t, tableModel, modelWithDownstreamLag),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", dynamicTableId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", dynamicTableId.FullyQualifiedName()),
@@ -119,8 +125,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 			},
 			// test changing initialize setting
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: variableSet3,
+				Config: accconfig.FromModels(t, tableModel, modelWithInitialize),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "initialize", string(sdk.DynamicTableInitializeOnSchedule)),
 
@@ -135,8 +140,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 			},
 			// test changing refresh_mode setting
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: variableSet4,
+				Config: accconfig.FromModels(t, tableModel, modelWithRefreshMode),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "initialize", string(sdk.DynamicTableInitializeOnSchedule)),
 					resource.TestCheckResourceAttr(resourceName, "refresh_mode", string(sdk.DynamicTableRefreshModeFull)),
@@ -151,8 +155,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 			},
 			// test import
 			{
-				ConfigDirectory:   config.TestStepDirectory(),
-				ConfigVariables:   variableSet2,
+				Config:            accconfig.FromModels(t, tableModel, modelWithDownstreamLag),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -173,18 +176,17 @@ func TestAcc_DynamicTable_issue2173(t *testing.T) {
 	otherSchemaName := otherSchemaId.Name()
 	newDynamicTableId := testClient().Ids.NewSchemaObjectIdentifierInSchema(dynamicTableName, otherSchemaId)
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":         config.StringVariable(dynamicTableName),
-			"database":     config.StringVariable(TestDatabaseName),
-			"schema":       config.StringVariable(TestSchemaName),
-			"warehouse":    config.StringVariable(TestWarehouseName),
-			"query":        config.StringVariable(query),
-			"comment":      config.StringVariable("Terraform acceptance test for GH issue 2173"),
-			"table_name":   config.StringVariable(tableName),
-			"other_schema": config.StringVariable(otherSchemaName),
-		}
-	}
+	schemaModel := model.Schema("other_schema", TestDatabaseName, otherSchemaName).
+		WithComment("Other schema")
+
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber},
+	}).WithChangeTracking(true)
+
+	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithComment("Terraform acceptance test for GH issue 2173").
+		WithDependsOn(tableModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -194,8 +196,7 @@ func TestAcc_DynamicTable_issue2173(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.DynamicTable),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, schemaModel, tableModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -208,8 +209,7 @@ func TestAcc_DynamicTable_issue2173(t *testing.T) {
 				PreConfig: func() {
 					testClient().DynamicTable.CreateDynamicTableWithOptions(t, newDynamicTableId, testClient().Ids.WarehouseId(), tableId)
 				},
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, schemaModel, tableModel, dtModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -219,8 +219,7 @@ func TestAcc_DynamicTable_issue2173(t *testing.T) {
 			},
 			{
 				// We use the same config here as in the previous step so the plan should be empty.
-				ConfigDirectory: ConfigurationSameAsStepN(2),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, schemaModel, tableModel, dtModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					/*
 					 * Before the fix this step resulted in
@@ -250,19 +249,20 @@ func TestAcc_DynamicTable_issue2134(t *testing.T) {
 
 	// whitespace (initial tab) is added on purpose here
 	query := fmt.Sprintf(`	select "id" from "%v"."%v"."%v"`, TestDatabaseName, TestSchemaName, tableName)
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":       config.StringVariable(dynamicTableName),
-			"database":   config.StringVariable(TestDatabaseName),
-			"schema":     config.StringVariable(TestSchemaName),
-			"warehouse":  config.StringVariable(TestWarehouseName),
-			"query":      config.StringVariable(query),
-			"comment":    config.StringVariable("Terraform acceptance test for GH issue 2134"),
-			"table_name": config.StringVariable(tableName),
-		}
-	}
-	m2 := m()
-	m2["comment"] = config.StringVariable("Changed comment")
+
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+	}).WithChangeTracking(true)
+
+	dtModelInitial := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithComment("Terraform acceptance test for GH issue 2134").
+		WithDependsOn(tableModel.ResourceReference())
+
+	dtModelUpdatedComment := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithComment("Changed comment").
+		WithDependsOn(tableModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -283,8 +283,7 @@ func TestAcc_DynamicTable_issue2134(t *testing.T) {
 			 * which matches the issue description exactly.
 			 */
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tableModel, dtModelInitial),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableName),
 				),
@@ -296,8 +295,7 @@ func TestAcc_DynamicTable_issue2134(t *testing.T) {
 			 * which matches the issue description exactly.
 			 */
 			{
-				ConfigDirectory: ConfigurationSameAsStepN(1),
-				ConfigVariables: m2,
+				Config: accconfig.FromModels(t, tableModel, dtModelUpdatedComment),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableName),
 				),
@@ -316,19 +314,20 @@ func TestAcc_DynamicTable_issue2276(t *testing.T) {
 	query := fmt.Sprintf(`select "id" from "%v"."%v"."%v"`, TestDatabaseName, TestSchemaName, tableName)
 	newQuery := fmt.Sprintf(`select "data" from "%v"."%v"."%v"`, TestDatabaseName, TestSchemaName, tableName)
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":       config.StringVariable(dynamicTableName),
-			"database":   config.StringVariable(TestDatabaseName),
-			"schema":     config.StringVariable(TestSchemaName),
-			"warehouse":  config.StringVariable(TestWarehouseName),
-			"query":      config.StringVariable(query),
-			"comment":    config.StringVariable("Terraform acceptance test for GH issue 2276"),
-			"table_name": config.StringVariable(tableName),
-		}
-	}
-	m2 := m()
-	m2["query"] = config.StringVariable(newQuery)
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+		{Name: "data", Type: testdatatypes.DataTypeVarchar},
+	}).WithChangeTracking(true)
+
+	dtModelInitial := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithComment("Terraform acceptance test for GH issue 2276").
+		WithDependsOn(tableModel.ResourceReference())
+
+	dtModelUpdatedQuery := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, newQuery,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithComment("Terraform acceptance test for GH issue 2276").
+		WithDependsOn(tableModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -338,16 +337,14 @@ func TestAcc_DynamicTable_issue2276(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.DynamicTable),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tableModel, dtModelInitial),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableName),
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", query),
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationSameAsStepN(1),
-				ConfigVariables: m2,
+				Config: accconfig.FromModels(t, tableModel, dtModelUpdatedQuery),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableName),
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", newQuery),
@@ -365,18 +362,18 @@ func TestAcc_DynamicTable_issue2329(t *testing.T) {
 	tableName := tableId.Name()
 
 	query := fmt.Sprintf(`select "id" from "%v"."%v"."%v"`, TestDatabaseName, TestSchemaName, tableName)
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":      config.StringVariable(dynamicTableName),
-			"database":  config.StringVariable(TestDatabaseName),
-			"schema":    config.StringVariable(TestSchemaName),
-			"warehouse": config.StringVariable(TestWarehouseName),
-			// spaces added on purpose
-			"query":      config.StringVariable("  " + query),
-			"comment":    config.StringVariable("Comment with AS on purpose"),
-			"table_name": config.StringVariable(tableName),
-		}
-	}
+
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+		{Name: "data", Type: testdatatypes.DataTypeVarchar},
+	}).WithChangeTracking(true)
+
+	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName,
+		// spaces added on purpose
+		"  "+query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithComment("Comment with AS on purpose").
+		WithDependsOn(tableModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -386,8 +383,7 @@ func TestAcc_DynamicTable_issue2329(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.DynamicTable),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tableModel, dtModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableName),
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", query),
@@ -395,8 +391,7 @@ func TestAcc_DynamicTable_issue2329(t *testing.T) {
 			},
 			// No changes are expected
 			{
-				ConfigDirectory: ConfigurationSameAsStepN(1),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tableModel, dtModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableName),
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", query),
@@ -414,17 +409,16 @@ func TestAcc_DynamicTable_issue2329_with_matching_comment(t *testing.T) {
 	tableName := tableId.Name()
 
 	query := fmt.Sprintf(`with temp as (select "id" from "%v"."%v"."%v") select * from temp`, TestDatabaseName, TestSchemaName, tableName)
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":       config.StringVariable(dynamicTableName),
-			"database":   config.StringVariable(TestDatabaseName),
-			"schema":     config.StringVariable(TestSchemaName),
-			"warehouse":  config.StringVariable(TestWarehouseName),
-			"query":      config.StringVariable(query),
-			"comment":    config.StringVariable("Comment with AS SELECT on purpose"),
-			"table_name": config.StringVariable(tableName),
-		}
-	}
+
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+		{Name: "data", Type: testdatatypes.DataTypeVarchar},
+	}).WithChangeTracking(true)
+
+	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithComment("Comment with AS SELECT on purpose").
+		WithDependsOn(tableModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -435,8 +429,7 @@ func TestAcc_DynamicTable_issue2329_with_matching_comment(t *testing.T) {
 		Steps: []resource.TestStep{
 			// If we match more than one time (in this case in comment) we raise an explanation error.
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_DynamicTable_issue2329/1"),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tableModel, dtModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableName),
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", query),
@@ -451,16 +444,15 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	query := fmt.Sprintf(`with temp as (select "id" from %v) select * from temp`, tableId.FullyQualifiedName())
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":       config.StringVariable(dynamicTableId.Name()),
-			"database":   config.StringVariable(TestDatabaseName),
-			"schema":     config.StringVariable(TestSchemaName),
-			"warehouse":  config.StringVariable(TestWarehouseName),
-			"query":      config.StringVariable(query),
-			"table_name": config.StringVariable(tableId.Name()),
-		}
-	}
+
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+	}).WithChangeTracking(true)
+
+	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithDependsOn(tableModel.ResourceReference()).
+		WithTimeoutCreate("50ms")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -470,8 +462,7 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.DynamicTable),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_DynamicTable_timeouts"),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tableModel, dtModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", query),

@@ -69,10 +69,12 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) MarshalJSON() (
 	type Alias ApiAuthenticationIntegrationWithClientCredentialsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(a),
 		DependsOn: a.DependsOn(),
+		Timeouts:  a.Timeouts(),
 	})
 }
 
@@ -83,6 +85,26 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithDependsOn(v
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a.DynamicBlock = dynamicBlock
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithTimeoutCreate(duration string) *ApiAuthenticationIntegrationWithClientCredentialsModel {
+	a.SetTimeoutCreate(duration)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithTimeoutRead(duration string) *ApiAuthenticationIntegrationWithClientCredentialsModel {
+	a.SetTimeoutRead(duration)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithTimeoutUpdate(duration string) *ApiAuthenticationIntegrationWithClientCredentialsModel {
+	a.SetTimeoutUpdate(duration)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithTimeoutDelete(duration string) *ApiAuthenticationIntegrationWithClientCredentialsModel {
+	a.SetTimeoutDelete(duration)
 	return a
 }
 

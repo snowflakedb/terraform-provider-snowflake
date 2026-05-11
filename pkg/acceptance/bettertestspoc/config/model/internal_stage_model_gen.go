@@ -63,10 +63,12 @@ func (i *InternalStageModel) MarshalJSON() ([]byte, error) {
 	type Alias InternalStageModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(i),
 		DependsOn: i.DependsOn(),
+		Timeouts:  i.Timeouts(),
 	})
 }
 
@@ -77,6 +79,26 @@ func (i *InternalStageModel) WithDependsOn(values ...string) *InternalStageModel
 
 func (i *InternalStageModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *InternalStageModel {
 	i.DynamicBlock = dynamicBlock
+	return i
+}
+
+func (i *InternalStageModel) WithTimeoutCreate(duration string) *InternalStageModel {
+	i.SetTimeoutCreate(duration)
+	return i
+}
+
+func (i *InternalStageModel) WithTimeoutRead(duration string) *InternalStageModel {
+	i.SetTimeoutRead(duration)
+	return i
+}
+
+func (i *InternalStageModel) WithTimeoutUpdate(duration string) *InternalStageModel {
+	i.SetTimeoutUpdate(duration)
+	return i
+}
+
+func (i *InternalStageModel) WithTimeoutDelete(duration string) *InternalStageModel {
+	i.SetTimeoutDelete(duration)
 	return i
 }
 

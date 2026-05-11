@@ -93,10 +93,12 @@ func (p *ProcedurePythonModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedurePythonModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -107,6 +109,26 @@ func (p *ProcedurePythonModel) WithDependsOn(values ...string) *ProcedurePythonM
 
 func (p *ProcedurePythonModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedurePythonModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *ProcedurePythonModel) WithTimeoutCreate(duration string) *ProcedurePythonModel {
+	p.SetTimeoutCreate(duration)
+	return p
+}
+
+func (p *ProcedurePythonModel) WithTimeoutRead(duration string) *ProcedurePythonModel {
+	p.SetTimeoutRead(duration)
+	return p
+}
+
+func (p *ProcedurePythonModel) WithTimeoutUpdate(duration string) *ProcedurePythonModel {
+	p.SetTimeoutUpdate(duration)
+	return p
+}
+
+func (p *ProcedurePythonModel) WithTimeoutDelete(duration string) *ProcedurePythonModel {
+	p.SetTimeoutDelete(duration)
 	return p
 }
 

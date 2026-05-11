@@ -163,10 +163,12 @@ func (c *CurrentAccountModel) MarshalJSON() ([]byte, error) {
 	type Alias CurrentAccountModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
+		Timeouts:  c.Timeouts(),
 	})
 }
 
@@ -177,6 +179,26 @@ func (c *CurrentAccountModel) WithDependsOn(values ...string) *CurrentAccountMod
 
 func (c *CurrentAccountModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *CurrentAccountModel {
 	c.DynamicBlock = dynamicBlock
+	return c
+}
+
+func (c *CurrentAccountModel) WithTimeoutCreate(duration string) *CurrentAccountModel {
+	c.SetTimeoutCreate(duration)
+	return c
+}
+
+func (c *CurrentAccountModel) WithTimeoutRead(duration string) *CurrentAccountModel {
+	c.SetTimeoutRead(duration)
+	return c
+}
+
+func (c *CurrentAccountModel) WithTimeoutUpdate(duration string) *CurrentAccountModel {
+	c.SetTimeoutUpdate(duration)
+	return c
+}
+
+func (c *CurrentAccountModel) WithTimeoutDelete(duration string) *CurrentAccountModel {
+	c.SetTimeoutDelete(duration)
 	return c
 }
 

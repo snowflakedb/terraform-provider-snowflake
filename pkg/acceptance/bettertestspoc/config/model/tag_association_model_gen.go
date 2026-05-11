@@ -64,10 +64,12 @@ func (t *TagAssociationModel) MarshalJSON() ([]byte, error) {
 	type Alias TagAssociationModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(t),
 		DependsOn: t.DependsOn(),
+		Timeouts:  t.Timeouts(),
 	})
 }
 
@@ -78,6 +80,26 @@ func (t *TagAssociationModel) WithDependsOn(values ...string) *TagAssociationMod
 
 func (t *TagAssociationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *TagAssociationModel {
 	t.DynamicBlock = dynamicBlock
+	return t
+}
+
+func (t *TagAssociationModel) WithTimeoutCreate(duration string) *TagAssociationModel {
+	t.SetTimeoutCreate(duration)
+	return t
+}
+
+func (t *TagAssociationModel) WithTimeoutRead(duration string) *TagAssociationModel {
+	t.SetTimeoutRead(duration)
+	return t
+}
+
+func (t *TagAssociationModel) WithTimeoutUpdate(duration string) *TagAssociationModel {
+	t.SetTimeoutUpdate(duration)
+	return t
+}
+
+func (t *TagAssociationModel) WithTimeoutDelete(duration string) *TagAssociationModel {
+	t.SetTimeoutDelete(duration)
 	return t
 }
 

@@ -59,10 +59,12 @@ func (g *GrantPrivilegesToShareModel) MarshalJSON() ([]byte, error) {
 	type Alias GrantPrivilegesToShareModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(g),
 		DependsOn: g.DependsOn(),
+		Timeouts:  g.Timeouts(),
 	})
 }
 
@@ -73,6 +75,26 @@ func (g *GrantPrivilegesToShareModel) WithDependsOn(values ...string) *GrantPriv
 
 func (g *GrantPrivilegesToShareModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *GrantPrivilegesToShareModel {
 	g.DynamicBlock = dynamicBlock
+	return g
+}
+
+func (g *GrantPrivilegesToShareModel) WithTimeoutCreate(duration string) *GrantPrivilegesToShareModel {
+	g.SetTimeoutCreate(duration)
+	return g
+}
+
+func (g *GrantPrivilegesToShareModel) WithTimeoutRead(duration string) *GrantPrivilegesToShareModel {
+	g.SetTimeoutRead(duration)
+	return g
+}
+
+func (g *GrantPrivilegesToShareModel) WithTimeoutUpdate(duration string) *GrantPrivilegesToShareModel {
+	g.SetTimeoutUpdate(duration)
+	return g
+}
+
+func (g *GrantPrivilegesToShareModel) WithTimeoutDelete(duration string) *GrantPrivilegesToShareModel {
+	g.SetTimeoutDelete(duration)
 	return g
 }
 

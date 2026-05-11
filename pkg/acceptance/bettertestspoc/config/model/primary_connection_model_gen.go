@@ -51,10 +51,12 @@ func (p *PrimaryConnectionModel) MarshalJSON() ([]byte, error) {
 	type Alias PrimaryConnectionModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -65,6 +67,26 @@ func (p *PrimaryConnectionModel) WithDependsOn(values ...string) *PrimaryConnect
 
 func (p *PrimaryConnectionModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *PrimaryConnectionModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *PrimaryConnectionModel) WithTimeoutCreate(duration string) *PrimaryConnectionModel {
+	p.SetTimeoutCreate(duration)
+	return p
+}
+
+func (p *PrimaryConnectionModel) WithTimeoutRead(duration string) *PrimaryConnectionModel {
+	p.SetTimeoutRead(duration)
+	return p
+}
+
+func (p *PrimaryConnectionModel) WithTimeoutUpdate(duration string) *PrimaryConnectionModel {
+	p.SetTimeoutUpdate(duration)
+	return p
+}
+
+func (p *PrimaryConnectionModel) WithTimeoutDelete(duration string) *PrimaryConnectionModel {
+	p.SetTimeoutDelete(duration)
 	return p
 }
 

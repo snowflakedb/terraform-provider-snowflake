@@ -61,10 +61,12 @@ func (u *UserProgrammaticAccessTokenModel) MarshalJSON() ([]byte, error) {
 	type Alias UserProgrammaticAccessTokenModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(u),
 		DependsOn: u.DependsOn(),
+		Timeouts:  u.Timeouts(),
 	})
 }
 
@@ -75,6 +77,26 @@ func (u *UserProgrammaticAccessTokenModel) WithDependsOn(values ...string) *User
 
 func (u *UserProgrammaticAccessTokenModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *UserProgrammaticAccessTokenModel {
 	u.DynamicBlock = dynamicBlock
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenModel) WithTimeoutCreate(duration string) *UserProgrammaticAccessTokenModel {
+	u.SetTimeoutCreate(duration)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenModel) WithTimeoutRead(duration string) *UserProgrammaticAccessTokenModel {
+	u.SetTimeoutRead(duration)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenModel) WithTimeoutUpdate(duration string) *UserProgrammaticAccessTokenModel {
+	u.SetTimeoutUpdate(duration)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenModel) WithTimeoutDelete(duration string) *UserProgrammaticAccessTokenModel {
+	u.SetTimeoutDelete(duration)
 	return u
 }
 

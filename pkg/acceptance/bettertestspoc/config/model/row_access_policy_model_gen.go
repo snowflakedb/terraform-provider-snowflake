@@ -70,10 +70,12 @@ func (r *RowAccessPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias RowAccessPolicyModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string          `json:"depends_on,omitempty"`
+		Timeouts  map[string]string `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(r),
 		DependsOn: r.DependsOn(),
+		Timeouts:  r.Timeouts(),
 	})
 }
 
@@ -84,6 +86,26 @@ func (r *RowAccessPolicyModel) WithDependsOn(values ...string) *RowAccessPolicyM
 
 func (r *RowAccessPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *RowAccessPolicyModel {
 	r.DynamicBlock = dynamicBlock
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithTimeoutCreate(duration string) *RowAccessPolicyModel {
+	r.SetTimeoutCreate(duration)
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithTimeoutRead(duration string) *RowAccessPolicyModel {
+	r.SetTimeoutRead(duration)
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithTimeoutUpdate(duration string) *RowAccessPolicyModel {
+	r.SetTimeoutUpdate(duration)
+	return r
+}
+
+func (r *RowAccessPolicyModel) WithTimeoutDelete(duration string) *RowAccessPolicyModel {
+	r.SetTimeoutDelete(duration)
 	return r
 }
 
