@@ -70,8 +70,6 @@ var hybridTableSchema = map[string]*schema.Schema{
 					Type:     schema.TypeBool,
 					Optional: true,
 					Default:  true,
-					// ForceNew here is belt; suspenders are in CustomizeDiff.
-					// Hybrid tables reject ALTER SET/DROP NOT NULL.
 					ForceNew:    true,
 					Description: "Whether this column allows NULLs. Changing this forces recreation because hybrid tables do not support ALTER SET/DROP NOT NULL.",
 				},
@@ -84,20 +82,23 @@ var hybridTableSchema = map[string]*schema.Schema{
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"constant": {
-								Type:        schema.TypeString,
-								Optional:    true,
-								Description: "The default constant value for the column.",
+								Type:          schema.TypeString,
+								Optional:      true,
+								ConflictsWith: []string{"column.0.default.0.expression", "column.0.default.0.sequence"},
+								Description:   "A constant default value for the column.",
 							},
 							"expression": {
-								Type:        schema.TypeString,
-								Optional:    true,
-								Description: "The default expression value for the column.",
+								Type:          schema.TypeString,
+								Optional:      true,
+								ConflictsWith: []string{"column.0.default.0.constant", "column.0.default.0.sequence"},
+								Description:   "A SQL expression default value for the column.",
 							},
 							"sequence": {
 								Type:             schema.TypeString,
 								Optional:         true,
-								Description:      "The default sequence to use for the column.",
+								ConflictsWith:    []string{"column.0.default.0.constant", "column.0.default.0.expression"},
 								DiffSuppressFunc: suppressIdentifierQuoting,
+								Description:      "The default sequence for the column (uses NEXTVAL).",
 							},
 						},
 					},
@@ -257,7 +258,6 @@ func HybridTable() *schema.Resource {
 			ComputedIfAnyAttributeChanged(hybridTableSchema, ShowOutputAttributeName, "name", "comment"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, DescribeOutputAttributeName, "name", "comment", "column"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
-			forceNewIfColumnNullableChanged(),
 			forceNewIfColumnCollateChanged(),
 		)),
 
@@ -928,12 +928,6 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) []any {
 // ---------------------------------------------------------------------------
 // CustomizeDiff
 // ---------------------------------------------------------------------------
-
-func forceNewIfColumnNullableChanged() schema.CustomizeDiffFunc {
-	return forceNewIfColumnFieldChanged(func(o, n hybridTableColumn) bool {
-		return o.nullable != n.nullable
-	})
-}
 
 // forceNewIfColumnCollateChanged forces recreation when collation changes on an
 // existing column. The SDK's HybridTableAlterColumnActionRequest has no WithCollate
