@@ -132,7 +132,7 @@ var accountSchema = map[string]*schema.Schema{
 	"grace_period_in_days": {
 		Type:             schema.TypeInt,
 		Required:         true,
-		Description:      "Specifies the number of days during which the account can be restored (“undropped”). The minimum is 3 days and the maximum is 90 days.",
+		Description:      "Specifies the number of days during which the account can be restored (\"undropped\"). The minimum is 3 days and the maximum is 90 days.",
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(3)),
 	},
 	"consumption_billing_entity": {
@@ -298,7 +298,7 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		_, err = client.Accounts.ShowByID(ctx, id)
 		if err != nil {
 			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
-			if errors.Is(err, sdk.ErrObjectNotFound) {
+			if errors.Is(err, sdk.ErrObjectNotFound) || errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 				return nil, false
 			} else {
 				return err, true
