@@ -38,6 +38,7 @@ func TestInt_Budgets(t *testing.T) {
 		require.Equal(t, 500, *spendingLimit)
 	})
 
+	// TODO [next PR]: consider wrapping the outputs in cases where the scalar output is parsable (e.g. comma-separated list here)
 	t.Run("SetEmailNotifications, GetNotificationEmail, and GetNotificationIntegrationName", func(t *testing.T) {
 		budgetId, budgetCleanup := testClientHelper().Budget.Create(t)
 		t.Cleanup(budgetCleanup)
