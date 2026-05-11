@@ -56,7 +56,7 @@ func readFunctionOrProcedureExternalAccessIntegrations(d *schema.ResourceData, e
 }
 
 func readFunctionOrProcedureSecrets(d *schema.ResourceData, secrets map[string]sdk.SchemaObjectIdentifier) error {
-	all := make([]map[string]any, 0)
+	all := make([]map[string]any, 0, len(secrets))
 	for k, v := range secrets {
 		all = append(all, map[string]any{
 			"secret_variable_name": k,
