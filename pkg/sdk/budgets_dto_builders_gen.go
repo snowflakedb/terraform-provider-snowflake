@@ -130,7 +130,7 @@ func NewSetCycleStartActionBudgetRequest(
 }
 
 func NewBudgetSetCycleStartActionArgsRequest(
-	procedure SchemaObjectIdentifier,
+	procedure SchemaObjectIdentifierWithArguments,
 	arguments []string,
 ) *BudgetSetCycleStartActionArgsRequest {
 	s := BudgetSetCycleStartActionArgsRequest{}

@@ -283,7 +283,7 @@ func TestBudgets_SetCycleStartAction(t *testing.T) {
 		return &SetCycleStartActionBudgetOptions{
 			name: id,
 			args: BudgetSetCycleStartActionArgs{
-				Procedure: procedureId.SchemaObjectId(),
+				Procedure: procedureId,
 				Arguments: []string{"arg1"},
 			},
 		}
@@ -304,14 +304,14 @@ func TestBudgets_SetCycleStartAction(t *testing.T) {
 	t.Run("one arg", func(t *testing.T) {
 		opts := defaultOpts()
 		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1)", id.FullyQualifiedName(), procedureId.SchemaObjectId().FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1)", id.FullyQualifiedName(), procedureId.FullyQualifiedName())
 	})
 
 	t.Run("more args", func(t *testing.T) {
 		procedureId2 := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeVARCHAR)
 		opts := defaultOpts()
-		opts.args = BudgetSetCycleStartActionArgs{Procedure: procedureId2.SchemaObjectId(), Arguments: []string{"arg1", "arg2"}}
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1, arg2)", id.FullyQualifiedName(), procedureId2.SchemaObjectId().FullyQualifiedName())
+		opts.args = BudgetSetCycleStartActionArgs{Procedure: procedureId2, Arguments: []string{"arg1", "arg2"}}
+		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1, arg2)", id.FullyQualifiedName(), procedureId2.FullyQualifiedName())
 	})
 }
 

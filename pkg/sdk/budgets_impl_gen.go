@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 )
 
 var _ Budgets = (*budgets)(nil)
@@ -176,11 +177,17 @@ func (r *GetCycleStartActionBudgetRequest) toOpts() *GetCycleStartActionBudgetOp
 
 func (r getCycleStartActionRow) convert() (*BudgetCycleStartAction, error) {
 	// added manually
-	return &BudgetCycleStartAction{
+	budget := &BudgetCycleStartAction{
 		ActionUuid:             r.ActionUuid,
-		ProcedureFqn:           r.ProcedureFqn,
 		ProcedureArgs:          ParseCommaSeparatedStringArray(r.ProcedureArgs, false),
 		AddedTimestamp:         r.AddedTimestamp,
 		LastTriggeredTimestamp: r.LastTriggeredTimestamp,
-	}, nil
+	}
+	id, err := ParseSchemaObjectIdentifierWithArguments(r.ProcedureFqn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse procedure fully qualified name for budget: %w", err)
+	} else {
+		budget.ProcedureId = id
+	}
+	return budget, nil
 }

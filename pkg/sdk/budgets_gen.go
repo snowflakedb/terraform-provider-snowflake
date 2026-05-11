@@ -123,8 +123,8 @@ type SetCycleStartActionBudgetOptions struct {
 }
 
 type BudgetSetCycleStartActionArgs struct {
-	Procedure SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"PROCEDURE"`
-	Arguments []string               `ddl:"list"`
+	Procedure SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
+	Arguments []string                            `ddl:"list"`
 }
 
 // GetCycleStartActionBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_cycle_start_action.
@@ -135,16 +135,16 @@ type GetCycleStartActionBudgetOptions struct {
 }
 
 type getCycleStartActionRow struct {
-	ActionUuid             string    `db:"action_uuid"`
-	ProcedureFqn           string    `db:"procedure_fqn"`
-	ProcedureArgs          string    `db:"procedure_args"`
-	AddedTimestamp         time.Time `db:"added_timestamp"`
-	LastTriggeredTimestamp time.Time `db:"last_triggered_timestamp"`
+	ActionUuid             string    `db:"ACTION_UUID"`
+	ProcedureFqn           string    `db:"PROCEDURE_FQN"`
+	ProcedureArgs          string    `db:"PROCEDURE_ARGS"`
+	AddedTimestamp         time.Time `db:"ADDED_TIMESTAMP"`
+	LastTriggeredTimestamp time.Time `db:"LAST_TRIGGERED_TIMESTAMP"`
 }
 
 type BudgetCycleStartAction struct {
 	ActionUuid             string
-	ProcedureFqn           string
+	ProcedureId            SchemaObjectIdentifierWithArguments
 	ProcedureArgs          []string
 	AddedTimestamp         time.Time
 	LastTriggeredTimestamp time.Time

@@ -72,8 +72,8 @@ type SetCycleStartActionBudgetRequest struct {
 }
 
 type BudgetSetCycleStartActionArgsRequest struct {
-	Procedure SchemaObjectIdentifier // required
-	Arguments []string               // required
+	Procedure SchemaObjectIdentifierWithArguments // required
+	Arguments []string                            // required
 }
 
 type GetCycleStartActionBudgetRequest struct {
