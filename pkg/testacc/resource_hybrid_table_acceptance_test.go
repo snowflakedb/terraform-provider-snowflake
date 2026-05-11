@@ -55,8 +55,8 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
 			HasComment("").
-			HasNoRows().
-			HasNoBytes(),
+			HasRows(0).
+			HasBytes(0),
 		objectassert.HybridTable(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -103,8 +103,8 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
 			HasComment(comment).
-			HasNoRows().
-			HasNoBytes(),
+			HasRows(0).
+			HasBytes(0),
 		objectassert.HybridTable(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -134,8 +134,8 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
 			HasComment("").
-			HasNoRows().
-			HasNoBytes(),
+			HasRows(0).
+			HasBytes(0),
 		objectassert.HybridTable(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -326,8 +326,8 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(comment).
-						HasNoRows().
-						HasNoBytes(),
+						HasRows(0).
+						HasBytes(0),
 					objectassert.HybridTable(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -377,8 +377,8 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(changedComment).
-						HasNoRows().
-						HasNoBytes(),
+						HasRows(0).
+						HasBytes(0),
 					objectassert.HybridTable(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
