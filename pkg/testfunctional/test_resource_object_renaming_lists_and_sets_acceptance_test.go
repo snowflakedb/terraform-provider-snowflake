@@ -484,23 +484,23 @@ func TestAcc_SdkV2Functional_ListsWithDuplicatedItems(t *testing.T) {
 }
 
 func objectRenamingConfigList(listItems []map[string]any) string {
-	generateListItem := func(name string, s string, i int) string {
+	generateListItem := func(item map[string]any) string {
+		name := ""
+		if n, ok := item["name"]; ok {
+			name = n.(string)
+		}
 		return fmt.Sprintf(`
 	list {
-		name = %[3]q
-		string = "%[1]s"
-		int = %[2]d
+		name = %q
+		string = "%s"
+		int = %d
 	}
-`, s, i, name)
+`, name, item["string"].(string), item["int"].(int))
 	}
 
 	generatedListItems := ""
 	for _, item := range listItems {
-		var name string
-		if n, ok := item["name"]; ok {
-			name = n.(string)
-		}
-		generatedListItems += generateListItem(name, item["string"].(string), item["int"].(int))
+		generatedListItems += generateListItem(item)
 	}
 
 	return fmt.Sprintf(`

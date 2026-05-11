@@ -160,20 +160,40 @@ func ContainsExactlyInAnyOrder(resourceKey string, attributePath string, expecte
 			}
 		}
 
+		// Determine which keys to compare: only those that appear in at least one expected item.
+		// This allows callers to omit schema fields they don't care about (e.g. optional fields that
+		// default to an empty string in state) without causing spurious mismatches.
+		keysToCompare := make(map[string]bool)
+		for _, expectedItem := range expectedItems {
+			for k := range expectedItem {
+				keysToCompare[k] = true
+			}
+		}
+		filteredActualItems := make([]map[string]string, len(actualItems))
+		for i, actual := range actualItems {
+			filtered := make(map[string]string)
+			for k, v := range actual {
+				if keysToCompare[k] {
+					filtered[k] = v
+				}
+			}
+			filteredActualItems[i] = filtered
+		}
+
 		errs := make([]error, 0)
-		for _, actualItem := range actualItems {
+		for _, filteredActualItem := range filteredActualItems {
 			found := false
-			if slices.ContainsFunc(expectedItems, func(expected map[string]string) bool { return maps.Equal(expected, actualItem) }) {
+			if slices.ContainsFunc(expectedItems, func(expected map[string]string) bool { return maps.Equal(expected, filteredActualItem) }) {
 				found = true
 			}
 			if !found {
-				errs = append(errs, fmt.Errorf("unexpected item found: %s", actualItem))
+				errs = append(errs, fmt.Errorf("unexpected item found: %s", filteredActualItem))
 			}
 		}
 
 		for _, expectedItem := range expectedItems {
 			found := false
-			if slices.ContainsFunc(actualItems, func(actual map[string]string) bool { return maps.Equal(actual, expectedItem) }) {
+			if slices.ContainsFunc(filteredActualItems, func(actual map[string]string) bool { return maps.Equal(actual, expectedItem) }) {
 				found = true
 			}
 			if !found {
