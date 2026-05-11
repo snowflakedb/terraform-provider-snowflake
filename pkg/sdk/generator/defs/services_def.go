@@ -48,6 +48,11 @@ var jobServiceFromSpecificationTemplateDef = g.NewQueryStruct("JobServiceFromSpe
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
 	WithValidation(g.ExactlyOneValueSet, "Location", "SpecificationTemplate")
 
+var ServiceStatusEnumDef = g.NewEnum(
+	"ServiceStatus", "ServiceStatuses",
+	"PENDING", "RUNNING", "FAILED", "DONE", "SUSPENDING", "SUSPENDED", "DELETING", "DELETED", "INTERNAL_ERROR",
+)
+
 var servicesDef = g.NewInterface(
 	"Services",
 	"Service",
@@ -145,7 +150,7 @@ var servicesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-services",
 	g.StructPair("servicesRow", "Service").
 		Text("name").
-		PlainField("status", "ServiceStatus").
+		PlainField("status", ServiceStatusEnumDef.Kind()).
 		Text("database_name").
 		Text("schema_name").
 		Text("owner").
@@ -182,7 +187,6 @@ var servicesDef = g.NewInterface(
 		OptionalStartsWith().
 		OptionalLimitFrom().
 		WithValidation(g.ConflictingFields, "Job", "ExcludeJobs"),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDServiceInFiltering,
 ).DescribeOperationWithPairedStructs(
@@ -190,7 +194,7 @@ var servicesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-service",
 	g.StructPair("serviceDescRow", "ServiceDetails").
 		Text("name").
-		PlainField("status", "ServiceStatus").
+		PlainField("status", ServiceStatusEnumDef.Kind()).
 		Text("database_name").
 		Text("schema_name").
 		Text("owner").
@@ -241,4 +245,6 @@ var servicesDef = g.NewInterface(
 		WithValidation(g.ExactlyOneValueSet, "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate").
 		WithValidation(g.ValidIdentifier, "InComputePool").
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
+).WithEnums(
+	ServiceStatusEnumDef,
 )

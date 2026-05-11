@@ -8,6 +8,7 @@ import (
 
 func pairedStructExampleAllOptions(dbName, plainName string) *g.PairedStructs {
 	return g.StructPair(dbName, plainName).
+		Text("name").
 		// Non-nullable string in both; auto-derived field names
 		Text("object_name").
 		// Both non-nullable strings; plain name explicitly overridden

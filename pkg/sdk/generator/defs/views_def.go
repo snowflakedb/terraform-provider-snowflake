@@ -6,6 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var ViewDataMetricScheduleStatusOperationOptionEnumDef = g.NewEnum(
+	"ViewDataMetricScheduleStatusOperationOption", "ViewDataMetricScheduleStatusOperationOptions",
+	"RESUME", "SUSPEND",
+)
+
 var viewPairs = g.StructPair("viewDBRow", "View").
 	Text("created_on").
 	Text("name").
@@ -57,7 +62,7 @@ var modifyDataMetricFunctionDef = g.NewQueryStruct("ViewModifyDataMetricFunction
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	Assignment(
 		"",
-		g.KindOfT[sdkcommons.ViewDataMetricScheduleStatusOperationOption](),
+		ViewDataMetricScheduleStatusOperationOptionEnumDef.Kind(),
 		g.ParameterOptions().NoEquals().NoQuotes(),
 	).
 	WithValidation(g.ValidIdentifier, "DataMetricFunction")
@@ -276,8 +281,6 @@ var viewsDef = g.NewInterface(
 			OptionalExtendedIn().
 			OptionalStartsWith().
 			OptionalLimit(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDExtendedInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
@@ -290,4 +293,7 @@ var viewsDef = g.NewInterface(
 			SQL("VIEW").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	WithEnums(
+		ViewDataMetricScheduleStatusOperationOptionEnumDef,
 	)

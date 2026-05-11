@@ -96,7 +96,6 @@ var eventTablesDef = g.NewInterface(
 		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimit(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(

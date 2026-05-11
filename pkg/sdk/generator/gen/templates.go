@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"strings"
 	"text/template"
 
 	_ "embed"
@@ -20,8 +21,11 @@ var (
 	//go:embed templates/interface.tmpl
 	interfaceTemplateContent string
 	InterfaceTemplate, _     = template.New("interfaceTemplate").Funcs(template.FuncMap{
-		"describe_mapping_deref": deref[DescriptionMappingKind],
-		"show_mapping_deref":     deref[ShowMappingKind],
+		"describe_mapping_deref":     deref[DescriptionMappingKind],
+		"show_mapping_deref":         deref[ShowMappingKind],
+		"instance_method_kind_deref": deref[InstanceMethodKind],
+		"join":                       strings.Join,
+		"splitLines":                 func(s string) []string { return strings.Split(s, "\n") },
 	}).Parse(interfaceTemplateContent)
 
 	//go:embed templates/operation_struct.tmpl
@@ -105,8 +109,9 @@ var (
 
 func init() {
 	subTemplates := template.New("subTemplates").Funcs(template.FuncMap{
-		"describe_mapping_deref": deref[DescriptionMappingKind],
-		"show_mapping_deref":     deref[ShowMappingKind],
+		"describe_mapping_deref":     deref[DescriptionMappingKind],
+		"show_mapping_deref":         deref[ShowMappingKind],
+		"instance_method_kind_deref": deref[InstanceMethodKind],
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
 	subTemplates, _ = subTemplates.New("convert").Parse(convertTemplateContent)

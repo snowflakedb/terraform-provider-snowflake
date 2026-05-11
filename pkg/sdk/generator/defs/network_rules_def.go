@@ -6,6 +6,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	NetworkRuleTypeEnumDef = g.NewEnum(
+		"NetworkRuleType", "NetworkRuleTypes",
+		"IPV4", "AWSVPCEID", "AZURELINKID", "GCPPSCID", "HOST_PORT", "PRIVATE_HOST_PORT",
+	)
+	NetworkRuleModeEnumDef = g.NewEnum(
+		"NetworkRuleMode", "NetworkRuleModes",
+		"INGRESS", "INTERNAL_STAGE", "EGRESS", "POSTGRES_INGRESS", "POSTGRES_EGRESS",
+	)
+)
+
 var networkRulesDef = g.NewInterface(
 	"NetworkRules",
 	"NetworkRule",
@@ -18,9 +29,9 @@ var networkRulesDef = g.NewInterface(
 			OrReplace().
 			SQL("NETWORK RULE").
 			Name().
-			AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.NetworkRuleType](), g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
+			AssignmentWithFieldName("TYPE", NetworkRuleTypeEnumDef.Kind(), g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
 			ListAssignment("VALUE_LIST", "NetworkRuleValue", g.ParameterOptions().Required().Parentheses()).
-			Assignment("MODE", g.KindOfT[sdkcommons.NetworkRuleMode](), g.ParameterOptions().Required().NoQuotes()).
+			Assignment("MODE", NetworkRuleModeEnumDef.Kind(), g.ParameterOptions().Required().NoQuotes()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name"),
 		g.NewQueryStruct("NetworkRuleValue").
@@ -81,8 +92,6 @@ var networkRulesDef = g.NewInterface(
 			OptionalIn().
 			OptionalStartsWith().
 			OptionalLimitFrom(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
@@ -104,4 +113,8 @@ var networkRulesDef = g.NewInterface(
 			SQL("NETWORK RULE").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+	).
+	WithEnums(
+		NetworkRuleTypeEnumDef,
+		NetworkRuleModeEnumDef,
 	)

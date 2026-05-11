@@ -42,6 +42,11 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogNamespace(expect
 	return c
 }
 
+func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSource(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
+	c.StringValueSet("catalog_source", expected)
+	return c
+}
+
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasComment(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
 	c.StringValueSet("comment", expected)
 	return c
@@ -80,6 +85,11 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogNamespaceString(
 	return c
 }
 
+func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSourceString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
+	c.AddAssertion(assert.ValueSet("catalog_source", expected))
+	return c
+}
+
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCommentString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
 	c.AddAssertion(assert.ValueSet("comment", expected))
 	return c
@@ -114,6 +124,11 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoCatalogNamespace() *C
 	return c
 }
 
+func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoCatalogSource() *CatalogIntegrationOpenCatalogResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("catalog_source"))
+	return c
+}
+
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoComment() *CatalogIntegrationOpenCatalogResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("comment"))
 	return c
@@ -143,6 +158,11 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogNamespaceEmpty()
 	return c
 }
 
+func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSourceEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
+	c.AddAssertion(assert.ValueSet("catalog_source", ""))
+	return c
+}
+
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCommentEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
 	c.AddAssertion(assert.ValueSet("comment", ""))
 	return c
@@ -169,6 +189,11 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNameNotEmpty() *Catalog
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogNamespaceNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
 	c.AddAssertion(assert.ValuePresent("catalog_namespace"))
+	return c
+}
+
+func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSourceNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
+	c.AddAssertion(assert.ValuePresent("catalog_source"))
 	return c
 }
 

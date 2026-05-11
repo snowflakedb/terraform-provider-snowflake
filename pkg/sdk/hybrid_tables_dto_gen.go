@@ -38,22 +38,10 @@ type HybridTableColumnRequest struct {
 }
 
 type HybridTableOutOfLineConstraintRequest struct {
-	Name               *string
-	Type               ColumnConstraintType // required
-	Columns            []string
-	ForeignKey         *OutOfLineForeignKey
-	Enforced           *bool
-	NotEnforced        *bool
-	Deferrable         *bool
-	NotDeferrable      *bool
-	InitiallyDeferred  *bool
-	InitiallyImmediate *bool
-	Enable             *bool
-	Disable            *bool
-	Validate           *bool
-	Novalidate         *bool
-	Rely               *bool
-	Norely             *bool
+	Name       *string
+	Type       ColumnConstraintType // required
+	Columns    []string
+	ForeignKey *OutOfLineForeignKey
 }
 
 type HybridTableOutOfLineIndexRequest struct {
@@ -73,7 +61,6 @@ type AlterHybridTableRequest struct {
 	DropIndexAction   *HybridTableDropIndexActionRequest
 	ClusteringAction  *HybridTableClusteringActionRequest
 	Set               *HybridTableSetPropertiesRequest
-	Unset             *HybridTableUnsetPropertiesRequest
 }
 
 type HybridTableAddColumnActionRequest struct {
@@ -87,23 +74,17 @@ type HybridTableAddColumnActionRequest struct {
 }
 
 type HybridTableConstraintActionRequest struct {
-	Add    *HybridTableConstraintActionAddRequest
 	Rename *HybridTableConstraintActionRenameRequest
 	Drop   *HybridTableConstraintActionDropRequest
 }
 
-type HybridTableConstraintActionAddRequest struct {
-	OutOfLineConstraint HybridTableOutOfLineConstraintRequest
-}
-
 type HybridTableConstraintActionRenameRequest struct {
 	OldName string // required
-	NewName string // required
+	NewName string
 }
 
 type HybridTableConstraintActionDropRequest struct {
 	ConstraintName *string
-	PrimaryKey     *bool
 	Unique         *bool
 	ForeignKey     *bool
 	Columns        []string
@@ -112,18 +93,12 @@ type HybridTableConstraintActionDropRequest struct {
 }
 
 type HybridTableAlterColumnActionRequest struct {
-	ColumnName        string // required
-	DropDefault       *bool
-	SetDefault        *SequenceName
-	NotNullConstraint *HybridTableColumnNotNullConstraintRequest
-	Type              *DataType
-	Comment           *string
-	UnsetComment      *bool
-}
-
-type HybridTableColumnNotNullConstraintRequest struct {
-	SetNotNull  *bool
-	DropNotNull *bool
+	ColumnName   string // required
+	DropDefault  *bool
+	SetDefault   *SequenceName
+	Type         *DataType
+	Comment      *string
+	UnsetComment *bool
 }
 
 type HybridTableDropColumnActionRequest struct {
@@ -155,22 +130,7 @@ type HybridTableReclusterChangeStateRequest struct {
 type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
-	ChangeTracking             *bool
-	DefaultDdlCollation        *string
-	EnableSchemaEvolution      *bool
-	Contact                    []TableContact
 	Comment                    *string
-	RowTimestamp               *bool
-}
-
-type HybridTableUnsetPropertiesRequest struct {
-	DataRetentionTimeInDays    *bool
-	MaxDataExtensionTimeInDays *bool
-	ChangeTracking             *bool
-	DefaultDdlCollation        *bool
-	EnableSchemaEvolution      *bool
-	ContactPurpose             *string
-	Comment                    *bool
 }
 
 type DropHybridTableRequest struct {

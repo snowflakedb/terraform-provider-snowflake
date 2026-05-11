@@ -26,13 +26,117 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.15.x ➞ v2.16.0
 
-### *(new feature)* New `snowflake_session_policy` resource
+### *(improvement)* snowflake_password_policy resource rework
 
-We have added a new preview resource for managing session policies: [snowflake_session_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy).
+The [snowflake_password_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/password_policy) resource has been reworked to follow the modern resource patterns used in this provider.
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_session_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+#### New computed attributes
 
-No changes are required for existing configurations unless you want to manage session policies with Terraform.
+The resource now exposes `show_output` and `describe_output` computed attributes that provide the raw results from Snowflake's `SHOW PASSWORD POLICIES` and `DESCRIBE PASSWORD POLICY` commands, respectively. This allows users to access all server-side values without needing additional data sources.
+
+#### Integer fields no longer have hardcoded defaults
+
+Previously, all integer fields (`min_length`, `max_length`, etc.) had hardcoded `Default` values in the schema. These have been removed in favor of Snowflake-managed defaults. When a field is not specified in the Terraform configuration, the resource will not send that parameter to Snowflake, allowing it to use its own default value.
+
+Fields where 0 is a valid value (`min_upper_case_chars`, `min_lower_case_chars`, `min_numeric_chars`, `min_special_chars`, `min_age_days`, `max_age_days`, `history`) now use `-1` as the default sentinel. Setting one of these fields to `-1` explicitly (or omitting it from config) means "use the Snowflake default".
+
+Fields where 0 is not a valid value (`min_length`, `max_length`, `max_retries`, `lockout_time_mins`) are now plain optional fields with no default. Omitting them means "use the Snowflake default".
+
+After importing the state, the plan may be not empty for the fields missing from the configuration due to this change. You can either apply the plan, or set the specific values in the configuration.
+
+#### Removed client-side validation
+
+Client-side `ValidateFunc` constraints (e.g., `IntBetween(8, 256)` for `min_length`) have been removed from all integer fields. Validation is now delegated to Snowflake, which will return an error if a value is out of range. This avoids drift between the provider's hardcoded ranges and Snowflake's actual limits.
+
+#### `or_replace` and `if_not_exists` fields deprecated
+
+The `or_replace` and `if_not_exists` fields are now deprecated as noops. They will be removed in a future version.
+
+#### ID format change
+
+During [identifiers rework](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#identifiers-rework) the internal resource ID format has changed from pipe-separated (`database|schema|name`) to fully qualified name format (`"database"."schema"."name"`). This is handled automatically by a state upgrader — no manual action is required. Read more in the [design decisions](./docs/guides/identifiers_rework_design_decisions.md).
+
+#### Identifier fields now support quoting
+
+The `database`, `schema`, and `name` fields now support quoted identifiers and suppress diffs caused by identifier quoting differences (read more in the [design decisions](./docs/guides/identifiers_rework_design_decisions.md)). Additionally, certain characters are blocklisted from these fields — see the resource documentation for details.
+
+#### Import behavior
+
+The import now uses `ImportName` for `SchemaObjectIdentifier`, which properly sets `database`, `schema`, and `name` fields. The import ID should be the fully qualified name of the password policy (e.g., `"my_database"."my_schema"."my_policy"`).
+
+### *(new feature)* snowflake_password_policies data source
+
+We have added a new preview data source for password policies: [snowflake_password_policies](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/password_policies). It supports filtering with `like`, `in`, and `limit`, and optionally runs `DESCRIBE PASSWORD POLICY` for each result (controlled by the `with_describe` attribute, enabled by default).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_password_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+### *(improvement)* Catalog integration resources: computed `catalog_source`
+
+A new **computed** attribute **`catalog_source`** is now available on these resources:
+
+- [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
+- [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
+- [snowflake_catalog_integration_open_catalog](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
+- [snowflake_catalog_integration_iceberg_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
+
+It reflects the active catalog source type Snowflake reports for the integration (for example `GLUE`, `OBJECT_STORE`, `POLARIS`, or `ICEBERG_REST`). The attribute is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens.
+
+No configuration changes are required.
+
+### *(new feature)* New session policy resources and data source
+
+#### Resources
+
+We have added new preview resources for session policies: [snowflake_session_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy) for defining policies, [snowflake_user_session_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user_session_policy_attachment) for assigning a session policy to a user, and [snowflake_account_session_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_session_policy_attachment) for assigning a session policy to the current account.
+
+These features will be marked as stable in future releases. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_session_policy_resource` for `snowflake_session_policy`;
+- `snowflake_user_session_policy_attachment_resource` for `snowflake_user_session_policy_attachment`;
+- `snowflake_account_session_policy_attachment_resource` for `snowflake_account_session_policy_attachment`.
+
+#### Data source
+
+We have added a new preview data source for session policies: [snowflake_session_policies](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/session_policies).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_session_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
+
+## v2.15.x ➞ v2.15.1
+
+### *(bug fix)* `snowflake_stream_on_table` and `snowflake_stream_on_view` import fix
+
+Previously, importing `snowflake_stream_on_table` or `snowflake_stream_on_view` with `terraform import` left the `show_initial_rows` attribute as `null` in state, because it cannot be read from Snowflake. On the next `terraform apply`, Terraform detected a diff and produced an "Update" plan. Because of it, the stream was recreated (see the [note](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stream_on_table)).
+
+To fix this, enable the `IMPORT_BOOLEAN_DEFAULT` experimental feature in the provider configuration and reimport the affected stream resources. When enabled, the `show_initial_rows` attribute is set to `"default"` during import, preventing the permadiff.
+
+References: [#3896](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3896)
+
+### *(bugfix)* TABLE data type parsing with parametrized column types
+
+In v2.15.0, resources that accept a `TABLE(...)` data type (e.g. return type in `snowflake_function_sql` or `snowflake_procedure_sql`)
+failed with an error when column types inside the `TABLE` definition carried precision or scale parameters (e.g. `NUMBER(38,0)`, `VARCHAR(256)`).
+The comma inside the type parameter was incorrectly treated as a column separator, producing a parse error similar to:
+
+```
+number NUMBER(38 could not be parsed, use "NUMBER(precision, scale)" format
+```
+
+This release fixes the parser to correctly handle nested parentheses when splitting column definitions,
+so `TABLE(ARG1 NUMBER(38,0), ARG2 VARCHAR)` is now parsed correctly.
+
+No configuration changes are required.
+
+### *(bug fix)* Improve handling of granting PUBLIC role
+
+A new experiment `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` is now available for the `snowflake_grant_account_role` resource. When enabled, granting the PUBLIC role is treated as a silent no-op instead of producing an inconsistent-result error.
+
+Snowflake implicitly grants PUBLIC to every role and user, so `GRANT ROLE PUBLIC` is always a no-op at the SQL level and `SHOW GRANTS` never lists it. Without this experiment, the provider's Read clears the state because it cannot find the grant, resulting in `Root object was present, but now absent` errors.
+
+To enable, add `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` to the `experimental_features_enabled` field in the provider configuration. No changes are required for existing configurations that do not grant the PUBLIC role.
+
+References: [#3001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3001)
 
 ### *(enhancement)* Improved identifier handling in `snowflake_stream_on_directory_table`
 

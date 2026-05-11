@@ -47,15 +47,9 @@ func (s *SessionPolicyResourceAssert) HasName(expected string) *SessionPolicyRes
 	return s
 }
 
-func (s *SessionPolicyResourceAssert) HasAllowedSecondaryRoles(expected ...string) *SessionPolicyResourceAssert {
-	s.SetContainsExactlyStringValues("allowed_secondary_roles", expected...)
-	return s
-}
+// typed assert for "allowed_secondary_roles" (type: List, subtype: Map) is not currently supported
 
-func (s *SessionPolicyResourceAssert) HasBlockedSecondaryRoles(expected ...string) *SessionPolicyResourceAssert {
-	s.SetContainsExactlyStringValues("blocked_secondary_roles", expected...)
-	return s
-}
+// typed assert for "blocked_secondary_roles" (type: List, subtype: Map) is not currently supported
 
 func (s *SessionPolicyResourceAssert) HasComment(expected string) *SessionPolicyResourceAssert {
 	s.StringValueSet("comment", expected)

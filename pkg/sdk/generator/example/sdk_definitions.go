@@ -42,6 +42,7 @@ type (
 type (
 	ValuesBehavior = sdk.ValuesBehavior
 	ObjectType     = sdk.ObjectType
+	Parameter      = sdk.Parameter
 )
 
 const (
@@ -60,6 +61,10 @@ func NewAccountObjectIdentifier(name string) AccountObjectIdentifier {
 
 func randomDatabaseObjectIdentifier() DatabaseObjectIdentifier {
 	return DatabaseObjectIdentifier{}
+}
+
+func randomAccountObjectIdentifier() AccountObjectIdentifier {
+	return AccountObjectIdentifier{}
 }
 
 func randomSchemaObjectIdentifier() SchemaObjectIdentifier {

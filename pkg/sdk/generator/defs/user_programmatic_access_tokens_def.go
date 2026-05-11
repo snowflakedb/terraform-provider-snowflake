@@ -20,23 +20,14 @@ var programmaticAccessTokenPairs = g.StructPair("programmaticAccessTokenResultDB
 	OptionalNumber("mins_to_bypass_network_policy_requirement").
 	OptionalText("rotated_to")
 
-var addProgrammaticAccessTokenResultDBRowDef = g.DbStruct("addProgrammaticAccessTokenResultDBRow").
+var addProgrammaticAccessTokenResultPairs = g.StructPair("addProgrammaticAccessTokenResultDBRow", "AddProgrammaticAccessTokenResult").
 	Text("token_name").
 	Text("token_secret")
 
-var addProgrammaticAccessTokenResultDef = g.PlainStruct("AddProgrammaticAccessTokenResult").
-	Text("TokenName").
-	Text("TokenSecret")
-
-var rotateProgrammaticAccessTokenResultDBRowDef = g.DbStruct("rotateProgrammaticAccessTokenResultDBRow").
+var rotateProgrammaticAccessTokenResultPairs = g.StructPair("rotateProgrammaticAccessTokenResultDBRow", "RotateProgrammaticAccessTokenResult").
 	Text("token_name").
 	Text("token_secret").
 	Text("rotated_token_name")
-
-var rotateProgrammaticAccessTokenResultDef = g.PlainStruct("RotateProgrammaticAccessTokenResult").
-	Text("TokenName").
-	Text("TokenSecret").
-	Text("RotatedTokenName")
 
 var userProgrammaticAccessTokensDef = g.NewInterface(
 	"UserProgrammaticAccessTokens",
@@ -46,12 +37,11 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 	// We use AccountObjectIdentifier as a kind of identifier for convenience.
 	// TODO(SNOW-2183032) Handle objects that do not have identifiers.
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"Add",
 	g.ShowMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token",
-	addProgrammaticAccessTokenResultDBRowDef,
-	addProgrammaticAccessTokenResultDef,
+	addProgrammaticAccessTokenResultPairs,
 	g.NewQueryStruct("AddUserProgrammaticAccessToken").
 		Alter().
 		SQL("USER").
@@ -96,12 +86,11 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "UserName").
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo"),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"Rotate",
 	g.ShowMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-user-rotate-programmatic-access-token",
-	rotateProgrammaticAccessTokenResultDBRowDef,
-	rotateProgrammaticAccessTokenResultDef,
+	rotateProgrammaticAccessTokenResultPairs,
 	g.NewQueryStruct("RotateUserProgrammaticAccessToken").
 		Alter().
 		SQL("USER").
@@ -131,5 +120,13 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
 		OptionalIdentifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
-).ShowByIdOperationWithNoFiltering().
-	WithEnums(ProgrammaticAccessTokenStatusDef)
+	g.ShowByIDNoFiltering,
+).
+	WithCustomInterfaceMethod(
+		"RemoveByIDSafely",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("request", "*RemoveUserProgrammaticAccessTokenRequest")},
+		"error",
+	).
+	WithEnums(ProgrammaticAccessTokenStatusDef).
+	WithShowObjectType("ProgrammaticAccessToken")

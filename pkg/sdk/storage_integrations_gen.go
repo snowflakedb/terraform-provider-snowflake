@@ -17,14 +17,13 @@ type StorageIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]StorageIntegrationProperty, error)
-
-	// DescribeAwsDetails is added manually; it returns converted describe output for AWS storage integrations.
+	// DescribeAwsDetails returns converted describe output for AWS storage integrations.
 	DescribeAwsDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAwsDetails, error)
-	// DescribeAwsDetails is added manually; it returns converted describe output for Azure storage integrations.
+	// DescribeAzureDetails returns converted describe output for Azure storage integrations.
 	DescribeAzureDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAzureDetails, error)
-	// DescribeAwsDetails is added manually; it returns converted describe output for GCS storage integrations.
+	// DescribeGcsDetails returns converted describe output for GCS storage integrations.
 	DescribeGcsDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationGcsDetails, error)
-	// DescribeDetails is added manually; it returns combined describe output for all types of storage integrations.
+	// DescribeDetails returns combined describe output for all types of storage integrations.
 	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAllDetails, error)
 }
 

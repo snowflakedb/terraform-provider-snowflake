@@ -12,6 +12,7 @@ import (
 
 type CatalogIntegrationObjectStorageModel struct {
 	Name                   tfconfig.Variable `json:"name,omitempty"`
+	CatalogSource          tfconfig.Variable `json:"catalog_source,omitempty"`
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -86,6 +87,11 @@ func (c *CatalogIntegrationObjectStorageModel) WithName(name string) *CatalogInt
 	return c
 }
 
+func (c *CatalogIntegrationObjectStorageModel) WithCatalogSource(catalogSource string) *CatalogIntegrationObjectStorageModel {
+	c.CatalogSource = tfconfig.StringVariable(catalogSource)
+	return c
+}
+
 func (c *CatalogIntegrationObjectStorageModel) WithComment(comment string) *CatalogIntegrationObjectStorageModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -117,6 +123,11 @@ func (c *CatalogIntegrationObjectStorageModel) WithTableFormat(tableFormat strin
 
 func (c *CatalogIntegrationObjectStorageModel) WithNameValue(value tfconfig.Variable) *CatalogIntegrationObjectStorageModel {
 	c.Name = value
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageModel) WithCatalogSourceValue(value tfconfig.Variable) *CatalogIntegrationObjectStorageModel {
+	c.CatalogSource = value
 	return c
 }
 

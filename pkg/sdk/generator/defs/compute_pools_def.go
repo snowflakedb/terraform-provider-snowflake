@@ -6,6 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+// See https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool#compute-pool-lifecycle.
+var ComputePoolStateEnumDef = g.NewEnum(
+	"ComputePoolState", "ComputePoolStates",
+	"IDLE", "ACTIVE", "SUSPENDED", "STARTING", "STOPPING", "RESIZING",
+)
+
 var computePoolsDef = g.NewInterface(
 	"ComputePools",
 	"ComputePool",
@@ -78,7 +84,7 @@ var computePoolsDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools",
 	g.StructPair("computePoolsRow", "ComputePool").
 		Text("name").
-		PlainField("state", "ComputePoolState").
+		PlainField("state", ComputePoolStateEnumDef.Kind()).
 		Number("min_nodes").
 		Number("max_nodes").
 		PlainField("instance_family", "ComputePoolInstanceFamily").
@@ -102,14 +108,12 @@ var computePoolsDef = g.NewInterface(
 		OptionalLike().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).ShowByIdOperationWithFiltering(
-	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSingleValue,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-compute-pool",
 	g.StructPair("computePoolDescRow", "ComputePoolDetails").
 		Text("name").
-		PlainField("state", "ComputePoolState").
+		PlainField("state", ComputePoolStateEnumDef.Kind()).
 		Number("min_nodes").
 		Number("max_nodes").
 		PlainField("instance_family", "ComputePoolInstanceFamily").
@@ -134,4 +138,7 @@ var computePoolsDef = g.NewInterface(
 		SQL("COMPUTE POOL").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-)
+).
+	WithEnums(
+		ComputePoolStateEnumDef,
+	)

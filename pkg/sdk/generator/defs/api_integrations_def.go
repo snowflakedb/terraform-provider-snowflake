@@ -137,9 +137,6 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATIONS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
@@ -153,4 +150,5 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithShowObjectType("Integration")

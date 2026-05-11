@@ -206,9 +206,6 @@ var catalogIntegrationsDef = g.NewInterface(
 			SQL("CATALOG INTEGRATIONS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-catalog-integration",
@@ -307,6 +304,42 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("Sigv4IamRole").
 			Text("Sigv4SigningRegion").
 			Text("Sigv4ExternalId"),
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAwsGlueDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationAwsGlueDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeObjectStorageDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationObjectStorageDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeOpenCatalogDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationOpenCatalogDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeIcebergRestDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationIcebergRestDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeSapBdcDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationSapBdcDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeDetails",
+		"DescribeDetails returns combined describe output for all types of catalog integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*CatalogIntegrationAllDetails", "error",
 	).
 	WithEnums(
 		CatalogIntegrationCatalogSourceTypeEnumDef,

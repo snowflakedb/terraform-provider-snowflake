@@ -6,6 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var OrganizationAccountEditionEnumDef = g.NewEnum(
+	"OrganizationAccountEdition", "OrganizationAccountEditions",
+	"ENTERPRISE", "BUSINESS_CRITICAL",
+)
+
 var organizationAccountsDef = g.NewInterface(
 	"OrganizationAccounts",
 	"OrganizationAccount",
@@ -24,7 +29,7 @@ var organizationAccountsDef = g.NewInterface(
 			OptionalTextAssignment("LAST_NAME", g.ParameterOptions().SingleQuotes()).
 			TextAssignment("EMAIL", g.ParameterOptions().Required().SingleQuotes()).
 			OptionalBooleanAssignment("MUST_CHANGE_PASSWORD", g.ParameterOptions()).
-			Assignment("EDITION", g.KindOfT[sdkcommons.OrganizationAccountEdition](), g.ParameterOptions().Required().NoQuotes()).
+			Assignment("EDITION", OrganizationAccountEditionEnumDef.Kind(), g.ParameterOptions().Required().NoQuotes()).
 			OptionalTextAssignment("REGION_GROUP", g.ParameterOptions().DoubleQuotes()).
 			OptionalTextAssignment("REGION", g.ParameterOptions().DoubleQuotes()).
 			OptionalComment().
@@ -83,7 +88,7 @@ var organizationAccountsDef = g.NewInterface(
 			Text("organization_name").
 			Text("account_name").
 			Text("snowflake_region").
-			PlainField("edition", "OrganizationAccountEdition").
+			PlainField("edition", OrganizationAccountEditionEnumDef.Kind()).
 			Text("account_url").
 			Text("created_on").
 			OptionalText("comment").
@@ -107,4 +112,25 @@ var organizationAccountsDef = g.NewInterface(
 			SQL("ORGANIZATION ACCOUNTS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering)
+	WithCustomInterfaceMethod("ShowParameters", "", nil, "[]*Parameter", "error").
+	WithCustomInterfaceMethod("UnsetAllParameters", "", nil, "error").
+	WithCustomInterfaceMethod(
+		"UnsetPolicySafely",
+		"UnsetPolicySafely unsets a policy on the current account by a given supported kind.\nIt ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.",
+		[]*g.MethodParameter{g.NewMethodParameter("kind", "PolicyKind")},
+		"error",
+	).
+	WithCustomInterfaceMethod(
+		"SetPolicySafely",
+		"SetPolicySafely sets a policy on the current account by a given supported kind.\nIt firstly tries to unset the policy with UnsetPolicySafely method to make sure that the policy is not set,\nthen proceeds by setting the passed policy on the organization account.",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("kind", "PolicyKind"),
+			g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]()),
+		},
+		"error",
+	).
+	WithCustomInterfaceMethod("UnsetAll", "", nil, "error").
+	WithEnums(
+		OrganizationAccountEditionEnumDef,
+	).
+	WithShowObjectType("Account")

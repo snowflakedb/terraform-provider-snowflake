@@ -195,8 +195,6 @@ var authenticationPoliciesDef = g.NewInterface(
 			OptionalOn().
 			OptionalStartsWith().
 			OptionalLimit(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 		g.ShowByIDExtendedInFiltering,
 	).

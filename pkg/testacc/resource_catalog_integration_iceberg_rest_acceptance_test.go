@@ -116,6 +116,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	basicAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
@@ -165,6 +166,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 		[]assert.TestCheckFuncProvider{
 			resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 				HasName(id.Name()).
+				HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 				HasEnabledString(r.BooleanFalse).
 				HasCommentEmpty().
 				HasRefreshIntervalSeconds(0).
@@ -191,6 +193,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	alteredProperties := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanTrue).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -239,6 +242,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	completeAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -287,6 +291,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	forceNewAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -335,6 +340,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	moreForceNewAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -384,6 +390,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 		[]assert.TestCheckFuncProvider{
 			resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 				HasName(id.Name()).
+				HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 				HasEnabledString(r.BooleanFalse).
 				HasComment(comment).
 				HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -410,6 +417,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	evenMoreForceNewAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -458,6 +466,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	withBearerTokenAssertions := append([]assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -694,6 +703,22 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				Config: config.FromModels(t, withBearerToken),
 				Check:  assertThat(t, withBearerTokenAssertions...),
 			},
+			// Change catalog source externally
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithOrReplace(true).
+						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, withBearerToken),
+				Check:  assertThat(t, withBearerTokenAssertions...),
+			},
 		},
 	})
 }
@@ -742,6 +767,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 	basicAssertions := append([]assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
@@ -761,6 +787,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 	updatedAssertions := append([]assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
@@ -780,6 +807,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 	sigV4Assertions := append([]assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
@@ -878,6 +906,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 	basicAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
@@ -918,6 +947,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 	updatedAssertions := append([]assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
@@ -944,6 +974,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 	withBearerTokenAssertions := append([]assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
 			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
