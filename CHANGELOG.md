@@ -1,5 +1,58 @@
 # Changelog
 
+## [2.16.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.15.0...v2.16.0) (2026-05-08)
+
+
+### 🎉 **What's new:**
+
+* Add comprehensive SDK integration tests for hybrid tables ([#4461](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4461)) ([060c665](https://github.com/snowflakedb/terraform-provider-snowflake/commit/060c665abe203edec3d2dd6e191f0025bec4d34d))
+* Add Cortex agents to SDK ([#4702](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4702)) ([c592106](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c59210616746c9850ed7f0ddae10637050b463b0))
+* Add snowflake_account_session_policy_attachment resource ([#4671](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4671)) ([c0b1f48](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c0b1f48ad3cd93dcae6006e3067863f1733e04c3))
+* Add snowflake_password_policies data source ([#4696](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4696)) ([e66b5c7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e66b5c78a437de83e79d722a4b135439119a0ca9))
+* Add snowflake_session_policies data source ([#4677](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4677)) ([7b17476](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7b17476e7bb72c5ea8842332b3be530e4691cf97))
+* add snowflake_session_policy resource ([#4645](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4645)) ([0f0ca92](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0f0ca926a68eb99458b3a0ebca7e3e440def36fa))
+* Add snowflake_user_session_policy_attachment resource ([#4666](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4666)) ([ab2bfa0](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ab2bfa07f2b3a0b07327696dc336597e8dd3898e))
+* handle external catalog source type drift ([#4682](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4682)) ([514b259](https://github.com/snowflakedb/terraform-provider-snowflake/commit/514b25958a72e89653e7af752d1821f7ad2408db))
+* nested none/all/roles for allowed and blocked secondary roles ([#4658](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4658)) ([74c47ea](https://github.com/snowflakedb/terraform-provider-snowflake/commit/74c47ea0e4719bdecb097b2363ece193c8ab6cbf))
+* postgres instance sdk integration tests ([#4686](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4686)) ([dcdabc8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/dcdabc8e6bc067a19d245f7663d64cf47dce9a82))
+* Rework password policy resource ([#4693](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4693)) ([af7e682](https://github.com/snowflakedb/terraform-provider-snowflake/commit/af7e682ff50a8571e88bc736b0d9e98e6d9f2399))
+* sfpg sdk support ([#4675](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4675)) ([5275527](https://github.com/snowflakedb/terraform-provider-snowflake/commit/527552777783548a9a3e6b840cf9eadde9604dcf))
+* support in-place session policy attachment updates ([#4676](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4676)) ([597723c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/597723cc124b2377cfde05c53496faee3a0dbbd4))
+
+
+### 🔧 **Misc**
+
+* Add custom interface method to SDK gen ([#4661](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4661)) ([708ef6b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/708ef6b4c9070513c92f4623c2c312a30bfda302))
+* Add enum test conversion addition to unit test generation part ([#4634](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4634)) ([6a3d714](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6a3d714faeb504ced87175d1d2f882512a151052))
+* Add Identifier First Login validation ([#4657](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4657)) ([b97d271](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b97d2711e2c06b08a7bb7249b7d7a85fdc896f75))
+* Adjust adaptive warehouse tests ([#4648](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4648)) ([87a0e5e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/87a0e5eb910ab27776840e5f22da3dda87b67406))
+* Adjust migration guide ([#4706](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4706)) ([910c388](https://github.com/snowflakedb/terraform-provider-snowflake/commit/910c388ec712e57d87740975caf8a342ddc2a230))
+* Allow specifying a different object type and correct show by id method signatures ([#4674](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4674)) ([abfb1ee](https://github.com/snowflakedb/terraform-provider-snowflake/commit/abfb1ee6582a916a2d766af717fcb72f8f4892f8))
+* Bump Go module dependencies ([#4649](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4649)) ([66d1ca6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/66d1ca6f6cf4a4336a7096699715d7ff51c75b9f))
+* Define custom interfaces in the SDK gen ([#4669](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4669)) ([ac108fe](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ac108fe521f96ae14546ae6a709593d7cdc75088))
+* Document active storage location removal limitation for external volume ([#4662](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4662)) ([a645e44](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a645e44d0f82cc80e99542c6252af9c5ad4aa182))
+* Fix and skip failing integration tests ([#4710](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4710)) ([0b71b69](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0b71b69961600cf8684fbdd6f2a7e78017a13ecc))
+* Migrate definitions to paired structs - part2 ([#4660](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4660)) ([61b9f16](https://github.com/snowflakedb/terraform-provider-snowflake/commit/61b9f16fa2e0c6c83d0cd26dc7b090f73ef84d74))
+* Migrate majority of db and plain struct definitions to paired structs approach ([#4655](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4655)) ([3244601](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3244601c0490379ee61c17f6e559dce2089caf5d))
+* Move manual enums to SDK generator part1 ([#4635](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4635)) ([5c3f7a2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5c3f7a2866da3e22903cb4da0dc2dcdc5eda5192))
+* Move manual enums to SDK generator part2 ([#4636](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4636)) ([1cf7782](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1cf778202a21a6f753d95946ed2e381af198709d))
+* Move manual enums to SDK generator part3 ([#4637](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4637)) ([2f2ab28](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2f2ab2873d053458fac54281388b8b92b9dce02f))
+* Move manual enums to SDK generator part4 ([#4654](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4654)) ([cec63e7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/cec63e7c38388af2899d5a1dd6c523bce1270be9))
+* Move manual enums to SDK generator part5 ([#4665](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4665)) ([26e89ac](https://github.com/snowflakedb/terraform-provider-snowflake/commit/26e89ace20717bd7a7b2c0834cff2451c68c0e7f))
+* Rework password policy integration tests ([#4690](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4690)) ([0d6e8d1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0d6e8d19bb4b643ad9e88299cec5534db1b682d9))
+* Rewrite PasswordPolicy SDK to use generator ([#4646](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4646)) ([009da2d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/009da2d3a094abfb01657d50aeccabe6f2dc23e6))
+* Update support note in the docs ([#4711](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4711)) ([bf6d255](https://github.com/snowflakedb/terraform-provider-snowflake/commit/bf6d2552b079ad0bf78a754f244aa5fd3eb84e2a))
+
+
+### 🐛 **Bug fixes:**
+
+* Add an experiment for granting account roles to the PUBLIC role ([#4664](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4664)) ([b7c2331](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b7c2331d6889217417d2e2e1973e525beb304ca9))
+* Address failing CI step ([#4597](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4597)) ([3257168](https://github.com/snowflakedb/terraform-provider-snowflake/commit/325716828791f13ad6a48fe8f823e95095829495))
+* authentication policy tests ([#4678](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4678)) ([4175350](https://github.com/snowflakedb/terraform-provider-snowflake/commit/41753501d1cdf6426f9a5f47d4894c469aec83d7))
+* Handle prefixed region format in AccountURL() ([#4650](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4650)) ([2ea315c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2ea315cb6e06c841266b2620c1b015ad993e844e)), closes [#4632](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4632)
+* Improve table data type parsing ([#4667](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4667)) ([d716fbf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d716fbfa8193ba826b65163a600d901bf13bd6f1))
+* Set show_initial_rows on stream import ([#4659](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4659)) ([e8f2d61](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e8f2d61c1ab847bb41e9541507fdf4c47a558c41))
+
 ## [2.15.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.14.0...v2.15.0) (2026-04-13)
 
 

@@ -154,6 +154,4 @@ var applicationPackagesDef = g.NewInterface(
 		OptionalLike().
 		OptionalStartsWith().
 		OptionalLimit(),
-).ShowByIdOperationWithFiltering(
-	g.ShowByIDLikeFiltering,
 )

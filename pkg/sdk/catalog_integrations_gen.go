@@ -17,18 +17,12 @@ type CatalogIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]CatalogIntegrationProperty, error)
-
-	// DescribeAwsGlueDetails is added manually
 	DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error)
-	// DescribeObjectStorageDetails is added manually
 	DescribeObjectStorageDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error)
-	// DescribeOpenCatalogDetails is added manually
 	DescribeOpenCatalogDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error)
-	// DescribeIcebergRestDetails is added manually
 	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
-	// DescribeSapBdcDetails is added manually
 	DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error)
-	// DescribeDetails is added manually; it returns combined describe output for all types of catalog integrations.
+	// DescribeDetails returns combined describe output for all types of catalog integrations.
 	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error)
 }
 

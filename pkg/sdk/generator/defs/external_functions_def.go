@@ -45,6 +45,7 @@ var externalFunctionUnset = g.NewQueryStruct("ExternalFunctionUnset").
 	OptionalSQL("RESPONSE_TRANSLATOR").
 	WithValidation(g.AtLeastOneValueSet, "Comment", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "Secure", "RequestTranslator", "ResponseTranslator")
 
+// TODO [SNOW-2048276]: Add dedicated external Drop and DropSafely functions
 var externalFunctionsDef = g.NewInterface(
 	"ExternalFunctions",
 	"ExternalFunction",
@@ -152,7 +153,6 @@ var externalFunctionsDef = g.NewInterface(
 		SQL("EXTERNAL FUNCTIONS").
 		OptionalLike().
 		OptionalIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperation(

@@ -32,7 +32,11 @@ var All{{ .NamePlural }}String = []string{
 }
 {{ end }}
 func To{{ .Name }}(s string) ({{ .Name }}, error) {
-	s = strings.ToUpper(s)
+  {{- if .IsLowercase }}
+  s = strings.ToLower(s)
+  {{- else }}
+  s = strings.ToUpper(s)
+  {{- end }}
 	switch s {
 	{{- range .ValueRepresentations }}
 	case string({{ .Name }}){{ range .Aliases }}, "{{ . }}"{{ end }}:

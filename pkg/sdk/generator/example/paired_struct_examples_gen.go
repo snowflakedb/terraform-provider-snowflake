@@ -10,6 +10,8 @@ import (
 
 type PairedStructExamples interface {
 	Show(ctx context.Context, request *ShowPairedStructExampleRequest) ([]PairedStructExample, error)
+	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error)
+	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExampleDetail, error)
 }
 
@@ -21,6 +23,7 @@ type ShowPairedStructExampleOptions struct {
 }
 
 type pairedStructExampleRow struct {
+	Name                         string         `db:"name"`
 	ObjectName                   string         `db:"object_name"`
 	BothNonNullableStrings       string         `db:"both_non_nullable_strings"`
 	StorageTypeDb                string         `db:"type"`
@@ -39,17 +42,18 @@ type pairedStructExampleRow struct {
 	Tags                         string         `db:"tags"`
 	AccountId                    string         `db:"account_id"`
 	SecondAccountId              string         `db:"second_account_id"`
-	OptionalAccountId            string         `db:"optional_account_id"`
-	OptionalSecondAccountId      string         `db:"optional_second_account_id"`
+	OptionalAccountId            sql.NullString `db:"optional_account_id"`
+	OptionalSecondAccountId      sql.NullString `db:"optional_second_account_id"`
 	SchemaObjectId               string         `db:"schema_object_id"`
 	SecondSchemaObjectId         string         `db:"second_schema_object_id"`
-	OptionalSchemaObjectId       string         `db:"optional_schema_object_id"`
-	OptionalSecondSchemaObjectId string         `db:"optional_second_schema_object_id"`
+	OptionalSchemaObjectId       sql.NullString `db:"optional_schema_object_id"`
+	OptionalSecondSchemaObjectId sql.NullString `db:"optional_second_schema_object_id"`
 	DatabaseObjectId             string         `db:"database_object_id"`
 	SecondDatabaseObjectId       string         `db:"second_database_object_id"`
 }
 
 type PairedStructExample struct {
+	Name                                 string
 	ObjectName                           string
 	OverriddenNonNullableStringPlainName string
 	StorageTypePlain                     string
@@ -78,6 +82,10 @@ type PairedStructExample struct {
 	OverriddenDatabaseObjectId           DatabaseObjectIdentifier
 }
 
+func (v *PairedStructExample) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}
+
 func (v *PairedStructExample) ObjectType() ObjectType {
 	return ObjectTypePairedStructExample
 }
@@ -90,6 +98,7 @@ type DescribePairedStructExampleOptions struct {
 }
 
 type pairedStructExampleDetailRow struct {
+	Name                         string         `db:"name"`
 	ObjectName                   string         `db:"object_name"`
 	BothNonNullableStrings       string         `db:"both_non_nullable_strings"`
 	StorageTypeDb                string         `db:"type"`
@@ -108,17 +117,18 @@ type pairedStructExampleDetailRow struct {
 	Tags                         string         `db:"tags"`
 	AccountId                    string         `db:"account_id"`
 	SecondAccountId              string         `db:"second_account_id"`
-	OptionalAccountId            string         `db:"optional_account_id"`
-	OptionalSecondAccountId      string         `db:"optional_second_account_id"`
+	OptionalAccountId            sql.NullString `db:"optional_account_id"`
+	OptionalSecondAccountId      sql.NullString `db:"optional_second_account_id"`
 	SchemaObjectId               string         `db:"schema_object_id"`
 	SecondSchemaObjectId         string         `db:"second_schema_object_id"`
-	OptionalSchemaObjectId       string         `db:"optional_schema_object_id"`
-	OptionalSecondSchemaObjectId string         `db:"optional_second_schema_object_id"`
+	OptionalSchemaObjectId       sql.NullString `db:"optional_schema_object_id"`
+	OptionalSecondSchemaObjectId sql.NullString `db:"optional_second_schema_object_id"`
 	DatabaseObjectId             string         `db:"database_object_id"`
 	SecondDatabaseObjectId       string         `db:"second_database_object_id"`
 }
 
 type PairedStructExampleDetail struct {
+	Name                                 string
 	ObjectName                           string
 	OverriddenNonNullableStringPlainName string
 	StorageTypePlain                     string

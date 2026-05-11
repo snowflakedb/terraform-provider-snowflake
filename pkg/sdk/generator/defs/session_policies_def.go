@@ -101,8 +101,9 @@ var sessionPoliciesDef = g.NewInterface(
 			OptionalOn().
 			OptionalStartsWith().
 			OptionalLimit(),
+		g.ShowByIDLikeFiltering,
+		g.ShowByIDExtendedInFiltering,
 	).
-	ShowByIdOperationWithFiltering(g.ShowByIDLikeFiltering, g.ShowByIDExtendedInFiltering).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-session-policy",
@@ -125,4 +126,10 @@ var sessionPoliciesDef = g.NewInterface(
 			Number("SessionUiIdleTimeoutMins").
 			StringList("AllowedSecondaryRoles").
 			StringList("BlockedSecondaryRoles"),
+	).
+	WithCustomInterfaceMethod(
+		"DescribeDetails",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*SessionPolicyDetails", "error",
 	)

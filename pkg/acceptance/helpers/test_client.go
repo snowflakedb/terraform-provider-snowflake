@@ -16,7 +16,6 @@ type TestClient struct {
 	AccountInformation
 
 	Account                      *AccountClient
-	Agent                        *AgentClient
 	AggregationPolicy            *AggregationPolicyClient
 	Alert                        *AlertClient
 	ApiIntegration               *ApiIntegrationClient
@@ -24,9 +23,11 @@ type TestClient struct {
 	ApplicationPackage           *ApplicationPackageClient
 	AuthenticationPolicy         *AuthenticationPolicyClient
 	BcrBundles                   *BcrBundlesClient
+	Budget                       *BudgetClient
 	ComputePool                  *ComputePoolClient
 	Connection                   *ConnectionClient
 	Context                      *ContextClient
+	CortexAgent                  *AgentClient
 	CortexSearchService          *CortexSearchServiceClient
 	CatalogIntegration           *CatalogIntegrationClient
 	Database                     *DatabaseClient
@@ -61,6 +62,7 @@ type TestClient struct {
 	Parameter                    *ParameterClient
 	PasswordPolicy               *PasswordPolicyClient
 	Pipe                         *PipeClient
+	PostgresInstance             *PostgresInstanceClient
 	Procedure                    *ProcedureClient
 	ProjectionPolicy             *ProjectionPolicyClient
 	PolicyReferences             *PolicyReferencesClient
@@ -114,7 +116,6 @@ func NewTestClient(
 		AccountInformation: context.client,
 
 		Account:                      NewAccountClient(context, idsGenerator),
-		Agent:                        NewAgentClient(context, idsGenerator),
 		AggregationPolicy:            NewAggregationPolicyClient(context, idsGenerator),
 		Alert:                        NewAlertClient(context, idsGenerator),
 		ApiIntegration:               NewApiIntegrationClient(context, idsGenerator),
@@ -122,9 +123,11 @@ func NewTestClient(
 		ApplicationPackage:           NewApplicationPackageClient(context, idsGenerator),
 		AuthenticationPolicy:         NewAuthenticationPolicyClient(context, idsGenerator),
 		BcrBundles:                   NewBcrBundlesClient(context),
+		Budget:                       NewBudgetClient(context, idsGenerator),
 		ComputePool:                  NewComputePoolClient(context, idsGenerator),
 		Connection:                   NewConnectionClient(context, idsGenerator),
 		Context:                      NewContextClient(context),
+		CortexAgent:                  NewAgentClient(context, idsGenerator),
 		CortexSearchService:          NewCortexSearchServiceClient(context, idsGenerator),
 		CatalogIntegration:           NewCatalogIntegrationClient(context, idsGenerator),
 		Database:                     NewDatabaseClient(context, idsGenerator),
@@ -159,6 +162,7 @@ func NewTestClient(
 		Parameter:                    NewParameterClient(context),
 		PasswordPolicy:               NewPasswordPolicyClient(context, idsGenerator),
 		Pipe:                         NewPipeClient(context, idsGenerator),
+		PostgresInstance:             NewPostgresInstanceClient(context, idsGenerator),
 		Procedure:                    NewProcedureClient(context, idsGenerator),
 		ProjectionPolicy:             NewProjectionPolicyClient(context, idsGenerator),
 		PolicyReferences:             NewPolicyReferencesClient(context),

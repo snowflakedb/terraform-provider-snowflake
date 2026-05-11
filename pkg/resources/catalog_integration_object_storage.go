@@ -48,6 +48,7 @@ func CatalogIntegrationObjectStorage() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(catalogIntegrationObjectStorageSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(catalogIntegrationObjectStorageSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
+			RecreateWhenCatalogSourceChangedExternally(sdk.CatalogIntegrationCatalogSourceTypeObjectStore),
 		),
 	}
 }
@@ -142,6 +143,7 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) sc
 			d.Set("enabled", details.Enabled),
 			// not reading refresh_interval_seconds on purpose (handled as external change to describe output)
 			d.Set("comment", details.Comment),
+			d.Set("catalog_source", string(details.CatalogSource)),
 			d.Set("table_format", string(details.TableFormat)),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(s)}),

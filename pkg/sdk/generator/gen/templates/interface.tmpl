@@ -13,8 +13,8 @@ type {{ .Name }} interface {
 				{{- end }}
 			{{- end }}
 		{{- else if eq .Name "ShowByID" }}
-			{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)
-			{{ .Name }}Safely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)
+			{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error)
+			{{ .Name }}Safely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error)
 		{{- else if and (eq .Name "Describe") .DescribeMapping }}
 			{{- if .DescribeKind }}
 				{{- if eq (describe_mapping_deref .DescribeKind) "single_value" }}
@@ -26,6 +26,14 @@ type {{ .Name }} interface {
 		{{- else if eq .Name "Drop" }}
 			Drop(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
 			DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error
+		{{- else if .InstanceMethodMapping }}
+			{{- if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}
+				{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .InstanceMethodMapping.To.Name }}, error)
+			{{- else }}
+				{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodMapping.To.Name }}, error)
+			{{- end }}
+		{{- else if .InstanceMethodScalarReturnType }}
+			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodScalarReturnType }}, error)
 		{{- else }}
 			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
 		{{- end -}}
@@ -36,6 +44,6 @@ type {{ .Name }} interface {
 			// {{ . }}
 			{{- end }}
 		{{- end }}
-		{{ .Name }}(ctx context.Context{{ range .Parameters }}, {{ .Name }} {{ .Kind }}{{ end }}){{ if eq (len .ReturnTypes) 0 }}{{ else if eq (len .ReturnTypes) 1 }} {{ index .ReturnTypes 0 }}{{ else }} ({{ join .ReturnTypes ", " }}){{ end }}
+		{{ .Name }}(ctx context.Context{{ range .Parameters }}, {{ .Name }} {{ .Kind }}{{ end }}){{ if eq (len .ReturnTypes) 1 }} {{ index .ReturnTypes 0 }}{{ else if gt (len .ReturnTypes) 1 }} ({{ join .ReturnTypes ", " }}){{ end }}
 	{{- end }}
 }

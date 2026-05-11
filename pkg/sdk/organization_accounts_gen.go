@@ -13,20 +13,15 @@ type OrganizationAccounts interface {
 	Show(ctx context.Context, request *ShowOrganizationAccountRequest) ([]OrganizationAccount, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OrganizationAccount, error)
-	// ShowParameters added manually
 	ShowParameters(ctx context.Context) ([]*Parameter, error)
-	// UnsetAllParameters added manually
 	UnsetAllParameters(ctx context.Context) error
-	// UnsetPolicySafely added manually
-	// Unsets a policy on the current account by a given supported kind.
+	// UnsetPolicySafely unsets a policy on the current account by a given supported kind.
 	// It ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.
 	UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
-	// SetPolicySafely added manually
-	// Sets a policy on the current account by a given supported kind.
+	// SetPolicySafely sets a policy on the current account by a given supported kind.
 	// It firstly tries to unset the policy with UnsetPolicySafely method to make sure that the policy is not set,
 	// then proceeds by setting the passed policy on the organization account.
 	SetPolicySafely(ctx context.Context, kind PolicyKind, id SchemaObjectIdentifier) error
-	// UnsetAll added manually
 	UnsetAll(ctx context.Context) error
 }
 
@@ -140,6 +135,5 @@ type OrganizationAccount struct {
 }
 
 func (v *OrganizationAccount) ObjectType() ObjectType {
-	// adjusted manually
 	return ObjectTypeAccount
 }

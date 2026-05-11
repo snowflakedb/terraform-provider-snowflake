@@ -37,6 +37,11 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasName(expected string)
 	return c
 }
 
+func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSource(expected string) *CatalogIntegrationObjectStorageResourceAssert {
+	c.StringValueSet("catalog_source", expected)
+	return c
+}
+
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasComment(expected string) *CatalogIntegrationObjectStorageResourceAssert {
 	c.StringValueSet("comment", expected)
 	return c
@@ -68,6 +73,11 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasTableFormat(expected 
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNameString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
 	c.AddAssertion(assert.ValueSet("name", expected))
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSourceString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
+	c.AddAssertion(assert.ValueSet("catalog_source", expected))
 	return c
 }
 
@@ -105,6 +115,11 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoName() *CatalogInte
 	return c
 }
 
+func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoCatalogSource() *CatalogIntegrationObjectStorageResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("catalog_source"))
+	return c
+}
+
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoComment() *CatalogIntegrationObjectStorageResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("comment"))
 	return c
@@ -134,6 +149,11 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoTableFormat() *Cata
 // Attribute empty checks //
 ////////////////////////////
 
+func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSourceEmpty() *CatalogIntegrationObjectStorageResourceAssert {
+	c.AddAssertion(assert.ValueSet("catalog_source", ""))
+	return c
+}
+
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasCommentEmpty() *CatalogIntegrationObjectStorageResourceAssert {
 	c.AddAssertion(assert.ValueSet("comment", ""))
 	return c
@@ -155,6 +175,11 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasRefreshIntervalSecond
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNameNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
 	c.AddAssertion(assert.ValuePresent("name"))
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSourceNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
+	c.AddAssertion(assert.ValuePresent("catalog_source"))
 	return c
 }
 

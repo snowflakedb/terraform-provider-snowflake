@@ -71,7 +71,6 @@ var cortexSearchServicesDef = g.NewInterface(
 		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).DescribeOperationWithPairedStructs(

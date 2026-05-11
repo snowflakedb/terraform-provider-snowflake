@@ -92,8 +92,6 @@ var networkRulesDef = g.NewInterface(
 			OptionalIn().
 			OptionalStartsWith().
 			OptionalLimitFrom(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
