@@ -73,38 +73,23 @@ var connectionsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-connections",
-	g.DbStruct("connectionRow").
+	g.StructPair("connectionRow", "Connection").
 		OptionalText("region_group").
 		Text("snowflake_region").
-		Field("created_on", "time.Time").
+		Time("created_on").
 		Text("account_name").
 		Text("name").
-		Field("comment", "sql.NullString").
-		Text("is_primary").
-		Text("primary").
-		Text("failover_allowed_to_accounts").
+		OptionalText("comment").
+		Field("is_primary", "string", "bool").
+		Field("primary", "string", "ExternalObjectIdentifier").
+		Field("failover_allowed_to_accounts", "string", "[]AccountIdentifier").
 		Text("connection_url").
 		Text("organization_name").
 		Text("account_locator"),
-	g.PlainStruct("Connection").
-		OptionalText("RegionGroup").
-		Text("SnowflakeRegion").
-		Field("CreatedOn", "time.Time").
-		Text("AccountName").
-		Text("Name").
-		OptionalText("Comment").
-		Bool("IsPrimary").
-		Field("Primary", "ExternalObjectIdentifier").
-		Field("FailoverAllowedToAccounts", "[]AccountIdentifier").
-		Text("ConnectionUrl").
-		Text("OrganizationName").
-		Text("AccountLocator"),
 	g.NewQueryStruct("ShowConnections").
 		Show().
 		SQL("CONNECTIONS").
 		OptionalLike(),
-).ShowByIdOperationWithFiltering(
-	g.ShowByIDLikeFiltering,
 )

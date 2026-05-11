@@ -23,25 +23,25 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 	comment := random.Comment()
 
 	completeModel := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithAuthenticationMethods(sdk.AuthenticationMethodsPassword).
-		WithMfaEnrollmentEnum(sdk.MfaEnrollmentRequired).
-		WithClientTypes(sdk.ClientTypesSnowflakeUi).
+		WithAuthenticationMethods(sdk.AuthenticationMethodsOptionPassword).
+		WithMfaEnrollmentEnum(sdk.MfaEnrollmentOptionRequired).
+		WithClientTypes(sdk.ClientTypesOptionSnowflakeUi).
 		WithSecurityIntegrations("ALL").
 		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
+			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
 			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodPassKey},
-				{Method: sdk.MfaPolicyAllowedMethodDuo},
+				{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+				{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
 			}),
 		).
 		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
 			WithDefaultExpiryInDays(1).
 			WithMaxExpiryInDays(30).
-			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
+			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 		).
 		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
 			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderAll},
+				{Provider: sdk.AllowedProviderOptionAll},
 			}).
 			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
 				{Value: "111122223333"},

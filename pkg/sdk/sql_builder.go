@@ -335,10 +335,31 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 				if reflectedValue.(Identifier).Name() == "" {
 					return nil, nil
 				}
+				// instance_method classifier: render as identifier!METHOD
+				for _, part := range ddlTagParts {
+					if strings.TrimSpace(part) == "instance_method" {
+						objectID, ok := reflectedValue.(ObjectIdentifier)
+						if !ok {
+							return nil, fmt.Errorf("instance_method classifier requires ObjectIdentifier, got %T", reflectedValue)
+						}
+						return sqlInstanceMethodClause{object: objectID, method: sqlTag}, nil
+					}
+				}
+				// system_reference classifier: render as SYSTEM$REFERENCE('<objectType>', '<fqn>')
+				for _, part := range ddlTagParts {
+					if strings.TrimSpace(part) == "system_reference" {
+						objectID, ok := reflectedValue.(ObjectIdentifier)
+						if !ok {
+							return nil, fmt.Errorf("system_reference classifier requires ObjectIdentifier, got %T", reflectedValue)
+						}
+						return sqlSystemReferenceClause{objectType: sqlTag, object: objectID}, nil
+					}
+				}
 				return sqlIdentifierClause{
 					key:   sqlTag,
 					value: reflectedValue.(Identifier),
 					em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+					qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 				}, nil
 			}
 		case "list":
@@ -348,6 +369,13 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 			fieldStructClauses, err := b.parseStruct(reflectedValue)
 			if err != nil {
 				return nil, err
+			}
+			if len(fieldStructClauses) == 0 {
+				// handle the case where the list is empty and parentheses are a must
+				pm := b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier)
+				if pm == MustParentheses {
+					fieldStructClauses = append(fieldStructClauses, sqlStaticClause(""))
+				}
 			}
 			clauses = append(clauses, sqlListClause{
 				clauses: fieldStructClauses,
@@ -409,6 +437,8 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			listClauses = append(listClauses, sqlIdentifierClause{
 				value: identifier,
 				em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+				// TODO [next PRs]: handle single quotes for identifier lists correctly
+				// qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 			})
 			continue
 		}
@@ -541,6 +571,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 			key:   sqlTag,
 			value: reflectedValue.(Identifier),
 			em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+			qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 		}
 	case "parameter":
 		if _, ok := reflectedValue.(ObjectType); ok {
@@ -612,6 +643,7 @@ type sqlIdentifierClause struct {
 	key   string
 	value Identifier
 	em    equalsModifier
+	qm    quoteModifier
 }
 
 func (v sqlIdentifierClause) String() string {
@@ -622,6 +654,7 @@ func (v sqlIdentifierClause) String() string {
 	} else {
 		name = DoubleQuotes.Modify(v.value.Name())
 	}
+	name = v.qm.Modify(name)
 	// else try to get the string value
 	if v.key != "" {
 		return v.em.Modify(v.key) + name
@@ -667,4 +700,22 @@ func (v sqlParameterClause) String() string {
 	// key = "value"
 	s += v.qm.Modify(value)
 	return s
+}
+
+type sqlInstanceMethodClause struct {
+	object ObjectIdentifier
+	method string
+}
+
+func (v sqlInstanceMethodClause) String() string {
+	return fmt.Sprintf("%s!%s", v.object.FullyQualifiedName(), v.method)
+}
+
+type sqlSystemReferenceClause struct {
+	objectType string
+	object     ObjectIdentifier
+}
+
+func (v sqlSystemReferenceClause) String() string {
+	return fmt.Sprintf("SYSTEM$REFERENCE('%s', '%s')", v.objectType, v.object.FullyQualifiedName())
 }

@@ -7,7 +7,7 @@ func {{ .Name }}ToSchema({{ $nameLowerCase }} *{{ .SdkType }}) map[string]any {
 {{- range .SchemaFields }}
     {{ if .IsOriginalTypePointer -}}
         if {{ $nameLowerCase }}.{{ .OriginalName }} != nil {
-        {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper $nameLowerCase "." .OriginalName }}
+        {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper "(*" $nameLowerCase "." .OriginalName ")" }}
         }
     {{- else -}}
         {{ $schemaName }}["{{ .Name }}"] = {{ RunMapper .Mapper $nameLowerCase "." .OriginalName }}

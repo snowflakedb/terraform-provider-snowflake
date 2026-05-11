@@ -130,7 +130,7 @@ func ExternalGcsStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalGcsStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalGcsStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalGcsStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "file_format"),
+			ComputedIfAnyAttributeChanged(externalGcsStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
 			ComputedIfAnyAttributeChanged(externalGcsStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("encryption"),

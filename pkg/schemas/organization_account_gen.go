@@ -110,44 +110,36 @@ func OrganizationAccountToSchema(organizationAccount *sdk.OrganizationAccount) m
 	organizationAccountSchema["account_url"] = organizationAccount.AccountUrl
 	organizationAccountSchema["created_on"] = organizationAccount.CreatedOn
 	if organizationAccount.Comment != nil {
-		organizationAccountSchema["comment"] = organizationAccount.Comment
+		organizationAccountSchema["comment"] = (*organizationAccount.Comment)
 	}
 	organizationAccountSchema["account_locator"] = organizationAccount.AccountLocator
 	organizationAccountSchema["account_locator_url"] = organizationAccount.AccountLocatorUrl
 	organizationAccountSchema["managed_accounts"] = organizationAccount.ManagedAccounts
 	organizationAccountSchema["consumption_billing_entity_name"] = organizationAccount.ConsumptionBillingEntityName
 	if organizationAccount.MarketplaceConsumerBillingEntityName != nil {
-		// adjusted manually
-		organizationAccountSchema["marketplace_consumer_billing_entity_name"] = *organizationAccount.MarketplaceConsumerBillingEntityName
+		organizationAccountSchema["marketplace_consumer_billing_entity_name"] = (*organizationAccount.MarketplaceConsumerBillingEntityName)
 	}
 	if organizationAccount.MarketplaceProviderBillingEntityName != nil {
-		// adjusted manually
-		organizationAccountSchema["marketplace_provider_billing_entity_name"] = *organizationAccount.MarketplaceProviderBillingEntityName
+		organizationAccountSchema["marketplace_provider_billing_entity_name"] = (*organizationAccount.MarketplaceProviderBillingEntityName)
 	}
 	if organizationAccount.OldAccountUrl != nil {
-		// adjusted manually
-		organizationAccountSchema["old_account_url"] = *organizationAccount.OldAccountUrl
+		organizationAccountSchema["old_account_url"] = (*organizationAccount.OldAccountUrl)
 	}
 	organizationAccountSchema["is_org_admin"] = organizationAccount.IsOrgAdmin
 	if organizationAccount.AccountOldUrlSavedOn != nil {
-		// adjusted manually
-		organizationAccountSchema["account_old_url_saved_on"] = *organizationAccount.AccountOldUrlSavedOn
+		organizationAccountSchema["account_old_url_saved_on"] = (*organizationAccount.AccountOldUrlSavedOn)
 	}
 	if organizationAccount.AccountOldUrlLastUsed != nil {
-		// adjusted manually
-		organizationAccountSchema["account_old_url_last_used"] = *organizationAccount.AccountOldUrlLastUsed
+		organizationAccountSchema["account_old_url_last_used"] = (*organizationAccount.AccountOldUrlLastUsed)
 	}
 	if organizationAccount.OrganizationOldUrl != nil {
-		// adjusted manually
-		organizationAccountSchema["organization_old_url"] = *organizationAccount.OrganizationOldUrl
+		organizationAccountSchema["organization_old_url"] = (*organizationAccount.OrganizationOldUrl)
 	}
 	if organizationAccount.OrganizationOldUrlSavedOn != nil {
-		// adjusted manually
-		organizationAccountSchema["organization_old_url_saved_on"] = *organizationAccount.OrganizationOldUrlSavedOn
+		organizationAccountSchema["organization_old_url_saved_on"] = (*organizationAccount.OrganizationOldUrlSavedOn)
 	}
 	if organizationAccount.OrganizationOldUrlLastUsed != nil {
-		// adjusted manually
-		organizationAccountSchema["organization_old_url_last_used"] = *organizationAccount.OrganizationOldUrlLastUsed
+		organizationAccountSchema["organization_old_url_last_used"] = (*organizationAccount.OrganizationOldUrlLastUsed)
 	}
 	organizationAccountSchema["is_events_account"] = organizationAccount.IsEventsAccount
 	organizationAccountSchema["is_organization_account"] = organizationAccount.IsOrganizationAccount

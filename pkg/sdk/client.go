@@ -30,10 +30,12 @@ type Client struct {
 	ApplicationRoles             ApplicationRoles
 	Applications                 Applications
 	AuthenticationPolicies       AuthenticationPolicies
+	Budgets                      Budgets
 	CatalogIntegrations          CatalogIntegrations
 	Comments                     Comments
 	ComputePools                 ComputePools
 	Connections                  Connections
+	CortexAgents                 CortexAgents
 	CortexSearchServices         CortexSearchServices
 	DatabaseRoles                DatabaseRoles
 	Databases                    Databases
@@ -63,6 +65,7 @@ type Client struct {
 	PasswordPolicies             PasswordPolicies
 	Pipes                        Pipes
 	PolicyReferences             PolicyReferences
+	PostgresInstances            PostgresInstances
 	Procedures                   Procedures
 	ResourceMonitors             ResourceMonitors
 	Roles                        Roles
@@ -163,11 +166,13 @@ func (c *Client) initialize() {
 	c.ApplicationRoles = &applicationRoles{client: c}
 	c.Applications = &applications{client: c}
 	c.AuthenticationPolicies = &authenticationPolicies{client: c}
+	c.Budgets = &budgets{client: c}
 	c.CatalogIntegrations = &catalogIntegrations{client: c}
 	c.Comments = &comments{client: c}
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
+	c.CortexAgents = &cortexAgents{client: c}
 	c.CortexSearchServices = &cortexSearchServices{client: c}
 	c.DatabaseRoles = &databaseRoles{client: c}
 	c.Databases = &databases{client: c}
@@ -197,6 +202,7 @@ func (c *Client) initialize() {
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
 	c.PolicyReferences = &policyReference{client: c}
+	c.PostgresInstances = &postgresInstances{client: c}
 	c.Procedures = &procedures{client: c}
 	c.ReplicationFunctions = &replicationFunctions{client: c}
 	c.ResourceMonitors = &resourceMonitors{client: c}

@@ -28,6 +28,7 @@ type Client = sdk.Client
 type (
 	ObjectIdentifier         = sdk.ObjectIdentifier
 	AccountObjectIdentifier  = sdk.AccountObjectIdentifier
+	AccountIdentifier        = sdk.AccountIdentifier
 	DatabaseObjectIdentifier = sdk.DatabaseObjectIdentifier
 	ExternalObjectIdentifier = sdk.ExternalObjectIdentifier
 	SchemaObjectIdentifier   = sdk.SchemaObjectIdentifier
@@ -41,19 +42,29 @@ type (
 type (
 	ValuesBehavior = sdk.ValuesBehavior
 	ObjectType     = sdk.ObjectType
+	Parameter      = sdk.Parameter
 )
 
 const (
-	ObjectTypeSequence  = sdk.ObjectTypeSequence
-	ObjectTypeStreamlit = sdk.ObjectTypeStreamlit
+	ObjectTypeSequence                       = sdk.ObjectTypeSequence
+	ObjectTypeStreamlit                      = sdk.ObjectTypeStreamlit
+	ObjectTypePairedStructExample ObjectType = "PAIRED_STRUCT_EXAMPLE"
 )
 
 func NewSchemaObjectIdentifier(_, _, _ string) SchemaObjectIdentifier {
 	return sdk.NewSchemaObjectIdentifier("", "", "")
 }
 
+func NewAccountObjectIdentifier(name string) AccountObjectIdentifier {
+	return sdk.NewAccountObjectIdentifier(name)
+}
+
 func randomDatabaseObjectIdentifier() DatabaseObjectIdentifier {
 	return DatabaseObjectIdentifier{}
+}
+
+func randomAccountObjectIdentifier() AccountObjectIdentifier {
+	return AccountObjectIdentifier{}
 }
 
 func randomSchemaObjectIdentifier() SchemaObjectIdentifier {
@@ -151,4 +162,20 @@ func String(s string) *string {
 
 func conversionErrorWrapped[U any](_ *U, _ error) (*U, error) {
 	return nil, nil
+}
+
+var allEnumConversionTests []enumTestProvider
+
+type enumTestProvider interface {
+	RunTest(t *testing.T)
+}
+
+type typedEnumTestProvider[T ~string] struct {
+	enumName       string
+	allValues      []T
+	conversionFunc func(string) (T, error)
+}
+
+func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
+	t.Helper()
 }

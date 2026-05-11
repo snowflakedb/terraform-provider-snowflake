@@ -37,11 +37,11 @@ func GetStorageLocationStorageProvider(i ExternalVolumeStorageLocationItem) (Sto
 	case s.S3StorageLocationParams != nil && *s.S3StorageLocationParams != S3StorageLocationParams{}:
 		return ToStorageProvider(string(s.S3StorageLocationParams.StorageProvider))
 	case s.GCSStorageLocationParams != nil && *s.GCSStorageLocationParams != GCSStorageLocationParams{}:
-		return StorageProviderGCS, nil
+		return StorageProviderGcs, nil
 	case s.AzureStorageLocationParams != nil && *s.AzureStorageLocationParams != AzureStorageLocationParams{}:
 		return StorageProviderAzure, nil
 	case s.S3CompatStorageLocationParams != nil && *s.S3CompatStorageLocationParams != S3CompatStorageLocationParams{}:
-		return StorageProviderS3Compatible, nil
+		return StorageProviderS3compat, nil
 	default:
 		return "", fmt.Errorf("Invalid storage location")
 	}
@@ -132,7 +132,7 @@ func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (Extern
 	}
 
 	switch storageProvider {
-	case StorageProviderS3, StorageProviderS3GOV:
+	case StorageProviderS3, StorageProviderS3gov:
 		details.S3StorageLocation = &StorageLocationS3Details{
 			StorageAwsRoleArn:        e.StorageAwsRoleArn,
 			StorageAwsIamUserArn:     e.StorageAwsIamUserArn,
@@ -141,7 +141,7 @@ func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (Extern
 			UsePrivatelinkEndpoint:   e.UsePrivatelinkEndpoint,
 			EncryptionKmsKeyId:       e.EncryptionKmsKeyId,
 		}
-	case StorageProviderGCS:
+	case StorageProviderGcs:
 		details.GCSStorageLocation = &StorageLocationGcsDetails{
 			StorageGcpServiceAccount: e.StorageGcpServiceAccount,
 			EncryptionKmsKeyId:       e.EncryptionKmsKeyId,
@@ -152,7 +152,7 @@ func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (Extern
 			AzureMultiTenantAppName: e.AzureMultiTenantAppName,
 			AzureConsentUrl:         e.AzureConsentUrl,
 		}
-	case StorageProviderS3Compatible:
+	case StorageProviderS3compat:
 		details.S3CompatStorageLocation = &StorageLocationS3CompatDetails{
 			Endpoint:           e.Endpoint,
 			AwsAccessKeyId:     e.AwsAccessKeyId,
@@ -213,7 +213,7 @@ func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
 		if len(s.Name) == 0 {
 			return fmt.Errorf("A storage location's Name in this volume could not be parsed.")
 		}
-		if !slices.Contains(AsStringList(AllStorageProviderValues), s.StorageProvider) {
+		if !slices.Contains(AsStringList(AllStorageProviders), s.StorageProvider) {
 			return fmt.Errorf("invalid storage provider parsed: %s", s.StorageProvider)
 		}
 		if len(s.StorageBaseUrl) == 0 {

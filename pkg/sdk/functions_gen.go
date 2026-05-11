@@ -22,10 +22,8 @@ type Functions interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Function, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Function, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]FunctionDetail, error)
-
-	// DescribeDetails is added manually; it returns aggregated describe results for the given function.
+	// DescribeDetails returns aggregated describe results for the given function.
 	DescribeDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*FunctionDetails, error)
-	// ShowParameters is added manually
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]*Parameter, error)
 }
 

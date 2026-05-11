@@ -15,6 +15,7 @@ type CatalogIntegrationIcebergRestModel struct {
 	Name                     tfconfig.Variable `json:"name,omitempty"`
 	BearerRestAuthentication tfconfig.Variable `json:"bearer_rest_authentication,omitempty"`
 	CatalogNamespace         tfconfig.Variable `json:"catalog_namespace,omitempty"`
+	CatalogSource            tfconfig.Variable `json:"catalog_source,omitempty"`
 	Comment                  tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                  tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -98,6 +99,11 @@ func (c *CatalogIntegrationIcebergRestModel) WithCatalogNamespace(catalogNamespa
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestModel) WithCatalogSource(catalogSource string) *CatalogIntegrationIcebergRestModel {
+	c.CatalogSource = tfconfig.StringVariable(catalogSource)
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestModel) WithComment(comment string) *CatalogIntegrationIcebergRestModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -140,6 +146,11 @@ func (c *CatalogIntegrationIcebergRestModel) WithBearerRestAuthenticationValue(v
 
 func (c *CatalogIntegrationIcebergRestModel) WithCatalogNamespaceValue(value tfconfig.Variable) *CatalogIntegrationIcebergRestModel {
 	c.CatalogNamespace = value
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestModel) WithCatalogSourceValue(value tfconfig.Variable) *CatalogIntegrationIcebergRestModel {
+	c.CatalogSource = value
 	return c
 }
 

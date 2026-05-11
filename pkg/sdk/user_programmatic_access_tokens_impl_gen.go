@@ -168,14 +168,14 @@ func (r programmaticAccessTokenResultDBRow) convert() (*ProgrammaticAccessToken,
 	} else {
 		token.UserName = userName
 	}
-	if r.RoleRestriction != "" {
-		roleRestriction, err := ParseAccountObjectIdentifier(r.RoleRestriction)
+	if r.RoleRestriction.Valid && r.RoleRestriction.String != "" {
+		roleRestriction, err := ParseAccountObjectIdentifier(r.RoleRestriction.String)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing role restriction: %w", err)
 		}
 		token.RoleRestriction = &roleRestriction
 	}
-	status, err := toProgrammaticAccessTokenStatus(r.Status)
+	status, err := ToProgrammaticAccessTokenStatus(r.Status)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing programmatic access token status: %w", err)
 	} else {

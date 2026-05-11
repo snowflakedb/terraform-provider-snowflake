@@ -10,6 +10,9 @@ export CURRENT_ARCH := $(shell arch)
 UNIT_TESTS_EXCLUDE_PACKAGES=./pkg/testacc ./pkg/sdk/testint ./pkg/testfunctional ./pkg/manual_tests
 UNIT_TESTS_EXCLUDE_PATTERN=$(shell echo $(UNIT_TESTS_EXCLUDE_PACKAGES) | sed 's/ /|/g')
 
+# Usage: $(call GIT_DIFF_CHECK,path) — diff path against HEAD; on mismatch restore and exit with diff's status.
+GIT_DIFF_CHECK = git diff --exit-code -- $(1) || ( status=$$?; git restore -- $(1); exit "$$status" )
+
 default: help
 
 dev-setup: ## setup development dependencies
@@ -26,14 +29,22 @@ docs: generate-docs-additional-files ## generate docs
 	tools/bin/tfplugindocs generate --provider-name=terraform-provider-snowflake
 
 docs-check: docs ## check that docs have been generated
-	git diff --exit-code -- docs
+	$(call GIT_DIFF_CHECK,docs)
 
 fmt: terraform-fmt ## Run terraform fmt and gofumpt
 	tools/bin/gofumpt -l -w .
 
+fmt-check: terraform-fmt-check ## Run terraform fmt and gofumpt without modifying any files
+	tools/bin/gofumpt -d .
+
 terraform-fmt: ## Run terraform fmt
 	terraform fmt -recursive ./examples/
 	terraform fmt -recursive ./pkg/testacc/testdata/
+
+terraform-fmt-check: ## check if all Terraform configuration files are correctly formatted
+	# -check causes a non-zero exit status to be returned if the input is improperly formatted (source: https://developer.hashicorp.com/terraform/cli/commands/fmt#usage)
+	terraform fmt -check -diff -recursive ./examples/
+	terraform fmt -check -diff -recursive ./pkg/testacc/testdata/
 
 help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-23s\033[0m %s\n", $$1, $$2}'
@@ -50,12 +61,13 @@ lint-fix: ## Run linters and formatters. If linters or formatters support autofi
 mod: ## add missing and remove unused modules
 	go mod tidy -compat=1.25.7
 
-mod-check: mod ## check if there are any missing/unused modules
-	git diff --exit-code -- go.mod go.sum
+mod-check: ## check if there are any missing/unused modules
+	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
+	go mod tidy -compat=1.25.7 -diff
 
-pre-push: generate-all-config-model-builders-check mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
+pre-push: generate-all-config-model-builders mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
-pre-push-check: pre-push mod-check generate-docs-additional-files-check docs-check ## Run checks before pushing a change (docs, fmt, mod, etc.)
+pre-push-check: generate-all-config-model-builders-check mod-check fmt-check generate-docs-additional-files-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -82,7 +94,7 @@ test-functional: ## run functional tests of the underlying terraform libraries (
 	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional
 
 test-architecture: ## check architecture constraints between packages
-	go test ./pkg/architests/... -v
+	go test ./pkg/architests/...
 
 test-acceptance-%: ## run acceptance tests (both non-account and account level ones) for the given resource only, e.g. test-acceptance-Warehouse
 	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run ^TestAcc_$* -v -timeout=20m ./pkg/testacc
@@ -147,7 +159,7 @@ generate-docs-additional-files: ## generate docs additional files
 	go run ./pkg/internal/tools/doc-gen-helper/ $$PWD
 
 generate-docs-additional-files-check: generate-docs-additional-files ## check that docs additional files have been generated
-	git diff --exit-code -- examples/additional
+	$(call GIT_DIFF_CHECK,examples/additional)
 
 generate-show-output-schemas: ## Generate show output schemas with mappers
 	go generate ./pkg/schemas/generate.go
@@ -211,9 +223,9 @@ clean-all-config-model-builders: clean-resource-model-builders clean-datasource-
 generate-all-config-model-builders: generate-resource-model-builders generate-datasource-model-builders generate-provider-model-builders ## generate all config model builders
 
 generate-all-config-model-builders-check: clean-all-config-model-builders generate-all-config-model-builders ## check that generated config model builders are up-to-date
-	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/model
-	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/datasourcemodel
-	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/providermodel
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/config/model)
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/config/datasourcemodel)
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/config/providermodel)
 
 clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-snowflake-object-parameters-assertions clean-resource-assertions clean-resource-parameters-assertions clean-resource-show-output-assertions clean-resource-model-builders clean-provider-model-builders clean-datasource-model-builders ## clean all generated assertions and config models
 
@@ -225,4 +237,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf
+.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf

@@ -32,8 +32,6 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 	providerModelWithExperiment := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
 
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults")
-
 	// stageModel: directory block with enable=false but NO explicit auto_refresh,
 	// so auto_refresh defaults to "default" in config. This lets us detect the permadiff
 	// (import sets "false", config has "default") and verify the experiment fixes it.
@@ -43,7 +41,7 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 		}).
 		WithFileFormatJson(sdk.FileFormatJsonOptions{
 			BinaryFormat: sdk.Pointer(sdk.BinaryFormatHex),
-			Compression:  sdk.Pointer(sdk.JSONCompressionAuto),
+			Compression:  sdk.Pointer(sdk.JsonCompressionAuto),
 			DateFormat: sdk.Pointer(sdk.StageFileFormatStringOrAuto{
 				Value: sdk.Pointer("AUTO"),
 			}),
@@ -60,7 +58,7 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 				FileFormatOptions: &sdk.FileFormatOptions{
 					JsonOptions: &sdk.FileFormatJsonOptions{
 						BinaryFormat: sdk.Pointer(sdk.BinaryFormatHex),
-						Compression:  sdk.Pointer(sdk.JSONCompressionAuto),
+						Compression:  sdk.Pointer(sdk.JsonCompressionAuto),
 						DateFormat: sdk.Pointer(sdk.StageFileFormatStringOrAuto{
 							Value: sdk.Pointer("AUTO"),
 						}),
@@ -130,7 +128,7 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 			// Import WITH experiment — all tri-value booleans are imported as "default"
 			{
 				PreConfig:                createStage,
-				ProtoV6ProviderFactories: experimentFactory,
+				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
 				Config:                   accconfig.FromModels(t, providerModelWithExperiment, stageModel),
 				ResourceName:             stageModel.ResourceReference(),
 				ImportState:              true,
@@ -152,7 +150,7 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 			},
 			// Plan WITH experiment — proves the fix: config and state both have "default" → no diff
 			{
-				ProtoV6ProviderFactories: experimentFactory,
+				ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
 				Config:                   accconfig.FromModels(t, providerModelWithExperiment, stageModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

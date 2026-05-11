@@ -54,8 +54,9 @@ func containsFieldNames(fields []Field, names ...string) bool {
 
 type ShowObjectTypeMethod struct {
 	StructName string
+	TypeName   string
 }
 
-func NewShowObjectTypeMethod(structName string) *ShowObjectTypeMethod {
-	return &ShowObjectTypeMethod{StructName: structName}
+func NewShowObjectTypeMethod(structName, typeName string) *ShowObjectTypeMethod {
+	return &ShowObjectTypeMethod{StructName: structName, TypeName: typeName}
 }

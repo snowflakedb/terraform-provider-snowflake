@@ -40,6 +40,16 @@ type Interface struct {
 	Operations []*Operation
 	// IdentifierKind keeps identifier of the underlying object (e.g. DatabaseObjectIdentifier)
 	IdentifierKind string
+	// Enums contains all enum definitions for this operation group.
+	Enums []*Enum
+	// CustomMethods holds interface methods that have no generated implementation.
+	// They will appear in the generated interface but the user is responsible for implementing them.
+	CustomMethods []*CustomInterfaceMethod
+	// ShowObjectTypeName overrides the suffix used in the generated ObjectType() return value.
+	// If empty, NameSingular is used (producing ObjectType<NameSingular>).
+	ShowObjectTypeName string
+	// ShowObjectName is the name of the main object returned from this interface through Show methods family.
+	ShowObjectName string
 
 	*genhelpers.PreambleModel
 	*genhelpers.ObjectGenerationSettings
@@ -76,4 +86,17 @@ func (i *Interface) NameLowerCased() string {
 // ObjectIdentifierKind returns the level of the object identifier (e.g. for DatabaseObjectIdentifier, it returns the prefix "Database")
 func (i *Interface) ObjectIdentifierPrefix() idPrefix {
 	return identifierStringToPrefix(i.IdentifierKind)
+}
+
+func (i *Interface) WithEnums(enums ...*Enum) *Interface {
+	i.Enums = append(i.Enums, enums...)
+	return i
+}
+
+// WithShowObjectType overrides the ObjectType constant used in the generated ObjectType() method.
+// By default the generator produces `return ObjectType<NameSingular>`. Use this when that constant
+// does not exist and the real constant uses a different suffix (e.g. "Account" instead of "OrganizationAccount").
+func (i *Interface) WithShowObjectType(name string) *Interface {
+	i.ShowObjectTypeName = name
+	return i
 }

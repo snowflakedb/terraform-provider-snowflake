@@ -136,7 +136,7 @@ func TestTableCreate(t *testing.T) {
 		opts := defaultOpts()
 		opts.StageFileFormat = &LegacyFileFormat{
 			FormatName:     String("some_format"),
-			FileFormatType: Pointer(FileFormatTypeCSV),
+			FileFormatType: Pointer(FileFormatTypeCsv),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("StageFileFormat", "FormatName", "FormatType"))
 	})
@@ -437,9 +437,9 @@ func TestTableCreate(t *testing.T) {
 			Rely:              Bool(true),
 		}
 		stageFileFormat := LegacyFileFormat{
-			FileFormatType: Pointer(FileFormatTypeCSV),
+			FileFormatType: Pointer(FileFormatTypeCsv),
 			Options: &LegacyFileFormatTypeOptions{
-				CSVCompression: Pointer(CSVCompressionAuto),
+				CSVCompression: Pointer(CsvCompressionAuto),
 			},
 		}
 		legacyTableCopyOptions := LegacyTableCopyOptions{
@@ -1337,7 +1337,7 @@ func TestTableAlter(t *testing.T) {
 			Set: &TableSet{
 				EnableSchemaEvolution: Bool(true),
 				StageFileFormat: &LegacyFileFormat{
-					FileFormatType: Pointer(FileFormatTypeCSV),
+					FileFormatType: Pointer(FileFormatTypeCsv),
 				},
 				StageCopyOptions: &LegacyTableCopyOptions{
 					OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},

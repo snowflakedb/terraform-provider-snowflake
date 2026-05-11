@@ -22,6 +22,8 @@ type Field struct {
 	Tags map[string][]string
 	// Required is used to mark fields which are essential (it's used e.g. for DTO builders generation)
 	Required bool
+	// IsEmptyStruct marks fields created via QueryStruct composition which are empty structs
+	IsEmptyStruct bool
 }
 
 func NewField(name string, kind string, tagBuilder *TagBuilder, transformer FieldTransformer) *Field {
@@ -103,6 +105,10 @@ func (f *Field) KindNoSlice() string {
 
 // IsStruct checks if field is a struct
 func (f *Field) IsStruct() bool {
+	return f.HasAnyFields() || f.IsEmptyStruct
+}
+
+func (f *Field) HasAnyFields() bool {
 	return len(f.Fields) > 0
 }
 
@@ -117,7 +123,7 @@ func (f *Field) IsSlice() bool {
 // ShouldBeInDto checks if field is not some static SQL field which should not be interacted with by SDK user
 // TODO: this is a very naive implementation, consider fixing it with DSL builder connection
 func (f *Field) ShouldBeInDto() bool {
-	return !slices.Contains(f.Tags["ddl"], "static")
+	return !slices.Contains(f.Tags["ddl"], "static") && !f.IsEmptyStruct
 }
 
 // IsRoot checks if field is at the top of field hierarchy, basically it is true for Option structs

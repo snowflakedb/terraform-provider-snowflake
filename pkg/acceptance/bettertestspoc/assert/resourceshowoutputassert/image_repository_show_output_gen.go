@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type ImageRepositoryShowOutputAssert struct {
@@ -77,6 +78,11 @@ func (i *ImageRepositoryShowOutputAssert) HasComment(expected string) *ImageRepo
 	return i
 }
 
+func (i *ImageRepositoryShowOutputAssert) HasEncryption(expected sdk.ImageRepositoryEncryptionType) *ImageRepositoryShowOutputAssert {
+	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("encryption", expected))
+	return i
+}
+
 func (i *ImageRepositoryShowOutputAssert) HasPrivatelinkRepositoryUrl(expected string) *ImageRepositoryShowOutputAssert {
 	i.AddAssertion(assert.ResourceShowOutputValueSet("privatelink_repository_url", expected))
 	return i
@@ -123,6 +129,11 @@ func (i *ImageRepositoryShowOutputAssert) HasNoOwnerRoleType() *ImageRepositoryS
 
 func (i *ImageRepositoryShowOutputAssert) HasNoComment() *ImageRepositoryShowOutputAssert {
 	i.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return i
+}
+
+func (i *ImageRepositoryShowOutputAssert) HasNoEncryption() *ImageRepositoryShowOutputAssert {
+	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("encryption"))
 	return i
 }
 
