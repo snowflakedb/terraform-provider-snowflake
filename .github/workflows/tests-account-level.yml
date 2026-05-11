@@ -172,7 +172,7 @@ jobs:
       # via job.check_run_id (since github.job returns the job_id, not the display name)
       # and uses it to find the matching check run on the fork PR's commit.
       - name: Set fork job status
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         if: ${{ always() }}
         id: update_check_run
         env:
