@@ -42,10 +42,6 @@ var icebergRestRestConfigDef = g.NewQueryStruct("IcebergRestRestConfig").
 	OptionalAssignment("CATALOG_API_TYPE", CatalogIntegrationCatalogApiTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
 	OptionalAssignment("ACCESS_DELEGATION_MODE", CatalogIntegrationAccessDelegationModeEnumDef.Kind(), g.ParameterOptions().NoQuotes())
 
-var sapBdcRestConfigDef = g.NewQueryStruct("SapBdcRestConfig").
-	TextAssignment("SAP_BDC_INVITATION_LINK", g.ParameterOptions().SingleQuotes().Required()).
-	SQLWithCustomFieldName("accessDelegationMode", "ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS")
-
 var oAuthRestAuthenticationDef = g.NewQueryStruct("OAuthRestAuthentication").
 	SQLWithCustomFieldName("restAuthType", "TYPE = OAUTH").
 	// TODO: Confirm that the OAUTH_TOKEN_URI property can be set while using private connectivity (when CATALOG_API_TYPE = PRIVATE)
@@ -132,22 +128,12 @@ var catalogIntegrationsDef = g.NewInterface(
 						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()).
 					WithValidation(g.ExactlyOneValueSet, "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"),
 				g.KeywordOptions()).
-			OptionalQueryStructField(
-				"SapBdcCatalogSourceParams",
-				g.NewQueryStruct("SapBdcParams").
-					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = SAP_BDC").
-					SQLWithCustomFieldName("tableFormat", "TABLE_FORMAT = DELTA").
-					QueryStructField(
-						"RestConfig",
-						sapBdcRestConfigDef,
-						g.ListOptions().SQL("REST_CONFIG =").Parentheses().NoComma()),
-				g.KeywordOptions()).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			OptionalNumberAssignment("REFRESH_INTERVAL_SECONDS", g.ParameterOptions().NoQuotes()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
-			WithValidation(g.ExactlyOneValueSet, "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"),
+			WithValidation(g.ExactlyOneValueSet, "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams"),
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-catalog-integration",
@@ -259,13 +245,6 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalField("OAuthRestAuthentication", "OAuthRestAuthenticationDetails").
 			OptionalField("BearerRestAuthentication", "BearerRestAuthenticationDetails").
 			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
-		g.PlainStruct("CatalogIntegrationSapBdcDetails").
-			AccountObjectIdentifier().
-			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
-			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
-			Bool("Enabled").
-			Number("RefreshIntervalSeconds").
-			Text("Comment"),
 		g.PlainStruct("CatalogIntegrationAllDetails").
 			AccountObjectIdentifier().
 			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
@@ -328,12 +307,6 @@ var catalogIntegrationsDef = g.NewInterface(
 		"",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
 		"*CatalogIntegrationIcebergRestDetails", "error",
-	).
-	WithCustomInterfaceMethod(
-		"DescribeSapBdcDetails",
-		"",
-		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
-		"*CatalogIntegrationSapBdcDetails", "error",
 	).
 	WithCustomInterfaceMethod(
 		"DescribeDetails",
