@@ -67,15 +67,27 @@ func TestInt_Budgets(t *testing.T) {
 		require.Equal(t, integration.ID().Name(), *integrationName)
 	})
 
+	// TODO [next PR]: try procedure with one arg
+	// TODO [next PR]: try procedure with 2 args (string and int)
+	// TODO [next PR]: get rid of the ARRAY_CONSTRUCT() workaround for empty list
 	t.Run("SetCycleStartAction and GetCycleStartAction", func(t *testing.T) {
 		budgetId, budgetCleanup := testClientHelper().Budget.Create(t)
 		t.Cleanup(budgetCleanup)
 
-		procedureId, procCleanup := testClientHelper().Procedure.Create(t)
+		procedure, procCleanup := testClientHelper().Procedure.Create(t)
 		t.Cleanup(procCleanup)
 
+		revokeDatabasePrivilege := testClientHelper().Grant.GrantUsageOnDatabaseToSnowflakeApplication(t, procedure.ID().DatabaseId())
+		t.Cleanup(revokeDatabasePrivilege)
+
+		revokeSchemaPrivilege := testClientHelper().Grant.GrantUsageOnSchemaToSnowflakeApplication(t, procedure.ID().SchemaId())
+		t.Cleanup(revokeSchemaPrivilege)
+
+		revokeProcedurePrivilege := testClientHelper().Grant.GrantUsageOnProcedureToSnowflakeApplication(t, procedure.ID())
+		t.Cleanup(revokeProcedurePrivilege)
+
 		result, err := client.Budgets.SetCycleStartAction(ctx, sdk.NewSetCycleStartActionBudgetRequest(
-			budgetId, *sdk.NewBudgetSetCycleStartActionArgsRequest(procedureId.ID().SchemaObjectId(), []string{}),
+			budgetId, *sdk.NewBudgetSetCycleStartActionArgsRequest(procedure.ID(), []string{"ARRAY_CONSTRUCT()"}),
 		))
 		require.NoError(t, err)
 		require.NotNil(t, result)
@@ -83,6 +95,10 @@ func TestInt_Budgets(t *testing.T) {
 		action, err := client.Budgets.GetCycleStartAction(ctx, sdk.NewGetCycleStartActionBudgetRequest(budgetId))
 		require.NoError(t, err)
 		require.NotNil(t, action)
-		require.Equal(t, procedureId.ID().SchemaObjectId().FullyQualifiedName(), action.ProcedureFqn)
+		require.Empty(t, action.ActionUuid)
+		require.Equal(t, procedure.ID().FullyQualifiedName(), action.ProcedureId.FullyQualifiedName())
+		require.Empty(t, action.ProcedureArgs)
+		require.NotEmpty(t, action.AddedTimestamp)
+		require.Empty(t, action.LastTriggeredTimestamp)
 	})
 }
