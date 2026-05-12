@@ -54,6 +54,20 @@ This feature will be marked as stable in future releases. To use this feature, a
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
+### *(bug fix)* "Provider produced inconsistent final plan" when adding a reference to a not-yet-created resource
+
+Previously, updating an existing resource to reference an attribute of another Terraform-managed resource that was being created in the same apply (for example, setting `resource_monitor = snowflake_resource_monitor.foo.fully_qualified_name` on an existing `snowflake_warehouse`) could fail with:
+
+> Provider produced inconsistent final plan [...] produced an invalid new value for .show_output: was known, but now unknown.
+
+The internal `ComputedIfAnyAttributeChanged` helper invoked each trigger field's `DiffSuppressFunc` against an empty string that was silently substituted for values still unknown at plan time, which caused computed outputs (like `show_output`) to be left marked as known. Once the referenced resource was created and the real value arrived at apply time, those outputs flipped to unknown — violating Terraform's plan/apply contract.
+
+The helper now short-circuits whenever the new value of a trigger field is unknown and marks the dependent computed field as computed, without consulting the suppressor. The fix applies to every resource that uses this helper (including `snowflake_warehouse`, `snowflake_account`, `snowflake_account_role`, and many others), so references across resources now plan and apply correctly.
+
+No configuration changes are required.
+
+References: [#4188](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4188)
+
 ### *(bugfix)* `snowflake_external_volume` — support for `use_privatelink_endpoint` in Azure deployments
 
 Previously, setting `use_privatelink_endpoint = "true"` on an Azure storage location in `snowflake_external_volume` was silently ignored — the field was not sent to Snowflake and was not read back into state. The field is now correctly sent on create and update, and reflected in state after a read.

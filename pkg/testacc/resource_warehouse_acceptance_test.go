@@ -360,6 +360,53 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 	})
 }
 
+// TestAcc_Warehouse_AddResourceMonitorAfterCreate is a regression test for
+// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4188.
+// Creating a warehouse without a resource_monitor and then adding one whose identifier is unknown
+// at plan time (because it references another Terraform-managed resource not yet created) used to
+// fail with "Provider produced inconsistent final plan" on show_output. ComputedIfAnyAttributeChanged
+// incorrectly invoked the trigger field's DiffSuppressFunc against an empty string derived from the
+// unknown, which the suppressor matched against the current show_output, so show_output was left
+// known — and then flipped to unknown at apply time.
+func TestAcc_Warehouse_AddResourceMonitorAfterCreate(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	resourceMonitorId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	configVariables := tfconfig.Variables{
+		"warehouse_name":        tfconfig.StringVariable(warehouseId.Name()),
+		"resource_monitor_name": tfconfig.StringVariable(resourceMonitorId.Name()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			// Step 1: warehouse without a resource_monitor.
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_Warehouse_AddResourceMonitorAfterCreate/1"),
+				ConfigVariables: configVariables,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_warehouse.test", "name", warehouseId.Name()),
+					resource.TestCheckNoResourceAttr("snowflake_warehouse.test", "resource_monitor"),
+				),
+			},
+			// Step 2: add a Terraform-managed resource_monitor referenced by its fully_qualified_name.
+			// The reference is unknown at plan time — this is where the bug used to surface.
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_Warehouse_AddResourceMonitorAfterCreate/2"),
+				ConfigVariables: configVariables,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_warehouse.test", "name", warehouseId.Name()),
+					resource.TestCheckResourceAttr("snowflake_warehouse.test", "resource_monitor", resourceMonitorId.FullyQualifiedName()),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 

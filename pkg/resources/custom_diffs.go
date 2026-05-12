@@ -127,6 +127,15 @@ func ComputedIfAnyAttributeChanged(resourceSchema map[string]*schema.Schema, key
 		var result bool
 		for _, changedKey := range changedAttributeKeys {
 			if diff.HasChange(changedKey) || !diff.NewValueKnown(changedKey) {
+				// An unknown new value (e.g. a reference to a not-yet-created resource) cannot be compared by a DiffSuppressFunc —
+				// diff.GetChange would coerce it to the zero value and the suppressor could incorrectly suppress the change, leaving
+				// the dependent output marked known. At apply time the real value arrives and the output flips to unknown, producing
+				// "Provider produced inconsistent final plan". Mark the computed key as computed instead.
+				if !diff.NewValueKnown(changedKey) {
+					log.Printf("[DEBUG] ComputedIfAnyAttributeChanged: key %s has an unknown new value; marking %s computed", changedKey, key)
+					result = true
+					continue
+				}
 				oldValue, newValue := diff.GetChange(changedKey)
 				log.Printf("[DEBUG] ComputedIfAnyAttributeChanged: changed key: %s", changedKey)
 
