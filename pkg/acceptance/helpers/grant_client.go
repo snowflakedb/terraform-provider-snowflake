@@ -571,6 +571,102 @@ func (c *GrantClient) RevokePrivilegeOnDatabaseFromShare(
 	require.NoError(t, err)
 }
 
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) GrantUsageOnIntegrationToSnowflakeApplication(t *testing.T, integrationId sdk.AccountObjectIdentifier) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`GRANT USAGE ON INTEGRATION %s TO APPLICATION SNOWFLAKE`, integrationId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+
+	return func() {
+		c.RevokeUsageOnIntegrationToSnowflakeApplication(t, integrationId)
+	}
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) RevokeUsageOnIntegrationToSnowflakeApplication(t *testing.T, integrationId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`REVOKE USAGE ON INTEGRATION %s FROM APPLICATION SNOWFLAKE`, integrationId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) GrantUsageOnDatabaseToSnowflakeApplication(t *testing.T, databaseId sdk.AccountObjectIdentifier) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`GRANT USAGE ON DATABASE %s TO APPLICATION SNOWFLAKE`, databaseId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+
+	return func() {
+		c.RevokeUsageOnDatabaseToSnowflakeApplication(t, databaseId)
+	}
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) RevokeUsageOnDatabaseToSnowflakeApplication(t *testing.T, databaseId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`REVOKE USAGE ON DATABASE %s FROM APPLICATION SNOWFLAKE`, databaseId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) GrantUsageOnSchemaToSnowflakeApplication(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`GRANT USAGE ON SCHEMA %s TO APPLICATION SNOWFLAKE`, schemaId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+
+	return func() {
+		c.RevokeUsageOnSchemaToSnowflakeApplication(t, schemaId)
+	}
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) RevokeUsageOnSchemaToSnowflakeApplication(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`REVOKE USAGE ON SCHEMA %s FROM APPLICATION SNOWFLAKE`, schemaId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) GrantUsageOnProcedureToSnowflakeApplication(t *testing.T, procedureId sdk.SchemaObjectIdentifierWithArguments) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`GRANT USAGE ON PROCEDURE %s TO APPLICATION SNOWFLAKE`, procedureId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+
+	return func() {
+		c.RevokeUsageOnProcedureToSnowflakeApplication(t, procedureId)
+	}
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) RevokeUsageOnProcedureToSnowflakeApplication(t *testing.T, procedureId sdk.SchemaObjectIdentifierWithArguments) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`REVOKE USAGE ON PROCEDURE %s FROM APPLICATION SNOWFLAKE`, procedureId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) ShowGrantsToShare(t *testing.T, shareId sdk.AccountObjectIdentifier) ([]sdk.Grant, error) {
 	t.Helper()
 	ctx := context.Background()

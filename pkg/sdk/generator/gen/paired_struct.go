@@ -254,6 +254,27 @@ func (p *PairedStructs) OptionalSchemaObjectIdentifier(dbColumnName string, opts
 	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifier", allOpts)
 }
 
+// SchemaObjectIdentifierWithArguments adds a SchemaObjectIdentifierWithArguments field. The db kind is string and the plain kind
+// is SchemaObjectIdentifierWithArguments. The plain field name defaults to "Id", but can be overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: Id SchemaObjectIdentifierWithArguments
+func (p *PairedStructs) SchemaObjectIdentifierWithArguments(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
+	return p.addField(dbColumnName, "string", "SchemaObjectIdentifierWithArguments", allOpts)
+}
+
+// OptionalSchemaObjectIdentifierWithArguments adds a nullable SchemaObjectIdentifierWithArguments field. The db kind is string
+// and the plain kind is *SchemaObjectIdentifierWithArguments. The plain field name defaults to "Id", but can be
+// overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: Id *SchemaObjectIdentifierWithArguments
+func (p *PairedStructs) OptionalSchemaObjectIdentifierWithArguments(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
+	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifierWithArguments", allOpts)
+}
+
 // asDbStruct materializes the definition as a *dbStruct following the old implementation.
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
