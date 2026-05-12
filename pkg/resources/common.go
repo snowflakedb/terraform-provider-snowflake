@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -53,6 +54,24 @@ func suppressQuoting(_, oldValue, newValue string, _ *schema.ResourceData) bool 
 		oldWithoutQuotes := strings.ReplaceAll(oldValue, "'", "")
 		newWithoutQuotes := strings.ReplaceAll(newValue, "'", "")
 		return oldWithoutQuotes == newWithoutQuotes
+	}
+}
+
+// ctyValueToGo converts a non-null cty.Value to the requested Go type.
+func ctyValueToGo[T any](v cty.Value) (T, error) {
+	var zero T
+	switch any(zero).(type) {
+	case string:
+		s := v.AsString()
+		return any(s).(T), nil
+	case int:
+		bf := v.AsBigFloat()
+		i, _ := bf.Int64()
+		return any(int(i)).(T), nil
+	case bool:
+		return any(v.True()).(T), nil
+	default:
+		return zero, fmt.Errorf("ctyValueToGo: unsupported type %T", zero)
 	}
 }
 

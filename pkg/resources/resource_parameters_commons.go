@@ -43,8 +43,17 @@ func handleParameterUpdate[T any, P ~string](d *schema.ResourceData, parameterNa
 func handleParameterUpdateWithMapping[T, R any, P ~string](d *schema.ResourceData, parameterName P, setField **R, unsetField **bool, mapping func(value T) (R, error)) diag.Diagnostics {
 	key := strings.ToLower(string(parameterName))
 	if d.HasChange(key) || !d.GetRawPlan().AsValueMap()[key].IsKnown() {
-		if !d.GetRawConfig().AsValueMap()[key].IsNull() {
-			mappedValue, err := mapping(d.Get(key).(T))
+		configValue := d.GetRawConfig().AsValueMap()[key]
+		if !configValue.IsNull() {
+			// Read the value from raw config instead of d.Get to avoid SDKv2 fallback to state value
+			// when the plan is unknown (e.g. after SetNewComputed was called in the custom diff).
+			// d.Get can return the state value when the plan is unknown, which is wrong when the user
+			// is explicitly changing the config to a new value (e.g. from "en_US" inherited to "" explicit).
+			v, err := ctyValueToGo[T](configValue)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			mappedValue, err := mapping(v)
 			if err != nil {
 				return diag.FromErr(err)
 			}
