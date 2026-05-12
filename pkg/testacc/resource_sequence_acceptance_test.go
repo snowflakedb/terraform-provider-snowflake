@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -23,7 +23,6 @@ func TestAcc_Sequence(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.Sequence),
 		Steps: []resource.TestStep{
 			// CREATE

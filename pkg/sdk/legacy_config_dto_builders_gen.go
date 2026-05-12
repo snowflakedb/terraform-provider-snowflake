@@ -204,3 +204,123 @@ func (s *LegacyConfigDTO) WithDisableConsoleLogin(DisableConsoleLogin bool) *Leg
 	s.DisableConsoleLogin = &DisableConsoleLogin
 	return s
 }
+
+func (s *LegacyConfigDTO) WithOauthClientID(OauthClientID string) *LegacyConfigDTO {
+	s.OauthClientID = &OauthClientID
+	return s
+}
+
+func (s *LegacyConfigDTO) WithOauthClientSecret(OauthClientSecret string) *LegacyConfigDTO {
+	s.OauthClientSecret = &OauthClientSecret
+	return s
+}
+
+func (s *LegacyConfigDTO) WithOauthAuthorizationURL(OauthAuthorizationURL string) *LegacyConfigDTO {
+	s.OauthAuthorizationURL = &OauthAuthorizationURL
+	return s
+}
+
+func (s *LegacyConfigDTO) WithOauthTokenRequestURL(OauthTokenRequestURL string) *LegacyConfigDTO {
+	s.OauthTokenRequestURL = &OauthTokenRequestURL
+	return s
+}
+
+func (s *LegacyConfigDTO) WithOauthRedirectURI(OauthRedirectURI string) *LegacyConfigDTO {
+	s.OauthRedirectURI = &OauthRedirectURI
+	return s
+}
+
+func (s *LegacyConfigDTO) WithOauthScope(OauthScope string) *LegacyConfigDTO {
+	s.OauthScope = &OauthScope
+	return s
+}
+
+func (s *LegacyConfigDTO) WithWorkloadIdentityProvider(WorkloadIdentityProvider string) *LegacyConfigDTO {
+	s.WorkloadIdentityProvider = &WorkloadIdentityProvider
+	return s
+}
+
+func (s *LegacyConfigDTO) WithWorkloadIdentityEntraResource(WorkloadIdentityEntraResource string) *LegacyConfigDTO {
+	s.WorkloadIdentityEntraResource = &WorkloadIdentityEntraResource
+	return s
+}
+
+func (s *LegacyConfigDTO) WithEnableSingleUseRefreshTokens(EnableSingleUseRefreshTokens bool) *LegacyConfigDTO {
+	s.EnableSingleUseRefreshTokens = &EnableSingleUseRefreshTokens
+	return s
+}
+
+func (s *LegacyConfigDTO) WithLogQueryText(LogQueryText bool) *LegacyConfigDTO {
+	s.LogQueryText = &LogQueryText
+	return s
+}
+
+func (s *LegacyConfigDTO) WithLogQueryParameters(LogQueryParameters bool) *LegacyConfigDTO {
+	s.LogQueryParameters = &LogQueryParameters
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyHost(ProxyHost string) *LegacyConfigDTO {
+	s.ProxyHost = &ProxyHost
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyPort(ProxyPort int) *LegacyConfigDTO {
+	s.ProxyPort = &ProxyPort
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyUser(ProxyUser string) *LegacyConfigDTO {
+	s.ProxyUser = &ProxyUser
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyPassword(ProxyPassword string) *LegacyConfigDTO {
+	s.ProxyPassword = &ProxyPassword
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyProtocol(ProxyProtocol string) *LegacyConfigDTO {
+	s.ProxyProtocol = &ProxyProtocol
+	return s
+}
+
+func (s *LegacyConfigDTO) WithNoProxy(NoProxy string) *LegacyConfigDTO {
+	s.NoProxy = &NoProxy
+	return s
+}
+
+func (s *LegacyConfigDTO) WithDisableOCSPChecks(DisableOCSPChecks bool) *LegacyConfigDTO {
+	s.DisableOCSPChecks = &DisableOCSPChecks
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCertRevocationCheckMode(CertRevocationCheckMode string) *LegacyConfigDTO {
+	s.CertRevocationCheckMode = &CertRevocationCheckMode
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlAllowCertificatesWithoutCrlURL(CrlAllowCertificatesWithoutCrlURL bool) *LegacyConfigDTO {
+	s.CrlAllowCertificatesWithoutCrlURL = &CrlAllowCertificatesWithoutCrlURL
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlInMemoryCacheDisabled(CrlInMemoryCacheDisabled bool) *LegacyConfigDTO {
+	s.CrlInMemoryCacheDisabled = &CrlInMemoryCacheDisabled
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlOnDiskCacheDisabled(CrlOnDiskCacheDisabled bool) *LegacyConfigDTO {
+	s.CrlOnDiskCacheDisabled = &CrlOnDiskCacheDisabled
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlHTTPClientTimeout(CrlHTTPClientTimeout int) *LegacyConfigDTO {
+	s.CrlHTTPClientTimeout = &CrlHTTPClientTimeout
+	return s
+}
+
+func (s *LegacyConfigDTO) WithDisableSamlURLCheck(DisableSamlURLCheck bool) *LegacyConfigDTO {
+	s.DisableSamlURLCheck = &DisableSamlURLCheck
+	return s
+}

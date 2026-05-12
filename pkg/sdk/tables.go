@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-var _ convertibleRow[Table] = new(tableDBRow)
-
 // TODO [SNOW-1007542]: add missing features:
 // - show columns (https://docs.snowflake.com/en/sql-reference/sql/show-columns)
 // - show primary keys (https://docs.snowflake.com/en/sql-reference/sql/show-primary-keys)
@@ -110,8 +108,8 @@ type createTableOptions struct {
 	ColumnsAndConstraints      CreateTableColumnsAndConstraints `ddl:"list,parentheses"`
 	ClusterBy                  []string                         `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	EnableSchemaEvolution      *bool                            `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	StageFileFormat            *StageFileFormat                 `ddl:"list,parentheses,no_comma" sql:"STAGE_FILE_FORMAT ="`
-	StageCopyOptions           *StageCopyOptions                `ddl:"list,parentheses,no_comma" sql:"STAGE_COPY_OPTIONS ="`
+	StageFileFormat            *LegacyFileFormat                `ddl:"list,parentheses,no_comma" sql:"STAGE_FILE_FORMAT ="`
+	StageCopyOptions           *LegacyTableCopyOptions          `ddl:"list,parentheses,no_comma" sql:"STAGE_COPY_OPTIONS ="`
 	DataRetentionTimeInDays    *int                             `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int                             `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	ChangeTracking             *bool                            `ddl:"parameter" sql:"CHANGE_TRACKING"`
@@ -451,14 +449,14 @@ type DropSearchOptimization struct {
 
 type TableSet struct {
 	// Optional
-	EnableSchemaEvolution      *bool             `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	StageFileFormat            *StageFileFormat  `ddl:"list,parentheses" sql:"STAGE_FILE_FORMAT ="`
-	StageCopyOptions           *StageCopyOptions `ddl:"list,parentheses" sql:"STAGE_COPY_OPTIONS ="`
-	DataRetentionTimeInDays    *int              `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int              `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool             `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDDLCollation        *string           `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
-	Comment                    *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	EnableSchemaEvolution      *bool                   `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
+	StageFileFormat            *LegacyFileFormat       `ddl:"list,parentheses" sql:"STAGE_FILE_FORMAT ="`
+	StageCopyOptions           *LegacyTableCopyOptions `ddl:"list,parentheses" sql:"STAGE_COPY_OPTIONS ="`
+	DataRetentionTimeInDays    *int                    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool                   `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	DefaultDDLCollation        *string                 `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	Comment                    *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type TableUnset struct {
@@ -595,7 +593,7 @@ func splitClusterBy(statementWithoutLinear string) []string {
 	return keysClean
 }
 
-func (row tableDBRow) convert() *Table {
+func (row tableDBRow) convert() (*Table, error) {
 	table := Table{
 		CreatedOn:    row.CreatedOn,
 		Name:         row.Name,
@@ -652,7 +650,7 @@ func (row tableDBRow) convert() *Table {
 	if row.Budget.Valid {
 		table.Budget = String(row.Budget.String)
 	}
-	return &table
+	return &table, nil
 }
 
 func (v *Table) ID() SchemaObjectIdentifier {
@@ -702,7 +700,7 @@ type tableColumnDetailsRow struct {
 	SchemaEvolutionRecord sql.NullString `db:"schema evolution record"`
 }
 
-func (r tableColumnDetailsRow) convert() *TableColumnDetails {
+func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
 	type_, collation := r.splitTypeAndCollation()
 
 	details := &TableColumnDetails{
@@ -732,7 +730,7 @@ func (r tableColumnDetailsRow) convert() *TableColumnDetails {
 	if r.SchemaEvolutionRecord.Valid {
 		details.SchemaEvolutionRecord = String(r.SchemaEvolutionRecord.String)
 	}
-	return details
+	return details, nil
 }
 
 func (r tableColumnDetailsRow) splitTypeAndCollation() (DataType, *string) {
@@ -769,12 +767,37 @@ type tableStageDetailsRow struct {
 	PropertyDefault string `db:"property_default"`
 }
 
-func (r tableStageDetailsRow) convert() *TableStageDetails {
+func (r tableStageDetailsRow) convert() (*TableStageDetails, error) {
 	return &TableStageDetails{
 		ParentProperty:  r.ParentProperty,
 		Property:        r.Property,
 		PropertyType:    r.PropertyType,
 		PropertyValue:   r.PropertyValue,
 		PropertyDefault: r.PropertyDefault,
-	}
+	}, nil
+}
+
+// LegacyTableCopyOptions are the options for COPY_OPTIONS in CREATE/ALTER TABLE.
+// They are now deprecated in Snowflake in favor of https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.
+type LegacyTableCopyOptions struct {
+	OnError           *LegacyTableCopyOnErrorOptions `ddl:"parameter" sql:"ON_ERROR"`
+	SizeLimit         *int                           `ddl:"parameter" sql:"SIZE_LIMIT"`
+	Purge             *bool                          `ddl:"parameter" sql:"PURGE"`
+	ReturnFailedOnly  *bool                          `ddl:"parameter" sql:"RETURN_FAILED_ONLY"`
+	MatchByColumnName *StageCopyColumnMapOption      `ddl:"parameter" sql:"MATCH_BY_COLUMN_NAME"`
+	EnforceLength     *bool                          `ddl:"parameter" sql:"ENFORCE_LENGTH"`
+	Truncatecolumns   *bool                          `ddl:"parameter" sql:"TRUNCATECOLUMNS"`
+	Force             *bool                          `ddl:"parameter" sql:"FORCE"`
+}
+
+type LegacyTableCopyOnErrorOptions struct {
+	Continue_      *bool   `ddl:"keyword" sql:"CONTINUE"`
+	SkipFile       *string `ddl:"keyword" sql:"SKIP_FILE"`
+	AbortStatement *bool   `ddl:"keyword" sql:"ABORT_STATEMENT"`
+}
+
+type LegacyFileFormat struct {
+	FormatName     *string                      `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
+	FileFormatType *FileFormatType              `ddl:"parameter" sql:"TYPE"`
+	Options        *LegacyFileFormatTypeOptions `ddl:"list,no_comma"`
 }

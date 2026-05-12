@@ -3,13 +3,10 @@ package datasources
 import (
 	"context"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -54,7 +51,7 @@ var computePoolsSchema = map[string]*schema.Schema{
 
 func ComputePools() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ComputePoolsDatasource), TrackingReadWrapper(datasources.ComputePools, ReadComputePools)),
+		ReadContext: TrackingReadWrapper(datasources.ComputePools, ReadComputePools),
 		Schema:      computePoolsSchema,
 		Description: "Data source used to get details of filtered compute pools. Filtering is aligned with the current possibilities for [SHOW COMPUTE POOLS](https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `compute_pools`.",
 	}

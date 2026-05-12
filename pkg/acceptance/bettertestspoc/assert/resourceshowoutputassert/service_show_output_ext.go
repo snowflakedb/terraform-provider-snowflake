@@ -26,8 +26,8 @@ func (s *ServiceShowOutputAssert) HasDnsNameNotEmpty() *ServiceShowOutputAssert 
 
 func (s *ServiceShowOutputAssert) HasExternalAccessIntegrations(expected ...sdk.AccountObjectIdentifier) *ServiceShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("external_access_integrations.#", fmt.Sprintf("%d", len(expected))))
-	for i, v := range expected {
-		s.AddAssertion(assert.ResourceShowOutputValueSet(fmt.Sprintf("external_access_integrations.%d", i), v.Name()))
+	for _, v := range expected {
+		s.AddAssertion(assert.ResourceShowOutputSetElem("external_access_integrations", v.Name()))
 	}
 	return s
 }

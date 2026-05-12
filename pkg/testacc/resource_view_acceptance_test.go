@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -9,8 +9,10 @@ import (
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -18,7 +20,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -31,10 +32,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TODO(SNOW-1423486): Fix using warehouse in all tests and remove unsetting testenvs.ConfigureClientOnce
 func TestAcc_View_basic(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	rowAccessPolicy, rowAccessPolicyCleanup := testClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(rowAccessPolicyCleanup)
 
@@ -87,7 +85,7 @@ func TestAcc_View_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -379,8 +377,6 @@ func TestAcc_View_basic(t *testing.T) {
 }
 
 func TestAcc_View_recursive(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
@@ -401,7 +397,7 @@ func TestAcc_View_recursive(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -434,19 +430,14 @@ func TestAcc_View_recursive(t *testing.T) {
 	})
 }
 
-// TODO [next PR]: currently this test is always skipped, try to fix the set up
 func TestAcc_View_temporary(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-	// we use one configured client, so a temporary view should be visible after creation
-	_ = testenvs.GetOrSkipTest(t, testenvs.ConfigureClientOnce)
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
 	viewModel := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statement)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_View_temporary"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -466,8 +457,6 @@ func TestAcc_View_temporary(t *testing.T) {
 }
 
 func TestAcc_View_complete(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 		*sdk.NewTableColumnRequest("foo", sdk.DataTypeNumber),
@@ -538,7 +527,7 @@ end;;
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -627,8 +616,6 @@ end;;
 }
 
 func TestAcc_View_columns(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 		*sdk.NewTableColumnRequest("foo", sdk.DataTypeNumber),
@@ -686,7 +673,7 @@ end;;
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -771,8 +758,6 @@ end;;
 }
 
 func TestAcc_View_columnsWithMaskingPolicyWithoutUsing(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
@@ -817,7 +802,7 @@ end;;
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -869,8 +854,6 @@ end;;
 }
 
 func TestAcc_View_Rename(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
@@ -893,8 +876,7 @@ func TestAcc_View_Rename(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -927,8 +909,6 @@ func TestAcc_View_Rename(t *testing.T) {
 }
 
 func TestAcc_View_Issue3073(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
@@ -943,8 +923,7 @@ func TestAcc_View_Issue3073(t *testing.T) {
 	))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -991,8 +970,6 @@ func TestAcc_View_Issue3073(t *testing.T) {
 
 // fixes https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/3073#issuecomment-2392250469
 func TestAcc_View_IncorrectColumnsWithOrReplace(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := `SELECT ROLE_NAME as "role_name", ROLE_OWNER as "role_owner" FROM INFORMATION_SCHEMA.APPLICABLE_ROLES`
 	statementUnquotedColumns := `SELECT ROLE_NAME as role_name, ROLE_OWNER as role_owner FROM INFORMATION_SCHEMA.APPLICABLE_ROLES`
@@ -1003,8 +980,7 @@ func TestAcc_View_IncorrectColumnsWithOrReplace(t *testing.T) {
 	viewLowercaseStatementModel3 := model.View("test", id.DatabaseName(), id.SchemaName(), id.Name(), statementUnquotedColumns3)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1050,8 +1026,6 @@ func TestAcc_View_IncorrectColumnsWithOrReplace(t *testing.T) {
 }
 
 func TestAcc_ViewChangeCopyGrants(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
@@ -1077,8 +1051,7 @@ func TestAcc_ViewChangeCopyGrants(t *testing.T) {
 	var createdOn string
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1119,8 +1092,6 @@ func TestAcc_ViewChangeCopyGrants(t *testing.T) {
 }
 
 func TestAcc_ViewChangeCopyGrantsReversed(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
@@ -1146,8 +1117,7 @@ func TestAcc_ViewChangeCopyGrantsReversed(t *testing.T) {
 	var createdOn string
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1185,8 +1155,6 @@ func TestAcc_ViewChangeCopyGrantsReversed(t *testing.T) {
 }
 
 func TestAcc_View_CheckGrantsAfterRecreation(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	table, cleanupTable := testClient().Table.Create(t)
 	t.Cleanup(cleanupTable)
 
@@ -1196,8 +1164,7 @@ func TestAcc_View_CheckGrantsAfterRecreation(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1271,8 +1238,6 @@ data "snowflake_grants" "grants" {
 }
 
 func TestAcc_View_Issue2640(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -1282,8 +1247,7 @@ func TestAcc_View_Issue2640(t *testing.T) {
 	statement := fmt.Sprintf("%s\n\tunion\n%s\n", part1, part2)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1349,13 +1313,12 @@ SQL
 }
 
 func TestAcc_view_migrateFromVersion_0_94_1(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	tag, tagCleanup := testClient().Tag.CreateTag(t)
 	t.Cleanup(tagCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	viewConfig := config.Variables{
 		"name":      config.StringVariable(id.Name()),
@@ -1380,9 +1343,9 @@ func TestAcc_view_migrateFromVersion_0_94_1(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            viewV0941WithTags(id, tag.ID(), "foo", statement),
+				Config:            providerConfig + viewV0941WithTags(id, tag.ID(), "foo", statement),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "tag.#", "1"),
@@ -1393,7 +1356,7 @@ func TestAcc_view_migrateFromVersion_0_94_1(t *testing.T) {
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: viewsProviderFactory,
 				ConfigDirectory:          ConfigurationDirectory("TestAcc_View/basic"),
 				ConfigVariables:          viewConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -1425,8 +1388,6 @@ resource "snowflake_view" "test" {
 }
 
 func TestAcc_View_Issue3676_proof(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 		*sdk.NewTableColumnRequest("foo", sdk.DataTypeNumber),
@@ -1443,7 +1404,6 @@ func TestAcc_View_Issue3676_proof(t *testing.T) {
 	renamedAndAlteredModel := model.View("test", newId.DatabaseName(), newId.SchemaName(), newId.Name(), otherStatement).WithColumnNames(columnNames...)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1477,8 +1437,6 @@ func TestAcc_View_Issue3676_proof(t *testing.T) {
 }
 
 func TestAcc_View_Issue3676_fix(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 		*sdk.NewTableColumnRequest("foo", sdk.DataTypeNumber),
@@ -1495,8 +1453,7 @@ func TestAcc_View_Issue3676_fix(t *testing.T) {
 	renamedAndAlteredModel := model.View("test", newId.DatabaseName(), newId.SchemaName(), newId.Name(), otherStatement).WithColumnNames(columnNames...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1520,7 +1477,70 @@ func TestAcc_View_Issue3676_fix(t *testing.T) {
 					HasStatementString(otherStatement),
 					objectassert.View(t, newId).HasName(newId.Name()),
 					// view with the old id does not exist
-					objectassert.ViewDoesNotExist(t, id),
+					invokeactionassert.ViewDoesNotExist(t, id),
+				),
+			},
+		},
+	})
+}
+
+// This test proves the fix for SNOW-3308280: panic when consumeToken reaches end of input (off-by-one in bounds check).
+// The error happened when the last column had a masking policy and no trailing options (USING clause), so the parser hits end-of-input while probing optional tokens.
+func TestAcc_View_MaskingPolicyWithoutUsingClausePanicFix(t *testing.T) {
+	// Use the identity masking policy to avoid the USING clause.
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
+	t.Cleanup(maskingPolicyCleanup)
+
+	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest("COL1", sdk.DataTypeVARCHAR),
+		*sdk.NewTableColumnRequest("COL2", sdk.DataTypeVARCHAR),
+	})
+	t.Cleanup(tableCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := fmt.Sprintf("SELECT COL1, COL2 FROM %s", table.ID().FullyQualifiedName())
+	viewModel := model.ViewWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(),
+		statement).
+		WithColumnValue(config.TupleVariable(
+			config.ObjectVariable(map[string]config.Variable{
+				"column_name": config.StringVariable("COL1"),
+			}),
+			config.ObjectVariable(map[string]config.Variable{
+				"column_name": config.StringVariable("COL2"),
+				"masking_policy": config.ObjectVariable(map[string]config.Variable{
+					"policy_name": config.StringVariable(maskingPolicy.ID().FullyQualifiedName()),
+				}),
+			}),
+		))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.View),
+		Steps: []resource.TestStep{
+			// v2.14.1: provider panics during Read after Create
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				Config:            accconfig.FromModels(t, viewModel),
+				ExpectError:       regexp.MustCompile(`index out of range`),
+			},
+			// It is fixed on the latest version of the provider.
+			// The view was created by step 1 but not saved to state.
+			// PreConfig drops the orphaned view so the apply can recreate it cleanly.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				PreConfig:                testClient().View.DropViewFunc(t, id),
+				Config:                   accconfig.FromModels(t, viewModel),
+				Check: assertThat(t, resourceassert.ViewResource(t, viewModel.ResourceReference()).
+					HasNameString(id.Name()).
+					HasDatabaseString(id.DatabaseName()).
+					HasSchemaString(id.SchemaName()).
+					HasStatementString(statement).
+					HasColumns([]sdk.ViewColumn{
+						{Name: "COL1"},
+						{Name: "COL2", MaskingPolicy: &sdk.ViewColumnMaskingPolicy{MaskingPolicy: maskingPolicy.ID()}},
+					}),
 				),
 			},
 		},

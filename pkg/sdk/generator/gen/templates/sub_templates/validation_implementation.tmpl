@@ -1,0 +1,15 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Field*/ -}}
+
+{{- $field := . -}}
+{{- range .Validations }}
+    if {{ .Condition $field }} {
+        errs = append(errs, {{ .ReturnedError $field }})
+    }
+{{- end -}}
+{{- range .Fields }}
+    {{- if .HasAnyValidationInSubtree }}
+        if valueSet(opts{{ .Path }}) {
+            {{- template "validationImplementation" . }}{{/* Recursive call */}}
+        }
+    {{- end -}}
+{{- end -}}

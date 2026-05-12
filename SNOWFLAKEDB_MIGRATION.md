@@ -42,4 +42,6 @@ If you are not pinning your provider versions, you may find it useful to forcefu
 terraform init -upgrade
 ```
 
-Note: When the provider was transferred over not all of the older releases were transferred. Only versions 0.28 and newer were transferred (the ones from Snowflake-Labs). If you are using a version older than 0.28, it is highly recommended to upgrade to a newer version and then change to snowflakedb namespace.
+To verify if all namespaces in the current working directory have been replaced, you can run the [terraform providers](https://developer.hashicorp.com/terraform/cli/commands/providers) command. Then, filter the outputs and ensure there are no `Snowflake-Labs` entries.
+
+>**Note**: When the provider was transferred over not all of the older releases were transferred. Only versions 0.28 and newer were transferred (the ones from Snowflake-Labs). If you are using a version older than 0.28, it is highly recommended to upgrade to a newer version and then change to snowflakedb namespace.

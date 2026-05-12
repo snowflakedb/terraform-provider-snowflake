@@ -11,9 +11,6 @@ import (
 )
 
 func TestInt_ShowGrants_To_Users(t *testing.T) {
-	t.Skip("TODO(SNOW-2081651): re-enable this if the test is still relevant without the BCR bundle update as now it's enabled by default in Snowflake")
-	secondaryTestClientHelper().BcrBundles.EnableBcrBundle(t, "2025_02")
-
 	t.Run("handles granteeName for account role granted to user", func(t *testing.T) {
 		user, userCleanup := secondaryTestClientHelper().User.CreateUser(t)
 		t.Cleanup(userCleanup)

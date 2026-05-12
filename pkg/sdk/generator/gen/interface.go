@@ -1,0 +1,102 @@
+package gen
+
+import (
+	"fmt"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+)
+
+type objectIdentifierKind string
+
+const (
+	AccountObjectIdentifier             objectIdentifierKind = "AccountObjectIdentifier"
+	DatabaseObjectIdentifier            objectIdentifierKind = "DatabaseObjectIdentifier"
+	SchemaObjectIdentifier              objectIdentifierKind = "SchemaObjectIdentifier"
+	SchemaObjectIdentifierWithArguments objectIdentifierKind = "SchemaObjectIdentifierWithArguments"
+)
+
+func ToObjectIdentifierKind(s string) (objectIdentifierKind, error) {
+	switch s {
+	case "AccountObjectIdentifier":
+		return AccountObjectIdentifier, nil
+	case "DatabaseObjectIdentifier":
+		return DatabaseObjectIdentifier, nil
+	case "SchemaObjectIdentifier":
+		return SchemaObjectIdentifier, nil
+	case "SchemaObjectIdentifierWithArguments":
+		return SchemaObjectIdentifierWithArguments, nil
+	default:
+		return "", fmt.Errorf("invalid string identifier type: %s", s)
+	}
+}
+
+// Interface groups operations for particular object or objects family (e.g. DATABASE ROLE)
+type Interface struct {
+	// Name is the interface's name, e.g. "DatabaseRoles"
+	Name string
+	// NameSingular is the prefix/suffix which can be used to create other structs and methods, e.g. "DatabaseRole"
+	NameSingular string
+	// Operations contains all operations for given interface
+	Operations []*Operation
+	// IdentifierKind keeps identifier of the underlying object (e.g. DatabaseObjectIdentifier)
+	IdentifierKind string
+	// Enums contains all enum definitions for this operation group.
+	Enums []*Enum
+	// CustomMethods holds interface methods that have no generated implementation.
+	// They will appear in the generated interface but the user is responsible for implementing them.
+	CustomMethods []*CustomInterfaceMethod
+	// ShowObjectTypeName overrides the suffix used in the generated ObjectType() return value.
+	// If empty, NameSingular is used (producing ObjectType<NameSingular>).
+	ShowObjectTypeName string
+	// ShowObjectName is the name of the main object returned from this interface through Show methods family.
+	ShowObjectName string
+
+	*genhelpers.PreambleModel
+	*genhelpers.ObjectGenerationSettings
+}
+
+// WithAllowedGenerationParts restricts this object to only the specified generation parts.
+// Parts not listed here will be skipped during generation, even if enabled globally.
+func (i *Interface) WithAllowedGenerationParts(parts ...string) *Interface {
+	if i.ObjectGenerationSettings == nil {
+		i.ObjectGenerationSettings = &genhelpers.ObjectGenerationSettings{}
+	}
+	i.ObjectGenerationSettings.AllowedGenerationParts = parts
+	return i
+}
+
+func (i *Interface) ObjectName() string {
+	return i.Name
+}
+
+func NewInterface(name string, nameSingular string, identifierKind string, operations ...*Operation) *Interface {
+	return &Interface{
+		Name:           name,
+		NameSingular:   nameSingular,
+		IdentifierKind: identifierKind,
+		Operations:     operations,
+	}
+}
+
+// NameLowerCased returns interface name starting with a lower case letter
+func (i *Interface) NameLowerCased() string {
+	return startingWithLowerCase(i.Name)
+}
+
+// ObjectIdentifierKind returns the level of the object identifier (e.g. for DatabaseObjectIdentifier, it returns the prefix "Database")
+func (i *Interface) ObjectIdentifierPrefix() idPrefix {
+	return identifierStringToPrefix(i.IdentifierKind)
+}
+
+func (i *Interface) WithEnums(enums ...*Enum) *Interface {
+	i.Enums = append(i.Enums, enums...)
+	return i
+}
+
+// WithShowObjectType overrides the ObjectType constant used in the generated ObjectType() method.
+// By default the generator produces `return ObjectType<NameSingular>`. Use this when that constant
+// does not exist and the real constant uses a different suffix (e.g. "Account" instead of "OrganizationAccount").
+func (i *Interface) WithShowObjectType(name string) *Interface {
+	i.ShowObjectTypeName = name
+	return i
+}

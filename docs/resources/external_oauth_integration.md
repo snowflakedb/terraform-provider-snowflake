@@ -7,6 +7,10 @@ description: |-
 
 !> **Note** The provider does not detect external changes on security integration type. In this case, remove the integration of wrong type manually with `terraform destroy` and recreate the resource. It will be addressed in the future.
 
+<!-- TODO(SNOW-1844996): Remove this note.-->
+-> **Note** Field `NETWORK_POLICY` added in BCR 2025_06 (read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#bundle-2025_06)) is currently missing. It will be added in the future.
+As a workaround, please use the [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+
 # snowflake_external_oauth_integration (Resource)
 
 Resource used to manage external oauth security integration objects. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-external).

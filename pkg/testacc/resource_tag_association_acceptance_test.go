@@ -1,20 +1,23 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -41,8 +44,7 @@ func TestAcc_TagAssociation(t *testing.T) {
 		WithDependsOn(tag2Model.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -168,7 +170,7 @@ func TestAcc_TagAssociation_objectIdentifiers(t *testing.T) {
 	model13 := model.TagAssociation("test", []sdk.ObjectIdentifier{dbRole1.ID(), dbRole3.ID()}, string(sdk.ObjectTypeDatabaseRole), tag.ID().FullyQualifiedName(), "foo")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -227,7 +229,7 @@ func TestAcc_TagAssociation_objectType(t *testing.T) {
 	modelWithDifferentObjectType := model.TagAssociation("test", []sdk.ObjectIdentifier{dbRole.ID()}, string(sdk.ObjectTypeDatabaseRole), tag.ID().FullyQualifiedName(), "foo")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -273,8 +275,7 @@ func TestAcc_TagAssociationSchema(t *testing.T) {
 		WithDependsOn(tagModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -307,8 +308,7 @@ func TestAcc_TagAssociation_lowercaseObjectType(t *testing.T) {
 	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{objectId}, objectType, tag.ID().FullyQualifiedName(), tagValue)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -346,8 +346,7 @@ func TestAcc_TagAssociationColumn(t *testing.T) {
 	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId}, string(sdk.ObjectTypeColumn), tag.ID().FullyQualifiedName(), tagValue)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -382,8 +381,7 @@ func TestAcc_TagAssociationIssue1202(t *testing.T) {
 	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{tableId}, string(sdk.ObjectTypeTable), tag.ID().FullyQualifiedName(), tagValue)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -427,8 +425,7 @@ func TestAcc_TagAssociationIssue1909(t *testing.T) {
 	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId, column2Id}, string(sdk.ObjectTypeColumn), tag.ID().FullyQualifiedName(), tagValue)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -478,8 +475,7 @@ func TestAcc_TagAssociationAccountIssues1910(t *testing.T) {
 		WithDependsOn(tagModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -528,8 +524,7 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 		WithDependsOn(tagModel.ResourceReference(), tableModel3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -573,8 +568,6 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 }
 
 func TestAcc_TagAssociation_migrateFromVersion_0_98_0(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
 	schemaId := testClient().Ids.SchemaId()
 	tagValue := "TAG_VALUE"
@@ -606,7 +599,7 @@ func TestAcc_TagAssociation_migrateFromVersion_0_98_0(t *testing.T) {
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: tagsProviderFactory,
 				Config:                   accconfig.FromModels(t, tagModel, tagAssociationModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -667,7 +660,7 @@ func TestAcc_TagAssociation_issue_3622(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, tagModel, tagAssociationModel),
@@ -684,6 +677,74 @@ func TestAcc_TagAssociation_issue_3622(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), newTagValue, string(sdk.ObjectTypeTable))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", newTagValue),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_TagAssociation_issue_4403 ensures that the update method for object_type = Function works as intended.
+// Previously, it was failing due to incorrect identifier parsing.
+func TestAcc_TagAssociation_issue_4403(t *testing.T) {
+	funcName := "some_function"
+	argName := "x"
+	tagValue1 := "value1"
+	tagValue2 := "value2"
+	dataType := testdatatypes.DataTypeNumber_36_2
+
+	functionId := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	definition := testClient().Function.SamplePythonDefinition(t, funcName, argName)
+
+	functionModel := model.FunctionPythonBasicInline("function", functionId, testvars.PythonRuntime, dataType, funcName, definition).
+		WithArgument(argName, dataType)
+
+	tagModel := model.TagBase("tag", tagId)
+
+	tagAssociationModel := model.TagAssociation(
+		"tag_association",
+		[]sdk.ObjectIdentifier{functionId},
+		string(sdk.ObjectTypeFunction),
+		tagId.FullyQualifiedName(),
+		tagValue1,
+	).WithDependsOn(tagModel.ResourceReference(), functionModel.ResourceReference())
+
+	tagAssociationModelUpdatedValue := model.TagAssociation(
+		"tag_association",
+		[]sdk.ObjectIdentifier{functionId},
+		string(sdk.ObjectTypeFunction),
+		tagId.FullyQualifiedName(),
+		tagValue2,
+	).WithDependsOn(tagModel.ResourceReference(), functionModel.ResourceReference())
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionPythonResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
+				Config:            accconfig.FromModels(t, providerModel, functionModel, tagModel, tagAssociationModel),
+				Check: assertThat(t,
+					resourceassert.TagAssociationResource(t, tagAssociationModel.ResourceReference()).
+						HasTagValueString(tagValue1),
+				),
+			},
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
+				Config:            accconfig.FromModels(t, providerModel, functionModel, tagModel, tagAssociationModelUpdatedValue),
+				ExpectError:       regexp.MustCompile("unable to read identifier"),
+			},
+			{
+				ProtoV6ProviderFactories: tagsProviderFactory,
+				Config:                   accconfig.FromModels(t, functionModel, tagModel, tagAssociationModelUpdatedValue),
+				Check: assertThat(t,
+					resourceassert.TagAssociationResource(t, tagAssociationModel.ResourceReference()).
+						HasTagValueString(tagValue2),
 				),
 			},
 		},

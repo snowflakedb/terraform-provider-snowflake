@@ -47,7 +47,7 @@ var materializedViewSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
 		Default:     false,
-		Description: "Overwrites the View if it exists.",
+		Description: "Specifies whether to use CREATE OR REPLACE when creating the materialized view. Note: this does not enable in-place updates when other fields forcing object recreation change; such fields always trigger delete and create operations in Terraform plan.",
 	},
 	"is_secure": {
 		Type:        schema.TypeBool,
@@ -63,7 +63,7 @@ var materializedViewSchema = map[string]*schema.Schema{
 	"statement": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      "Specifies the query used to create the view.",
+		Description:      "Specifies the query used to create the view. Changing this value will trigger a drop and recreate of the materialized view.",
 		ForceNew:         true,
 		DiffSuppressFunc: DiffSuppressStatement,
 	},
@@ -111,15 +111,15 @@ func CreateMaterializedView(ctx context.Context, d *schema.ResourceData, meta an
 	createRequest := sdk.NewCreateMaterializedViewRequest(id, s)
 
 	if v, ok := d.GetOk("or_replace"); ok && v.(bool) {
-		createRequest.WithOrReplace(sdk.Bool(true))
+		createRequest.WithOrReplace(true)
 	}
 
 	if v, ok := d.GetOk("is_secure"); ok && v.(bool) {
-		createRequest.WithSecure(sdk.Bool(true))
+		createRequest.WithSecure(true)
 	}
 
 	if v, ok := d.GetOk("comment"); ok {
-		createRequest.WithComment(sdk.String(v.(string)))
+		createRequest.WithComment(v.(string))
 	}
 
 	warehouseName := d.Get("warehouse").(string)
@@ -214,7 +214,7 @@ func UpdateMaterializedView(ctx context.Context, d *schema.ResourceData, meta an
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.MaterializedViews.Alter(ctx, sdk.NewAlterMaterializedViewRequest(id).WithRenameTo(&newId))
+		err := client.MaterializedViews.Alter(ctx, sdk.NewAlterMaterializedViewRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming materialized view %v err = %w", d.Id(), err))
 		}
@@ -232,31 +232,31 @@ func UpdateMaterializedView(ctx context.Context, d *schema.ResourceData, meta an
 		comment := d.Get("comment").(string)
 		if comment == "" {
 			runUnsetStatement = true
-			unsetRequest.WithComment(sdk.Bool(true))
+			unsetRequest.WithComment(true)
 		} else {
 			runSetStatement = true
-			setRequest.WithComment(sdk.String(comment))
+			setRequest.WithComment(comment)
 		}
 	}
 	if d.HasChange("is_secure") {
 		if d.Get("is_secure").(bool) {
 			runSetStatement = true
-			setRequest.WithSecure(sdk.Bool(true))
+			setRequest.WithSecure(true)
 		} else {
 			runUnsetStatement = true
-			unsetRequest.WithSecure(sdk.Bool(true))
+			unsetRequest.WithSecure(true)
 		}
 	}
 
 	if runSetStatement {
-		err := client.MaterializedViews.Alter(ctx, sdk.NewAlterMaterializedViewRequest(id).WithSet(setRequest))
+		err := client.MaterializedViews.Alter(ctx, sdk.NewAlterMaterializedViewRequest(id).WithSet(*setRequest))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating materialized view: %w", err))
 		}
 	}
 
 	if runUnsetStatement {
-		err := client.MaterializedViews.Alter(ctx, sdk.NewAlterMaterializedViewRequest(id).WithUnset(unsetRequest))
+		err := client.MaterializedViews.Alter(ctx, sdk.NewAlterMaterializedViewRequest(id).WithUnset(*unsetRequest))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating materialized view: %w", err))
 		}

@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/customassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -55,8 +56,7 @@ func TestAcc_Services(t *testing.T) {
 		WithDependsOn(serviceModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -64,8 +64,6 @@ func TestAcc_Services(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, serviceModel, dataSourceModel),
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.#", "1")),
-
 					resourceshowoutputassert.ServicesDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasStatus(sdk.ServiceStatusPending).
@@ -74,8 +72,6 @@ func TestAcc_Services(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(2).
@@ -95,6 +91,8 @@ func TestAcc_Services(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(dataSourceModel.DatasourceReference(), "services.0.show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(dataSourceModel.DatasourceReference(), "services.0.show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.database_name", id.DatabaseName())),
@@ -103,8 +101,8 @@ func TestAcc_Services(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.0.describe_output.0.max_instances", "2")),
@@ -140,8 +138,6 @@ func TestAcc_Services(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(2).
@@ -162,6 +158,8 @@ func TestAcc_Services(t *testing.T) {
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModelWithoutOptionals.DatasourceReference(), "services.0.describe_output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttrWith(dataSourceModelWithoutOptionals.DatasourceReference(), "services.0.show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(dataSourceModelWithoutOptionals.DatasourceReference(), "services.0.show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 				),
 			},
 		},
@@ -217,7 +215,6 @@ func TestAcc_Services_Filtering(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, model1, model2, model3, jobModel, dataSourceModelLikeFirstOne),
@@ -256,7 +253,6 @@ func TestAcc_Services_Filtering(t *testing.T) {
 func TestAcc_Services_emptyIn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

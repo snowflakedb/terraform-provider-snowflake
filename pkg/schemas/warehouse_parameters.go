@@ -3,6 +3,7 @@ package schemas
 import (
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -17,10 +18,10 @@ var ShowWarehouseParametersSchema = map[string]*schema.Schema{
 }
 
 // TODO [SNOW-1473425]: validate all present?
-func WarehouseParametersToSchema(parameters []*sdk.Parameter) map[string]any {
+func WarehouseParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
 	warehouseParameters := make(map[string]any)
 	for _, param := range parameters {
-		parameterSchema := ParameterToSchema(param)
+		parameterSchema := ParameterToSchemaReducedOutput(param, providerCtx)
 		switch key := strings.ToUpper(param.Key); key {
 		case string(sdk.ObjectParameterMaxConcurrencyLevel),
 			string(sdk.ObjectParameterStatementQueuedTimeoutInSeconds),

@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -14,6 +14,7 @@ import (
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/customassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -65,8 +66,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 		WithComment(changedComment)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -99,8 +99,6 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -120,6 +118,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -128,8 +128,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -181,8 +181,6 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -202,6 +200,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.database_name", id.DatabaseName())),
@@ -210,8 +210,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.spec")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.dns_name")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", "1")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", "1")),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_ready_instances", "1")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_instances", "1")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.max_instances", "1")),
@@ -248,7 +248,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString(r.BooleanTrue).
 						HasMinInstancesString("2").
 						HasMinReadyInstancesString("2").
@@ -264,8 +264,6 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(2).
 						HasMinReadyInstances(2).
 						HasMinInstances(2).
 						HasMaxInstances(2).
@@ -285,6 +283,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -293,8 +293,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "2")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "2")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "2")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "2")),
@@ -330,7 +330,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString("true").
 						HasMinInstancesString("2").
 						HasMinReadyInstancesString("2").
@@ -346,8 +346,6 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(2).
 						HasMinReadyInstances(2).
 						HasMinInstances(2).
 						HasMaxInstances(2).
@@ -367,6 +365,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.database_name", id.DatabaseName())),
@@ -375,8 +375,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.spec")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.dns_name")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", "1")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", "2")),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_ready_instances", "2")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_instances", "2")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.max_instances", "2")),
@@ -430,8 +430,6 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -451,6 +449,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -459,8 +459,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -527,7 +527,6 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						// Current and target instances are skipped because the value is not consistent and depends on provisioning the compute pool instances.
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -547,6 +546,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -555,7 +556,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.dns_name")),
-					// Current and target instances are skipped because the value is not consistent and depends on provisioning the compute pool instances.
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithDifferentValues.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -609,7 +611,6 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						// Current and target instances are skipped because the value is not consistent and depends on provisioning the compute pool instances.
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -629,6 +630,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -637,7 +640,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					// Current and target instances are skipped because the value is not consistent and depends on provisioning the compute pool instances.
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 2))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 2))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -684,8 +688,7 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 	modelBasicOnStageTemplate := model.ServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specTemplateFileName, using...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -781,8 +784,7 @@ func TestAcc_Service_changeServiceTypeExternally(t *testing.T) {
 	modelBasic := model.ServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -851,8 +853,7 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 	modelBasic := model.ServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -885,8 +886,6 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -906,6 +905,8 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -914,8 +915,8 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -951,8 +952,7 @@ func TestAcc_Service_fromSpecificationTemplate(t *testing.T) {
 	model := model.ServiceWithSpecTemplate("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), specTemplate, using...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -983,8 +983,6 @@ func TestAcc_Service_fromSpecificationTemplate(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -1004,6 +1002,8 @@ func TestAcc_Service_fromSpecificationTemplate(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -1012,8 +1012,8 @@ func TestAcc_Service_fromSpecificationTemplate(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -1055,8 +1055,7 @@ func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 	model := model.ServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName, using...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1087,8 +1086,6 @@ func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(1).
@@ -1108,6 +1105,8 @@ func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -1116,8 +1115,8 @@ func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -1168,8 +1167,7 @@ func TestAcc_Service_complete(t *testing.T) {
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1185,7 +1183,7 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString(r.BooleanTrue).
 						HasMinInstancesString("1").
 						HasMinReadyInstancesString("1").
@@ -1201,8 +1199,6 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(1).
-						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
 						HasMaxInstances(2).
@@ -1222,6 +1218,8 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasIsUpgrading(false).
 						HasManagingObjectDomainEmpty().
 						HasManagingObjectNameEmpty(),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status", string(sdk.ServiceStatusPending))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -1230,8 +1228,8 @@ func TestAcc_Service_complete(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "2")),
@@ -1259,7 +1257,13 @@ func TestAcc_Service_complete(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"from_specification"},
+				ImportStateVerifyIgnore: []string{"from_specification", "show_output.0.current_instances", "show_output.0.target_instances", "describe_output.0.current_instances", "describe_output.0.target_instances"},
+				ImportStateCheck: assertThatImport(t,
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
+				),
 			},
 		},
 	})
@@ -1330,8 +1334,7 @@ func TestAcc_Service_Validations(t *testing.T) {
 		}))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

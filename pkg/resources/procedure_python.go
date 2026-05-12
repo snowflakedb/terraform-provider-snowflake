@@ -111,7 +111,8 @@ func CreateContextProcedurePython(ctx context.Context, d *schema.ResourceData, m
 }
 
 func ReadContextProcedurePython(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -128,7 +129,7 @@ func ReadContextProcedurePython(ctx context.Context, d *schema.ResourceData, met
 	errs := errors.Join(
 		// not reading is_secure on purpose (handled as external change to show output)
 		readFunctionOrProcedureArguments(d, allProcedureDetails.procedureDetails.NormalizedArguments),
-		d.Set("return_type", allProcedureDetails.procedureDetails.ReturnDataType.ToSql()),
+		HandleDatatypeSet(d, "return_type", allProcedureDetails.procedureDetails.ReturnDataType),
 		// not reading null_input_behavior on purpose (handled as external change to show output)
 		// not reading execute_as on purpose (handled as external change to show output)
 		setRequiredFromStringPtr(d, "runtime_version", allProcedureDetails.procedureDetails.RuntimeVersion),
@@ -145,7 +146,7 @@ func ReadContextProcedurePython(ctx context.Context, d *schema.ResourceData, met
 		handleProcedureParameterRead(d, allProcedureDetails.procedureParameters),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ProcedureToSchema(allProcedureDetails.procedure)}),
-		d.Set(ParametersAttributeName, []map[string]any{schemas.ProcedureParametersToSchema(allProcedureDetails.procedureParameters)}),
+		d.Set(ParametersAttributeName, []map[string]any{schemas.ProcedureParametersToSchema(allProcedureDetails.procedureParameters, providerCtx)}),
 	)
 	if errs != nil {
 		return diag.FromErr(err)

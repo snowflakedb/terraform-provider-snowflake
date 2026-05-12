@@ -39,7 +39,7 @@ func init() {
 	allTestHandlers["parameter_handling_private"] = parameterHandlingPrivateHandler
 }
 
-// TODO [mux-PRs]: can we assert private bytes?
+// TODO [SNOW-2298172]: can we assert private bytes?
 func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *testing.T) {
 	id := sdk.NewAccountObjectIdentifier("abc")
 	resourceType := fmt.Sprintf("%s_parameter_handling_private", PluginFrameworkFunctionalTestsProviderName)

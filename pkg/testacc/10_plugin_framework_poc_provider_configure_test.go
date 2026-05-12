@@ -10,10 +10,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
-// TODO [mux-PR]: populate all the remaining fields of gosnowflake.Config
+// TODO [SNOW-2234579]: populate all the remaining fields of gosnowflake.Config
 //   - validate_default_parameters
 //   - params
 //   - client_ip
@@ -42,9 +42,7 @@ import (
 //   - disable_console_login
 //   - DisableSamlURLCheck
 func (p *pluginFrameworkPocProvider) getDriverConfigFromTerraform(configModel pluginFrameworkPocProviderModelV0) (*gosnowflake.Config, error) {
-	config := &gosnowflake.Config{
-		Application: "terraform-provider-snowflake",
-	}
+	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
 	if errs := errors.Join(
 		setAccount(configModel, config),
 		setStringAttribute(configModel.User, snowflakeenvs.User, &config.User),

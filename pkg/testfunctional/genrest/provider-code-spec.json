@@ -1,0 +1,390 @@
+{
+	"provider": {
+		"name": "snowflakepluginframeworkfunctionaltests"
+	},
+	"resources": [
+		{
+			"name": "warehouse",
+			"schema": {
+				"attributes": [
+					{
+						"name": "auto_resume",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Specifies whether to automatically resume a warehouse when a SQL statement is submitted to it",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"true\",\n\"false\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "auto_suspend",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "time in seconds before auto suspend"
+						}
+					},
+					{
+						"name": "available",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Percentage of the warehouse compute resources that are provisioned and available."
+						}
+					},
+					{
+						"name": "budget",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Comment representing budget for warehouse."
+						}
+					},
+					{
+						"name": "comment",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Specifies a comment for the warehouse"
+						}
+					},
+					{
+						"name": "created_on",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Date and time when the warehouse was created."
+						}
+					},
+					{
+						"name": "enable_query_acceleration",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Specifies whether to enable the query acceleration service for queries that rely on this warehouse for compute resources",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"true\",\n\"false\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "initially_suspended",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Specifies whether the warehouse is created initially in the Suspended state",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"true\",\n\"false\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "is_current",
+						"bool": {
+							"computed_optional_required": "computed_optional",
+							"description": "Whether the warehouse is in use for the session. Only one warehouse can be in use at a time for a session.  To specify or change the warehouse for a session, use the USE WAREHOUSE command."
+						}
+					},
+					{
+						"name": "is_default",
+						"bool": {
+							"computed_optional_required": "computed_optional",
+							"description": "Whether the warehouse is the default for the current user."
+						}
+					},
+					{
+						"name": "kind",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"deprecation_message": "This attribute is deprecated."
+						}
+					},
+					{
+						"name": "max_cluster_count",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Specifies the maximum number of clusters for a multi-cluster warehouse"
+						}
+					},
+					{
+						"name": "max_concurrency_level",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Object parameter that specifies the concurrency level for SQL statements executed by a warehouse cluster"
+						}
+					},
+					{
+						"name": "min_cluster_count",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Specifies the minimum number of clusters for a multi-cluster warehouse"
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "A Snowflake object identifier. If the identifier contains spaces or special characters, the entire string must be enclosed in double quotes. Identifiers enclosed in double quotes are also case-sensitive.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "regexp"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^\\\"([^\\\"]|\\\"\\\")+\\\"|[a-zA-Z_][a-zA-Z0-9_$]*$\"), \"\")"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "other",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Percentage of the warehouse compute resources that are in a state other than available,  provisioning, or quiescing."
+						}
+					},
+					{
+						"name": "owner",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Role that owns the warehouse."
+						}
+					},
+					{
+						"name": "owner_role_type",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "The type of role that owns the object."
+						}
+					},
+					{
+						"name": "provisioning",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Percentage of the warehouse compute resources that are in the process of provisioning."
+						}
+					},
+					{
+						"name": "query_acceleration_max_scale_factor",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Specifies the maximum scale factor for leasing compute resources for query acceleration. The scale factor is used as a multiplier based on warehouse size"
+						}
+					},
+					{
+						"name": "queued",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Number of SQL statements that are queued for the warehouse."
+						}
+					},
+					{
+						"name": "quiescing",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Percentage of the warehouse compute resources that are executing SQL statements,  but will be shut down once the queries complete."
+						}
+					},
+					{
+						"name": "resource_monitor",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "A Snowflake object identifier. If the identifier contains spaces or special characters, the entire string must be enclosed in double quotes. Identifiers enclosed in double quotes are also case-sensitive.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "regexp"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^\\\"([^\\\"]|\\\"\\\")+\\\"|[a-zA-Z_][a-zA-Z0-9_$]*$\"), \"\")"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "resumed_on",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Date and time when the warehouse was last started or restarted."
+						}
+					},
+					{
+						"name": "running",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Number of SQL statements that are being executed by the warehouse."
+						}
+					},
+					{
+						"name": "scaling_policy",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Scaling policy of warehouse, possible scaling policies: STANDARD, ECONOMY"
+						}
+					},
+					{
+						"name": "size",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"deprecation_message": "This attribute is deprecated.",
+							"description": "[Deprecated] names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large"
+						}
+					},
+					{
+						"name": "started_clusters",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Number of clusters currently started."
+						}
+					},
+					{
+						"name": "state",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "The state of warehouse, possible states: STARTED, STARTING, DYNAMIC, SUSPENDED, RESIZING, RESUMING, SUSPENDING"
+						}
+					},
+					{
+						"name": "statement_queued_timeout_in_seconds",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Object parameter that specifies the time, in seconds, a SQL statement can be queued on a warehouse before it is canceled by the system"
+						}
+					},
+					{
+						"name": "statement_timeout_in_seconds",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Object parameter that specifies the time, in seconds, after which a running SQL statement  is canceled by the system"
+						}
+					},
+					{
+						"name": "target_statement_size",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Names of size: X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large"
+						}
+					},
+					{
+						"name": "type",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"deprecation_message": "This attribute is deprecated.",
+							"description": "[Deprecated] Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED"
+						}
+					},
+					{
+						"name": "updated_on",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Date and time when the warehouse was last updated,  which includes changing any of the properties of the warehouse or changing the state (STARTED, SUSPENDED, RESIZING) of the warehouse."
+						}
+					},
+					{
+						"name": "wait_for_completion",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "When resizing a warehouse, you can use this parameter to block the return of the ALTER WAREHOUSE command until the resize has finished provisioning all its compute resources",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"true\",\n\"false\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "warehouse_credit_limit",
+						"int64": {
+							"computed_optional_required": "computed_optional",
+							"description": "Credit limit that are can be executed by the warehouse."
+						}
+					},
+					{
+						"name": "warehouse_size",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Size of warehouse, possible sizes: XSMALL, SMALL, MEDIUM, LARGE, XLARGE, XXLARGE, XXXLARGE, X4LARGE, X5LARGE, X6LARGE"
+						}
+					},
+					{
+						"name": "warehouse_type",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Type of warehouse, possible types: STANDARD, SNOWPARK-OPTIMIZED"
+						}
+					},
+					{
+						"name": "status",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "Message returned by the server."
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Identifier (i.e. name) for the resource.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "regexp"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^\\\"([^\\\"]|\\\"\\\")+\\\"|[a-zA-Z_][a-zA-Z0-9_$]*$\"), \"\")"
+									}
+								}
+							]
+						}
+					}
+				]
+			}
+		}
+	],
+	"version": "0.1"
+}

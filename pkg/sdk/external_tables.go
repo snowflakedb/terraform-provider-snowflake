@@ -6,12 +6,6 @@ import (
 	"time"
 )
 
-var (
-	_ convertibleRow[ExternalTable]              = (*externalTableRow)(nil)
-	_ convertibleRow[ExternalTableColumnDetails] = (*externalTableColumnDetailsRow)(nil)
-	_ convertibleRow[ExternalTableStageDetails]  = (*externalTableStageDetailsRow)(nil)
-)
-
 type ExternalTables interface {
 	Create(ctx context.Context, req *CreateExternalTableRequest) error
 	CreateWithManualPartitioning(ctx context.Context, req *CreateWithManualPartitioningExternalTableRequest) error
@@ -112,10 +106,10 @@ type ExternalTableFileFormat struct {
 type ExternalTableFileFormatType string
 
 var (
-	ExternalTableFileFormatTypeCSV     ExternalTableFileFormatType = "CSV"
-	ExternalTableFileFormatTypeJSON    ExternalTableFileFormatType = "JSON"
+	ExternalTableFileFormatTypeCsv     ExternalTableFileFormatType = "CSV"
+	ExternalTableFileFormatTypeJson    ExternalTableFileFormatType = "JSON"
 	ExternalTableFileFormatTypeAvro    ExternalTableFileFormatType = "AVRO"
-	ExternalTableFileFormatTypeORC     ExternalTableFileFormatType = "ORC"
+	ExternalTableFileFormatTypeOrc     ExternalTableFileFormatType = "ORC"
 	ExternalTableFileFormatTypeParquet ExternalTableFileFormatType = "PARQUET"
 )
 
@@ -131,7 +125,7 @@ type ExternalTableFileFormatTypeOptions struct {
 	CSVFieldOptionallyEnclosedBy *string                      `ddl:"parameter,single_quotes" sql:"FIELD_OPTIONALLY_ENCLOSED_BY"`
 	CSVNullIf                    *[]NullString                `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	CSVEmptyFieldAsNull          *bool                        `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
-	CSVEncoding                  *CSVEncoding                 `ddl:"parameter,single_quotes" sql:"ENCODING"`
+	CSVEncoding                  *CsvEncoding                 `ddl:"parameter,single_quotes" sql:"ENCODING"`
 
 	// JSON type options
 	JSONCompression              *ExternalTableJsonCompression `ddl:"parameter" sql:"COMPRESSION"`
@@ -358,7 +352,7 @@ type externalTableRow struct {
 	OwnerRoleType       string         `db:"owner_role_type"`
 }
 
-func (e externalTableRow) convert() *ExternalTable {
+func (e externalTableRow) convert() (*ExternalTable, error) {
 	et := &ExternalTable{
 		CreatedOn:      e.CreatedOn,
 		Name:           e.Name,
@@ -390,7 +384,7 @@ func (e externalTableRow) convert() *ExternalTable {
 	if e.FileFormatType.Valid {
 		et.FileFormatType = e.FileFormatType.String
 	}
-	return et
+	return et, nil
 }
 
 // describeExternalTableColumnsOptions based on https://docs.snowflake.com/en/sql-reference/sql/desc-external-table
@@ -429,7 +423,7 @@ type externalTableColumnDetailsRow struct {
 	PolicyName sql.NullString `db:"policy name"`
 }
 
-func (r externalTableColumnDetailsRow) convert() *ExternalTableColumnDetails {
+func (r externalTableColumnDetailsRow) convert() (*ExternalTableColumnDetails, error) {
 	details := &ExternalTableColumnDetails{
 		Name:       r.Name,
 		Type:       r.Type,
@@ -453,7 +447,7 @@ func (r externalTableColumnDetailsRow) convert() *ExternalTableColumnDetails {
 	if r.PolicyName.Valid {
 		details.PolicyName = String(r.PolicyName.String)
 	}
-	return details
+	return details, nil
 }
 
 type describeExternalTableStageOptions struct {
@@ -478,12 +472,12 @@ type externalTableStageDetailsRow struct {
 	PropertyDefault string `db:"property_default"`
 }
 
-func (r externalTableStageDetailsRow) convert() *ExternalTableStageDetails {
+func (r externalTableStageDetailsRow) convert() (*ExternalTableStageDetails, error) {
 	return &ExternalTableStageDetails{
 		ParentProperty:  r.ParentProperty,
 		Property:        r.Property,
 		PropertyType:    r.PropertyType,
 		PropertyValue:   r.PropertyValue,
 		PropertyDefault: r.PropertyDefault,
-	}
+	}, nil
 }

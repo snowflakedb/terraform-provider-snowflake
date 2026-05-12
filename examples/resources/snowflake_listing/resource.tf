@@ -48,7 +48,10 @@ resource "snowflake_listing" "basic_staged" {
   name = "LISTING"
   manifest {
     from_stage = {
-      stage = snowflake_stage.test_stage.fully_qualified_name
+      stage           = snowflake_stage.test_stage.fully_qualified_name
+      location        = "path/to/manifest"
+      version_name    = "v1.0.0"
+      version_comment = "Initial version of the manifest"
     }
   }
 

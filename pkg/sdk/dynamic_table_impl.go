@@ -6,7 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ DynamicTables = (*dynamicTables)(nil)
+var (
+	_ DynamicTables                       = (*dynamicTables)(nil)
+	_ convertibleRow[DynamicTable]        = new(dynamicTableRow)
+	_ convertibleRow[DynamicTableDetails] = new(dynamicTableDetailsRow)
+)
 
 type dynamicTables struct {
 	client *Client
@@ -37,7 +41,7 @@ func (v *dynamicTables) Describe(ctx context.Context, request *DescribeDynamicTa
 	if err != nil {
 		return nil, err
 	}
-	return row.convert(), nil
+	return conversionErrorWrapped(row.convert())
 }
 
 func (v *dynamicTables) Show(ctx context.Context, request *ShowDynamicTableRequest) ([]DynamicTable, error) {
@@ -46,8 +50,7 @@ func (v *dynamicTables) Show(ctx context.Context, request *ShowDynamicTableReque
 	if err != nil {
 		return nil, err
 	}
-	result := convertRows[dynamicTableRow, DynamicTable](rows)
-	return result, nil
+	return convertRows[dynamicTableRow, DynamicTable](rows)
 }
 
 func (v *dynamicTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*DynamicTable, error) {

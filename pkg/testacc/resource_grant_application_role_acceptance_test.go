@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -19,6 +20,14 @@ import (
 func createApp(t *testing.T) *sdk.Application {
 	t.Helper()
 
+	application, _ := createAppReturnApplicationPackage(t)
+	return application
+}
+
+// TODO [SNOW-1431726]: Move to helpers
+func createAppReturnApplicationPackage(t *testing.T) (*sdk.Application, *sdk.ApplicationPackage) {
+	t.Helper()
+
 	stage, cleanupStage := testClient().Stage.CreateStage(t)
 	t.Cleanup(cleanupStage)
 
@@ -28,11 +37,11 @@ func createApp(t *testing.T) *sdk.Application {
 	applicationPackage, cleanupApplicationPackage := testClient().ApplicationPackage.CreateApplicationPackage(t)
 	t.Cleanup(cleanupApplicationPackage)
 
-	testClient().ApplicationPackage.AddApplicationPackageVersion(t, applicationPackage.ID(), stage.ID(), "v1")
+	testClient().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), "v1")
 
 	application, cleanupApplication := testClient().Application.CreateApplication(t, applicationPackage.ID(), "v1")
 	t.Cleanup(cleanupApplication)
-	return application
+	return application, applicationPackage
 }
 
 func TestAcc_GrantApplicationRole_accountRole(t *testing.T) {
@@ -130,6 +139,7 @@ func TestAcc_GrantApplicationRole_migrateFromV0941_ensureSmoothUpgradeWithNewRes
 	applicationRoleName := testvars.ApplicationRole1
 	appRoleId := sdk.NewDatabaseObjectIdentifier(app.ID().Name(), applicationRoleName)
 	parentRoleId := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -137,9 +147,9 @@ func TestAcc_GrantApplicationRole_migrateFromV0941_ensureSmoothUpgradeWithNewRes
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantApplicationRoleBasicConfig(fmt.Sprintf(`\"%s\".\"%s\"`, appRoleId.DatabaseName(), appRoleId.Name()), parentRoleId.Name()),
+				Config:            providerConfig + grantApplicationRoleBasicConfig(fmt.Sprintf(`\"%s\".\"%s\"`, appRoleId.DatabaseName(), appRoleId.Name()), parentRoleId.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_application_role.test", "id", fmt.Sprintf(`%s|ACCOUNT_ROLE|%s`, appRoleId.FullyQualifiedName(), parentRoleId.FullyQualifiedName())),
 				),
@@ -185,6 +195,7 @@ func TestAcc_GrantApplicationRole_IdentifierQuotingDiffSuppression(t *testing.T)
 
 	unquotedApplicationRoleId := fmt.Sprintf(`%s.%s`, appRoleId.DatabaseName(), appRoleId.Name())
 	quotedParentRoleId := fmt.Sprintf(`\"%s\"`, parentRoleId.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -192,10 +203,10 @@ func TestAcc_GrantApplicationRole_IdentifierQuotingDiffSuppression(t *testing.T)
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent final plan"),
-				Config:            grantApplicationRoleBasicConfig(unquotedApplicationRoleId, quotedParentRoleId),
+				Config:            providerConfig + grantApplicationRoleBasicConfig(unquotedApplicationRoleId, quotedParentRoleId),
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },

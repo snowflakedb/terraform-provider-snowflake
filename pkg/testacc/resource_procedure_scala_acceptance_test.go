@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -46,11 +46,10 @@ func TestAcc_ProcedureScala_InlineBasic(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureScala),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -194,11 +193,10 @@ func TestAcc_ProcedureScala_InlineFull(t *testing.T) {
 		WithComment("some other comment")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureScala),
 		Steps: []resource.TestStep{
 			// CREATE BASIC

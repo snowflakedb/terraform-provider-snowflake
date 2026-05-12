@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -157,7 +158,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					ForceNew:    true,
-					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToObjectTypesString, " | ")),
+					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToSchemaObjectTypesString, " | ")),
 					RequiredWith: []string{
 						"on_schema_object.0.object_name",
 					},
@@ -165,7 +166,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
 					},
-					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToObjectTypesString, true),
+					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToSchemaObjectTypesString, true),
 				},
 				"object_name": {
 					Type:        schema.TypeString,
@@ -189,7 +190,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Description: "Configures the privilege to be granted on all objects in either a database or schema.",
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(sdk.ValidGrantToPluralObjectTypesString),
+						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(sdk.ValidGrantToAllPluralObjectTypesString),
 					},
 					ConflictsWith: []string{
 						"on_schema_object.0.object_type",
@@ -598,7 +599,8 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 }
 
 func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := ParseGrantPrivilegesToDatabaseRoleId(d.Id())
 	if err != nil {
 		return diag.Diagnostics{
@@ -614,13 +616,11 @@ func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = client.Grants.RevokePrivilegesFromDatabaseRole(
-		ctx,
-		getDatabaseRolePrivilegesFromSchema(d),
-		grantOn,
-		id.DatabaseRoleName,
-		&sdk.RevokePrivilegesFromDatabaseRoleOptions{},
-	)
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		err = client.Grants.RevokePrivilegesFromDatabaseRoleSafely(ctx, getDatabaseRolePrivilegesFromSchema(d), grantOn, id.DatabaseRoleName, &sdk.RevokePrivilegesFromDatabaseRoleOptions{})
+	} else {
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, getDatabaseRolePrivilegesFromSchema(d), grantOn, id.DatabaseRoleName, &sdk.RevokePrivilegesFromDatabaseRoleOptions{})
+	}
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{

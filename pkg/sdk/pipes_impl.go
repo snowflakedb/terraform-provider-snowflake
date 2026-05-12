@@ -6,7 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Pipes = (*pipes)(nil)
+var (
+	_ Pipes                = (*pipes)(nil)
+	_ convertibleRow[Pipe] = new(pipeDBRow)
+)
 
 type pipes struct {
 	client *Client
@@ -41,9 +44,7 @@ func (v *pipes) Show(ctx context.Context, opts *ShowPipeOptions) ([]Pipe, error)
 		return nil, err
 	}
 
-	resultList := convertRows[pipeDBRow, Pipe](dbRows)
-
-	return resultList, nil
+	return convertRows[pipeDBRow, Pipe](dbRows)
 }
 
 func (v *pipes) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error) {
@@ -74,5 +75,5 @@ func (v *pipes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Pipe,
 	if err != nil {
 		return nil, err
 	}
-	return pipeRow.convert(), nil
+	return conversionErrorWrapped(pipeRow.convert())
 }

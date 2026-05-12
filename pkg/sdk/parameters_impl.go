@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"strconv"
 )
 
 func GetSessionParametersFrom(params map[string]any) (*SessionParameters, error) {
@@ -60,6 +61,8 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 		sessionParameters.DateInputFormat = &value
 	case SessionParameterDateOutputFormat:
 		sessionParameters.DateOutputFormat = &value
+	case SessionParameterEnableGetDdlUseDataTypeAlias:
+		err = setBooleanValue(parameter, value, &sessionParameters.EnableGetDdlUseDataTypeAlias)
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
 		err = setBooleanValue(parameter, value, &sessionParameters.EnableUnloadPhysicalTypeOptimization)
 	case SessionParameterErrorOnNondeterministicMerge:
@@ -206,6 +209,8 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 		unsetField = &sessionParametersUnset.DateInputFormat
 	case SessionParameterDateOutputFormat:
 		unsetField = &sessionParametersUnset.DateOutputFormat
+	case SessionParameterEnableGetDdlUseDataTypeAlias:
+		unsetField = &sessionParametersUnset.EnableGetDdlUseDataTypeAlias
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
 		unsetField = &sessionParametersUnset.EnableUnloadPhysicalTypeOptimization
 	case SessionParameterErrorOnNondeterministicMerge:
@@ -301,4 +306,224 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 	}
 	*unsetField = Bool(true)
 	return nil
+}
+
+func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter AccountParameter, value string) (matched bool, err error) {
+	matched = true
+	switch parameter {
+	case AccountParameterAllowBindValuesAccess:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.AllowBindValuesAccess = b
+	case AccountParameterAllowClientMFACaching:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.AllowClientMFACaching = b
+	case AccountParameterAllowIDToken:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.AllowIDToken = b
+	case AccountParameterAllowedSpcsWorkloadTypes:
+		legacyAccountParameters.AllowedSpcsWorkloadTypes = &value
+	case AccountParameterClientEncryptionKeySize:
+		v, err := strconv.Atoi(value)
+		if err != nil {
+			return matched, fmt.Errorf("CLIENT_ENCRYPTION_KEY_SIZE session parameter is an integer, got %v", value)
+		}
+		legacyAccountParameters.ClientEncryptionKeySize = Pointer(v)
+	case AccountParameterCortexEnabledCrossRegion:
+		legacyAccountParameters.CortexEnabledCrossRegion = &value
+	case AccountParameterCortexModelsAllowlist:
+		legacyAccountParameters.CortexModelsAllowlist = &value
+	case AccountParameterDefaultDbtVersion:
+		legacyAccountParameters.DefaultDbtVersion = &value
+	case AccountParameterDisableUserPrivilegeGrants:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.DisableUserPrivilegeGrants = b
+	case AccountParameterDisallowedSpcsWorkloadTypes:
+		legacyAccountParameters.DisallowedSpcsWorkloadTypes = &value
+	case AccountParameterEnableBudgetEventLogging:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableBudgetEventLogging = b
+	case AccountParameterEnableCortexAnalyst:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableCortexAnalyst = b
+	case AccountParameterEnableIdentifierFirstLogin:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableIdentifierFirstLogin = b
+	case AccountParameterEnableInternalStagesPrivatelink:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableInternalStagesPrivatelink = b
+	case AccountParameterEnablePersonalDatabase:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnablePersonalDatabase = b
+	case AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = b
+	case AccountParameterEnableTagPropagationEventLogging:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableTagPropagationEventLogging = b
+	case AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = b
+	case AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = b
+	case AccountParameterEnableUnhandledExceptionsReporting:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableUnhandledExceptionsReporting = b
+	case AccountParameterEnableUnredactedQuerySyntaxError:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableUnredactedQuerySyntaxError = b
+	case AccountParameterEnforceNetworkRulesForInternalStages:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnforceNetworkRulesForInternalStages = b
+	case AccountParameterEventTable:
+		legacyAccountParameters.EventTable = &value
+	case AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = b
+	case AccountParameterInitialReplicationSizeLimitInTB:
+		legacyAccountParameters.InitialReplicationSizeLimitInTB = &value
+	case AccountParameterMetricLevel:
+		legacyAccountParameters.MetricLevel = Pointer(MetricLevel(value))
+	case AccountParameterMinDataRetentionTimeInDays:
+		v, err := strconv.Atoi(value)
+		if err != nil {
+			return matched, fmt.Errorf("MIN_DATA_RETENTION_TIME_IN_DAYS session parameter is an integer, got %v", value)
+		}
+		legacyAccountParameters.MinDataRetentionTimeInDays = Pointer(v)
+	case AccountParameterNetworkPolicy:
+		legacyAccountParameters.NetworkPolicy = &value
+	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.OAuthAddPrivilegedRolesToBlockedList = b
+	case AccountParameterPeriodicDataRekeying:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.PeriodicDataRekeying = b
+	case AccountParameterPreventLoadFromInlineURL:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.PreventLoadFromInlineURL = b
+	case AccountParameterPreventUnloadToInlineURL:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.PreventUnloadToInlineURL = b
+	case AccountParameterPreventUnloadToInternalStages:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.PreventUnloadToInternalStages = b
+	case AccountParameterReadConsistencyMode:
+		legacyAccountParameters.ReadConsistencyMode = &value
+	case AccountParameterRequireStorageIntegrationForStageCreation:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.RequireStorageIntegrationForStageCreation = b
+	case AccountParameterRequireStorageIntegrationForStageOperation:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.RequireStorageIntegrationForStageOperation = b
+	case AccountParameterSqlTraceQueryText:
+		legacyAccountParameters.SqlTraceQueryText = &value
+	case AccountParameterSsoLoginPage:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.SSOLoginPage = b
+	case AccountParameterUseWorkspacesForSql:
+		legacyAccountParameters.UseWorkspacesForSql = &value
+	default:
+		matched = false
+	}
+	return matched, nil
 }

@@ -32,6 +32,156 @@ To use the provider with the bundles containing this change:
 
 Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
 
+## [Bundle 2026_02](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02_bundle)
+
+### External OAuth security integrations: `EXTERNAL_OAUTH_JWS_KEYS_URL` requires HTTPS
+
+The `EXTERNAL_OAUTH_JWS_KEYS_URL` parameter specifies the endpoint from which Snowflake retrieves public keys to validate OAuth access tokens. After this change, only HTTPS URLs are accepted; HTTP URLs are rejected.
+
+If you manage External OAuth security integrations with the [`snowflake_external_oauth_integration`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_oauth_integration) resource, ensure `external_oauth_jws_keys_url` and `jws_keys_urls` use `https://` URLs before the bundle is active on your account.
+
+Reference: [BCR-2218](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02/bcr-2218)
+
+## [Bundle 2025_07](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07_bundle)
+
+### USAGE privilege on CATALOG INTEGRATION and EXTERNAL VOLUME required for database owner role for all operations
+
+In certain scenarios, new privileges would be required to perform operations on catalog integrations and external volumes. You can manage these in Terraform with [grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role)
+and [grant_privileges_to_database_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role).
+
+Reference: [BCR-2114](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2114)
+
+### New default column sizes for string and binary data types
+
+Before this change, the default size was 16 MB for text and 8 MB for binary columns. With the new bundle, the defaults increase to 128 MB for text and 64 MB for binary columns.
+For now, the provider will continue to use the old default size - 16 MB for text and 8 MB for binary. We are planning to adjust even more datatypes because of a new `DATA_TYPE_ALIAS` column in information schema - read [related BCR](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2061). We'll comeback to this in the future.
+
+The datatype precision and scale can be specified for columns in the provider.
+
+Reference: [BCR-2118](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2118)
+
+### Disallow setting date and time output formats to AUTO
+
+Snowflake now does not allow setting a number of time output parameters to `AUTO` - see the reference for the exact list. The provider does not validate such values in related resources. If you are using the `AUTO` value, adjust your configurations.
+
+Reference: [BCR-2115](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2115)
+
+### Python telemetry library automatically installed
+
+Snowflake automatically installs the `snowflake-telemetry-python` package when a function or procedure with a Python handler is created. Read more about packages policy in [Snowflake documentation](https://docs.snowflake.com/en/developer-guide/udf/python/packages-policy). Package policies are not yet supported in the provider.
+
+Reference: [BCR-2120](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2120)
+
+### Disallow GRANT REFERENCE_USAGE on a database if GRANT USAGE isn’t set first
+
+After enabling this BCR, `GRANT USAGE` on a database must be granted before `GRANT REFERENCE_USAGE`. These operations can be combined like `GRANT USAGE, REFERENCE_USAGE`. You can manage these in Terraform with [grant_privileges_to_share](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_share). You may need to adjust your grant configurations.
+
+Additionally, when updating the `accounts` field in the `share` resource, the provider creates a temporary database from the share. Before, it granted only the `USAGE` grant. Since [v2.11.0](./MIGRATION_GUIDE.md#improvement-granting-privileges-on-a-database-during-share-update), it also grants `REFERENCE_USAGE`. If you have trouble updating or creating the `share` resource, update the provider to this version.
+
+Reference: [BCR-2136](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2136)
+
+### Default schedule for data metric functions in views
+
+Setting data metric functions in views is now optional. In the provider, the `data_metric_function` field must be set if `data_metric_schedule` is set. The provider will continue to require setting that field for now. We are treating this relaxation as a missing feature, and we'll adjust it in the future.
+
+Reference: [BCR-2101](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2101)
+
+### New `generation` column in output in SHOW WAREHOUSES
+
+This bundle adds the `generation` column. The values in `resource_constraint` column remain the same. The provider has been adjusted in [v2.10.1](./MIGRATION_GUIDE.md#improvement-handling-show_output-in-warehouses).
+
+Reference: [BCR-2110](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2110)
+
+## [Bundle 2025_06](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06_bundle)
+
+### Changes in authentication policies
+> [!IMPORTANT]
+> The [BCR-2086](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2086) change has been rolled back from the BCR 2025_04 and was moved to 2025_06.
+
+> [!IMPORTANT]
+> These changes are addressed in the v2.10.0 version.
+> If you use an older version, please upgrade to v2.10.0, or use the instructions below as a workaround.
+
+#### `MFA_AUTHENTICATION_METHODS` property deprecation
+##### Change
+The `MFA_AUTHENTICATION_METHODS` property is deprecated. Setting the `MFA_AUTHENTICATION_METHODS` property returns an error. The new way of handling authentication methods is with `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` field. Note that the `MFA_AUTHENTICATION_METHODS` is still returned in the `DESCRIBE` output.
+
+##### Provider impact
+If you:
+- Use the [authentication_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) resource with `mfa_authentication_methods` field different than Snowflake default, or not set, and
+- Have this bundle enabled and
+- Use versions before v2.10.0,
+The provider can return errors like `invalid property 'mfa_AUTHENTICATION_METHODS' for 'AUTHENTICATION_POLICY'` or `MFA_AUTHENTICATION_METHODS is deprecated`. Also, the provider could cause a permadiff on this field due to incorrect handling.
+
+##### Required changes
+Upgrade provider to v2.10.0. This version fixes the permadiff and upgrades the state automatically. For older versions, you can set this field to a Snowflake default with [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+
+If you get errors like `MFA_AUTHENTICATION_METHODS is deprecated`, then:
+1. Disable the 2025_06 bundle.
+1. Remove the `mfa_authentication_methods` field from the configuration.
+1. Enable the 2025_06 bundle.
+1. If you get a non-empty plan on the `mfa_authentication_methods` (it's still in the state), use the [ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments) attribute.
+
+Additionally, the allowed values for `MFA_ENROLLMENT` are changed: `OPTIONAL` is removed and `REQUIRED_PASSWORD_ONLY` and `REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY` are added.
+
+Reference: [BCR-2086](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2086), [BCR-2097](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2097)
+
+### Snowflake OAuth authentication: Change in the network policy used for a request from client to Snowflake
+
+This change modifies the behavior of authentication with active network policies. Please verify that your network policy configuration allows connection by the provider after activating this change.
+
+Additionally, this change adds the possibility to assign network policies to External Oauth integrations.
+
+Setting the `network_policy` field in `external_oauth_integration` resource is not yet supported in the provider, and it will be handled in the future. As a workaround, please use the [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+
+Reference: [BCR-2094](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2094)
+
+### Snowpark Container Services job service: Retention-time increase
+
+In the provider, the job_service resource forces setting the `ASYNC` option.
+
+Before the change, Snowflake automatically deletes the job service 7 days after completion.
+
+After the change, Snowflake retains job services for 14 days after completion.
+
+In most cases, this change in Snowflake should have no effect on the provider. Optionally, you can manually drop the completed jobs.
+
+Reference: [BCR-2093](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2093)
+
+## [Bundle 2025_05](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05_bundle)
+
+### Key-pair authentication for Google Cloud accounts in the us-central1 region
+
+Previously, when you used key-pair authentication from a Snowflake account in the Google Cloud us-central1 region, specifying the account by using an account locator with additional segments was supported.
+
+Now, when you use key-pair authentication across all cloud platforms and regions, you must specify the account by using only the account locator without additional segments. See our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide for authentication overview in the provider.
+
+Reference: [BCR-2055](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05/bcr-2055)
+
+### File formats and stages: Enforce dependency checks
+
+You can't drop or recreate a file format or stage that has dependent external tables. You also can't alter the location of a stage with dependent external tables. To perform these operations, first drop the dependent external tables manually.
+
+Reference: [BCR-1989](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_05/bcr-1989)
+
+## [Bundle 2025_04](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04_bundle)
+
+### `MFA_AUTHENTICATION_METHODS` in authentication policy now only includes `PASSWORD` by default
+
+Previously, the created authentication policies with default `MFA_AUTHENTICATION_METHODS` had both `[PASSWORD, SAML]` values.
+In this BCR, the default value is changed to only `PASSWORD`. This can cause a permadiff on the optional `mfa_authentication_methods` field in `authentication_policy` resource.
+To address this, you can either specify this attribute in the resource configuration, or use the [ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments#lifecycle) meta argument.
+
+This resource is still in preview, and we are planning to rework it in the near future. Handling of default values will be improved.
+
+Reference: [BCR-1971](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1971)
+
+### Primary role requires stage access during `CREATE EXTERNAL TABLE` command
+
+Creating an external table succeeds only if a user’s primary role has the `USAGE` privilege on the stage referenced in the `snowflake_external_table` resource. If you manage external tables in the provider, please grant the `USAGE` privilege on the relevant stages to the connection role.
+
+Reference: [BCR-1993](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_04/bcr-1993)
+
 ## [Bundle 2025_03](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_03_bundle)
 
 ### The `CREATE DATA EXCHANGE LISTING` privilege rename

@@ -6,7 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tables = (*tables)(nil)
+var (
+	_ Tables                             = (*tables)(nil)
+	_ convertibleRow[TableColumnDetails] = new(tableColumnDetailsRow)
+	_ convertibleRow[TableStageDetails]  = new(tableStageDetailsRow)
+	_ convertibleRow[Table]              = new(tableDBRow)
+)
 
 var (
 	_ optionsProvider[createTableOptions]              = new(CreateTableRequest)
@@ -76,9 +81,7 @@ func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, 
 		return nil, err
 	}
 
-	resultList := convertRows[tableDBRow, Table](dbRows)
-
-	return resultList, nil
+	return convertRows[tableDBRow, Table](dbRows)
 }
 
 func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
@@ -100,7 +103,7 @@ func (v *tables) DescribeColumns(ctx context.Context, req *DescribeTableColumnsR
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[tableColumnDetailsRow, TableColumnDetails](rows), nil
+	return convertRows[tableColumnDetailsRow, TableColumnDetails](rows)
 }
 
 func (v *tables) DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error) {
@@ -108,7 +111,7 @@ func (v *tables) DescribeStage(ctx context.Context, req *DescribeTableStageReque
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[tableStageDetailsRow, TableStageDetails](rows), nil
+	return convertRows[tableStageDetailsRow, TableStageDetails](rows)
 }
 
 func (s *AlterTableRequest) toOpts() *alterTableOptions {
@@ -227,8 +230,8 @@ func (s *TableSetRequest) toOpts() *TableSet {
 		Comment:                    s.Comment,
 	}
 
-	if s.StageCopyOptions != nil {
-		set.StageCopyOptions = s.StageCopyOptions.toOpts()
+	if s.LegacyTableCopyOptions != nil {
+		set.StageCopyOptions = s.LegacyTableCopyOptions.toOpts()
 	}
 	if s.StageFileFormat != nil {
 		set.StageFileFormat = s.StageFileFormat.toOpts()
@@ -627,16 +630,16 @@ func (s *CreateTableCloneRequest) toOpts() *createTableCloneOptions {
 	}
 }
 
-func (v *StageFileFormatRequest) toOpts() *StageFileFormat {
-	return &StageFileFormat{
-		FormatName: v.FormatName,
-		Type:       v.Type,
-		Options:    v.Options.toOpts(),
+func (v *LegacyFileFormatRequest) toOpts() *LegacyFileFormat {
+	return &LegacyFileFormat{
+		FormatName:     v.FormatName,
+		FileFormatType: v.FileFormatType,
+		Options:        v.Options.toOpts(),
 	}
 }
 
-func (v *StageCopyOptionsRequest) toOpts() *StageCopyOptions {
-	return &StageCopyOptions{
+func (v *LegacyTableCopyOptionsRequest) toOpts() *LegacyTableCopyOptions {
+	return &LegacyTableCopyOptions{
 		OnError:           v.OnError.toOpts(),
 		SizeLimit:         v.SizeLimit,
 		Purge:             v.Purge,
@@ -648,36 +651,36 @@ func (v *StageCopyOptionsRequest) toOpts() *StageCopyOptions {
 	}
 }
 
-func (v *StageCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
-	return &StageCopyOnErrorOptions{
-		Continue:       v.Continue,
-		SkipFile:       v.SkipFile,
-		AbortStatement: v.AbortStatement,
+func (s *LegacyTableCopyOnErrorOptionsRequest) toOpts() *LegacyTableCopyOnErrorOptions {
+	return &LegacyTableCopyOnErrorOptions{
+		Continue_:      s.Continue_,
+		SkipFile:       s.SkipFile,
+		AbortStatement: s.AbortStatement,
 	}
 }
 
-func convertStageFileFormatOptions(stageFileFormatRequests []StageFileFormatRequest) []StageFileFormat {
-	fileFormats := make([]StageFileFormat, 0, len(stageFileFormatRequests))
+func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRequest) []LegacyFileFormat {
+	fileFormats := make([]LegacyFileFormat, 0, len(stageFileFormatRequests))
 	for _, request := range stageFileFormatRequests {
-		var options *FileFormatTypeOptions
+		var options *LegacyFileFormatTypeOptions
 		if request.Options != nil {
 			options = request.Options.toOpts()
 		}
-		format := StageFileFormat{
-			FormatName: request.FormatName,
-			Type:       request.Type,
-			Options:    options,
+		format := LegacyFileFormat{
+			FormatName:     request.FormatName,
+			FileFormatType: request.FileFormatType,
+			Options:        options,
 		}
 		fileFormats = append(fileFormats, format)
 	}
 	return fileFormats
 }
 
-func (v *FileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptions {
+func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *LegacyFileFormatTypeOptions {
 	if v == nil {
 		return nil
 	}
-	return &FileFormatTypeOptions{
+	return &LegacyFileFormatTypeOptions{
 		CSVCompression:                  v.CSVCompression,
 		CSVRecordDelimiter:              v.CSVRecordDelimiter,
 		CSVFieldDelimiter:               v.CSVFieldDelimiter,

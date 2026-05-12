@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -52,7 +52,6 @@ func TestAcc_CompleteUsageTracking_Datasource(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck: func() { TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, schemaModel, schemasModel),

@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testint
 
@@ -513,7 +513,7 @@ func TestInt_Views(t *testing.T) {
 		err = client.Views.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
-		dataMetricFunctionReferences := testClientHelper().DataMetricFunctionReferences.GetDataMetricFunctionReferences(t, view.ID(), sdk.DataMetricFunctionRefEntityDomainView)
+		dataMetricFunctionReferences := testClientHelper().DataMetricFunctionReferences.GetDataMetricFunctionReferences(t, view.ID(), sdk.DataMetricFunctionRefEntityDomainOptionView)
 		require.Len(t, dataMetricFunctionReferences, 1)
 
 		assertDataMetricFunctionReference(t, dataMetricFunctionReferences[0], view.ID(), cron)
@@ -528,7 +528,7 @@ func TestInt_Views(t *testing.T) {
 		err = client.Views.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
-		dataMetricFunctionReferences = testClientHelper().DataMetricFunctionReferences.GetDataMetricFunctionReferences(t, view.ID(), sdk.DataMetricFunctionRefEntityDomainView)
+		dataMetricFunctionReferences = testClientHelper().DataMetricFunctionReferences.GetDataMetricFunctionReferences(t, view.ID(), sdk.DataMetricFunctionRefEntityDomainOptionView)
 		require.NoError(t, err)
 		require.Empty(t, dataMetricFunctionReferences)
 
@@ -546,7 +546,7 @@ func TestInt_Views(t *testing.T) {
 		err = client.Views.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
-		dataMetricFunctionReferences = testClientHelper().DataMetricFunctionReferences.GetDataMetricFunctionReferences(t, view.ID(), sdk.DataMetricFunctionRefEntityDomainView)
+		dataMetricFunctionReferences = testClientHelper().DataMetricFunctionReferences.GetDataMetricFunctionReferences(t, view.ID(), sdk.DataMetricFunctionRefEntityDomainOptionView)
 		require.Len(t, dataMetricFunctionReferences, 2)
 
 		assertDataMetricFunctionReference(t, dataMetricFunctionReferences[0], view.ID(), cron)

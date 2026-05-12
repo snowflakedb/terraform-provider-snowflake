@@ -3,13 +3,10 @@ package datasources
 import (
 	"context"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,7 +40,7 @@ var userProgrammaticAccessTokensSchema = map[string]*schema.Schema{
 
 func UserProgrammaticAccessTokens() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.UserProgrammaticAccessTokensDatasource), TrackingReadWrapper(datasources.UserProgrammaticAccessTokens, ReadUserProgrammaticAccessTokens)),
+		ReadContext: TrackingReadWrapper(datasources.UserProgrammaticAccessTokens, ReadUserProgrammaticAccessTokens),
 		Schema:      userProgrammaticAccessTokensSchema,
 		Description: "Data source used to get details of filtered user programmatic access tokens. Filtering is aligned with the current possibilities for [SHOW USER PROGRAMMATIC ACCESS TOKENS](https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens) query. The results of SHOW are encapsulated in one output collection `user_programmatic_access_tokens`.",
 	}

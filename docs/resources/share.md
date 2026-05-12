@@ -7,6 +7,14 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+-> **Note** When adding or updating accounts in the `accounts` field, the provider creates a temporary database as a workaround for a Snowflake race condition. This is because accounts cannot be added to a share until after a database has been granted to the share, but database grants depend on the share existing first.
+The provider automatically:
+1. Creates a temporary database (named `TEMP_<share_name>_<timestamp>`)
+2. Grants `USAGE` and `REFERENCE_USAGE` privileges on the temporary database to the share
+3. Adds the specified accounts to the share
+4. Revokes the privileges and drops the temporary database
+This process is fully automated during the creation.
+
 # snowflake_share (Resource)
 
 

@@ -6,14 +6,31 @@ Because we generate a bunch of code in the project, and we tend to copy-paste si
 
 The main building blocks of this package are:
 - `generator.go` defining `Generator[T ObjectNameProvider, M GenerationModel] struct` allowing to create new generators
+- `generation_part_filters.go` and `object_filers.go` containing the common generation filters
+- `flags.go` defining custom flag types that are used to alter generators behavior
 - `mappers.go` defining mappers that can be reused in the generated objects
+- `models.go` defining common models that can be reused throughout generators
 - `struct_details_extractor.go` allowing to parse any struct to retrieve its information (for the later generation purposes)
 - `template_commons.go` containing template helper functions and the easy way to use them without providing their name everytime
 - `util.go` with a variety of util functions
 
 ### How it works
 
-##### Defining and running a new generator
+Each generator consists of:
+- Name and version - version should be bumped whenever the templates or generation logic changes.
+- List of input objects - they are transformed to models used in templates.
+- List of generation parts - they contain the needed templates and file naming logic.
+- (optional) Additional object/generation part filters - generator allows defining custom filters altering the given generators logic further.
+- (currently optional) Description - used for printing the usage for the given generator (`-h` or `--help` flag, check the TODO section below).
+- (currently optional) Makefile command part - we usually invoke the generator as make commands; it's used for printing the usage for the given generator (`-h` or `--help` flag, check the TODO section below).
+
+Each generator workflow looks as follows:
+- The list of input objects is filtered using all defined filters (default and additional).
+- The list of generation parts is filtered using all defined filters (default and additional).
+- For each remaining object, each remaining generation part is run.
+- The generator returns to OS.
+
+#### Defining and running a new generator
 
 Before proceeding with the following steps check [objectassert/gen](../../acceptance/bettertestspoc/assert/objectassert/gen) package for reference.
 
@@ -22,41 +39,58 @@ To create a new generator:
     - `main/main.go` file
     - `templates` directory
     - `model.go` containing the model definition and conversion
-    - `templates.go` containing the templates definitions and helper functions 
+    - `templates.go` containing the templates definitions and helper functions
 2. Create `generate.go` file on the same level as the `gen` package above with the following content only (in addition to the package name) `//go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS`.
-3. In the `gen/main/main.go` create and run a new generator. This means:
+3. In the `gen/main/main.go` create and run a new generator. This means invoking the `genhelpers.NewGenerator` and:
+   - providing the name and version for the generator
+   - (currently optional) providing a short description and Makefile command part
    - providing an input definition for the source objects
-   - method to enrich source object definitions with the necessary content
-   - method to translate enriched objects to the models used inside the templates
-   - method with the generated files naming strategy
-   - list of all the needed templates
-   - (optionally) additional debug output you want to run for each of the objects
-   - (optionally) a filter to limit the generation to only specific objects
+   - defining all needed templates
+   - providing all generation parts using the defined templates and containing the file naming logic
+   - providing method to enrich source object definitions with the necessary content
+   - providing method to translate enriched objects to the models used inside the templates
+   - (optional) providing additional debug output you want to run for each of the objects
+   - (optional) providing additional filters to limit the generation to only specific objects or generation parts
+   - ending with `RunAndHandleOsReturn()`
 4. Add two entries to our Makefile:
-   - first for a cleanup, e.g. `rm -f ./pkg/acceptance/bettertestspoc/assert/objectparametersassert/*_gen.go`
-   - second for a generation itself, e.g. `go generate ./pkg/acceptance/bettertestspoc/assert/objectparametersassert/generate.go`
-5. By default, generator support the following command line flags (invokable with e.g. `make generate-show-output-schemas SF_TF_GENERATOR_ARGS='--dry-run --verbose'`)
+   - first for a cleanup, in form of `clean-<makefile-command-part>`, e.g.
+   ```makefile
+   clean-snowflake-object-parameters-assertions:
+       rm -f ./pkg/acceptance/bettertestspoc/assert/objectparametersassert/*_gen.go
+   ```
+   - second for a generation itself, in form of `generate-<makefile-command-part>`, e.g.
+   ```makefile
+   generate-snowflake-object-parameters-assertions:
+       go generate ./pkg/acceptance/bettertestspoc/assert/objectparametersassert/generate.go
+   ```
+5. By default, generator support the following command line flags (invokable with e.g. `make generate-<makefile-command-part> SF_TF_GENERATOR_ARGS='<space-separated flags>'`)
    - `--dry-run` allowing to print the generated content to the command line instead of saving it to files
+   - `-h` or `--help` printing the usage for the given generator
+   - `--filter-generation-part-names <name1>,<name2>,...` allowing to generate only for the given generation part names; defaults to empty list meaning all generation parts are used
+   - `--filter-object-names <name1>,<name2>,...` allowing to generate only for the given object names; defaults to empty list meaning all objects are used
    - `--verbose` allowing to see the all the additional debug logs
 
 ### Next steps
 
-##### Known limitations
-
-- Currently, only 3 generators reuse the same flow; we need to include more to have more observations
-
-##### Improvements
+#### Improvements
 
 Functional improvements:
+- Currently, generation part filters are applied to all filtered objects. There are situations (like adding a generation part) in which we would like to use this part only for a subset of objects without disrupting the generation of other objects within the given generator. For that reason, generation part filtering could be handled on the object-by-object basis. It means:
+  - Extracting a common generation part setting on the object level. Consider:
+    - Setting it as additional field to the `PreambleModel` (in which case, maybe it's good to finally rename this struct to a more appropriate name).
+    - Setting it as a separate struct as `PreambleModel` is currently reused throughout the whole generator.
+    - Extracting a dedicated common struct that would be nested in each object definition; it could contain the default generation parts for the given object and some other common object-level generation settings in the future. Also, the object name currently acquired from the `ObjectNameProvider` could be a part of this dedicated struct and handled like the `HasPreambleModel` interface.
+  - Providing a generator-wide default for cases when generation part filtering is not set on the given object (e.g. when the new generation part is being developed it can be set on the chosen object without affecting the others and without the need to alter their definitions).
+    - Similarly to the defaults for the generation parts, we could provide the default object filtering for the given generator (e.g. for situations where given object requires some additional attention but all others can be automatically regenerated without problems).
+  - Rethinking how the filtering should be handled on the generator level and how it should behave with combination of the command-line argument (i.e. should it override filters for all objects? should it be treated as an additional filter in addition to the setting on the object level? if the latter, should we have another option to generate the given part even if it's not listed for the given object?).
+  - Ensuring that the listed parts are available for the given generator (compile-time or runtime validation?).
 - add a generic terraform schema reader, to allow later generation from schemas
 - handle the missing types (TODOs in [struct_details_extractor_test.go](./struct_details_extractor_test.go))
+- add support for custom command line flags
+- Currently, there is no friendly error handling in the created generators. Some of them, use panic to prevent obvious configuration mistakes. It would be better to handle errors programmatically (e.g. do not fail on the first one but collect errors from all object declarations and present nicely to the user invoking).
 
 Implementation improvements:
 - add acceptance test for a `testStruct` (the one from [struct_details_extractor_test.go](./struct_details_extractor_test.go)) for the whole generation flow
 - add description to all publicly available structs and functions (multiple TODOs left)
-- introduce a more meaningful function for the `GenerationModel` interface (TODO left in the `generator.go`)
-- tackle the temporary hacky solution to allow easy passing multiple args from the make command (TODO left in the `generator.go`)
-- extract a common filter by name filter (TODO left in the `pkg/schemas/gen/main`)
 - describe and test all the template helpers (TODOs left in `templates_commons.go`)
 - test writing to file (TODO left in `util.go`)
-- use commons in the SDK generator

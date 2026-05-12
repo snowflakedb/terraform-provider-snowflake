@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -19,7 +19,8 @@ import (
 func TestAcc_DynamicTable_basic(t *testing.T) {
 	dynamicTableId := testClient().Ids.RandomSchemaObjectIdentifier()
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
-	newWarehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	newWarehouse, newWarehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(newWarehouseCleanup)
 	comment := random.Comment()
 	newComment := random.Comment()
 
@@ -35,7 +36,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 		}
 	}
 	variableSet2 := m()
-	variableSet2["warehouse"] = config.StringVariable(newWarehouseId.Name())
+	variableSet2["warehouse"] = config.StringVariable(newWarehouse.ID().Name())
 	variableSet2["comment"] = config.StringVariable(newComment)
 
 	variableSet3 := m()
@@ -51,7 +52,6 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 	resourceName := "snowflake_dynamic_table.dt"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -104,7 +104,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", dynamicTableId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "database", TestDatabaseName),
 					resource.TestCheckResourceAttr(resourceName, "schema", TestSchemaName),
-					resource.TestCheckResourceAttr(resourceName, "warehouse", newWarehouseId.Name()),
+					resource.TestCheckResourceAttr(resourceName, "warehouse", newWarehouse.ID().Name()),
 					resource.TestCheckResourceAttr(resourceName, "target_lag.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "target_lag.0.downstream", "true"),
 					resource.TestCheckResourceAttr(resourceName, "comment", newComment),
@@ -188,7 +188,6 @@ func TestAcc_DynamicTable_issue2173(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -267,7 +266,6 @@ func TestAcc_DynamicTable_issue2134(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -334,7 +332,6 @@ func TestAcc_DynamicTable_issue2276(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -383,7 +380,6 @@ func TestAcc_DynamicTable_issue2329(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -432,7 +428,6 @@ func TestAcc_DynamicTable_issue2329_with_matching_comment(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -469,7 +464,6 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -1,5 +1,0 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.ShowObjectIdMethod*/ -}}
-
-func (v *{{ .StructName }}) ID() {{ .IdentifierKind }} {
-    return New{{ .IdentifierKind }}({{ range .Args }}v.{{ . }}, {{ end }})
-}

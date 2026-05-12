@@ -43,6 +43,14 @@ func (c *AuthenticationPolicyClient) CreateWithOptions(t *testing.T, id sdk.Sche
 	return authenticationPolicy, c.DropFunc(t, id)
 }
 
+func (c *AuthenticationPolicyClient) Alter(t *testing.T, request *sdk.AlterAuthenticationPolicyRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, request)
+	require.NoError(t, err)
+}
+
 func (c *AuthenticationPolicyClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
@@ -57,4 +65,15 @@ func (c *AuthenticationPolicyClient) Show(t *testing.T, id sdk.SchemaObjectIdent
 	t.Helper()
 	ctx := context.Background()
 	return c.client().ShowByID(ctx, id)
+}
+
+func (c *AuthenticationPolicyClient) ShowOnCurrentAccount(t *testing.T) *sdk.AuthenticationPolicy {
+	t.Helper()
+	ctx := context.Background()
+	policies, err := c.client().Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithOn(sdk.On{Account: sdk.Bool(true)}))
+	require.NoError(t, err)
+	if len(policies) == 1 {
+		return &policies[0]
+	}
+	return nil
 }

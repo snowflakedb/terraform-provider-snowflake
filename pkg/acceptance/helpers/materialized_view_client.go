@@ -33,7 +33,7 @@ func (c *MaterializedViewClient) CreateMaterializedViewWithName(t *testing.T, id
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Create(ctx, sdk.NewCreateMaterializedViewRequest(id, query).WithOrReplace(sdk.Bool(orReplace)))
+	err := c.client().Create(ctx, sdk.NewCreateMaterializedViewRequest(id, query).WithOrReplace(orReplace))
 	require.NoError(t, err)
 
 	view, err := c.client().ShowByID(ctx, id)
@@ -47,7 +47,7 @@ func (c *MaterializedViewClient) DropMaterializedViewFunc(t *testing.T, id sdk.S
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropMaterializedViewRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropMaterializedViewRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

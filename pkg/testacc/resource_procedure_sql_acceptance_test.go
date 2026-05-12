@@ -1,8 +1,9 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -12,9 +13,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -37,11 +40,10 @@ func TestAcc_ProcedureSql_InlineBasic(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -128,11 +130,10 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 		WithComment("some other comment")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -184,6 +185,120 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.ProcedureShowOutput(t, procedureModelUpdateWithoutRecreation.ResourceReference()).
 						HasIsSecure(false),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_ProcedureSql_DecfloatUnsupported(t *testing.T) {
+	argName := "x"
+	dataType := testdatatypes.DataTypeDecfloat
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+
+	definition := testClient().Procedure.SampleSqlDefinitionWithArgument(t)
+
+	procedureModel := model.ProcedureSqlBasicInline("w", id, dataType, definition).
+		WithArgument(argName, dataType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
+		Steps: []resource.TestStep{
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(procedureModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config:      config.FromModels(t, procedureModel),
+				ExpectError: regexp.MustCompile(`Language SQL does not support type 'DECFLOAT\(38\)' for argument or return type`),
+			},
+		},
+	})
+}
+
+func TestAcc_ProcedureSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	returnType := "TABLE(O_ERR_CODE NUMBER(24, 2), O_ERR_SEVERITY VARCHAR(150))"
+	definition := testClient().Procedure.SampleSqlDefinitionReturningTable(t)
+
+	procedureModel := model.ProcedureSql("test", id.DatabaseName(), id.SchemaName(), id.Name(), definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ProcedureSqlResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
+		Steps: []resource.TestStep{
+			// Step 1: v2.15.0 fails because TABLE with parametrized columns cannot be parsed.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, providerModel, procedureModel),
+				ExpectError:       regexp.MustCompile(`number NUMBER\(24 could not be parsed, use "NUMBER\(precision, scale\)" format`),
+			},
+			// Step 2: Current version correctly parses TABLE with parametrized columns.
+			{
+				ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+				Config:                   config.FromModels(t, procedureModel),
+				Check: assertThat(t,
+					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasReturnTypeString(returnType),
+				),
+			},
+		},
+	})
+}
+
+// When a procedure with TABLE return type using non-parametrized column types was created in
+// v2.15.0, the current version must not produce spurious plan drift after migration.
+func TestAcc_ProcedureSql_defaultParamsNoDriftAfterMigration(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	returnType := "TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"
+	definition := testClient().Procedure.SampleSqlDefinitionReturningTable(t)
+
+	procedureModel := model.ProcedureSql("test", id.DatabaseName(), id.SchemaName(), id.Name(), definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ProcedureSqlResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
+		Steps: []resource.TestStep{
+			// v2.15.0 creates the procedure with NUMBER return type successfully.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, providerModel, procedureModel),
+				Check: assertThat(t,
+					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasReturnTypeString(returnType),
+				),
+			},
+			// Current version: no drift even though state now contains the full type..
+			{
+				ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+				Config:                   config.FromModels(t, procedureModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasReturnTypeString(returnType),
 				),
 			},
 		},

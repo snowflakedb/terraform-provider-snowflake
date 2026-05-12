@@ -19,6 +19,18 @@ func TaskDatasourceParameters(t *testing.T, name string) *TaskResourceParameters
 	return &taskAssert
 }
 
+func (u *TaskResourceParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSize() *TaskResourceParametersAssert {
+	return u.HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSize("Medium"))
+}
+
+func (u *TaskResourceParametersAssert) HasDefaultServerlessTaskMinStatementSize() *TaskResourceParametersAssert {
+	return u.HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall)
+}
+
+func (u *TaskResourceParametersAssert) HasDefaultServerlessTaskMaxStatementSize() *TaskResourceParametersAssert {
+	return u.HasServerlessTaskMaxStatementSize(sdk.WarehouseSize("X2Large"))
+}
+
 func (u *TaskResourceParametersAssert) HasAllDefaults() *TaskResourceParametersAssert {
 	return u.
 		HasSuspendTaskAfterNumFailures(10).

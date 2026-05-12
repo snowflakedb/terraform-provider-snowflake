@@ -14,10 +14,6 @@ variable "authentication_methods" {
   type = set(string)
 }
 
-variable "mfa_authentication_methods" {
-  type = set(string)
-}
-
 variable "mfa_enrollment" {
   type = string
 }

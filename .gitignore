@@ -30,3 +30,8 @@ dist/
 
 # Test environment variables
 test.env
+
+# Test sensitive values
+*.tfvars
+
+tmp/

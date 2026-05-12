@@ -1,7 +1,6 @@
 package schemas
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -11,7 +10,7 @@ import (
 var (
 	ShowAccountParametersSchema = make(map[string]*schema.Schema)
 	accountParameters           = []sdk.AccountParameter{
-		// TODO(SNOW-1348092 - next prs): Add parameters
+		// TODO [SNOW-2298247]: Only session parameters are present here; add the missing ones while adding them to the accounts data source.
 		// session parameters
 		sdk.AccountParameterAbortDetachedQuery,
 		sdk.AccountParameterAutocommit,
@@ -58,14 +57,4 @@ func init() {
 	for _, param := range accountParameters {
 		ShowAccountParametersSchema[strings.ToLower(string(param))] = ParameterListSchema
 	}
-}
-
-func AccountParametersToSchema(parameters []*sdk.Parameter) map[string]any {
-	accountParametersValue := make(map[string]any)
-	for _, param := range parameters {
-		if slices.Contains(accountParameters, sdk.AccountParameter(param.Key)) {
-			accountParametersValue[strings.ToLower(param.Key)] = []map[string]any{ParameterToSchema(param)}
-		}
-	}
-	return accountParametersValue
 }

@@ -223,6 +223,7 @@ func procedureBaseSchema() map[string]schema.Schema {
 						Required:         true,
 						ValidateDiagFunc: IsDataTypeValid,
 						DiffSuppressFunc: DiffSuppressDataTypes,
+						StateFunc:        DataTypeStateFunc,
 						Description:      "The argument type.",
 					},
 					"arg_default_value": {
@@ -242,6 +243,7 @@ func procedureBaseSchema() map[string]schema.Schema {
 			ForceNew:         true,
 			ValidateDiagFunc: IsDataTypeValid,
 			DiffSuppressFunc: DiffSuppressDataTypes,
+			StateFunc:        DataTypeStateFunc,
 		},
 		"null_input_behavior": {
 			Type:             schema.TypeString,
@@ -519,6 +521,7 @@ func ImportProcedure(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 		setOptionalFromStringPtr(d, "null_input_behavior", procedureDetails.NullHandling),
 		d.Set("execute_as", procedureDetails.ExecuteAs),
 		importFunctionOrProcedureArguments(d, procedureDetails.NormalizedArguments),
+		d.Set("return_type", procedureDetails.ReturnDataType.ToSql()),
 		// all others are set in read
 	)
 	if err != nil {

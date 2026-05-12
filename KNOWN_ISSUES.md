@@ -237,11 +237,11 @@ during `terrform apply` they may fail with the `Error: Provider produced inconsi
 
 ### Experiencing Go related issues (e.g., using Suricata-based firewalls, like AWS Network Firewall, with >=v1.0.4 version of the provider)
 
-**Problem:** The communication from the provider is dropped, because of the firewalls that are incompatible with the `tlskyber` setting introduced in [Go v1.23](https://go.dev/doc/godebug#go-123).
+**Problem:** The communication from the provider is dropped, because of the firewalls that are incompatible with the `tlskyber` setting introduced in [Go v1.23](https://go.dev/doc/godebug#go-123) and renamed to `tlsmlkem` setting in [Go v1.24](https://go.dev/doc/godebug#go-124).
 
 **Related issues:** [#3421](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3421)
 
-**Solution:** [Solution described in the migration guide for v1.0.3 to v1.0.4 upgrade](./MIGRATION_GUIDE.md#new-go-version-and-conflicts-with-suricata-based-firewalls-like-aws-network-firewall).
+**Solution:** Solution described in the migration guide for [v1.0.3 to v1.0.4 upgrade](./MIGRATION_GUIDE.md#new-go-version-and-conflicts-with-suricata-based-firewalls-like-aws-network-firewall) and [v2.10.0 to v2.10.1 upgrade](./MIGRATION_GUIDE.md#new-go-version-and-conflicts-with-suricata-based-firewalls-like-aws-network-firewall---changes-caused-by-go-124).
 
 ### Provider is too slow
 

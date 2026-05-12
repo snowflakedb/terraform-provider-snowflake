@@ -6,6 +6,7 @@ description: Manage SnowflakeDB with Terraform.
 ## Support
 
 For official support and urgent, production-impacting issues, please [contact Snowflake Support](https://community.snowflake.com/s/article/How-To-Submit-a-Support-Case-in-Snowflake-Lodge).
+This support channel is limited to issues directly related to the provider. For third-party solutions using this provider, please reach out to the associated third-party support team.
 
 ~> **Keep in mind** that the official support starts with the [v2.0.0](https://registry.terraform.io/providers/snowflakedb/snowflake/2.0.0) version for stable resources only. All previous versions and preview resources are not officially supported. Also, consult [supported architectures](#supported-architectures).
 
@@ -13,7 +14,7 @@ Please follow [creating issues guidelines](https://github.com/snowflakedb/terraf
 
 # Snowflake Provider
 
-~> **Disclaimer** The project is in GA version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+~> **Disclaimer** The project is in GA version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions. You can also use [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) to alter the provider's behavior. **It's still considered a preview feature, even when applied to the stable resources.**
 
 ~> **Note** Please check the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md) when changing the version of the provider.
 
@@ -106,24 +107,42 @@ provider "snowflake" {
 ### Optional
 
 - `account_name` (String) Specifies your Snowflake account name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#account-name). Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_ACCOUNT_NAME` environment variable.
-- `authenticator` (String) Specifies the [authentication type](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#AuthType) to use when connecting to Snowflake. Valid options are: `SNOWFLAKE` | `OAUTH` | `EXTERNALBROWSER` | `OKTA` | `SNOWFLAKE_JWT` | `TOKENACCESSOR` | `USERNAMEPASSWORDMFA` | `PROGRAMMATIC_ACCESS_TOKEN`. Can also be sourced from the `SNOWFLAKE_AUTHENTICATOR` environment variable.
-- `client_ip` (String) IP address for network checks. Can also be sourced from the `SNOWFLAKE_CLIENT_IP` environment variable.
+- `authenticator` (String) Specifies the [authentication type](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#AuthType) to use when connecting to Snowflake. Valid options are: `SNOWFLAKE` | `OAUTH` | `EXTERNALBROWSER` | `OKTA` | `SNOWFLAKE_JWT` | `TOKENACCESSOR` | `USERNAMEPASSWORDMFA` | `PROGRAMMATIC_ACCESS_TOKEN` | `OAUTH_CLIENT_CREDENTIALS` | `OAUTH_AUTHORIZATION_CODE` | `WORKLOAD_IDENTITY`. Can also be sourced from the `SNOWFLAKE_AUTHENTICATOR` environment variable.
+- `cert_revocation_check_mode` (String) Specifies the certificate revocation check mode. Valid options are: `DISABLED` | `ADVISORY` | `ENABLED`. The value is case-insensitive. Can also be sourced from the `SNOWFLAKE_CERT_REVOCATION_CHECK_MODE` environment variable.
+- `client_ip` (String, Deprecated) This field is deprecated. It will be removed in the next major release. The driver was accepting this value in the previous versions but it had no impact. Setting this field causes no action on the provider side. Can also be sourced from the `SNOWFLAKE_CLIENT_IP` environment variable.
 - `client_request_mfa_token` (String) When true the MFA token is cached in the credential manager. True by default in Windows/OSX. False for Linux. Can also be sourced from the `SNOWFLAKE_CLIENT_REQUEST_MFA_TOKEN` environment variable.
 - `client_store_temporary_credential` (String) When true the ID token is cached in the credential manager. True by default in Windows/OSX. False for Linux. Can also be sourced from the `SNOWFLAKE_CLIENT_STORE_TEMPORARY_CREDENTIAL` environment variable.
 - `client_timeout` (Number) The timeout in seconds for the client to complete the authentication. Can also be sourced from the `SNOWFLAKE_CLIENT_TIMEOUT` environment variable.
+- `crl_allow_certificates_without_crl_url` (String) Allow certificates (not short-lived) without CRL DP included to be treated as correct ones. Can also be sourced from the `SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL` environment variable.
+- `crl_http_client_timeout` (Number) Timeout in seconds for HTTP client used to download CRL. Can also be sourced from the `SNOWFLAKE_CRL_HTTP_CLIENT_TIMEOUT` environment variable.
+- `crl_in_memory_cache_disabled` (Boolean) False by default. When set to true, the CRL in-memory cache is disabled. Can also be sourced from the `SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED` environment variable.
+- `crl_on_disk_cache_disabled` (Boolean) False by default. When set to true, the CRL on-disk cache is disabled. Can also be sourced from the `SNOWFLAKE_CRL_ON_DISK_CACHE_DISABLED` environment variable.
 - `disable_console_login` (String) Indicates whether console login should be disabled in the driver. Can also be sourced from the `SNOWFLAKE_DISABLE_CONSOLE_LOGIN` environment variable.
+- `disable_ocsp_checks` (Boolean) False by default. When set to true, the driver doesn't check certificate revocation status. Can also be sourced from the `SNOWFLAKE_DISABLE_OCSP_CHECKS` environment variable.
 - `disable_query_context_cache` (Boolean) Disables HTAP query context cache in the driver. Can also be sourced from the `SNOWFLAKE_DISABLE_QUERY_CONTEXT_CACHE` environment variable.
-- `disable_telemetry` (Boolean) Disables telemetry in the driver. Can also be sourced from the `DISABLE_TELEMETRY` environment variable.
-- `driver_tracing` (String) Specifies the logging level to be used by the driver. Valid options are: `trace` | `debug` | `info` | `print` | `warning` | `error` | `fatal` | `panic`. Can also be sourced from the `SNOWFLAKE_DRIVER_TRACING` environment variable.
+- `disable_saml_url_check` (String) Indicates whether the SAML URL check should be disabled. Can also be sourced from the `SNOWFLAKE_DISABLE_SAML_URL_CHECK` environment variable.
+- `disable_telemetry` (Boolean, Deprecated) This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`. Disables telemetry in the driver. Can also be sourced from the `DISABLE_TELEMETRY` environment variable.
+- `driver_tracing` (String) Specifies the logging level to be used by the driver. Valid options are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. The following values are deprecated and will be removed in v3: `WARNING` (uses `WARN` instead), `PRINT` (uses `INFO` instead), `PANIC` (uses `FATAL` instead). Can also be sourced from the `SNOWFLAKE_DRIVER_TRACING` environment variable.
+- `enable_single_use_refresh_tokens` (Boolean) Enables single use refresh tokens for Snowflake IdP. Can also be sourced from the `SNOWFLAKE_ENABLE_SINGLE_USE_REFRESH_TOKENS` environment variable.
+- `experimental_features_enabled` (Set of String) A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `PARAMETERS_REDUCED_OUTPUT` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` | `GRANTS_IMPORT_VALIDATION` | `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` | `IMPORT_BOOLEAN_DEFAULT` | `GRANTS_SAFE_DESTROY` | `TAG_ASSOCIATION_SAFE_DESTROY` | `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE`.
 - `external_browser_timeout` (Number) The timeout in seconds for the external browser to complete the authentication. Can also be sourced from the `SNOWFLAKE_EXTERNAL_BROWSER_TIMEOUT` environment variable.
 - `host` (String) Specifies a custom host value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_HOST` environment variable.
 - `include_retry_reason` (String) Should retried request contain retry reason. Can also be sourced from the `SNOWFLAKE_INCLUDE_RETRY_REASON` environment variable.
-- `insecure_mode` (Boolean) If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only. Can also be sourced from the `SNOWFLAKE_INSECURE_MODE` environment variable.
+- `insecure_mode` (Boolean, Deprecated) This field is deprecated. It will be removed in the next major release. Use `disable_ocsp_checks` instead. Setting this field sets `disable_ocsp_checks` in the underlying driver. If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only. Can also be sourced from the `SNOWFLAKE_INSECURE_MODE` environment variable.
 - `jwt_client_timeout` (Number) The timeout in seconds for the JWT client to complete the authentication. Can also be sourced from the `SNOWFLAKE_JWT_CLIENT_TIMEOUT` environment variable.
 - `jwt_expire_timeout` (Number) JWT expire after timeout in seconds. Can also be sourced from the `SNOWFLAKE_JWT_EXPIRE_TIMEOUT` environment variable.
 - `keep_session_alive` (Boolean) Enables the session to persist even after the connection is closed. Can also be sourced from the `SNOWFLAKE_KEEP_SESSION_ALIVE` environment variable.
+- `log_query_parameters` (Boolean) When set to true, the parameters will be logged. Requires logQueryText to be enabled first. Be aware that it may include sensitive information. Default value is false. Can also be sourced from the `SNOWFLAKE_LOG_QUERY_PARAMETERS` environment variable.
+- `log_query_text` (Boolean) When set to true, the full query text will be logged. Be aware that it may include sensitive information. Default value is false. Can also be sourced from the `SNOWFLAKE_LOG_QUERY_TEXT` environment variable.
 - `login_timeout` (Number) Login retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_LOGIN_TIMEOUT` environment variable.
 - `max_retry_count` (Number) Specifies how many times non-periodic HTTP request can be retried by the driver. Can also be sourced from the `SNOWFLAKE_MAX_RETRY_COUNT` environment variable.
+- `no_proxy` (String) A comma-separated list of hostnames, domains, and IP addresses to exclude from proxying. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_NO_PROXY` environment variable.
+- `oauth_authorization_url` (String, Sensitive) Authorization URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_AUTHORIZATION_URL` environment variable.
+- `oauth_client_id` (String, Sensitive) Client id for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_ID` environment variable.
+- `oauth_client_secret` (String, Sensitive) Client secret for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_SECRET` environment variable.
+- `oauth_redirect_uri` (String, Sensitive) Redirect URI registered in IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_REDIRECT_URI` environment variable.
+- `oauth_scope` (String) Comma separated list of scopes. If empty it is derived from role. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_SCOPE` environment variable.
+- `oauth_token_request_url` (String, Sensitive) Token request URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL` environment variable.
 - `ocsp_fail_open` (String) True represents OCSP fail open mode. False represents OCSP fail closed mode. Fail open true by default. Can also be sourced from the `SNOWFLAKE_OCSP_FAIL_OPEN` environment variable.
 - `okta_url` (String) The URL of the Okta server. e.g. https://example.okta.com. Okta URL host needs to to have a suffix `okta.com`. Read more in Snowflake [docs](https://docs.snowflake.com/en/user-guide/oauth-okta). Can also be sourced from the `SNOWFLAKE_OKTA_URL` environment variable.
 - `organization_name` (String) Specifies your Snowflake organization name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#organization-name). Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_ORGANIZATION_NAME` environment variable.
@@ -132,21 +151,28 @@ provider "snowflake" {
 - `passcode_in_password` (Boolean) False by default. Set to true if the MFA passcode is embedded to the configured password. Can also be sourced from the `SNOWFLAKE_PASSCODE_IN_PASSWORD` environment variable.
 - `password` (String, Sensitive) Password for user + password or [token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#generating-a-programmatic-access-token) for [PAT auth](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens). Cannot be used with `private_key` and `private_key_passphrase`. Can also be sourced from the `SNOWFLAKE_PASSWORD` environment variable.
 - `port` (Number) Specifies a custom port value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_PORT` environment variable.
-- `preview_features_enabled` (Set of String) A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Valid options are: `snowflake_account_authentication_policy_attachment_resource` | `snowflake_account_password_policy_attachment_resource` | `snowflake_alert_resource` | `snowflake_alerts_datasource` | `snowflake_api_integration_resource` | `snowflake_authentication_policy_resource` | `snowflake_compute_pool_resource` | `snowflake_compute_pools_datasource` | `snowflake_cortex_search_service_resource` | `snowflake_cortex_search_services_datasource` | `snowflake_current_account_resource` | `snowflake_current_account_datasource` | `snowflake_current_organization_account_resource` | `snowflake_database_datasource` | `snowflake_database_role_datasource` | `snowflake_dynamic_table_resource` | `snowflake_dynamic_tables_datasource` | `snowflake_external_function_resource` | `snowflake_external_functions_datasource` | `snowflake_external_table_resource` | `snowflake_external_tables_datasource` | `snowflake_external_volume_resource` | `snowflake_failover_group_resource` | `snowflake_failover_groups_datasource` | `snowflake_file_format_resource` | `snowflake_file_formats_datasource` | `snowflake_function_java_resource` | `snowflake_function_javascript_resource` | `snowflake_function_python_resource` | `snowflake_function_scala_resource` | `snowflake_function_sql_resource` | `snowflake_functions_datasource` | `snowflake_git_repository_resource` | `snowflake_git_repositories_datasource` | `snowflake_image_repository_resource` | `snowflake_image_repositories_datasource` | `snowflake_job_service_resource` | `snowflake_listing_resource` | `snowflake_managed_account_resource` | `snowflake_materialized_view_resource` | `snowflake_materialized_views_datasource` | `snowflake_network_policy_attachment_resource` | `snowflake_network_rule_resource` | `snowflake_email_notification_integration_resource` | `snowflake_notification_integration_resource` | `snowflake_object_parameter_resource` | `snowflake_password_policy_resource` | `snowflake_pipe_resource` | `snowflake_pipes_datasource` | `snowflake_current_role_datasource` | `snowflake_service_resource` | `snowflake_services_datasource` | `snowflake_sequence_resource` | `snowflake_sequences_datasource` | `snowflake_share_resource` | `snowflake_shares_datasource` | `snowflake_parameters_datasource` | `snowflake_procedure_java_resource` | `snowflake_procedure_javascript_resource` | `snowflake_procedure_python_resource` | `snowflake_procedure_scala_resource` | `snowflake_procedure_sql_resource` | `snowflake_procedures_datasource` | `snowflake_stage_resource` | `snowflake_stages_datasource` | `snowflake_storage_integration_resource` | `snowflake_storage_integrations_datasource` | `snowflake_system_generate_scim_access_token_datasource` | `snowflake_system_get_aws_sns_iam_policy_datasource` | `snowflake_system_get_privatelink_config_datasource` | `snowflake_system_get_snowflake_platform_info_datasource` | `snowflake_table_column_masking_policy_application_resource` | `snowflake_table_constraint_resource` | `snowflake_table_resource` | `snowflake_tables_datasource` | `snowflake_user_authentication_policy_attachment_resource` | `snowflake_user_public_keys_resource` | `snowflake_user_password_policy_attachment_resource` | `snowflake_user_programmatic_access_token_resource` | `snowflake_user_programmatic_access_tokens_datasource`.
+- `preview_features_enabled` (Set of String) A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Preview features that can be enabled are: `snowflake_account_authentication_policy_attachment_resource` | `snowflake_account_password_policy_attachment_resource` | `snowflake_account_session_policy_attachment_resource` | `snowflake_alert_resource` | `snowflake_alerts_datasource` | `snowflake_api_integration_resource` | `snowflake_authentication_policy_resource` | `snowflake_authentication_policies_datasource` | `snowflake_catalog_integration_aws_glue_resource` | `snowflake_catalog_integration_object_storage_resource` | `snowflake_catalog_integration_open_catalog_resource` | `snowflake_catalog_integration_iceberg_rest_resource` | `snowflake_catalog_integrations_datasource` | `snowflake_cortex_search_service_resource` | `snowflake_cortex_search_services_datasource` | `snowflake_current_account_resource` | `snowflake_current_account_datasource` | `snowflake_current_organization_account_resource` | `snowflake_database_datasource` | `snowflake_database_role_datasource` | `snowflake_dynamic_table_resource` | `snowflake_dynamic_tables_datasource` | `snowflake_stage_external_azure_resource` | `snowflake_external_function_resource` | `snowflake_external_functions_datasource` | `snowflake_stage_external_gcs_resource` | `snowflake_stage_external_s3_resource` | `snowflake_stage_external_s3_compatible_resource` | `snowflake_external_table_resource` | `snowflake_external_tables_datasource` | `snowflake_external_volume_resource` | `snowflake_external_volumes_datasource` | `snowflake_failover_group_resource` | `snowflake_failover_groups_datasource` | `snowflake_file_format_resource` | `snowflake_file_formats_datasource` | `snowflake_function_java_resource` | `snowflake_function_javascript_resource` | `snowflake_function_python_resource` | `snowflake_function_scala_resource` | `snowflake_function_sql_resource` | `snowflake_functions_datasource` | `snowflake_stage_internal_resource` | `snowflake_job_service_resource` | `snowflake_listings_datasource` | `snowflake_managed_account_resource` | `snowflake_materialized_view_resource` | `snowflake_materialized_views_datasource` | `snowflake_network_policy_attachment_resource` | `snowflake_network_rules_datasource` | `snowflake_notebook_resource` | `snowflake_notebooks_datasource` | `snowflake_email_notification_integration_resource` | `snowflake_notification_integration_resource` | `snowflake_object_parameter_resource` | `snowflake_password_policies_datasource` | `snowflake_password_policy_resource` | `snowflake_pipe_resource` | `snowflake_pipes_datasource` | `snowflake_current_role_datasource` | `snowflake_semantic_view_resource` | `snowflake_semantic_views_datasource` | `snowflake_session_policies_datasource` | `snowflake_session_policy_resource` | `snowflake_sequence_resource` | `snowflake_sequences_datasource` | `snowflake_share_resource` | `snowflake_shares_datasource` | `snowflake_parameters_datasource` | `snowflake_procedure_java_resource` | `snowflake_procedure_javascript_resource` | `snowflake_procedure_python_resource` | `snowflake_procedure_scala_resource` | `snowflake_procedure_sql_resource` | `snowflake_procedures_datasource` | `snowflake_stage_resource` | `snowflake_stages_datasource` | `snowflake_storage_integration_resource` | `snowflake_storage_integration_aws_resource` | `snowflake_storage_integration_azure_resource` | `snowflake_storage_integration_gcs_resource` | `snowflake_storage_integrations_datasource` | `snowflake_system_generate_scim_access_token_datasource` | `snowflake_system_get_aws_sns_iam_policy_datasource` | `snowflake_system_get_privatelink_config_datasource` | `snowflake_system_get_snowflake_platform_info_datasource` | `snowflake_table_column_masking_policy_application_resource` | `snowflake_table_constraint_resource` | `snowflake_table_resource` | `snowflake_tables_datasource` | `snowflake_user_authentication_policy_attachment_resource` | `snowflake_user_password_policy_attachment_resource` | `snowflake_user_public_keys_resource` | `snowflake_user_session_policy_attachment_resource` | `snowflake_warehouse_adaptive_resource`. Promoted features that are stable and are enabled by default are: `snowflake_compute_pool_resource` | `snowflake_compute_pools_datasource` | `snowflake_git_repository_resource` | `snowflake_git_repositories_datasource` | `snowflake_image_repository_resource` | `snowflake_image_repositories_datasource` | `snowflake_listing_resource` | `snowflake_service_resource` | `snowflake_services_datasource` | `snowflake_user_programmatic_access_token_resource` | `snowflake_user_programmatic_access_tokens_datasource` | `snowflake_network_rule_resource`. Promoted features can be safely removed from this field. They will be removed in the next major version.
 - `private_key` (String, Sensitive) Private Key for username+private-key auth. Cannot be used with `password`. Can also be sourced from the `SNOWFLAKE_PRIVATE_KEY` environment variable.
 - `private_key_passphrase` (String, Sensitive) Supports the encryption ciphers aes-128-cbc, aes-128-gcm, aes-192-cbc, aes-192-gcm, aes-256-cbc, aes-256-gcm, and des-ede3-cbc. Can also be sourced from the `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE` environment variable.
 - `profile` (String) Sets the profile to read from ~/.snowflake/config file. Can also be sourced from the `SNOWFLAKE_PROFILE` environment variable.
 - `protocol` (String) A protocol used in the connection. Valid options are: `http` | `https`. Can also be sourced from the `SNOWFLAKE_PROTOCOL` environment variable.
+- `proxy_host` (String) The host of the proxy to use for the connection. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_HOST` environment variable.
+- `proxy_password` (String, Sensitive) The password of the proxy to use for the connection. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_PASSWORD` environment variable.
+- `proxy_port` (Number) The port of the proxy to use for the connection. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_PORT` environment variable.
+- `proxy_protocol` (String) The protocol of the proxy to use for the connection. Valid options are: `http` | `https`. The value is case-insensitive. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_PROTOCOL` environment variable.
+- `proxy_user` (String) The user of the proxy to use for the connection. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_USER` environment variable.
 - `request_timeout` (Number) request retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_REQUEST_TIMEOUT` environment variable.
 - `role` (String) Specifies the role to use by default for accessing Snowflake objects in the client session. Can also be sourced from the `SNOWFLAKE_ROLE` environment variable.
 - `skip_toml_file_permission_verification` (Boolean) False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations). Can also be sourced from the `SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION` environment variable.
 - `tmp_directory_path` (String) Sets temporary directory used by the driver for operations like encrypting, compressing etc. Can also be sourced from the `SNOWFLAKE_TMP_DIRECTORY_PATH` environment variable.
-- `token` (String, Sensitive) Token to use for OAuth and other forms of token based auth. Can also be sourced from the `SNOWFLAKE_TOKEN` environment variable.
-- `token_accessor` (Block List, Max: 1) (see [below for nested schema](#nestedblock--token_accessor))
+- `token` (String, Sensitive) Token to use for OAuth and other forms of token based auth. When this field is set here, or in the TOML file, the provider sets the `authenticator` to `OAUTH`. Optionally, set the `authenticator` field to the authenticator you want to use. Can also be sourced from the `SNOWFLAKE_TOKEN` environment variable.
+- `token_accessor` (Block List, Max: 1) If you are using the OAuth authentication flows, use the dedicated `authenticator` and `oauth...` fields instead. See our [authentication methods guide](./guides/authentication_methods) for more information. (see [below for nested schema](#nestedblock--token_accessor))
 - `use_legacy_toml_file` (Boolean) False by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#examples) Can also be sourced from the `SNOWFLAKE_USE_LEGACY_TOML_FILE` environment variable.
 - `user` (String) Username. Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_USER` environment variable.
 - `validate_default_parameters` (String) True by default. If false, disables the validation checks for Database, Schema, Warehouse and Role at the time a connection is established. Can also be sourced from the `SNOWFLAKE_VALIDATE_DEFAULT_PARAMETERS` environment variable.
 - `warehouse` (String) Specifies the virtual warehouse to use by default for queries, loading, etc. in the client session. Can also be sourced from the `SNOWFLAKE_WAREHOUSE` environment variable.
+- `workload_identity_entra_resource` (String) The resource to use for WIF authentication on Azure environment. Can also be sourced from the `SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE` environment variable.
+- `workload_identity_provider` (String) The workload identity provider to use for WIF authentication. Can also be sourced from the `SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER` environment variable.
 
 <a id="nestedblock--token_accessor"></a>
 ### Nested Schema for `token_accessor`
@@ -170,8 +196,11 @@ The Snowflake provider supports multiple ways to authenticate:
 * Browser Auth
 * Private Key
 * Config File
+* Oauth with Client Credentials
+* Oauth with Authorization Code
+* Workload Identity Federation (WIF)
 
-In all cases `organization_name`, `account_name` and `user` are required.
+In all cases `organization_name`, and `account_name` are required. In all cases except for Oauth with Client Credentials, `user` is required.
 
 -> **Note** Storing the credentials and other secret values safely is on the users' side. Read more in [Authentication Methods guide](./guides/authentication_methods).
 
@@ -250,12 +279,44 @@ export SNOWFLAKE_USER='...'
 export SNOWFLAKE_PASSWORD='...'
 ```
 
+### Oauth with Client Credentials Environment Variables
+
+If you choose to use Oauth with Client Credentials Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_OAUTH_CLIENT_ID='...'
+export SNOWFLAKE_OAUTH_CLIENT_SECRET='...'
+export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
+```
+
+### Oauth with Authorization Code Environment Variables
+
+If you choose to use Oauth with Authorization Code Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_OAUTH_CLIENT_ID='...'
+export SNOWFLAKE_OAUTH_CLIENT_SECRET='...'
+export SNOWFLAKE_OAUTH_AUTHORIZATION_URL='...'
+export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
+export SNOWFLAKE_OAUTH_REDIRECT_URI='...'
+export SNOWFLAKE_OAUTH_SCOPE='...'
+```
+
+### Workload Identity Federation (WIF) Authentication
+
+If you choose to use Workload Identity Federation (WIF) Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER='...'
+export SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE='...'
+```
+
 ## Order Precedence
 
 Currently, the provider can be configured in three ways:
 1. In a Terraform file located in the Terraform module with other resources.
 2. In environmental variables (envs). This is mainly used to provide sensitive values.
-3. In a TOML file (default in ~/.snowflake/config).
+3. In a TOML file (default in `~/.snowflake/config`).
 
 ### Terraform file located in the Terraform module with other resources
 One of the methods of configuring the provider is in the Terraform module. Read more in the [Terraform docs](https://developer.hashicorp.com/terraform/language/providers/configuration).
@@ -285,7 +346,7 @@ When a `default` profile is not present in the TOML file, it is treated as "empt
 
 Read [TOML](https://toml.io/en/) specification for more details on the syntax.
 
--> **Note**: This configuration file is distinct from the ones used to configure [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/connecting/configure-cli) or [SnowSQL](https://docs.snowflake.com/en/user-guide/snowsql-config).
+-> **Note** This configuration file is distinct from the ones used to configure [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/connecting/configure-cli) or [SnowSQL](https://docs.snowflake.com/en/user-guide/snowsql-config).
 
 Example content of the Terraform file configuration:
 
@@ -316,9 +377,9 @@ role='ACCOUNTADMIN'
 #### TOML file limitations
 To ensure a better security of the provider, the following limitations are introduced:
 
--> **Note**: TOML file size is limited to 10MB.
+-> **Note** TOML file size is limited to 10MB.
 
--> **Note**: Only TOML file with restricted privileges can be read. Any privileges for group or others cannot be set (the maximum valid privilege is `700`). You can set the expected privileges like `chmod 0600 ~/.snowflake/config`. This is checked only on non-Windows platforms. If you are using the provider on Windows, please make sure that your configuration file has not too permissive privileges.
+-> **Note** Only TOML file with restricted privileges can be read. Any privileges for group or others cannot be set (the maximum valid privilege is `700`). You can set the expected privileges like `chmod 0600 ~/.snowflake/config`. This is checked only on non-Windows platforms. If you are using the provider on Windows, please make sure that your configuration file has not too permissive privileges.
 
 ### Source Hierarchy
 Not all fields must be configured in one source; users can choose which fields are configured in which source.
@@ -369,6 +430,30 @@ tmp_dir_path = '/tmp/terraform-provider/'
 disable_query_context_cache = true
 include_retry_reason = true
 disable_console_login = true
+oauth_client_id = 'oauth_client_id'
+oauth_client_secret = 'oauth_client_secret'
+oauth_token_request_url = 'oauth_token_request_url'
+oauth_authorization_url = 'oauth_authorization_url'
+oauth_redirect_uri = 'oauth_redirect_uri'
+oauth_scope = 'oauth_scope'
+workload_identity_provider = 'azure'
+workload_identity_entra_resource = 'workload_identity_entra_resource'
+enable_single_use_refresh_tokens = true
+log_query_text = false
+log_query_parameters = false
+proxy_host = 'proxy.example.com'
+proxy_port = 443
+proxy_user = 'username'
+proxy_password = 'proxy_password'
+proxy_protocol = 'https'
+no_proxy = 'localhost,snowflake.computing.com'
+disable_ocsp_checks = true
+cert_revocation_check_mode = 'ADVISORY'
+crl_allow_certificates_without_crl_url = true
+crl_in_memory_cache_disabled = false
+crl_on_disk_cache_disabled = true
+crl_http_client_timeout = 30
+disable_saml_url_check = true
 
 [example.params]
 param_key = 'param_value'
@@ -408,6 +493,30 @@ tmpdirpath = '/tmp/terraform-provider/'
 disablequerycontextcache = true
 includeretryreason = true
 disableconsolelogin = true
+oauthclientid = 'oauth_client_id'
+oauthclientsecret = 'oauth_client_secret'
+oauthtokenrequesturl = 'oauth_token_request_url'
+oauthauthorizationurl = 'oauth_authorization_url'
+oauthredirecturi = 'oauth_redirect_uri'
+oauthscope = 'oauth_scope'
+workloadidentityprovider = 'azure'
+workloadidentityentraresource = 'workload_identity_entra_resource'
+enablesingleuserefreshtokens = true
+logquerytext = false
+logqueryparameters = false
+proxyhost = 'proxy.example.com'
+proxyport = 443
+proxyuser = 'username'
+proxypassword = '****'
+proxyprotocol = 'https'
+noproxy = 'localhost,snowflake.computing.com'
+disableocspchecks = true
+certrevocationcheckmode = 'ADVISORY'
+crlallowcertificateswithoutcrlurl = true
+crlinmemorycachedisabled = false
+crlondiskcachedisabled = true
+crlhttpclienttimeout = 30
+disablesamlurlcheck = true
 
 [example.params]
 param_key = 'param_value'
@@ -447,15 +556,99 @@ provider "snowflake" {
 	driver_tracing = "info"
 	tmp_directory_path = "/tmp/terraform-provider/"
 	disable_console_login = true
+	oauth_client_id         = var.oauth_client_id
+	oauth_client_secret     = var.oauth_client_secret
+	oauth_token_request_url = var.oauth_token_request_url
+	oauth_authorization_url = var.oauth_authorization_url
+	oauth_redirect_uri = var.oauth_redirect_uri
+	oauth_scope = "session:role:PUBLIC"
+	workload_identity_provider = "azure"
+	workload_identity_entra_resource = "workload_identity_entra_resource"
+	enable_single_use_refresh_tokens = true
+	log_query_text = false
+	log_query_parameters = false
+	proxy_host = "proxy.example.com"
+	proxy_port = 443
+	proxy_user = "username"
+	proxy_password = var.proxy_password
+	proxy_protocol = "https"
+	no_proxy = "localhost,snowflake.computing.com"
+	disable_ocsp_checks = true
+	cert_revocation_check_mode = "ADVISORY"
+	crl_allow_certificates_without_crl_url = true
+	crl_in_memory_cache_disabled = false
+	crl_on_disk_cache_disabled = true
+	crl_http_client_timeout = 30
+	disable_saml_url_check = true
+
 	params = {
 		param_key = "param_value"
 	}
 }
+
+# Password for the proxy.
+variable "proxy_password" {
+  type      = string
+  sensitive = true
+}
+
+# Client ID from the Okta application.
+variable "oauth_client_id" {
+  type      = string
+  sensitive = true
+}
+
+# Client Secret from the Okta application.
+variable "oauth_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+# Client Token Request URL from the Okta API Authorization Server.
+variable "oauth_token_request_url" {
+  type      = string
+  sensitive = true
+}
+
+# Authorization URL for the Oauth flow.
+variable "oauth_authorization_url" {
+  type      = string
+  sensitive = true
+}
+
+# Redirect URI for the Oauth flow.
+variable "oauth_redirect_uri" {
+  type      = string
+  sensitive = true
+}
 ```
 
 <!-- Section of deprecated resources -->
+ ## Currently deprecated resources 
+
+- [snowflake_stage](./docs/resources/stage)
+- [snowflake_storage_integration](./docs/resources/storage_integration)
 
 <!-- Section of deprecated data sources -->
+
+## Proxy
+
+Terraform is plugin-based. It means that every plugin (provider) is responsible for making its own network requests.
+Not all providers follow the same standardized ways, so familiarize yourself with proxy setting for each of the providers used within your module.
+
+A few important pointers for setting the proxy connection:
+- As far as we are aware, there are no official Terraform docs regarding proxy, but there are some discussions on the official HashiCorp discussion forum (e.g. [this one](https://discuss.hashicorp.com/t/use-terraform-in-an-internal-network/59464)).
+- Terraform relies on Go default proxy setting (so it supports `HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`).
+- The official Go driver for Snowflake, which is used in this provider, also supports the default Go environment variables (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`). Documented [here](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#hdr-Proxy).
+- The provider offers a separate config (through the provider block, dedicated environment variables, and the TOML file).
+- The order of precedence is as follows:
+  1. Provider configuration (following its own [precedence](#order-precedence)).
+  2. Standard environment variables (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`).
+
+References:
+- [Hashicorp discussion group example](https://discuss.hashicorp.com/t/use-terraform-in-an-internal-network/59464)
+- [Go driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#hdr-Proxy)
+- [Go documentation](https://go.dev/src/vendor/golang.org/x/net/http/httpproxy/proxy.go)
 
 ## Sensitive values limitations
 
@@ -502,6 +695,19 @@ resource "snowflake_execute" "test" {
 
 -> Note: Timeouts can be also set at driver's level (see [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake)). These timeouts are independent. We recommend tweaking the timeouts on Terraform level first.
 
+## General provider rules
+
+> Note: This section is in a `work in progress` state and will be updated over time.
+
+In this section, we describe general rules that apply to multiple resources and data sources in the provider.
+This may help you understand the provider behavior when you are getting started with it.
+
+However, getting familiar with existing guides (`Guides` section on the left),
+resource-specific documentation, and Snowflake-specific documentation for a given object is still recommended.
+
+Here's a list of general rules:
+- All fields representing object identifiers (e.g., [allowed_network_rule_list](./resources/network_policy#allowed_network_rule_list-1) in `snowflake_network_policy`) or parts of them (e.g., `database`, `schema`, and `name` in the [snowflake_network_rule](./resources/network_rule#required) resource) are case-sensitive. This is true for all stable resources (there may be some exceptions in the preview ones; especially older ones). However, you can make all identifiers case-insensitive by enabling [QUOTED_IDENTIFIERS_IGNORE_CASE](https://docs.snowflake.com/en/sql-reference/parameters#quoted-identifiers-ignore-case), but be aware with the [issues you may have when using it](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/KNOWN_ISSUES.md#using-quoted_identifiers_ignore_case-with-the-provider).
+
 ## A list of preview and stable resources and data sources
 
 The provider supports a number of Snowflake features. Within the provider, some features are stable, while others are in preview
@@ -515,7 +721,7 @@ Preview features are disabled by default and should be used with caution.
 To use them, add the relevant feature name to the `preview_features_enabled` field in the [provider configuration](#preview_features_enabled-1).
 
 <!-- Section of stable resources -->
-## Currently stable resources 
+### Currently stable resources 
 
 - [snowflake_account](./docs/resources/account)
 - [snowflake_account_parameter](./docs/resources/account_parameter)
@@ -523,10 +729,12 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_api_authentication_integration_with_authorization_code_grant](./docs/resources/api_authentication_integration_with_authorization_code_grant)
 - [snowflake_api_authentication_integration_with_client_credentials](./docs/resources/api_authentication_integration_with_client_credentials)
 - [snowflake_api_authentication_integration_with_jwt_bearer](./docs/resources/api_authentication_integration_with_jwt_bearer)
+- [snowflake_compute_pool](./docs/resources/compute_pool)
 - [snowflake_database](./docs/resources/database)
 - [snowflake_database_role](./docs/resources/database_role)
 - [snowflake_execute](./docs/resources/execute)
 - [snowflake_external_oauth_integration](./docs/resources/external_oauth_integration)
+- [snowflake_git_repository](./docs/resources/git_repository)
 - [snowflake_grant_account_role](./docs/resources/grant_account_role)
 - [snowflake_grant_application_role](./docs/resources/grant_application_role)
 - [snowflake_grant_database_role](./docs/resources/grant_database_role)
@@ -534,9 +742,12 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_grant_privileges_to_account_role](./docs/resources/grant_privileges_to_account_role)
 - [snowflake_grant_privileges_to_database_role](./docs/resources/grant_privileges_to_database_role)
 - [snowflake_grant_privileges_to_share](./docs/resources/grant_privileges_to_share)
+- [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_legacy_service_user](./docs/resources/legacy_service_user)
+- [snowflake_listing](./docs/resources/listing)
 - [snowflake_masking_policy](./docs/resources/masking_policy)
 - [snowflake_network_policy](./docs/resources/network_policy)
+- [snowflake_network_rule](./docs/resources/network_rule)
 - [snowflake_oauth_integration_for_custom_clients](./docs/resources/oauth_integration_for_custom_clients)
 - [snowflake_oauth_integration_for_partner_applications](./docs/resources/oauth_integration_for_partner_applications)
 - [snowflake_primary_connection](./docs/resources/primary_connection)
@@ -551,6 +762,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_secret_with_basic_authentication](./docs/resources/secret_with_basic_authentication)
 - [snowflake_secret_with_client_credentials](./docs/resources/secret_with_client_credentials)
 - [snowflake_secret_with_generic_string](./docs/resources/secret_with_generic_string)
+- [snowflake_service](./docs/resources/service)
 - [snowflake_service_user](./docs/resources/service_user)
 - [snowflake_shared_database](./docs/resources/shared_database)
 - [snowflake_stream_on_directory_table](./docs/resources/stream_on_directory_table)
@@ -562,18 +774,22 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_tag_association](./docs/resources/tag_association)
 - [snowflake_task](./docs/resources/task)
 - [snowflake_user](./docs/resources/user)
+- [snowflake_user_programmatic_access_token](./docs/resources/user_programmatic_access_token)
 - [snowflake_view](./docs/resources/view)
 - [snowflake_warehouse](./docs/resources/warehouse)
 
 <!-- Section of stable data sources -->
-## Currently stable data sources 
+### Currently stable data sources 
 
 - [snowflake_account_roles](./docs/data-sources/account_roles)
 - [snowflake_accounts](./docs/data-sources/accounts)
+- [snowflake_compute_pools](./docs/data-sources/compute_pools)
 - [snowflake_connections](./docs/data-sources/connections)
 - [snowflake_database_roles](./docs/data-sources/database_roles)
 - [snowflake_databases](./docs/data-sources/databases)
+- [snowflake_git_repositories](./docs/data-sources/git_repositories)
 - [snowflake_grants](./docs/data-sources/grants)
+- [snowflake_image_repositories](./docs/data-sources/image_repositories)
 - [snowflake_masking_policies](./docs/data-sources/masking_policies)
 - [snowflake_network_policies](./docs/data-sources/network_policies)
 - [snowflake_resource_monitors](./docs/data-sources/resource_monitors)
@@ -581,23 +797,29 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_schemas](./docs/data-sources/schemas)
 - [snowflake_secrets](./docs/data-sources/secrets)
 - [snowflake_security_integrations](./docs/data-sources/security_integrations)
+- [snowflake_services](./docs/data-sources/services)
 - [snowflake_streamlits](./docs/data-sources/streamlits)
 - [snowflake_streams](./docs/data-sources/streams)
 - [snowflake_tags](./docs/data-sources/tags)
 - [snowflake_tasks](./docs/data-sources/tasks)
+- [snowflake_user_programmatic_access_tokens](./docs/data-sources/user_programmatic_access_tokens)
 - [snowflake_users](./docs/data-sources/users)
 - [snowflake_views](./docs/data-sources/views)
 - [snowflake_warehouses](./docs/data-sources/warehouses)
 
 <!-- Section of preview resources -->
-## Currently preview resources 
+### Currently preview resources 
 
 - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
+- [snowflake_account_session_policy_attachment](./docs/resources/account_session_policy_attachment)
 - [snowflake_alert](./docs/resources/alert)
 - [snowflake_api_integration](./docs/resources/api_integration)
 - [snowflake_authentication_policy](./docs/resources/authentication_policy)
-- [snowflake_compute_pool](./docs/resources/compute_pool)
+- [snowflake_catalog_integration_aws_glue](./docs/resources/catalog_integration_aws_glue)
+- [snowflake_catalog_integration_iceberg_rest](./docs/resources/catalog_integration_iceberg_rest)
+- [snowflake_catalog_integration_object_storage](./docs/resources/catalog_integration_object_storage)
+- [snowflake_catalog_integration_open_catalog](./docs/resources/catalog_integration_open_catalog)
 - [snowflake_cortex_search_service](./docs/resources/cortex_search_service)
 - [snowflake_current_account](./docs/resources/current_account)
 - [snowflake_current_organization_account](./docs/resources/current_organization_account)
@@ -613,14 +835,11 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_function_python](./docs/resources/function_python)
 - [snowflake_function_scala](./docs/resources/function_scala)
 - [snowflake_function_sql](./docs/resources/function_sql)
-- [snowflake_git_repository](./docs/resources/git_repository)
-- [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_job_service](./docs/resources/job_service)
-- [snowflake_listing](./docs/resources/listing)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
 - [snowflake_network_policy_attachment](./docs/resources/network_policy_attachment)
-- [snowflake_network_rule](./docs/resources/network_rule)
+- [snowflake_notebook](./docs/resources/notebook)
 - [snowflake_notification_integration](./docs/resources/notification_integration)
 - [snowflake_object_parameter](./docs/resources/object_parameter)
 - [snowflake_password_policy](./docs/resources/password_policy)
@@ -630,24 +849,35 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_procedure_python](./docs/resources/procedure_python)
 - [snowflake_procedure_scala](./docs/resources/procedure_scala)
 - [snowflake_procedure_sql](./docs/resources/procedure_sql)
+- [snowflake_semantic_view](./docs/resources/semantic_view)
 - [snowflake_sequence](./docs/resources/sequence)
-- [snowflake_service](./docs/resources/service)
+- [snowflake_session_policy](./docs/resources/session_policy)
 - [snowflake_share](./docs/resources/share)
 - [snowflake_stage](./docs/resources/stage)
+- [snowflake_stage_external_azure](./docs/resources/stage_external_azure)
+- [snowflake_stage_external_gcs](./docs/resources/stage_external_gcs)
+- [snowflake_stage_external_s3](./docs/resources/stage_external_s3)
+- [snowflake_stage_external_s3_compatible](./docs/resources/stage_external_s3_compatible)
+- [snowflake_stage_internal](./docs/resources/stage_internal)
 - [snowflake_storage_integration](./docs/resources/storage_integration)
+- [snowflake_storage_integration_aws](./docs/resources/storage_integration_aws)
+- [snowflake_storage_integration_azure](./docs/resources/storage_integration_azure)
+- [snowflake_storage_integration_gcs](./docs/resources/storage_integration_gcs)
 - [snowflake_table](./docs/resources/table)
 - [snowflake_table_column_masking_policy_application](./docs/resources/table_column_masking_policy_application)
 - [snowflake_table_constraint](./docs/resources/table_constraint)
 - [snowflake_user_authentication_policy_attachment](./docs/resources/user_authentication_policy_attachment)
 - [snowflake_user_password_policy_attachment](./docs/resources/user_password_policy_attachment)
-- [snowflake_user_programmatic_access_token](./docs/resources/user_programmatic_access_token)
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
+- [snowflake_user_session_policy_attachment](./docs/resources/user_session_policy_attachment)
+- [snowflake_warehouse_adaptive](./docs/resources/warehouse_adaptive)
 
 <!-- Section of preview data sources -->
-## Currently preview data sources 
+### Currently preview data sources 
 
 - [snowflake_alerts](./docs/data-sources/alerts)
-- [snowflake_compute_pools](./docs/data-sources/compute_pools)
+- [snowflake_authentication_policies](./docs/data-sources/authentication_policies)
+- [snowflake_catalog_integrations](./docs/data-sources/catalog_integrations)
 - [snowflake_cortex_search_services](./docs/data-sources/cortex_search_services)
 - [snowflake_current_account](./docs/data-sources/current_account)
 - [snowflake_current_role](./docs/data-sources/current_role)
@@ -656,17 +886,21 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_dynamic_tables](./docs/data-sources/dynamic_tables)
 - [snowflake_external_functions](./docs/data-sources/external_functions)
 - [snowflake_external_tables](./docs/data-sources/external_tables)
+- [snowflake_external_volumes](./docs/data-sources/external_volumes)
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)
-- [snowflake_git_repositories](./docs/data-sources/git_repositories)
-- [snowflake_image_repositories](./docs/data-sources/image_repositories)
+- [snowflake_listings](./docs/data-sources/listings)
 - [snowflake_materialized_views](./docs/data-sources/materialized_views)
+- [snowflake_network_rules](./docs/data-sources/network_rules)
+- [snowflake_notebooks](./docs/data-sources/notebooks)
 - [snowflake_parameters](./docs/data-sources/parameters)
+- [snowflake_password_policies](./docs/data-sources/password_policies)
 - [snowflake_pipes](./docs/data-sources/pipes)
 - [snowflake_procedures](./docs/data-sources/procedures)
+- [snowflake_semantic_views](./docs/data-sources/semantic_views)
 - [snowflake_sequences](./docs/data-sources/sequences)
-- [snowflake_services](./docs/data-sources/services)
+- [snowflake_session_policies](./docs/data-sources/session_policies)
 - [snowflake_shares](./docs/data-sources/shares)
 - [snowflake_stages](./docs/data-sources/stages)
 - [snowflake_storage_integrations](./docs/data-sources/storage_integrations)
@@ -675,4 +909,95 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_system_get_privatelink_config](./docs/data-sources/system_get_privatelink_config)
 - [snowflake_system_get_snowflake_platform_info](./docs/data-sources/system_get_snowflake_platform_info)
 - [snowflake_tables](./docs/data-sources/tables)
-- [snowflake_user_programmatic_access_tokens](./docs/data-sources/user_programmatic_access_tokens)
+
+## Experimental features
+
+Experiments alter the provider behavior.
+Similarly to preview features, they are not yet stable features of the provider.
+Enabling the given experiment is still considered a preview feature, even when applied to the stable resource.
+If the given experiment is successful, it can be considered an addition in the future provider versions.
+
+### Active experiments
+
+The following experiments are currently active. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
+
+To share feedback please reach out to us through your Snowflake account manager.
+
+#### WAREHOUSE_SHOW_IMPROVED_PERFORMANCE
+It's meant to improve the performance for accounts with many warehouses.
+
+When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).
+
+**Important**: to benefit from this improvement, you need to have it enabled also on your Snowflake account. To do this, please reach out to us through your Snowflake Account Manager.
+
+#### GRANTS_STRICT_PRIVILEGE_MANAGEMENT
+The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.
+
+It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.
+
+Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
+
+This feature works independently of the `GRANTS_IMPORT_VALIDATION` flag.
+
+#### PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL
+Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).
+
+When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.
+
+#### PARAMETERS_REDUCED_OUTPUT
+Currently, the `parameters` field in various resources contains a verbatim output for the `SHOW PARAMETERS IN <object>` command. One of the fields contained in the output is the `description`. It does not change and is repeated for all objects containing the given parameter. It leads to an excessive output (check e.g., [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)).
+
+To mitigate the problem, we are adding this option to reduce the output to only `value` and `level` fields, which should significantly reduce the state size. **Note**: it's also affecting the `parameters` output for data sources.
+
+We considered the option to remove the `parameters` output completely, however, we plan to change the external change logic detection to use it (to make it consistent with other attributes using `show_output` and because we won't be able to implement the current logic when switching to the Terraform Plugin Framework) and it still allows referencing the parameter value/level from other parts of the configuration.
+
+#### USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY
+The new `default_workload_identity_federation` field was added to the `snowflake_legacy_service_user` and `snowflake_service_user` resources. This field allows for managing WIFs. Due to feature complexity, it requires enabling this experiment.
+
+Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).
+
+#### GRANTS_IMPORT_VALIDATION
+Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.
+
+When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
+
+This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
+
+#### TAGS_ALLOW_EMPTY_ALLOWED_VALUES
+Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.
+
+When enabled, the three possible states in Snowflake for allowed values will be supported: `nil` (any value is allowed; whenever `allowed_values` are empty), `empty` (no value is allowed; handled by the `no_allowed_values` field), and `set` (all values defined in `allowed_values` are allowed).
+
+Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).
+
+#### IMPORT_BOOLEAN_DEFAULT
+Changes import behavior for boolean fields using the special `"default"` value.
+
+When enabled, boolean fields using the special `"default"` value are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`). This prevents unavoidable diffs on every plan after import.
+
+Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).
+
+#### GRANTS_SAFE_DESTROY
+When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.
+
+This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
+
+Without this experiment, destroying such resources fails with `does not exist or not authorized`.
+
+#### TAG_ASSOCIATION_SAFE_DESTROY
+When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.
+
+Currently supported by: `snowflake_tag_association`.
+
+This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.
+
+Without this experiment, destroying such resources fails with `does not exist or not authorized`.
+
+#### GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE
+When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.
+
+Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.
+
+With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.

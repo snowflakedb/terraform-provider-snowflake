@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -37,9 +38,9 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 	_, configVariables2 := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert2)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
-	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer2, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl2, temporaryVariableName).
+	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer2, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl2, temporaryVariableName).
 		WithEnabled(r.BooleanTrue).
 		WithComment(comment).
 		WithSaml2SsoUrl(validUrl2).
@@ -50,19 +51,19 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 		WithSaml2SignRequest(r.BooleanTrue).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
-		WithSaml2SpInitiatedLoginPageLabel("foo").
-		WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		WithAllowedUserDomains("example.com")
-	recreatesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+		WithSaml2SpInitiatedLoginPageLabel("foo")
+	// TODO(SNOW-3200188): allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
+	recreatesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
-		WithSaml2SpInitiatedLoginPageLabel("foo").
-		WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		WithAllowedUserDomains("example.com")
+		WithSaml2SpInitiatedLoginPageLabel("foo")
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -77,7 +78,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "enabled", r.BooleanDefault),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_issuer", issuer),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_sso_url", validUrl),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_x509_cert", cert),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "saml2_sp_initiated_login_page_label"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_enable_sp_initiated", r.BooleanDefault),
@@ -87,14 +88,14 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "saml2_snowflake_issuer_url"),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "saml2_snowflake_acs_url"),
-					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "allowed_user_domains"),
-					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "allowed_email_patterns"),
+					// resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "allowed_user_domains"),
+					// resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "allowed_email_patterns"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "comment", ""),
 
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", ""),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "false"),
@@ -108,15 +109,15 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(basicModel.ResourceReference(), "describe_output.0.saml2_snowflake_metadata.0.value"),
 					resource.TestCheckResourceAttrSet(basicModel.ResourceReference(), "describe_output.0.saml2_digest_methods_used.0.value"),
 					resource.TestCheckResourceAttrSet(basicModel.ResourceReference(), "describe_output.0.saml2_signature_methods_used.0.value"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[]"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[]"),
+					// resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[]"),
+					// resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[]"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.comment.0.value", ""),
 
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.#", "1"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.name", id.Name()),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.integration_type", "SAML2"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.enabled", "false"),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.enabled", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.comment", ""),
 					resource.TestCheckResourceAttrSet(basicModel.ResourceReference(), "show_output.0.created_on"),
 				),
@@ -129,10 +130,10 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 				ImportState:     true,
 				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "false"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_issuer", issuer),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sso_url", validUrl),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_x509_cert", cert),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sp_initiated_login_page_label", ""),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_enable_sp_initiated", "false"),
@@ -142,8 +143,8 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_force_authn", "false"),
 					importchecks.TestCheckResourceAttrInstanceStateSet(resourcehelpers.EncodeResourceIdentifier(id), "saml2_snowflake_issuer_url"),
 					importchecks.TestCheckResourceAttrInstanceStateSet(resourcehelpers.EncodeResourceIdentifier(id), "saml2_snowflake_acs_url"),
-					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains"),
-					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns"),
+					// importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains"),
+					// importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", ""),
 				),
 			},
@@ -156,7 +157,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_issuer", issuer2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sso_url", validUrl2),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_x509_cert", cert2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_enable_sp_initiated", "true"),
@@ -166,16 +167,16 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_force_authn", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.#", "1"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.#", "1"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "comment", comment),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl2),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "true"),
@@ -189,8 +190,8 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_snowflake_metadata.0.value"),
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_digest_methods_used.0.value"),
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_signature_methods_used.0.value"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.comment.0.value", comment),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "show_output.#", "1"),
@@ -213,7 +214,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_issuer", issuer2),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sso_url", validUrl2),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_x509_cert", cert2),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sp_initiated_login_page_label", "foo"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_enable_sp_initiated", "true"),
@@ -223,10 +224,10 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_force_authn", "true"),
 					importchecks.TestCheckResourceAttrInstanceStateSet(resourcehelpers.EncodeResourceIdentifier(id), "saml2_snowflake_issuer_url"),
 					importchecks.TestCheckResourceAttrInstanceStateSet(resourcehelpers.EncodeResourceIdentifier(id), "saml2_snowflake_acs_url"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains.0", "example.com"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains.#", "1"),
+					// importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains.0", "example.com"),
+					// importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns.#", "1"),
+					// importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", comment),
 				),
 			},
@@ -260,7 +261,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_issuer", issuer2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sso_url", validUrl2),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_x509_cert", cert2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_enable_sp_initiated", "true"),
@@ -270,16 +271,16 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_force_authn", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.#", "1"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.#", "1"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "comment", comment),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer2),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl2),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "true"),
@@ -293,8 +294,8 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_snowflake_metadata.0.value"),
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_digest_methods_used.0.value"),
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_signature_methods_used.0.value"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.comment.0.value", comment),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "show_output.#", "1"),
@@ -315,7 +316,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "enabled", r.BooleanDefault),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_issuer", issuer),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_sso_url", validUrl),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_x509_cert", cert),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "foo"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_enable_sp_initiated", r.BooleanDefault),
@@ -325,16 +326,16 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "allowed_user_domains.#", "1"),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "allowed_email_patterns.#", "1"),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "allowed_user_domains.#", "1"),
+					// resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+					// resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "allowed_email_patterns.#", "1"),
+					// resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "comment", ""),
 
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "false"),
@@ -348,8 +349,8 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(recreatesModel.ResourceReference(), "describe_output.0.saml2_snowflake_metadata.0.value"),
 					resource.TestCheckResourceAttrSet(recreatesModel.ResourceReference(), "describe_output.0.saml2_digest_methods_used.0.value"),
 					resource.TestCheckResourceAttrSet(recreatesModel.ResourceReference(), "describe_output.0.saml2_signature_methods_used.0.value"),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "describe_output.0.comment.0.value", ""),
 
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "show_output.#", "1"),
@@ -374,15 +375,14 @@ func TestAcc_Saml2Integration_forceAuthn(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
-	saml2ConfigForceAuthnTrueModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
+	saml2ConfigForceAuthnTrueModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2ForceAuthn(r.BooleanTrue)
-	saml2ConfigForceAuthnFalseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	saml2ConfigForceAuthnFalseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2ForceAuthn(r.BooleanFalse)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -548,7 +548,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
 	// TODO(SNOW-1479617): set saml2_snowflake_x509_cert
-	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	completeModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithEnabled(r.BooleanTrue).
 		WithComment(comment).
 		WithSaml2EnableSpInitiated(r.BooleanTrue).
@@ -559,13 +559,13 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SsoUrl(validUrl).
-		WithSaml2SpInitiatedLoginPageLabel("foo").
-		WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		WithAllowedUserDomains("example.com")
+		WithSaml2SpInitiatedLoginPageLabel("foo")
+	// TODO(SNOW-3200188): allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -580,7 +580,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "enabled", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_issuer", issuer),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sso_url", validUrl),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_x509_cert", cert),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_enable_sp_initiated", "true"),
@@ -590,16 +590,16 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_force_authn", "true"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.#", "1"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.#", "1"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.#", "1"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "comment", comment),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_issuer.0.value", issuer),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sso_url.0.value", validUrl),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_provider.0.value", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					resource.TestCheckNoResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_x509_cert.0.value"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "foo"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.saml2_enable_sp_initiated.0.value", "true"),
@@ -613,8 +613,8 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_snowflake_metadata.0.value"),
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_digest_methods_used.0.value"),
 					resource.TestCheckResourceAttrSet(completeModel.ResourceReference(), "describe_output.0.saml2_signature_methods_used.0.value"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.comment.0.value", comment),
 
 					resource.TestCheckResourceAttr(completeModel.ResourceReference(), "show_output.#", "1"),
@@ -637,7 +637,7 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_issuer", issuer),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sso_url", validUrl),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_provider", string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_x509_cert", cert),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_sp_initiated_login_page_label", "foo"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_enable_sp_initiated", "true"),
@@ -647,10 +647,10 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "saml2_force_authn", "true"),
 					importchecks.TestCheckResourceAttrInstanceStateSet(resourcehelpers.EncodeResourceIdentifier(id), "saml2_snowflake_issuer_url"),
 					importchecks.TestCheckResourceAttrInstanceStateSet(resourcehelpers.EncodeResourceIdentifier(id), "saml2_snowflake_acs_url"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains.0", "example.com"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains.#", "1"),
+					// importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_user_domains.0", "example.com"),
+					// importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns.#", "1"),
+					// importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", comment),
 				),
 			},
@@ -667,12 +667,11 @@ func TestAcc_Saml2Integration_InvalidNameIdFormat(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2RequestedNameidFormat("invalid")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -701,7 +700,6 @@ func TestAcc_Saml2Integration_InvalidProvider(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -711,7 +709,7 @@ func TestAcc_Saml2Integration_InvalidProvider(t *testing.T) {
 				Config:          accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
 				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: invalid Saml2SecurityIntegrationSaml2ProviderOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid saml2 security integration saml2 provider option: INVALID"),
 			},
 		},
 	})
@@ -728,46 +726,47 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	baseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	baseModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
-		WithSaml2SpInitiatedLoginPageLabel("label").
-		WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		WithAllowedUserDomains("example.com")
-	withoutLoginPageLabelModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+		WithSaml2SpInitiatedLoginPageLabel("label")
+	// TODO(SNOW-3200188): allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
+	withoutLoginPageLabelModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
-		WithSaml2SpInitiatedLoginPageLabel("").
-		WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		WithAllowedUserDomains("example.com")
-	withoutSnowflakeIssuerUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+		WithSaml2SpInitiatedLoginPageLabel("")
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
+	withoutSnowflakeIssuerUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl("").
-		WithSaml2SpInitiatedLoginPageLabel("label").
-		WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		WithAllowedUserDomains("example.com")
-	withoutAcsUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+		WithSaml2SpInitiatedLoginPageLabel("label")
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
+	withoutAcsUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl("").
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
-		WithSaml2SpInitiatedLoginPageLabel("label").
-		WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		WithAllowedUserDomains("example.com")
-	withoutAllowedEmailPatternsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
-		WithSaml2SnowflakeAcsUrl(acsURL).
-		WithSaml2SnowflakeIssuerUrl(issuerURL).
-		WithSaml2SpInitiatedLoginPageLabel("label").
-		WithAllowedEmailPatternsValue(accconfig.EmptyListVariable()).
-		WithAllowedUserDomains("example.com")
-	withoutAllowedUserDomainsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
-		WithSaml2SnowflakeAcsUrl(acsURL).
-		WithSaml2SnowflakeIssuerUrl(issuerURL).
-		WithSaml2SpInitiatedLoginPageLabel("label").
-		WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		WithAllowedUserDomainsValue(accconfig.EmptyListVariable())
+		WithSaml2SpInitiatedLoginPageLabel("label")
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
+	// TODO(SNOW-3200188): Re-enable once allowed_email_patterns and allowed_user_domains are fixed
+	// withoutAllowedEmailPatternsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
+	// 	WithSaml2SnowflakeAcsUrl(acsURL).
+	// 	WithSaml2SnowflakeIssuerUrl(issuerURL).
+	// 	WithSaml2SpInitiatedLoginPageLabel("label").
+	// 	WithAllowedEmailPatternsValue(accconfig.EmptyListVariable()).
+	// 	WithAllowedUserDomains("example.com")
+	// withoutAllowedUserDomainsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
+	// 	WithSaml2SnowflakeAcsUrl(acsURL).
+	// 	WithSaml2SnowflakeIssuerUrl(issuerURL).
+	// 	WithSaml2SpInitiatedLoginPageLabel("label").
+	// 	WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// 	WithAllowedUserDomainsValue(accconfig.EmptyListVariable())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -801,17 +800,17 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "saml2_sp_initiated_login_page_label", ""),
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "allowed_user_domains.#", "1"),
-					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "allowed_email_patterns.#", "1"),
-					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "allowed_user_domains.#", "1"),
+					// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+					// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "allowed_email_patterns.#", "1"),
+					// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", ""),
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
-					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 				),
 			},
 			{
@@ -827,17 +826,17 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "saml2_snowflake_issuer_url", ""),
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "allowed_user_domains.#", "1"),
-					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "allowed_email_patterns.#", "1"),
-					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "allowed_user_domains.#", "1"),
+					// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+					// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "allowed_email_patterns.#", "1"),
+					// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", strings.ToLower(issuerURL)),
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
-					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 				),
 			},
 			{
@@ -853,66 +852,67 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "saml2_snowflake_acs_url", ""),
-					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "allowed_user_domains.#", "1"),
-					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "allowed_email_patterns.#", "1"),
-					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
+					// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "allowed_user_domains.#", "1"),
+					// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+					// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "allowed_email_patterns.#", "1"),
+					// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "allowed_email_patterns.0", "^(.+dev)@example.com$"),
 
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", strings.ToLower(acsURL)),
-					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 				),
 			},
-			{
-				Config:          accconfig.FromModels(t, withoutAllowedEmailPatternsModel, temporaryVariableModel),
-				ConfigVariables: configVariables,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(withoutAllowedEmailPatternsModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_user_domains.#", "1"),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_email_patterns.#", "0"),
-
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-					resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[]"),
-				),
-			},
-			{
-				Config:          accconfig.FromModels(t, withoutAllowedUserDomainsModel, temporaryVariableModel),
-				ConfigVariables: configVariables,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(withoutAllowedUserDomainsModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "allowed_user_domains.#", "0"),
-
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.#", "1"),
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
-					resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[]"),
-				),
-			},
+			// TODO(SNOW-3200188): Re-enable once allowed_email_patterns and allowed_user_domains are fixed
+			// {
+			// 	Config:          accconfig.FromModels(t, withoutAllowedEmailPatternsModel, temporaryVariableModel),
+			// 	ConfigVariables: configVariables,
+			// 	ConfigPlanChecks: resource.ConfigPlanChecks{
+			// 		PreApply: []plancheck.PlanCheck{
+			// 			plancheck.ExpectResourceAction(withoutAllowedEmailPatternsModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+			// 		},
+			// 	},
+			// 	Check: resource.ComposeAggregateTestCheckFunc(
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "name", id.Name()),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_user_domains.#", "1"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_email_patterns.#", "0"),
+			//
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.#", "1"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[]"),
+			// 	),
+			// },
+			// {
+			// 	Config:          accconfig.FromModels(t, withoutAllowedUserDomainsModel, temporaryVariableModel),
+			// 	ConfigVariables: configVariables,
+			// 	ConfigPlanChecks: resource.ConfigPlanChecks{
+			// 		PreApply: []plancheck.PlanCheck{
+			// 			plancheck.ExpectResourceAction(withoutAllowedUserDomainsModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+			// 		},
+			// 	},
+			// 	Check: resource.ComposeAggregateTestCheckFunc(
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "name", id.Name()),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "allowed_user_domains.#", "0"),
+			//
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.#", "1"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[]"),
+			// 	),
+			// },
 		},
 	})
 }
@@ -926,19 +926,18 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
-	withZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
+	withZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithEnabled(r.BooleanFalse).
 		WithSaml2ForceAuthn(r.BooleanFalse).
 		WithSaml2PostLogoutRedirectUrl("")
-	withNonZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
+	withNonZeroValuesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName).
 		WithEnabled(r.BooleanTrue).
 		WithSaml2ForceAuthn(r.BooleanTrue).
 		WithSaml2PostLogoutRedirectUrl(validUrl)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1066,23 +1065,23 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 	cert := random.GenerateX509(t)
 	issuer := testClient().Ids.Alpha()
 	validUrl := "https://example.com"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
+	basicModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, basicModel, temporaryVariableModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:   configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "id", id.Name()),
@@ -1107,24 +1106,24 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	cert := random.GenerateX509(t)
 	issuer := testClient().Ids.Alpha()
 	validUrl := "https://example.com"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
 
-	basicModel := model.Saml2SecurityIntegrationVar("test", quotedId, issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName)
+	basicModel := model.Saml2SecurityIntegrationVar("test", quotedId, issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderOptionCustom), validUrl, temporaryVariableName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, basicModel, temporaryVariableModel),
+				Config:             providerConfig + accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:    configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "name", id.Name()),

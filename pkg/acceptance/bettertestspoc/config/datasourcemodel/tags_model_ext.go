@@ -13,3 +13,19 @@ func (t *TagsModel) WithInDatabase(databaseId sdk.AccountObjectIdentifier) *Tags
 		}),
 	)
 }
+
+func (t *TagsModel) WithInSchema(schemaId sdk.DatabaseObjectIdentifier) *TagsModel {
+	return t.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"schema": tfconfig.StringVariable(schemaId.FullyQualifiedName()),
+		}),
+	)
+}
+
+func (t *TagsModel) WithInAccount() *TagsModel {
+	return t.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}

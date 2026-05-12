@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -202,12 +203,12 @@ func (s *CreateTableRequest) WithEnableSchemaEvolution(enableSchemaEvolution *bo
 	return s
 }
 
-func (s *CreateTableRequest) WithStageFileFormat(stageFileFormat StageFileFormatRequest) *CreateTableRequest {
+func (s *CreateTableRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRequest) *CreateTableRequest {
 	s.stageFileFormat = &stageFileFormat
 	return s
 }
 
-func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions StageCopyOptionsRequest) *CreateTableRequest {
+func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *CreateTableRequest {
 	s.stageCopyOptions = &stageCopyOptions
 	return s
 }
@@ -757,296 +758,296 @@ func NewTagAssociationRequest(
 	return &s
 }
 
-func NewFileFormatTypeOptionsRequest() *FileFormatTypeOptionsRequest {
-	return &FileFormatTypeOptionsRequest{}
+func NewFileFormatTypeOptionsRequest() *LegacyFileFormatTypeOptionsRequest {
+	return &LegacyFileFormatTypeOptionsRequest{}
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVCompression(csvCompression *CSVCompression) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVCompression(csvCompression *CsvCompression) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVCompression = csvCompression
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVRecordDelimiter(csvRecordDelimiter *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVRecordDelimiter(csvRecordDelimiter *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVRecordDelimiter = csvRecordDelimiter
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVFieldDelimiter(csvFieldDelimiter *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVFieldDelimiter(csvFieldDelimiter *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVFieldDelimiter = csvFieldDelimiter
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVFileExtension(csvFileExtension *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVFileExtension(csvFileExtension *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVFileExtension = csvFileExtension
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVParseHeader(csvParseHeader *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVParseHeader(csvParseHeader *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVParseHeader = csvParseHeader
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVSkipHeader(csvSkipHeader *int) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVSkipHeader(csvSkipHeader *int) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVSkipHeader = csvSkipHeader
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVSkipBlankLines(csvSkipBlankLines *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVSkipBlankLines(csvSkipBlankLines *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVSkipBlankLines = csvSkipBlankLines
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVDateFormat(csvDateFormat *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVDateFormat(csvDateFormat *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVDateFormat = csvDateFormat
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVTimeFormat(csvTimeFormat *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVTimeFormat(csvTimeFormat *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVTimeFormat = csvTimeFormat
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVTimestampFormat(csvTimestampFormat *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVTimestampFormat(csvTimestampFormat *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVTimestampFormat = csvTimestampFormat
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVBinaryFormat(csvBinaryFormat *BinaryFormat) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVBinaryFormat(csvBinaryFormat *BinaryFormat) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVBinaryFormat = csvBinaryFormat
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVEscape(csvEscape *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVEscape(csvEscape *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVEscape = csvEscape
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVEscapeUnenclosedField(csvEscapeUnenclosedField *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVEscapeUnenclosedField(csvEscapeUnenclosedField *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVEscapeUnenclosedField = csvEscapeUnenclosedField
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVTrimSpace(csvTrimSpace *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVTrimSpace(csvTrimSpace *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVTrimSpace = csvTrimSpace
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVFieldOptionallyEnclosedBy(csvFieldOptionallyEnclosedBy *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVFieldOptionallyEnclosedBy(csvFieldOptionallyEnclosedBy *string) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVFieldOptionallyEnclosedBy = csvFieldOptionallyEnclosedBy
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVNullIf(csvNullIf *[]NullString) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVNullIf(csvNullIf *[]NullString) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVNullIf = csvNullIf
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVErrorOnColumnCountMismatch(csvErrorOnColumnCountMismatch *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVErrorOnColumnCountMismatch(csvErrorOnColumnCountMismatch *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVErrorOnColumnCountMismatch = csvErrorOnColumnCountMismatch
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVReplaceInvalidCharacters(csvReplaceInvalidCharacters *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVReplaceInvalidCharacters(csvReplaceInvalidCharacters *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVReplaceInvalidCharacters = csvReplaceInvalidCharacters
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVEmptyFieldAsNull(csvEmptyFieldAsNull *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVEmptyFieldAsNull(csvEmptyFieldAsNull *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVEmptyFieldAsNull = csvEmptyFieldAsNull
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVSkipByteOrderMark(csvSkipByteOrderMark *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVSkipByteOrderMark(csvSkipByteOrderMark *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVSkipByteOrderMark = csvSkipByteOrderMark
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithCSVEncoding(csvEncoding *CSVEncoding) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVEncoding(csvEncoding *CsvEncoding) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVEncoding = csvEncoding
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONCompression(jsonCompression *JSONCompression) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONCompression(jsonCompression *JsonCompression) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONCompression = jsonCompression
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONDateFormat(jsonDateFormat *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONDateFormat(jsonDateFormat *string) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONDateFormat = jsonDateFormat
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONTimeFormat(jsonTimeFormat *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONTimeFormat(jsonTimeFormat *string) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONTimeFormat = jsonTimeFormat
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONTimestampFormat(jsonTimestampFormat *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONTimestampFormat(jsonTimestampFormat *string) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONTimestampFormat = jsonTimestampFormat
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONBinaryFormat(jsonBinaryFormat *BinaryFormat) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONBinaryFormat(jsonBinaryFormat *BinaryFormat) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONBinaryFormat = jsonBinaryFormat
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONTrimSpace(jsonTrimSpace *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONTrimSpace(jsonTrimSpace *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONTrimSpace = jsonTrimSpace
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONNullIf(jsonNullIf []NullString) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONNullIf(jsonNullIf []NullString) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONNullIf = jsonNullIf
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONFileExtension(jsonFileExtension *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONFileExtension(jsonFileExtension *string) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONFileExtension = jsonFileExtension
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONEnableOctal(jsonEnableOctal *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONEnableOctal(jsonEnableOctal *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONEnableOctal = jsonEnableOctal
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONAllowDuplicate(jsonAllowDuplicate *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONAllowDuplicate(jsonAllowDuplicate *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONAllowDuplicate = jsonAllowDuplicate
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONStripOuterArray(jsonStripOuterArray *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONStripOuterArray(jsonStripOuterArray *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONStripOuterArray = jsonStripOuterArray
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONStripNullValues(jsonStripNullValues *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONStripNullValues(jsonStripNullValues *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONStripNullValues = jsonStripNullValues
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONReplaceInvalidCharacters(jsonReplaceInvalidCharacters *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONReplaceInvalidCharacters(jsonReplaceInvalidCharacters *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONReplaceInvalidCharacters = jsonReplaceInvalidCharacters
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONIgnoreUTF8Errors(jsonIgnoreUTF8Errors *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONIgnoreUTF8Errors(jsonIgnoreUTF8Errors *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONIgnoreUTF8Errors = jsonIgnoreUTF8Errors
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithJSONSkipByteOrderMark(jsonSkipByteOrderMark *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONSkipByteOrderMark(jsonSkipByteOrderMark *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONSkipByteOrderMark = jsonSkipByteOrderMark
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithAvroCompression(avroCompression *AvroCompression) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithAvroCompression(avroCompression *AvroCompression) *LegacyFileFormatTypeOptionsRequest {
 	s.AvroCompression = avroCompression
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithAvroTrimSpace(avroTrimSpace *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithAvroTrimSpace(avroTrimSpace *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.AvroTrimSpace = avroTrimSpace
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithAvroReplaceInvalidCharacters(avroReplaceInvalidCharacters *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithAvroReplaceInvalidCharacters(avroReplaceInvalidCharacters *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.AvroReplaceInvalidCharacters = avroReplaceInvalidCharacters
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithAvroNullIf(avroNullIf *[]NullString) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithAvroNullIf(avroNullIf *[]NullString) *LegacyFileFormatTypeOptionsRequest {
 	s.AvroNullIf = avroNullIf
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithORCTrimSpace(orcTrimSpace *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithORCTrimSpace(orcTrimSpace *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.ORCTrimSpace = orcTrimSpace
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithORCReplaceInvalidCharacters(orcReplaceInvalidCharacters *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithORCReplaceInvalidCharacters(orcReplaceInvalidCharacters *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.ORCReplaceInvalidCharacters = orcReplaceInvalidCharacters
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithORCNullIf(orcNullIf *[]NullString) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithORCNullIf(orcNullIf *[]NullString) *LegacyFileFormatTypeOptionsRequest {
 	s.ORCNullIf = orcNullIf
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithParquetCompression(parquetCompression *ParquetCompression) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithParquetCompression(parquetCompression *ParquetCompression) *LegacyFileFormatTypeOptionsRequest {
 	s.ParquetCompression = parquetCompression
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithParquetSnappyCompression(parquetSnappyCompression *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithParquetSnappyCompression(parquetSnappyCompression *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.ParquetSnappyCompression = parquetSnappyCompression
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithParquetBinaryAsText(parquetBinaryAsText *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithParquetBinaryAsText(parquetBinaryAsText *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.ParquetBinaryAsText = parquetBinaryAsText
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithParquetTrimSpace(parquetTrimSpace *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithParquetTrimSpace(parquetTrimSpace *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.ParquetTrimSpace = parquetTrimSpace
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithParquetReplaceInvalidCharacters(parquetReplaceInvalidCharacters *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithParquetReplaceInvalidCharacters(parquetReplaceInvalidCharacters *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.ParquetReplaceInvalidCharacters = parquetReplaceInvalidCharacters
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithParquetNullIf(parquetNullIf *[]NullString) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithParquetNullIf(parquetNullIf *[]NullString) *LegacyFileFormatTypeOptionsRequest {
 	s.ParquetNullIf = parquetNullIf
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithXMLCompression(xmlCompression *XMLCompression) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLCompression(xmlCompression *XmlCompression) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLCompression = xmlCompression
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithXMLIgnoreUTF8Errors(xmlIgnoreUTF8Errors *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLIgnoreUTF8Errors(xmlIgnoreUTF8Errors *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLIgnoreUTF8Errors = xmlIgnoreUTF8Errors
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithXMLPreserveSpace(xmlPreserveSpace *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLPreserveSpace(xmlPreserveSpace *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLPreserveSpace = xmlPreserveSpace
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithXMLStripOuterElement(xmlStripOuterElement *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLStripOuterElement(xmlStripOuterElement *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLStripOuterElement = xmlStripOuterElement
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithXMLDisableSnowflakeData(xmlDisableSnowflakeData *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLDisableSnowflakeData(xmlDisableSnowflakeData *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLDisableSnowflakeData = xmlDisableSnowflakeData
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithXMLDisableAutoConvert(xmlDisableAutoConvert *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLDisableAutoConvert(xmlDisableAutoConvert *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLDisableAutoConvert = xmlDisableAutoConvert
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithXMLReplaceInvalidCharacters(xmlReplaceInvalidCharacters *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLReplaceInvalidCharacters(xmlReplaceInvalidCharacters *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLReplaceInvalidCharacters = xmlReplaceInvalidCharacters
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithXMLSkipByteOrderMark(xmlSkipByteOrderMark *bool) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLSkipByteOrderMark(xmlSkipByteOrderMark *bool) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLSkipByteOrderMark = xmlSkipByteOrderMark
 	return s
 }
 
-func (s *FileFormatTypeOptionsRequest) WithComment(comment *string) *FileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithComment(comment *string) *LegacyFileFormatTypeOptionsRequest {
 	s.Comment = comment
 	return s
 }
@@ -1525,13 +1526,13 @@ func (s *TableSetRequest) WithEnableSchemaEvolution(enableSchemaEvolution *bool)
 	return s
 }
 
-func (s *TableSetRequest) WithStageFileFormat(stageFileFormat StageFileFormatRequest) *TableSetRequest {
+func (s *TableSetRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRequest) *TableSetRequest {
 	s.StageFileFormat = &stageFileFormat
 	return s
 }
 
-func (s *TableSetRequest) WithStageCopyOptions(stageCopyOptions StageCopyOptionsRequest) *TableSetRequest {
-	s.StageCopyOptions = &stageCopyOptions
+func (s *TableSetRequest) WithLegacyTableCopyOptions(legacyTableCopyOptions LegacyTableCopyOptionsRequest) *TableSetRequest {
+	s.LegacyTableCopyOptions = &legacyTableCopyOptions
 	return s
 }
 
@@ -1676,4 +1677,103 @@ func NewDescribeTableStageRequest(
 	s := DescribeTableStageRequest{}
 	s.id = id
 	return &s
+}
+
+func NewLegacyTableCopyOptionsRequest() *LegacyTableCopyOptionsRequest {
+	return &LegacyTableCopyOptionsRequest{}
+}
+
+func (s *LegacyTableCopyOptionsRequest) WithOnError(onError LegacyTableCopyOnErrorOptionsRequest) *LegacyTableCopyOptionsRequest {
+	s.OnError = &onError
+	return s
+}
+
+func (s *LegacyTableCopyOptionsRequest) WithSizeLimit(sizeLimit int) *LegacyTableCopyOptionsRequest {
+	s.SizeLimit = &sizeLimit
+	return s
+}
+
+func (s *LegacyTableCopyOptionsRequest) WithPurge(purge bool) *LegacyTableCopyOptionsRequest {
+	s.Purge = &purge
+	return s
+}
+
+func (s *LegacyTableCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *LegacyTableCopyOptionsRequest {
+	s.ReturnFailedOnly = &returnFailedOnly
+	return s
+}
+
+func (s *LegacyTableCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *LegacyTableCopyOptionsRequest {
+	s.MatchByColumnName = &matchByColumnName
+	return s
+}
+
+func (s *LegacyTableCopyOptionsRequest) WithEnforceLength(enforceLength bool) *LegacyTableCopyOptionsRequest {
+	s.EnforceLength = &enforceLength
+	return s
+}
+
+func (s *LegacyTableCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *LegacyTableCopyOptionsRequest {
+	s.Truncatecolumns = &truncatecolumns
+	return s
+}
+
+func (s *LegacyTableCopyOptionsRequest) WithForce(force bool) *LegacyTableCopyOptionsRequest {
+	s.Force = &force
+	return s
+}
+
+// Builder functions for LegacyTableCopyOnErrorOptionsRequest
+
+func NewLegacyTableCopyOnErrorOptionsRequest() *LegacyTableCopyOnErrorOptionsRequest {
+	return &LegacyTableCopyOnErrorOptionsRequest{}
+}
+
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *LegacyTableCopyOnErrorOptionsRequest {
+	s.Continue_ = &continue_
+	return s
+}
+
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *LegacyTableCopyOnErrorOptionsRequest {
+	s.AbortStatement = &abortStatement
+	return s
+}
+
+// WithSkipFile sets SkipFile to "SKIP_FILE"
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFile() *LegacyTableCopyOnErrorOptionsRequest {
+	s.SkipFile = String("SKIP_FILE")
+	return s
+}
+
+// WithSkipFileX sets SkipFile to "SKIP_FILE_n" where n is the provided integer
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFileX(x int) *LegacyTableCopyOnErrorOptionsRequest {
+	s.SkipFile = String(fmt.Sprintf("SKIP_FILE_%d", x))
+	return s
+}
+
+// WithSkipFileXPercent sets SkipFile to "'SKIP_FILE_n%'" where n is the provided integer
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFileXPercent(x int) *LegacyTableCopyOnErrorOptionsRequest {
+	s.SkipFile = String(fmt.Sprintf("'SKIP_FILE_%d%%'", x))
+	return s
+}
+
+func NewLegacyFileFormatRequest() *LegacyFileFormatRequest {
+	s := LegacyFileFormatRequest{}
+	return &s
+}
+
+func (s *LegacyFileFormatRequest) WithFormatName(formatName string) *LegacyFileFormatRequest {
+	s.FormatName = &formatName
+	return s
+}
+
+func (s *LegacyFileFormatRequest) WithFileFormatType(fileFormatType FileFormatType) *LegacyFileFormatRequest {
+	s.FileFormatType = &fileFormatType
+	return s
+}
+
+// adjusted manually
+func (s *LegacyFileFormatRequest) WithOptions(options LegacyFileFormatTypeOptionsRequest) *LegacyFileFormatRequest {
+	s.Options = &options
+	return s
 }

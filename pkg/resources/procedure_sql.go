@@ -99,7 +99,8 @@ func CreateContextProcedureSql(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func ReadContextProcedureSql(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -116,7 +117,7 @@ func ReadContextProcedureSql(ctx context.Context, d *schema.ResourceData, meta a
 	errs := errors.Join(
 		// not reading is_secure on purpose (handled as external change to show output)
 		readFunctionOrProcedureArguments(d, allProcedureDetails.procedureDetails.NormalizedArguments),
-		d.Set("return_type", allProcedureDetails.procedureDetails.ReturnDataType.ToSql()),
+		HandleDatatypeSet(d, "return_type", allProcedureDetails.procedureDetails.ReturnDataType),
 		// not reading null_input_behavior on purpose (handled as external change to show output)
 		// not reading execute_as on purpose (handled as external change to show output)
 		d.Set("comment", allProcedureDetails.procedure.Description),
@@ -126,7 +127,7 @@ func ReadContextProcedureSql(ctx context.Context, d *schema.ResourceData, meta a
 		handleProcedureParameterRead(d, allProcedureDetails.procedureParameters),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ProcedureToSchema(allProcedureDetails.procedure)}),
-		d.Set(ParametersAttributeName, []map[string]any{schemas.ProcedureParametersToSchema(allProcedureDetails.procedureParameters)}),
+		d.Set(ParametersAttributeName, []map[string]any{schemas.ProcedureParametersToSchema(allProcedureDetails.procedureParameters, providerCtx)}),
 	)
 	if errs != nil {
 		return diag.FromErr(err)

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -62,13 +63,18 @@ func (c *SecurityIntegrationClient) CreateApiAuthenticationWithAuthorizationCode
 
 func (c *SecurityIntegrationClient) CreateExternalOauth(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	id := c.ids.RandomAccountObjectIdentifier()
 	issuer := random.String()
-	request := sdk.NewCreateExternalOauthSecurityIntegrationRequest(id, false, sdk.ExternalOauthSecurityIntegrationTypeCustom,
-		issuer, []sdk.TokenUserMappingClaim{{Claim: "foo"}}, sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
-	).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "http://example.com"}})
+	request := sdk.NewCreateExternalOauthSecurityIntegrationRequest(id, false, sdk.ExternalOauthSecurityIntegrationTypeOptionCustom,
+		issuer, []sdk.TokenUserMappingClaim{{Claim: "foo"}}, sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName,
+	).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example.com"}})
+	return c.CreateExternalOauthWithRequest(t, request)
+}
+
+func (c *SecurityIntegrationClient) CreateExternalOauthWithRequest(t *testing.T, request *sdk.CreateExternalOauthSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {
+	t.Helper()
+	ctx := context.Background()
+
 	err := c.client().CreateExternalOauth(ctx, request)
 	require.NoError(t, err)
 
@@ -83,7 +89,7 @@ func (c *SecurityIntegrationClient) CreateOauthForPartnerApplications(t *testing
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	request := sdk.NewCreateOauthForPartnerApplicationsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientLooker).
+	request := sdk.NewCreateOauthForPartnerApplicationsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientOptionLooker).
 		WithOauthRedirectUri("http://example.com")
 	err := c.client().CreateOauthForPartnerApplications(ctx, request)
 	require.NoError(t, err)
@@ -99,7 +105,7 @@ func (c *SecurityIntegrationClient) CreateOauthForCustomClients(t *testing.T) (*
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	request := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypePublic, "https://example.com")
+	request := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypeOptionPublic, "https://example.com")
 	err := c.client().CreateOauthForCustomClients(ctx, request)
 	require.NoError(t, err)
 
@@ -130,7 +136,7 @@ func (c *SecurityIntegrationClient) CreateSaml2WithRequest(t *testing.T, request
 
 func (c *SecurityIntegrationClient) CreateScim(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
-	return c.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.ScimSecurityIntegrationScimClientGeneric, sdk.ScimSecurityIntegrationRunAsRoleGenericScimProvisioner))
+	return c.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.ScimSecurityIntegrationScimClientOptionGeneric, snowflakeroles.GenericScimProvisioner.FullyQualifiedName()))
 }
 
 func (c *SecurityIntegrationClient) CreateApiAuthenticationClientCredentialsWithRequest(t *testing.T, request *sdk.CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {
@@ -204,4 +210,34 @@ func (c *SecurityIntegrationClient) DropSecurityIntegrationFunc(t *testing.T, id
 		err := c.client().Drop(ctx, sdk.NewDropSecurityIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithAuthorizationCodeGrantFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithAuthorizationCodeGrantFlow(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithClientCredentialsFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithClientCredentialsFlow(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithJwtBearerFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithJwtBearerFlow(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *SecurityIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SecurityIntegration, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
 }

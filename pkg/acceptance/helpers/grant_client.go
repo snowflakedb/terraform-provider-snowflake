@@ -27,7 +27,7 @@ func (c *GrantClient) client() sdk.Grants {
 	return c.context.client.Grants
 }
 
-func (c *GrantClient) GrantGlobalPrivilegesOnAccount(
+func (c *GrantClient) GrantGlobalPrivilegesOnAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
 	privileges []sdk.GlobalPrivilege,
@@ -48,6 +48,28 @@ func (c *GrantClient) GrantGlobalPrivilegesOnAccount(
 	require.NoError(t, err)
 }
 
+func (c *GrantClient) RevokeGlobalPrivilegesFromAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges []sdk.GlobalPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().RevokePrivilegesFromAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			GlobalPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			Account: sdk.Bool(true),
+		},
+		accountRoleId,
+		&sdk.RevokePrivilegesFromAccountRoleOptions{},
+	)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) GrantOnSchemaToAccountRole(t *testing.T, schemaId sdk.DatabaseObjectIdentifier, accountRoleId sdk.AccountObjectIdentifier, privileges ...sdk.SchemaPrivilege) {
 	t.Helper()
 	ctx := context.Background()
@@ -65,6 +87,146 @@ func (c *GrantClient) GrantOnSchemaToAccountRole(t *testing.T, schemaId sdk.Data
 		accountRoleId,
 		new(sdk.GrantPrivilegesToAccountRoleOptions),
 	)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) GrantFutureSchemaPrivilegesInDatabaseToAccountRole(
+	t *testing.T,
+	databaseId sdk.AccountObjectIdentifier,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges ...sdk.SchemaPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().GrantPrivilegesToAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			Schema: &sdk.GrantOnSchema{
+				FutureSchemasInDatabase: &databaseId,
+			},
+		},
+		accountRoleId,
+		new(sdk.GrantPrivilegesToAccountRoleOptions),
+	)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) GrantFutureSchemaObjectPrivilegesInDatabaseToAccountRole(
+	t *testing.T,
+	databaseId sdk.AccountObjectIdentifier,
+	pluralObjectType sdk.PluralObjectType,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges ...sdk.SchemaObjectPrivilege,
+) {
+	t.Helper()
+
+	c.grantFutureSchemaObjectPrivilegesToAccountRole(
+		t,
+		accountRoleId,
+		sdk.GrantOnSchemaObjectIn{
+			PluralObjectType: pluralObjectType,
+			InDatabase:       &databaseId,
+		},
+		privileges...,
+	)
+}
+
+func (c *GrantClient) GrantFutureSchemaObjectPrivilegesInSchemaToAccountRole(
+	t *testing.T,
+	schemaId sdk.DatabaseObjectIdentifier,
+	pluralObjectType sdk.PluralObjectType,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges ...sdk.SchemaObjectPrivilege,
+) {
+	t.Helper()
+
+	c.grantFutureSchemaObjectPrivilegesToAccountRole(
+		t,
+		accountRoleId,
+		sdk.GrantOnSchemaObjectIn{
+			PluralObjectType: pluralObjectType,
+			InSchema:         &schemaId,
+		},
+		privileges...,
+	)
+}
+
+func (c *GrantClient) grantFutureSchemaObjectPrivilegesToAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	in sdk.GrantOnSchemaObjectIn,
+	privileges ...sdk.SchemaObjectPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().GrantPrivilegesToAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				Future: &in,
+			},
+		},
+		accountRoleId,
+		new(sdk.GrantPrivilegesToAccountRoleOptions),
+	)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) ShowFutureGrantsInDatabase(t *testing.T, databaseId sdk.AccountObjectIdentifier) ([]sdk.Grant, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Show(ctx, &sdk.ShowGrantOptions{
+		Future: sdk.Bool(true),
+		In: &sdk.ShowGrantsIn{
+			Database: &databaseId,
+		},
+	})
+}
+
+func (c *GrantClient) ShowFutureGrantsInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) ([]sdk.Grant, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Show(ctx, &sdk.ShowGrantOptions{
+		Future: sdk.Bool(true),
+		In: &sdk.ShowGrantsIn{
+			Schema: &schemaId,
+		},
+	})
+}
+
+func (c *GrantClient) RevokePrivilegesOnSchemaFromAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	schemaId sdk.DatabaseObjectIdentifier,
+	privileges []sdk.SchemaPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().RevokePrivilegesFromAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			Schema: &sdk.GrantOnSchema{
+				Schema: &schemaId,
+			},
+		},
+		accountRoleId,
+		new(sdk.RevokePrivilegesFromAccountRoleOptions),
+	)
+
 	require.NoError(t, err)
 }
 
@@ -153,6 +315,31 @@ func (c *GrantClient) RevokePrivilegesOnDatabaseFromDatabaseRole(
 	require.NoError(t, err)
 }
 
+func (c *GrantClient) RevokePrivilegesOnDatabaseFromAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	databaseId sdk.AccountObjectIdentifier,
+	privileges []sdk.AccountObjectPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().RevokePrivilegesFromAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			AccountObjectPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			AccountObject: &sdk.GrantOnAccountObject{
+				Database: sdk.Pointer(databaseId),
+			},
+		},
+		accountRoleId,
+		new(sdk.RevokePrivilegesFromAccountRoleOptions),
+	)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) GrantPrivilegesOnDatabaseToAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
@@ -172,6 +359,34 @@ func (c *GrantClient) GrantPrivilegesOnDatabaseToAccountRole(
 		privileges,
 		withGrantOption,
 	)
+}
+
+func (c *GrantClient) GrantPrivilegesOnSchemaToAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	schemaId sdk.DatabaseObjectIdentifier,
+	privileges []sdk.SchemaPrivilege,
+	withGrantOption bool,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().GrantPrivilegesToAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			Schema: &sdk.GrantOnSchema{
+				Schema: &schemaId,
+			},
+		},
+		accountRoleId,
+		&sdk.GrantPrivilegesToAccountRoleOptions{
+			WithGrantOption: sdk.Bool(withGrantOption),
+		},
+	)
+	require.NoError(t, err)
 }
 
 func (c *GrantClient) GrantPrivilegesOnWarehouseToAccountRole(
@@ -266,6 +481,32 @@ func (c *GrantClient) GrantOwnershipToAccountRole(
 			AccountRoleName: &accountRoleId,
 		},
 		new(sdk.GrantOwnershipOptions),
+	)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) GrantOwnershipToAccountRoleWithOwnershipOptions(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	objectType sdk.ObjectType,
+	objectName sdk.ObjectIdentifier,
+	options sdk.GrantOwnershipOptions,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().GrantOwnership(
+		ctx,
+		sdk.OwnershipGrantOn{
+			Object: &sdk.Object{
+				ObjectType: objectType,
+				Name:       objectName,
+			},
+		},
+		sdk.OwnershipGrantTo{
+			AccountRoleName: &accountRoleId,
+		},
+		&options,
 	)
 	require.NoError(t, err)
 }
@@ -402,5 +643,14 @@ func (c *GrantClient) GrantPrivilegesOnDatabaseToUser(t *testing.T, databaseId s
 
 	// TODO(SNOW-2095669): Update when the client is updated to support this
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("GRANT %s ON DATABASE %s TO USER %s", collections.JoinStrings(privileges, ","), databaseId.FullyQualifiedName(), userId.FullyQualifiedName()))
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) GrantDatabaseRoleToApplication(t *testing.T, databaseRoleId sdk.DatabaseObjectIdentifier, applicationId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	// TODO(SNOW-2095669): Update when the client is updated to support this
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("GRANT DATABASE ROLE %s TO APPLICATION %s", databaseRoleId.FullyQualifiedName(), applicationId.FullyQualifiedName()))
 	require.NoError(t, err)
 }

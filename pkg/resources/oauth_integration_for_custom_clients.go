@@ -34,7 +34,7 @@ var oauthIntegrationForCustomClientsSchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToOauthSecurityIntegrationClientTypeOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToOauthSecurityIntegrationClientTypeOption),
-		Description:      fmt.Sprintf("Specifies the type of client being registered. Snowflake supports both confidential and public clients. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationClientTypes)),
+		Description:      fmt.Sprintf("Specifies the type of client being registered. Snowflake supports both confidential and public clients. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationClientTypeOptions)),
 	},
 	"oauth_redirect_uri": {
 		Type:        schema.TypeString,
@@ -71,7 +71,7 @@ var oauthIntegrationForCustomClientsSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToOauthSecurityIntegrationUseSecondaryRolesOption),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToOauthSecurityIntegrationUseSecondaryRolesOption),
-		Description:      fmt.Sprintf("Specifies whether default secondary roles set in the user properties are activated by default in the session being opened. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationUseSecondaryRoles)),
+		Description:      fmt.Sprintf("Specifies whether default secondary roles set in the user properties are activated by default in the session being opened. Valid options are: %v.", possibleValuesListed(sdk.AllOauthSecurityIntegrationUseSecondaryRolesOptions)),
 	},
 	"pre_authorized_roles_list": {
 		Type: schema.TypeSet,
@@ -381,7 +381,8 @@ func CreateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 
 func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -497,11 +498,17 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 				return diag.FromErr(err)
 			}
 
+			var oauthRefreshTokenValidityValue int
 			oauthRefreshTokenValidity, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
 				return property.Name == "OAUTH_REFRESH_TOKEN_VALIDITY"
 			})
 			if err != nil {
 				return diag.FromErr(err)
+			} else {
+				oauthRefreshTokenValidityValue, err = strconv.Atoi(oauthRefreshTokenValidity.Value)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 
 			blockedRolesList, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
@@ -516,7 +523,7 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 				describeMapping{"oauth_enforce_pkce", "oauth_enforce_pkce", oauthEnforcePkce.Value, oauthEnforcePkce.Value, nil},
 				describeMapping{"oauth_use_secondary_roles", "oauth_use_secondary_roles", oauthUseSecondaryRoles.Value, oauthUseSecondaryRoles.Value, nil},
 				describeMapping{"oauth_issue_refresh_tokens", "oauth_issue_refresh_tokens", oauthIssueRefreshTokens.Value, oauthIssueRefreshTokens.Value, nil},
-				describeMapping{"oauth_refresh_token_validity", "oauth_refresh_token_validity", oauthRefreshTokenValidity.Value, oauthRefreshTokenValidity.Value, nil},
+				describeMapping{"oauth_refresh_token_validity", "oauth_refresh_token_validity", oauthRefreshTokenValidity.Value, oauthRefreshTokenValidityValue, nil},
 				describeMapping{"blocked_roles_list", "blocked_roles_list", blockedRolesList.Value, sdk.ParseCommaSeparatedStringArray(blockedRolesList.Value, false), nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -546,7 +553,7 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set(RelatedParametersAttributeName, []map[string]any{schemas.OauthForCustomClientsParametersToSchema([]*sdk.Parameter{param})}); err != nil {
+		if err = d.Set(RelatedParametersAttributeName, []map[string]any{schemas.OauthForCustomClientsParametersToSchema([]*sdk.Parameter{param}, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 

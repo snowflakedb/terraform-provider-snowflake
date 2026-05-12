@@ -5,6 +5,9 @@ description: |-
   Data source used to get details of filtered warehouses. Filtering is aligned with the current possibilities for SHOW WAREHOUSES https://docs.snowflake.com/en/sql-reference/sql/show-warehouses query (only like is supported). The results of SHOW, DESCRIBE, and SHOW PARAMETERS IN are encapsulated in one output collection.
 ---
 
+
+-> **Note** Since [2025_07 BCR](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2110), `describe_output` field is different from Snowflake. Now, in Snowflake always `resource_constraint` and `generation` are present. The provider, always takes the value from `resource_constraint` and dispatches it based on the warehouse type: for Standard warehouses, it sets `generation`, for Snowpark-optimized warehouses, it sets `resource_constraint`. This will be adjusted later.
+
 # snowflake_warehouses (Data Source)
 
 Data source used to get details of filtered warehouses. Filtering is aligned with the current possibilities for [SHOW WAREHOUSES](https://docs.snowflake.com/en/sql-reference/sql/show-warehouses) query (only `like` is supported). The results of SHOW, DESCRIBE, and SHOW PARAMETERS IN are encapsulated in one output collection.
@@ -167,9 +170,11 @@ Read-Only:
 - `comment` (String)
 - `created_on` (String)
 - `enable_query_acceleration` (Boolean)
+- `generation` (String)
 - `is_current` (Boolean)
 - `is_default` (Boolean)
 - `max_cluster_count` (Number)
+- `max_query_performance_level` (String)
 - `min_cluster_count` (Number)
 - `name` (String)
 - `other` (Number)
@@ -177,8 +182,10 @@ Read-Only:
 - `owner_role_type` (String)
 - `provisioning` (Number)
 - `query_acceleration_max_scale_factor` (Number)
+- `query_throughput_multiplier` (Number)
 - `queued` (Number)
 - `quiescing` (Number)
+- `resource_constraint` (String)
 - `resource_monitor` (String)
 - `resumed_on` (String)
 - `running` (Number)

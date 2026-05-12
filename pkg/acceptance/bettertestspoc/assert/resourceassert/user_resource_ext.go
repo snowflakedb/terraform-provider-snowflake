@@ -9,7 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (u *UserResourceAssert) HasDisabled(expected bool) *UserResourceAssert {
+func (u *UserResourceAssert) HasDisabledBool(expected bool) *UserResourceAssert {
 	u.AddAssertion(assert.ValueSet("disabled", strconv.FormatBool(expected)))
 	return u
 }
@@ -24,12 +24,12 @@ func (u *UserResourceAssert) HasNotEmptyPassword() *UserResourceAssert {
 	return u
 }
 
-func (u *UserResourceAssert) HasMustChangePassword(expected bool) *UserResourceAssert {
+func (u *UserResourceAssert) HasMustChangePasswordBool(expected bool) *UserResourceAssert {
 	u.AddAssertion(assert.ValueSet("must_change_password", strconv.FormatBool(expected)))
 	return u
 }
 
-func (u *UserResourceAssert) HasDefaultSecondaryRolesOption(expected sdk.SecondaryRolesOption) *UserResourceAssert {
+func (u *UserResourceAssert) HasDefaultSecondaryRolesOptionEnum(expected sdk.SecondaryRolesOption) *UserResourceAssert {
 	return u.HasDefaultSecondaryRolesOptionString(string(expected))
 }
 
@@ -39,22 +39,22 @@ func (u *UserResourceAssert) HasAllDefaults(userId sdk.AccountObjectIdentifier, 
 		HasNoPassword().
 		HasNoLoginName().
 		HasNoDisplayName().
-		HasNoFirstName().
-		HasNoMiddleName().
-		HasNoLastName().
-		HasNoEmail().
+		HasFirstNameEmpty().
+		HasMiddleNameEmpty().
+		HasLastNameEmpty().
+		HasEmailEmpty().
 		HasMustChangePasswordString(r.BooleanDefault).
 		HasDisabledString(r.BooleanDefault).
 		HasNoDaysToExpiry().
 		HasMinsToUnlockString(r.IntDefaultString).
-		HasNoDefaultWarehouse().
+		HasDefaultWarehouseEmpty().
 		HasNoDefaultNamespace().
-		HasNoDefaultRole().
-		HasDefaultSecondaryRolesOption(expectedDefaultSecondaryRoles).
+		HasDefaultRoleEmpty().
+		HasDefaultSecondaryRolesOptionEnum(expectedDefaultSecondaryRoles).
 		HasMinsToBypassMfaString(r.IntDefaultString).
-		HasNoRsaPublicKey().
-		HasNoRsaPublicKey2().
-		HasNoComment().
+		HasRsaPublicKeyEmpty().
+		HasRsaPublicKey2Empty().
+		HasCommentEmpty().
 		HasDisableMfaString(r.BooleanDefault).
 		HasFullyQualifiedNameString(userId.FullyQualifiedName())
 }

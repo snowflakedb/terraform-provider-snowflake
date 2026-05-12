@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -19,7 +19,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -175,7 +174,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasFullyQualifiedNameString(sdk.NewAccountIdentifier(organizationName, id).FullyQualifiedName()).
 						HasAdminNameString(name).
 						HasAdminRsaPublicKeyString(key).
-						HasAdminUserType(sdk.UserTypePerson).
+						HasAdminUserTypeEnum(sdk.UserTypePerson).
 						HasEmailString(email).
 						HasFirstNameString(firstName).
 						HasLastNameString(lastName).
@@ -283,7 +282,7 @@ func TestAcc_Account_Rename(t *testing.T) {
 					resourceassert.AccountResource(t, configModel.ResourceReference()).
 						HasNameString(id).
 						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
-						HasAdminUserType(sdk.UserTypeService),
+						HasAdminUserTypeEnum(sdk.UserTypeService),
 					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
 						HasOrganizationName(organizationName).
 						HasAccountName(id),
@@ -300,7 +299,7 @@ func TestAcc_Account_Rename(t *testing.T) {
 					resourceassert.AccountResource(t, newConfigModel.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasFullyQualifiedNameString(newAccountId.FullyQualifiedName()).
-						HasAdminUserType(sdk.UserTypeService),
+						HasAdminUserTypeEnum(sdk.UserTypeService),
 					resourceshowoutputassert.AccountShowOutput(t, newConfigModel.ResourceReference()).
 						HasOrganizationName(organizationName).
 						HasAccountName(newId.Name()),
@@ -351,7 +350,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 					resourceassert.AccountResource(t, configModelWithOrgAdminTrue.ResourceReference()).
 						HasNameString(id).
 						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
-						HasAdminUserType(sdk.UserTypeService).
+						HasAdminUserTypeEnum(sdk.UserTypeService).
 						HasIsOrgAdminString(r.BooleanTrue),
 					resourceshowoutputassert.AccountShowOutput(t, configModelWithOrgAdminTrue.ResourceReference()).
 						HasOrganizationName(organizationName).
@@ -371,7 +370,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 					resourceassert.AccountResource(t, configModelWithOrgAdminFalse.ResourceReference()).
 						HasNameString(id).
 						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
-						HasAdminUserType(sdk.UserTypeService).
+						HasAdminUserTypeEnum(sdk.UserTypeService).
 						HasIsOrgAdminString(r.BooleanFalse),
 					resourceshowoutputassert.AccountShowOutput(t, configModelWithOrgAdminFalse.ResourceReference()).
 						HasOrganizationName(organizationName).
@@ -391,7 +390,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 					resourceassert.AccountResource(t, configModelWithoutOrgAdmin.ResourceReference()).
 						HasNameString(id).
 						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
-						HasAdminUserType(sdk.UserTypeService).
+						HasAdminUserTypeEnum(sdk.UserTypeService).
 						HasIsOrgAdminString(r.BooleanDefault),
 					resourceshowoutputassert.AccountShowOutput(t, configModelWithoutOrgAdmin.ResourceReference()).
 						HasOrganizationName(organizationName).
@@ -417,7 +416,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 					resourceassert.AccountResource(t, configModelWithoutOrgAdmin.ResourceReference()).
 						HasNameString(id).
 						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
-						HasAdminUserType(sdk.UserTypeService).
+						HasAdminUserTypeEnum(sdk.UserTypeService).
 						HasIsOrgAdminString(r.BooleanDefault),
 					resourceshowoutputassert.AccountShowOutput(t, configModelWithoutOrgAdmin.ResourceReference()).
 						HasOrganizationName(organizationName).
@@ -561,7 +560,7 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
 						HasAdminNameString(name).
 						HasAdminPasswordString(pass).
-						HasAdminUserType(sdk.UserTypePerson).
+						HasAdminUserTypeEnum(sdk.UserTypePerson).
 						HasEmailString(email).
 						HasFirstNameString(firstName).
 						HasLastNameString(lastName).
@@ -581,7 +580,7 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 						HasFullyQualifiedNameString(accountId.FullyQualifiedName()).
 						HasAdminNameString(name).
 						HasAdminPasswordString(pass).
-						HasAdminUserType(sdk.UserTypePerson).
+						HasAdminUserTypeEnum(sdk.UserTypePerson).
 						HasEmailString(email).
 						HasFirstNameString(firstName).
 						HasLastNameString(lastName).
@@ -600,17 +599,14 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-	t.Setenv(snowflakeenvs.Role, snowflakeroles.Accountadmin.Name())
-
-	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Accountadmin.Name())
 
 	configModel := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: explicitAccountAdminRoleProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

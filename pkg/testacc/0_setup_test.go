@@ -13,7 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 const AcceptanceTestPrefix = "acc_test_"
@@ -28,8 +28,8 @@ var (
 	NonExistingSchemaObjectIdentifier   = sdk.NewSchemaObjectIdentifier(TestDatabaseName, TestSchemaName, "does_not_exist")
 )
 
-// TODO [next PRs]: make logging level configurable
-// TODO [next PRs]: adjust during logger rework (e.g. use in model builders); maybe use log/slog
+// TODO [SNOW-1325306]: make logging level configurable
+// TODO [SNOW-1325306]: adjust during logger rework (e.g. use in model builders); maybe use log/slog
 var accTestLog = log.New(os.Stdout, "", log.LstdFlags)
 
 type acceptanceTestContext struct {
@@ -81,8 +81,8 @@ func setup() {
 	}
 }
 
-// TODO [next PRs]: extract more convenience methods for reuse
-// TODO [next PRs]: potentially extract test context logic into separate directory
+// TODO [SNOW-2298294]: extract more convenience methods for reuse
+// TODO [SNOW-2298294]: potentially extract test context logic into separate directory
 func (atc *acceptanceTestContext) initialize() error {
 	accTestLog.Printf("[INFO] Initializing acceptance test context")
 
@@ -103,7 +103,14 @@ func (atc *acceptanceTestContext) initialize() error {
 	}
 	atc.config = defaultConfig
 	atc.client = client
-	atc.testClient = helpers.NewTestClient(client, TestDatabaseName, TestSchemaName, TestWarehouseName, acceptancetests.ObjectsSuffix)
+	atc.testClient = helpers.NewTestClient(
+		client,
+		TestDatabaseName,
+		TestSchemaName,
+		TestWarehouseName,
+		acceptancetests.ObjectsSuffix,
+		testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+	)
 
 	ctx := context.Background()
 	db, dbCleanup, err := testClient().CreateTestDatabase(ctx, false)
@@ -127,7 +134,7 @@ func (atc *acceptanceTestContext) initialize() error {
 	}
 	atc.warehouse = wh
 
-	// TODO [next PRs]: what do we do with SimplifiedIntegrationTestsSetup
+	// TODO [SNOW-1763603]: what do we do with SimplifiedIntegrationTestsSetup
 	if os.Getenv(string(testenvs.SimplifiedIntegrationTestsSetup)) == "" {
 		secondaryConfig, secondaryClient, err := setUpSdkClient(testprofiles.Secondary, "acceptance")
 		if err != nil {
@@ -135,7 +142,14 @@ func (atc *acceptanceTestContext) initialize() error {
 		}
 		atc.secondaryConfig = secondaryConfig
 		atc.secondaryClient = secondaryClient
-		atc.secondaryTestClient = helpers.NewTestClient(secondaryClient, TestDatabaseName, TestSchemaName, TestWarehouseName, acceptancetests.ObjectsSuffix)
+		atc.secondaryTestClient = helpers.NewTestClient(
+			secondaryClient,
+			TestDatabaseName,
+			TestSchemaName,
+			TestWarehouseName,
+			acceptancetests.ObjectsSuffix,
+			testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+		)
 
 		if secondaryConfig.Account == defaultConfig.Account {
 			accTestLog.Printf("[WARN] Default and secondary configs are set to the same account; it may cause problems in tests requiring multiple accounts")
@@ -164,9 +178,11 @@ func (atc *acceptanceTestContext) initialize() error {
 
 		errs := errors.Join(
 			testClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+			testClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
 			secondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
-			testClient().EnsureScimProvisionerRolesExist(ctx),
-			secondaryTestClient().EnsureScimProvisionerRolesExist(ctx),
+			secondaryTestClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
+			testClient().EnsureEssentialRolesExist(ctx),
+			secondaryTestClient().EnsureEssentialRolesExist(ctx),
 		)
 		if errs != nil {
 			return errs

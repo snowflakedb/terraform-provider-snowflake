@@ -98,6 +98,30 @@ var extendedInSchema = &schema.Schema{
 	},
 }
 
+var onSchema = &schema.Schema{
+	Type:        schema.TypeList,
+	Optional:    true,
+	Description: "Lists the policies that are effective on the specified object.",
+	MaxItems:    1,
+	Elem: &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"account": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				Description:  "Returns records for the entire account.",
+				ExactlyOneOf: []string{"on.0.account", "on.0.user"},
+			},
+			"user": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Returns records for the specified user.",
+				ExactlyOneOf:     []string{"on.0.account", "on.0.user"},
+				ValidateDiagFunc: resources.IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			},
+		},
+	},
+}
+
 var serviceInSchema = &schema.Schema{
 	Type:        schema.TypeList,
 	Optional:    true,
@@ -213,6 +237,23 @@ func handleIn(d *schema.ResourceData, setField **sdk.In) error {
 			*setField = &sdk.In{Schema: schemaId}
 		default:
 			return fmt.Errorf("the `in` filtering field was set, but none of the subfields (account, database, schema) was specified")
+		}
+	}
+	return nil
+}
+
+func handleOn(d *schema.ResourceData, setField **sdk.On) error {
+	if v, ok := d.GetOk("on"); ok {
+		on := v.([]any)[0].(map[string]any)
+		accountValue, okAccount := on["account"]
+		userValue, okUser := on["user"]
+		switch {
+		case okAccount && accountValue.(bool):
+			*setField = &sdk.On{Account: sdk.Bool(true)}
+		case okUser && userValue.(string) != "":
+			*setField = &sdk.On{User: sdk.NewAccountObjectIdentifier(userValue.(string))}
+		default:
+			return fmt.Errorf("the `on` filtering field was set, but none of the subfields (account, user) was specified")
 		}
 	}
 	return nil

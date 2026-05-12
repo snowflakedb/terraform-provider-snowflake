@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -71,6 +72,11 @@ func (c *ListingClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk
 	return c.client().ShowByID(context.Background(), id)
 }
 
+func (c *ListingClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ListingDetails, error) {
+	t.Helper()
+	return c.client().Describe(context.Background(), sdk.NewDescribeListingRequest(id))
+}
+
 func (c *ListingClient) ShowVersions(t *testing.T, id sdk.AccountObjectIdentifier) ([]sdk.ListingVersion, error) {
 	t.Helper()
 	return c.client().ShowVersions(context.Background(), sdk.NewShowVersionsListingRequest(id))
@@ -96,24 +102,24 @@ func (c *ListingClient) BasicManifestWithUnquotedValuesAndDifferentSubtitle(t *t
 	return c.basicManifestWithUnquotedValues(t, "basic_with_diff_subtitle_", "different_subtitle")
 }
 
-func (c *ListingClient) BasicManifestWithTargetAccount(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) BasicManifestWithTargetAccounts(t *testing.T, targetAccounts ...sdk.AccountIdentifier) (string, string) {
 	t.Helper()
-	return c.basicManifestWithTargetAccount(t, "with_target_accounts_", "subtitle", targetAccount)
+	return c.basicManifestWithTargetAccount(t, "with_target_accounts_", "subtitle", targetAccounts...)
 }
 
-func (c *ListingClient) BasicManifestWithTargetAccountAndDifferentSubtitle(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) BasicManifestWithTargetAccountsAndDifferentSubtitle(t *testing.T, targetAccounts ...sdk.AccountIdentifier) (string, string) {
 	t.Helper()
-	return c.basicManifestWithTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccount)
+	return c.basicManifestWithTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccounts...)
 }
 
-func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccount(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccounts(t *testing.T, targetAccounts ...sdk.AccountIdentifier) (string, string) {
 	t.Helper()
-	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_", "subtitle", targetAccount)
+	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_", "subtitle", targetAccounts...)
 }
 
-func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccountAndDifferentSubtitle(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccountsAndDifferentSubtitle(t *testing.T, targetAccounts ...sdk.AccountIdentifier) (string, string) {
 	t.Helper()
-	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccount)
+	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccounts...)
 }
 
 func (c *ListingClient) basicManifest(t *testing.T, titleSuffix string, subtitle string) (string, string) {
@@ -123,7 +129,7 @@ func (c *ListingClient) basicManifest(t *testing.T, titleSuffix string, subtitle
 subtitle: "%s"
 description: "description"
 listing_terms:
-  type: "OFFLINE"
+  type: "STANDARD"
 `, title, subtitle), title
 }
 
@@ -134,32 +140,38 @@ func (c *ListingClient) basicManifestWithUnquotedValues(t *testing.T, titleSuffi
 subtitle: %s
 description: description
 listing_terms:
-  type: OFFLINE
+  type: STANDARD
 `, title, subtitle), title
 }
 
-func (c *ListingClient) basicManifestWithTargetAccount(t *testing.T, titleSuffix string, subtitle string, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) basicManifestWithTargetAccount(t *testing.T, titleSuffix string, subtitle string, targetAccounts ...sdk.AccountIdentifier) (string, string) {
 	t.Helper()
 	title := c.ids.WithTestObjectSuffix(titleSuffix)
+	mappedTargetAccounts := collections.Map(targetAccounts, func(id sdk.AccountIdentifier) string {
+		return fmt.Sprintf("%s.%s", id.OrganizationName(), id.AccountName())
+	})
 	return fmt.Sprintf(`title: "%s"
 subtitle: "%s"
 description: "description"
 listing_terms:
-  type: "OFFLINE"
+  type: "STANDARD"
 targets:
-  accounts: [%s.%s]
-`, title, subtitle, targetAccount.OrganizationName(), targetAccount.AccountName()), title
+  accounts: [%s]
+`, title, subtitle, collections.JoinStrings(mappedTargetAccounts, ", ")), title
 }
 
-func (c *ListingClient) basicManifestWithUnquotedValuesAndTargetAccount(t *testing.T, titleSuffix string, subtitle string, targetAccount sdk.AccountIdentifier) (string, string) {
+func (c *ListingClient) basicManifestWithUnquotedValuesAndTargetAccount(t *testing.T, titleSuffix string, subtitle string, targetAccounts ...sdk.AccountIdentifier) (string, string) {
 	t.Helper()
 	title := c.ids.WithTestObjectSuffix(titleSuffix)
+	mappedTargetAccounts := collections.Map(targetAccounts, func(id sdk.AccountIdentifier) string {
+		return fmt.Sprintf("%s.%s", id.OrganizationName(), id.AccountName())
+	})
 	return fmt.Sprintf(`title: %s
 subtitle: %s
 description: description
 listing_terms:
-  type: OFFLINE
+  type: STANDARD
 targets:
-  accounts: [%s.%s]
-`, title, subtitle, targetAccount.OrganizationName(), targetAccount.AccountName()), title
+  accounts: [%s]
+`, title, subtitle, collections.JoinStrings(mappedTargetAccounts, ", ")), title
 }

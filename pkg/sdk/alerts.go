@@ -18,6 +18,8 @@ var (
 	_ validatable = new(AlterAlertOptions)
 	_ validatable = new(DropAlertOptions)
 	_ validatable = new(ShowAlertOptions)
+
+	_ convertibleRow[Alert] = new(alertDBRow)
 )
 
 type Alerts interface {
@@ -256,7 +258,7 @@ type alertDBRow struct {
 	OwnerRoleType sql.NullString `db:"owner_role_type"`
 }
 
-func (row alertDBRow) convert() *Alert {
+func (row alertDBRow) convert() (*Alert, error) {
 	alert := &Alert{
 		CreatedOn:    row.CreatedOn,
 		Name:         row.Name,
@@ -266,15 +268,16 @@ func (row alertDBRow) convert() *Alert {
 		Comment:      row.Comment,
 		Warehouse:    row.Warehouse,
 		Schedule:     row.Schedule,
-		State:        AlertState(row.State),
-		Condition:    row.Condition,
-		Action:       row.Action,
+		// TODO [SNOW-3108659]: use enum mapping instead
+		State:     AlertState(row.State),
+		Condition: row.Condition,
+		Action:    row.Action,
 	}
 	if row.OwnerRoleType.Valid {
 		alert.OwnerRoleType = row.OwnerRoleType.String
 	}
 
-	return alert
+	return alert, nil
 }
 
 func (opts *ShowAlertOptions) validate() error {
@@ -290,8 +293,7 @@ func (v *alerts) Show(ctx context.Context, opts *ShowAlertOptions) ([]Alert, err
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[alertDBRow, Alert](dbRows)
-	return resultList, nil
+	return convertRows[alertDBRow, Alert](dbRows)
 }
 
 func (v *alerts) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error) {

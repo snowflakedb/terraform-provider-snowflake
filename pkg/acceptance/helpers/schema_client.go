@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -92,6 +93,18 @@ func (c *SchemaClient) UpdateDataRetentionTime(t *testing.T, id sdk.DatabaseObje
 	})
 }
 
+func (c *SchemaClient) UpdateLogLevel(t *testing.T, id sdk.DatabaseObjectIdentifier, level sdk.LogLevel) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, id, &sdk.AlterSchemaOptions{
+		Set: &sdk.SchemaSet{
+			LogLevel: &level,
+		},
+	})
+	require.NoError(t, err)
+}
+
 func (c *SchemaClient) UnsetDataRetentionTime(t *testing.T, id sdk.DatabaseObjectIdentifier) {
 	t.Helper()
 
@@ -102,11 +115,28 @@ func (c *SchemaClient) UnsetDataRetentionTime(t *testing.T, id sdk.DatabaseObjec
 	})
 }
 
+func (c *SchemaClient) UnsetLogLevel(t *testing.T, id sdk.DatabaseObjectIdentifier) {
+	t.Helper()
+
+	c.Alter(t, id, &sdk.AlterSchemaOptions{
+		Unset: &sdk.SchemaUnset{
+			LogLevel: sdk.Bool(true),
+		},
+	})
+}
+
 func (c *SchemaClient) Show(t *testing.T, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, error) {
 	t.Helper()
 	ctx := context.Background()
 
 	return c.client().ShowByID(ctx, id)
+}
+
+func (c *SchemaClient) ShowParameters(t *testing.T, id sdk.DatabaseObjectIdentifier) ([]*sdk.Parameter, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowParameters(ctx, id)
 }
 
 func (c *SchemaClient) ShowWithOptions(t *testing.T, opts *sdk.ShowSchemaOptions) []sdk.Schema {
@@ -123,5 +153,15 @@ func (c *SchemaClient) Alter(t *testing.T, id sdk.DatabaseObjectIdentifier, opts
 	ctx := context.Background()
 
 	err := c.client().Alter(ctx, id, opts)
+	require.NoError(t, err)
+}
+
+func (c *SchemaClient) AlterDefaultStreamlitNotebookWarehouse(t *testing.T, id sdk.DatabaseObjectIdentifier, warehouse sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`ALTER SCHEMA %s SET DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE = '%s'`, id.FullyQualifiedName(), warehouse.Name())
+
+	_, err := c.context.client.ExecForTests(ctx, query)
 	require.NoError(t, err)
 }

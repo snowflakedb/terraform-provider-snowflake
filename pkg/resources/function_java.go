@@ -106,7 +106,8 @@ func CreateContextFunctionJava(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func ReadContextFunctionJava(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -123,7 +124,7 @@ func ReadContextFunctionJava(ctx context.Context, d *schema.ResourceData, meta a
 	errs := errors.Join(
 		// not reading is_secure on purpose (handled as external change to show output)
 		readFunctionOrProcedureArguments(d, allFunctionDetails.functionDetails.NormalizedArguments),
-		d.Set("return_type", allFunctionDetails.functionDetails.ReturnDataType.ToSql()),
+		HandleDatatypeSet(d, "return_type", allFunctionDetails.functionDetails.ReturnDataType),
 		// not reading null_input_behavior on purpose (handled as external change to show output)
 		// not reading return_results_behavior on purpose (handled as external change to show output)
 		setOptionalFromStringPtr(d, "runtime_version", allFunctionDetails.functionDetails.RuntimeVersion),
@@ -140,7 +141,7 @@ func ReadContextFunctionJava(ctx context.Context, d *schema.ResourceData, meta a
 		handleFunctionParameterRead(d, allFunctionDetails.functionParameters),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.FunctionToSchema(allFunctionDetails.function)}),
-		d.Set(ParametersAttributeName, []map[string]any{schemas.FunctionParametersToSchema(allFunctionDetails.functionParameters)}),
+		d.Set(ParametersAttributeName, []map[string]any{schemas.FunctionParametersToSchema(allFunctionDetails.functionParameters, providerCtx)}),
 	)
 	if errs != nil {
 		return diag.FromErr(err)

@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testint
 
@@ -32,11 +32,11 @@ func TestInt_DataMetricFunctionReferences(t *testing.T) {
 		}})))
 		require.NoError(t, err)
 
-		dmfs, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequest(view.ID(), sdk.DataMetricFunctionRefEntityDomainView))
+		dmfs, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequestCustom(view.ID(), sdk.DataMetricFunctionRefEntityDomainOptionView))
 		require.NoError(t, err)
 		require.Len(t, dmfs, 1)
 		dmf := dmfs[0]
-		assert.Equal(t, string(sdk.DataMetricFunctionRefEntityDomainView), strings.ToUpper(dmf.RefEntityDomain))
+		assert.Equal(t, string(sdk.DataMetricFunctionRefEntityDomainOptionView), strings.ToUpper(dmf.RefEntityDomain))
 		assert.Equal(t, functionId.DatabaseName(), dmf.MetricDatabaseName)
 		assert.Equal(t, functionId.SchemaName(), dmf.MetricSchemaName)
 		assert.Equal(t, functionId.Name(), dmf.MetricName)

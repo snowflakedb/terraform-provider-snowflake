@@ -1,5 +1,5 @@
 <!-- Section of stable resources -->
-## Currently stable resources 
+### Currently stable resources 
 
 - [snowflake_account](./docs/resources/account)
 - [snowflake_account_parameter](./docs/resources/account_parameter)
@@ -7,10 +7,12 @@
 - [snowflake_api_authentication_integration_with_authorization_code_grant](./docs/resources/api_authentication_integration_with_authorization_code_grant)
 - [snowflake_api_authentication_integration_with_client_credentials](./docs/resources/api_authentication_integration_with_client_credentials)
 - [snowflake_api_authentication_integration_with_jwt_bearer](./docs/resources/api_authentication_integration_with_jwt_bearer)
+- [snowflake_compute_pool](./docs/resources/compute_pool)
 - [snowflake_database](./docs/resources/database)
 - [snowflake_database_role](./docs/resources/database_role)
 - [snowflake_execute](./docs/resources/execute)
 - [snowflake_external_oauth_integration](./docs/resources/external_oauth_integration)
+- [snowflake_git_repository](./docs/resources/git_repository)
 - [snowflake_grant_account_role](./docs/resources/grant_account_role)
 - [snowflake_grant_application_role](./docs/resources/grant_application_role)
 - [snowflake_grant_database_role](./docs/resources/grant_database_role)
@@ -18,9 +20,12 @@
 - [snowflake_grant_privileges_to_account_role](./docs/resources/grant_privileges_to_account_role)
 - [snowflake_grant_privileges_to_database_role](./docs/resources/grant_privileges_to_database_role)
 - [snowflake_grant_privileges_to_share](./docs/resources/grant_privileges_to_share)
+- [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_legacy_service_user](./docs/resources/legacy_service_user)
+- [snowflake_listing](./docs/resources/listing)
 - [snowflake_masking_policy](./docs/resources/masking_policy)
 - [snowflake_network_policy](./docs/resources/network_policy)
+- [snowflake_network_rule](./docs/resources/network_rule)
 - [snowflake_oauth_integration_for_custom_clients](./docs/resources/oauth_integration_for_custom_clients)
 - [snowflake_oauth_integration_for_partner_applications](./docs/resources/oauth_integration_for_partner_applications)
 - [snowflake_primary_connection](./docs/resources/primary_connection)
@@ -35,6 +40,7 @@
 - [snowflake_secret_with_basic_authentication](./docs/resources/secret_with_basic_authentication)
 - [snowflake_secret_with_client_credentials](./docs/resources/secret_with_client_credentials)
 - [snowflake_secret_with_generic_string](./docs/resources/secret_with_generic_string)
+- [snowflake_service](./docs/resources/service)
 - [snowflake_service_user](./docs/resources/service_user)
 - [snowflake_shared_database](./docs/resources/shared_database)
 - [snowflake_stream_on_directory_table](./docs/resources/stream_on_directory_table)
@@ -46,5 +52,6 @@
 - [snowflake_tag_association](./docs/resources/tag_association)
 - [snowflake_task](./docs/resources/task)
 - [snowflake_user](./docs/resources/user)
+- [snowflake_user_programmatic_access_token](./docs/resources/user_programmatic_access_token)
 - [snowflake_view](./docs/resources/view)
 - [snowflake_warehouse](./docs/resources/warehouse)

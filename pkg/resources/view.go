@@ -487,9 +487,9 @@ func CreateView(orReplace bool) schema.CreateContextFunc {
 					var statusCmd sdk.ViewDataMetricScheduleStatusOperationOption
 					switch expectedStatus {
 					case sdk.DataMetricScheduleStatusStarted:
-						statusCmd = sdk.ViewDataMetricScheduleStatusOperationResume
+						statusCmd = sdk.ViewDataMetricScheduleStatusOperationOptionResume
 					case sdk.DataMetricScheduleStatusSuspended:
-						statusCmd = sdk.ViewDataMetricScheduleStatusOperationSuspend
+						statusCmd = sdk.ViewDataMetricScheduleStatusOperationOptionSuspend
 					default:
 						return diag.FromErr(fmt.Errorf("unexpected data metric function status: %v", expectedStatus))
 					}
@@ -729,7 +729,7 @@ func handlePolicyReferences(policyRefs []sdk.PolicyReference, d *schema.Resource
 }
 
 func handleDataMetricFunctions(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData) error {
-	dataMetricFunctionReferences, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequest(id, sdk.DataMetricFunctionRefEntityDomainView))
+	dataMetricFunctionReferences, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequestCustom(id, sdk.DataMetricFunctionRefEntityDomainOptionView))
 	if err != nil {
 		return err
 	}
@@ -1024,9 +1024,9 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 					var statusCmd sdk.ViewDataMetricScheduleStatusOperationOption
 					switch expectedStatus {
 					case sdk.DataMetricScheduleStatusStarted:
-						statusCmd = sdk.ViewDataMetricScheduleStatusOperationResume
+						statusCmd = sdk.ViewDataMetricScheduleStatusOperationOptionResume
 					case sdk.DataMetricScheduleStatusSuspended:
-						statusCmd = sdk.ViewDataMetricScheduleStatusOperationSuspend
+						statusCmd = sdk.ViewDataMetricScheduleStatusOperationOptionSuspend
 					default:
 						return diag.FromErr(fmt.Errorf("unexpected data metric function status: %v", expectedStatus))
 					}

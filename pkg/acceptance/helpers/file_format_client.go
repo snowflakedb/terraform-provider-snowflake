@@ -20,14 +20,14 @@ func NewFileFormatClient(context *TestClientContext, idsGenerator *IdsGenerator)
 	}
 }
 
-func (c *FileFormatClient) client() sdk.FileFormats {
+func (c *FileFormatClient) client() sdk.LegacyFileFormats {
 	return c.context.client.FileFormats
 }
 
 func (c *FileFormatClient) CreateFileFormat(t *testing.T) (*sdk.FileFormat, func()) {
 	t.Helper()
 	return c.CreateFileFormatWithOptions(t, &sdk.CreateFileFormatOptions{
-		Type: sdk.FileFormatTypeCSV,
+		Type: sdk.FileFormatTypeCsv,
 	})
 }
 

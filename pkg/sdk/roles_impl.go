@@ -8,7 +8,7 @@ import (
 
 var (
 	_ Roles                = (*roles)(nil)
-	_ convertibleRow[Role] = (*roleDBRow)(nil)
+	_ convertibleRow[Role] = new(roleDBRow)
 )
 
 type roles struct {
@@ -36,8 +36,7 @@ func (v *roles) Show(ctx context.Context, req *ShowRoleRequest) ([]Role, error) 
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[roleDBRow, Role](dbRows)
-	return resultList, nil
+	return convertRows[roleDBRow, Role](dbRows)
 }
 
 func (v *roles) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Role, error) {
@@ -58,6 +57,10 @@ func (v *roles) Grant(ctx context.Context, req *GrantRoleRequest) error {
 
 func (v *roles) Revoke(ctx context.Context, req *RevokeRoleRequest) error {
 	return validateAndExec(v.client, ctx, req.toOpts())
+}
+
+func (v *roles) RevokeSafely(ctx context.Context, req *RevokeRoleRequest) error {
+	return SafeRevokePrivileges(func() error { return v.Revoke(ctx, req) })
 }
 
 func (v *roles) Use(ctx context.Context, req *UseRoleRequest) error {

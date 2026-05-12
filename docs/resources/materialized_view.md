@@ -7,6 +7,10 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+~> **Important** The `or_replace` parameter controls whether the provider uses `CREATE OR REPLACE MATERIALIZED VIEW` during create and recreate operations. However, any change to the fields causing recreation will **always trigger delete and create operations** of the materialized view, regardless of the `or_replace` setting.
+This means setting `or_replace = true` does **not** enable in-place updates when you modify the `statement` field specifically. Changes to `statement` will cause downtime as the view is dropped and recreated. The `or_replace` parameter is primarily useful to overwrite an existing view during initial resource creation.
+This behavior is a known limitation and may be improved in future versions of the provider.
+
 !> **Sensitive values** This resource's `statement` field is not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
 
 # snowflake_materialized_view (Resource)
@@ -45,14 +49,14 @@ SQL
 - `database` (String) The database in which to create the view. Don't use the | character.
 - `name` (String) Specifies the identifier for the view; must be unique for the schema in which the view is created.
 - `schema` (String) The schema in which to create the view. Don't use the | character.
-- `statement` (String) Specifies the query used to create the view.
+- `statement` (String) Specifies the query used to create the view. Changing this value will trigger a drop and recreate of the materialized view.
 - `warehouse` (String) The warehouse name.
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the view.
 - `is_secure` (Boolean) (Default: `false`) Specifies that the view is secure.
-- `or_replace` (Boolean) (Default: `false`) Overwrites the View if it exists.
+- `or_replace` (Boolean) (Default: `false`) Specifies whether to use CREATE OR REPLACE when creating the materialized view. Note: this does not enable in-place updates when other fields forcing object recreation change; such fields always trigger delete and create operations in Terraform plan.
 - `tag` (Block List, Deprecated) Definitions of a tag to associate with the resource. (see [below for nested schema](#nestedblock--tag))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 

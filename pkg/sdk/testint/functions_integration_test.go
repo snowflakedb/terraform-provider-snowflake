@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testint
 
@@ -166,10 +166,10 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithRuntimeVersion("11").
 			WithComment("comment").
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpJavaFunction.JarLocation())}).
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpJavaFunction.JarLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:snowpark:1.14.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:telemetry:0.1.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:snowpark:1.14.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:telemetry:0.1.0"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}}).
@@ -258,7 +258,7 @@ func TestInt_Functions(t *testing.T) {
 
 		requestStaged := sdk.NewCreateForJavaFunctionRequest(id.SchemaObjectId(), *returns, handler).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(importPath)})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(importPath)})
 
 		err := client.Functions.CreateForJava(ctx, requestStaged)
 		require.NoError(t, err)
@@ -343,10 +343,10 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithRuntimeVersion("11").
 			WithComment("comment").
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpJavaFunction.JarLocation())}).
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpJavaFunction.JarLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:snowpark:1.14.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:telemetry:0.1.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:snowpark:1.14.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:telemetry:0.1.0"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}})
@@ -434,7 +434,7 @@ func TestInt_Functions(t *testing.T) {
 
 		requestStaged := sdk.NewCreateForJavaFunctionRequest(id.SchemaObjectId(), *returns, handler).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(importPath)})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(importPath)})
 
 		err := client.Functions.CreateForJava(ctx, requestStaged)
 		require.NoError(t, err)
@@ -737,10 +737,10 @@ func TestInt_Functions(t *testing.T) {
 			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())}).
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpPythonFunction.PythonModuleLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("absl-py==0.12.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("about-time==4.2.1"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("absl-py==0.12.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("about-time==4.2.1"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}}).
@@ -821,7 +821,7 @@ func TestInt_Functions(t *testing.T) {
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, tmpPythonFunction.PythonHandler()).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpPythonFunction.PythonModuleLocation())})
 
 		err := client.Functions.CreateForPython(ctx, request)
 		require.NoError(t, err)
@@ -904,12 +904,12 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("absl-py==0.12.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("about-time==4.2.1"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("absl-py==0.12.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("about-time==4.2.1"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpPythonFunction.PythonModuleLocation())})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpPythonFunction.PythonModuleLocation())})
 
 		err := client.Functions.CreateForPython(ctx, request)
 		require.NoError(t, err)
@@ -987,7 +987,7 @@ func TestInt_Functions(t *testing.T) {
 		definition := testClientHelper().Function.SampleScalaDefinition(t, className, funcName, argName)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		handler := fmt.Sprintf("%s.%s", className, funcName)
-		request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
+		request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, "2.12", handler).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithFunctionDefinitionWrapped(definition)
 
@@ -1066,7 +1066,7 @@ func TestInt_Functions(t *testing.T) {
 		handler := fmt.Sprintf("%s.%s", className, funcName)
 		jarName := fmt.Sprintf("tf-%d-%s.jar", time.Now().Unix(), random.AlphaN(5))
 		targetPath := fmt.Sprintf("@~/%s", jarName)
-		request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
+		request := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, "2.12", handler).
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -1074,10 +1074,10 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithComment("comment").
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpJavaFunction.JarLocation())}).
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpJavaFunction.JarLocation())}).
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:snowpark:1.14.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:telemetry:0.1.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:snowpark:1.14.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:telemetry:0.1.0"),
 			}).
 			WithTargetPath(targetPath).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
@@ -1163,9 +1163,9 @@ func TestInt_Functions(t *testing.T) {
 		handler := tmpJavaFunction.JavaHandler()
 		importPath := tmpJavaFunction.JarLocation()
 
-		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
+		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, "2.12", handler).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(importPath)})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(importPath)})
 
 		err := client.Functions.CreateForScala(ctx, requestStaged)
 		require.NoError(t, err)
@@ -1239,7 +1239,7 @@ func TestInt_Functions(t *testing.T) {
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		handler := tmpJavaFunction.JavaHandler()
 
-		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, handler, "2.12").
+		requestStaged := sdk.NewCreateForScalaFunctionRequest(id.SchemaObjectId(), dataType, "2.12", handler).
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
@@ -1248,12 +1248,12 @@ func TestInt_Functions(t *testing.T) {
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithComment("comment").
 			WithPackages([]sdk.FunctionPackageRequest{
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:snowpark:1.14.0"),
-				*sdk.NewFunctionPackageRequest().WithPackage("com.snowflake:telemetry:0.1.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:snowpark:1.14.0"),
+				*sdk.NewFunctionPackageRequest().WithFunctionPackage("com.snowflake:telemetry:0.1.0"),
 			}).
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecrets([]sdk.SecretReference{{VariableName: "abc", Name: secretId}}).
-			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithImport(tmpJavaFunction.JarLocation())})
+			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpJavaFunction.JarLocation())})
 
 		err := client.Functions.CreateForScala(ctx, requestStaged)
 		require.NoError(t, err)
@@ -1937,7 +1937,7 @@ func TestInt_Functions(t *testing.T) {
 	})
 
 	// TODO [SNOW-1348103]: remove with old function removal for V1
-	t.Run("function returns non detailed data types of arguments - old data types", func(t *testing.T) {
+	t.Run("function returns non-detailed data types of arguments - old data types", func(t *testing.T) {
 		// This test proves that every detailed data types (e.g. VARCHAR(20) and NUMBER(10, 0)) are generalized
 		// on Snowflake side (to e.g. VARCHAR and NUMBER) and that sdk.ToDataType mapping function maps detailed types
 		// correctly to their generalized counterparts (same as in Snowflake).
@@ -1993,6 +1993,31 @@ func TestInt_Functions(t *testing.T) {
 		require.Equal(t, dataTypes, function.ArgumentsOld)
 	})
 
+	// This test follows the same reasoning as the above `function returns non-detailed data types of arguments - old data types` above.
+	// It is separated as DECFLOAT type is supported only in SQL function type and python type is used above.
+	t.Run("function returns non-detailed data types of arguments - old data types, DECFLOAT", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		arg := *sdk.NewFunctionArgumentRequest("P", nil).WithArgDataTypeOld(datatypes.DecfloatLegacyDataType)
+		definition := "3.141592654::DECFLOAT"
+		err := client.Functions.CreateForSQL(ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
+			id,
+			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(datatypes.DecfloatLegacyDataType)),
+			definition,
+		).
+			WithArguments([]sdk.FunctionArgumentRequest{arg}),
+		)
+		require.NoError(t, err)
+
+		dataType, err := datatypes.ParseDataType(string(arg.ArgDataTypeOld))
+		require.NoError(t, err)
+		dataTypes := []sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}
+		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataTypes...)
+
+		function, err := client.Functions.ShowByID(ctx, idWithArguments)
+		require.NoError(t, err)
+		require.Equal(t, dataTypes, function.ArgumentsOld)
+	})
+
 	// This test shows behavior of detailed types (e.g. VARCHAR(20) and NUMBER(10, 0)) on Snowflake side for functions.
 	// NOTE: These changes has been rolled back from 2025_03 bundle and may be reintroduced in the future.
 	// For SHOW, it changed after 2025_03 Bundle:
@@ -2013,6 +2038,7 @@ func TestInt_Functions(t *testing.T) {
 		{"INTEGER", "NUMBER"},
 		{"FLOAT", "FLOAT"},
 		{"DOUBLE", "FLOAT"},
+		{"DECFLOAT(38)", "DECFLOAT"},
 		{"VARCHAR", "VARCHAR"},
 		{"VARCHAR(20)", "VARCHAR"},
 		{fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), "VARCHAR"},
@@ -2043,21 +2069,18 @@ func TestInt_Functions(t *testing.T) {
 		t.Run(fmt.Sprintf("function returns non detailed data types of arguments for %s", tc.input), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			argName := "A"
-			funcName := "identity"
 			dataType, err := datatypes.ParseDataType(tc.input)
 			require.NoError(t, err)
 			args := []sdk.FunctionArgumentRequest{
 				*sdk.NewFunctionArgumentRequest(argName, dataType),
 			}
 
-			err = client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
+			err = client.Functions.CreateForSQL(ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
 				id,
 				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
-				testvars.PythonRuntime,
-				funcName,
+				testClientHelper().Function.SampleSqlDefinitionWithArgument(t, argName),
 			).
-				WithArguments(args).
-				WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
+				WithArguments(args),
 			)
 			require.NoError(t, err)
 
@@ -2103,6 +2126,7 @@ func TestInt_Functions(t *testing.T) {
 		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
 	} {
 		tc := tc
+		// TODO [SNOW-2681221]: verify with SQL function type
 		t.Run(fmt.Sprintf("function returns after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			argName := "A"
@@ -2149,6 +2173,49 @@ func TestInt_Functions(t *testing.T) {
 			}
 		})
 	}
+
+	// DECFLOAT has separate test as it can be used only in SQL function and the above test uses python (changing the type to SQL yields different results).
+	t.Run("function returns after 2025_03 Bundle for explicit types: DECFLOAT", func(t *testing.T) {
+		input := "DECFLOAT(38)"
+		expectedShowValue := "DECFLOAT"
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		argName := "A"
+		dataType, err := datatypes.ParseDataType(input)
+		require.NoError(t, err)
+
+		// we fall back to the direct data type specification on purpose
+		explicitDataType := sdk.DataType(input)
+
+		args := []sdk.FunctionArgumentRequest{
+			*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
+		}
+
+		err = client.Functions.CreateForSQL(ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
+			id,
+			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
+			testClientHelper().Function.SampleSqlDefinitionWithArgument(t, argName),
+		).
+			WithArguments(args),
+		)
+		require.NoError(t, err)
+
+		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
+
+		function, err := client.Functions.ShowByID(ctx, idWithArguments)
+		require.NoError(t, err)
+		assert.Equal(t, []sdk.DataType{sdk.DataType(expectedShowValue)}, function.ArgumentsOld)
+		assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), expectedShowValue), function.ArgumentsRaw)
+
+		details, err := client.Functions.Describe(ctx, idWithArguments)
+		require.NoError(t, err)
+		pairs := make(map[string]string)
+		for _, detail := range details {
+			pairs[detail.Property] = *detail.Value
+		}
+		assert.Equal(t, fmt.Sprintf("(%s %s)", argName, sdk.LegacyDataTypeFrom(dataType)), pairs["signature"])
+		assert.Equal(t, dataType.Canonical(), pairs["returns"])
+	})
 
 	for _, tc := range []struct {
 		input        string

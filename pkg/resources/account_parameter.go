@@ -8,21 +8,22 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO(next prs): Deprecate account_parameter in favor of current_account (the list should stay as client.Parameters.SetAccountParameter was not updated to handle newly defined parameters).
+// TODO [SNOW-2298249]: Adjust client.Parameters.SetAccountParameter.
+// TODO [SNOW-2298249]: Continue handling parameters not available in current_account.
+// TODO [SNOW-2298249]: Ultimately unify with parameters list in current_account, these two resources should handle the same parameters list.
 var accountParameterSupportedParameters = []sdk.AccountParameter{
 	sdk.AccountParameterAllowClientMFACaching,
 	sdk.AccountParameterAllowIDToken,
 	sdk.AccountParameterClientEncryptionKeySize,
 	sdk.AccountParameterCortexEnabledCrossRegion,
+	sdk.AccountParameterCortexModelsAllowlist,
 	sdk.AccountParameterDisableUserPrivilegeGrants,
 	sdk.AccountParameterEnableIdentifierFirstLogin,
 	sdk.AccountParameterEnableInternalStagesPrivatelink,
@@ -127,6 +128,25 @@ var accountParameterSupportedParameters = []sdk.AccountParameter{
 	sdk.AccountParameterEnableConsoleOutput,
 	sdk.AccountParameterEnableUnredactedQuerySyntaxError,
 	sdk.AccountParameterEnablePersonalDatabase,
+
+	sdk.AccountParameterAllowBindValuesAccess,
+	sdk.AccountParameterAllowedSpcsWorkloadTypes,
+	sdk.AccountParameterDataMetricSchedule,
+	sdk.AccountParameterDefaultDbtVersion,
+	sdk.AccountParameterDisallowedSpcsWorkloadTypes,
+	sdk.AccountParameterEnableBudgetEventLogging,
+	sdk.AccountParameterEnableCortexAnalyst,
+	sdk.AccountParameterEnableDataCompaction,
+	sdk.AccountParameterEnableGetDdlUseDataTypeAlias,
+	sdk.AccountParameterEnableIcebergMergeOnRead,
+	sdk.AccountParameterEnableNotebookCreationInPersonalDb,
+	sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement,
+	sdk.AccountParameterEnableTagPropagationEventLogging,
+	sdk.AccountParameterIcebergVersionDefault,
+	sdk.AccountParameterReadConsistencyMode,
+	sdk.AccountParameterRowTimestampDefault,
+	sdk.AccountParameterSqlTraceQueryText,
+	sdk.AccountParameterUseWorkspacesForSql,
 }
 
 func ToAccountParameter(s string) (sdk.AccountParameter, error) {

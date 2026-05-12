@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -22,42 +23,38 @@ func (c *BcrBundlesClient) client() sdk.SystemFunctions {
 	return c.context.client.SystemFunctions
 }
 
-func (c *BcrBundlesClient) EnableBcrBundle(t *testing.T, name string) {
+func (c *BcrBundlesClient) ShowActiveBundles(t *testing.T) []sdk.BehaviorChangeBundleInfo {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().EnableBehaviorChangeBundle(ctx, name)
+	bundles, err := c.client().ShowActiveBehaviorChangeBundles(ctx)
 	require.NoError(t, err)
 
-	t.Cleanup(c.disableBcrBundleFunc(t, name))
+	return bundles
 }
 
-func (c *BcrBundlesClient) DisableBcrBundle(t *testing.T, name string) {
+func (c *BcrBundlesClient) BehaviorChangeBundleStatus(t *testing.T, bundle string) sdk.BehaviorChangeBundleStatus {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().DisableBehaviorChangeBundle(ctx, name)
+	status, err := c.client().BehaviorChangeBundleStatus(ctx, bundle)
 	require.NoError(t, err)
 
-	t.Cleanup(c.enableBcrBundleFunc(t, name))
+	return status
 }
 
-func (c *BcrBundlesClient) disableBcrBundleFunc(t *testing.T, name string) func() {
+func (c *BcrBundlesClient) GetBcrInfo(t *testing.T, name string) sdk.BehaviorChangeBundleInfo {
 	t.Helper()
 	ctx := context.Background()
 
-	return func() {
-		err := c.client().DisableBehaviorChangeBundle(ctx, name)
-		require.NoError(t, err)
-	}
-}
+	bundles, err := c.client().ShowActiveBehaviorChangeBundles(ctx)
+	require.NoError(t, err)
 
-func (c *BcrBundlesClient) enableBcrBundleFunc(t *testing.T, name string) func() {
-	t.Helper()
-	ctx := context.Background()
+	info, err := collections.FindFirst(bundles, func(bundle sdk.BehaviorChangeBundleInfo) bool {
+		return bundle.Name == name
+	})
+	require.NoError(t, err)
+	require.NotNil(t, info)
 
-	return func() {
-		err := c.client().EnableBehaviorChangeBundle(ctx, name)
-		require.NoError(t, err)
-	}
+	return *info
 }

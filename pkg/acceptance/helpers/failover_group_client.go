@@ -47,6 +47,18 @@ func (c *FailoverGroupClient) CreateFailoverGroupWithOptions(t *testing.T, objec
 	return failoverGroup, c.DropFailoverGroupFunc(t, id)
 }
 
+func (c *FailoverGroupClient) RemoveAllowedAccounts(t *testing.T, id sdk.AccountObjectIdentifier, accounts ...sdk.AccountIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterSource(ctx, id, &sdk.AlterSourceFailoverGroupOptions{
+		Remove: &sdk.FailoverGroupRemove{
+			AllowedAccounts: accounts,
+		},
+	})
+	require.NoError(t, err)
+}
+
 func (c *FailoverGroupClient) DropFailoverGroupFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

@@ -29,7 +29,7 @@ func (c *SequenceClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) f
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropSequenceRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropSequenceRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

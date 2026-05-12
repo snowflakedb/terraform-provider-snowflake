@@ -71,6 +71,9 @@ The motivation behind this was consistency with other resources. Other resources
 Additionally, having such a destructive default could lead to some unexpected grants being revoked if someone forgets to set the flag.
 Right now, there’s no alternative to the behavior **enable_multiple_grants** set to false, but we’re considering a flag for that case ([see future topics section](#future-topics)).
 
+**Update(v2.13.0)**: We've added a new flag that mimics the old **enable_multiple_grants** set to `false` behavior (removing external privileges).
+Read our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more details.
+
 ### Workaround for on_all and all_privileges (the always_apply parameter)
 As with the **on_future** field, granting **all_privileges** or granting **on_all** also raised a few questions about tracking granted objects.
 Mostly, it boiled down to running the GRANT statement whenever something changes in the Snowflake infrastructure in the case of **on_all** or whenever a privilege was added to/removed from Snowflake in the case of **all_privileges**.
@@ -110,6 +113,113 @@ To name a few lower-priority reasons, we also had in mind that:
 - When adding a new resource we could carry out a large code structure refactor without fear of breaking anything already used by the users.
   This increased the maintainability of the resource and made it easier to grasp, so providing new functionality or fixing a bug can be done faster.
 - We wanted to address all known edge cases during the refactor mentioned above, making the resource more complete.
+
+### Why we decide to stick with resources representing single grant instead of multiple ones like in old resources
+
+With the redesign of grant resources, our goal was to simplify how grants are represented in the provider.
+Previously, each resource represented a single object with multiple grant options, which was difficult to maintain since the implementation had to be repeated for every object type.
+The new design introduces a more generic resource that can be used for all types of grantable objects while adhering to the single responsibility principle followed by most resources.
+This was a solid starting point, allowing us to begin with a simpler resource that could be improved based on your feedback through GitHub issues and discussions, which we greatly appreciate.
+
+However, as more users transitioned to the new resources, there was increased demand for more complex grant resources capable of representing multiple grants in a single resource.
+This demand is largely related to pricing models that base costs on the number of managed resources, an issue we are aware of and plan to address in the future.
+To follow our current plans, see the roadmap in our GitHub repository: [ROADMAP.md](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md).
+It is updated regularly, usually in the first month of each quarter.
+
+For now, we recommend using Terraform built-in functionalities like `for_each` or `count` to create multiple resources within a single configuration.
+Here's an example configuration for granting account roles to multiple roles and users:
+
+```terraform
+locals {
+  granting_roles = ["role1", "role2", "role3"]
+
+  roles = ["role1", "role2", "role3"]
+  users = ["user1", "user2", "user3"]
+
+  roles_to_grant = flatten([
+    for a in local.granting_roles : [
+      for b in local.roles : {
+        granting_role    = a
+        parent_role_name = b
+      }
+    ]
+  ])
+  users_to_grant = flatten([
+    for a in local.granting_roles : [
+      for b in local.users : {
+        granting_role = a
+        user_name     = b
+      }
+    ]
+  ])
+}
+
+resource "snowflake_grant_account_role" "grants_to_account_roles" {
+  count = length(local.roles_to_grant)
+
+  role_name        = local.roles_to_grant[count.index].granting_role
+  parent_role_name = local.roles_to_grant[count.index].parent_role_name
+}
+
+resource "snowflake_grant_account_role" "grants_to_users" {
+  count = length(local.users_to_grant)
+
+  role_name = local.users_to_grant[count.index].granting_role
+  user_name = local.users_to_grant[count.index].user_name
+}
+```
+
+You can also combine both local variables to use only one resource configuration:
+```terraform
+locals {
+  combined_grants = concat(
+    [
+      for grant in local.roles_to_grant : {
+      granting_role    = grant.granting_role
+      parent_role_name = grant.parent_role_name
+      user_name        = null
+    }
+    ],
+    [
+      for grant in local.users_to_grant : {
+      granting_role    = grant.granting_role
+      parent_role_name = null
+      user_name        = grant.user_name
+    }
+    ]
+  )
+}
+
+resource "snowflake_grant_account_role" "combined_grants" {
+  count = length(local.combined_grants)
+
+  role_name        = local.combined_grants[count.index].granting_role
+  parent_role_name = local.combined_grants[count.index].parent_role_name
+  user_name        = local.combined_grants[count.index].user_name
+}
+```
+
+By modifying the above example, you can also use `for_each` to create multiple resources in a single resource configuration, like so:
+
+```terraform
+locals {
+  roles_to_grant = toset(flatten([
+    for a in local.granting_roles : [
+      for b in local.roles : "${a}_${b}" # Be careful with the separator being a part of an identifier
+    ]
+  ]))
+}
+
+resource "snowflake_grant_account_role" "grants_to_account_roles" {
+  for_each = local.roles_to_grant
+
+  role_name        = split("_", each.value)[0]
+  parent_role_name = split("_", each.value)[1]
+}
+```
+
+Those are only examples, and they should be adjusted to your needs, but it shows how you can use Terraform to create multiple resources in a single resource configuration.
+Make sure you also know the pros and cons between using `for_each` and `count` ([comparison documentation](https://developer.hashicorp.com/terraform/language/meta-arguments/count#when-to-use-for_each-instead-of-count)).
 
 ### Why we decide to stick with one data source for grants
 Grants have one show page in the documentation and were already represented as one data source. The motivation behind following this path was that:
@@ -154,8 +264,10 @@ There may be some unusual cases where the current version of grant resources may
 With a more stable project, we will be able to do more work dedicated to discovering such edge cases.
 For now, we’re relying on you to report such cases that we later analyze, prioritize, fix, and release as soon as possible.
 As for the list of things yet to be discussed, we have:
-- Right now, there's no way to "have **enable_multiple_grants** turned off" in the new grant resources, but we are considering adding an **authoritative** flag (the name is not chosen yet) that would work oppositely to the **enable_multiple_grants**.
-  By enabling the **authoritative** flag, any other privileges granted to the target object will be revoked, making the granting resource the only source of privileges on this object.
+- Missing [enable_multiple_grants](#implicit-enable_multiple_grants-enabled-by-default) in new grant resources.
+  **Update(v2.13.0)**: We've added a new flag that mimics the old **enable_multiple_grants** set to `false` behavior (removing external privileges).
+  Read our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more details.
+  Currently, it's an experimental feature and is only supported by the [snowflake_grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource.
 - Discussion on granting **all_privileges** and **on_all** where we’ll decide how and if we would like to track changes of:
   - Added or removed privileges by Snowflake in the case of all_privileges
   - Added or removed objects by the user in Snowflake in the case of on_all

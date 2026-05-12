@@ -7,6 +7,11 @@
 # Run secret-dependent integration tests only after /ok-to-test approval
 name: Account-Level Tests
 
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
 # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/control-the-concurrency-of-workflows-and-jobs#example-only-cancel-in-progress-jobs-or-runs-for-the-current-workflow
 concurrency:
   group: ${{ github.workflow }}
@@ -22,11 +27,16 @@ jobs:
     environment: test
     env:
       ## adding additional suffix to don't have conflict in non-account level tests and their pre-created objects
-      TEST_SF_TF_TEST_OBJECT_SUFFIX: ${{ ((github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.head.sha) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha)) && 'AL' }}
+      TEST_SF_TF_TEST_OBJECT_SUFFIX: ${{ format('{0}{1}', ((github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.head.sha) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha)), 'AL') }}
+      TEST_SF_TF_TEST_WORKFLOW_ID: "${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.head.sha) || (github.event_name == 'pull_request' && github.event.pull_request.head.sha) }}_${{ github.run_attempt }}"
+      ADDITIONAL_TEST_FLAGS: "-json"
     name: Run all account-level tests
     runs-on: ubuntu-latest
     if: (github.event_name == 'repository_dispatch') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     steps:
+      - name: Print object suffix
+        run: |
+          echo "$TEST_SF_TF_TEST_OBJECT_SUFFIX"
       - name: Filter changed files
         uses: dorny/paths-filter@v3
         id: changes
@@ -44,16 +54,21 @@ jobs:
 
       - id: verify_sha_input
         if: github.event_name == 'repository_dispatch'
+        env:
+          PR_HEAD_SHA: ${{ github.event.client_payload.pull_request.head.sha }}
+          SLASH_SHA: ${{ github.event.client_payload.slash_command.args.named.sha }}
+          PR_HEAD_REPO: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+          PR_HEAD_REF: ${{ github.event.client_payload.pull_request.head.ref }}
         run: |
-          echo \"${{ github.event.client_payload.pull_request.head.sha }}\"
-          echo \"${{ github.event.client_payload.slash_command.args.named.sha }}\"
-          echo \"${{ github.event.client_payload.pull_request.head.repo.full_name }}\"
-          echo \"${{ github.event.client_payload.pull_request.head.ref }}\"
-          SHAINPUT=$(echo ${{ github.event.client_payload.slash_command.args.named.sha }} | cut -c1-7)
+          echo "$PR_HEAD_SHA"
+          echo "$SLASH_SHA"
+          echo "$PR_HEAD_REPO"
+          echo "$PR_HEAD_REF"
+          SHAINPUT=$(echo "$SLASH_SHA" | cut -c1-7)
           if [ ${#SHAINPUT} -le 6 ]; then echo "error::input sha not at least 7 characters long" ; exit 1
           else echo "done"
           fi
-          SHAHEAD=$(echo ${{ github.event.client_payload.pull_request.head.sha }} | cut -c1-7)
+          SHAHEAD=$(echo "$PR_HEAD_SHA" | cut -c1-7)
           echo ${#SHAINPUT}
           echo ${#SHAHEAD}
           if [ "${SHAHEAD}" != "${SHAINPUT}" ]; then echo "sha input from slash command does not equal the head sha" ; exit 1
@@ -113,8 +128,8 @@ jobs:
           cd $HOME/.snowflake
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
-          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
-          chmod 0600 ./config ./config_legacy ./config_v097_compatible
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE_WITH_SERVICE_USER }}" > ./config_v097_compatible_with_service_user
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible_with_service_user
 
       - name: Setup Terraform
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
@@ -125,9 +140,11 @@ jobs:
           terraform_wrapper: false
 
       - name: Run integration and acceptance account-level tests
-        run: make test-account-level-features
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
+        run: set -o pipefail && make test-account-level-features | make save-test-results
         if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
         env:
+          TEST_SF_TF_TEST_TYPE: "account_level"
           SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT: ${{ secrets.SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT }}
           TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL }}
           TEST_SF_TF_AWS_EXTERNAL_KEY_ID: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_KEY_ID }}
@@ -137,6 +154,8 @@ jobs:
           TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN }}
           TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID }}
           TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE }}
 
       - name: Sweepers cleanup
         if: ${{ always() && steps.setup_go.conclusion == 'success' }}
@@ -150,13 +169,19 @@ jobs:
           body: |
             Account-level tests ${{ job.status }} for [${{ github.event.client_payload.slash_command.args.named.sha || github.event.pull_request.head.sha }}](https://github.com/snowflakedb/terraform-provider-snowflake/actions/runs/${{ github.run_id }})
 
+      # For fork PRs, tests run via repository_dispatch (triggered by /ok-to-test),
+      # but the resulting check runs are tied to the default branch, not the fork PR.
+      # This step updates the (skipped) check run on the fork PR's head SHA so the
+      # PR status reflects the actual test outcome. It resolves the job's display name
+      # via job.check_run_id (since github.job returns the job_id, not the display name)
+      # and uses it to find the matching check run on the fork PR's commit.
       - name: Set fork job status
         uses: actions/github-script@v6
         if: ${{ always() }}
         id: update_check_run
         env:
           number: ${{ github.event.client_payload.pull_request.number }}
-          job: ${{ github.job }}
+          check_run_id: ${{ job.check_run_id }}
           # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
           conclusion: ${{ job.status }}
           sha: ${{ github.event.client_payload.slash_command.args.named.sha }}
@@ -168,13 +193,23 @@ jobs:
               console.log("Not repository_dispatch... nothing to do!");
               return process.env.event_name;
             }
+            const { data: currentCheck } = await github.rest.checks.get({
+              ...context.repo,
+              check_run_id: parseInt(process.env.check_run_id)
+            });
+            const jobName = currentCheck.name;
+            console.log(`Current job check run name: ${jobName}`);
             const ref = process.env.sha;
             const { data: checks } = await github.rest.checks.listForRef({
               ...context.repo,
               ref
             });
-            const check = checks.check_runs.filter(c => c.name === process.env.job);
+            const check = checks.check_runs.filter(c => c.name === jobName);
             console.log(check);
+            if (check.length === 0) {
+              console.log(`No matching check run found for "${jobName}" on ${ref}`);
+              return;
+            }
             const { data: result } = await github.rest.checks.update({
               ...context.repo,
               check_run_id: check[0].id,

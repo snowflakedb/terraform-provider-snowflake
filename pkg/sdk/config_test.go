@@ -4,16 +4,15 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"net"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testhelpers"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -35,7 +34,7 @@ func TestLoadConfigFile(t *testing.T) {
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
-	configPath := testhelpers.TestFile(t, "config", bytes)
+	configPath := testfiles.TestFile(t, "config", bytes)
 
 	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -57,7 +56,7 @@ func TestLoadConfigFileWithUnknownFields(t *testing.T) {
 	unknown='TEST_ACCOUNT'
 	account_name='TEST_ACCOUNT'
 	`
-	configPath := testhelpers.TestFile(t, "config", []byte(c))
+	configPath := testfiles.TestFile(t, "config", []byte(c))
 
 	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -76,7 +75,7 @@ func Test_LoadConfigFile_triValueBooleanDefault(t *testing.T) {
 	)
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
-	configPath := testhelpers.TestFile(t, "config", bytes)
+	configPath := testfiles.TestFile(t, "config", bytes)
 
 	m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 	require.NoError(t, err)
@@ -106,7 +105,7 @@ func Test_LoadConfigFile_triValueBooleanSet(t *testing.T) {
 			)
 			bytes, err := cfg.MarshalToml()
 			require.NoError(t, err)
-			configPath := testhelpers.TestFile(t, "config", bytes)
+			configPath := testfiles.TestFile(t, "config", bytes)
 
 			m, err := LoadConfigFile[*ConfigDTO](configPath, true)
 			require.NoError(t, err)
@@ -155,6 +154,28 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		{name: "DisableQueryContextCache", fieldName: "disable_query_context_cache", wantType: "*bool"},
 		{name: "IncludeRetryReason", fieldName: "include_retry_reason", wantType: "*bool"},
 		{name: "DisableConsoleLogin", fieldName: "disable_console_login", wantType: "*bool"},
+		{name: "OauthClientID", fieldName: "oauth_client_id", wantType: "*string"},
+		{name: "OauthClientSecret", fieldName: "oauth_client_secret", wantType: "*string"},
+		{name: "OauthTokenRequestURL", fieldName: "oauth_token_request_url", wantType: "*string"},
+		{name: "OauthAuthorizationURL", fieldName: "oauth_authorization_url", wantType: "*string"},
+		{name: "OauthRedirectURI", fieldName: "oauth_redirect_uri", wantType: "*string"},
+		{name: "OauthScope", fieldName: "oauth_scope", wantType: "*string"},
+		{name: "EnableSingleUseRefreshTokens", fieldName: "enable_single_use_refresh_tokens", wantType: "*bool"},
+		{name: "WorkloadIdentityProvider", fieldName: "workload_identity_provider", wantType: "*string"},
+		{name: "WorkloadIdentityEntraResource", fieldName: "workload_identity_entra_resource", wantType: "*string"},
+		{name: "LogQueryText", fieldName: "log_query_text", wantType: "*bool"},
+		{name: "LogQueryParameters", fieldName: "log_query_parameters", wantType: "*bool"},
+		{name: "ProxyHost", fieldName: "proxy_host", wantType: "*string"},
+		{name: "ProxyUser", fieldName: "proxy_user", wantType: "*string"},
+		{name: "ProxyPassword", fieldName: "proxy_password", wantType: "*string"},
+		{name: "ProxyProtocol", fieldName: "proxy_protocol", wantType: "*string"},
+		{name: "NoProxy", fieldName: "no_proxy", wantType: "*string"},
+		{name: "DisableOCSPChecks", fieldName: "disable_ocsp_checks", wantType: "*bool"},
+		{name: "CertRevocationCheckMode", fieldName: "cert_revocation_check_mode", wantType: "*string"},
+		{name: "CrlAllowCertificatesWithoutCrlURL", fieldName: "crl_allow_certificates_without_crl_url", wantType: "*bool"},
+		{name: "CrlInMemoryCacheDisabled", fieldName: "crl_in_memory_cache_disabled", wantType: "*bool"},
+		{name: "CrlOnDiskCacheDisabled", fieldName: "crl_on_disk_cache_disabled", wantType: "*bool"},
+		{name: "DisableSamlURLCheck", fieldName: "disable_saml_url_check", wantType: "*bool"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -162,7 +183,7 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		[default]
 		%s=42
 		`, tt.fieldName)
-			configPath := testhelpers.TestFile(t, "config", []byte(config))
+			configPath := testfiles.TestFile(t, "config", []byte(config))
 
 			_, err := LoadConfigFile[*ConfigDTO](configPath, true)
 			require.ErrorContains(t, err, fmt.Sprintf("toml: cannot decode TOML integer into struct field sdk.ConfigDTO.%s of type %s", tt.name, tt.wantType))
@@ -183,6 +204,8 @@ func TestLoadConfigFileWithInvalidFieldTypeIntFails(t *testing.T) {
 		{name: "JwtExpireTimeout", fieldName: "jwt_expire_timeout"},
 		{name: "ExternalBrowserTimeout", fieldName: "external_browser_timeout"},
 		{name: "MaxRetryCount", fieldName: "max_retry_count"},
+		{name: "ProxyPort", fieldName: "proxy_port"},
+		{name: "CrlHTTPClientTimeout", fieldName: "crl_http_client_timeout"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -190,7 +213,7 @@ func TestLoadConfigFileWithInvalidFieldTypeIntFails(t *testing.T) {
 		[default]
 		%s=value
 		`, tt.fieldName)
-			configPath := testhelpers.TestFile(t, "config", []byte(config))
+			configPath := testfiles.TestFile(t, "config", []byte(config))
 
 			_, err := LoadConfigFile[*ConfigDTO](configPath, true)
 			require.ErrorContains(t, err, "toml: incomplete number")
@@ -255,7 +278,7 @@ func TestLoadConfigFileWithInvalidTOMLFails(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			configPath := testhelpers.TestFile(t, "config", []byte(tt.config))
+			configPath := testfiles.TestFile(t, "config", []byte(tt.config))
 
 			_, err := LoadConfigFile[*ConfigDTO](configPath, true)
 			require.ErrorContains(t, err, tt.err)
@@ -289,7 +312,7 @@ func TestProfileConfig(t *testing.T) {
 		WithExternalBrowserTimeout(60).
 		WithMaxRetryCount(1).
 		WithAuthenticator(string(AuthenticationTypeJwt)).
-		WithInsecureMode(true).
+		WithInsecureMode(false).
 		WithOcspFailOpen(true).
 		WithToken("token").
 		WithKeepSessionAlive(true).
@@ -306,13 +329,37 @@ func TestProfileConfig(t *testing.T) {
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
 			"foo": Pointer("bar"),
-		}),
+		}).
+		WithOauthClientID("oauth_client_id").
+		WithOauthClientSecret("oauth_client_secret").
+		WithOauthTokenRequestURL("oauth_token_request_url").
+		WithOauthAuthorizationURL("oauth_authorization_url").
+		WithOauthRedirectURI("oauth_redirect_uri").
+		WithOauthScope("oauth_scope").
+		WithEnableSingleUseRefreshTokens(true).
+		WithWorkloadIdentityProvider("workload_identity_provider").
+		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+		WithLogQueryText(true).
+		WithLogQueryParameters(true).
+		WithProxyHost("proxy.example.com").
+		WithProxyPort(443).
+		WithProxyUser("username").
+		WithProxyPassword("****").
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com").
+		WithDisableOCSPChecks(false).
+		WithCertRevocationCheckMode("ADVISORY").
+		WithCrlAllowCertificatesWithoutCrlURL(true).
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(true).
+		WithCrlHTTPClientTimeout(30).
+		WithDisableSamlURLCheck(true),
 		"securityadmin",
 	)
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
 
-	configPath := testhelpers.TestFile(t, "config", bytes)
+	configPath := testfiles.TestFile(t, "config", bytes)
 
 	t.Run("with found profile", func(t *testing.T) {
 		t.Setenv(snowflakeenvs.ConfigPath, configPath)
@@ -335,9 +382,8 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, "password", config.Password)
 		assert.Equal(t, "warehouse", config.Warehouse)
 		assert.Equal(t, "role", config.Role)
-		assert.Equal(t, map[string]*string{"foo": Pointer("bar")}, config.Params)
+		assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, config.Params)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
-		assert.Equal(t, "1.1.1.1", config.ClientIP.String())
 		assert.Equal(t, "http", config.Protocol)
 		assert.Equal(t, "host", config.Host)
 		assert.Equal(t, 1, config.Port)
@@ -352,19 +398,41 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, 50*time.Second, config.JWTExpireTimeout)
 		assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 		assert.Equal(t, 1, config.MaxRetryCount)
-		assert.True(t, config.InsecureMode) //nolint:staticcheck
 		assert.Equal(t, "token", config.Token)
 		assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
-		assert.True(t, config.KeepSessionAlive)
+		assert.True(t, config.ServerSessionKeepAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
-		assert.True(t, config.DisableTelemetry)
-		assert.Equal(t, "trace", config.Tracing)
+		assert.Equal(t, "TRACE", config.Tracing)
 		assert.Equal(t, ".", config.TmpDirPath)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
 		assert.True(t, config.DisableQueryContextCache)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
+		assert.Equal(t, "oauth_client_id", config.OauthClientID)
+		assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+		assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
+		assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+		assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+		assert.Equal(t, "oauth_scope", config.OauthScope)
+		assert.True(t, config.EnableSingleUseRefreshTokens)
+		assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+		assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
+		assert.True(t, config.LogQueryText)
+		assert.True(t, config.LogQueryParameters)
+		assert.Equal(t, "proxy.example.com", config.ProxyHost)
+		assert.Equal(t, 443, config.ProxyPort)
+		assert.Equal(t, "username", config.ProxyUser)
+		assert.Equal(t, "****", config.ProxyPassword)
+		assert.Equal(t, "https", config.ProxyProtocol)
+		assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
+		assert.False(t, config.DisableOCSPChecks)
+		assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
+		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
+		assert.False(t, config.CrlInMemoryCacheDisabled)
+		assert.True(t, config.CrlOnDiskCacheDisabled)
+		assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
+		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -415,34 +483,55 @@ func Test_MergeConfig(t *testing.T) {
 		Params: map[string]*string{
 			"foo": Pointer("1"),
 		},
-		ClientIP:                       net.ParseIP("1.1.1.1"),
-		Protocol:                       "protocol1",
-		Host:                           "host1",
-		Port:                           1,
-		Authenticator:                  gosnowflake.AuthTypeSnowflake,
-		Passcode:                       "passcode1",
-		PasscodeInPassword:             false,
-		OktaURL:                        testvars.ExampleOktaUrl,
-		LoginTimeout:                   1,
-		RequestTimeout:                 1,
-		JWTExpireTimeout:               1,
-		ClientTimeout:                  1,
-		JWTClientTimeout:               1,
-		ExternalBrowserTimeout:         1,
-		MaxRetryCount:                  1,
-		InsecureMode:                   false,
-		OCSPFailOpen:                   1,
-		Token:                          "token1",
-		KeepSessionAlive:               false,
-		PrivateKey:                     random.GenerateRSAPrivateKey(t),
-		DisableTelemetry:               false,
-		Tracing:                        "tracing1",
-		TmpDirPath:                     "tmpdirpath1",
-		ClientRequestMfaToken:          gosnowflake.ConfigBoolFalse,
-		ClientStoreTemporaryCredential: gosnowflake.ConfigBoolFalse,
-		DisableQueryContextCache:       false,
-		IncludeRetryReason:             1,
-		DisableConsoleLogin:            gosnowflake.ConfigBoolFalse,
+		Protocol:                          "protocol1",
+		Host:                              "host1",
+		Port:                              1,
+		Authenticator:                     gosnowflake.AuthTypeSnowflake,
+		Passcode:                          "passcode1",
+		PasscodeInPassword:                false,
+		OktaURL:                           testvars.ExampleOktaUrl,
+		LoginTimeout:                      1,
+		RequestTimeout:                    1,
+		JWTExpireTimeout:                  1,
+		ClientTimeout:                     1,
+		JWTClientTimeout:                  1,
+		ExternalBrowserTimeout:            1,
+		MaxRetryCount:                     1,
+		OCSPFailOpen:                      1,
+		Token:                             "token1",
+		ServerSessionKeepAlive:            false,
+		PrivateKey:                        random.GenerateRSAPrivateKey(t),
+		Tracing:                           "tracing1",
+		TmpDirPath:                        "tmpdirpath1",
+		ClientRequestMfaToken:             gosnowflake.ConfigBoolFalse,
+		ClientStoreTemporaryCredential:    gosnowflake.ConfigBoolFalse,
+		DisableQueryContextCache:          false,
+		IncludeRetryReason:                1,
+		DisableConsoleLogin:               gosnowflake.ConfigBoolFalse,
+		OauthClientID:                     "oauth_client_id1",
+		OauthClientSecret:                 "oauth_client_secret1",
+		OauthTokenRequestURL:              "oauth_token_request_url1",
+		OauthAuthorizationURL:             "oauth_authorization_url1",
+		OauthRedirectURI:                  "oauth_redirect_uri1",
+		OauthScope:                        "oauth_scope1",
+		EnableSingleUseRefreshTokens:      false,
+		WorkloadIdentityProvider:          "workload_identity_provider1",
+		WorkloadIdentityEntraResource:     "workload_identity_entra_resource1",
+		LogQueryText:                      false,
+		LogQueryParameters:                false,
+		ProxyHost:                         "proxy_host1",
+		ProxyPort:                         443,
+		ProxyUser:                         "proxy_user1",
+		ProxyPassword:                     "proxy_password1",
+		ProxyProtocol:                     "proxy_protocol1",
+		NoProxy:                           "no_proxy1",
+		DisableOCSPChecks:                 true,
+		CertRevocationCheckMode:           gosnowflake.CertRevocationCheckAdvisory,
+		CrlAllowCertificatesWithoutCrlURL: gosnowflake.ConfigBoolTrue,
+		CrlInMemoryCacheDisabled:          false,
+		CrlOnDiskCacheDisabled:            true,
+		CrlHTTPClientTimeout:              30,
+		DisableSamlURLCheck:               gosnowflake.ConfigBoolTrue,
 	}
 
 	config2 := &gosnowflake.Config{
@@ -453,36 +542,58 @@ func Test_MergeConfig(t *testing.T) {
 		Role:                      "role2",
 		ValidateDefaultParameters: 1,
 		Params: map[string]*string{
-			"foo": Pointer("2"),
+			"foo":                                 Pointer("2"),
+			ClientTelemetryEnableSessionParameter: Pointer("false"),
 		},
-		ClientIP:                       net.ParseIP("2.2.2.2"),
-		Protocol:                       "protocol2",
-		Host:                           "host2",
-		Port:                           2,
-		Authenticator:                  gosnowflake.AuthTypeOAuth,
-		Passcode:                       "passcode2",
-		PasscodeInPassword:             true,
-		OktaURL:                        testvars.ExampleOktaUrlFromEnv,
-		LoginTimeout:                   2,
-		RequestTimeout:                 2,
-		JWTExpireTimeout:               2,
-		ClientTimeout:                  2,
-		JWTClientTimeout:               2,
-		ExternalBrowserTimeout:         2,
-		MaxRetryCount:                  2,
-		InsecureMode:                   true,
-		OCSPFailOpen:                   2,
-		Token:                          "token2",
-		KeepSessionAlive:               true,
-		PrivateKey:                     random.GenerateRSAPrivateKey(t),
-		DisableTelemetry:               true,
-		Tracing:                        "tracing2",
-		TmpDirPath:                     "tmpdirpath2",
-		ClientRequestMfaToken:          gosnowflake.ConfigBoolTrue,
-		ClientStoreTemporaryCredential: gosnowflake.ConfigBoolTrue,
-		DisableQueryContextCache:       true,
-		IncludeRetryReason:             gosnowflake.ConfigBoolTrue,
-		DisableConsoleLogin:            gosnowflake.ConfigBoolTrue,
+		Protocol:                          "protocol2",
+		Host:                              "host2",
+		Port:                              2,
+		Authenticator:                     gosnowflake.AuthTypeOAuth,
+		Passcode:                          "passcode2",
+		PasscodeInPassword:                true,
+		OktaURL:                           testvars.ExampleOktaUrlFromEnv,
+		LoginTimeout:                      2,
+		RequestTimeout:                    2,
+		JWTExpireTimeout:                  2,
+		ClientTimeout:                     2,
+		JWTClientTimeout:                  2,
+		ExternalBrowserTimeout:            2,
+		MaxRetryCount:                     2,
+		OCSPFailOpen:                      2,
+		Token:                             "token2",
+		ServerSessionKeepAlive:            true,
+		PrivateKey:                        random.GenerateRSAPrivateKey(t),
+		Tracing:                           "tracing2",
+		TmpDirPath:                        "tmpdirpath2",
+		ClientRequestMfaToken:             gosnowflake.ConfigBoolTrue,
+		ClientStoreTemporaryCredential:    gosnowflake.ConfigBoolTrue,
+		DisableQueryContextCache:          true,
+		IncludeRetryReason:                gosnowflake.ConfigBoolTrue,
+		DisableConsoleLogin:               gosnowflake.ConfigBoolTrue,
+		OauthClientID:                     "oauth_client_id2",
+		OauthClientSecret:                 "oauth_client_secret2",
+		OauthTokenRequestURL:              "oauth_token_request_url2",
+		OauthAuthorizationURL:             "oauth_authorization_url2",
+		OauthRedirectURI:                  "oauth_redirect_uri2",
+		OauthScope:                        "oauth_scope2",
+		EnableSingleUseRefreshTokens:      true,
+		WorkloadIdentityProvider:          "workload_identity_provider2",
+		WorkloadIdentityEntraResource:     "workload_identity_entra_resource2",
+		LogQueryText:                      true,
+		LogQueryParameters:                true,
+		ProxyHost:                         "proxy_host2",
+		ProxyPort:                         443,
+		ProxyUser:                         "proxy_user2",
+		ProxyPassword:                     "proxy_password2",
+		ProxyProtocol:                     "proxy_protocol2",
+		NoProxy:                           "no_proxy2",
+		DisableOCSPChecks:                 false,
+		CertRevocationCheckMode:           gosnowflake.CertRevocationCheckAdvisory,
+		CrlAllowCertificatesWithoutCrlURL: gosnowflake.ConfigBoolTrue,
+		CrlInMemoryCacheDisabled:          false,
+		CrlOnDiskCacheDisabled:            true,
+		CrlHTTPClientTimeout:              30,
+		DisableSamlURLCheck:               gosnowflake.ConfigBoolTrue,
 	}
 
 	t.Run("base config empty", func(t *testing.T) {
@@ -504,7 +615,7 @@ func Test_MergeConfig(t *testing.T) {
 
 	t.Run("special authenticator value", func(t *testing.T) {
 		config := MergeConfig(&gosnowflake.Config{
-			Authenticator: gosnowflakeAuthTypeEmpty,
+			Authenticator: GosnowflakeAuthTypeEmpty,
 		}, config1)
 
 		require.Equal(t, config1, config)
@@ -571,6 +682,9 @@ func Test_ToAuthenticationType(t *testing.T) {
 		{input: "SNOWFLAKE_JWT", want: gosnowflake.AuthTypeJwt},
 		{input: "TOKENACCESSOR", want: gosnowflake.AuthTypeTokenAccessor},
 		{input: "USERNAMEPASSWORDMFA", want: gosnowflake.AuthTypeUsernamePasswordMFA},
+		{input: "OAUTH_CLIENT_CREDENTIALS", want: gosnowflake.AuthTypeOAuthClientCredentials},
+		{input: "OAUTH_AUTHORIZATION_CODE", want: gosnowflake.AuthTypeOAuthAuthorizationCode},
+		{input: "WORKLOAD_IDENTITY", want: gosnowflake.AuthTypeWorkloadIdentityFederation},
 	}
 
 	invalid := []test{
@@ -613,7 +727,10 @@ func Test_ToExtendedAuthenticatorType(t *testing.T) {
 		{input: "TOKENACCESSOR", want: gosnowflake.AuthTypeTokenAccessor},
 		{input: "USERNAMEPASSWORDMFA", want: gosnowflake.AuthTypeUsernamePasswordMFA},
 		{input: "PROGRAMMATIC_ACCESS_TOKEN", want: gosnowflake.AuthTypePat},
-		{input: "", want: gosnowflakeAuthTypeEmpty},
+		{input: "OAUTH_CLIENT_CREDENTIALS", want: gosnowflake.AuthTypeOAuthClientCredentials},
+		{input: "OAUTH_AUTHORIZATION_CODE", want: gosnowflake.AuthTypeOAuthAuthorizationCode},
+		{input: "WORKLOAD_IDENTITY", want: gosnowflake.AuthTypeWorkloadIdentityFederation},
+		{input: "", want: GosnowflakeAuthTypeEmpty},
 	}
 
 	invalid := []test{
@@ -647,23 +764,24 @@ func Test_Provider_toDriverLogLevel(t *testing.T) {
 
 	valid := []test{
 		// Case insensitive.
-		{input: "WARNING", want: DriverLogLevelWarning},
+		{input: "WARN", want: DriverLogLevelWarn},
 
 		// Supported Values.
 		{input: "trace", want: DriverLogLevelTrace},
 		{input: "debug", want: DriverLogLevelDebug},
 		{input: "info", want: DriverLogLevelInfo},
-		{input: "print", want: DriverLogLevelPrint},
-		{input: "warning", want: DriverLogLevelWarning},
+		{input: "warn", want: DriverLogLevelWarn},
 		{input: "error", want: DriverLogLevelError},
 		{input: "fatal", want: DriverLogLevelFatal},
-		{input: "panic", want: DriverLogLevelPanic},
+		{input: "off", want: DriverLogLevelOff},
 	}
 
 	invalid := []test{
 		{input: ""},
 		{input: "foo"},
 		{input: "tracing"},
+		{input: "print"},
+		{input: "panic"},
 	}
 
 	for _, tc := range valid {
@@ -677,6 +795,57 @@ func Test_Provider_toDriverLogLevel(t *testing.T) {
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToDriverLogLevel(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_Provider_toDriverLogLevelWithDeprecatedMappings(t *testing.T) {
+	type test struct {
+		input string
+		want  DriverLogLevel
+	}
+
+	valid := []test{
+		// Standard values.
+		{input: "trace", want: DriverLogLevelTrace},
+		{input: "debug", want: DriverLogLevelDebug},
+		{input: "info", want: DriverLogLevelInfo},
+		{input: "warn", want: DriverLogLevelWarn},
+		{input: "error", want: DriverLogLevelError},
+		{input: "fatal", want: DriverLogLevelFatal},
+		{input: "off", want: DriverLogLevelOff},
+
+		// Case insensitive.
+		{input: "WARN", want: DriverLogLevelWarn},
+		{input: "OFF", want: DriverLogLevelOff},
+
+		// Deprecated values mapped to new ones.
+		{input: "warning", want: DriverLogLevelWarn},
+		{input: "WARNING", want: DriverLogLevelWarn},
+		{input: "panic", want: DriverLogLevelFatal},
+		{input: "PANIC", want: DriverLogLevelFatal},
+		{input: "print", want: DriverLogLevelInfo},
+		{input: "PRINT", want: DriverLogLevelInfo},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+		{input: "tracing"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToDriverLogLevelWithDeprecatedMappings(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToDriverLogLevelWithDeprecatedMappings(tc.input)
 			require.Error(t, err)
 		})
 	}
@@ -773,6 +942,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "org-acc", got.Account)
 				assert.Equal(t, "user", got.User)
 				assert.Equal(t, "pass", got.Password)
+				assert.Equal(t, GosnowflakeAuthTypeEmpty, got.Authenticator)
 			},
 		},
 		{
@@ -801,7 +971,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithExternalBrowserTimeout(60).
 				WithMaxRetryCount(2).
 				WithAuthenticator("SNOWFLAKE_JWT").
-				WithInsecureMode(true).
+				WithInsecureMode(false).
 				WithOcspFailOpen(true).
 				WithToken("token").
 				WithKeepSessionAlive(true).
@@ -815,7 +985,31 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithTmpDirPath("/tmp").
 				WithDisableQueryContextCache(true).
 				WithIncludeRetryReason(true).
-				WithDisableConsoleLogin(true),
+				WithDisableConsoleLogin(true).
+				WithOauthClientID("oauth_client_id").
+				WithOauthClientSecret("oauth_client_secret").
+				WithOauthTokenRequestURL("oauth_token_request_url").
+				WithOauthAuthorizationURL("oauth_authorization_url").
+				WithOauthRedirectURI("oauth_redirect_uri").
+				WithOauthScope("oauth_scope").
+				WithEnableSingleUseRefreshTokens(true).
+				WithWorkloadIdentityProvider("workload_identity_provider").
+				WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+				WithLogQueryText(true).
+				WithLogQueryParameters(true).
+				WithProxyHost("proxy.example.com").
+				WithProxyPort(443).
+				WithProxyUser("username").
+				WithProxyPassword("****").
+				WithProxyProtocol("https").
+				WithNoProxy("localhost,snowflake.computing.com").
+				WithDisableOCSPChecks(false).
+				WithCertRevocationCheckMode("ADVISORY").
+				WithCrlAllowCertificatesWithoutCrlURL(true).
+				WithCrlInMemoryCacheDisabled(false).
+				WithCrlOnDiskCacheDisabled(true).
+				WithCrlHTTPClientTimeout(30).
+				WithDisableSamlURLCheck(true),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -825,8 +1019,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "host", got.Host)
 				assert.Equal(t, "wh", got.Warehouse)
 				assert.Equal(t, "role", got.Role)
-				assert.Equal(t, map[string]*string{"foo": Pointer("bar")}, got.Params)
-				assert.Equal(t, "1.2.3.4", got.ClientIP.String())
+				assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, got.Params)
 				assert.Equal(t, "https", got.Protocol)
 				assert.Equal(t, "code", got.Passcode)
 				assert.Equal(t, 1234, got.Port)
@@ -840,11 +1033,9 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, 60*time.Second, got.ExternalBrowserTimeout)
 				assert.Equal(t, 2, got.MaxRetryCount)
 				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
-				assert.True(t, got.InsecureMode) // nolint:staticcheck
 				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
 				assert.Equal(t, "token", got.Token)
-				assert.True(t, got.KeepSessionAlive)
-				assert.True(t, got.DisableTelemetry)
+				assert.True(t, got.ServerSessionKeepAlive)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ValidateDefaultParameters)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientRequestMfaToken)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientStoreTemporaryCredential)
@@ -853,6 +1044,30 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.True(t, got.DisableQueryContextCache)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.IncludeRetryReason)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.DisableConsoleLogin)
+				assert.Equal(t, "oauth_client_id", got.OauthClientID)
+				assert.Equal(t, "oauth_client_secret", got.OauthClientSecret)
+				assert.Equal(t, "oauth_token_request_url", got.OauthTokenRequestURL)
+				assert.Equal(t, "oauth_authorization_url", got.OauthAuthorizationURL)
+				assert.Equal(t, "oauth_redirect_uri", got.OauthRedirectURI)
+				assert.Equal(t, "oauth_scope", got.OauthScope)
+				assert.True(t, got.EnableSingleUseRefreshTokens)
+				assert.Equal(t, "workload_identity_provider", got.WorkloadIdentityProvider)
+				assert.Equal(t, "workload_identity_entra_resource", got.WorkloadIdentityEntraResource)
+				assert.True(t, got.LogQueryText)
+				assert.True(t, got.LogQueryParameters)
+				assert.Equal(t, "proxy.example.com", got.ProxyHost)
+				assert.Equal(t, 443, got.ProxyPort)
+				assert.Equal(t, "username", got.ProxyUser)
+				assert.Equal(t, "****", got.ProxyPassword)
+				assert.Equal(t, "https", got.ProxyProtocol)
+				assert.Equal(t, "localhost,snowflake.computing.com", got.NoProxy)
+				assert.False(t, got.DisableOCSPChecks)
+				assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, got.CertRevocationCheckMode)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.CrlAllowCertificatesWithoutCrlURL)
+				assert.False(t, got.CrlInMemoryCacheDisabled)
+				assert.True(t, got.CrlOnDiskCacheDisabled)
+				assert.Equal(t, 30*time.Second, got.CrlHTTPClientTimeout)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.DisableSamlURLCheck)
 
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
@@ -865,6 +1080,16 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, privateKey, string(gotUnencryptedKey))
 			},
 		},
+	}
+
+	deprecatedLoggingLevels := []struct {
+		name          string
+		input         string
+		expectedLevel string
+	}{
+		{name: "warning mapped to warn", input: "warning", expectedLevel: string(DriverLogLevelWarn)},
+		{name: "panic mapped to fatal", input: "panic", expectedLevel: string(DriverLogLevelFatal)},
+		{name: "print mapped to info", input: "print", expectedLevel: string(DriverLogLevelInfo)},
 	}
 
 	invalid := []struct {
@@ -885,6 +1110,12 @@ func TestConfigDTODriverConfig(t *testing.T) {
 			err: fmt.Errorf("invalid authenticator type: invalid"),
 		},
 		{
+			name: "invalid authenticator - empty",
+			input: NewConfigDTO().
+				WithAuthenticator(""),
+			err: fmt.Errorf("invalid authenticator type: "),
+		},
+		{
 			name: "invalid privatekey",
 			input: NewConfigDTO().
 				WithPrivateKey("not_a_valid_pem"),
@@ -899,10 +1130,107 @@ func TestConfigDTODriverConfig(t *testing.T) {
 		})
 	}
 
+	for _, tt := range deprecatedLoggingLevels {
+		t.Run(tt.name, func(t *testing.T) {
+			input := NewConfigDTO().WithDriverTracing(tt.input)
+			got, err := input.DriverConfig()
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedLevel, got.Tracing)
+		})
+	}
+
 	for _, tt := range invalid {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := tt.input.DriverConfig()
 			require.ErrorContains(t, err, tt.err.Error())
 		})
 	}
+}
+
+func TestConfigDTODriverConfig_insecureModeAndDisableOcspChecks(t *testing.T) {
+	tests := []struct {
+		insecureMode      *bool
+		disableOcspChecks *bool
+		expected          bool
+	}{
+		{
+			insecureMode:      nil,
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: nil,
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(false),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+	}
+
+	boolPtrToString := func(b *bool) string {
+		if b != nil {
+			return strconv.FormatBool(*b)
+		}
+		return "nil"
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("insecure mode: %s, disableOcspChecks: %s, expected: %v", boolPtrToString(tt.insecureMode), boolPtrToString(tt.disableOcspChecks), tt.expected), func(t *testing.T) {
+			cfg := NewConfigDTO()
+			if tt.insecureMode != nil {
+				cfg = cfg.WithInsecureMode(*tt.insecureMode)
+			}
+			if tt.disableOcspChecks != nil {
+				cfg = cfg.WithDisableOCSPChecks(*tt.disableOcspChecks)
+			}
+
+			got, err := cfg.DriverConfig()
+
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, got.DisableOCSPChecks)
+		})
+	}
+}
+
+func TestConfigDTODriverConfig_disableTelemetryWithoutParams(t *testing.T) {
+	cfg := NewConfigDTO().WithDisableTelemetry(true)
+
+	got, err := cfg.DriverConfig()
+
+	require.NoError(t, err)
+	require.NotNil(t, got.Params)
+	require.Equal(t, Pointer("false"), got.Params[ClientTelemetryEnableSessionParameter])
 }

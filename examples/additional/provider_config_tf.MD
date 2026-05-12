@@ -29,7 +29,68 @@ provider "snowflake" {
 	driver_tracing = "info"
 	tmp_directory_path = "/tmp/terraform-provider/"
 	disable_console_login = true
+	oauth_client_id         = var.oauth_client_id
+	oauth_client_secret     = var.oauth_client_secret
+	oauth_token_request_url = var.oauth_token_request_url
+	oauth_authorization_url = var.oauth_authorization_url
+	oauth_redirect_uri = var.oauth_redirect_uri
+	oauth_scope = "session:role:PUBLIC"
+	workload_identity_provider = "azure"
+	workload_identity_entra_resource = "workload_identity_entra_resource"
+	enable_single_use_refresh_tokens = true
+	log_query_text = false
+	log_query_parameters = false
+	proxy_host = "proxy.example.com"
+	proxy_port = 443
+	proxy_user = "username"
+	proxy_password = var.proxy_password
+	proxy_protocol = "https"
+	no_proxy = "localhost,snowflake.computing.com"
+	disable_ocsp_checks = true
+	cert_revocation_check_mode = "ADVISORY"
+	crl_allow_certificates_without_crl_url = true
+	crl_in_memory_cache_disabled = false
+	crl_on_disk_cache_disabled = true
+	crl_http_client_timeout = 30
+	disable_saml_url_check = true
+
 	params = {
 		param_key = "param_value"
 	}
+}
+
+# Password for the proxy.
+variable "proxy_password" {
+  type      = string
+  sensitive = true
+}
+
+# Client ID from the Okta application.
+variable "oauth_client_id" {
+  type      = string
+  sensitive = true
+}
+
+# Client Secret from the Okta application.
+variable "oauth_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+# Client Token Request URL from the Okta API Authorization Server.
+variable "oauth_token_request_url" {
+  type      = string
+  sensitive = true
+}
+
+# Authorization URL for the Oauth flow.
+variable "oauth_authorization_url" {
+  type      = string
+  sensitive = true
+}
+
+# Redirect URI for the Oauth flow.
+variable "oauth_redirect_uri" {
+  type      = string
+  sensitive = true
 }

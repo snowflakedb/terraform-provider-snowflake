@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -47,38 +46,44 @@ var DiffSuppressDataTypes = NormalizeAndCompareUsingFunc(datatypes.ParseDataType
 // and the first diff is usually .# referring to the collection length (we skip those).
 func NormalizeAndCompareIdentifiersInSet(key string) schema.SchemaDiffSuppressFunc {
 	return func(k, oldValue, newValue string, d *schema.ResourceData) bool {
-		if strings.HasSuffix(k, ".#") {
-			return false
-		}
-
-		if oldValue == "" && !d.GetRawState().IsNull() {
-			if helpers.ContainsIdentifierIgnoringQuotes(ctyValToSliceString(d.GetRawState().AsValueMap()[key].AsValueSet().Values()), newValue) {
-				return true
-			}
-		}
-
-		if newValue == "" {
-			if helpers.ContainsIdentifierIgnoringQuotes(expandStringList(d.Get(key).(*schema.Set).List()), oldValue) {
-				return true
-			}
-		}
-
-		return false
+		containsFunc := helpers.ContainsIdentifierIgnoringQuotes
+		return normalizeAndCompareValuesInSet[sdk.ObjectIdentifier](key, containsFunc)(k, oldValue, newValue, d)
 	}
 }
 
-func SuppressCaseInSet(key string) schema.SchemaDiffSuppressFunc {
+// NormalizeAndCompareIdentifiersInSet is a diff suppression function similar to NormalizeAndCompareIdentifiersInSet, but for enum sets.
+func NormalizeAndCompareEnumsInSet[T ~string](key string, enumNormalizer func(string) (T, error)) schema.SchemaDiffSuppressFunc {
+	return func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+		containsFunc := func(a []string, b string) bool { return helpers.ContainsEnum(a, b, enumNormalizer) }
+		return normalizeAndCompareValuesInSet[T](key, containsFunc)(k, oldValue, newValue, d)
+	}
+}
+
+func normalizeAndCompareValuesInSet[T comparable](key string, containsFunc func(a []string, b string) bool) schema.SchemaDiffSuppressFunc {
 	return func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 		if strings.HasSuffix(k, ".#") {
 			return false
 		}
 
-		if oldValue == "" && !d.GetRawState().IsNull() && !d.GetRawState().AsValueMap()[key].IsNull() {
-			return slices.Contains(collections.Map(ctyValToSliceString(d.GetRawState().AsValueMap()[key].AsValueSet().Values()), strings.ToUpper), strings.ToUpper(newValue))
+		// TODO(SNOW-2332640): Research if we can simplify this logic and keep this type safe.
+		if oldValue == "" && !d.GetRawState().IsNull() {
+			stateRaw, ok := d.GetRawState().AsValueMap()[key]
+			if ok && !stateRaw.IsNull() && stateRaw.Type().IsCollectionType() {
+				if containsFunc(ctyValToSliceString(stateRaw.AsValueSet().Values()), newValue) {
+					return true
+				}
+			} else {
+				log.Printf("[DEBUG] normalizeAndCompareValuesInSet: state raw for key %s is not found or is not a collection type", key)
+			}
 		}
 
 		if newValue == "" {
-			return slices.Contains(collections.Map(expandStringList(d.Get(key).(*schema.Set).List()), strings.ToUpper), strings.ToUpper(oldValue))
+			oldRaw, ok := d.Get(key).(*schema.Set)
+			if ok && containsFunc(expandStringList(oldRaw.List()), oldValue) {
+				return true
+			} else {
+				log.Printf("[DEBUG] normalizeAndCompareValuesInSet: old raw for key %s is not found or is not a collection type", key)
+			}
 		}
 
 		return false
@@ -300,4 +305,8 @@ func ignoreCaseSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
 
 func ignoreCaseAndTrimSpaceSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
 	return strings.EqualFold(strings.TrimSpace(old), strings.TrimSpace(new))
+}
+
+func ignoreAlwaysSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
+	return true
 }

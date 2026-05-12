@@ -10,16 +10,11 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
-
-// TODO [next PRs]: this file is currently almost exact copy of check_destroy file in old acceptance package:
-// 	- the package name was changed
-//  - TestClient() -> testClient()
 
 func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*terraform.State) error {
 	t.Helper()
@@ -36,6 +31,17 @@ func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*te
 
 func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.State) error {
 	t.Helper()
+	return checkDestroy(t, resource, decodeSnowflakeId)
+}
+
+// CheckDestroyUsingLegacyIdParsing is meant to be used in tests checking older provider versions with the legacy identifier logic.
+func CheckDestroyUsingLegacyIdParsing(t *testing.T, resource resources.Resource) func(*terraform.State) error {
+	t.Helper()
+	return checkDestroy(t, resource, decodeSnowflakeIdLegacy)
+}
+
+func checkDestroy(t *testing.T, resource resources.Resource, decodeSnowflakeIdFunc decodeSnowflakeIdFunc) func(*terraform.State) error {
+	t.Helper()
 	// TODO [SNOW-1653619]: use TestClient() here
 	client := atc.client
 	t.Logf("running check destroy for resource %s", resource)
@@ -47,7 +53,7 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 			}
 			t.Logf("found resource %s in state", resource)
 			ctx := context.Background()
-			id, err := decodeSnowflakeId(rs, resource)
+			id, err := decodeSnowflakeIdFunc(rs, resource)
 			if err != nil {
 				return err
 			}
@@ -58,10 +64,15 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 			if !ok {
 				return fmt.Errorf("unsupported show by id in cleanup for %s, with id %v", resource, id.FullyQualifiedName())
 			}
-			if showById(ctx, client, id) == nil {
+			if err := showById(ctx, client, id); err == nil {
 				return fmt.Errorf("%s %v still exists", resource, id.FullyQualifiedName())
 			} else {
-				t.Logf("resource %s (%v) was dropped successfully in Snowflake", resource, id.FullyQualifiedName())
+				var incorrectIdentifierError *IncorrectIdentifierError
+				if errors.As(err, &incorrectIdentifierError) {
+					return err
+				} else {
+					t.Logf("resource %s (%v) was dropped successfully in Snowflake, err: %v", resource, id.FullyQualifiedName(), err)
+				}
 			}
 		}
 		return nil
@@ -70,28 +81,88 @@ func CheckDestroy(t *testing.T, resource resources.Resource) func(*terraform.Sta
 
 func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource) (sdk.ObjectIdentifier, error) {
 	switch resource {
-	case resources.ExternalFunction:
-		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
-	case resources.FunctionJava,
+	// resources using schema object identifier with arguments
+	case resources.ExternalFunction,
+		resources.FunctionJava,
 		resources.FunctionJavascript,
 		resources.FunctionPython,
 		resources.FunctionScala,
-		resources.FunctionSql:
-		return sdk.ParseSchemaObjectIdentifierWithArguments(rs.Primary.ID)
-	case resources.ProcedureJava,
+		resources.FunctionSql,
+		resources.ProcedureJava,
 		resources.ProcedureJavascript,
 		resources.ProcedurePython,
 		resources.ProcedureScala,
 		resources.ProcedureSql:
-		return sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rs.Primary.ID), nil
+		return sdk.ParseSchemaObjectIdentifierWithArguments(rs.Primary.ID)
+	// resources using legacy identifier encoding (with pipes)
+	case resources.AccountAuthenticationPolicyAttachment,
+		resources.AccountPasswordPolicyAttachment,
+		resources.Alert,
+		resources.ApiIntegration,
+		resources.CortexSearchService,
+		resources.DynamicTable,
+		resources.EmailNotificationIntegration,
+		resources.ExternalTable,
+		resources.FailoverGroup,
+		resources.FileFormat,
+		resources.ManagedAccount,
+		resources.MaterializedView,
+		resources.NotificationIntegration,
+		resources.Pipe,
+		resources.Sequence,
+		resources.Share,
+		resources.Stage,
+		resources.Table:
+		return decodeSnowflakeIdLegacy(rs, resource)
+	// Handling user separately, due to existing test with "." as part of the identifier.
+	case resources.User:
+		return sdk.ParseAccountObjectIdentifier(rs.Primary.ID)
 	default:
-		return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
+		return sdk.ParseObjectIdentifierString(rs.Primary.ID)
 	}
 }
 
-type showByIdFunc func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
+func decodeSnowflakeIdLegacy(rs *terraform.ResourceState, _ resources.Resource) (sdk.ObjectIdentifier, error) {
+	return helpers.DecodeSnowflakeIDLegacy(rs.Primary.ID), nil
+}
 
-var showByIdFunctions = map[resources.Resource]showByIdFunc{
+type supportedIdentifierTypes interface {
+	sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments
+}
+
+type (
+	runShowByIdFunc                                 func(context.Context, *sdk.Client, sdk.ObjectIdentifier) error
+	showByIdFunc[T supportedIdentifierTypes, U any] func(context.Context, T) (U, error)
+	decodeSnowflakeIdFunc                           func(rs *terraform.ResourceState, resource resources.Resource) (sdk.ObjectIdentifier, error)
+)
+
+func runShowById[T supportedIdentifierTypes, U any](ctx context.Context, id sdk.ObjectIdentifier, show showByIdFunc[T, U]) error {
+	idCast, err := asId[T](id)
+	if err != nil {
+		return err
+	}
+	_, err = show(ctx, *idCast)
+	return err
+}
+
+type IncorrectIdentifierError struct {
+	expectedType string
+	id           sdk.ObjectIdentifier
+}
+
+func (e *IncorrectIdentifierError) Error() string {
+	return fmt.Sprintf("expected %s identifier type, but got: %T", e.expectedType, e.id)
+}
+
+func asId[T supportedIdentifierTypes](id sdk.ObjectIdentifier) (*T, error) {
+	if idCast, ok := id.(T); !ok {
+		return nil, &IncorrectIdentifierError{reflect.TypeOf(new(T)).Elem().Name(), id}
+	} else {
+		return &idCast, nil
+	}
+}
+
+var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.Account: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Accounts.ShowByID)
 	},
@@ -116,6 +187,18 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.AuthenticationPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.AuthenticationPolicies.ShowByID)
 	},
+	resources.CatalogIntegrationAwsGlue: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
+	resources.CatalogIntegrationObjectStorage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
+	resources.CatalogIntegrationOpenCatalog: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
+	resources.CatalogIntegrationIcebergRest: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
 	},
@@ -136,6 +219,18 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	},
 	resources.EmailNotificationIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NotificationIntegrations.ShowByID)
+	},
+	resources.ExternalAzureStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
+	resources.ExternalGcsStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
+	resources.ExternalS3Stage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
+	resources.ExternalS3CompatibleStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
 	},
 	resources.ExternalFunction: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ExternalFunctions.ShowByID)
@@ -176,6 +271,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ImageRepositories.ShowByID)
 	},
+	resources.InternalStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
 	resources.JobService: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Services.ShowByID)
 	},
@@ -199,6 +297,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	},
 	resources.NetworkRule: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NetworkRules.ShowByID)
+	},
+	resources.Notebook: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Notebooks.ShowByID)
 	},
 	resources.NotificationIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NotificationIntegrations.ShowByID)
@@ -263,6 +364,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.SecretWithGenericString: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Secrets.ShowByID)
 	},
+	resources.SemanticView: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.SemanticViews.ShowByID)
+	},
 	resources.Service: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Services.ShowByID)
 	},
@@ -271,6 +375,9 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	},
 	resources.ServiceUser: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Users.ShowByID)
+	},
+	resources.SessionPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.SessionPolicies.ShowByID)
 	},
 	resources.Share: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Shares.ShowByID)
@@ -282,6 +389,15 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 		return runShowById(ctx, id, client.Stages.ShowByID)
 	},
 	resources.StorageIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
+	resources.StorageIntegrationAws: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
+	resources.StorageIntegrationAzure: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
+	resources.StorageIntegrationGcs: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
 	},
 	resources.StreamOnDirectoryTable: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
@@ -314,26 +430,12 @@ var showByIdFunctions = map[resources.Resource]showByIdFunc{
 	resources.View: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Views.ShowByID)
 	},
+	resources.WarehouseAdaptive: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Warehouses.ShowByID)
+	},
 	resources.Warehouse: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Warehouses.ShowByID)
 	},
-}
-
-func runShowById[T any, U sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments](ctx context.Context, id sdk.ObjectIdentifier, show func(ctx context.Context, id U) (T, error)) error {
-	idCast, err := asId[U](id)
-	if err != nil {
-		return err
-	}
-	_, err = show(ctx, *idCast)
-	return err
-}
-
-func asId[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.TableColumnIdentifier | sdk.SchemaObjectIdentifierWithArguments](id sdk.ObjectIdentifier) (*T, error) {
-	if idCast, ok := id.(T); !ok {
-		return nil, fmt.Errorf("expected %s identifier type, but got: %T", reflect.TypeOf(new(T)).Elem().Name(), id)
-	} else {
-		return &idCast, nil
-	}
 }
 
 // CheckGrantAccountRoleDestroy is a custom checks that should be later incorporated into generic CheckDestroy
@@ -402,8 +504,21 @@ func CheckGrantDatabaseRoleDestroy(t *testing.T) func(*terraform.State) error {
 	}
 }
 
-// CheckAccountRolePrivilegesRevoked is a custom checks that should be later incorporated into generic CheckDestroy
+// CheckAccountRolePrivilegesRevoked is a custom check that should be later incorporated into generic CheckDestroy
 func CheckAccountRolePrivilegesRevoked(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+
+	return checkAccountRolePrivilegesRevoked(t, 0)
+}
+
+// CheckAccountRolePrivilegesRevokedAtMost checks if the number of granted privileges is less than or equal to the given number
+func CheckAccountRolePrivilegesRevokedAtMost(t *testing.T, atMost int) func(*terraform.State) error {
+	t.Helper()
+
+	return checkAccountRolePrivilegesRevoked(t, atMost)
+}
+
+func checkAccountRolePrivilegesRevoked(t *testing.T, atMost int) func(*terraform.State) error {
 	t.Helper()
 
 	return func(s *terraform.State) error {
@@ -424,8 +539,8 @@ func CheckAccountRolePrivilegesRevoked(t *testing.T) func(*terraform.State) erro
 			for _, grant := range grants {
 				grantedPrivileges = append(grantedPrivileges, grant.Privilege)
 			}
-			if len(grantedPrivileges) > 0 {
-				return fmt.Errorf("account role (%s) is still granted, granted privileges %v", id.FullyQualifiedName(), grantedPrivileges)
+			if len(grantedPrivileges) > atMost {
+				return fmt.Errorf("account role (%s) is still granted with more than %d privileges: %v", id.FullyQualifiedName(), atMost, grantedPrivileges)
 			}
 		}
 		return nil
@@ -492,54 +607,19 @@ func CheckSharePrivilegesRevoked(t *testing.T) func(*terraform.State) error {
 // CheckUserPasswordPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
 func CheckUserPasswordPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "snowflake_user_password_policy_attachment" {
-				continue
-			}
-			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
-			if err != nil {
-				if strings.Contains(err.Error(), "does not exist or not authorized") {
-					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
-					continue
-				}
-				return err
-			}
-
-			_, err = collections.FindFirst(policyReferences, func(reference sdk.PolicyReference) bool {
-				return reference.PolicyKind == sdk.PolicyKindPasswordPolicy &&
-					sdk.NewSchemaObjectIdentifier(*reference.PolicyDb, *reference.PolicySchema, reference.PolicyName).FullyQualifiedName() == rs.Primary.Attributes["password_policy_name"]
-			})
-			if err == nil {
-				return fmt.Errorf("user password policy attachment %v still exists", policyReferences[0].PolicyName)
-			}
-		}
-		return nil
-	}
+	return checkUserPolicyAttachmentDestroy(t, resources.UserPasswordPolicyAttachment, sdk.PolicyKindPasswordPolicy)
 }
 
 // CheckUserAuthenticationPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
 func CheckUserAuthenticationPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "snowflake_user_authentication_policy_attachment" {
-				continue
-			}
-			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
-			if err != nil {
-				if strings.Contains(err.Error(), "does not exist or not authorized") {
-					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
-					continue
-				}
-				return err
-			}
-			if len(policyReferences) > 0 {
-				return fmt.Errorf("user authentication policy attachment %v still exists", policyReferences[0].PolicyName)
-			}
-		}
-		return nil
-	}
+	return checkUserPolicyAttachmentDestroy(t, resources.UserAuthenticationPolicyAttachment, sdk.PolicyKindAuthenticationPolicy)
+}
+
+// CheckUserSessionPolicyAttachmentDestroy is a custom check that should be later incorporated into generic CheckDestroy
+func CheckUserSessionPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkUserPolicyAttachmentDestroy(t, resources.UserSessionPolicyAttachment, sdk.PolicyKindSessionPolicy)
 }
 
 // CheckResourceTagUnset is a custom check that should be later incorporated into generic CheckDestroy
@@ -658,6 +738,22 @@ func CheckAccountParameterUnset(t *testing.T, paramName sdk.AccountParameter) fu
 	}
 }
 
+func CheckAccountParameterUnsetToDefaultLevel(t *testing.T, paramName sdk.AccountParameter, defaultLevel sdk.ParameterType) func(*terraform.State) error {
+	t.Helper()
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "snowflake_account_parameter" {
+				continue
+			}
+			parameter := testClient().Parameter.ShowAccountParameter(t, paramName)
+			if parameter.Level != defaultLevel {
+				return fmt.Errorf("expected parameter level %v, got %v", defaultLevel, parameter.Level)
+			}
+		}
+		return nil
+	}
+}
+
 func CheckUserProgrammaticAccessTokenDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
 	return func(s *terraform.State) error {
@@ -674,6 +770,32 @@ func CheckUserProgrammaticAccessTokenDestroy(t *testing.T) func(*terraform.State
 			if token != nil ||
 				(err != nil && !errors.Is(err, sdk.ErrObjectNotFound)) {
 				return fmt.Errorf("programmatic access token %v for user %s still exists", token, userId.Name())
+			}
+		}
+		return nil
+	}
+}
+
+func checkUserPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, policyKind sdk.PolicyKind) func(*terraform.State) error {
+	t.Helper()
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != resource.String() {
+				continue
+			}
+			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
+			if err != nil {
+				if strings.Contains(err.Error(), "does not exist or not authorized") {
+					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
+					continue
+				}
+				return err
+			}
+
+			for _, ref := range policyReferences {
+				if ref.PolicyKind == policyKind {
+					return fmt.Errorf("user %s attachment %v still exists", policyKind, policyReferences[0].PolicyName)
+				}
 			}
 		}
 		return nil

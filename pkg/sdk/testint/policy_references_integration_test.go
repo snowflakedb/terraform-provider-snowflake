@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testint
 
@@ -16,11 +16,11 @@ func TestInt_PolicyReferences(t *testing.T) {
 	ctx := testContext(t)
 
 	passwordPolicyId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	err := client.PasswordPolicies.Create(ctx, passwordPolicyId, &sdk.CreatePasswordPolicyOptions{})
+	err := client.PasswordPolicies.Create(ctx, sdk.NewCreatePasswordPolicyRequest(passwordPolicyId))
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := client.PasswordPolicies.Drop(ctx, passwordPolicyId, &sdk.DropPasswordPolicyOptions{IfExists: sdk.Bool(true)})
+		err := client.PasswordPolicies.Drop(ctx, sdk.NewDropPasswordPolicyRequest(passwordPolicyId).WithIfExists(true))
 		require.NoError(t, err)
 	})
 
@@ -55,7 +55,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 		t.Cleanup(tagCleanup)
 
 		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).WithSet(
-			sdk.NewTagSetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()}),
+			*sdk.NewTagSetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()}),
 		))
 		require.NoError(t, err)
 
@@ -66,7 +66,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 		require.Equal(t, sdk.PolicyKindMaskingPolicy, policyReferences[0].PolicyKind)
 
 		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).WithUnset(
-			sdk.NewTagUnsetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()}),
+			*sdk.NewTagUnsetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()}),
 		))
 		require.NoError(t, err)
 	})

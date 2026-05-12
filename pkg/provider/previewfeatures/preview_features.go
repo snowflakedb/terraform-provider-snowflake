@@ -13,10 +13,17 @@ type feature string
 const (
 	AccountAuthenticationPolicyAttachmentResource feature = "snowflake_account_authentication_policy_attachment_resource"
 	AccountPasswordPolicyAttachmentResource       feature = "snowflake_account_password_policy_attachment_resource"
+	AccountSessionPolicyAttachmentResource        feature = "snowflake_account_session_policy_attachment_resource"
 	AlertResource                                 feature = "snowflake_alert_resource"
 	AlertsDatasource                              feature = "snowflake_alerts_datasource"
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
 	AuthenticationPolicyResource                  feature = "snowflake_authentication_policy_resource"
+	AuthenticationPoliciesDatasource              feature = "snowflake_authentication_policies_datasource"
+	CatalogIntegrationAwsGlueResource             feature = "snowflake_catalog_integration_aws_glue_resource"
+	CatalogIntegrationObjectStorageResource       feature = "snowflake_catalog_integration_object_storage_resource"
+	CatalogIntegrationOpenCatalogResource         feature = "snowflake_catalog_integration_open_catalog_resource"
+	CatalogIntegrationIcebergRestResource         feature = "snowflake_catalog_integration_iceberg_rest_resource"
+	CatalogIntegrationsDatasource                 feature = "snowflake_catalog_integrations_datasource"
 	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
@@ -29,11 +36,16 @@ const (
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
 	DynamicTablesDatasource                       feature = "snowflake_dynamic_tables_datasource"
 	EmailNotificationIntegrationResource          feature = "snowflake_email_notification_integration_resource"
+	ExternalAzureStageResource                    feature = "snowflake_stage_external_azure_resource"
 	ExternalFunctionResource                      feature = "snowflake_external_function_resource"
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
+	ExternalGcsStageResource                      feature = "snowflake_stage_external_gcs_resource"
+	ExternalS3StageResource                       feature = "snowflake_stage_external_s3_resource"
+	ExternalS3CompatibleStageResource             feature = "snowflake_stage_external_s3_compatible_resource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
 	ExternalTablesDatasource                      feature = "snowflake_external_tables_datasource"
 	ExternalVolumeResource                        feature = "snowflake_external_volume_resource"
+	ExternalVolumesDatasource                     feature = "snowflake_external_volumes_datasource"
 	FailoverGroupResource                         feature = "snowflake_failover_group_resource"
 	FailoverGroupsDatasource                      feature = "snowflake_failover_groups_datasource"
 	FileFormatResource                            feature = "snowflake_file_format_resource"
@@ -48,15 +60,21 @@ const (
 	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
+	InternalStageResource                         feature = "snowflake_stage_internal_resource"
 	JobServiceResource                            feature = "snowflake_job_service_resource"
 	ListingResource                               feature = "snowflake_listing_resource"
+	ListingsDatasource                            feature = "snowflake_listings_datasource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
+	NetworkRulesDatasource                        feature = "snowflake_network_rules_datasource"
+	NotebookResource                              feature = "snowflake_notebook_resource"
+	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
+	PasswordPoliciesDatasource                    feature = "snowflake_password_policies_datasource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
 	PipeResource                                  feature = "snowflake_pipe_resource"
 	PipesDatasource                               feature = "snowflake_pipes_datasource"
@@ -67,6 +85,10 @@ const (
 	ProcedureSqlResource                          feature = "snowflake_procedure_sql_resource"
 	ProceduresDatasource                          feature = "snowflake_procedures_datasource"
 	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
+	SemanticViewResource                          feature = "snowflake_semantic_view_resource"
+	SemanticViewDatasource                        feature = "snowflake_semantic_views_datasource"
+	SessionPoliciesDatasource                     feature = "snowflake_session_policies_datasource"
+	SessionPolicyResource                         feature = "snowflake_session_policy_resource"
 	ServiceResource                               feature = "snowflake_service_resource"
 	ServicesDatasource                            feature = "snowflake_services_datasource"
 	SequenceResource                              feature = "snowflake_sequence_resource"
@@ -77,6 +99,9 @@ const (
 	StageResource                                 feature = "snowflake_stage_resource"
 	StagesDatasource                              feature = "snowflake_stages_datasource"
 	StorageIntegrationResource                    feature = "snowflake_storage_integration_resource"
+	StorageIntegrationAwsResource                 feature = "snowflake_storage_integration_aws_resource"
+	StorageIntegrationAzureResource               feature = "snowflake_storage_integration_azure_resource"
+	StorageIntegrationGcsResource                 feature = "snowflake_storage_integration_gcs_resource"
 	StorageIntegrationsDatasource                 feature = "snowflake_storage_integrations_datasource"
 	SystemGenerateSCIMAccessTokenDatasource       feature = "snowflake_system_generate_scim_access_token_datasource"
 	SystemGetAWSSNSIAMPolicyDatasource            feature = "snowflake_system_get_aws_sns_iam_policy_datasource"
@@ -90,18 +115,25 @@ const (
 	UserPublicKeysResource                        feature = "snowflake_user_public_keys_resource"
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
 	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
+	UserSessionPolicyAttachmentResource           feature = "snowflake_user_session_policy_attachment_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
+	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
 )
 
 var allPreviewFeatures = []feature{
 	AccountAuthenticationPolicyAttachmentResource,
 	AccountPasswordPolicyAttachmentResource,
+	AccountSessionPolicyAttachmentResource,
 	AlertResource,
 	AlertsDatasource,
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
-	ComputePoolResource,
-	ComputePoolsDatasource,
+	AuthenticationPoliciesDatasource,
+	CatalogIntegrationAwsGlueResource,
+	CatalogIntegrationObjectStorageResource,
+	CatalogIntegrationOpenCatalogResource,
+	CatalogIntegrationIcebergRestResource,
+	CatalogIntegrationsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -111,11 +143,16 @@ var allPreviewFeatures = []feature{
 	DatabaseRoleDatasource,
 	DynamicTableResource,
 	DynamicTablesDatasource,
+	ExternalAzureStageResource,
 	ExternalFunctionResource,
 	ExternalFunctionsDatasource,
+	ExternalGcsStageResource,
+	ExternalS3StageResource,
+	ExternalS3CompatibleStageResource,
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	ExternalVolumeResource,
+	ExternalVolumesDatasource,
 	FailoverGroupResource,
 	FailoverGroupsDatasource,
 	FileFormatResource,
@@ -126,26 +163,28 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
-	GitRepositoryResource,
-	GitRepositoriesDatasource,
-	ImageRepositoryResource,
-	ImageRepositoriesDatasource,
+	InternalStageResource,
 	JobServiceResource,
-	ListingResource,
+	ListingsDatasource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
 	NetworkPolicyAttachmentResource,
-	NetworkRuleResource,
+	NetworkRulesDatasource,
+	NotebookResource,
+	NotebooksDatasource,
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
+	PasswordPoliciesDatasource,
 	PasswordPolicyResource,
 	PipeResource,
 	PipesDatasource,
 	CurrentRoleDatasource,
-	ServiceResource,
-	ServicesDatasource,
+	SemanticViewResource,
+	SemanticViewDatasource,
+	SessionPoliciesDatasource,
+	SessionPolicyResource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,
@@ -160,6 +199,9 @@ var allPreviewFeatures = []feature{
 	StageResource,
 	StagesDatasource,
 	StorageIntegrationResource,
+	StorageIntegrationAwsResource,
+	StorageIntegrationAzureResource,
+	StorageIntegrationGcsResource,
 	StorageIntegrationsDatasource,
 	SystemGenerateSCIMAccessTokenDatasource,
 	SystemGetAWSSNSIAMPolicyDatasource,
@@ -170,12 +212,30 @@ var allPreviewFeatures = []feature{
 	TableResource,
 	TablesDatasource,
 	UserAuthenticationPolicyAttachmentResource,
-	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
-	UserProgrammaticAccessTokenResource,
-	UserProgrammaticAccessTokensDatasource,
+	UserPublicKeysResource,
+	UserSessionPolicyAttachmentResource,
+	WarehouseAdaptiveResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
+
+var promotedFeatures = []feature{
+	ComputePoolResource,
+	ComputePoolsDatasource,
+	GitRepositoryResource,
+	GitRepositoriesDatasource,
+	ImageRepositoryResource,
+	ImageRepositoriesDatasource,
+	ListingResource,
+	ServiceResource,
+	ServicesDatasource,
+	UserProgrammaticAccessTokenResource,
+	UserProgrammaticAccessTokensDatasource,
+	NetworkRuleResource,
+}
+var PromotedFeatures = sdk.AsStringList(promotedFeatures)
+
+var ValidPreviewFeatures = append(AllPreviewFeatures, PromotedFeatures...)
 
 func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 	if !slices.ContainsFunc(enabledFeatures, func(s string) bool {
@@ -188,8 +248,38 @@ func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 
 func StringToFeature(featRaw string) (feature, error) {
 	feat := feature(strings.ToLower(featRaw))
-	if !slices.Contains(allPreviewFeatures, feat) {
+	if !slices.Contains(ValidPreviewFeatures, string(feat)) {
 		return "", fmt.Errorf("invalid feature: %s", featRaw)
 	}
 	return feat, nil
+}
+
+func GetPromotedFeatures(enabledFeatures []string) []string {
+	containedPromotedFeatures := make([]string, 0)
+	if enabledFeatures == nil {
+		return containedPromotedFeatures
+	}
+	for _, enabledFeature := range enabledFeatures {
+		if IsPromotedFeature(enabledFeature) {
+			containedPromotedFeatures = append(containedPromotedFeatures, enabledFeature)
+		}
+	}
+	return containedPromotedFeatures
+}
+
+func IsPromotedFeature(rawFeature string) bool {
+	return slices.ContainsFunc(PromotedFeatures, func(s string) bool {
+		return strings.EqualFold(rawFeature, s)
+	})
+}
+
+type PreviewFeature interface {
+	xxxProtected()
+	String() string
+}
+
+func (f feature) xxxProtected() {}
+
+func (f feature) String() string {
+	return string(f)
 }

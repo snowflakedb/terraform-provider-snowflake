@@ -16,6 +16,7 @@ type Roles interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Role, error)
 	Grant(ctx context.Context, req *GrantRoleRequest) error
 	Revoke(ctx context.Context, req *RevokeRoleRequest) error
+	RevokeSafely(ctx context.Context, req *RevokeRoleRequest) error
 	Use(ctx context.Context, req *UseRoleRequest) error
 	UseSecondary(ctx context.Context, req *UseSecondaryRolesRequest) error
 }
@@ -54,7 +55,7 @@ type roleDBRow struct {
 	Comment         sql.NullString `db:"comment"`
 }
 
-func (row roleDBRow) convert() *Role {
+func (row roleDBRow) convert() (*Role, error) {
 	role := &Role{
 		CreatedOn:       row.CreatedOn,
 		Name:            row.Name,
@@ -77,7 +78,7 @@ func (row roleDBRow) convert() *Role {
 	if row.Comment.Valid {
 		role.Comment = row.Comment.String
 	}
-	return role
+	return role, nil
 }
 
 // CreateRoleOptions based on https://docs.snowflake.com/en/sql-reference/sql/create-role

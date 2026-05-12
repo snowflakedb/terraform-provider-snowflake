@@ -53,6 +53,10 @@ type LimitFrom struct {
 	From *string `ddl:"parameter,no_equals,single_quotes" sql:"FROM"`
 }
 
+type StringListItemWrapper struct {
+	Value string `ddl:"keyword,single_quotes"`
+}
+
 type In struct {
 	Account  *bool                    `ddl:"keyword" sql:"ACCOUNT"`
 	Database AccountObjectIdentifier  `ddl:"identifier" sql:"DATABASE"`
@@ -65,9 +69,19 @@ type ExtendedIn struct {
 	ApplicationPackage AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
 }
 
+type On struct {
+	Account *bool                   `ddl:"keyword" sql:"ACCOUNT"`
+	User    AccountObjectIdentifier `ddl:"identifier" sql:"USER"`
+}
+
 type ServiceIn struct {
 	In
 	ComputePool AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
+}
+
+type TableIn struct {
+	In
+	Table SchemaObjectIdentifier `ddl:"identifier" sql:"TABLE"`
 }
 
 type Like struct {
@@ -75,6 +89,7 @@ type Like struct {
 }
 
 type TagAssociation struct {
+	// TODO(SNOW-2312025): Change the type to SchemaObjectIdentifier.
 	Name  ObjectIdentifier `ddl:"identifier"`
 	Value string           `ddl:"parameter,single_quotes"`
 }
@@ -294,7 +309,7 @@ func ToReturnResultsBehavior(value string) (ReturnResultsBehavior, error) {
 	}
 }
 
-var AllAllowedReturnResultsBehaviors = []ReturnResultsBehavior{
+var AllReturnResultsBehaviors = []ReturnResultsBehavior{
 	ReturnResultsBehaviorVolatile,
 	ReturnResultsBehaviorImmutable,
 }
@@ -337,10 +352,6 @@ var (
 	DistributionInternal Distribution = "INTERNAL"
 	DistributionExternal Distribution = "EXTERNAL"
 )
-
-func DistributionPointer(v Distribution) *Distribution {
-	return &v
-}
 
 type LogLevel string
 
@@ -490,6 +501,14 @@ func NewStageLocation(stage SchemaObjectIdentifier, path string) StageLocation {
 		stage: stage,
 		path:  path,
 	}
+}
+
+func (s StageLocation) GetStageId() SchemaObjectIdentifier {
+	return s.stage
+}
+
+func (s StageLocation) GetPath() string {
+	return s.path
 }
 
 func (s StageLocation) ToSql() string {

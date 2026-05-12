@@ -1,8 +1,9 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -12,10 +13,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -41,7 +44,6 @@ func TestAcc_FunctionSql_InlineBasic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -131,7 +133,6 @@ func TestAcc_FunctionSql_InlineFull(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -175,6 +176,198 @@ func TestAcc_FunctionSql_InlineFull(t *testing.T) {
 						HasNameString(idWithChangedNameButTheSameDataType.Name()).
 						HasFullyQualifiedNameString(idWithChangedNameButTheSameDataType.FullyQualifiedName()).
 						HasCommentString(otherComment),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_FunctionSql_Decfloat(t *testing.T) {
+	argName := "abc"
+	dataType := testdatatypes.DataTypeDecfloat
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+
+	definition := testClient().Function.SampleSqlDefinitionWithArgument(t, argName)
+
+	functionModel := model.FunctionSqlBasicInline("test", id, definition, dataType.ToLegacyDataTypeSql()).
+		WithArgument(argName, dataType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
+		Steps: []resource.TestStep{
+			// CREATE BASIC
+			{
+				Config: config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasIsSecureString(r.BooleanDefault).
+						HasCommentString(sdk.DefaultFunctionComment).
+						HasFunctionDefinitionString(definition).
+						HasFunctionLanguageString("SQL").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.FunctionShowOutput(t, functionModel.ResourceReference()).
+						HasIsSecure(false),
+					assert.Check(resource.TestCheckResourceAttr(functionModel.ResourceReference(), "arguments.0.arg_name", argName)),
+					assert.Check(resource.TestCheckResourceAttr(functionModel.ResourceReference(), "arguments.0.arg_data_type", dataType.ToSql())),
+					assert.Check(resource.TestCheckResourceAttr(functionModel.ResourceReference(), "arguments.0.arg_default_value", "")),
+				),
+			},
+			// REMOVE EXTERNALLY (CHECK RECREATION)
+			{
+				PreConfig: func() {
+					testClient().Function.DropFunctionFunc(t, id)()
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()),
+				),
+			},
+			// IMPORT
+			{
+				ResourceName:            functionModel.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"is_secure"},
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedFunctionSqlResource(t, id.FullyQualifiedName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_data_type", dataType.ToSql())),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_default_value", "")),
+				),
+			},
+		},
+	})
+}
+
+// In v2.15.0 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
+// time because the comma inside NUMBER(x,y) is incorrectly treated as a column separator.
+func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	definition := "SELECT 1::NUMBER(38,0), 'error'::VARCHAR"
+	returnType := "TABLE(O_ERR_CODE NUMBER(38,0), O_ERR_SEVERITY VARCHAR)"
+
+	functionModel := model.FunctionSqlBasicInline("test", id, definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionSqlResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
+		Steps: []resource.TestStep{
+			// Step 1: v2.15.0 fails because TABLE with parametrized columns cannot be parsed.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, providerModel, functionModel),
+				ExpectError:       regexp.MustCompile(`number NUMBER\(38 could not be parsed, use "NUMBER\(precision, scale\)" format`),
+			},
+			// Step 2: Current version correctly parses TABLE with parametrized columns.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFunctionLanguageString("SQL").
+						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER(38, 0), O_ERR_SEVERITY VARCHAR(16777216))"),
+				),
+			},
+		},
+	})
+}
+
+// In v2.15.0 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
+// time because the comma inside NUMBER(x,y) is incorrectly treated as a column separator.
+// This test uses non-default precision/scale to verify state preserves config values.
+func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	definition := "SELECT 1::NUMBER(24,2), 'error'::VARCHAR"
+	returnType := "TABLE(O_ERR_CODE NUMBER(24,2), O_ERR_SEVERITY VARCHAR)"
+
+	functionModel := model.FunctionSqlBasicInline("test", id, definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionSqlResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
+		Steps: []resource.TestStep{
+			// Step 1: v2.15.0 fails because TABLE with parametrized columns cannot be parsed.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, providerModel, functionModel),
+				ExpectError:       regexp.MustCompile(`number NUMBER\(24 could not be parsed, use "NUMBER\(precision, scale\)" format`),
+			},
+			// Step 2: Current version correctly parses TABLE with parametrized columns.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFunctionLanguageString("SQL").
+						// State preserves config value (normalized via StateFunc).
+						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER(24, 2), O_ERR_SEVERITY VARCHAR(16777216))"),
+				),
+			},
+		},
+	})
+}
+
+// When a function with TABLE return type using non-parametrized column types was created in
+// v2.15.0, the current version must not produce spurious plan drift after migration.
+func TestAcc_FunctionSql_tableReturnTypeDefaultParamsNoDriftAfterMigration(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	definition := "SELECT 1::NUMBER, 'error'::VARCHAR"
+	returnType := "TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"
+
+	functionModel := model.FunctionSqlBasicInline("test", id, definition, returnType)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FunctionSqlResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
+		Steps: []resource.TestStep{
+			// v2.15.0 creates the function successfully: TABLE(NUMBER, VARCHAR) has no commas
+			// inside type parameters, so the naive comma split in v2.15.0 works correctly.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
+				Config:            config.FromModels(t, providerModel, functionModel),
+			},
+			// Current version: no drift even though the state now contains the full type.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, functionModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasReturnTypeString(returnType),
 				),
 			},
 		},

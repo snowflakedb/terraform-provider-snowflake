@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"strings"
 	"text/template"
 
 	_ "embed"
@@ -9,15 +10,12 @@ import (
 )
 
 var (
-	//go:embed templates/preamble.tmpl
-	preambleTemplateContent string
-	PreambleTemplate, _     = template.New("preambleTemplate").Parse(preambleTemplateContent)
-
 	//go:embed templates/definition.tmpl
 	definitionTemplateContent string
 	DefinitionTemplate, _     = template.New("definitionTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
 		genhelpers.FirstLetterLowercase,
 		genhelpers.FirstLetter,
+		strings.TrimSuffix,
 	)).Parse(definitionTemplateContent)
 
 	//go:embed templates/assertions.tmpl
@@ -28,7 +26,8 @@ var (
 		genhelpers.IsTypeSlice,
 		genhelpers.SnakeCase,
 		genhelpers.RunMapper,
+		strings.TrimSuffix,
 	)).Parse(assertionsTemplateContent)
 
-	AllTemplates = []*template.Template{PreambleTemplate, DefinitionTemplate, AssertionsTemplate}
+	AllTemplates = []*template.Template{genhelpers.PreambleTemplate, DefinitionTemplate, AssertionsTemplate}
 )

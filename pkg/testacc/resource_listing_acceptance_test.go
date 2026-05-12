@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -33,7 +33,7 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	basicManifest, listingTitle := testClient().Listing.BasicManifestWithUnquotedValues(t)
-	manifestWithTargetAccounts, listingTitleWithTargetAccounts := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	manifestWithTargetAccounts, listingTitleWithTargetAccounts := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)
 
 	comment, newComment := random.Comment(), random.Comment()
 
@@ -62,7 +62,6 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -234,7 +233,7 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	basicManifest, listingTitle := testClient().Listing.BasicManifest(t)
-	manifestWithTargetAccounts, listingTitleWithTargetAccounts := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	manifestWithTargetAccounts, listingTitleWithTargetAccounts := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)
 
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
@@ -264,7 +263,6 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -431,7 +429,7 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	manifest, title := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	manifest, title := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)
 
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
@@ -453,7 +451,6 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -507,7 +504,7 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	manifest, title := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
+	manifest, title := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)
 
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
@@ -530,7 +527,6 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -583,8 +579,8 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	manifest1, title1 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
-	manifest2, title2 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccountAndDifferentSubtitle(t, testClient().Context.CurrentAccountId(t))
+	manifest1, title1 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)
+	manifest2, title2 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccountsAndDifferentSubtitle(t)
 
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
@@ -608,7 +604,6 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -688,8 +683,8 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	manifest1, title1 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccount(t, testClient().Context.CurrentAccountId(t))
-	manifest2, title2 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccountAndDifferentSubtitle(t, testClient().Context.CurrentAccountId(t))
+	manifest1, title1 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)
+	manifest2, title2 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccountsAndDifferentSubtitle(t)
 
 	stage1, stage1Cleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stage1Cleanup)
@@ -727,7 +722,6 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -877,7 +871,6 @@ func TestAcc_Listing_Validations(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

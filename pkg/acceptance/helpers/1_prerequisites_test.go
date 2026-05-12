@@ -11,19 +11,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type MockAccountInformation struct {
+	AccountLocator string
+}
+
+func (m MockAccountInformation) GetAccountLocator() string {
+	return m.AccountLocator
+}
+
 func TestEnsureValidAccountIsUsed(t *testing.T) {
-	client := sdk.Client{}
+	accountLocator := "ABC123123"
 
 	testClient := TestClient{
-		context: &TestClientContext{
-			client: &client,
+		AccountInformation: &MockAccountInformation{
+			AccountLocator: accountLocator,
 		},
 	}
 
 	t.Run("valid account: the test shouldn't be skipped", func(t *testing.T) {
-		accountLocator := "ABC123123"
-		client.SetAccountLocatorForTests(accountLocator)
-
 		t.Setenv(string(testenvs.TestAccountCreate), "1")
 		t.Setenv(string(testenvs.TestNonProdModifiableAccountLocator), accountLocator)
 		defer func() {
@@ -35,8 +40,6 @@ func TestEnsureValidAccountIsUsed(t *testing.T) {
 	})
 
 	t.Run(fmt.Sprintf("invalid account is used: should skip the tests as %s is not set", testenvs.TestAccountCreate), func(t *testing.T) {
-		accountLocator := "ABC123123"
-		client.SetAccountLocatorForTests(accountLocator)
 		t.Setenv(string(testenvs.TestNonProdModifiableAccountLocator), accountLocator)
 		t.Setenv(string(testenvs.TestAccountCreate), "")
 		defer func() {
@@ -117,9 +120,11 @@ func TestEnsureValidOrganizationAccountIsUsed(t *testing.T) {
 	client := sdk.Client{
 		OrganizationAccounts: organizationAccounts,
 	}
-	client.SetAccountLocatorForTests(accountLocator)
 
 	testClient := TestClient{
+		AccountInformation: &MockAccountInformation{
+			AccountLocator: accountLocator,
+		},
 		context: &TestClientContext{
 			client: &client,
 		},

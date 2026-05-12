@@ -70,9 +70,10 @@ var dynamicTableSchema = map[string]*schema.Schema{
 		},
 	},
 	"warehouse": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The warehouse in which to create the dynamic table.",
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The warehouse in which to create the dynamic table.",
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"query": {
 		Type:             schema.TypeString,
@@ -206,6 +207,7 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		return diag.FromErr(err)
 	}
+
 	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,9 +218,6 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 	if err := d.Set("schema", dynamicTable.SchemaName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("warehouse", dynamicTable.Warehouse); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("comment", dynamicTable.Comment); err != nil {
@@ -301,6 +300,26 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 	if err := d.Set("data_timestamp", dynamicTable.DataTimestamp.Format("2006-01-02T16:04:05.000 -0700")); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if err := d.Set("warehouse", dynamicTable.Warehouse); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if dynamicTable.Text == "" {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Failed to query dynamic table's text column.",
+				Detail: fmt.Sprintf(
+					joinWithSpace(
+						"The text column is empty for dynamic table (%s): ensure that the currently used user and role is privileged enough to see the TEXT column in SHOW DYNAMIC TABLES command for this dynamic table.",
+						"If not, refer to the Snowflake documentation to see which privileges are required: https://docs.snowflake.com/en/user-guide/dynamic-tables-privileges#label-dynamic-tables-privileges-view-metadata.",
+					),
+					id.FullyQualifiedName(),
+				),
+			},
+		}
 	}
 
 	extractor := snowflake.NewViewSelectStatementExtractor(dynamicTable.Text)

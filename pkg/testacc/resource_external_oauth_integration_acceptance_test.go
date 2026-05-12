@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -7,13 +7,18 @@ import (
 	"regexp"
 	"testing"
 
-	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	tfjson "github.com/hashicorp/terraform-json"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -22,398 +27,289 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_ExternalOauthIntegration_basic(t *testing.T) {
-	role, roleCleanup := testClient().Role.CreateRole(t)
-	t.Cleanup(roleCleanup)
-
+func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
 	issuer := random.String()
 
-	m := func(complete, unset bool) map[string]config.Variable {
-		c := map[string]config.Variable{
-			"enabled":             config.BoolVariable(true),
-			"name":                config.StringVariable(id.Name()),
-			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_issuer":                           config.StringVariable(issuer),
-			"external_oauth_jws_keys_url":                     config.SetVariable(config.StringVariable("https://example.com")),
-		}
-		if complete {
-			c["external_oauth_allowed_roles_list"] = config.SetVariable(config.StringVariable(role.ID().Name()))
-			c["external_oauth_any_role_mode"] = config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable))
-			c["external_oauth_audience_list"] = config.SetVariable(config.StringVariable("foo"))
-			c["external_oauth_scope_delimiter"] = config.StringVariable(".")
-			c["external_oauth_scope_mapping_attribute"] = config.StringVariable("foo")
-			c["comment"] = config.StringVariable("foo")
-		}
-		if unset {
-			c["external_oauth_scope_mapping_attribute"] = config.StringVariable("foo")
-		}
-		return c
+	basic := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
+	).
+		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com")))
+
+	complete := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
+	).
+		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com"))).
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
+		WithExternalOauthAudienceListValue(config.SetVariable(config.StringVariable("bar"))).
+		WithExternalOauthScopeDelimiter(".").
+		WithComment(comment)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
+			HasEnabled(true).
+			HasComment(""),
+
+		resourceassert.ExternalOauthSecurityIntegrationResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasEnabledString(r.BooleanTrue).
+			HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)).
+			HasExternalOauthIssuerString(issuer).
+			HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
+			HasCommentString(""),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
+			HasEnabled(true).
+			HasComment(""),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", r.BooleanTrue)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress))),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ",")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.comment.0.value", "")),
 	}
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
+			HasEnabled(true).
+			HasComment(comment),
+
+		resourceassert.ExternalOauthSecurityIntegrationResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasEnabledString(r.BooleanTrue).
+			HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)).
+			HasExternalOauthIssuerString(issuer).
+			HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
+			HasExternalOauthAnyRoleModeString(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
+			HasExternalOauthScopeDelimiterString(".").
+			HasCommentString(comment),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
+			HasEnabled(true).
+			HasComment(comment),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", r.BooleanTrue)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_audience_list.0.value", "bar")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ".")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
 		Steps: []resource.TestStep{
-			// create with empty optionals
+			// Create - without optionals
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/basic"),
-				ConfigVariables: m(false, false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_issuer", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.0", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.integration_type", "EXTERNAL_OAUTH - CUSTOM"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.comment", ""),
-					resource.TestCheckResourceAttrSet("snowflake_external_oauth_integration.test", "show_output.0.created_on"),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_issuer.0.value", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_allowed_roles_list.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_audience_list.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_scope_delimiter.0.value", ","),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.comment.0.value", "")),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
 			},
-			// import - without optionals
+			// Import - without optionals
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/basic"),
-				ConfigVariables: m(false, false),
-				ResourceName:    "snowflake_external_oauth_integration.test",
-				ImportState:     true,
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_issuer", issuer),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_token_user_mapping_claim.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_token_user_mapping_claim.0", "foo"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_jws_keys_url.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_jws_keys_url.0", "https://example.com"),
-				),
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_oauth_jws_keys_url",
+					"external_oauth_rsa_public_key",
+					"external_oauth_rsa_public_key_2",
+					"external_oauth_scope_mapping_attribute",
+					"external_oauth_any_role_mode",
+					"external_oauth_scope_delimiter",
+					"external_oauth_blocked_roles_list",
+				},
 			},
-			// set optionals
+			// Update - set optionals
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
-				ConfigVariables: m(true, true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "comment", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_allowed_roles_list.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_allowed_roles_list.0", role.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_audience_list.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_audience_list.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_issuer", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.0", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_delimiter", "."),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_mapping_attribute", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.integration_type", "EXTERNAL_OAUTH - CUSTOM"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.comment", "foo"),
-					resource.TestCheckResourceAttrSet("snowflake_external_oauth_integration.test", "show_output.0.created_on"),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_issuer.0.value", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_allowed_roles_list.0.value", role.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_audience_list.0.value", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_scope_delimiter.0.value", "."),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.comment.0.value", "foo")),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
 			},
-			// import - complete
+			// Import - with optionals
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
-				ConfigVariables: m(true, true),
-				ResourceName:    "snowflake_external_oauth_integration.test",
-				ImportState:     true,
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_issuer", issuer),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_token_user_mapping_claim.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_token_user_mapping_claim.0", "foo"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_jws_keys_url.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_jws_keys_url.0", "https://example.com"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_allowed_roles_list.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_allowed_roles_list.0", role.ID().Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_audience_list.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_audience_list.0", "foo"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "external_oauth_scope_delimiter", "."),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", "foo"),
-				),
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_oauth_jws_keys_url",
+					"external_oauth_rsa_public_key",
+					"external_oauth_rsa_public_key_2",
+					"external_oauth_scope_mapping_attribute",
+					"external_oauth_any_role_mode",
+					"external_oauth_scope_delimiter",
+					"external_oauth_blocked_roles_list",
+				},
 			},
-			// change values externally
+			// Update - unset optionals
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
-				ConfigVariables: m(true, true),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
+			{
 				PreConfig: func() {
 					testClient().SecurityIntegration.UpdateExternalOauth(t, sdk.NewAlterExternalOauthSecurityIntegrationRequest(id).
 						WithSet(*sdk.NewExternalOauthIntegrationSetRequest().
-							WithExternalOauthSnowflakeUserMappingAttribute(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName),
+							WithEnabled(true).
+							WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{"https://example.com"}}).
+							WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable).
+							WithExternalOauthAudienceList(*sdk.NewAudienceListRequest([]sdk.AudienceListItem{{"bar"}})).
+							WithExternalOauthSnowflakeUserMappingAttribute(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName).
+							WithComment(sdk.StringAllowEmpty{Value: comment}),
 						))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("snowflake_external_oauth_integration.test", plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift("snowflake_external_oauth_integration.test", "external_oauth_snowflake_user_mapping_attribute", sdk.String(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)), sdk.String(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName))),
-						planchecks.ExpectChange("snowflake_external_oauth_integration.test", "external_oauth_snowflake_user_mapping_attribute", tfjson.ActionUpdate, sdk.String(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName)), sdk.String(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress))),
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "comment", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_allowed_roles_list.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_allowed_roles_list.0", role.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_audience_list.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_audience_list.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_issuer", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.0", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_delimiter", "."),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_mapping_attribute", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.integration_type", "EXTERNAL_OAUTH - CUSTOM"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.comment", "foo"),
-					resource.TestCheckResourceAttrSet("snowflake_external_oauth_integration.test", "show_output.0.created_on"),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_issuer.0.value", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_allowed_roles_list.0.value", role.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_audience_list.0.value", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_scope_delimiter.0.value", "."),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.comment.0.value", "foo")),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
 			},
-			// unset without force new
+			// Destroy - ensure external oauth integration is deleted
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/unset"),
-				ConfigVariables: m(false, true),
+				Destroy: true,
+				Config:  accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					invokeactionassert.SecurityIntegrationDoesNotExist(t, id),
+				),
+			},
+			// Create - with optionals
+			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("snowflake_external_oauth_integration.test", plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "comment", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "enabled", "true"),
-					resource.TestCheckNoResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_allowed_roles_list.#"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_any_role_mode", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_issuer", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.0", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_delimiter", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_mapping_attribute", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.integration_type", "EXTERNAL_OAUTH - CUSTOM"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.comment", ""),
-					resource.TestCheckResourceAttrSet("snowflake_external_oauth_integration.test", "show_output.0.created_on"),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_issuer.0.value", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_allowed_roles_list.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_audience_list.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_scope_delimiter.0.value", ","),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.comment.0.value", "")),
-			},
-			// unset all
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/basic"),
-				ConfigVariables: m(false, true),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("snowflake_external_oauth_integration.test", plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "comment", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "enabled", "true"),
-					resource.TestCheckNoResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_allowed_roles_list.#"),
-					resource.TestCheckNoResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_any_role_mode"),
-					resource.TestCheckNoResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_audience_list.#"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_issuer", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.0", "https://example.com"),
-					resource.TestCheckNoResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_delimiter"),
-					resource.TestCheckNoResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_mapping_attribute"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.integration_type", "EXTERNAL_OAUTH - CUSTOM"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.comment", ""),
-					resource.TestCheckResourceAttrSet("snowflake_external_oauth_integration.test", "show_output.0.created_on"),
-
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_issuer.0.value", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_allowed_roles_list.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_audience_list.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_scope_delimiter.0.value", ","),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.comment.0.value", "")),
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
 			},
 		},
 	})
 }
 
-func TestAcc_ExternalOauthIntegration_completeWithJwsKeysUrlAndAllowedRolesList(t *testing.T) {
+func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
 	issuer := random.String()
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"comment":                                         config.StringVariable("foo"),
-			"enabled":                                         config.BoolVariable(true),
-			"external_oauth_allowed_roles_list":               config.SetVariable(config.StringVariable(role.ID().Name())),
-			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_issuer":                           config.StringVariable(issuer),
-			"external_oauth_jws_keys_url":                     config.SetVariable(config.StringVariable("https://example.com")),
-			"external_oauth_scope_delimiter":                  config.StringVariable("."),
-			"external_oauth_scope_mapping_attribute":          config.StringVariable("foo"),
-			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
-			"name":                config.StringVariable(id.Name()),
-			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
-		}
-	}
+	complete := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
+	).
+		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com"))).
+		WithExternalOauthScopeMappingAttribute("scp").
+		WithExternalOauthAllowedRolesListValue(config.SetVariable(config.StringVariable(role.ID().Name()))).
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
+		WithExternalOauthAudienceListValue(config.SetVariable(config.StringVariable("bar"))).
+		WithExternalOauthScopeDelimiter(".").
+		WithComment(comment)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
 		Steps: []resource.TestStep{
+			// Create - with all optionals (including optional force-new fields)
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
-				ConfigVariables: m(),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "comment", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_allowed_roles_list.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_allowed_roles_list.0", role.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_audience_list.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_audience_list.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_issuer", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_jws_keys_url.0", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_delimiter", "."),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_scope_mapping_attribute", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_token_user_mapping_claim.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(t,
+					objectassert.SecurityIntegration(t, id).
+						HasName(id.Name()).
+						HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
+						HasEnabled(true).
+						HasComment(comment),
 
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.integration_type", "EXTERNAL_OAUTH - CUSTOM"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "show_output.0.comment", "foo"),
-					resource.TestCheckResourceAttrSet("snowflake_external_oauth_integration.test", "show_output.0.created_on"),
+					resourceassert.ExternalOauthSecurityIntegrationResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasEnabledString(r.BooleanTrue).
+						HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)).
+						HasExternalOauthIssuerString(issuer).
+						HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
+						HasExternalOauthScopeMappingAttributeString("scp").
+						HasExternalOauthAnyRoleModeString(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
+						HasExternalOauthScopeDelimiterString(".").
+						HasCommentString(comment),
 
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_issuer.0.value", issuer),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_allowed_roles_list.0.value", role.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_audience_list.0.value", "foo"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']"),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.external_oauth_scope_delimiter.0.value", "."),
-					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "describe_output.0.comment.0.value", "foo"),
+					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+						HasName(id.Name()).
+						HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
+						HasEnabled(true).
+						HasComment(comment),
+
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", r.BooleanTrue)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_issuer.0.value", issuer)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_jws_keys_url.0.value", "https://example.com")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_token_user_mapping_claim.0.value", "['foo']")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress))),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_allowed_roles_list.0.value", role.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_audience_list.0.value", "bar")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ".")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
 				),
 			},
+			// Import - with all optionals
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
-				ConfigVariables:         m(),
-				ResourceName:            "snowflake_external_oauth_integration.test",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"external_oauth_rsa_public_key", "external_oauth_rsa_public_key_2", "external_oauth_scope_mapping_attribute"},
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_oauth_jws_keys_url",
+					"external_oauth_rsa_public_key",
+					"external_oauth_rsa_public_key_2",
+					"external_oauth_scope_mapping_attribute",
+					"external_oauth_any_role_mode",
+					"external_oauth_scope_delimiter",
+					"external_oauth_allowed_roles_list",
+				},
 			},
 		},
 	})
@@ -434,15 +330,14 @@ func TestAcc_ExternalOauthIntegration_invalidAnyRoleMode(t *testing.T) {
 			"external_oauth_rsa_public_key_2":                 config.StringVariable("foo"),
 			"external_oauth_scope_delimiter":                  config.StringVariable("foo"),
 			"external_oauth_scope_mapping_attribute":          config.StringVariable("foo"),
-			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
+			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)),
 			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
 			"name":                config.StringVariable("foo"),
-			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 		}
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -450,7 +345,7 @@ func TestAcc_ExternalOauthIntegration_invalidAnyRoleMode(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
 				ConfigVariables: m(),
-				ExpectError:     regexp.MustCompile("Error: invalid ExternalOauthSecurityIntegrationAnyRoleModeOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid external oauth security integration any role mode option: INVALID"),
 			},
 		},
 	})
@@ -462,7 +357,7 @@ func TestAcc_ExternalOauthIntegration_invalidSnowflakeUserMappingAttribute(t *te
 			"comment":                                         config.StringVariable("foo"),
 			"enabled":                                         config.BoolVariable(true),
 			"external_oauth_allowed_roles_list":               config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
+			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
 			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_issuer":                           config.StringVariable(random.String()),
@@ -474,12 +369,11 @@ func TestAcc_ExternalOauthIntegration_invalidSnowflakeUserMappingAttribute(t *te
 			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable("invalid"),
 			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
 			"name":                config.StringVariable("foo"),
-			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 		}
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -487,7 +381,7 @@ func TestAcc_ExternalOauthIntegration_invalidSnowflakeUserMappingAttribute(t *te
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
 				ConfigVariables: m(),
-				ExpectError:     regexp.MustCompile("Error: invalid ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid external oauth security integration snowflake user mapping attribute option: INVALID"),
 			},
 		},
 	})
@@ -499,7 +393,7 @@ func TestAcc_ExternalOauthIntegration_invalidOauthType(t *testing.T) {
 			"comment":                                         config.StringVariable("foo"),
 			"enabled":                                         config.BoolVariable(true),
 			"external_oauth_allowed_roles_list":               config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
+			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
 			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable("foo")),
 			"external_oauth_issuer":                           config.StringVariable(random.String()),
@@ -508,7 +402,7 @@ func TestAcc_ExternalOauthIntegration_invalidOauthType(t *testing.T) {
 			"external_oauth_rsa_public_key_2":                 config.StringVariable("foo"),
 			"external_oauth_scope_delimiter":                  config.StringVariable("foo"),
 			"external_oauth_scope_mapping_attribute":          config.StringVariable("foo"),
-			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress)),
+			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)),
 			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
 			"name":                config.StringVariable("foo"),
 			"external_oauth_type": config.StringVariable("invalid"),
@@ -516,7 +410,6 @@ func TestAcc_ExternalOauthIntegration_invalidOauthType(t *testing.T) {
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -524,7 +417,7 @@ func TestAcc_ExternalOauthIntegration_invalidOauthType(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithJwsKeysUrlAndAllowedRolesList"),
 				ConfigVariables: m(),
-				ExpectError:     regexp.MustCompile("Error: invalid ExternalOauthSecurityIntegrationTypeOption: INVALID"),
+				ExpectError:     regexp.MustCompile("Error: invalid external oauth security integration type option: INVALID"),
 			},
 		},
 	})
@@ -539,7 +432,6 @@ func TestAcc_ExternalOauthIntegration_InvalidIncomplete(t *testing.T) {
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -567,26 +459,26 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withRsaPublicKeysAnd
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	issuer := random.String()
 	rsaKey, _ := random.GenerateRSAPublicKey(t)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_external_oauth_integration.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            externalOauthIntegrationWithRsaPublicKeysAndBlockedRolesListv092(id.Name(), issuer, rsaKey, role.Name),
+				Config:            providerConfig + externalOauthIntegrationWithRsaPublicKeysAndBlockedRolesListv092(id.Name(), issuer, rsaKey, role.Name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
-					resource.TestCheckResourceAttr(resourceName, "type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+					resource.TestCheckResourceAttr(resourceName, "type", string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 					resource.TestCheckResourceAttr(resourceName, "issuer", issuer),
 					resource.TestCheckResourceAttr(resourceName, "token_user_mapping_claims.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "token_user_mapping_claims.0", "foo"),
-					resource.TestCheckResourceAttr(resourceName, "snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName)),
+					resource.TestCheckResourceAttr(resourceName, "snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName)),
 					resource.TestCheckResourceAttr(resourceName, "scope_mapping_attribute", "foo"),
 					resource.TestCheckResourceAttr(resourceName, "rsa_public_key", rsaKey),
 					resource.TestCheckResourceAttr(resourceName, "rsa_public_key_2", rsaKey),
@@ -594,7 +486,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withRsaPublicKeysAnd
 					resource.TestCheckResourceAttr(resourceName, "blocked_roles.0", role.ID().Name()),
 					resource.TestCheckResourceAttr(resourceName, "audience_urls.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "audience_urls.0", "foo"),
-					resource.TestCheckResourceAttr(resourceName, "any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
+					resource.TestCheckResourceAttr(resourceName, "any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
 					resource.TestCheckResourceAttr(resourceName, "scope_delimiter", ":"),
 				),
 			},
@@ -604,11 +496,11 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withRsaPublicKeysAnd
 				Config:                   externalOauthIntegrationWithRsaPublicKeysAndBlockedRolesListv093(id.Name(), issuer, rsaKey, role.Name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
-					resource.TestCheckResourceAttr(resourceName, "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+					resource.TestCheckResourceAttr(resourceName, "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_issuer", issuer),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_token_user_mapping_claim.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_token_user_mapping_claim.0", "foo"),
-					resource.TestCheckResourceAttr(resourceName, "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName)),
+					resource.TestCheckResourceAttr(resourceName, "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName)),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_scope_mapping_attribute", "foo"),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_rsa_public_key", rsaKey),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_rsa_public_key_2", rsaKey),
@@ -616,7 +508,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withRsaPublicKeysAnd
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_blocked_roles_list.0", role.ID().Name()),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_audience_list.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_audience_list.0", "foo"),
-					resource.TestCheckResourceAttr(resourceName, "external_oauth_any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
+					resource.TestCheckResourceAttr(resourceName, "external_oauth_any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_scope_delimiter", ":"),
 				),
 			},
@@ -682,26 +574,26 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withJwsKeysUrlAndAll
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	issuer := random.String()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_external_oauth_integration.test"
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            externalOauthIntegrationWithJwsKeysUrlAndAllowedRolesListv092(id.Name(), issuer, role.Name),
+				Config:            providerConfig + externalOauthIntegrationWithJwsKeysUrlAndAllowedRolesListv092(id.Name(), issuer, role.Name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
-					resource.TestCheckResourceAttr(resourceName, "type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+					resource.TestCheckResourceAttr(resourceName, "type", string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 					resource.TestCheckResourceAttr(resourceName, "issuer", issuer),
 					resource.TestCheckResourceAttr(resourceName, "token_user_mapping_claims.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "token_user_mapping_claims.0", "foo"),
-					resource.TestCheckResourceAttr(resourceName, "snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName)),
+					resource.TestCheckResourceAttr(resourceName, "snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName)),
 					resource.TestCheckResourceAttr(resourceName, "scope_mapping_attribute", "foo"),
 					resource.TestCheckResourceAttr(resourceName, "jws_keys_urls.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "jws_keys_urls.0", "https://example.com"),
@@ -709,7 +601,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withJwsKeysUrlAndAll
 					resource.TestCheckResourceAttr(resourceName, "allowed_roles.0", role.ID().Name()),
 					resource.TestCheckResourceAttr(resourceName, "audience_urls.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "audience_urls.0", "foo"),
-					resource.TestCheckResourceAttr(resourceName, "any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
+					resource.TestCheckResourceAttr(resourceName, "any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
 					resource.TestCheckResourceAttr(resourceName, "scope_delimiter", ":"),
 				),
 			},
@@ -719,11 +611,11 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withJwsKeysUrlAndAll
 				Config:                   externalOauthIntegrationWithJwsKeysUrlAndAllowedRolesListv093(id.Name(), issuer, role.Name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
-					resource.TestCheckResourceAttr(resourceName, "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
+					resource.TestCheckResourceAttr(resourceName, "external_oauth_type", string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_issuer", issuer),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_token_user_mapping_claim.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_token_user_mapping_claim.0", "foo"),
-					resource.TestCheckResourceAttr(resourceName, "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName)),
+					resource.TestCheckResourceAttr(resourceName, "external_oauth_snowflake_user_mapping_attribute", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName)),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_scope_mapping_attribute", "foo"),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_jws_keys_url.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_jws_keys_url.0", "https://example.com"),
@@ -731,7 +623,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withJwsKeysUrlAndAll
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_allowed_roles_list.0", role.ID().Name()),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_audience_list.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_audience_list.0", "foo"),
-					resource.TestCheckResourceAttr(resourceName, "external_oauth_any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeDisable)),
+					resource.TestCheckResourceAttr(resourceName, "external_oauth_any_role_mode", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
 					resource.TestCheckResourceAttr(resourceName, "external_oauth_scope_delimiter", ":"),
 				),
 			},
@@ -780,18 +672,18 @@ resource "snowflake_external_oauth_integration" "test" {
 func TestAcc_ExternalOauthIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	issuer := random.String()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            externalOauthIntegrationBasicConfig(id.Name(), issuer),
+				Config:            providerConfig + externalOauthIntegrationBasicConfig(id.Name(), issuer),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "id", id.Name()),
 				),
@@ -812,19 +704,19 @@ func TestAcc_ExternalOauthIntegration_WithQuotedName(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`\"%s\"`, id.Name())
 	issuer := random.String()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             externalOauthIntegrationBasicConfig(quotedId, issuer),
+				Config:             providerConfig + externalOauthIntegrationBasicConfig(quotedId, issuer),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "id", id.Name()),

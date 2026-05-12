@@ -5,16 +5,15 @@ import (
 	"net/http"
 )
 
-// TODO [mux-PRs]: make it possible to reuse simultaneously from multiple tests (e.g. map per test)
-// TODO [mux-PRs]: https://go.dev/blog/routing-enhancements
+// TODO [SNOW-2296350]: make it possible to reuse simultaneously from multiple tests (e.g. map per test) (https://go.dev/blog/routing-enhancements)
 type DynamicHandler[T any] struct {
 	currentValue    T
 	defaultValue    T
 	replaceWithFunc func(T, T, T) T
 }
 
-// TODO [mux-PRs]: Log nicer values (use interface)
-// TODO [mux-PRs]: Handle set/unset instead just opts; update the helper functions and tests while doing it.
+// TODO [SNOW-2296350]: Log nicer values (use interface)
+// TODO [SNOW-2296350]: Handle set/unset instead just opts; update the helper functions and tests while doing it.
 func (h *DynamicHandler[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

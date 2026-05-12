@@ -114,6 +114,73 @@ func Test_ParseDataType_Number(t *testing.T) {
 	}
 }
 
+func Test_ParseDataType_Decfloat(t *testing.T) {
+	type test struct {
+		input                  string
+		expectedPrecision      int
+		expectedUnderlyingType string
+	}
+	defaults := func(input string) test {
+		return test{
+			input:                  input,
+			expectedPrecision:      DefaultDecfloatPrecision,
+			expectedUnderlyingType: strings.TrimSpace(strings.ToUpper(input)),
+		}
+	}
+	negative := func(input string) test {
+		return test{input: input}
+	}
+
+	positiveTestCases := []test{
+		{input: "DECFLOAT(4)", expectedPrecision: 4, expectedUnderlyingType: "DECFLOAT"},
+		{input: "decfloat(5)", expectedPrecision: 5, expectedUnderlyingType: "DECFLOAT"},
+		{input: "DECFLOAT(   2   )", expectedPrecision: 2, expectedUnderlyingType: "DECFLOAT"},
+		{input: "    DECFLOAT   (   7   )    ", expectedPrecision: 7, expectedUnderlyingType: "DECFLOAT"},
+		{input: fmt.Sprintf("DECFLOAT(%d)", DefaultDecfloatPrecision), expectedPrecision: DefaultDecfloatPrecision, expectedUnderlyingType: "DECFLOAT"},
+
+		defaults("   DECFLOAT   "),
+		defaults("DECFLOAT"),
+		defaults("decfloat"),
+		defaults("  decfloat \t "),
+	}
+
+	negativeTestCases := []test{
+		negative("DECFLOAT(38, 0)"),
+		negative("DECFLOAT(38, 2)"),
+		negative("DECFLOAT()"),
+		negative("D E C F L O A T"),
+		negative("other"),
+		negative("other(3)"),
+	}
+
+	for _, tc := range positiveTestCases {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			parsed, err := ParseDataType(tc.input)
+
+			require.NoError(t, err)
+			require.IsType(t, &DecfloatDataType{}, parsed)
+
+			assert.Equal(t, tc.expectedPrecision, parsed.(*DecfloatDataType).precision)
+			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*DecfloatDataType).underlyingType)
+
+			assert.Equal(t, DecfloatLegacyDataType, parsed.ToLegacyDataTypeSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*DecfloatDataType).underlyingType, parsed.(*DecfloatDataType).precision), parsed.ToSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", DecfloatLegacyDataType, parsed.(*DecfloatDataType).precision), parsed.Canonical())
+		})
+	}
+
+	for _, tc := range negativeTestCases {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			parsed, err := ParseDataType(tc.input)
+
+			require.Error(t, err)
+			require.Nil(t, parsed)
+		})
+	}
+}
+
 func Test_ParseDataType_Float(t *testing.T) {
 	type test struct {
 		input                  string
@@ -1117,7 +1184,13 @@ func Test_ParseDataType_Table(t *testing.T) {
 		{input: "TABLE(arg_name NUMBER(38), arg_name_2 VARCHAR)", expectedColumns: []column{{"arg_name", "NUMBER(38)"}, {"arg_name_2", "VARCHAR"}}},
 		{input: "TABLE(arg_name number, second float, third GEOGRAPHY)", expectedColumns: []column{{"arg_name", "number"}, {"second", "float"}, {"third", "GEOGRAPHY"}}},
 		{input: "TABLE  (		arg_name 		varchar, 		second 	date, third TIME 			)", expectedColumns: []column{{"arg_name", "varchar"}, {"second", "date"}, {"third", "time"}}},
-		// TODO [SNOW-2054316]: Support types with parameters (for now, only legacy types are supported because Snowflake returns only with this output), e.g. TABLE(ARG NUMBER(38, 0))
+		// parametrized column types
+		{input: "TABLE(A NUMBER(38,0))", expectedColumns: []column{{"A", "NUMBER(38,0)"}}},
+		{input: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedColumns: []column{{"A", "NUMBER(38,0)"}, {"B", "VARCHAR"}}},
+		{input: "TABLE(O_ERR_CODE NUMBER(38,0), O_ERR_SEVERITY VARCHAR)", expectedColumns: []column{{"O_ERR_CODE", "NUMBER(38,0)"}, {"O_ERR_SEVERITY", "VARCHAR"}}},
+		{input: "TABLE(A NUMBER(10,2), B NUMBER(38,0), C TEXT)", expectedColumns: []column{{"A", "NUMBER(10,2)"}, {"B", "NUMBER(38,0)"}, {"C", "TEXT"}}},
+		{input: "TABLE(A VARCHAR(100), B NUMBER(5,2))", expectedColumns: []column{{"A", "VARCHAR(100)"}, {"B", "NUMBER(5,2)"}}},
+		{input: "TABLE(A VECTOR(FLOAT, 256), B NUMBER)", expectedColumns: []column{{"A", "VECTOR(FLOAT, 256)"}, {"B", "NUMBER"}}},
 		// TODO [SNOW-2054316]: Support nested tables, e.g. TABLE(ARG NUMBER, NESTED TABLE(A VARCHAR, B GEOMETRY))
 		// TODO [SNOW-2054316]: Support complex argument names (with quotes / spaces / special characters / etc)
 	}
@@ -1147,7 +1220,7 @@ func Test_ParseDataType_Table(t *testing.T) {
 			require.IsType(t, &TableDataType{}, parsed)
 
 			assert.Equal(t, "TABLE", parsed.(*TableDataType).underlyingType)
-			assert.Equal(t, len(tc.expectedColumns), len(parsed.(*TableDataType).columns))
+			assert.Len(t, parsed.(*TableDataType).columns, len(tc.expectedColumns))
 			for i, column := range tc.expectedColumns {
 				assert.Equal(t, column.Name, parsed.(*TableDataType).columns[i].name)
 				parsedType, err := ParseDataType(column.Type)
@@ -1172,7 +1245,7 @@ func Test_ParseDataType_Table(t *testing.T) {
 			columns := strings.Join(collections.Map(tc.expectedColumns, func(col column) string {
 				parsedType, err := ParseDataType(col.Type)
 				require.NoError(t, err)
-				return fmt.Sprintf("%s %s", col.Name, parsedType.ToLegacyDataTypeSql())
+				return fmt.Sprintf("%s %s", col.Name, parsedType.ToSql())
 			}), ", ")
 			assert.Equal(t, fmt.Sprintf("TABLE(%s)", columns), parsed.ToSql())
 		})
@@ -1202,6 +1275,10 @@ func Test_AreTheSame(t *testing.T) {
 		{d1: "", d2: "NUMBER", expectedOutcome: false},
 		{d1: "NUMBER", d2: "", expectedOutcome: false},
 
+		{d1: "DECFLOAT(20)", d2: "DECFLOAT(21)", expectedOutcome: false},
+		{d1: "DECFLOAT(38)", d2: "DECFLOAT(38)", expectedOutcome: true},
+		{d1: "DECFLOAT", d2: "DECFLOAT(38)", expectedOutcome: true},
+		{d1: "DECFLOAT", d2: fmt.Sprintf("DECFLOAT(%d)", DefaultDecfloatPrecision), expectedOutcome: true},
 		{d1: "NUMBER(20)", d2: "NUMBER(20, 2)", expectedOutcome: false},
 		{d1: "NUMBER(20, 1)", d2: "NUMBER(20, 2)", expectedOutcome: false},
 		{d1: "NUMBER", d2: "NUMBER(20, 2)", expectedOutcome: false},
@@ -1246,6 +1323,11 @@ func Test_AreTheSame(t *testing.T) {
 		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
 		{d1: "TABLE(A NUMBER, B NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: false},
 		{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(24,2), B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR(100))", d2: "TABLE(A NUMBER(24,2), B VARCHAR(200))", expectedOutcome: false},
 	}
 
 	for _, tc := range testCases {
@@ -1282,6 +1364,11 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "", d2: "NUMBER", expectedOutcome: true},
 		{d1: "NUMBER", d2: "", expectedOutcome: true},
 
+		{d1: "DECFLOAT(20)", d2: "DECFLOAT(21)", expectedOutcome: true},
+		{d1: "DECFLOAT(38)", d2: "DECFLOAT(38)", expectedOutcome: false},
+		{d1: "DECFLOAT", d2: "DECFLOAT(38)", expectedOutcome: false},
+		{d1: "DECFLOAT", d2: "DECFLOAT(34)", expectedOutcome: false},
+		{d1: "DECFLOAT", d2: fmt.Sprintf("DECFLOAT(%d)", DefaultDecfloatPrecision), expectedOutcome: false},
 		{d1: "NUMBER(20)", d2: "NUMBER(20, 2)", expectedOutcome: false},
 		{d1: "NUMBER(20, 1)", d2: "NUMBER(20, 2)", expectedOutcome: true},
 		{d1: "NUMBER", d2: "NUMBER(20, 2)", expectedOutcome: false},
@@ -1330,6 +1417,11 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "TABLE()", d2: "TABLE(A NUMBER)", expectedOutcome: true},
 		{d1: "TABLE(B CHAR)", d2: "TABLE()", expectedOutcome: true},
 		{d1: "TABLE(A NUMBER)", d2: "TABLE(A NUMBER, B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER, B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR(16777216))", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(24,2), B VARCHAR)", expectedOutcome: false},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedOutcome: true},
+		{d1: "TABLE(A NUMBER(24,2), B VARCHAR(100))", d2: "TABLE(A NUMBER(24,2), B VARCHAR(200))", expectedOutcome: true},
 	}
 
 	for _, tc := range testCases {
@@ -1359,6 +1451,8 @@ func Test_ToSqlWithoutUnknowns(t *testing.T) {
 	}
 
 	testCases := []test{
+		{dt: "DECFLOAT"},
+		{dt: fmt.Sprintf("DECFLOAT(%d)", DefaultDecfloatPrecision)},
 		{dt: "NUMBER"},
 		{dt: "NUMBER(20)"},
 		{dt: "NUMBER(20, 4)"},

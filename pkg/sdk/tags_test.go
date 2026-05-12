@@ -3,6 +3,8 @@ package sdk
 import (
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestTagCreate(t *testing.T) {
@@ -18,7 +20,7 @@ func TestTagCreate(t *testing.T) {
 		opts.IfNotExists = Bool(true)
 		opts.Comment = String("comment")
 		opts.AllowedValues = &AllowedValues{
-			Values: []AllowedValue{
+			Values: []StringAllowEmpty{
 				{
 					Value: "value1",
 				},
@@ -27,7 +29,26 @@ func TestTagCreate(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG IF NOT EXISTS %s ALLOWED_VALUES 'value1', 'value2' COMMENT = 'comment'`, id.FullyQualifiedName())
+		opts.Propagate = &TagPropagate{
+			PropagationMethod: Pointer(TagPropagationOnDependencyAndDataMovement),
+			OnConflict:        &TagOnConflict{CustomValue: String("FAIL")},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG IF NOT EXISTS %s ALLOWED_VALUES 'value1', 'value2' PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL' COMMENT = 'comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("create with propagate only", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Propagate = &TagPropagate{PropagationMethod: Pointer(TagPropagationOnDependency)}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DEPENDENCY`, id.FullyQualifiedName())
+	})
+
+	t.Run("create with on_conflict allowed_values_sequence", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Propagate = &TagPropagate{
+			PropagationMethod: Pointer(TagPropagationOnDataMovement),
+			OnConflict:        &TagOnConflict{AllowedValuesSequence: Bool(true)},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DATA_MOVEMENT ON_CONFLICT = ALLOWED_VALUES_SEQUENCE`, id.FullyQualifiedName())
 	})
 
 	t.Run("validation: nil options", func(t *testing.T) {
@@ -44,7 +65,7 @@ func TestTagCreate(t *testing.T) {
 	t.Run("validation: allowed values count", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AllowedValues = &AllowedValues{
-			Values: []AllowedValue{},
+			Values: []StringAllowEmpty{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errIntBetween("AllowedValues", "Values", 1, 300))
 	})
@@ -173,7 +194,7 @@ func TestTagAlter(t *testing.T) {
 	}
 	defaultAllowedValues := func() *AllowedValues {
 		return &AllowedValues{
-			Values: []AllowedValue{
+			Values: []StringAllowEmpty{
 				{
 					Value: "value1",
 				},
@@ -248,6 +269,35 @@ func TestTagAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET COMMENT = 'comment'`, id.FullyQualifiedName())
 	})
 
+	t.Run("alter with set propagate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &TagSet{Propagate: &TagPropagate{PropagationMethod: Pointer(TagPropagationOnDependency)}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET PROPAGATE = ON_DEPENDENCY`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter with set propagate and on_conflict value", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &TagSet{
+			Propagate: &TagPropagate{
+				PropagationMethod: Pointer(TagPropagationOnDependencyAndDataMovement),
+				OnConflict:        &TagOnConflict{CustomValue: String("FAIL")},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter with unset propagate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &TagUnset{Propagate: Bool(true)}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s UNSET PROPAGATE`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter with unset on_conflict", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &TagUnset{OnConflict: Bool(true)}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s UNSET ON_CONFLICT`, id.FullyQualifiedName())
+	})
+
 	t.Run("alter with unset comment", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TagUnset{Comment: Bool(true)}
@@ -287,7 +337,7 @@ func TestTagAlter(t *testing.T) {
 			Comment:         String("comment"),
 			MaskingPolicies: &TagSetMaskingPolicies{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("TagSet", "MaskingPolicies", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("TagSet", "MaskingPolicies", "AllowedValues", "Propagate", "Comment"))
 	})
 
 	t.Run("validation: empty masking policies in set", func(t *testing.T) {
@@ -327,14 +377,14 @@ func TestTagAlter(t *testing.T) {
 	t.Run("validation: no property to unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TagUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TagUnset", "MaskingPolicies", "AllowedValues", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TagUnset", "MaskingPolicies", "AllowedValues", "Propagate", "OnConflict", "Comment"))
 	})
 
 	t.Run("validation: add allowed values count", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Add = &TagAdd{
 			AllowedValues: &AllowedValues{
-				Values: []AllowedValue{},
+				Values: []StringAllowEmpty{},
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errIntBetween("AllowedValues", "Values", 1, 300))
@@ -344,7 +394,7 @@ func TestTagAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Drop = &TagDrop{
 			AllowedValues: &AllowedValues{
-				Values: []AllowedValue{},
+				Values: []StringAllowEmpty{},
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errIntBetween("AllowedValues", "Values", 1, 300))
@@ -482,4 +532,43 @@ func TestTagUnset(t *testing.T) {
 		opts := request.toOpts()
 		assertOptsValidAndSQLEquals(t, opts, `ALTER %s IF EXISTS %s MODIFY COLUMN "%s" UNSET TAG %s, %s`, opts.objectType, id.FullyQualifiedName(), objectId.Name(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
+}
+
+func Test_Tag_ToTagPropagation(t *testing.T) {
+	type test struct {
+		input string
+		want  TagPropagation
+	}
+
+	valid := []test{
+		// case insensitive
+		{input: "on_dependency", want: TagPropagationOnDependency},
+
+		// Supported Values
+		{input: "ON_DEPENDENCY_AND_DATA_MOVEMENT", want: TagPropagationOnDependencyAndDataMovement},
+		{input: "ON_DEPENDENCY", want: TagPropagationOnDependency},
+		{input: "ON_DATA_MOVEMENT", want: TagPropagationOnDataMovement},
+		{input: "NONE", want: TagPropagationNone},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+		{input: "'ON_DEPENDENCY'"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToTagPropagation(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToTagPropagation(tc.input)
+			require.Error(t, err)
+		})
+	}
 }

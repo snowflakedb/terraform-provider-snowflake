@@ -3,6 +3,7 @@ package testenvs
 import (
 	"fmt"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -11,6 +12,7 @@ import (
 type env string
 
 const (
+	envPrefix                   = "TEST_SF_TF_"
 	BusinessCriticalAccount env = "SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT"
 
 	// TestNonProdModifiableAccountLocator represents an account locator that can be used for account modification tests.
@@ -34,16 +36,22 @@ const (
 	EnableAcceptance            env = resource.EnvTfAcc
 	EnableSweep                 env = "TEST_SF_TF_ENABLE_SWEEP"
 	EnableManual                env = "TEST_SF_TF_ENABLE_MANUAL_TESTS"
-	ConfigureClientOnce         env = "SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE"
 	EnableAllPreviewFeatures    env = "SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES"
 	TestObjectsSuffix           env = "TEST_SF_TF_TEST_OBJECT_SUFFIX"
 	RequireTestObjectsSuffix    env = "TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX"
 	RequireGeneratedRandomValue env = "TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE"
 	GeneratedRandomValue        env = "TEST_SF_TF_GENERATED_RANDOM_VALUE"
+	SnowflakeTestingEnvironment env = "TEST_SF_TF_SNOWFLAKE_TESTING_ENVIRONMENT"
 
 	SimplifiedIntegrationTestsSetup env = "TEST_SF_TF_SIMPLIFIED_INTEGRATION_TESTS_SETUP"
 
+	TestResourceNullListHandlingEnv     env = "TEST_SF_TF_TEST_RESOURCE_DATA_NULL_LIST_HANDLING_ENV"
 	TestResourceDataTypeDiffHandlingEnv env = "TEST_SF_TF_TEST_RESOURCE_DATA_DIFF_HANDLING_ENV"
+
+	// Oauth-related
+	OauthWithClientCredentialsClientId     env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_ID"
+	OauthWithClientCredentialsClientSecret env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_SECRET"
+	OauthWithClientCredentialsIssuer       env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_ISSUER"
 )
 
 func GetOrSkipTest(t *testing.T, envName Env) string {
@@ -60,6 +68,22 @@ func SkipTestIfSet(t *testing.T, envName Env, reason string) {
 	env := os.Getenv(fmt.Sprintf("%v", envName))
 	if env != "" {
 		t.Skipf("Skipping %s, because env %v is set. Reason: \"%s\"", t.Name(), envName, reason)
+	}
+}
+
+func SkipTestIfSetTo(t *testing.T, envName Env, value string, reason string) {
+	t.Helper()
+	env := os.Getenv(fmt.Sprintf("%v", envName))
+	if env == value {
+		t.Skipf("Skipping %s, because env %v is set to %s. Reason: \"%s\"", t.Name(), envName, value, reason)
+	}
+}
+
+func SkipTestIfValueIn(t *testing.T, envName Env, values []string, reason string) {
+	t.Helper()
+	env := os.Getenv(fmt.Sprintf("%v", envName))
+	if slices.Contains(values, env) {
+		t.Skipf("Skipping %s, because env %v is set to %s. Reason: \"%s\"", t.Name(), envName, env, reason)
 	}
 }
 

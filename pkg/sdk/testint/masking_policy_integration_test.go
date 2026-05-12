@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testint
 
@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [next PR]: merge these tests
+// TODO [SNOW-2298256]: merge these tests
 func TestInt_MaskingPoliciesShow(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -222,6 +222,26 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		assert.Equal(t, name, maskingPolicy[0].Name)
 		assert.Equal(t, "", maskingPolicy[0].Comment)
 		assert.False(t, maskingPolicy[0].ExemptOtherPolicies)
+	})
+
+	t.Run("create: DECFLOAT", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		name := id.Name()
+		signature := []sdk.TableColumnSignature{
+			{
+				Name: "col1",
+				Type: testdatatypes.DataTypeDecfloat,
+			},
+		}
+		expression := "REPLACE('X', 1, 2)::DECFLOAT"
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeDecfloat, expression, nil)
+		require.NoError(t, err)
+		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, name, maskingPolicyDetails.Name)
+		assert.Equal(t, signature, maskingPolicyDetails.Signature)
+		assert.Equal(t, "DECFLOAT(38)", maskingPolicyDetails.ReturnType.ToSqlWithoutUnknowns())
+		assert.Equal(t, expression, maskingPolicyDetails.Body)
 	})
 
 	t.Run("test multiline expression", func(t *testing.T) {

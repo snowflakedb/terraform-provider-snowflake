@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
@@ -73,6 +75,27 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 		Default:     "",
 		Description: "This is a helper field and should not be set. Its main purpose is to help to achieve the functionality described by the always_apply field.",
 	},
+	"strict_privilege_management": {
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  false,
+		ConflictsWith: []string{
+			"all_privileges",
+			"on_schema.0.all_schemas_in_database",
+			"on_schema_object.0.all",
+		},
+		Description: joinWithSpace(
+			"If true, the resource will revoke all privileges that are not explicitly defined in the config making it a central source of truth for the privileges granted on an object to an account role.",
+			"If false, the resource will be only concerned with the privileges that are explicitly defined in the config.",
+			"The potential privilege removals will be planned only after second `terraform apply` run, after setting the flag in resource configuration.",
+			"This means, the flag update doesn't revoke immediately any externally granted privileges.",
+			"This is a Terraform limitation, and two steps are needed to properly show the potential privilege changes (e.g., revoking privileges not specified in the configuration) in the plan.",
+			"External privileges will be detected regardless of their grant option.",
+			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) field.",
+			"Regular and future grants are treated separately, meaning, more resources need to be defined to control regular and future grants for a given object and role (and for a given database or schema they're defined in for future grants).",
+			"See our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more information.",
+		),
+	},
 	"on_account": {
 		Type:        schema.TypeBool,
 		Optional:    true,
@@ -101,21 +124,11 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"object_type": {
-					Type:        schema.TypeString,
-					Required:    true,
-					ForceNew:    true,
-					Description: "The object type of the account object on which privileges will be granted. Valid values are: USER | RESOURCE MONITOR | WAREHOUSE | COMPUTE POOL | DATABASE | INTEGRATION | FAILOVER GROUP | REPLICATION GROUP | EXTERNAL VOLUME",
-					ValidateFunc: validation.StringInSlice([]string{
-						"USER",
-						"RESOURCE MONITOR",
-						"WAREHOUSE",
-						"COMPUTE POOL",
-						"DATABASE",
-						"INTEGRATION",
-						"FAILOVER GROUP",
-						"REPLICATION GROUP",
-						"EXTERNAL VOLUME",
-					}, true),
+					Type:         schema.TypeString,
+					Required:     true,
+					ForceNew:     true,
+					Description:  fmt.Sprintf("The object type of the account object on which privileges will be granted. Valid values are: %s", docs.PossibleValuesListed(sdk.ValidGrantToAccountObjectTypesString)),
+					ValidateFunc: validation.StringInSlice(sdk.ValidGrantToAccountObjectTypesString, true),
 				},
 				"object_name": {
 					Type:             schema.TypeString,
@@ -202,7 +215,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					ForceNew:    true,
-					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToObjectTypesString, " | ")),
+					Description: fmt.Sprintf("The object type of the schema object on which privileges will be granted. Valid values are: %s", strings.Join(sdk.ValidGrantToSchemaObjectTypesString, " | ")),
 					RequiredWith: []string{
 						"on_schema_object.0.object_name",
 					},
@@ -210,7 +223,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
 					},
-					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToObjectTypesString, true),
+					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToSchemaObjectTypesString, true),
 				},
 				"object_name": {
 					Type:        schema.TypeString,
@@ -234,7 +247,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Description: "Configures the privilege to be granted on all objects in either a database or schema.",
 					MaxItems:    1,
 					Elem: &schema.Resource{
-						Schema: getGrantPrivilegesOnAccountRoleBulkOperationSchema(sdk.ValidGrantToPluralObjectTypesString),
+						Schema: getGrantPrivilegesOnAccountRoleBulkOperationSchema(sdk.ValidGrantToAllPluralObjectTypesString),
 					},
 					ConflictsWith: []string{
 						"on_schema_object.0.object_type",
@@ -303,108 +316,161 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 
 		Schema: grantPrivilegesToAccountRoleSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole()),
+			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole),
 		},
 		Timeouts: defaultTimeouts,
+		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
+			func(ctx context.Context, req schema.ValidateResourceConfigFuncRequest, resp *schema.ValidateResourceConfigFuncResponse) {
+				rawPrivileges := req.RawConfig.GetAttr("privileges")
+				if rawPrivileges.IsNull() || !rawPrivileges.IsKnown() {
+					return
+				}
+				privilegesCty := rawPrivileges.AsValueSet().Values()
+				privileges := make([]string, 0, len(privilegesCty))
+				for _, privilegeCty := range privilegesCty {
+					// Even though we check it for the whole list, we still need to check it for each privilege.
+					// See issue 3992
+					if privilegeCty.IsNull() || !privilegeCty.IsKnown() {
+						continue
+					}
+					privileges = append(privileges, privilegeCty.AsString())
+				}
+				if slices.Contains(privileges, string(sdk.AccountObjectPrivilegeImportedPrivileges)) && len(privileges) > 1 {
+					resp.Diagnostics = append(resp.Diagnostics, diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Invalid privileges",
+						Detail:   fmt.Sprintf("%s cannot be used with other privileges", sdk.AccountObjectPrivilegeImportedPrivileges),
+					})
+				}
+			},
+		},
 	}
 }
 
-func ImportGrantPrivilegesToAccountRole() func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	return func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-		id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
-		if err != nil {
-			return nil, err
-		}
-		if err := d.Set("account_role_name", id.RoleName.FullyQualifiedName()); err != nil {
-			return nil, err
-		}
-		if err := d.Set("with_grant_option", id.WithGrantOption); err != nil {
-			return nil, err
-		}
-		if err := d.Set("always_apply", id.AlwaysApply); err != nil {
-			return nil, err
-		}
-		if err := d.Set("all_privileges", id.AllPrivileges); err != nil {
-			return nil, err
-		}
-		if err := d.Set("privileges", id.Privileges); err != nil {
-			return nil, err
-		}
-		if err := d.Set("on_account", false); err != nil {
-			return nil, err
-		}
-
-		switch id.Kind {
-		case OnAccountAccountRoleGrantKind:
-			if err := d.Set("on_account", true); err != nil {
-				return nil, err
-			}
-		case OnAccountObjectAccountRoleGrantKind:
-			data := id.Data.(*OnAccountObjectGrantData)
-			onAccountObject := make(map[string]any)
-			onAccountObject["object_type"] = data.ObjectType.String()
-			onAccountObject["object_name"] = data.ObjectName.FullyQualifiedName()
-
-			if err := d.Set("on_account_object", []any{onAccountObject}); err != nil {
-				return nil, err
-			}
-		case OnSchemaAccountRoleGrantKind:
-			data := id.Data.(*OnSchemaGrantData)
-			onSchema := make(map[string]any)
-
-			switch data.Kind {
-			case OnSchemaSchemaGrantKind:
-				onSchema["schema_name"] = data.SchemaName.FullyQualifiedName()
-			case OnAllSchemasInDatabaseSchemaGrantKind:
-				onSchema["all_schemas_in_database"] = data.DatabaseName.FullyQualifiedName()
-			case OnFutureSchemasInDatabaseSchemaGrantKind:
-				onSchema["future_schemas_in_database"] = data.DatabaseName.FullyQualifiedName()
-			}
-
-			if err := d.Set("on_schema", []any{onSchema}); err != nil {
-				return nil, err
-			}
-		case OnSchemaObjectAccountRoleGrantKind:
-			data := id.Data.(*OnSchemaObjectGrantData)
-			onSchemaObject := make(map[string]any)
-
-			switch data.Kind {
-			case OnObjectSchemaObjectGrantKind:
-				onSchemaObject["object_type"] = data.Object.ObjectType.String()
-				onSchemaObject["object_name"] = data.Object.Name.FullyQualifiedName()
-			case OnAllSchemaObjectGrantKind:
-				onAll := make(map[string]any)
-
-				onAll["object_type_plural"] = data.OnAllOrFuture.ObjectNamePlural.String()
-				switch data.OnAllOrFuture.Kind {
-				case InDatabaseBulkOperationGrantKind:
-					onAll["in_database"] = data.OnAllOrFuture.Database.FullyQualifiedName()
-				case InSchemaBulkOperationGrantKind:
-					onAll["in_schema"] = data.OnAllOrFuture.Schema.FullyQualifiedName()
-				}
-
-				onSchemaObject["all"] = []any{onAll}
-			case OnFutureSchemaObjectGrantKind:
-				onFuture := make(map[string]any)
-
-				onFuture["object_type_plural"] = data.OnAllOrFuture.ObjectNamePlural.String()
-				switch data.OnAllOrFuture.Kind {
-				case InDatabaseBulkOperationGrantKind:
-					onFuture["in_database"] = data.OnAllOrFuture.Database.FullyQualifiedName()
-				case InSchemaBulkOperationGrantKind:
-					onFuture["in_schema"] = data.OnAllOrFuture.Schema.FullyQualifiedName()
-				}
-
-				onSchemaObject["future"] = []any{onFuture}
-			}
-
-			if err := d.Set("on_schema_object", []any{onSchemaObject}); err != nil {
-				return nil, err
-			}
-		}
-
-		return []*schema.ResourceData{d}, nil
+func ImportGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
+	if err != nil {
+		return nil, err
 	}
+	err = errors.Join(
+		d.Set("account_role_name", id.RoleName.FullyQualifiedName()),
+		d.Set("with_grant_option", id.WithGrantOption),
+		d.Set("always_apply", id.AlwaysApply),
+		d.Set("all_privileges", id.AllPrivileges),
+		d.Set("privileges", id.Privileges),
+		d.Set("on_account", false),
+		d.Set("strict_privilege_management", false),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	switch id.Kind {
+	case OnAccountAccountRoleGrantKind:
+		if err := d.Set("on_account", true); err != nil {
+			return nil, err
+		}
+	case OnAccountObjectAccountRoleGrantKind:
+		data := id.Data.(*OnAccountObjectGrantData)
+		onAccountObject := make(map[string]any)
+		onAccountObject["object_type"] = data.ObjectType.String()
+		onAccountObject["object_name"] = data.ObjectName.FullyQualifiedName()
+
+		if err := d.Set("on_account_object", []any{onAccountObject}); err != nil {
+			return nil, err
+		}
+	case OnSchemaAccountRoleGrantKind:
+		data := id.Data.(*OnSchemaGrantData)
+		onSchema := make(map[string]any)
+
+		switch data.Kind {
+		case OnSchemaSchemaGrantKind:
+			onSchema["schema_name"] = data.SchemaName.FullyQualifiedName()
+		case OnAllSchemasInDatabaseSchemaGrantKind:
+			onSchema["all_schemas_in_database"] = data.DatabaseName.FullyQualifiedName()
+		case OnFutureSchemasInDatabaseSchemaGrantKind:
+			onSchema["future_schemas_in_database"] = data.DatabaseName.FullyQualifiedName()
+		}
+
+		if err := d.Set("on_schema", []any{onSchema}); err != nil {
+			return nil, err
+		}
+	case OnSchemaObjectAccountRoleGrantKind:
+		data := id.Data.(*OnSchemaObjectGrantData)
+		onSchemaObject := make(map[string]any)
+
+		switch data.Kind {
+		case OnObjectSchemaObjectGrantKind:
+			onSchemaObject["object_type"] = data.Object.ObjectType.String()
+			onSchemaObject["object_name"] = data.Object.Name.FullyQualifiedName()
+		case OnAllSchemaObjectGrantKind:
+			onAll := make(map[string]any)
+
+			onAll["object_type_plural"] = data.OnAllOrFuture.ObjectNamePlural.String()
+			switch data.OnAllOrFuture.Kind {
+			case InDatabaseBulkOperationGrantKind:
+				onAll["in_database"] = data.OnAllOrFuture.Database.FullyQualifiedName()
+			case InSchemaBulkOperationGrantKind:
+				onAll["in_schema"] = data.OnAllOrFuture.Schema.FullyQualifiedName()
+			}
+
+			onSchemaObject["all"] = []any{onAll}
+		case OnFutureSchemaObjectGrantKind:
+			onFuture := make(map[string]any)
+
+			onFuture["object_type_plural"] = data.OnAllOrFuture.ObjectNamePlural.String()
+			switch data.OnAllOrFuture.Kind {
+			case InDatabaseBulkOperationGrantKind:
+				onFuture["in_database"] = data.OnAllOrFuture.Database.FullyQualifiedName()
+			case InSchemaBulkOperationGrantKind:
+				onFuture["in_schema"] = data.OnAllOrFuture.Schema.FullyQualifiedName()
+			}
+
+			onSchemaObject["future"] = []any{onFuture}
+		}
+
+		if err := d.Set("on_schema_object", []any{onSchemaObject}); err != nil {
+			return nil, err
+		}
+	}
+
+	providerCtx := m.(*provider.Context)
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsImportValidation, providerCtx.EnabledExperiments) {
+		if err := validateGrantPrivilegesToAccountRoleImport(ctx, m, id); err != nil {
+			return nil, fmt.Errorf("grant import validation: %w", err)
+		}
+	}
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func validateGrantPrivilegesToAccountRoleImport(ctx context.Context, m any, id GrantPrivilegesToAccountRoleId) error {
+	providerCtx := m.(*provider.Context)
+	if len(id.Privileges) == 0 {
+		return nil
+	}
+
+	opts, grantedOn := prepareShowGrantsRequestForAccountRole(id)
+	if opts == nil {
+		return nil
+	}
+
+	grants, err := providerCtx.Client.Grants.Show(ctx, opts)
+	if err != nil {
+		return fmt.Errorf("show grants: %w", err)
+	}
+
+	// We don't need to pass strict validation here, because we are validating the privileges against the actual privileges in Snowflake.
+	actualPrivileges := computePrivileges(id, grants, grantedOn, opts, false)
+
+	expectedPrivileges := slices.Clone(id.Privileges)
+	slices.Sort(actualPrivileges)
+	slices.Sort(expectedPrivileges)
+	if !slices.Equal(actualPrivileges, expectedPrivileges) {
+		return fmt.Errorf("privileges granted in Snowflake do not match the expected privileges: actual=%+v, expected=%+v", actualPrivileges, expectedPrivileges)
+	}
+
+	return nil
 }
 
 func CreateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -545,17 +611,25 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 					id.Kind == OnSchemaObjectAccountRoleGrantKind,
 				)
 
+				// To simplify the logic in Read, when the grant option is not set, we revoke the GRANT OPTION FOR privileges just in case.
+				// In case this option is set in the config, it is re-granted below.
 				if !id.WithGrantOption {
-					if err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privilegesToGrant, grantOn, id.RoleName, &sdk.RevokePrivilegesFromAccountRoleOptions{
-						GrantOptionFor: sdk.Bool(true),
-					}); err != nil {
-						return diag.Diagnostics{
-							diag.Diagnostic{
-								Severity: diag.Error,
-								Summary:  "Failed to revoke privileges to add",
-								Detail:   fmt.Sprintf("Id: %s\nPrivileges to add: %v\nError: %s", d.Id(), privilegesToAdd, err.Error()),
-							},
+					// If IMPORTED PRIVILEGES is set, do not revoke its privilege, because `GRANT OPTION FOR` option is not supported for this privilege.
+					// We can use a simple `contains` check because IMPORTED PRIVILEGES cannot be used with any other privilege.
+					if !slices.Contains(privilegesToGrant.AccountObjectPrivileges, sdk.AccountObjectPrivilegeImportedPrivileges) {
+						if err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privilegesToGrant, grantOn, id.RoleName, &sdk.RevokePrivilegesFromAccountRoleOptions{
+							GrantOptionFor: sdk.Bool(true),
+						}); err != nil {
+							return diag.Diagnostics{
+								diag.Diagnostic{
+									Severity: diag.Error,
+									Summary:  "Failed to revoke privileges with GrantOptionFor",
+									Detail:   fmt.Sprintf("Id: %s\nPrivileges to revoke with GrantOptionFor: %v\nError: %s", d.Id(), privilegesToGrant, err.Error()),
+								},
+							}
 						}
+					} else {
+						log.Printf("[DEBUG] Skipping revoking privileges with GrantOptionFor for IMPORTED PRIVILEGES")
 					}
 				}
 
@@ -678,7 +752,8 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 }
 
 func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
 	if err != nil {
@@ -696,13 +771,13 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	err = client.Grants.RevokePrivilegesFromAccountRole(
-		ctx,
-		getAccountRolePrivilegesFromSchema(d),
-		grantOn,
-		id.RoleName,
-		&sdk.RevokePrivilegesFromAccountRoleOptions{},
-	)
+	privileges := getAccountRolePrivilegesFromSchema(d)
+	opts := &sdk.RevokePrivilegesFromAccountRoleOptions{}
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		err = client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, privileges, grantOn, id.RoleName, opts)
+	} else {
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, grantOn, id.RoleName, opts)
+	}
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
@@ -719,6 +794,14 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 }
 
 func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
+	strictPrivilegeManagement := d.Get("strict_privilege_management").(bool)
+	if strictPrivilegeManagement && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement, providerCtx.EnabledExperiments) {
+		return diag.Errorf("to use `strict_privilege_management`, you need to first specify the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` feature in the `experimental_features_enabled` field at the provider level")
+	}
+
 	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
 	if err != nil {
 		return diag.Diagnostics{
@@ -774,8 +857,6 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 
-	client := meta.(*provider.Context).Client
-
 	if _, err := client.Roles.ShowByID(ctx, id.RoleName); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
 		d.SetId("")
 		return diag.Diagnostics{
@@ -807,57 +888,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 			},
 		}
 	}
-
-	actualPrivileges := make([]string, 0)
-	expectedPrivileges := make([]string, 0)
-	expectedPrivileges = append(expectedPrivileges, id.Privileges...)
-
-	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
-		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
-	}) {
-		expectedPrivileges = append(expectedPrivileges, sdk.AccountObjectPrivilegeUsage.String())
-	}
-
-	for _, grant := range grants {
-		// Accept only (account) ROLEs
-		if grant.GrantTo != sdk.ObjectTypeRole && grant.GrantedTo != sdk.ObjectTypeRole {
-			continue
-		}
-		// Only consider privileges that are already present in the ID, so we
-		// don't delete privileges managed by other resources.
-		if !slices.Contains(expectedPrivileges, grant.Privilege) {
-			continue
-		}
-		if grant.GrantOption == id.WithGrantOption && grant.GranteeName.Name() == id.RoleName.Name() {
-			// Future grants do not have grantedBy, only current grants do.
-			// If grantedby is an empty string, it means terraform could not have created the grant.
-			// The same goes for the default SNOWFLAKE database, but we don't want to skip in this case
-			if (opts.Future == nil || !*opts.Future) && grant.GrantedBy.Name() == "" && grant.Name.Name() != "SNOWFLAKE" {
-				continue
-			}
-
-			// grant_on is for future grants, granted_on is for current grants.
-			// They function the same way though in a test for matching the object type
-			//
-			// To `grant privilege on application to a role` the user has to use `object_type = "DATABASE"`.
-			// It's because Snowflake treats applications as if they were databases. One exception to the rule is
-			// the default application named SNOWFLAKE that could be granted with `object_type = "APPLICATION"`.
-			// To make the logic simpler, we do not allow it and `object_type = "DATABASE"` should be used for all applications.
-			// TODO When implementing SNOW-991421 see if logic added in SNOW-887897 could be moved to the SDK to simplify the resource implementation.
-			if grantedOn == sdk.ObjectTypeDatabase && (sdk.ObjectTypeApplication == grant.GrantedOn || sdk.ObjectTypeApplication == grant.GrantOn) {
-				actualPrivileges = append(actualPrivileges, grant.Privilege)
-			} else if grantedOn == grant.GrantedOn || grantedOn == grant.GrantOn {
-				actualPrivileges = append(actualPrivileges, grant.Privilege)
-			}
-		}
-	}
-
-	usageIndex := slices.IndexFunc(actualPrivileges, func(s string) bool { return strings.ToUpper(s) == sdk.AccountObjectPrivilegeUsage.String() })
-	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
-		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
-	}) && usageIndex >= 0 {
-		actualPrivileges[usageIndex] = sdk.AccountObjectPrivilegeImportedPrivileges.String()
-	}
+	actualPrivileges := computePrivileges(id, grants, grantedOn, opts, strictPrivilegeManagement)
 
 	if err := d.Set("privileges", actualPrivileges); err != nil {
 		return diag.Diagnostics{
@@ -870,6 +901,67 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 	}
 
 	return nil
+}
+
+func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, grantedOn sdk.ObjectType, opts *sdk.ShowGrantOptions, strictPrivilegeManagement bool) (actualPrivileges []string) {
+	expectedPrivileges := slices.Clone(id.Privileges)
+
+	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
+		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
+	}) {
+		expectedPrivileges = append(expectedPrivileges, sdk.AccountObjectPrivilegeUsage.String())
+	}
+
+	for _, grant := range grants {
+		// Process only (ACCOUNT) ROLE specified in the config
+		if (grant.GrantTo != sdk.ObjectTypeRole && grant.GrantedTo != sdk.ObjectTypeRole) || grant.GranteeName.Name() != id.RoleName.Name() {
+			continue
+		}
+
+		// Depending on the strict privilege management flag:
+		//
+		// If not set, consider privileges specified only by the configuration, so we don't delete privileges managed by other resources.
+		// The privilege should also match grant option with the one stored in the configuration.
+		//
+		// If set, skip this check, because we want to take into account all privileges
+		// (not only those specified in the config), regardless of grant option setting.
+		if !strictPrivilegeManagement && (!slices.Contains(expectedPrivileges, grant.Privilege) || grant.GrantOption != id.WithGrantOption) {
+			continue
+		}
+
+		// If grantedBy is an empty string, it means:
+		// - it's a future grant, or
+		// - it's a predefined Snowflake grant
+		// Thus, we should skip if we are getting future grants when not specified in the SHOW opts, or
+		// we are dealing with predefined object other than the "SNOWFLAKE" database (unsupported feature).
+		if (opts.Future == nil || !*opts.Future) && grant.GrantedBy.Name() == "" && grant.Name.Name() != "SNOWFLAKE" {
+			continue
+		}
+
+		// grant_on is for future grants, granted_on is for current grants.
+		// They function the same way though in a test for matching the object type
+		//
+		// To `grant privilege on application to a role` the user has to use `object_type = "DATABASE"`.
+		// It's because Snowflake treats applications as if they were databases. One exception to the rule is
+		// the default application named SNOWFLAKE that could be granted with `object_type = "APPLICATION"`.
+		// To make the logic simpler, we do not allow it and `object_type = "DATABASE"` should be used for all applications.
+		// TODO When implementing SNOW-991421 see if logic added in SNOW-887897 could be moved to the SDK to simplify the resource implementation.
+		if grantedOn == sdk.ObjectTypeDatabase && (sdk.ObjectTypeApplication == grant.GrantedOn || sdk.ObjectTypeApplication == grant.GrantOn) {
+			actualPrivileges = append(actualPrivileges, grant.Privilege)
+		} else if grantedOn == grant.GrantedOn || grantedOn == grant.GrantOn {
+			actualPrivileges = append(actualPrivileges, grant.Privilege)
+		}
+	}
+
+	// Remap USAGE back to IMPORTED_PRIVILEGES (Snowflake returns USAGE for IMPORTED_PRIVILEGES grants)
+	usageIndex := slices.IndexFunc(actualPrivileges, func(s string) bool { return strings.ToUpper(s) == sdk.AccountObjectPrivilegeUsage.String() })
+	if slices.ContainsFunc(id.Privileges, func(s string) bool {
+		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
+	}) && usageIndex >= 0 {
+		actualPrivileges[usageIndex] = sdk.AccountObjectPrivilegeImportedPrivileges.String()
+	}
+
+	return actualPrivileges
 }
 
 func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, sdk.ObjectType) {

@@ -10,6 +10,8 @@ var (
 	deprecatedResourcesFilename   = markdown("deprecated_resources")
 	deprecatedDataSourcesFilename = markdown("deprecated_data_sources")
 
+	experimentalFeatures = markdown("experimental_features")
+
 	stableResourcesFilename   = markdown("stable_resources")
 	stableDataSourcesFilename = markdown("stable_data_sources")
 

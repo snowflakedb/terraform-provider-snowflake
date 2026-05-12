@@ -10,15 +10,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/snowflakedb/gosnowflake"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 var (
 	_ validatable = new(CreateAccountOptions)
 	_ validatable = new(AlterAccountOptions)
 	_ validatable = new(ShowAccountOptions)
+
+	_ convertibleRow[Account] = new(accountDBRow)
 )
 
 type Accounts interface {
@@ -159,13 +160,25 @@ func (c *accounts) Create(ctx context.Context, id AccountObjectIdentifier, opts 
 		log.Printf("[WARN] Unable to retrieve create account output, err = %v", err)
 	}
 
-	if len(rows) == 1 && rows[0]["status"] != nil {
-		if status, ok := (*rows[0]["status"]).(string); ok {
-			return ToAccountCreateResponse(status)
-		}
+	response, err := getAccountCreateResponse(rows)
+	if err != nil {
+		return nil, fmt.Errorf("converting response from Snowflake: %w", err)
 	}
+	return response, nil
+}
 
-	return nil, nil
+func getAccountCreateResponse(rows []map[string]*any) (*AccountCreateResponse, error) {
+	if len(rows) != 1 {
+		return nil, fmt.Errorf("expected 1 row, got %d", len(rows))
+	}
+	if rows[0]["status"] == nil {
+		return nil, fmt.Errorf("status is not set")
+	}
+	statusString, ok := (*rows[0]["status"]).(string)
+	if !ok {
+		return nil, fmt.Errorf("could not convert status to string")
+	}
+	return ToAccountCreateResponse(statusString)
 }
 
 // AlterAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-account.
@@ -461,7 +474,7 @@ type accountDBRow struct {
 	OrganizationUrlExpirationOn sql.NullTime   `db:"organization_URL_expiration_on"`
 }
 
-func (row accountDBRow) convert() *Account {
+func (row accountDBRow) convert() (*Account, error) {
 	acc := &Account{
 		OrganizationName:      row.OrganizationName,
 		AccountName:           row.AccountName,
@@ -541,7 +554,7 @@ func (row accountDBRow) convert() *Account {
 	if row.OrganizationUrlExpirationOn.Valid {
 		acc.OrganizationUrlExpirationOn = &row.OrganizationUrlExpirationOn.Time
 	}
-	return acc
+	return acc, nil
 }
 
 func (c *accounts) Show(ctx context.Context, opts *ShowAccountOptions) ([]Account, error) {
@@ -550,8 +563,7 @@ func (c *accounts) Show(ctx context.Context, opts *ShowAccountOptions) ([]Accoun
 	if err != nil {
 		return nil, err
 	}
-	resultList := convertRows[accountDBRow, Account](dbRows)
-	return resultList, nil
+	return convertRows[accountDBRow, Account](dbRows)
 }
 
 func (c *accounts) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Account, error) {
@@ -635,123 +647,140 @@ func (c *accounts) ShowParameters(ctx context.Context) ([]*Parameter, error) {
 func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 	return c.client.Accounts.Alter(ctx, &AlterAccountOptions{Unset: &AccountUnset{
 		Parameters: &AccountParametersUnset{
-			AbortDetachedQuery:                               Bool(true),
-			ActivePythonProfiler:                             Bool(true),
-			AllowClientMFACaching:                            Bool(true),
-			AllowIDToken:                                     Bool(true),
-			Autocommit:                                       Bool(true),
-			BaseLocationPrefix:                               Bool(true),
-			BinaryInputFormat:                                Bool(true),
-			BinaryOutputFormat:                               Bool(true),
-			Catalog:                                          Bool(true),
-			CatalogSync:                                      Bool(true),
-			ClientEnableLogInfoStatementParameters:           Bool(true),
-			ClientEncryptionKeySize:                          Bool(true),
-			ClientMemoryLimit:                                Bool(true),
-			ClientMetadataRequestUseConnectionCtx:            Bool(true),
-			ClientMetadataUseSessionDatabase:                 Bool(true),
-			ClientPrefetchThreads:                            Bool(true),
-			ClientResultChunkSize:                            Bool(true),
-			ClientResultColumnCaseInsensitive:                Bool(true),
-			ClientSessionKeepAlive:                           Bool(true),
-			ClientSessionKeepAliveHeartbeatFrequency:         Bool(true),
-			ClientTimestampTypeMapping:                       Bool(true),
-			CortexEnabledCrossRegion:                         Bool(true),
-			CortexModelsAllowlist:                            Bool(true),
-			CsvTimestampFormat:                               Bool(true),
-			DataRetentionTimeInDays:                          Bool(true),
-			DateInputFormat:                                  Bool(true),
-			DateOutputFormat:                                 Bool(true),
-			DefaultDDLCollation:                              Bool(true),
-			DefaultNotebookComputePoolCpu:                    Bool(true),
-			DefaultNotebookComputePoolGpu:                    Bool(true),
-			DefaultNullOrdering:                              Bool(true),
-			DefaultStreamlitNotebookWarehouse:                Bool(true),
-			DisableUiDownloadButton:                          Bool(true),
-			DisableUserPrivilegeGrants:                       Bool(true),
-			EnableAutomaticSensitiveDataClassificationLog:    Bool(true),
-			EnableEgressCostOptimizer:                        Bool(true),
-			EnableIdentifierFirstLogin:                       Bool(true),
-			EnableInternalStagesPrivatelink:                  Bool(true),
-			EnableTriSecretAndRekeyOptOutForImageRepository:  Bool(true),
-			EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: Bool(true),
-			EnableUnhandledExceptionsReporting:               Bool(true),
-			EnableUnloadPhysicalTypeOptimization:             Bool(true),
-			EnableUnredactedQuerySyntaxError:                 Bool(true),
-			EnableUnredactedSecureObjectError:                Bool(true),
-			EnforceNetworkRulesForInternalStages:             Bool(true),
-			ErrorOnNondeterministicMerge:                     Bool(true),
-			ErrorOnNondeterministicUpdate:                    Bool(true),
-			EventTable:                                       Bool(true),
-			ExternalOAuthAddPrivilegedRolesToBlockedList:     Bool(true),
-			ExternalVolume:                                   Bool(true),
-			GeographyOutputFormat:                            Bool(true),
-			GeometryOutputFormat:                             Bool(true),
-			HybridTableLockTimeout:                           Bool(true),
-			InitialReplicationSizeLimitInTB:                  Bool(true),
-			JdbcTreatDecimalAsInt:                            Bool(true),
-			JdbcTreatTimestampNtzAsUtc:                       Bool(true),
-			JdbcUseSessionTimezone:                           Bool(true),
-			JsonIndent:                                       Bool(true),
-			JsTreatIntegerAsBigInt:                           Bool(true),
-			ListingAutoFulfillmentReplicationRefreshSchedule: Bool(true),
-			LockTimeout:                                      Bool(true),
-			LogLevel:                                         Bool(true),
-			MaxConcurrencyLevel:                              Bool(true),
-			MaxDataExtensionTimeInDays:                       Bool(true),
-			MetricLevel:                                      Bool(true),
-			MinDataRetentionTimeInDays:                       Bool(true),
-			MultiStatementCount:                              Bool(true),
-			NetworkPolicy:                                    Bool(true),
-			NoorderSequenceAsDefault:                         Bool(true),
-			OAuthAddPrivilegedRolesToBlockedList:             Bool(true),
-			OdbcTreatDecimalAsInt:                            Bool(true),
-			PeriodicDataRekeying:                             Bool(true),
-			PipeExecutionPaused:                              Bool(true),
-			PreventUnloadToInlineURL:                         Bool(true),
-			PreventUnloadToInternalStages:                    Bool(true),
-			PythonProfilerModules:                            Bool(true),
-			PythonProfilerTargetStage:                        Bool(true),
-			QueryTag:                                         Bool(true),
-			QuotedIdentifiersIgnoreCase:                      Bool(true),
-			ReplaceInvalidCharacters:                         Bool(true),
-			RequireStorageIntegrationForStageCreation:        Bool(true),
-			RequireStorageIntegrationForStageOperation:       Bool(true),
-			RowsPerResultset:                                 Bool(true),
-			S3StageVpceDnsName:                               Bool(true),
-			SamlIdentityProvider:                             Bool(true),
-			SearchPath:                                       Bool(true),
-			ServerlessTaskMaxStatementSize:                   Bool(true),
-			ServerlessTaskMinStatementSize:                   Bool(true),
-			SimulatedDataSharingConsumer:                     Bool(true),
-			SsoLoginPage:                                     Bool(true),
-			StatementQueuedTimeoutInSeconds:                  Bool(true),
-			StatementTimeoutInSeconds:                        Bool(true),
-			StorageSerializationPolicy:                       Bool(true),
-			StrictJsonOutput:                                 Bool(true),
-			SuspendTaskAfterNumFailures:                      Bool(true),
-			TaskAutoRetryAttempts:                            Bool(true),
-			TimestampDayIsAlways24h:                          Bool(true),
-			TimestampInputFormat:                             Bool(true),
-			TimestampLtzOutputFormat:                         Bool(true),
-			TimestampNtzOutputFormat:                         Bool(true),
-			TimestampOutputFormat:                            Bool(true),
-			TimestampTypeMapping:                             Bool(true),
-			TimestampTzOutputFormat:                          Bool(true),
-			Timezone:                                         Bool(true),
-			TimeInputFormat:                                  Bool(true),
-			TimeOutputFormat:                                 Bool(true),
-			TraceLevel:                                       Bool(true),
-			TransactionAbortOnError:                          Bool(true),
-			TransactionDefaultIsolationLevel:                 Bool(true),
-			TwoDigitCenturyStart:                             Bool(true),
-			UnsupportedDdlAction:                             Bool(true),
-			UserTaskManagedInitialWarehouseSize:              Bool(true),
-			UserTaskMinimumTriggerIntervalInSeconds:          Bool(true),
-			UserTaskTimeoutMs:                                Bool(true),
-			UseCachedResult:                                  Bool(true),
-			WeekOfYearPolicy:                                 Bool(true),
-			WeekStart:                                        Bool(true),
+			AbortDetachedQuery:                            Bool(true),
+			ActivePythonProfiler:                          Bool(true),
+			AllowBindValuesAccess:                         Bool(true),
+			AllowClientMFACaching:                         Bool(true),
+			AllowedSpcsWorkloadTypes:                      Bool(true),
+			AllowIDToken:                                  Bool(true),
+			Autocommit:                                    Bool(true),
+			BaseLocationPrefix:                            Bool(true),
+			BinaryInputFormat:                             Bool(true),
+			BinaryOutputFormat:                            Bool(true),
+			Catalog:                                       Bool(true),
+			CatalogSync:                                   Bool(true),
+			ClientEnableLogInfoStatementParameters:        Bool(true),
+			ClientEncryptionKeySize:                       Bool(true),
+			ClientMemoryLimit:                             Bool(true),
+			ClientMetadataRequestUseConnectionCtx:         Bool(true),
+			ClientMetadataUseSessionDatabase:              Bool(true),
+			ClientPrefetchThreads:                         Bool(true),
+			ClientResultChunkSize:                         Bool(true),
+			ClientResultColumnCaseInsensitive:             Bool(true),
+			ClientSessionKeepAlive:                        Bool(true),
+			ClientSessionKeepAliveHeartbeatFrequency:      Bool(true),
+			ClientTimestampTypeMapping:                    Bool(true),
+			CortexEnabledCrossRegion:                      Bool(true),
+			CortexModelsAllowlist:                         Bool(true),
+			CsvTimestampFormat:                            Bool(true),
+			DataMetricSchedule:                            Bool(true),
+			DataRetentionTimeInDays:                       Bool(true),
+			DateInputFormat:                               Bool(true),
+			DateOutputFormat:                              Bool(true),
+			DefaultDbtVersion:                             Bool(true),
+			DefaultDDLCollation:                           Bool(true),
+			DefaultNotebookComputePoolCpu:                 Bool(true),
+			DefaultNotebookComputePoolGpu:                 Bool(true),
+			DefaultNullOrdering:                           Bool(true),
+			DefaultStreamlitNotebookWarehouse:             Bool(true),
+			DisableUiDownloadButton:                       Bool(true),
+			DisallowedSpcsWorkloadTypes:                   Bool(true),
+			DisableUserPrivilegeGrants:                    Bool(true),
+			EnableAutomaticSensitiveDataClassificationLog: Bool(true),
+			EnableBudgetEventLogging:                      Bool(true),
+			EnableCortexAnalyst:                           Bool(true),
+			EnableDataCompaction:                          Bool(true),
+			EnableEgressCostOptimizer:                     Bool(true),
+			EnableGetDdlUseDataTypeAlias:                  Bool(true),
+			EnableIcebergMergeOnRead:                      Bool(true),
+			EnableNotebookCreationInPersonalDb:            Bool(true),
+			EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement: Bool(true),
+			EnableTagPropagationEventLogging:                         Bool(true),
+			EnableIdentifierFirstLogin:                               Bool(true),
+			EnableInternalStagesPrivatelink:                          Bool(true),
+			EnableTriSecretAndRekeyOptOutForImageRepository:          Bool(true),
+			EnableTriSecretAndRekeyOptOutForSpcsBlockStorage:         Bool(true),
+			EnableUnhandledExceptionsReporting:                       Bool(true),
+			EnableUnloadPhysicalTypeOptimization:                     Bool(true),
+			EnableUnredactedQuerySyntaxError:                         Bool(true),
+			EnableUnredactedSecureObjectError:                        Bool(true),
+			EnforceNetworkRulesForInternalStages:                     Bool(true),
+			ErrorOnNondeterministicMerge:                             Bool(true),
+			ErrorOnNondeterministicUpdate:                            Bool(true),
+			EventTable:                                               Bool(true),
+			ExternalOAuthAddPrivilegedRolesToBlockedList:             Bool(true),
+			ExternalVolume:                                           Bool(true),
+			GeographyOutputFormat:                                    Bool(true),
+			GeometryOutputFormat:                                     Bool(true),
+			HybridTableLockTimeout:                                   Bool(true),
+			IcebergVersionDefault:                                    Bool(true),
+			InitialReplicationSizeLimitInTB:                          Bool(true),
+			JdbcTreatDecimalAsInt:                                    Bool(true),
+			JdbcTreatTimestampNtzAsUtc:                               Bool(true),
+			JdbcUseSessionTimezone:                                   Bool(true),
+			JsonIndent:                                               Bool(true),
+			JsTreatIntegerAsBigInt:                                   Bool(true),
+			ListingAutoFulfillmentReplicationRefreshSchedule:         Bool(true),
+			LockTimeout:                                              Bool(true),
+			LogLevel:                                                 Bool(true),
+			MaxConcurrencyLevel:                                      Bool(true),
+			MaxDataExtensionTimeInDays:                               Bool(true),
+			MetricLevel:                                              Bool(true),
+			MinDataRetentionTimeInDays:                               Bool(true),
+			MultiStatementCount:                                      Bool(true),
+			NetworkPolicy:                                            Bool(true),
+			NoorderSequenceAsDefault:                                 Bool(true),
+			OAuthAddPrivilegedRolesToBlockedList:                     Bool(true),
+			OdbcTreatDecimalAsInt:                                    Bool(true),
+			PeriodicDataRekeying:                                     Bool(true),
+			PipeExecutionPaused:                                      Bool(true),
+			PreventUnloadToInlineURL:                                 Bool(true),
+			PreventUnloadToInternalStages:                            Bool(true),
+			PythonProfilerModules:                                    Bool(true),
+			PythonProfilerTargetStage:                                Bool(true),
+			QueryTag:                                                 Bool(true),
+			QuotedIdentifiersIgnoreCase:                              Bool(true),
+			ReadConsistencyMode:                                      Bool(true),
+			ReplaceInvalidCharacters:                                 Bool(true),
+			RequireStorageIntegrationForStageCreation:                Bool(true),
+			RequireStorageIntegrationForStageOperation:               Bool(true),
+			RowTimestampDefault:                                      Bool(true),
+			RowsPerResultset:                                         Bool(true),
+			S3StageVpceDnsName:                                       Bool(true),
+			SearchPath:                                               Bool(true),
+			ServerlessTaskMaxStatementSize:                           Bool(true),
+			ServerlessTaskMinStatementSize:                           Bool(true),
+			SimulatedDataSharingConsumer:                             Bool(true),
+			SsoLoginPage:                                             Bool(true),
+			SqlTraceQueryText:                                        Bool(true),
+			StatementQueuedTimeoutInSeconds:                          Bool(true),
+			StatementTimeoutInSeconds:                                Bool(true),
+			StorageSerializationPolicy:                               Bool(true),
+			StrictJsonOutput:                                         Bool(true),
+			SuspendTaskAfterNumFailures:                              Bool(true),
+			TaskAutoRetryAttempts:                                    Bool(true),
+			TimestampDayIsAlways24h:                                  Bool(true),
+			TimestampInputFormat:                                     Bool(true),
+			TimestampLtzOutputFormat:                                 Bool(true),
+			TimestampNtzOutputFormat:                                 Bool(true),
+			TimestampOutputFormat:                                    Bool(true),
+			TimestampTypeMapping:                                     Bool(true),
+			TimestampTzOutputFormat:                                  Bool(true),
+			Timezone:                                                 Bool(true),
+			TimeInputFormat:                                          Bool(true),
+			TimeOutputFormat:                                         Bool(true),
+			TraceLevel:                                               Bool(true),
+			TransactionAbortOnError:                                  Bool(true),
+			TransactionDefaultIsolationLevel:                         Bool(true),
+			TwoDigitCenturyStart:                                     Bool(true),
+			UnsupportedDdlAction:                                     Bool(true),
+			UserTaskManagedInitialWarehouseSize:                      Bool(true),
+			UserTaskMinimumTriggerIntervalInSeconds:                  Bool(true),
+			UserTaskTimeoutMs:                                        Bool(true),
+			UseCachedResult:                                          Bool(true),
+			UseWorkspacesForSql:                                      Bool(true),
+			WeekOfYearPolicy:                                         Bool(true),
+			WeekStart:                                                Bool(true),
 		},
 	}})
 }

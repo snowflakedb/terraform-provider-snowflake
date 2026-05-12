@@ -30,8 +30,8 @@ func (c *NotificationIntegrationClient) client() sdk.NotificationIntegrations {
 func (c *NotificationIntegrationClient) CreateWithGcpPubSub(t *testing.T) (*sdk.NotificationIntegration, func()) {
 	t.Helper()
 	return c.CreateWithRequest(t, sdk.NewCreateNotificationIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
-		WithAutomatedDataLoadsParams(sdk.NewAutomatedDataLoadsParamsRequest().
-			WithGoogleAutoParams(sdk.NewGoogleAutoParamsRequest(gcpPubsubSubscriptionName)),
+		WithAutomatedDataLoadsParams(*sdk.NewAutomatedDataLoadsParamsRequest().
+			WithGoogleAutoParams(*sdk.NewGoogleAutoParamsRequest(gcpPubsubSubscriptionName)),
 		),
 	)
 }
@@ -44,7 +44,7 @@ func (c *NotificationIntegrationClient) Create(t *testing.T) (*sdk.NotificationI
 
 	// TODO [SNOW-1007539]: use email of our service user
 	request := sdk.NewCreateNotificationIntegrationRequest(id, true).
-		WithEmailParams(sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: "artur.sawicki@snowflake.com"}}))
+		WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: "artur.sawicki@snowflake.com"}}))
 
 	err := c.client().Create(ctx, request)
 	require.NoError(t, err)
@@ -73,7 +73,7 @@ func (c *NotificationIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObj
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropNotificationIntegrationRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropNotificationIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

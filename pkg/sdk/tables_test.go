@@ -134,9 +134,9 @@ func TestTableCreate(t *testing.T) {
 
 	t.Run("validation: stageFileFormat's both format name and format type are present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StageFileFormat = &StageFileFormat{
-			FormatName: String("some_format"),
-			Type:       Pointer(FileFormatTypeCSV),
+		opts.StageFileFormat = &LegacyFileFormat{
+			FormatName:     String("some_format"),
+			FileFormatType: Pointer(FileFormatTypeCsv),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("StageFileFormat", "FormatName", "FormatType"))
 	})
@@ -436,14 +436,14 @@ func TestTableCreate(t *testing.T) {
 			Enable:            Bool(true),
 			Rely:              Bool(true),
 		}
-		stageFileFormat := StageFileFormat{
-			Type: Pointer(FileFormatTypeCSV),
-			Options: &FileFormatTypeOptions{
-				CSVCompression: Pointer(CSVCompressionAuto),
+		stageFileFormat := LegacyFileFormat{
+			FileFormatType: Pointer(FileFormatTypeCsv),
+			Options: &LegacyFileFormatTypeOptions{
+				CSVCompression: Pointer(CsvCompressionAuto),
 			},
 		}
-		stageCopyOptions := StageCopyOptions{
-			OnError: &StageCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
+		legacyTableCopyOptions := LegacyTableCopyOptions{
+			OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
 		}
 		rowAccessPolicy := TableRowAccessPolicy{
 			Name: randomSchemaObjectIdentifier(),
@@ -472,7 +472,7 @@ func TestTableCreate(t *testing.T) {
 			ClusterBy:                  []string{"COLUMN_1", "COLUMN_2"},
 			EnableSchemaEvolution:      Bool(true),
 			StageFileFormat:            &stageFileFormat,
-			StageCopyOptions:           &stageCopyOptions,
+			StageCopyOptions:           &legacyTableCopyOptions,
 			DataRetentionTimeInDays:    Int(10),
 			MaxDataExtensionTimeInDays: Int(100),
 			ChangeTracking:             Bool(true),
@@ -504,7 +504,7 @@ func TestTableCreate(t *testing.T) {
 			{name: "FIRST_COLUMN", type_: DataTypeVARCHAR},
 		}
 		request := NewCreateTableRequest(id, columns).
-			WithStageCopyOptions(*NewStageCopyOptionsRequest().WithOnError(NewStageCopyOnErrorOptionsRequest().WithSkipFileX(5)))
+			WithStageCopyOptions(*NewLegacyTableCopyOptionsRequest().WithOnError(*NewLegacyTableCopyOnErrorOptionsRequest().WithSkipFileX(5)))
 		assertOptsValidAndSQLEquals(t, request.toOpts(), `CREATE TABLE %s (FIRST_COLUMN VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE_5)`, id.FullyQualifiedName())
 	})
 
@@ -513,7 +513,7 @@ func TestTableCreate(t *testing.T) {
 			{name: "FIRST_COLUMN", type_: DataTypeVARCHAR},
 		}
 		request := NewCreateTableRequest(id, columns).
-			WithStageCopyOptions(*NewStageCopyOptionsRequest().WithOnError(NewStageCopyOnErrorOptionsRequest().WithSkipFileXPercent(10)))
+			WithStageCopyOptions(*NewLegacyTableCopyOptionsRequest().WithOnError(*NewLegacyTableCopyOnErrorOptionsRequest().WithSkipFileXPercent(10)))
 		assertOptsValidAndSQLEquals(t, request.toOpts(), `CREATE TABLE %s (FIRST_COLUMN VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = 'SKIP_FILE_10%%')`, id.FullyQualifiedName())
 	})
 }
@@ -1336,11 +1336,11 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			Set: &TableSet{
 				EnableSchemaEvolution: Bool(true),
-				StageFileFormat: &StageFileFormat{
-					Type: Pointer(FileFormatTypeCSV),
+				StageFileFormat: &LegacyFileFormat{
+					FileFormatType: Pointer(FileFormatTypeCsv),
 				},
-				StageCopyOptions: &StageCopyOptions{
-					OnError: &StageCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
+				StageCopyOptions: &LegacyTableCopyOptions{
+					OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
 				},
 				DataRetentionTimeInDays:    Int(30),
 				MaxDataExtensionTimeInDays: Int(90),

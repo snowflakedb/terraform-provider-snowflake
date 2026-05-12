@@ -6,11 +6,20 @@ import (
 	"strings"
 	"text/template"
 
+	_ "embed"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // TODO [SNOW-1501905]: describe all methods in this file
 // TODO [SNOW-1501905]: test all methods in this file
+
+// common templates should go here
+var (
+	//go:embed templates/preamble.tmpl
+	preambleTemplateContent string
+	PreambleTemplate, _     = template.New("preambleTemplate").Parse(preambleTemplateContent)
+)
 
 func FirstLetterLowercase(in string) string {
 	return strings.ToLower(in[:1]) + in[1:]
@@ -46,6 +55,7 @@ func CamelToWords(camel string) string {
 	return strings.ReplaceAll(ToSnakeCase(camel), "_", " ")
 }
 
+// SnakeCaseToCamel converts a snake_case string to a camelCase string.
 func SnakeCaseToCamel(snake string) string {
 	var suffix string
 	if strings.HasSuffix(snake, "_") {
@@ -55,6 +65,9 @@ func SnakeCaseToCamel(snake string) string {
 	snake = strings.ToLower(snake)
 	parts := strings.Split(snake, "_")
 	for idx, p := range parts {
+		if p == "" {
+			continue
+		}
 		parts[idx] = strings.ToUpper(p[:1]) + p[1:]
 	}
 	return strings.Join(parts, "") + suffix

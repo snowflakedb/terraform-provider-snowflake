@@ -1,0 +1,250 @@
+package model
+
+import (
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+)
+
+func SemanticViewWithMetrics(
+	resourceName string,
+	id sdk.SchemaObjectIdentifier,
+	tables []sdk.LogicalTable,
+	metrics []sdk.MetricDefinition,
+) *SemanticViewModel {
+	return SemanticView(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), tables).WithMetrics(metrics)
+}
+
+func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewModel {
+	maps := make([]tfconfig.Variable, len(tables))
+	for i, v := range tables {
+		m := map[string]tfconfig.Variable{
+			"table_name": tfconfig.StringVariable(v.TableName.FullyQualifiedName()),
+		}
+		if v.Comment != nil {
+			m["comment"] = tfconfig.StringVariable(*v.Comment)
+		}
+		logicalTableAlias := v.GetLogicalTableAlias()
+		if logicalTableAlias != nil {
+			m["table_alias"] = tfconfig.StringVariable(logicalTableAlias.LogicalTableAlias)
+		}
+		primaryKeys := v.GetPrimaryKeys()
+		if primaryKeys != nil {
+			keys := make([]tfconfig.Variable, len(primaryKeys.PrimaryKey))
+			for j, key := range primaryKeys.PrimaryKey {
+				keys[j] = tfconfig.StringVariable(key.Name)
+			}
+			m["primary_key"] = tfconfig.ListVariable(keys...)
+		}
+		uniqueKeys := v.GetUniqueKeys()
+		if uniqueKeys != nil {
+			keys := make([]tfconfig.Variable, len(uniqueKeys))
+			for j, key := range uniqueKeys {
+				uniKeys := make([]tfconfig.Variable, len(key.Unique))
+				for k, uniKey := range key.Unique {
+					uniKeys[k] = tfconfig.StringVariable(uniKey.Name)
+				}
+				keys[j] = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"values": tfconfig.ListVariable(uniKeys...),
+				})
+			}
+			m["unique"] = tfconfig.ListVariable(keys...)
+		}
+		synonyms := v.GetSynonyms()
+		if synonyms != nil {
+			syns := make([]tfconfig.Variable, len(synonyms.WithSynonyms))
+			for j, synonym := range synonyms.WithSynonyms {
+				syns[j] = tfconfig.StringVariable(synonym.Synonym)
+			}
+			m["synonym"] = tfconfig.SetVariable(syns...)
+		}
+		maps[i] = tfconfig.ObjectVariable(m)
+	}
+	s.Tables = tfconfig.ListVariable(maps...)
+	return s
+}
+
+func (s *SemanticViewModel) WithRelationships(relationships []sdk.SemanticViewRelationship) *SemanticViewModel {
+	maps := make([]tfconfig.Variable, len(relationships))
+	for i, v := range relationships {
+		m := map[string]tfconfig.Variable{}
+		tableNameOrAlias := v.GetTableNameOrAlias()
+		if tableNameOrAlias != nil {
+			tableNameOrAliasVar := map[string]tfconfig.Variable{}
+			if tableNameOrAlias.RelationshipTableAlias != nil {
+				tableNameOrAliasVar["table_alias"] = tfconfig.StringVariable(*tableNameOrAlias.RelationshipTableAlias)
+			} else if tableNameOrAlias.RelationshipTableName != nil {
+				tableNameOrAliasVar["table_name"] = tfconfig.StringVariable(tableNameOrAlias.RelationshipTableName.FullyQualifiedName())
+			}
+
+			m["table_name_or_alias"] = tfconfig.ListVariable(tfconfig.ObjectVariable(tableNameOrAliasVar))
+		}
+
+		refTableNameOrAlias := v.GetRefTableNameOrAlias()
+		if refTableNameOrAlias != nil {
+			refTableNameOrAliasVar := map[string]tfconfig.Variable{}
+			if refTableNameOrAlias.RelationshipTableAlias != nil {
+				refTableNameOrAliasVar["table_alias"] = tfconfig.StringVariable(*refTableNameOrAlias.RelationshipTableAlias)
+			} else if refTableNameOrAlias.RelationshipTableName != nil {
+				refTableNameOrAliasVar["table_name"] = tfconfig.StringVariable(refTableNameOrAlias.RelationshipTableName.FullyQualifiedName())
+			}
+			m["referenced_table_name_or_alias"] = tfconfig.ListVariable(tfconfig.ObjectVariable(refTableNameOrAliasVar))
+		}
+
+		relColumnNames := v.GetRelationshipColumnsNames()
+		if relColumnNames != nil {
+			keys := make([]tfconfig.Variable, len(relColumnNames))
+			for j, key := range relColumnNames {
+				keys[j] = tfconfig.StringVariable(key.Name)
+			}
+			m["relationship_columns"] = tfconfig.ListVariable(keys...)
+		}
+
+		relRefColumnNames := v.GetRelationshipRefColumnsNames()
+		if relRefColumnNames != nil {
+			keys := make([]tfconfig.Variable, len(relRefColumnNames))
+			for j, key := range relRefColumnNames {
+				keys[j] = tfconfig.StringVariable(key.Name)
+			}
+			m["referenced_relationship_columns"] = tfconfig.ListVariable(keys...)
+		}
+
+		relationshipAlias := v.GetRelationshipAlias()
+		if relationshipAlias != nil {
+			m["relationship_identifier"] = tfconfig.StringVariable(relationshipAlias.RelationshipAlias)
+		}
+
+		maps[i] = tfconfig.ObjectVariable(m)
+	}
+	s.Relationships = tfconfig.ListVariable(maps...)
+	return s
+}
+
+func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *SemanticViewModel {
+	maps := make([]tfconfig.Variable, len(metrics))
+	for i, v := range metrics {
+		m := map[string]tfconfig.Variable{}
+		semExp := v.GetSemanticExpression()
+		windFunc := v.GetWindowFunctionMetricDefinition()
+		if semExp != nil {
+			semExpVar := map[string]tfconfig.Variable{}
+			if semExp.Comment != nil {
+				semExpVar["comment"] = tfconfig.StringVariable(*semExp.Comment)
+			}
+			qExpName := semExp.GetQualifiedExpressionName()
+			if qExpName != nil {
+				semExpVar["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
+			}
+			sqlExp := semExp.GetSqlExpression()
+			if sqlExp != nil {
+				semExpVar["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
+			}
+			synonyms := semExp.GetSynonyms()
+			if synonyms != nil {
+				syns := make([]tfconfig.Variable, len(synonyms.WithSynonyms))
+				for j, synonym := range synonyms.WithSynonyms {
+					syns[j] = tfconfig.StringVariable(synonym.Synonym)
+				}
+				semExpVar["synonym"] = tfconfig.SetVariable(syns...)
+			}
+			m["semantic_expression"] = tfconfig.ListVariable(tfconfig.ObjectVariable(semExpVar))
+		} else if windFunc != nil {
+			windFuncVar := map[string]tfconfig.Variable{}
+			qExpName := windFunc.GetQualifiedExpressionName()
+			if qExpName != nil {
+				windFuncVar["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
+			}
+			sqlExp := windFunc.GetSqlExpression()
+			if sqlExp != nil {
+				windFuncVar["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
+			}
+			if windFunc.OverClause != nil {
+				overClauseVar := map[string]tfconfig.Variable{}
+				if windFunc.OverClause.PartitionBy != nil {
+					overClauseVar["partition_by"] = tfconfig.StringVariable(*windFunc.OverClause.PartitionBy)
+				}
+				if windFunc.OverClause.OrderBy != nil {
+					overClauseVar["order_by"] = tfconfig.StringVariable(*windFunc.OverClause.OrderBy)
+				}
+				if windFunc.OverClause.WindowFrameClause != nil {
+					overClauseVar["window_frame_clause"] = tfconfig.StringVariable(*windFunc.OverClause.WindowFrameClause)
+				}
+				windFuncVar["over_clause"] = tfconfig.ObjectVariable(overClauseVar)
+			}
+			m["window_function"] = tfconfig.ListVariable(tfconfig.ObjectVariable(windFuncVar))
+		}
+
+		if v.CheckIsPrivateIsNotNil() {
+			m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
+		}
+
+		maps[i] = tfconfig.ObjectVariable(m)
+	}
+	s.Metrics = tfconfig.ListVariable(maps...)
+	return s
+}
+
+func (s *SemanticViewModel) WithFacts(facts []sdk.FactDefinition) *SemanticViewModel {
+	maps := make([]tfconfig.Variable, len(facts))
+	for i, v := range facts {
+		semExp := v.GetSemanticExpression()
+		m := map[string]tfconfig.Variable{}
+		if semExp.Comment != nil {
+			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
+		}
+		qExpName := semExp.GetQualifiedExpressionName()
+		if qExpName != nil {
+			m["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
+		}
+		sqlExp := semExp.GetSqlExpression()
+		if sqlExp != nil {
+			m["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
+		}
+		synonyms := semExp.GetSynonyms()
+		if synonyms != nil {
+			syns := make([]tfconfig.Variable, len(synonyms.WithSynonyms))
+			for j, synonym := range synonyms.WithSynonyms {
+				syns[j] = tfconfig.StringVariable(synonym.Synonym)
+			}
+			m["synonym"] = tfconfig.SetVariable(syns...)
+		}
+
+		if v.CheckIsPrivateIsNotNil() {
+			m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
+		}
+
+		maps[i] = tfconfig.ObjectVariable(m)
+	}
+	s.Facts = tfconfig.ListVariable(maps...)
+	return s
+}
+
+func (s *SemanticViewModel) WithDimensions(dimensions []sdk.DimensionDefinition) *SemanticViewModel {
+	maps := make([]tfconfig.Variable, len(dimensions))
+	for i, v := range dimensions {
+		semExp := v.GetSemanticExpression()
+		m := map[string]tfconfig.Variable{}
+		if semExp.Comment != nil {
+			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
+		}
+		qExpName := semExp.GetQualifiedExpressionName()
+		if qExpName != nil {
+			m["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
+		}
+		sqlExp := semExp.GetSqlExpression()
+		if sqlExp != nil {
+			m["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
+		}
+		synonyms := semExp.GetSynonyms()
+		if synonyms != nil {
+			syns := make([]tfconfig.Variable, len(synonyms.WithSynonyms))
+			for j, synonym := range synonyms.WithSynonyms {
+				syns[j] = tfconfig.StringVariable(synonym.Synonym)
+			}
+			m["synonym"] = tfconfig.SetVariable(syns...)
+		}
+		maps[i] = tfconfig.ObjectVariable(m)
+	}
+	s.Dimensions = tfconfig.ListVariable(maps...)
+	return s
+}

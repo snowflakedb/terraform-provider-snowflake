@@ -10,11 +10,15 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/sdkv2enhancements"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+// TODO(SNOW-3043057): Refactor custom diffs. Now, code is duplicated for other resources and fields.
 
 func StringParameterValueComputedIf[T ~string](key string, params []*sdk.Parameter, parameterLevel sdk.ParameterType, parameterName T) schema.CustomizeDiffFunc {
 	return ParameterValueComputedIf(key, params, parameterLevel, parameterName, func(value any) string { return value.(string) })
@@ -30,6 +34,7 @@ func BoolParameterValueComputedIf[T ~string](key string, params []*sdk.Parameter
 
 func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter, objectParameterLevel sdk.ParameterType, parameterName T, valueToString func(v any) string) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+		providerCtx := meta.(*provider.Context)
 		foundParameter, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == string(parameterName) })
 		if err != nil {
 			log.Printf("[WARN] failed to find parameter: %s", parameterName)
@@ -51,11 +56,19 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 			return nil
 		}
 
-		// If the configuration is not set, perform SetNewComputed for cases like:
-		// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
-		// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
-		if parameter.Value != valueToString(d.Get(key)) || parameter.Level == objectParameterLevel {
-			return d.SetNewComputed(key)
+		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel, providerCtx.EnabledExperiments) {
+			// If the configuration is not set, perform SetNewComputed only for parameter being set on the object level (if so, it means that it was set externally, and we have to unset it).
+			// The value change is handled through read.
+			if parameter.Level == objectParameterLevel {
+				return d.SetNewComputed(key)
+			}
+		} else {
+			// If the configuration is not set, perform SetNewComputed for cases like:
+			// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
+			// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
+			if parameter.Value != valueToString(d.Get(key)) || parameter.Level == objectParameterLevel {
+				return d.SetNewComputed(key)
+			}
 		}
 
 		return nil
@@ -86,9 +99,24 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 	})
 }
 
+// ForceNewIfUrlIsS3Compatible sets a ForceNew for a url field which is set to an s3compat:// url.
+func ForceNewIfUrlIsS3Compatible() schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange("url", func(ctx context.Context, oldValue, newValue, meta any) bool {
+		return strings.HasPrefix(oldValue.(string), "s3compat://")
+	})
+}
+
+// ForceNewIfNotDefault sets a ForceNew for a string field which was set to a non-default value.
+func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
+		return newValue.(string) != BooleanDefault
+	})
+}
+
 // ComputedIfAnyAttributeChanged marks the given fields as computed if any of the listed fields changes.
 // It takes field-level diffSuppress into consideration based on the schema passed.
 // If the field is not found in the given schema, it continues without error. Only top level schema fields should be used.
+// If the field is a nested field, it may cause diffs eagerly. This happens because diff.HasChange returns true, even if a nested field diff is suppressed.
 func ComputedIfAnyAttributeChanged(resourceSchema map[string]*schema.Schema, key string, changedAttributeKeys ...string) schema.CustomizeDiffFunc {
 	return customdiff.ComputedIf(key, func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) bool {
 		var result bool
@@ -195,6 +223,20 @@ func RecreateWhenUserTypeChangedExternally(userType sdk.UserType) schema.Customi
 	}
 }
 
+func RecreateWhenStageTypeChangedExternally(stageType sdk.StageType) schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		if n := diff.Get("stage_type"); n != nil {
+			log.Printf("[DEBUG] new external value for stage type: %s", n.(string))
+
+			diffStageType, _ := sdk.ToStageType(n.(string))
+			if acceptableStageTypes, ok := sdk.AcceptableStageTypes[stageType]; ok && !slices.Contains(acceptableStageTypes, diffStageType) {
+				return errors.Join(diff.SetNew("stage_type", "<changed externally>"), diff.ForceNew("stage_type"))
+			}
+		}
+		return nil
+	}
+}
+
 func RecreateWhenSecretTypeChangedExternally(secretType sdk.SecretType) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get("secret_type"); n != nil {
@@ -237,6 +279,38 @@ func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) sc
 	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)
 }
 
+// RecreateWhenCatalogSourceChangedExternally recreates a catalog integration when argument catalogSource is different
+// than in the state.
+func RecreateWhenCatalogSourceChangedExternally(catalogSource sdk.CatalogIntegrationCatalogSourceType) schema.CustomizeDiffFunc {
+	return RecreateWhenResourceTypeChangedExternally("catalog_source", catalogSource, sdk.ToCatalogIntegrationCatalogSourceType)
+}
+
+// RecreateWhenStageCloudChangedExternally recreates a stage when argument stageCloud is different than in the state.
+func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.CustomizeDiffFunc {
+	return RecreateWhenResourceTypeChangedExternally("cloud", stageCloud, sdk.ToStageCloud)
+}
+
+// HandleWarehouseExternalTypeChange detects when the warehouse type has been changed externally
+// and plans an update to restore it to warehouseType (without forcing recreation).
+func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		if n := diff.Get("warehouse_type"); n != nil {
+			gotTypeRaw := n.(string)
+			if gotTypeRaw == "" {
+				return nil
+			}
+			gotType, err := sdk.ToWarehouseType(gotTypeRaw)
+			if err != nil {
+				return fmt.Errorf("unknown warehouse type: %w", err)
+			}
+			if gotType != warehouseType {
+				return diff.SetNew("warehouse_type", string(warehouseType))
+			}
+		}
+		return nil
+	}
+}
+
 // RecreateWhenResourceTypeChangedExternally recreates a resource when argument wantType is different than the value in typeField.
 func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, wantType T, toType func(string) (T, error)) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
@@ -275,12 +349,36 @@ func RecreateWhenStreamIsStale() schema.CustomizeDiffFunc {
 	}
 }
 
+// RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage forces recreation when switching
+// between credentials-based authentication and storage integration-based authentication on external stages.
+// This is necessary because Snowflake doesn't allow updating between these two authentication methods in-place.
+// Handles both directions:
+// - From storage_integration to credentials: ForceNew on credentials
+// - From credentials to storage_integration: ForceNew on storage_integration
+func RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage() schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		credentialsOld, credentialsNew := diff.GetChange("credentials")
+		storageIntegrationOld, storageIntegrationNew := diff.GetChange("storage_integration")
+		// Change from storage_integration to credentials requires recreation
+		if diff.HasChange("credentials") && storageIntegrationOld.(string) != "" && len(credentialsNew.([]any)) > 0 {
+			return diff.ForceNew("credentials")
+		}
+		// Change from credentials to storage_integration requires recreation
+		if diff.HasChange("storage_integration") && len(credentialsOld.([]any)) > 0 && storageIntegrationNew.(string) != "" {
+			return diff.ForceNew("storage_integration")
+		}
+
+		return nil
+	}
+}
+
 // RecreateWhenResourceBoolFieldChangedExternally recreates a resource when wantValue is different than value in boolField.
 func RecreateWhenResourceBoolFieldChangedExternally(boolField string, wantValue bool) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get(boolField); n != nil {
-			log.Printf("[DEBUG] new external value for %v, recreating the resource...", boolField)
+			log.Printf("[DEBUG] new external value for %v", boolField)
 			if n.(bool) != wantValue {
+				log.Printf("[DEBUG] recreating the resource, because %v doesn't equal to the expected value...", boolField)
 				return errors.Join(diff.SetNew(boolField, wantValue), diff.ForceNew(boolField))
 			}
 		}

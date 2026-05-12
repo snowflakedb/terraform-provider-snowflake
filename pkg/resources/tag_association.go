@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
@@ -176,16 +177,21 @@ func CreateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 }
 
 func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	tagValue := d.Get("tag_value").(string)
 
 	tagId, ids, objectType, err := TagIdentifierAndObjectIdentifier(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 	var correctObjectIds []string
 	for _, oid := range ids {
 		objectTagValue, err := client.SystemFunctions.GetTag(ctx, tagId, oid, objectType)
+		if safeDestroy && errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+			continue
+		}
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -204,7 +210,8 @@ func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	tagId, _, objectType, err := TagIdentifierAndObjectIdentifier(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -228,17 +235,23 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 		newIdsFQN := collections.Map(newIds, sdk.ObjectIdentifier.FullyQualifiedName)
 		addedIdsFQN, removedIdsFQN, commonIdsFQN := ListDiffWithCommonItems(oldIdsFQN, newIdsFQN)
 
-		addedIds, err := collections.MapErr(addedIdsFQN, sdk.ParseObjectIdentifierString)
+		addedIds, err := collections.MapErr(addedIdsFQN, func(fqn string) (sdk.ObjectIdentifier, error) {
+			return GetOnObjectIdentifier(objectType, fqn)
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		removedIds, err := collections.MapErr(removedIdsFQN, sdk.ParseObjectIdentifierString)
+		removedIds, err := collections.MapErr(removedIdsFQN, func(fqn string) (sdk.ObjectIdentifier, error) {
+			return GetOnObjectIdentifier(objectType, fqn)
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		commonIds, err := collections.MapErr(commonIdsFQN, sdk.ParseObjectIdentifierString)
+		commonIds, err := collections.MapErr(commonIdsFQN, func(fqn string) (sdk.ObjectIdentifier, error) {
+			return GetOnObjectIdentifier(objectType, fqn)
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -255,7 +268,15 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
+		safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 		for _, id := range removedIds {
+			request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
+			if safeDestroy {
+				if err := client.Tags.UnsetSafely(ctx, request); err != nil {
+					return diag.FromErr(err)
+				}
+				continue
+			}
 			if objectType == sdk.ObjectTypeColumn {
 				skip, err := skipColumnIfDoesNotExist(ctx, client, id)
 				if err != nil {
@@ -265,7 +286,6 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 					continue
 				}
 			}
-			request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
 			if err := client.Tags.Unset(ctx, request); err != nil {
 				return diag.FromErr(err)
 			}
@@ -291,12 +311,21 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 }
 
 func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	tagId, ids, objectType, err := TagIdentifierAndObjectIdentifier(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 	for _, id := range ids {
+		request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
+		if safeDestroy {
+			if err := client.Tags.UnsetSafely(ctx, request); err != nil {
+				return diag.FromErr(err)
+			}
+			continue
+		}
 		if objectType == sdk.ObjectTypeColumn {
 			skip, err := skipColumnIfDoesNotExist(ctx, client, id)
 			if err != nil {
@@ -306,7 +335,6 @@ func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 				continue
 			}
 		}
-		request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
 		if err := client.Tags.Unset(ctx, request); err != nil {
 			return diag.FromErr(err)
 		}
@@ -322,7 +350,7 @@ func skipColumnIfDoesNotExist(ctx context.Context, client *sdk.Client, id sdk.Ob
 		return false, errors.New("invalid column identifier")
 	}
 	// TODO [SNOW-1007542]: use SHOW COLUMNS
-	_, err := client.Tables.ShowByID(ctx, columnId.SchemaObjectId())
+	_, err := client.Tables.ShowByIDSafely(ctx, columnId.SchemaObjectId())
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			log.Printf("[DEBUG] table %s not found, skipping", columnId.SchemaObjectId())

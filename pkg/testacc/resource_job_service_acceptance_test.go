@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/customassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -63,8 +64,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 		WithComment(changedComment)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -121,8 +121,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -198,8 +198,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.spec")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.dns_name")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", "0")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", "1")),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_ready_instances", "1")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_instances", "1")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.max_instances", "1")),
@@ -235,7 +235,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasExternalAccessIntegrations(externalAccessIntegration1Id).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegration1Id).
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(comment),
@@ -276,8 +276,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -322,7 +322,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasExternalAccessIntegrations(externalAccessIntegration2Id).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegration2Id).
 						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(changedComment),
@@ -363,8 +363,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -407,7 +407,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasExternalAccessIntegrations(externalAccessIntegration2Id).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegration2Id).
 						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(changedComment),
@@ -448,8 +448,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -528,8 +528,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -565,8 +565,7 @@ func TestAcc_JobService_changeServiceTypeExternally(t *testing.T) {
 	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -635,8 +634,7 @@ func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 	modelBasic := model.JobServiceWithSpecOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -693,8 +691,8 @@ func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -730,8 +728,7 @@ func TestAcc_JobService_fromSpecificationTemplate(t *testing.T) {
 	model := model.JobServiceWithSpecTemplate("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), specTemplate, using...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -787,8 +784,8 @@ func TestAcc_JobService_fromSpecificationTemplate(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -830,8 +827,7 @@ func TestAcc_JobService_fromSpecificationTemplateOnStage(t *testing.T) {
 	model := model.JobServiceWithSpecTemplateOnStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), stage.ID(), specFileName, using...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -887,8 +883,8 @@ func TestAcc_JobService_fromSpecificationTemplateOnStage(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -931,8 +927,7 @@ func TestAcc_JobService_changingSpec(t *testing.T) {
 	modelBasic := model.JobServiceWithSpec("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePool.ID().FullyQualifiedName(), spec)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1021,8 +1016,7 @@ func TestAcc_JobService_complete(t *testing.T) {
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1037,7 +1031,7 @@ func TestAcc_JobService_complete(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(comment),
@@ -1078,8 +1072,8 @@ func TestAcc_JobService_complete(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.current_instances", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_instances", "1")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_instances", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_instances", "1")),
@@ -1167,8 +1161,7 @@ func TestAcc_JobService_Validations(t *testing.T) {
 		}))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: servicesProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

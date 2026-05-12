@@ -228,7 +228,8 @@ func CreateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 
 func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -299,7 +300,7 @@ func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(schemaParameters)}); err != nil {
+		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(schemaParameters, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 		return nil
@@ -310,6 +311,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
 	if err != nil {
+		d.Partial(true)
 		return diag.FromErr(err)
 	}
 
@@ -319,6 +321,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			NewName: sdk.Pointer(newId),
 		})
 		if err != nil {
+			d.Partial(true)
 			return diag.FromErr(err)
 		}
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
@@ -330,6 +333,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			var err error
 			parsed, err := booleanStringToBool(v)
 			if err != nil {
+				d.Partial(true)
 				return diag.FromErr(err)
 			}
 			if parsed {
@@ -342,6 +346,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 				})
 			}
 			if err != nil {
+				d.Partial(true)
 				return diag.FromErr(fmt.Errorf("error handling with_managed_access on %v err = %w", d.Id(), err))
 			}
 		} else {
@@ -349,6 +354,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			if err := client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
 				DisableManagedAccess: sdk.Pointer(true),
 			}); err != nil {
+				d.Partial(true)
 				return diag.FromErr(fmt.Errorf("error handling with_managed_access on %v err = %w", d.Id(), err))
 			}
 		}
@@ -367,6 +373,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if updateParamDiags := handleSchemaParametersChanges(d, set, unset); len(updateParamDiags) > 0 {
+		d.Partial(true)
 		return updateParamDiags
 	}
 	if (*set != sdk.SchemaSet{}) {
@@ -374,6 +381,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			Set: set,
 		})
 		if err != nil {
+			d.Partial(true)
 			return diag.FromErr(err)
 		}
 	}
@@ -383,6 +391,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			Unset: unset,
 		})
 		if err != nil {
+			d.Partial(true)
 			return diag.FromErr(err)
 		}
 	}

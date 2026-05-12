@@ -245,7 +245,7 @@ func (opts *ExternalTableDropOption) validate() error {
 
 func externalTableFileFormatTypeOptionsFieldsByType(opts *ExternalTableFileFormatTypeOptions) map[ExternalTableFileFormatType][]any {
 	return map[ExternalTableFileFormatType][]any{
-		ExternalTableFileFormatTypeCSV: {
+		ExternalTableFileFormatTypeCsv: {
 			opts.CSVCompression,
 			opts.CSVRecordDelimiter,
 			opts.CSVFieldDelimiter,
@@ -258,7 +258,7 @@ func externalTableFileFormatTypeOptionsFieldsByType(opts *ExternalTableFileForma
 			opts.CSVEmptyFieldAsNull,
 			opts.CSVEncoding,
 		},
-		ExternalTableFileFormatTypeJSON: {
+		ExternalTableFileFormatTypeJson: {
 			opts.JSONCompression,
 			opts.JSONAllowDuplicate,
 			opts.JSONStripOuterArray,
@@ -269,7 +269,7 @@ func externalTableFileFormatTypeOptionsFieldsByType(opts *ExternalTableFileForma
 			opts.AvroCompression,
 			opts.AvroReplaceInvalidCharacters,
 		},
-		ExternalTableFileFormatTypeORC: {
+		ExternalTableFileFormatTypeOrc: {
 			opts.ORCTrimSpace,
 			opts.ORCReplaceInvalidCharacters,
 			opts.ORCNullIf,

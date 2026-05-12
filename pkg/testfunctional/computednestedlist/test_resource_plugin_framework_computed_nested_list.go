@@ -139,7 +139,7 @@ func setActionsOutputDedicated(ctx context.Context, response *resource.CreateRes
 	})...)
 }
 
-// TODO [mux-PRs]: implement and test read
+// TODO [SNOW-2234579]: implement and test read
 func (r *computedNestedListResource) Read(_ context.Context, _ resource.ReadRequest, _ *resource.ReadResponse) {
 }
 

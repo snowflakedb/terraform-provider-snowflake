@@ -32,6 +32,13 @@ func (c *StreamlitClient) Update(t *testing.T, request *sdk.AlterStreamlitReques
 	require.NoError(t, err)
 }
 
+func (c *StreamlitClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Streamlit, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByID(ctx, id)
+}
+
 func (c *StreamlitClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

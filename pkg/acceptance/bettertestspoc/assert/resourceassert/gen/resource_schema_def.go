@@ -34,12 +34,40 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AccountRole().Schema,
 	},
 	{
+		name:   "AccountSessionPolicyAttachment",
+		schema: resources.AccountSessionPolicyAttachment().Schema,
+	},
+	{
 		name:   "ApiAuthenticationIntegrationWithAuthorizationCodeGrant",
 		schema: resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant().Schema,
 	},
 	{
 		name:   "ApiAuthenticationIntegrationWithClientCredentials",
 		schema: resources.ApiAuthenticationIntegrationWithClientCredentials().Schema,
+	},
+	{
+		name:   "ApiAuthenticationIntegrationWithJwtBearer",
+		schema: resources.ApiAuthenticationIntegrationWithJwtBearer().Schema,
+	},
+	{
+		name:   "AuthenticationPolicy",
+		schema: resources.AuthenticationPolicy().Schema,
+	},
+	{
+		name:   "CatalogIntegrationAwsGlue",
+		schema: resources.CatalogIntegrationAwsGlue().Schema,
+	},
+	{
+		name:   "CatalogIntegrationObjectStorage",
+		schema: resources.CatalogIntegrationObjectStorage().Schema,
+	},
+	{
+		name:   "CatalogIntegrationOpenCatalog",
+		schema: resources.CatalogIntegrationOpenCatalog().Schema,
+	},
+	{
+		name:   "CatalogIntegrationIcebergRest",
+		schema: resources.CatalogIntegrationIcebergRest().Schema,
 	},
 	{
 		name:   "ComputePool",
@@ -62,12 +90,28 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.DatabaseRole().Schema,
 	},
 	{
-		name:   "ExternalVolume",
-		schema: resources.ExternalVolume().Schema,
+		name:   "Execute",
+		schema: resources.Execute().Schema,
 	},
 	{
-		name:   "ImageRepository",
-		schema: resources.ImageRepository().Schema,
+		name:   "ExternalAzureStage",
+		schema: resources.ExternalAzureStage().Schema,
+	},
+	{
+		name:   "ExternalGcsStage",
+		schema: resources.ExternalGcsStage().Schema,
+	},
+	{
+		name:   "ExternalS3Stage",
+		schema: resources.ExternalS3Stage().Schema,
+	},
+	{
+		name:   "ExternalS3CompatibleStage",
+		schema: resources.ExternalS3CompatibleStage().Schema,
+	},
+	{
+		name:   "ExternalVolume",
+		schema: resources.ExternalVolume().Schema,
 	},
 	{
 		name:   "ExternalOauthSecurityIntegration",
@@ -98,6 +142,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.GitRepository().Schema,
 	},
 	{
+		name:   "ImageRepository",
+		schema: resources.ImageRepository().Schema,
+	},
+	{
+		name:   "InternalStage",
+		schema: resources.InternalStage().Schema,
+	},
+	{
 		name:   "JobService",
 		schema: resources.JobService().Schema,
 	},
@@ -105,15 +157,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "LegacyServiceUser",
 		schema: resources.LegacyServiceUser().Schema,
 	},
-	// TODO(SNOW-1501905): Support required object types (commented because it's blocking model generator)
-	// Manifest field (required object type) is not supported by the model generator.
-	// Current overrides are not sufficient to generate the model with the required attribute that would use tfconfig.Variable type.
-	// The WithManifestValue method should be used in the constructors as WithManifest is not generated at all (another generator limitation, but not that important in this case).
-	// Once it's supported, uncomment this and remove the manually written model.
-	// {
-	//	name:   "Listing",
-	//	schema: resources.Listing().Schema,
-	// },
+	{
+		name:   "Listing",
+		schema: resources.Listing().Schema,
+	},
 	{
 		name:   "ManagedAccount",
 		schema: resources.ManagedAccount().Schema,
@@ -127,12 +174,20 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.NetworkPolicy().Schema,
 	},
 	{
+		name:   "Notebook",
+		schema: resources.Notebook().Schema,
+	},
+	{
 		name:   "OauthIntegrationForCustomClients",
 		schema: resources.OauthIntegrationForCustomClients().Schema,
 	},
 	{
 		name:   "OauthIntegrationForPartnerApplications",
 		schema: resources.OauthIntegrationForPartnerApplications().Schema,
+	},
+	{
+		name:   "PasswordPolicy",
+		schema: resources.PasswordPolicy().Schema,
 	},
 	{
 		name:   "PrimaryConnection",
@@ -203,6 +258,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.SecretWithGenericString().Schema,
 	},
 	{
+		name:   "SemanticView",
+		schema: resources.SemanticView().Schema,
+	},
+	{
+		name:   "SessionPolicy",
+		schema: resources.SessionPolicy().Schema,
+	},
+	{
 		name:   "Service",
 		schema: resources.Service().Schema,
 	},
@@ -217,6 +280,18 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "Streamlit",
 		schema: resources.Streamlit().Schema,
+	},
+	{
+		name:   "StorageIntegrationAws",
+		schema: resources.StorageIntegrationAws().Schema,
+	},
+	{
+		name:   "StorageIntegrationAzure",
+		schema: resources.StorageIntegrationAzure().Schema,
+	},
+	{
+		name:   "StorageIntegrationGcs",
+		schema: resources.StorageIntegrationGcs().Schema,
 	},
 	{
 		name:   "StreamOnDirectoryTable",
@@ -259,11 +334,63 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.UserProgrammaticAccessToken().Schema,
 	},
 	{
+		name:   "UserSessionPolicyAttachment",
+		schema: resources.UserSessionPolicyAttachment().Schema,
+	},
+	{
 		name:   "View",
 		schema: resources.View().Schema,
 	},
 	{
 		name:   "Warehouse",
 		schema: resources.Warehouse().Schema,
+	},
+	{
+		name:   "WarehouseAdaptive",
+		schema: resources.WarehouseAdaptive().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToAccountRole",
+		schema: resources.GrantPrivilegesToAccountRole().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToDatabaseRole",
+		schema: resources.GrantPrivilegesToDatabaseRole().Schema,
+	},
+	{
+		name:   "GrantPrivilegesToShare",
+		schema: resources.GrantPrivilegesToShare().Schema,
+	},
+	{
+		name:   "GrantAccountRole",
+		schema: resources.GrantAccountRole().Schema,
+	},
+	{
+		name:   "GrantDatabaseRole",
+		schema: resources.GrantDatabaseRole().Schema,
+	},
+	{
+		name:   "GrantApplicationRole",
+		schema: resources.GrantApplicationRole().Schema,
+	},
+	{
+		name:   "GrantOwnership",
+		schema: resources.GrantOwnership().Schema,
+	},
+	{
+		name:   "StorageIntegration",
+		schema: resources.StorageIntegration().Schema,
+	},
+	{
+		name:   "Stage",
+		schema: resources.Stage().Schema,
+	},
+	{
+		name:   "DynamicTable",
+		schema: resources.DynamicTable().Schema,
+	},
+	{
+		name:   "NetworkRule",
+		schema: resources.NetworkRule().Schema,
 	},
 }

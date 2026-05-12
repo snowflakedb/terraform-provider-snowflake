@@ -47,6 +47,32 @@ const (
 	DisableConsoleLogin                = "SNOWFLAKE_DISABLE_CONSOLE_LOGIN"
 	SkipTomlFilePermissionVerification = "SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION"
 	UseLegacyTomlFile                  = "SNOWFLAKE_USE_LEGACY_TOML_FILE"
+	WorkloadIdentityProvider           = "SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER"
+	WorkloadIdentityEntraResource      = "SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE"
+	LogQueryText                       = "SNOWFLAKE_LOG_QUERY_TEXT"
+	LogQueryParameters                 = "SNOWFLAKE_LOG_QUERY_PARAMETERS"
+	ProxyHost                          = "SNOWFLAKE_PROXY_HOST"
+	ProxyPort                          = "SNOWFLAKE_PROXY_PORT"
+	ProxyUser                          = "SNOWFLAKE_PROXY_USER"
+	ProxyPassword                      = "SNOWFLAKE_PROXY_PASSWORD"
+	ProxyProtocol                      = "SNOWFLAKE_PROXY_PROTOCOL"
+	NoProxy                            = "SNOWFLAKE_NO_PROXY"
+
+	DisableOCSPChecks                 = "SNOWFLAKE_DISABLE_OCSP_CHECKS"
+	CertRevocationCheckMode           = "SNOWFLAKE_CERT_REVOCATION_CHECK_MODE"
+	CrlAllowCertificatesWithoutCrlURL = "SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL"
+	CrlInMemoryCacheDisabled          = "SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED"
+	CrlOnDiskCacheDisabled            = "SNOWFLAKE_CRL_ON_DISK_CACHE_DISABLED"
+	CrlHTTPClientTimeout              = "SNOWFLAKE_CRL_HTTP_CLIENT_TIMEOUT"
+	DisableSamlURLCheck               = "SNOWFLAKE_DISABLE_SAML_URL_CHECK"
+
+	OauthClientId                = "SNOWFLAKE_OAUTH_CLIENT_ID"
+	OauthClientSecret            = "SNOWFLAKE_OAUTH_CLIENT_SECRET" //nolint:gosec
+	OauthAuthorizationUrl        = "SNOWFLAKE_OAUTH_AUTHORIZATION_URL"
+	OauthTokenRequestUrl         = "SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL" //nolint:gosec
+	OauthRedirectUri             = "SNOWFLAKE_OAUTH_REDIRECT_URI"
+	OauthScope                   = "SNOWFLAKE_OAUTH_SCOPE"
+	EnableSingleUseRefreshTokens = "SNOWFLAKE_ENABLE_SINGLE_USE_REFRESH_TOKENS"
 
 	ConfigPath = "SNOWFLAKE_CONFIG_PATH"
 )

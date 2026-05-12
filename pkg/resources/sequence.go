@@ -100,14 +100,14 @@ func CreateSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	req := sdk.NewCreateSequenceRequest(id)
 
 	if v, ok := d.GetOk("increment"); ok {
-		req.WithIncrement(sdk.Int(v.(int)))
+		req.WithIncrement(v.(int))
 	}
 
 	if v, ok := d.GetOk("comment"); ok {
-		req.WithComment(sdk.String(v.(string)))
+		req.WithComment(v.(string))
 	}
 	if v, ok := d.GetOk("ordering"); ok {
-		req.WithValuesBehavior(sdk.ValuesBehaviorPointer(sdk.ValuesBehavior(v.(string))))
+		req.WithValuesBehavior(sdk.ValuesBehavior(v.(string)))
 	}
 	err := client.Sequences.Create(ctx, req)
 	if err != nil {
@@ -184,7 +184,7 @@ func UpdateSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if d.HasChange("comment") {
 		req := sdk.NewAlterSequenceRequest(id)
-		req.WithSet(sdk.NewSequenceSetRequest().WithComment(sdk.String(d.Get("comment").(string))))
+		req.WithSet(*sdk.NewSequenceSetRequest().WithComment(d.Get("comment").(string)))
 		if err := client.Sequences.Alter(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
@@ -192,7 +192,7 @@ func UpdateSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if d.HasChange("increment") {
 		req := sdk.NewAlterSequenceRequest(id)
-		req.WithSetIncrement(sdk.Int(d.Get("increment").(int)))
+		req.WithSetIncrement(d.Get("increment").(int))
 		if err := client.Sequences.Alter(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
@@ -200,7 +200,7 @@ func UpdateSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if d.HasChange("ordering") {
 		req := sdk.NewAlterSequenceRequest(id)
-		req.WithSet(sdk.NewSequenceSetRequest().WithValuesBehavior(sdk.ValuesBehaviorPointer(sdk.ValuesBehavior(d.Get("ordering").(string)))))
+		req.WithSet(*sdk.NewSequenceSetRequest().WithValuesBehavior(sdk.ValuesBehavior(d.Get("ordering").(string))))
 		if err := client.Sequences.Alter(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}

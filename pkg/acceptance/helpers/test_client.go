@@ -1,13 +1,19 @@
 package helpers
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
+
+type AccountInformation interface {
+	GetAccountLocator() string
+}
 
 type TestClient struct {
 	context *TestClientContext
 
 	Ids *IdsGenerator
+	AccountInformation
 
 	Account                      *AccountClient
 	AggregationPolicy            *AggregationPolicyClient
@@ -17,9 +23,11 @@ type TestClient struct {
 	ApplicationPackage           *ApplicationPackageClient
 	AuthenticationPolicy         *AuthenticationPolicyClient
 	BcrBundles                   *BcrBundlesClient
+	Budget                       *BudgetClient
 	ComputePool                  *ComputePoolClient
 	Connection                   *ConnectionClient
 	Context                      *ContextClient
+	CortexAgent                  *AgentClient
 	CortexSearchService          *CortexSearchServiceClient
 	CatalogIntegration           *CatalogIntegrationClient
 	Database                     *DatabaseClient
@@ -44,14 +52,17 @@ type TestClient struct {
 	Listing                      *ListingClient
 	MaskingPolicy                *MaskingPolicyClient
 	MaterializedView             *MaterializedViewClient
+	McpServer                    *McpServerClient
 	NetworkPolicy                *NetworkPolicyClient
 	NetworkRule                  *NetworkRuleClient
+	Notebook                     *NotebookClient
 	NotificationIntegration      *NotificationIntegrationClient
 	OrganizationAccount          *OrganizationAccountClient
 	PackagesPolicy               *PackagesPolicyClient
 	Parameter                    *ParameterClient
 	PasswordPolicy               *PasswordPolicyClient
 	Pipe                         *PipeClient
+	PostgresInstance             *PostgresInstanceClient
 	Procedure                    *ProcedureClient
 	ProjectionPolicy             *ProjectionPolicyClient
 	PolicyReferences             *PolicyReferencesClient
@@ -65,7 +76,9 @@ type TestClient struct {
 	Sequence                     *SequenceClient
 	SessionPolicy                *SessionPolicyClient
 	Share                        *ShareClient
+	SemanticView                 *SemanticViewClient
 	Snapshot                     *SnapshotClient
+	SnowflakeDefaults            *SnowflakeDefaultsClient
 	Stage                        *StageClient
 	StorageIntegration           *StorageIntegrationClient
 	Stream                       *StreamClient
@@ -78,19 +91,29 @@ type TestClient struct {
 	Warehouse                    *WarehouseClient
 }
 
-func NewTestClient(c *sdk.Client, database string, schema string, warehouse string, testObjectSuffix string) *TestClient {
+func NewTestClient(
+	c *sdk.Client,
+	database string,
+	schema string,
+	warehouse string,
+	testObjectSuffix string,
+	snowflakeEnvironment testenvs.SnowflakeEnvironment,
+) *TestClient {
 	context := &TestClientContext{
-		client:           c,
-		database:         database,
-		schema:           schema,
-		warehouse:        warehouse,
-		testObjectSuffix: testObjectSuffix,
+		client:               c,
+		database:             database,
+		schema:               schema,
+		warehouse:            warehouse,
+		testObjectSuffix:     testObjectSuffix,
+		snowflakeEnvironment: snowflakeEnvironment,
 	}
+
 	idsGenerator := NewIdsGenerator(context)
 	return &TestClient{
 		context: context,
 
-		Ids: idsGenerator,
+		Ids:                idsGenerator,
+		AccountInformation: context.client,
 
 		Account:                      NewAccountClient(context, idsGenerator),
 		AggregationPolicy:            NewAggregationPolicyClient(context, idsGenerator),
@@ -100,9 +123,11 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		ApplicationPackage:           NewApplicationPackageClient(context, idsGenerator),
 		AuthenticationPolicy:         NewAuthenticationPolicyClient(context, idsGenerator),
 		BcrBundles:                   NewBcrBundlesClient(context),
+		Budget:                       NewBudgetClient(context, idsGenerator),
 		ComputePool:                  NewComputePoolClient(context, idsGenerator),
 		Connection:                   NewConnectionClient(context, idsGenerator),
 		Context:                      NewContextClient(context),
+		CortexAgent:                  NewAgentClient(context, idsGenerator),
 		CortexSearchService:          NewCortexSearchServiceClient(context, idsGenerator),
 		CatalogIntegration:           NewCatalogIntegrationClient(context, idsGenerator),
 		Database:                     NewDatabaseClient(context, idsGenerator),
@@ -127,14 +152,17 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		Listing:                      NewListingClient(context, idsGenerator),
 		MaskingPolicy:                NewMaskingPolicyClient(context, idsGenerator),
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),
+		McpServer:                    NewMcpServerClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
 		NetworkRule:                  NewNetworkRuleClient(context, idsGenerator),
+		Notebook:                     NewNotebookClient(context, idsGenerator),
 		NotificationIntegration:      NewNotificationIntegrationClient(context, idsGenerator),
 		OrganizationAccount:          NewOrganizationAccountClient(context, idsGenerator),
 		PackagesPolicy:               NewPackagesPolicyClient(context, idsGenerator),
 		Parameter:                    NewParameterClient(context),
 		PasswordPolicy:               NewPasswordPolicyClient(context, idsGenerator),
 		Pipe:                         NewPipeClient(context, idsGenerator),
+		PostgresInstance:             NewPostgresInstanceClient(context, idsGenerator),
 		Procedure:                    NewProcedureClient(context, idsGenerator),
 		ProjectionPolicy:             NewProjectionPolicyClient(context, idsGenerator),
 		PolicyReferences:             NewPolicyReferencesClient(context),
@@ -144,7 +172,9 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		Schema:                       NewSchemaClient(context, idsGenerator),
 		Secret:                       NewSecretClient(context, idsGenerator),
 		SecurityIntegration:          NewSecurityIntegrationClient(context, idsGenerator),
+		SemanticView:                 NewSemanticViewClient(context, idsGenerator),
 		Snapshot:                     NewSnapshotClient(context, idsGenerator),
+		SnowflakeDefaults:            NewSnowflakeDefaultsClient(context),
 		Service:                      NewServiceClient(context, idsGenerator),
 		Sequence:                     NewSequenceClient(context, idsGenerator),
 		SessionPolicy:                NewSessionPolicyClient(context, idsGenerator),
@@ -163,13 +193,10 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 }
 
 type TestClientContext struct {
-	client           *sdk.Client
-	database         string
-	schema           string
-	warehouse        string
-	testObjectSuffix string
-}
-
-func (c *TestClient) GetAccountLocator() string {
-	return c.context.client.GetAccountLocator()
+	client               *sdk.Client
+	database             string
+	schema               string
+	warehouse            string
+	testObjectSuffix     string
+	snowflakeEnvironment testenvs.SnowflakeEnvironment
 }

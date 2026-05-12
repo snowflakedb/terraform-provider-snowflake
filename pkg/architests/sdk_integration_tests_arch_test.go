@@ -40,7 +40,7 @@ func TestArchCheck_IntegrationTests_Sdk(t *testing.T) {
 
 		packageFiles.All(func(file *architest.File) {
 			file.ExportedMethods().All(func(method *architest.Method) {
-				// our integration tests have TestMain, let's filter it out now (maybe later we can support in in architest)
+				// our integration tests have TestMain, let's filter it out now (maybe later we can support it in architest)
 				if method.Name() != "TestMain" {
 					method.AssertIntegrationTestNamedCorrectly(t)
 				}

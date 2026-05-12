@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
@@ -163,7 +162,7 @@ type dynamicTableRow struct {
 	OwnerRoleType       sql.NullString `db:"owner_role_type"`
 }
 
-func (dtr dynamicTableRow) convert() *DynamicTable {
+func (dtr dynamicTableRow) convert() (*DynamicTable, error) {
 	dt := &DynamicTable{
 		CreatedOn:           dtr.CreatedOn,
 		Name:                dtr.Name,
@@ -197,7 +196,7 @@ func (dtr dynamicTableRow) convert() *DynamicTable {
 		dt.OwnerRoleType = dtr.OwnerRoleType.String
 	}
 
-	return dt
+	return dt, nil
 }
 
 // describeDynamicTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-dynamic-table
@@ -235,7 +234,7 @@ type dynamicTableDetailsRow struct {
 	PolicyName sql.NullString `db:"policy name"`
 }
 
-func (row dynamicTableDetailsRow) convert() *DynamicTableDetails {
+func (row dynamicTableDetailsRow) convert() (*DynamicTableDetails, error) {
 	typ, _ := datatypes.ParseDataType(row.Type)
 	dtd := &DynamicTableDetails{
 		Name:       row.Name,
@@ -260,5 +259,5 @@ func (row dynamicTableDetailsRow) convert() *DynamicTableDetails {
 	if row.PolicyName.Valid {
 		dtd.PolicyName = row.PolicyName.String
 	}
-	return dtd
+	return dtd, nil
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 const IntegrationTestPrefix = "int_test_"
@@ -145,7 +145,14 @@ func (itc *integrationTestContext) initialize() error {
 	}
 
 	// TODO [SNOW-1763603]: we can't use test client because of the testing.T parameter that is not present here; discuss
-	itc.testClient = helpers.NewTestClient(c, TestDatabaseName, TestSchemaName, TestWarehouseName, integrationtests.ObjectsSuffix)
+	itc.testClient = helpers.NewTestClient(
+		c,
+		TestDatabaseName,
+		TestSchemaName,
+		TestWarehouseName,
+		integrationtests.ObjectsSuffix,
+		testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+	)
 
 	db, dbCleanup, err := testClientHelper().CreateTestDatabase(itc.ctx, false)
 	itc.databaseCleanup = dbCleanup
@@ -186,7 +193,14 @@ func (itc *integrationTestContext) initialize() error {
 		itc.secondaryClient = secondaryClient
 		itc.secondaryCtx = context.Background()
 
-		itc.secondaryTestClient = helpers.NewTestClient(secondaryClient, TestDatabaseName, TestSchemaName, TestWarehouseName, integrationtests.ObjectsSuffix)
+		itc.secondaryTestClient = helpers.NewTestClient(
+			secondaryClient,
+			TestDatabaseName,
+			TestSchemaName,
+			TestWarehouseName,
+			integrationtests.ObjectsSuffix,
+			testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+		)
 
 		secondaryDb, secondaryDbCleanup, err := secondaryTestClientHelper().CreateTestDatabase(itc.ctx, false)
 		itc.secondaryDatabaseCleanup = secondaryDbCleanup
@@ -209,24 +223,25 @@ func (itc *integrationTestContext) initialize() error {
 		}
 		itc.secondaryWarehouse = secondaryWarehouse
 
-		err = testClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.ctx)
-		if err != nil {
-			return err
-		}
-		err = secondaryTestClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.secondaryCtx)
+		err = errors.Join(
+			testClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.ctx),
+			testClientHelper().EnsureEnableIdentifierFirstLoginIsSetToTrue(itc.ctx),
+			secondaryTestClientHelper().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(itc.secondaryCtx),
+			secondaryTestClientHelper().EnsureEnableIdentifierFirstLoginIsSetToTrue(itc.secondaryCtx),
+		)
 		if err != nil {
 			return err
 		}
 
 		// TODO(SNOW-1842271): Adjust test setup to work properly with Accountadmin role for object tests and Orgadmin for account tests
 		if os.Getenv(string(testenvs.TestAccountCreate)) == "" {
-			err = testClientHelper().EnsureScimProvisionerRolesExist(itc.ctx)
+			err = testClientHelper().EnsureEssentialRolesExist(itc.ctx)
 			if err != nil {
-				return err
+				return fmt.Errorf("ensuring essential roles exist in the test client: %w", err)
 			}
-			err = secondaryTestClientHelper().EnsureScimProvisionerRolesExist(itc.secondaryCtx)
+			err = secondaryTestClientHelper().EnsureEssentialRolesExist(itc.secondaryCtx)
 			if err != nil {
-				return err
+				return fmt.Errorf("ensuring essential roles exist in the secondary test client: %w", err)
 			}
 		}
 
@@ -268,6 +283,11 @@ func testContext(t *testing.T) context.Context {
 func testSecondaryClient(t *testing.T) *sdk.Client {
 	t.Helper()
 	return itc.secondaryClient
+}
+
+func testSecondaryContext(t *testing.T) context.Context {
+	t.Helper()
+	return itc.secondaryCtx
 }
 
 func testClientHelper() *helpers.TestClient {

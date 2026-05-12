@@ -40,6 +40,7 @@ func ApiAuthenticationIntegrationWithClientCredentials() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ApiAuthenticationIntegrationWithClientCredentials, customdiff.All(
 			ForceNewIfChangeToEmptyString("oauth_token_endpoint"),
 			ForceNewIfChangeToEmptyString("oauth_client_auth_method"),
+			ForceNewIfChangeToEmptySet("oauth_allowed_scopes"),
 			ComputedIfAnyAttributeChanged(apiAuthClientCredentialsSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(apiAuthClientCredentialsSchema, DescribeOutputAttributeName, "enabled", "comment", "oauth_access_token_validity", "oauth_refresh_token_validity",
 				"oauth_client_auth_method", "oauth_token_endpoint", "oauth_allowed_scopes"),
@@ -67,7 +68,7 @@ func ImportApiAuthenticationWithClientCredentials(ctx context.Context, d *schema
 	if err != nil {
 		return nil, err
 	}
-	if err := handleApiAuthImport(d, integration, properties); err != nil {
+	if err := handleApiAuthImport(ctx, d, integration, properties); err != nil {
 		return nil, err
 	}
 	oauthAllowedScopes, err := collections.FindFirst(properties, func(property sdk.SecurityIntegrationProperty) bool { return property.Name == "OAUTH_ALLOWED_SCOPES" })

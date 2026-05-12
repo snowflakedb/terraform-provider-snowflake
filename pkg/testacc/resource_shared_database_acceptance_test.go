@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -55,7 +56,6 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -173,7 +173,6 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -226,7 +225,6 @@ func TestAcc_CreateSharedDatabase_InvalidValues(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
@@ -267,20 +265,20 @@ func TestAcc_SharedDatabase_migrateFromV0941_ensureSmoothUpgradeWithNewResourceI
 	externalShareId := createShareableDatabase(t)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	sharedDatabaseModel := model.SharedDatabase("test", id.Name(), externalShareId.FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, sharedDatabaseModel),
+				Config:            providerConfig + accconfig.FromModels(t, sharedDatabaseModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(sharedDatabaseModel.ResourceReference(), "id", id.Name()),
 				),
@@ -303,21 +301,21 @@ func TestAcc_SharedDatabase_IdentifierQuotingDiffSuppression(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
 	unquotedExternalShareId := fmt.Sprintf("%s.%s.%s", externalShareId.AccountIdentifier().OrganizationName(), externalShareId.AccountIdentifier().AccountName(), externalShareId.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	sharedDatabaseModel := model.SharedDatabase("test", quotedId, unquotedExternalShareId)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.SharedDatabase),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, sharedDatabaseModel),
+				Config:             providerConfig + accconfig.FromModels(t, sharedDatabaseModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(sharedDatabaseModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(sharedDatabaseModel.ResourceReference(), "id", id.Name()),

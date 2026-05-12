@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testint
 
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -243,5 +244,57 @@ func TestInt_Roles(t *testing.T) {
 
 		assert.Equal(t, 0, roleAfter.GrantedToRoles)
 		assert.Equal(t, 0, parentRoleAfter.GrantedRoles)
+	})
+
+	t.Run("grant public role to role - grant succeeds but show grants does not find it", func(t *testing.T) {
+		parentRole, cleanupParentRole := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(cleanupParentRole)
+
+		publicRoleID := sdk.NewAccountObjectIdentifier("PUBLIC")
+		parentRoleID := parentRole.ID()
+
+		// Grant PUBLIC to the parent role — Snowflake silently succeeds (it's always a no-op)
+		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(publicRoleID, sdk.GrantRole{Role: &parentRoleID}))
+		require.NoError(t, err)
+
+		// SHOW GRANTS OF ROLE PUBLIC does NOT contain an explicit grant to the parent role
+		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Of: &sdk.ShowGrantsOf{
+				Role: publicRoleID,
+			},
+		})
+		require.NoError(t, err)
+
+		_, err = collections.FindFirst(grants, func(grant sdk.Grant) bool {
+			return grant.GrantedTo == sdk.ObjectTypeRole &&
+				grant.GranteeName.FullyQualifiedName() == parentRoleID.FullyQualifiedName()
+		})
+		require.ErrorIs(t, err, collections.ErrObjectNotFound)
+	})
+
+	t.Run("grant public role to user - grant succeeds but show grants does not find it", func(t *testing.T) {
+		user, cleanupUser := testClientHelper().User.CreateUser(t)
+		t.Cleanup(cleanupUser)
+
+		publicRoleID := sdk.NewAccountObjectIdentifier("PUBLIC")
+		userID := user.ID()
+
+		// Grant PUBLIC to the user — Snowflake silently succeeds (it's always a no-op)
+		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(publicRoleID, sdk.GrantRole{User: &userID}))
+		require.NoError(t, err)
+
+		// SHOW GRANTS OF ROLE PUBLIC does NOT contain an explicit grant to the user
+		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Of: &sdk.ShowGrantsOf{
+				Role: publicRoleID,
+			},
+		})
+		require.NoError(t, err)
+
+		_, err = collections.FindFirst(grants, func(grant sdk.Grant) bool {
+			return grant.GrantedTo == sdk.ObjectTypeUser &&
+				grant.GranteeName.FullyQualifiedName() == userID.FullyQualifiedName()
+		})
+		require.ErrorIs(t, err, collections.ErrObjectNotFound)
 	})
 }

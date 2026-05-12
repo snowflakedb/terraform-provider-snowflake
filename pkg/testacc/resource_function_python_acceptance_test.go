@@ -1,8 +1,9 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -14,7 +15,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -25,8 +25,6 @@ import (
 )
 
 func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	funcName := "some_function"
 	argName := "x"
 	dataType := testdatatypes.DataTypeNumber_36_2
@@ -42,11 +40,10 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.FunctionPython),
 		Steps: []resource.TestStep{
 			// CREATE BASIC
@@ -112,8 +109,6 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 }
 
 func TestAcc_FunctionPython_InlineFull(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	secretId := testClient().Ids.RandomSchemaObjectIdentifier()
 	secretId2 := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -176,11 +171,10 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 		})
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		PreCheck:     func() { TestAccPreCheck(t) },
 		CheckDestroy: CheckDestroy(t, resources.FunctionPython),
 		Steps: []resource.TestStep{
 			// CREATE WITH ALL
@@ -242,6 +236,38 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 					resourceshowoutputassert.FunctionShowOutput(t, functionModelUpdateWithoutRecreation.ResourceReference()).
 						HasIsSecure(false),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_FunctionPython_DecfloatUnsupported(t *testing.T) {
+	funcName := "some_function"
+	argName := "x"
+	dataType := testdatatypes.DataTypeDecfloat
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+
+	definition := testClient().Function.PythonIdentityDefinition(t, funcName, argName)
+
+	functionModel := model.FunctionPythonBasicInline("test", id, testvars.PythonRuntime, dataType, funcName, definition).
+		WithArgument(argName, dataType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionPython),
+		Steps: []resource.TestStep{
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config:      config.FromModels(t, functionModel),
+				ExpectError: regexp.MustCompile(`Snowflake type DECFLOAT\[DECFLOAT18]\(38,0\)\{nullable\} is not supported in function .* with handler some_function`),
 			},
 		},
 	})

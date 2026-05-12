@@ -24,7 +24,12 @@ make clean-show-output-schemas generate-show-output-schemas
 
 To generate only chosen subset of all objects run:
 ```shell
-make clean-show-output-schemas generate-show-output-schemas SF_TF_GENERATOR_EXT_ALLOWED_OBJECT_NAMES="sdk.Warehouse,sdk.User"
+make clean-show-output-schemas generate-show-output-schemas SF_TF_GENERATOR_ARGS="--filter-object-names=sdk.Warehouse,sdk.User"
+```
+
+```shell
+# show usage
+make generate-show-output-schemas SF_TF_GENERATOR_ARGS='-h'
 ```
 
 ##### Supported types

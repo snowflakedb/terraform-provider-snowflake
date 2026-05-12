@@ -20,11 +20,11 @@ func NewSystemGetAWSSNSIAMPolicyBuilder(awsSnsTopicArn string) *SystemGetAWSSNSI
 
 // Select generates the select statement for obtaining the aws sns iam policy.
 func (pb *SystemGetAWSSNSIAMPolicyBuilder) Select() string {
-	return fmt.Sprintf(`SELECT SYSTEM$GET_AWS_SNS_IAM_POLICY('%v') AS "policy"`, pb.awsSnsTopicArn)
+	return fmt.Sprintf(`SELECT SYSTEM$GET_AWS_SNS_IAM_POLICY('%v') AS "POLICY"`, pb.awsSnsTopicArn)
 }
 
 type AWSSNSIAMPolicy struct {
-	Policy string `db:"policy"`
+	Policy string `db:"POLICY"`
 }
 
 // ScanAWSSNSIAMPolicy convert a result into a.

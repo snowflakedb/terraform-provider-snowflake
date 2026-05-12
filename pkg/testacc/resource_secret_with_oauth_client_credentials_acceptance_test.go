@@ -1,15 +1,16 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
 import (
+	"testing"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"testing"
 )
 
 //func TestAcc_SecretWithClientCredentials_BasicFlow(t *testing.T) {
@@ -420,7 +421,7 @@ func TestAcc_SecretWithClientCredentials_OauthScopesHandling(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
-			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "foo"}, {Scope: "bar"}, {Scope: "test"}}),
+			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}, {Scope: "scope3"}, {Scope: "scope4"}}),
 	)
 	t.Cleanup(apiIntegrationCleanup)
 
@@ -429,12 +430,12 @@ func TestAcc_SecretWithClientCredentials_OauthScopesHandling(t *testing.T) {
 	basicModel := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.SecretWithClientCredentials),
 		Steps: []resource.TestStep{
+			// Create - without optionals
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.4.0"),
 				Config:            config.FromModels(t, oldBasicModel),

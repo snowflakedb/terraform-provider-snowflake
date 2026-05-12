@@ -1,13 +1,13 @@
 ---
 page_title: "snowflake_image_repository Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage image repositories. For more information, check image repositories documentation https://docs.snowflake.com/en/sql-reference/sql/create-image-repository. Snowpark Container Services provides an OCIv2-compliant image registry service and a storage unit call repository to store images. See Working with an image registry and repository https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-registry-repository developer guide for more details.
 ---
 
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
-
 -> **Note** Quoted names for special characters or case-sensitive names are not supported. The same constraint also applies to database and schema names where you create an image repository. That is, database and schema names without quotes are valid when creating an image repository. This limitation in the provider follows the limitation in Snowflake (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository)). Please use only characters compatible with [unquoted identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax#label-unquoted-identifier).
+
+-> **Note** The `encryption` attribute can only be set at creation time and Snowflake default is used if omitted. Changing this value requires destroying and recreating the resource. When importing an existing image repository, the `encryption` field is not populated in state — only `show_output[0].encryption` reflects the actual value. To avoid a diff after import, either omit `encryption` from your configuration or set it explicitly to match the current Snowflake value.
 
 # snowflake_image_repository (Resource)
 
@@ -49,6 +49,7 @@ resource "snowflake_image_repository" "complete" {
 ### Optional
 
 - `comment` (String) Specifies a comment for the object.
+- `encryption` (String) Specifies the encryption type for the image repository. Can only be set at creation time. Valid values are (case-insensitive): `SNOWFLAKE_FULL` | `SNOWFLAKE_SSE`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -76,6 +77,7 @@ Read-Only:
 - `comment` (String)
 - `created_on` (String)
 - `database_name` (String)
+- `encryption` (String)
 - `name` (String)
 - `owner` (String)
 - `owner_role_type` (String)

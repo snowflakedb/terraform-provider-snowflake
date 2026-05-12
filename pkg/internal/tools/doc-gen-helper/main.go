@@ -11,11 +11,12 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func main() {
@@ -74,6 +75,9 @@ func main() {
 		}
 	}
 
+	activeExperiments := collections.Map(experimentalfeatures.ActiveExperiments, toExperimentModel)
+	discontinuedExperiments := collections.Map(experimentalfeatures.DiscontinuedExperiments, toExperimentModel)
+
 	if errs := errors.Join(
 		printTo(DeprecatedResourcesTemplate, DeprecatedResourcesContext{deprecatedResources}, filepath.Join(additionalExamplesPath, deprecatedResourcesFilename)),
 		printTo(DeprecatedDataSourcesTemplate, DeprecatedDataSourcesContext{deprecatedDataSources}, filepath.Join(additionalExamplesPath, deprecatedDataSourcesFilename)),
@@ -83,6 +87,8 @@ func main() {
 
 		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeResource, FeatureStatePreview, previewResources}, filepath.Join(additionalExamplesPath, previewResourcesFilename)),
 		printTo(FeatureStabilityTemplate, FeatureStabilityContext{FeatureTypeDataSource, FeatureStatePreview, previewDataSources}, filepath.Join(additionalExamplesPath, previewDataSourcesFilename)),
+
+		printTo(ExperimentalFeaturesTemplate, ExperimentalFeatures{activeExperiments, discontinuedExperiments}, filepath.Join(additionalExamplesPath, experimentalFeatures)),
 	); errs != nil {
 		log.Fatal(errs)
 	}

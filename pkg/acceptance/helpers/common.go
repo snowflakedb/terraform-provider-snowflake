@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,4 +17,9 @@ func AssertErrorContainsPartsFunc(t *testing.T, parts []string) resource.ErrorCh
 		}
 		return nil
 	}
+}
+
+// EnumToLower converts an enum to lowercase.
+func EnumToLower[T ~string](enum T) T {
+	return T(strings.ToLower(string(enum)))
 }

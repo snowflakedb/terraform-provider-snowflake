@@ -47,7 +47,7 @@ type warehousePocModelV0 struct {
 	AutoSuspend                     types.Int64                              `tfsdk:"auto_suspend"`
 	AutoResume                      types.Bool                               `tfsdk:"auto_resume"`
 	InitiallySuspended              types.Bool                               `tfsdk:"initially_suspended"`
-	ResourceMonitor                 types.String                             `tfsdk:"resource_monitor"` // TODO [mux-PR]: identifier type?
+	ResourceMonitor                 types.String                             `tfsdk:"resource_monitor"` // TODO [SNOW-2296366]: identifier type?
 	Comment                         types.String                             `tfsdk:"comment"`
 	EnableQueryAcceleration         types.Bool                               `tfsdk:"enable_query_acceleration"`
 	QueryAccelerationMaxScaleFactor types.Int64                              `tfsdk:"query_acceleration_max_scale_factor"`
@@ -92,18 +92,33 @@ type WarehousePocParametersPrivateJson struct {
 }
 
 func warehousePocPrivateJsonFromWarehouse(warehouse *sdk.Warehouse) *WarehousePocPrivateJson {
-	return &WarehousePocPrivateJson{
-		WarehouseType:                   warehouse.Type,
-		WarehouseSize:                   warehouse.Size,
-		MaxClusterCount:                 warehouse.MaxClusterCount,
-		MinClusterCount:                 warehouse.MinClusterCount,
-		ScalingPolicy:                   warehouse.ScalingPolicy,
-		AutoSuspend:                     warehouse.AutoSuspend,
-		AutoResume:                      warehouse.AutoResume,
-		ResourceMonitor:                 warehouse.ResourceMonitor.Name(),
-		EnableQueryAcceleration:         warehouse.EnableQueryAcceleration,
-		QueryAccelerationMaxScaleFactor: warehouse.QueryAccelerationMaxScaleFactor,
+	result := &WarehousePocPrivateJson{
+		WarehouseType:   warehouse.Type,
+		ResourceMonitor: warehouse.ResourceMonitor.Name(),
 	}
+	if warehouse.Size != nil {
+		result.WarehouseSize = *warehouse.Size
+	}
+	if warehouse.MaxClusterCount != nil {
+		result.MaxClusterCount = *warehouse.MaxClusterCount
+	}
+	if warehouse.MinClusterCount != nil {
+		result.MinClusterCount = *warehouse.MinClusterCount
+	}
+	if warehouse.ScalingPolicy != nil {
+		result.ScalingPolicy = *warehouse.ScalingPolicy
+	}
+	if warehouse.AutoSuspend != nil {
+		result.AutoSuspend = *warehouse.AutoSuspend
+	}
+	result.AutoResume = warehouse.AutoResume
+	if warehouse.EnableQueryAcceleration != nil {
+		result.EnableQueryAcceleration = *warehouse.EnableQueryAcceleration
+	}
+	if warehouse.QueryAccelerationMaxScaleFactor != nil {
+		result.QueryAccelerationMaxScaleFactor = *warehouse.QueryAccelerationMaxScaleFactor
+	}
+	return result
 }
 
 func warehousePocParametersPrivateJsonFromParameters(warehouseParameters []*sdk.Parameter) (*WarehousePocParametersPrivateJson, error) {
@@ -162,9 +177,9 @@ func (r *WarehouseResource) Metadata(_ context.Context, request resource.Metadat
 	response.TypeName = request.ProviderTypeName + "_warehouse_poc"
 }
 
-// TODO [mux-PR]: suppress identifier quoting
-// TODO [mux-PR]: support all identifier types
-// TODO [mux-PR]: show_output and parameters
+// TODO [SNOW-2296366]: suppress identifier quoting
+// TODO [SNOW-2296366]: support all identifier types
+// TODO [SNOW-2298113]: show_output and parameters
 func warehousePocAttributes() map[string]schema.Attribute {
 	existingWarehouseSchema := resources.Warehouse().Schema
 	attrs := map[string]schema.Attribute{
@@ -223,12 +238,12 @@ func warehousePocAttributes() map[string]schema.Attribute {
 		"initially_suspended": schema.BoolAttribute{
 			Description: existingWarehouseSchema["initially_suspended"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: IgnoreAfterCreation
+			// TODO [SNOW-2298083]: IgnoreAfterCreation
 		},
 		"resource_monitor": schema.StringAttribute{
 			Description: existingWarehouseSchema["resource_monitor"].Description,
 			Optional:    true,
-			// TODO [mux-PR]: identifier validation
+			// TODO [SNOW-2296366]: identifier validation
 		},
 		"comment": schema.StringAttribute{
 			Description: existingWarehouseSchema["comment"].Description,
@@ -301,13 +316,13 @@ func (r *WarehouseResource) ModifyPlan(ctx context.Context, request resource.Mod
 		return
 	}
 
-	// TODO [mux-PR]: we can extract modifiers like earlier we had ComputedIfAnyAttributeChanged)
+	// TODO [SNOW-2298083]: we can extract modifiers like earlier we had ComputedIfAnyAttributeChanged)
 	if !plan.Name.Equal(state.Name) {
 		plan.FullyQualifiedName = types.StringUnknown()
 		plan.Id = types.StringUnknown()
 	}
 
-	// TODO [mux-PR]: add a functional test documenting that IgnoreChangeToCurrentSnowflakeValueInShow cannot be achieved that way.
+	// TODO [SNOW-2296391]: add a functional test documenting that IgnoreChangeToCurrentSnowflakeValueInShow cannot be achieved that way.
 	// Commented out on purpose for now.
 	// r.simulateOldIgnoreChangeToCurrentSnowflakeValueInShow(ctx, request, response, plan, state)
 	// if response.Diagnostics.HasError() {
@@ -377,7 +392,7 @@ func (r *WarehouseResource) simulateOldIgnoreChangeToCurrentSnowflakeValueInShow
 	}
 }
 
-// TODO [mux-PR]: from the docs https://developer.hashicorp.com/terraform/plugin/framework/resources/import
+// From the docs https://developer.hashicorp.com/terraform/plugin/framework/resources/import
 // (...) which must either specify enough Terraform state for the Read method to refresh [resource] or return an error.
 func (r *WarehouseResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
 	id, err := sdk.ParseAccountObjectIdentifier(request.ID)
@@ -393,19 +408,33 @@ func (r *WarehouseResource) ImportState(ctx context.Context, request resource.Im
 		return
 	}
 	data := &warehousePocModelV0{
-		Id:                              types.StringValue(helpers.EncodeResourceIdentifier(id)),
-		Name:                            types.StringValue(id.Name()),
-		WarehouseType:                   customtypes.NewEnumValue(warehouse.Type),
-		WarehouseSize:                   customtypes.NewEnumValue(warehouse.Size),
-		MaxClusterCount:                 types.Int64Value(int64(warehouse.MaxClusterCount)),
-		MinClusterCount:                 types.Int64Value(int64(warehouse.MinClusterCount)),
-		ScalingPolicy:                   customtypes.NewEnumValue(warehouse.ScalingPolicy),
-		AutoSuspend:                     types.Int64Value(int64(warehouse.AutoSuspend)),
-		AutoResume:                      types.BoolValue(warehouse.AutoResume),
-		ResourceMonitor:                 types.StringValue(warehouse.ResourceMonitor.Name()),
-		Comment:                         types.StringValue(warehouse.Comment),
-		EnableQueryAcceleration:         types.BoolValue(warehouse.EnableQueryAcceleration),
-		QueryAccelerationMaxScaleFactor: types.Int64Value(int64(warehouse.QueryAccelerationMaxScaleFactor)),
+		Id:              types.StringValue(helpers.EncodeResourceIdentifier(id)),
+		Name:            types.StringValue(id.Name()),
+		WarehouseType:   customtypes.NewEnumValue(warehouse.Type),
+		ResourceMonitor: types.StringValue(warehouse.ResourceMonitor.Name()),
+		Comment:         types.StringValue(warehouse.Comment),
+	}
+	if warehouse.Size != nil {
+		data.WarehouseSize = customtypes.NewEnumValue(*warehouse.Size)
+	}
+	if warehouse.MaxClusterCount != nil {
+		data.MaxClusterCount = types.Int64Value(int64(*warehouse.MaxClusterCount))
+	}
+	if warehouse.MinClusterCount != nil {
+		data.MinClusterCount = types.Int64Value(int64(*warehouse.MinClusterCount))
+	}
+	if warehouse.ScalingPolicy != nil {
+		data.ScalingPolicy = customtypes.NewEnumValue(*warehouse.ScalingPolicy)
+	}
+	if warehouse.AutoSuspend != nil {
+		data.AutoSuspend = types.Int64Value(int64(*warehouse.AutoSuspend))
+	}
+	data.AutoResume = types.BoolValue(warehouse.AutoResume)
+	if warehouse.EnableQueryAcceleration != nil {
+		data.EnableQueryAcceleration = types.BoolValue(*warehouse.EnableQueryAcceleration)
+	}
+	if warehouse.QueryAccelerationMaxScaleFactor != nil {
+		data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(*warehouse.QueryAccelerationMaxScaleFactor))
 	}
 
 	warehouseParameters, err := client.Warehouses.ShowParameters(ctx, id)
@@ -486,7 +515,7 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 		return
 	}
 
-	// TODO [mux-PR]: Adjust fully_qualified_name logic
+	// TODO [SNOW-2298108]: Adjust fully_qualified_name logic
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	// we can use the existing encoder
@@ -581,7 +610,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		return diags
 	}
 
-	// TODO [mux-PR]: Adjust fully_qualified_name logic
+	// TODO [SNOW-2298108]: Adjust fully_qualified_name logic
 	data.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	prevValueBytes, d := request.Private.GetKey(ctx, privateStateSnowflakeObjectsStateKey)
@@ -597,24 +626,24 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 			return diags
 		}
 
-		// TODO [mux-PR]: introduce function like handleExternalChangesToObjectInShow or something similar
+		// TODO [SNOW-2298113]: introduce function like handleExternalChangesToObjectInShow or something similar
 		if warehouse.Type != prevValue.WarehouseType {
 			data.WarehouseType = customtypes.NewEnumValue(warehouse.Type)
 		}
-		if warehouse.Size != prevValue.WarehouseSize {
-			data.WarehouseSize = customtypes.NewEnumValue(warehouse.Size)
+		if warehouse.Size != nil && *warehouse.Size != prevValue.WarehouseSize {
+			data.WarehouseSize = customtypes.NewEnumValue(*warehouse.Size)
 		}
-		if warehouse.MaxClusterCount != prevValue.MaxClusterCount {
-			data.MaxClusterCount = types.Int64Value(int64(warehouse.MaxClusterCount))
+		if warehouse.MaxClusterCount != nil && *warehouse.MaxClusterCount != prevValue.MaxClusterCount {
+			data.MaxClusterCount = types.Int64Value(int64(*warehouse.MaxClusterCount))
 		}
-		if warehouse.MinClusterCount != prevValue.MinClusterCount {
-			data.MinClusterCount = types.Int64Value(int64(warehouse.MinClusterCount))
+		if warehouse.MinClusterCount != nil && *warehouse.MinClusterCount != prevValue.MinClusterCount {
+			data.MinClusterCount = types.Int64Value(int64(*warehouse.MinClusterCount))
 		}
-		if warehouse.ScalingPolicy != prevValue.ScalingPolicy {
-			data.ScalingPolicy = customtypes.NewEnumValue(warehouse.ScalingPolicy)
+		if warehouse.ScalingPolicy != nil && *warehouse.ScalingPolicy != prevValue.ScalingPolicy {
+			data.ScalingPolicy = customtypes.NewEnumValue(*warehouse.ScalingPolicy)
 		}
-		if warehouse.AutoSuspend != prevValue.AutoSuspend {
-			data.AutoSuspend = types.Int64Value(int64(warehouse.AutoSuspend))
+		if warehouse.AutoSuspend != nil && *warehouse.AutoSuspend != prevValue.AutoSuspend {
+			data.AutoSuspend = types.Int64Value(int64(*warehouse.AutoSuspend))
 		}
 		if warehouse.AutoResume != prevValue.AutoResume {
 			data.AutoResume = types.BoolValue(warehouse.AutoResume)
@@ -622,11 +651,11 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		if warehouse.ResourceMonitor.Name() != prevValue.ResourceMonitor {
 			data.ResourceMonitor = types.StringValue(warehouse.ResourceMonitor.Name())
 		}
-		if warehouse.EnableQueryAcceleration != prevValue.EnableQueryAcceleration {
-			data.EnableQueryAcceleration = types.BoolValue(warehouse.EnableQueryAcceleration)
+		if warehouse.EnableQueryAcceleration != nil && *warehouse.EnableQueryAcceleration != prevValue.EnableQueryAcceleration {
+			data.EnableQueryAcceleration = types.BoolValue(*warehouse.EnableQueryAcceleration)
 		}
-		if warehouse.QueryAccelerationMaxScaleFactor != prevValue.QueryAccelerationMaxScaleFactor {
-			data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(warehouse.QueryAccelerationMaxScaleFactor))
+		if warehouse.QueryAccelerationMaxScaleFactor != nil && *warehouse.QueryAccelerationMaxScaleFactor != prevValue.QueryAccelerationMaxScaleFactor {
+			data.QueryAccelerationMaxScaleFactor = types.Int64Value(int64(*warehouse.QueryAccelerationMaxScaleFactor))
 		}
 
 		if parametersJson, err := warehousePocParametersPrivateJsonFromParameters(warehouseParameters); err != nil {
@@ -667,7 +696,7 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 	}
 	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, bytes)...)
 
-	// TODO [mux-PR]: show_output and parameters
+	// TODO [SNOW-2298113]: show_output and parameters
 
 	return diags
 }
@@ -757,7 +786,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		}
 	}
 
-	// TODO [mux-PR]: Adjust fully_qualified_name logic
+	// TODO [SNOW-2298108]: Adjust fully_qualified_name logic
 	plan.FullyQualifiedName = types.StringValue(id.FullyQualifiedName())
 
 	response.Diagnostics.Append(response.State.Set(ctx, &plan)...)

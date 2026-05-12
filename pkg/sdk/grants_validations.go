@@ -26,6 +26,7 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeDataMetricFunction,
 	ObjectTypeDatabase,
 	ObjectTypeDatabaseRole,
+	ObjectTypeDbtProject,
 	ObjectTypeDynamicTable,
 	ObjectTypeEventTable,
 	ObjectTypeExternalTable,
@@ -54,6 +55,7 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeSchema,
 	ObjectTypeSessionPolicy,
 	ObjectTypeSecret,
+	ObjectTypeSemanticView,
 	ObjectTypeSequence,
 	ObjectTypeStage,
 	ObjectTypeStream,
@@ -65,78 +67,191 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeWarehouse,
 }
 
-// based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#required-parameters
-var validGrantToObjectTypes = []ObjectType{
+// Database roles are excluded
+var validGrantOwnershipBulkObjectTypes = []ObjectType{
 	ObjectTypeAggregationPolicy,
 	ObjectTypeAlert,
 	ObjectTypeAuthenticationPolicy,
-	ObjectTypeCortexSearchService,
+	ObjectTypeComputePool,
 	ObjectTypeDataMetricFunction,
+	ObjectTypeDatabase,
+	ObjectTypeDbtProject,
 	ObjectTypeDynamicTable,
 	ObjectTypeEventTable,
 	ObjectTypeExternalTable,
+	ObjectTypeExternalVolume,
+	ObjectTypeFailoverGroup,
 	ObjectTypeFileFormat,
 	ObjectTypeFunction,
 	ObjectTypeGitRepository,
 	ObjectTypeHybridTable,
-	ObjectTypeImageRepository,
 	ObjectTypeIcebergTable,
-	ObjectTypeMaskingPolicy,
+	ObjectTypeImageRepository,
+	ObjectTypeIntegration,
 	ObjectTypeMaterializedView,
-	ObjectTypeModel,
+	ObjectTypeNetworkPolicy,
 	ObjectTypeNetworkRule,
-	ObjectTypeNotebook,
 	ObjectTypePackagesPolicy,
-	ObjectTypePasswordPolicy,
 	ObjectTypePipe,
 	ObjectTypeProcedure,
+	ObjectTypeMaskingPolicy,
+	ObjectTypePasswordPolicy,
 	ObjectTypeProjectionPolicy,
+	ObjectTypeReplicationGroup,
+	ObjectTypeResourceMonitor,
+	ObjectTypeRole,
 	ObjectTypeRowAccessPolicy,
-	ObjectTypeSecret,
-	ObjectTypeService,
+	ObjectTypeSchema,
 	ObjectTypeSessionPolicy,
+	ObjectTypeSecret,
+	ObjectTypeSemanticView,
 	ObjectTypeSequence,
-	ObjectTypeSnapshot,
 	ObjectTypeStage,
 	ObjectTypeStream,
 	ObjectTypeTable,
 	ObjectTypeTag,
 	ObjectTypeTask,
+	ObjectTypeUser,
 	ObjectTypeView,
-	ObjectTypeStreamlit, // added because of https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2656
-	ObjectTypeDataset,   // added because of https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2807
+	ObjectTypeWarehouse,
+}
+
+var validGrantToAccountObjectTypes = []ObjectType{
+	ObjectTypeUser,
+	ObjectTypeResourceMonitor,
+	ObjectTypeWarehouse,
+	ObjectTypeComputePool,
+	ObjectTypeDatabase,
+	ObjectTypeIntegration,
+	ObjectTypeConnection,
+	ObjectTypeFailoverGroup,
+	ObjectTypeReplicationGroup,
+	ObjectTypeExternalVolume,
+}
+
+// based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#required-parameters
+var validGrantToSchemaObjectTypes = []ObjectType{
+	ObjectTypeAgent,
+	ObjectTypeAggregationPolicy,
+	ObjectTypeAlert,
+	ObjectTypeAuthenticationPolicy,
+	ObjectTypeCortexSearchService,
+	ObjectTypeDataMetricFunction,
+	ObjectTypeDataset,
+	ObjectTypeDbtProject,
+	ObjectTypeDynamicTable,
+	ObjectTypeEventTable,
+	ObjectTypeExperiment,
+	ObjectTypeExternalTable,
+	ObjectTypeFileFormat,
+	ObjectTypeFunction,
+	ObjectTypeGateway,
+	ObjectTypeGitRepository,
+	ObjectTypeHybridTable,
+	ObjectTypeImageRepository,
+	ObjectTypeIcebergTable,
+	ObjectTypeJoinPolicy,
+	ObjectTypeMaskingPolicy,
+	ObjectTypeMaterializedView,
+	ObjectTypeMcpServer,
+	ObjectTypeModel,
+	ObjectTypeModelMonitor,
+	ObjectTypeNetworkRule,
+	ObjectTypeNotebook,
+	ObjectTypeNotebookProject,
+	ObjectTypeOnlineFeatureTable,
+	ObjectTypePackagesPolicy,
+	ObjectTypePasswordPolicy,
+	ObjectTypePipe,
+	ObjectTypePrivacyPolicy,
+	ObjectTypeProcedure,
+	ObjectTypeProjectionPolicy,
+	ObjectTypeRowAccessPolicy,
+	ObjectTypeSecret,
+	ObjectTypeSemanticView,
+	ObjectTypeService,
+	ObjectTypeSessionPolicy,
+	ObjectTypeSequence,
+	ObjectTypeSnapshot,
+	ObjectTypeSnapshotPolicy,
+	ObjectTypeSnapshotSet,
+	ObjectTypeStage,
+	ObjectTypeStorageLifecyclePolicy,
+	ObjectTypeStream,
+	ObjectTypeStreamlit,
+	ObjectTypeTable,
+	ObjectTypeTag,
+	ObjectTypeTask,
+	ObjectTypeView,
+	ObjectTypeWorkspace,
+}
+
+// TODO(SNOW-2370066): Adjust after adding tests
+// based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
+var invalidGrantToAllObjectTypes = []ObjectType{
+	ObjectTypeComputePool,
+	ObjectTypeExternalFunction,
+	ObjectTypeExperiment,
+	ObjectTypeGateway,
+	ObjectTypeJoinPolicy,
+	ObjectTypeNotebookProject,
+	// ObjectTypeAggregationPolicy,
+	// ObjectTypeMaskingPolicy,
+	// ObjectTypePackagesPolicy,
+	// ObjectTypeProjectionPolicy,
+	// ObjectTypeRowAccessPolicy,
+	// ObjectTypeSessionPolicy,
+	ObjectTypeStorageLifecyclePolicy,
+	// ObjectTypeTag,
+	ObjectTypeWarehouse,
+	ObjectTypeWorkspace,
 }
 
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
 var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
 	ObjectTypeExternalFunction,
-	ObjectTypeImageRepository,
+	ObjectTypeExperiment,
+	ObjectTypeGateway,
 	ObjectTypeAggregationPolicy,
+	ObjectTypeJoinPolicy,
+	ObjectTypeNotebookProject,
 	ObjectTypeMaskingPolicy,
 	ObjectTypePackagesPolicy,
 	ObjectTypeProjectionPolicy,
 	ObjectTypeRowAccessPolicy,
 	ObjectTypeSessionPolicy,
+	ObjectTypeSnapshot,
+	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeTag,
+	ObjectTypeWarehouse,
+	ObjectTypeWorkspace,
 }
 
 var (
 	ValidGrantOwnershipObjectTypesString       = make([]string, len(validGrantOwnershipObjectTypes))
-	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipObjectTypes))
-	ValidGrantToObjectTypesString              = make([]string, len(validGrantToObjectTypes))
-	ValidGrantToPluralObjectTypesString        = make([]string, len(validGrantToObjectTypes))
+	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipBulkObjectTypes))
+	ValidGrantToAccountObjectTypesString       = make([]string, len(validGrantToAccountObjectTypes))
+	ValidGrantToSchemaObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
+	ValidGrantToAllPluralObjectTypesString     = make([]string, 0)
 	ValidGrantToFuturePluralObjectTypesString  = make([]string, 0)
 )
 
 func init() {
 	for i, objectType := range validGrantOwnershipObjectTypes {
 		ValidGrantOwnershipObjectTypesString[i] = objectType.String()
+	}
+	for i, objectType := range validGrantOwnershipBulkObjectTypes {
 		ValidGrantOwnershipPluralObjectTypesString[i] = objectType.Plural().String()
 	}
-	for i, objectType := range validGrantToObjectTypes {
-		ValidGrantToObjectTypesString[i] = objectType.String()
-		ValidGrantToPluralObjectTypesString[i] = objectType.Plural().String()
+	for i, objectType := range validGrantToAccountObjectTypes {
+		ValidGrantToAccountObjectTypesString[i] = objectType.String()
+	}
+	for i, objectType := range validGrantToSchemaObjectTypes {
+		ValidGrantToSchemaObjectTypesString[i] = objectType.String()
+		if !slices.Contains(invalidGrantToAllObjectTypes, objectType) {
+			ValidGrantToAllPluralObjectTypesString = append(ValidGrantToAllPluralObjectTypesString, objectType.Plural().String())
+		}
 		if !slices.Contains(invalidGrantToFutureObjectTypes, objectType) {
 			ValidGrantToFuturePluralObjectTypesString = append(ValidGrantToFuturePluralObjectTypesString, objectType.Plural().String())
 		}

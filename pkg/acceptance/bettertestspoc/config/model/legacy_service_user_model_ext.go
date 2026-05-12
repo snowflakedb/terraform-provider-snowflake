@@ -64,3 +64,55 @@ func (u *LegacyServiceUserModel) WithNetworkPolicyId(networkPolicy sdk.AccountOb
 func (u *LegacyServiceUserModel) WithDefaultSecondaryRolesOptionEnum(option sdk.SecondaryRolesOption) *LegacyServiceUserModel {
 	return u.WithDefaultSecondaryRolesOption(string(option))
 }
+
+// WIF (Workload Identity Federation) helper methods
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityAws(arn string) *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAwsVariable(arn)
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityGcp(subject string) *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityGcpVariable(subject)
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityAzure(issuer, subject string) *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAzureVariable(issuer, subject)
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityOidc(issuer, subject string, audienceList ...string) *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityOidcVariable(issuer, subject, audienceList...)
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityAwsEmpty() *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAwsEmpty()
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityGcpEmpty() *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityGcpEmpty()
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityAzureEmpty() *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAzureEmpty()
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityOidcEmpty() *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityOidcEmpty()
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityMultipleProviders() *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityMultipleProvidersVariable()
+	return u
+}
+
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityEmpty() *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityEmpty()
+	return u
+}

@@ -62,7 +62,7 @@ var failoverGroupSchema = map[string]*schema.Schema{
 		Elem:          &schema.Schema{Type: schema.TypeString},
 		Optional:      true,
 		ConflictsWith: []string{"from_replica"},
-		Description:   "Specifies the target account or list of target accounts to which replication and failover of specified objects from the source account is enabled. Secondary failover groups in the target accounts in this list can be promoted to serve as the primary failover group in case of failover. Expected in the form <org_name>.<target_account_name>",
+		Description:   "Specifies the target account or list of target accounts to which replication and failover of specified objects from the source account is enabled. Secondary failover groups in the target accounts in this list can be promoted to serve as the primary failover group in case of failover. Expected in the form `<org_name>.<target_account_name>`. This value is case-sensitive.",
 	},
 	"ignore_edition_check": {
 		Type:          schema.TypeBool,
@@ -605,7 +605,7 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 			parts := strings.Split(v, ".")
 			organizationName := parts[0]
 			accountName := parts[1]
-			accountIdentifier := sdk.NewAccountIdentifier(accountName, organizationName)
+			accountIdentifier := sdk.NewAccountIdentifier(organizationName, accountName)
 			oldAllowedAccounts[i] = accountIdentifier
 		}
 		nad := expandStringList(n.(*schema.Set).List())
@@ -614,7 +614,7 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 			parts := strings.Split(v, ".")
 			organizationName := parts[0]
 			accountName := parts[1]
-			accountIdentifier := sdk.NewAccountIdentifier(accountName, organizationName)
+			accountIdentifier := sdk.NewAccountIdentifier(organizationName, accountName)
 			newAllowedAccounts[i] = accountIdentifier
 		}
 
@@ -649,7 +649,7 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 				},
 			}
 			if err := client.FailoverGroups.AlterSource(ctx, id, opts); err != nil {
-				return diag.FromErr(fmt.Errorf("error removing allowed accounts for failover group %v err = %w", id.Name(), err))
+				return diag.FromErr(fmt.Errorf("error adding allowed accounts for failover group %v err = %w", id.Name(), err))
 			}
 		}
 	}

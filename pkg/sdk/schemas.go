@@ -130,7 +130,7 @@ type CreateSchemaOptions struct {
 	Catalog                                 *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"CATALOG"`
 	PipeExecutionPaused                     *bool                       `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	DefaultDDLCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultDDLCollation                     *StringAllowEmpty           `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
@@ -242,7 +242,7 @@ type SchemaSet struct {
 	Catalog                                 *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"CATALOG"`
 	PipeExecutionPaused                     *bool                       `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	DefaultDDLCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultDDLCollation                     *StringAllowEmpty           `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`

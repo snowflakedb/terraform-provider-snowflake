@@ -8,7 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/jmoiron/sqlx"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 type Client struct {
@@ -30,9 +30,12 @@ type Client struct {
 	ApplicationRoles             ApplicationRoles
 	Applications                 Applications
 	AuthenticationPolicies       AuthenticationPolicies
+	Budgets                      Budgets
+	CatalogIntegrations          CatalogIntegrations
 	Comments                     Comments
 	ComputePools                 ComputePools
 	Connections                  Connections
+	CortexAgents                 CortexAgents
 	CortexSearchServices         CortexSearchServices
 	DatabaseRoles                DatabaseRoles
 	Databases                    Databases
@@ -43,10 +46,11 @@ type Client struct {
 	ExternalTables               ExternalTables
 	EventTables                  EventTables
 	FailoverGroups               FailoverGroups
-	FileFormats                  FileFormats
+	FileFormats                  LegacyFileFormats
 	Functions                    Functions
 	GitRepositories              GitRepositories
 	Grants                       Grants
+	HybridTables                 HybridTables
 	ImageRepositories            ImageRepositories
 	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
@@ -54,12 +58,17 @@ type Client struct {
 	MaterializedViews            MaterializedViews
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
+	Notebooks                    Notebooks
 	NotificationIntegrations     NotificationIntegrations
+	OpenflowConnectors           OpenflowConnectors
+	OpenflowDeployments          OpenflowDeployments
+	OpenflowRuntimes             OpenflowRuntimes
 	OrganizationAccounts         OrganizationAccounts
 	Parameters                   Parameters
 	PasswordPolicies             PasswordPolicies
 	Pipes                        Pipes
 	PolicyReferences             PolicyReferences
+	PostgresInstances            PostgresInstances
 	Procedures                   Procedures
 	ResourceMonitors             ResourceMonitors
 	Roles                        Roles
@@ -67,6 +76,7 @@ type Client struct {
 	Schemas                      Schemas
 	Secrets                      Secrets
 	SecurityIntegrations         SecurityIntegrations
+	SemanticViews                SemanticViews
 	Services                     Services
 	Sequences                    Sequences
 	SessionPolicies              SessionPolicies
@@ -83,10 +93,6 @@ type Client struct {
 	UserProgrammaticAccessTokens UserProgrammaticAccessTokens
 	Views                        Views
 	Warehouses                   Warehouses
-}
-
-func (c *Client) SetAccountLocatorForTests(accountLocator string) {
-	c.accountLocator = accountLocator
 }
 
 func (c *Client) GetAccountLocator() string {
@@ -110,6 +116,11 @@ func NewClient(cfg *gosnowflake.Config, opts ...func(*FileReaderConfig)) (*Clien
 	if cfg == nil {
 		log.Printf("[DEBUG] Searching for default config in credentials chain...")
 		cfg = DefaultConfig(opts...)
+	}
+
+	// If authenticator was not set on any level we use the driver's default.
+	if cfg.Authenticator == GosnowflakeAuthTypeEmpty {
+		cfg.Authenticator = gosnowflake.AuthTypeSnowflake
 	}
 
 	dsn, err := gosnowflake.DSN(cfg)
@@ -158,10 +169,13 @@ func (c *Client) initialize() {
 	c.ApplicationRoles = &applicationRoles{client: c}
 	c.Applications = &applications{client: c}
 	c.AuthenticationPolicies = &authenticationPolicies{client: c}
+	c.Budgets = &budgets{client: c}
+	c.CatalogIntegrations = &catalogIntegrations{client: c}
 	c.Comments = &comments{client: c}
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
+	c.CortexAgents = &cortexAgents{client: c}
 	c.CortexSearchServices = &cortexSearchServices{client: c}
 	c.DatabaseRoles = &databaseRoles{client: c}
 	c.Databases = &databases{client: c}
@@ -172,10 +186,11 @@ func (c *Client) initialize() {
 	c.ExternalTables = &externalTables{client: c}
 	c.EventTables = &eventTables{client: c}
 	c.FailoverGroups = &failoverGroups{client: c}
-	c.FileFormats = &fileFormats{client: c}
+	c.FileFormats = &legacyFileFormats{client: c}
 	c.Functions = &functions{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
+	c.HybridTables = &hybridTables{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
 	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
@@ -183,12 +198,17 @@ func (c *Client) initialize() {
 	c.MaterializedViews = &materializedViews{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
+	c.Notebooks = &notebooks{client: c}
 	c.NotificationIntegrations = &notificationIntegrations{client: c}
+	c.OpenflowConnectors = &openflowConnectors{client: c}
+	c.OpenflowDeployments = &openflowDeployments{client: c}
+	c.OpenflowRuntimes = &openflowRuntimes{client: c}
 	c.OrganizationAccounts = &organizationAccounts{client: c}
 	c.Parameters = &parameters{client: c}
 	c.PasswordPolicies = &passwordPolicies{client: c}
 	c.Pipes = &pipes{client: c}
 	c.PolicyReferences = &policyReference{client: c}
+	c.PostgresInstances = &postgresInstances{client: c}
 	c.Procedures = &procedures{client: c}
 	c.ReplicationFunctions = &replicationFunctions{client: c}
 	c.ResourceMonitors = &resourceMonitors{client: c}
@@ -197,6 +217,7 @@ func (c *Client) initialize() {
 	c.Schemas = &schemas{client: c}
 	c.Secrets = &secrets{client: c}
 	c.SecurityIntegrations = &securityIntegrations{client: c}
+	c.SemanticViews = &semanticViews{client: c}
 	c.Sequences = &sequences{client: c}
 	c.Services = &services{client: c}
 	c.SessionPolicies = &sessionPolicies{client: c}

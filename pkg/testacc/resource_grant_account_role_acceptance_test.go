@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -11,7 +11,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -37,7 +36,6 @@ func TestAcc_GrantAccountRole_accountRole(t *testing.T) {
 	resourceName := "snowflake_grant_account_role.g"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		CheckDestroy:             CheckGrantAccountRoleDestroy(t),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -80,7 +78,6 @@ func TestAcc_GrantAccountRole_user(t *testing.T) {
 	resourceName := "snowflake_grant_account_role.g"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		CheckDestroy:             CheckGrantAccountRoleDestroy(t),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -110,17 +107,17 @@ func TestAcc_GrantAccountRole_user(t *testing.T) {
 func TestAcc_GrantAccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	roleId := testClient().Ids.RandomAccountObjectIdentifier()
 	parentRoleId := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantAccountRoleBasicConfig(roleId, parentRoleId),
+				Config:            providerConfig + grantAccountRoleBasicConfig(roleId, parentRoleId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_account_role.test", "id", fmt.Sprintf(`%v|ROLE|%v`, roleId.FullyQualifiedName(), parentRoleId.FullyQualifiedName())),
 				),
@@ -165,18 +162,18 @@ resource "snowflake_grant_account_role" "test" {
 func TestAcc_GrantAccountRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 	roleId := testClient().Ids.RandomAccountObjectIdentifier()
 	parentRoleId := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent final plan"),
-				Config:            grantAccountRoleConfigWithQuotedIdentifiers(roleId, parentRoleId),
+				Config:            providerConfig + grantAccountRoleConfigWithQuotedIdentifiers(roleId, parentRoleId),
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
@@ -222,8 +219,6 @@ resource "snowflake_grant_account_role" "test" {
 
 // proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629 (UBAC) doesn't affect the grant account role resource
 func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	accountRole, accountRoleCleanup := secondaryTestClient().Role.CreateRole(t)
 	t.Cleanup(accountRoleCleanup)
 
@@ -237,11 +232,10 @@ func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
 	testConfig := accconfig.FromModels(t, providerModel) + grantAccountRoleIssue3629Config(accountRole.ID(), parentAccountRole.ID())
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {

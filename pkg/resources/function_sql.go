@@ -98,7 +98,8 @@ func CreateContextFunctionSql(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func ReadContextFunctionSql(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -115,7 +116,7 @@ func ReadContextFunctionSql(ctx context.Context, d *schema.ResourceData, meta an
 	errs := errors.Join(
 		// not reading is_secure on purpose (handled as external change to show output)
 		readFunctionOrProcedureArguments(d, allFunctionDetails.functionDetails.NormalizedArguments),
-		d.Set("return_type", allFunctionDetails.functionDetails.ReturnDataType.ToSql()),
+		HandleDatatypeSet(d, "return_type", allFunctionDetails.functionDetails.ReturnDataType),
 		// not reading return_results_behavior on purpose (handled as external change to show output)
 		d.Set("comment", allFunctionDetails.function.Description),
 		setRequiredFromStringPtr(d, "handler", allFunctionDetails.functionDetails.Handler),
@@ -125,7 +126,7 @@ func ReadContextFunctionSql(ctx context.Context, d *schema.ResourceData, meta an
 		handleFunctionParameterRead(d, allFunctionDetails.functionParameters),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.FunctionToSchema(allFunctionDetails.function)}),
-		d.Set(ParametersAttributeName, []map[string]any{schemas.FunctionParametersToSchema(allFunctionDetails.functionParameters)}),
+		d.Set(ParametersAttributeName, []map[string]any{schemas.FunctionParametersToSchema(allFunctionDetails.functionParameters, providerCtx)}),
 	)
 	if errs != nil {
 		return diag.FromErr(err)

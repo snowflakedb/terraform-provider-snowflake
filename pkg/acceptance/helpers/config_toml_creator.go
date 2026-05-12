@@ -40,14 +40,38 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithValidateDefaultParameters(true).
 		WithClientRequestMfaToken(true).
 		WithClientStoreTemporaryCredential(true).
-		WithDriverTracing(string(sdk.DriverLogLevelWarning)).
+		WithDriverTracing(string(sdk.DriverLogLevelWarn)).
 		WithTmpDirPath(".").
 		WithDisableQueryContextCache(true).
 		WithIncludeRetryReason(true).
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
 			"foo": sdk.Pointer("bar"),
-		}),
+		}).
+		WithOauthClientID("oauth_client_id").
+		WithOauthClientSecret("oauth_client_secret").
+		WithOauthTokenRequestURL("oauth_token_request_url").
+		WithOauthAuthorizationURL("oauth_authorization_url").
+		WithOauthRedirectURI("oauth_redirect_uri").
+		WithOauthScope("oauth_scope").
+		WithWorkloadIdentityProvider("workload_identity_provider").
+		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+		WithEnableSingleUseRefreshTokens(true).
+		WithLogQueryText(true).
+		WithLogQueryParameters(true).
+		WithProxyHost("").
+		WithProxyPort(443).
+		WithProxyUser("proxy_user").
+		WithProxyPassword("proxy_password").
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com").
+		WithDisableOCSPChecks(false).
+		WithCertRevocationCheckMode("ADVISORY").
+		WithCrlAllowCertificatesWithoutCrlURL(true).
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(true).
+		WithCrlHTTPClientTimeout(30).
+		WithDisableSamlURLCheck(true),
 	)
 }
 
@@ -75,7 +99,7 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithExternalBrowserTimeout(-1).
 		WithMaxRetryCount(-1).
 		WithAuthenticator("snowflake").
-		WithInsecureMode(true).
+		WithInsecureMode(false).
 		WithOcspFailOpen(true).
 		WithToken("token").
 		WithKeepSessionAlive(true).
@@ -90,7 +114,31 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
 			"foo": sdk.Pointer("bar"),
-		})
+		}).
+		WithOauthClientID("invalid").
+		WithOauthClientSecret("invalid").
+		WithOauthTokenRequestURL("invalid").
+		WithOauthAuthorizationURL("invalid").
+		WithOauthRedirectURI("invalid").
+		WithOauthScope("invalid").
+		WithWorkloadIdentityProvider("invalid").
+		WithWorkloadIdentityEntraResource("invalid").
+		WithEnableSingleUseRefreshTokens(true).
+		WithLogQueryText(true).
+		WithLogQueryParameters(true).
+		WithProxyHost("").
+		WithProxyPort(443).
+		WithProxyUser("proxy_user").
+		WithProxyPassword("proxy_password").
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com").
+		WithDisableOCSPChecks(false).
+		WithCertRevocationCheckMode("ADVISORY").
+		WithCrlAllowCertificatesWithoutCrlURL(true).
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(true).
+		WithCrlHTTPClientTimeout(30).
+		WithDisableSamlURLCheck(true)
 	return configDtoToTomlString(t, profile, dto)
 }
 
@@ -159,15 +207,15 @@ func TomlIncorrectConfigForServiceUser(t *testing.T, profile string, accountIden
 func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, pass string) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithUser(userId.Name()).
-		WithPassword(pass).
-		WithRole(roleId.Name()).
-		WithOrganizationName(accountIdentifier.OrganizationName()).
-		WithAccountName(accountIdentifier.AccountName()).
-		WithWarehouse(warehouseId.Name()).
-		WithAuthenticator(string(sdk.AuthenticationTypeSnowflake)),
-	)
+	return configDtoToTomlString(t, profile, sdk.ConfigForSnowflakeAuth(accountIdentifier, userId, pass, roleId, warehouseId))
+}
+
+// TomlConfigForLegacyServiceUserWithoutAuthenticator is a temporary function used to test provider configuration
+func TomlConfigForLegacyServiceUserWithoutAuthenticator(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, pass string) string {
+	t.Helper()
+
+	return configDtoToTomlString(t, profile, sdk.ConfigForSnowflakeAuth(accountIdentifier, userId, pass, roleId, warehouseId).
+		WithAuthenticatorNil())
 }
 
 // TomlConfigForServiceUserWithModifiers is a temporary function used to test provider configuration allowing to modify the toml config
@@ -184,6 +232,29 @@ func TomlConfigForServiceUserWithModifiers(t *testing.T, profile string, service
 		WithAuthenticator(string(sdk.AuthenticationTypeJwt))
 
 	return configDtoToTomlString(t, profile, configDtoModifier(configDto))
+}
+
+// TomlConfigForServiceUserWithOauthClientCredentials is a temporary function used to test provider configuration
+func TomlConfigForServiceUserWithOauthClientCredentials(
+	t *testing.T,
+	profile string,
+	roleId sdk.AccountObjectIdentifier,
+	accountIdentifier sdk.AccountIdentifier,
+	oauthClientId string,
+	oauthClientSecret string,
+	oauthTokenRequestURL string,
+) string {
+	t.Helper()
+
+	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
+		WithRole(roleId.Name()).
+		WithOrganizationName(accountIdentifier.OrganizationName()).
+		WithAccountName(accountIdentifier.AccountName()).
+		WithOauthClientID(oauthClientId).
+		WithOauthClientSecret(oauthClientSecret).
+		WithOauthTokenRequestURL(oauthTokenRequestURL).
+		WithAuthenticator(string(sdk.AuthenticationTypeOauthClientCredentials)),
+	)
 }
 
 func configDtoToTomlString(t *testing.T, profile string, config *sdk.ConfigDTO) string {

@@ -1,26 +1,17 @@
 package gen
 
 import (
-	"os"
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
-// TODO [SNOW-1501905]: extract to commons?
-type PreambleModel struct {
-	PackageName               string
-	AdditionalStandardImports []string
-}
-
 type ResourceShowOutputAssertionsModel struct {
-	Name       string
-	Attributes []ResourceShowOutputAssertionModel
-	PreambleModel
-}
+	Name             string
+	IsDescribeOutput bool
+	Attributes       []ResourceShowOutputAssertionModel
 
-func (m ResourceShowOutputAssertionsModel) SomeFunc() {
+	*genhelpers.PreambleModel
 }
 
 type ResourceShowOutputAssertionModel struct {
@@ -30,22 +21,18 @@ type ResourceShowOutputAssertionModel struct {
 	Mapper           genhelpers.Mapper
 }
 
-func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) ResourceShowOutputAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel) ResourceShowOutputAssertionsModel {
 	attributes := make([]ResourceShowOutputAssertionModel, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {
 		attributes[idx] = MapToResourceShowOutputAssertion(field)
 	}
 
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
-	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
-	unwantedPackageNames := []string{"slices"}
 	return ResourceShowOutputAssertionsModel{
-		Name:       name,
-		Attributes: attributes,
-		PreambleModel: PreambleModel{
-			PackageName:               packageWithGenerateDirective,
-			AdditionalStandardImports: slices.DeleteFunc(genhelpers.AdditionalStandardImports(sdkObject.Fields), func(s string) bool { return slices.Contains(unwantedPackageNames, s) }),
-		},
+		Name:             name,
+		IsDescribeOutput: sdkObject.IsDataSourceOutput,
+		Attributes:       attributes,
+		PreambleModel:    preamble,
 	}
 }
 
@@ -63,6 +50,7 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 	case concreteTypeWithoutPtr == "string":
 		assertionCreator = "ResourceShowOutputValue"
 	// TODO [SNOW-1501905]: distinguish between different enum types
+	// TODO [SNOW-1501905]: currently, it also generates this assertion type for sdk structs
 	case strings.HasPrefix(concreteTypeWithoutPtr, "sdk."):
 		assertionCreator = "ResourceShowOutputStringUnderlyingValue"
 	default:
@@ -74,7 +62,7 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 	switch concreteTypeWithoutPtr {
 	case "sdk.AccountObjectIdentifier":
 		mapper = genhelpers.Name
-	case "sdk.AccountIdentifier", "sdk.DatabaseObjectIdentifier", "sdk.SchemaObjectIdentifier", "sdk.SchemaObjectIdentifierWithArguments", "sdk.ExternalObjectIdentifier":
+	case "sdk.ObjectIdentifier", "sdk.AccountIdentifier", "sdk.DatabaseObjectIdentifier", "sdk.SchemaObjectIdentifier", "sdk.SchemaObjectIdentifierWithArguments", "sdk.ExternalObjectIdentifier":
 		mapper = genhelpers.FullyQualifiedName
 	case "time.Time":
 		mapper = genhelpers.ToString

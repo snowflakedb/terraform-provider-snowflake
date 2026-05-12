@@ -23,28 +23,53 @@ func (c *TestClient) EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx context.C
 	return nil
 }
 
-func (c *TestClient) EnsureScimProvisionerRolesExist(ctx context.Context) error {
-	log.Printf("[DEBUG] Making sure Scim Provisioner roles exist")
-	roleIDs := []sdk.AccountObjectIdentifier{snowflakeroles.GenericScimProvisioner, snowflakeroles.AadProvisioner, snowflakeroles.OktaProvisioner}
+func (c *TestClient) EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx context.Context) error {
+	log.Printf("[DEBUG] Making sure ENABLE_IDENTIFIER_FIRST_LOGIN parameter is set correctly")
+	param, err := c.context.client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterEnableIdentifierFirstLogin)
+	if err != nil {
+		return fmt.Errorf("checking ENABLE_IDENTIFIER_FIRST_LOGIN resulted in error: %w", err)
+	}
+	if param.Value != "true" {
+		return fmt.Errorf("parameter ENABLE_IDENTIFIER_FIRST_LOGIN has value %s, expected: true", param.Value)
+	}
+	return nil
+}
+
+func (c *TestClient) EnsureEssentialRolesExist(ctx context.Context) error {
+	log.Printf("[DEBUG] Making sure essential roles exist")
+	type RoleGrant struct {
+		RoleID          sdk.AccountObjectIdentifier
+		ShouldBeGranted bool
+	}
+	roleGrants := []RoleGrant{
+		{RoleID: snowflakeroles.GenericScimProvisioner, ShouldBeGranted: true},
+		{RoleID: snowflakeroles.AadProvisioner, ShouldBeGranted: true},
+		{RoleID: snowflakeroles.OktaProvisioner, ShouldBeGranted: true},
+		{RoleID: snowflakeroles.Restricted, ShouldBeGranted: false},
+	}
 	currentRoleID, err := c.context.client.ContextFunctions.CurrentRole(ctx)
 	if err != nil {
 		return err
 	}
-	for _, roleID := range roleIDs {
-		_, err := c.context.client.Roles.ShowByID(ctx, roleID)
+	for _, roleGrant := range roleGrants {
+		_, err := c.context.client.Roles.ShowByID(ctx, roleGrant.RoleID)
 		if err != nil {
-			return err
+			return fmt.Errorf("showing role %s: %w", roleGrant.RoleID.Name(), err)
 		}
 		grants, err := c.context.client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 			Of: &sdk.ShowGrantsOf{
-				Role: roleID,
+				Role: roleGrant.RoleID,
 			},
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("showing grants for role %s: %w", roleGrant.RoleID.Name(), err)
 		}
-		if !hasGranteeName(grants, currentRoleID) {
-			return fmt.Errorf("role %s not granted to %s", currentRoleID.Name(), roleID.Name())
+		isGranted := hasGranteeName(grants, currentRoleID)
+		if roleGrant.ShouldBeGranted && !isGranted {
+			return fmt.Errorf("role %s should be granted to %s, but is not", roleGrant.RoleID.Name(), currentRoleID.Name())
+		}
+		if !roleGrant.ShouldBeGranted && isGranted {
+			return fmt.Errorf("role %s should not be granted to %s, but is", roleGrant.RoleID.Name(), currentRoleID.Name())
 		}
 	}
 	return nil
@@ -73,7 +98,7 @@ func (c *TestClient) EnsureValidNonProdAccountIsUsed(t *testing.T) {
 	t.Helper()
 	testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 	nonProdModifiableAccountLocator := testenvs.GetOrSkipTest(t, testenvs.TestNonProdModifiableAccountLocator)
-	if c.context.client.GetAccountLocator() != nonProdModifiableAccountLocator {
+	if c.GetAccountLocator() != nonProdModifiableAccountLocator {
 		t.Skipf("Current client account locator does not match the required non-prod modifiable account's locator set in %s env variable. Skipping test.", testenvs.TestNonProdModifiableAccountLocator)
 	}
 }
@@ -81,7 +106,7 @@ func (c *TestClient) EnsureValidNonProdAccountIsUsed(t *testing.T) {
 func (c *TestClient) EnsureValidNonProdOrganizationAccountIsUsed(t *testing.T) {
 	t.Helper()
 	nonProdModifiableAccountLocator := testenvs.GetOrSkipTest(t, testenvs.TestNonProdModifiableAccountLocator)
-	if c.context.client.GetAccountLocator() != nonProdModifiableAccountLocator {
+	if c.GetAccountLocator() != nonProdModifiableAccountLocator {
 		t.Skipf("Current client account locator does not match the required non-prod modifiable account's locator set in %s env variable. Skipping test.", testenvs.TestNonProdModifiableAccountLocator)
 	}
 	organizationAccounts, err := c.context.client.OrganizationAccounts.Show(context.Background(), sdk.NewShowOrganizationAccountRequest())

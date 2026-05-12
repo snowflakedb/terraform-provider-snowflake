@@ -16,7 +16,7 @@ var zeroValuesHandler = common.NewDynamicHandlerWithInitialValueAndReplaceWithFu
 	testfunctional.ZeroValuesOpts{}, common.AlwaysReplace,
 )
 
-// TODO [mux-PRs]: handle by reflection or generate (keeping it for the Optional+Computed test)
+// TODO [SNOW-2296391]: handle by reflection or generate (keeping it for the Optional+Computed test)
 func zeroValuesOptsReplaceWithNonNil(base testfunctional.ZeroValuesOpts, replaceWith testfunctional.ZeroValuesOpts) testfunctional.ZeroValuesOpts {
 	if replaceWith.BoolValue != nil {
 		base.BoolValue = replaceWith.BoolValue

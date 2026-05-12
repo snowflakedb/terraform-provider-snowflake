@@ -58,3 +58,10 @@ func (c *DynamicTableClient) DropDynamicTableFunc(t *testing.T, id sdk.SchemaObj
 		require.NoError(t, err)
 	}
 }
+
+func (c *DynamicTableClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.DynamicTable, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByIDSafely(ctx, id)
+}

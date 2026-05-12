@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testint
 
@@ -114,7 +114,7 @@ func TestInt_Streams(t *testing.T) {
 		t.Cleanup(stageCleanup)
 
 		externalTableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		externalTableReq := sdk.NewCreateExternalTableRequest(externalTableId, stage.Location()).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJSON))
+		externalTableReq := sdk.NewCreateExternalTableRequest(externalTableId, stage.Location()).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJson))
 		_, externalTableCleanup := testClientHelper().ExternalTable.CreateWithRequest(t, externalTableReq)
 		t.Cleanup(externalTableCleanup)
 
@@ -152,8 +152,8 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeStage).
 			HasMode(sdk.StreamModeDefault).
-			HasStageName(stage.ID().Name()).
-			HasBaseTablesPartiallyQualified(stage.ID().Name()),
+			HasTableId(stage.ID()).
+			HasBaseTables(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())),
 		)
 	})
 

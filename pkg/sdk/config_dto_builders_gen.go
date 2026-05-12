@@ -2,8 +2,6 @@
 
 package sdk
 
-import ()
-
 func NewConfigFile() *ConfigFile {
 	return &ConfigFile{}
 }
@@ -204,5 +202,125 @@ func (s *ConfigDTO) WithIncludeRetryReason(IncludeRetryReason bool) *ConfigDTO {
 
 func (s *ConfigDTO) WithDisableConsoleLogin(DisableConsoleLogin bool) *ConfigDTO {
 	s.DisableConsoleLogin = &DisableConsoleLogin
+	return s
+}
+
+func (s *ConfigDTO) WithOauthClientID(OauthClientID string) *ConfigDTO {
+	s.OauthClientID = &OauthClientID
+	return s
+}
+
+func (s *ConfigDTO) WithOauthClientSecret(OauthClientSecret string) *ConfigDTO {
+	s.OauthClientSecret = &OauthClientSecret
+	return s
+}
+
+func (s *ConfigDTO) WithOauthAuthorizationURL(OauthAuthorizationURL string) *ConfigDTO {
+	s.OauthAuthorizationURL = &OauthAuthorizationURL
+	return s
+}
+
+func (s *ConfigDTO) WithOauthTokenRequestURL(OauthTokenRequestURL string) *ConfigDTO {
+	s.OauthTokenRequestURL = &OauthTokenRequestURL
+	return s
+}
+
+func (s *ConfigDTO) WithOauthRedirectURI(OauthRedirectURI string) *ConfigDTO {
+	s.OauthRedirectURI = &OauthRedirectURI
+	return s
+}
+
+func (s *ConfigDTO) WithOauthScope(OauthScope string) *ConfigDTO {
+	s.OauthScope = &OauthScope
+	return s
+}
+
+func (s *ConfigDTO) WithWorkloadIdentityProvider(WorkloadIdentityProvider string) *ConfigDTO {
+	s.WorkloadIdentityProvider = &WorkloadIdentityProvider
+	return s
+}
+
+func (s *ConfigDTO) WithWorkloadIdentityEntraResource(WorkloadIdentityEntraResource string) *ConfigDTO {
+	s.WorkloadIdentityEntraResource = &WorkloadIdentityEntraResource
+	return s
+}
+
+func (s *ConfigDTO) WithEnableSingleUseRefreshTokens(EnableSingleUseRefreshTokens bool) *ConfigDTO {
+	s.EnableSingleUseRefreshTokens = &EnableSingleUseRefreshTokens
+	return s
+}
+
+func (s *ConfigDTO) WithLogQueryText(LogQueryText bool) *ConfigDTO {
+	s.LogQueryText = &LogQueryText
+	return s
+}
+
+func (s *ConfigDTO) WithLogQueryParameters(LogQueryParameters bool) *ConfigDTO {
+	s.LogQueryParameters = &LogQueryParameters
+	return s
+}
+
+func (s *ConfigDTO) WithProxyHost(ProxyHost string) *ConfigDTO {
+	s.ProxyHost = &ProxyHost
+	return s
+}
+
+func (s *ConfigDTO) WithProxyPort(ProxyPort int) *ConfigDTO {
+	s.ProxyPort = &ProxyPort
+	return s
+}
+
+func (s *ConfigDTO) WithProxyUser(ProxyUser string) *ConfigDTO {
+	s.ProxyUser = &ProxyUser
+	return s
+}
+
+func (s *ConfigDTO) WithProxyPassword(ProxyPassword string) *ConfigDTO {
+	s.ProxyPassword = &ProxyPassword
+	return s
+}
+
+func (s *ConfigDTO) WithProxyProtocol(ProxyProtocol string) *ConfigDTO {
+	s.ProxyProtocol = &ProxyProtocol
+	return s
+}
+
+func (s *ConfigDTO) WithNoProxy(NoProxy string) *ConfigDTO {
+	s.NoProxy = &NoProxy
+	return s
+}
+
+func (s *ConfigDTO) WithDisableOCSPChecks(DisableOCSPChecks bool) *ConfigDTO {
+	s.DisableOCSPChecks = &DisableOCSPChecks
+	return s
+}
+
+func (s *ConfigDTO) WithCertRevocationCheckMode(CertRevocationCheckMode string) *ConfigDTO {
+	s.CertRevocationCheckMode = &CertRevocationCheckMode
+	return s
+}
+
+func (s *ConfigDTO) WithCrlAllowCertificatesWithoutCrlURL(CrlAllowCertificatesWithoutCrlURL bool) *ConfigDTO {
+	s.CrlAllowCertificatesWithoutCrlURL = &CrlAllowCertificatesWithoutCrlURL
+	return s
+}
+
+func (s *ConfigDTO) WithCrlInMemoryCacheDisabled(CrlInMemoryCacheDisabled bool) *ConfigDTO {
+	s.CrlInMemoryCacheDisabled = &CrlInMemoryCacheDisabled
+	return s
+}
+
+func (s *ConfigDTO) WithCrlOnDiskCacheDisabled(CrlOnDiskCacheDisabled bool) *ConfigDTO {
+	s.CrlOnDiskCacheDisabled = &CrlOnDiskCacheDisabled
+	return s
+}
+
+func (s *ConfigDTO) WithCrlHTTPClientTimeout(CrlHTTPClientTimeout int) *ConfigDTO {
+	s.CrlHTTPClientTimeout = &CrlHTTPClientTimeout
+	return s
+}
+
+func (s *ConfigDTO) WithDisableSamlURLCheck(DisableSamlURLCheck bool) *ConfigDTO {
+	s.DisableSamlURLCheck = &DisableSamlURLCheck
 	return s
 }

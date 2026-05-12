@@ -184,7 +184,7 @@ type ExternalTableFileFormatTypeOptionsRequest struct {
 	csvFieldOptionallyEnclosedBy *string
 	csvNullIf                    *[]NullStringRequest
 	csvEmptyFieldAsNull          *bool
-	csvEncoding                  *CSVEncoding
+	csvEncoding                  *CsvEncoding
 
 	// JSON type options
 	jsonCompression              *ExternalTableJsonCompression

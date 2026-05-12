@@ -1,0 +1,80 @@
+package defs
+
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
+
+var ImageRepositoryEncryptionTypeDef = g.NewEnum("ImageRepositoryEncryptionType", "ImageRepositoryEncryptionTypes", "SNOWFLAKE_FULL", "SNOWFLAKE_SSE")
+
+var imageRepositoriesDef = g.NewInterface(
+	"ImageRepositories",
+	"ImageRepository",
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
+).CreateOperation(
+	"https://docs.snowflake.com/en/sql-reference/sql/create-image-repository",
+	g.NewQueryStruct("CreateImageRepository").
+		Create().
+		OrReplace().
+		SQL("IMAGE REPOSITORY").
+		IfNotExists().
+		Name().
+		OptionalQueryStructField(
+			"Encryption",
+			g.NewQueryStruct("ImageRepositoryEncryption").
+				AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.ImageRepositoryEncryptionType](), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
+				WithValidation(g.ValidateValueSet, "EncryptionType"),
+			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
+		).
+		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+		OptionalTags().
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"),
+).AlterOperation(
+	"https://docs.snowflake.com/en/sql-reference/sql/alter-image-repository",
+	g.NewQueryStruct("AlterImageRepository").
+		Alter().
+		SQL("IMAGE REPOSITORY").
+		IfExists().
+		Name().
+		OptionalQueryStructField(
+			"Set",
+			g.NewQueryStruct("ImageRepositorySet").
+				// TODO(SNOW-2070753): use COMMENT in unset and here use OptionalComment
+				OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()),
+			g.KeywordOptions().SQL("SET"),
+		).
+		OptionalSetTags().
+		OptionalUnsetTags().
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ExactlyOneValueSet, "Set", "SetTags", "UnsetTags"),
+).DropOperation(
+	"https://docs.snowflake.com/en/sql-reference/sql/drop-image-repository",
+	g.NewQueryStruct("DropImageRepository").
+		Drop().
+		SQL("IMAGE REPOSITORY").
+		IfExists().
+		Name().
+		WithValidation(g.ValidIdentifier, "name"),
+).ShowOperationWithPairedStructs(
+	"https://docs.snowflake.com/en/sql-reference/sql/show-image-repositories",
+	g.StructPair("imageRepositoriesRow", "ImageRepository").
+		Time("created_on").
+		Text("name").
+		Text("database_name").
+		Text("schema_name").
+		Text("repository_url").
+		Text("owner").
+		Text("owner_role_type").
+		Text("comment").
+		PlainField("encryption", "ImageRepositoryEncryptionType").
+		Text("privatelink_repository_url"),
+	g.NewQueryStruct("ShowImageRepositories").
+		Show().
+		SQL("IMAGE REPOSITORIES").
+		OptionalLike().
+		OptionalIn(),
+	g.ShowByIDLikeFiltering,
+	g.ShowByIDInFiltering,
+).WithEnums(ImageRepositoryEncryptionTypeDef)

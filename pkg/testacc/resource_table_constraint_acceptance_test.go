@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -21,7 +22,6 @@ func TestAcc_TableConstraint_fk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -94,7 +94,6 @@ func TestAcc_TableConstraint_pk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -172,7 +171,6 @@ func TestAcc_TableConstraint_unique(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -222,23 +220,23 @@ resource "snowflake_table_constraint" "unique" {
 // proves issue https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2535
 func TestAcc_Table_issue2535_newConstraint(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.86.0"),
-				Config:            tableConstraintUniqueConfigUsingTableId(id, "|"),
+				Config:            providerConfig + tableConstraintUniqueConfigUsingTableId(id, "|"),
 				ExpectError:       regexp.MustCompile(`.*table id is incorrect.*`),
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.89.0"),
-				Config:            tableConstraintUniqueConfigUsingTableId(id, "|"),
+				Config:            providerConfig + tableConstraintUniqueConfigUsingTableId(id, "|"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_table_constraint.unique", "type", "UNIQUE"),
 				),
@@ -263,9 +261,9 @@ func TestAcc_Table_issue2535_newConstraint(t *testing.T) {
 // proves issue https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2535
 func TestAcc_Table_issue2535_existingTable(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -273,9 +271,9 @@ func TestAcc_Table_issue2535_existingTable(t *testing.T) {
 		Steps: []resource.TestStep{
 			// reference done by table.id in 0.85.0
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            tableConstraintUniqueConfigUsingTableId(id, "|"),
+				Config:            providerConfig + tableConstraintUniqueConfigUsingTableId(id, "|"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_table_constraint.unique", "type", "UNIQUE"),
 				),
@@ -283,7 +281,7 @@ func TestAcc_Table_issue2535_existingTable(t *testing.T) {
 			// switched to qualified_name in 0.86.0
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.86.0"),
-				Config:            tableConstraintUniqueConfigUsingQualifiedName(id),
+				Config:            providerConfig + tableConstraintUniqueConfigUsingQualifiedName(id),
 				ExpectError:       regexp.MustCompile(`.*table id is incorrect.*`),
 			},
 			// fixed in the current version
@@ -404,7 +402,6 @@ func TestAcc_TableConstraint_ProperlyHandles_EmptyForeignKeyProperties(t *testin
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -9,6 +9,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -38,7 +39,6 @@ func TestAcc_GrantOwnership_OnObject_Database_ToAccountRole(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -89,7 +89,6 @@ func TestAcc_GrantOwnership_OnObject_Database_IdentifiersWithDots(t *testing.T) 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -144,7 +143,6 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToAccountRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -199,7 +197,6 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToDatabaseRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -254,7 +251,6 @@ func TestAcc_GrantOwnership_OnObject_Table_ToAccountRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -313,7 +309,6 @@ func TestAcc_GrantOwnership_OnObject_Table_ToDatabaseRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -363,7 +358,6 @@ func TestAcc_GrantOwnership_OnObject_ProcedureWithArguments_ToAccountRole(t *tes
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -413,7 +407,6 @@ func TestAcc_GrantOwnership_OnObject_ProcedureWithoutArguments_ToDatabaseRole(t 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -465,7 +458,6 @@ func TestAcc_GrantOwnership_OnAll_InDatabase_ToAccountRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -519,7 +511,6 @@ func TestAcc_GrantOwnership_OnAll_InSchema_ToAccountRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -570,7 +561,6 @@ func TestAcc_GrantOwnership_OnFuture_InDatabase_ToAccountRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -626,7 +616,6 @@ func TestAcc_GrantOwnership_OnFuture_InSchema_ToAccountRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -671,7 +660,6 @@ func TestAcc_GrantOwnership_InvalidConfiguration_EmptyObjectType(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -698,7 +686,6 @@ func TestAcc_GrantOwnership_InvalidConfiguration_MultipleTargets(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -732,7 +719,6 @@ func TestAcc_GrantOwnership_TargetObjectRemovedOutsideTerraform(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -790,7 +776,6 @@ func TestAcc_GrantOwnership_AccountRoleRemovedOutsideTerraform(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -852,7 +837,6 @@ func TestAcc_GrantOwnership_OnMaterializedView(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -899,7 +883,6 @@ func TestAcc_GrantOwnership_RoleBasedAccessControlUseCase(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -989,7 +972,6 @@ func TestAcc_GrantOwnership_MoveOwnershipOutsideTerraform(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1056,7 +1038,6 @@ func TestAcc_GrantOwnership_ForceOwnershipTransferOnCreate(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1098,7 +1079,6 @@ func TestAcc_GrantOwnership_OnPipe(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1150,7 +1130,6 @@ func TestAcc_GrantOwnership_OnAllPipes(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1187,7 +1166,6 @@ func TestAcc_GrantOwnership_OnTask(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1231,7 +1209,6 @@ func TestAcc_GrantOwnership_OnTask_Discussion2877(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1317,7 +1294,6 @@ func TestAcc_GrantOwnership_OnAllTasks(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1356,7 +1332,6 @@ func TestAcc_GrantOwnership_OnServerlessTask(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1405,7 +1380,6 @@ func TestAcc_GrantOwnership_OnDatabaseRole(t *testing.T) {
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1464,6 +1438,7 @@ func TestAcc_GrantOwnership_migrateFromV0941_ensureSmoothUpgradeWithNewResourceI
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	escapedFullyQualifiedName := fmt.Sprintf(`\"%s\".\"%s\".\"%s\"`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -1472,9 +1447,9 @@ func TestAcc_GrantOwnership_migrateFromV0941_ensureSmoothUpgradeWithNewResourceI
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantOwnershipOnTableBasicConfig(TestDatabaseName, TestSchemaName, tableId.Name(), accountRoleId.Name(), escapedFullyQualifiedName),
+				Config:            providerConfig + grantOwnershipOnTableBasicConfig(TestDatabaseName, TestSchemaName, tableId.Name(), accountRoleId.Name(), escapedFullyQualifiedName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TABLE|%s", accountRoleId.FullyQualifiedName(), tableId.FullyQualifiedName())),
 				),
@@ -1536,6 +1511,7 @@ func TestAcc_GrantOwnership_IdentifierQuotingDiffSuppression(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	unescapedFullyQualifiedName := fmt.Sprintf(`%s.%s.%s`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -1544,9 +1520,9 @@ func TestAcc_GrantOwnership_IdentifierQuotingDiffSuppression(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantOwnershipOnTableBasicConfigWithManagedDatabaseAndSchema(databaseId.Name(), schemaId.Name(), tableId.Name(), accountRoleId.Name(), unescapedFullyQualifiedName),
+				Config:            providerConfig + grantOwnershipOnTableBasicConfigWithManagedDatabaseAndSchema(databaseId.Name(), schemaId.Name(), tableId.Name(), accountRoleId.Name(), unescapedFullyQualifiedName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", unescapedFullyQualifiedName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TABLE|%s", accountRoleId.FullyQualifiedName(), tableId.FullyQualifiedName())),
@@ -1624,7 +1600,6 @@ func TestAcc_GrantOwnership_OnObject_ResourceMonitor_ToAccountRole(t *testing.T)
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1681,7 +1656,7 @@ func TestAcc_GrantOwnership_OnObject_HybridTable_ToAccountRole_Fails(t *testing.
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_HybridTable_ToAccountRole"),
 				ConfigVariables: configVariables(sdk.ObjectTypeHybridTable),
-				ExpectError:     regexp.MustCompile("syntax error line 1 at position 26 unexpected 'TABLE"),
+				ExpectError:     regexp.MustCompile("Unsupported feature"),
 			},
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_HybridTable_ToAccountRole"),

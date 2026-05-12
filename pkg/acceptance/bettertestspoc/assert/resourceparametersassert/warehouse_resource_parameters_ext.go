@@ -1,5 +1,20 @@
 package resourceparametersassert
 
+import (
+	"testing"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+)
+
+func WarehousesDatasourceParameters(t *testing.T, datasourceReference string) *WarehouseResourceParametersAssert {
+	t.Helper()
+
+	w := WarehouseResourceParametersAssert{
+		ResourceAssert: assert.NewDatasourceAssert(datasourceReference, "parameters", "warehouses.0."),
+	}
+	return &w
+}
+
 func (w *WarehouseResourceParametersAssert) HasDefaultMaxConcurrencyLevel() *WarehouseResourceParametersAssert {
 	return w.
 		HasMaxConcurrencyLevel(8).

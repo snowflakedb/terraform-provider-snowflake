@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -24,8 +24,8 @@ import (
 )
 
 func TestAcc_ExternalTable_basic(t *testing.T) {
-	// TODO [SNOW-1423486]: unskip
-	t.Skipf("Skip because error %s; will be fixed in SNOW-1423486", "Error: 000606 (57P03): No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.")
+	// TODO [SNOW-1348353]: unskip
+	t.Skipf("Skip because error %s; will be fixed in SNOW-1348353", "Error: 000606 (57P03): No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.")
 
 	awsBucketURL, awsKeyId, awsSecretKey := getExternalTableTestEnvsOrSkipTest(t)
 
@@ -64,7 +64,6 @@ func TestAcc_ExternalTable_basic(t *testing.T) {
 	resourceName := "snowflake_external_table.test_table"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -150,7 +149,6 @@ func TestAcc_ExternalTable_CorrectDataTypes(t *testing.T) {
 	resourceName := "snowflake_external_table.test_table"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -209,7 +207,6 @@ func TestAcc_ExternalTable_CanCreateWithPartitions(t *testing.T) {
 	resourceName := "snowflake_external_table.test_table"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -269,7 +266,6 @@ func TestAcc_ExternalTable_DeltaLake(t *testing.T) {
 	resourceName := "snowflake_external_table.test_table"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck:                 func() { TestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

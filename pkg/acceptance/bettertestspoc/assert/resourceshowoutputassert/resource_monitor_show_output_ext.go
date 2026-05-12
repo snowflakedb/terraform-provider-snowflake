@@ -7,11 +7,11 @@ import (
 )
 
 // ResourceMonitorDatasourceShowOutput is a temporary workaround to have better show output assertions in data source acceptance tests.
-func ResourceMonitorDatasourceShowOutput(t *testing.T, name string) *ResourceMonitorShowOutputAssert {
+func ResourceMonitorDatasourceShowOutput(t *testing.T, datasourceReference string) *ResourceMonitorShowOutputAssert {
 	t.Helper()
 
 	u := ResourceMonitorShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert("data."+name, "show_output", "resource_monitors.0."),
+		ResourceAssert: assert.NewDatasourceAssert(datasourceReference, "show_output", "resource_monitors.0."),
 	}
 	u.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &u

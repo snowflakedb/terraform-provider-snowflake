@@ -11,10 +11,6 @@ import (
 )
 
 var (
-	//go:embed templates/preamble.tmpl
-	preambleTemplateContent string
-	PreambleTemplate, _     = template.New("preambleTemplate").Parse(preambleTemplateContent)
-
 	//go:embed templates/definition.tmpl
 	definitionTemplateContent string
 	DefinitionTemplate, _     = template.New("definitionTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
@@ -32,5 +28,5 @@ var (
 	)).Parse(marshalJsonTemplateContent)
 
 	// TODO [SNOW-1501905]: consider duplicating the builders template from resource (currently same template used for datasources and provider which limits the customization possibilities for just one block type)
-	AllTemplates = []*template.Template{PreambleTemplate, DefinitionTemplate, MarshalJsonTemplate, resourcemodel.BuildersTemplate}
+	AllTemplates = []*template.Template{genhelpers.PreambleTemplate, DefinitionTemplate, MarshalJsonTemplate, resourcemodel.BuildersTemplate}
 )
