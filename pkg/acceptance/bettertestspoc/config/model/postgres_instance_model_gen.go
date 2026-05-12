@@ -12,17 +12,17 @@ import (
 
 type PostgresInstanceModel struct {
 	Name                    tfconfig.Variable `json:"name,omitempty"`
-	ComputeFamily           tfconfig.Variable `json:"compute_family,omitempty"`
-	StorageSizeGb           tfconfig.Variable `json:"storage_size_gb,omitempty"`
 	AuthenticationAuthority tfconfig.Variable `json:"authentication_authority,omitempty"`
-	PostgresVersion         tfconfig.Variable `json:"postgres_version,omitempty"`
-	NetworkPolicy           tfconfig.Variable `json:"network_policy,omitempty"`
-	HighAvailability        tfconfig.Variable `json:"high_availability,omitempty"`
-	StorageIntegration      tfconfig.Variable `json:"storage_integration,omitempty"`
-	PostgresSettings        tfconfig.Variable `json:"postgres_settings,omitempty"`
-	MaintenanceWindowStart  tfconfig.Variable `json:"maintenance_window_start,omitempty"`
 	Comment                 tfconfig.Variable `json:"comment,omitempty"`
+	ComputeFamily           tfconfig.Variable `json:"compute_family,omitempty"`
 	FullyQualifiedName      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	HighAvailability        tfconfig.Variable `json:"high_availability,omitempty"`
+	MaintenanceWindowStart  tfconfig.Variable `json:"maintenance_window_start,omitempty"`
+	NetworkPolicy           tfconfig.Variable `json:"network_policy,omitempty"`
+	PostgresSettings        tfconfig.Variable `json:"postgres_settings,omitempty"`
+	PostgresVersion         tfconfig.Variable `json:"postgres_version,omitempty"`
+	StorageIntegration      tfconfig.Variable `json:"storage_integration,omitempty"`
+	StorageSizeGb           tfconfig.Variable `json:"storage_size_gb,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -36,29 +36,29 @@ type PostgresInstanceModel struct {
 func PostgresInstance(
 	resourceName string,
 	name string,
+	authenticationAuthority string,
 	computeFamily string,
 	storageSizeGb int,
-	authenticationAuthority string,
 ) *PostgresInstanceModel {
 	p := &PostgresInstanceModel{ResourceModelMeta: config.Meta(resourceName, resources.PostgresInstance)}
 	p.WithName(name)
+	p.WithAuthenticationAuthority(authenticationAuthority)
 	p.WithComputeFamily(computeFamily)
 	p.WithStorageSizeGb(storageSizeGb)
-	p.WithAuthenticationAuthority(authenticationAuthority)
 	return p
 }
 
 func PostgresInstanceWithDefaultMeta(
 	name string,
+	authenticationAuthority string,
 	computeFamily string,
 	storageSizeGb int,
-	authenticationAuthority string,
 ) *PostgresInstanceModel {
 	p := &PostgresInstanceModel{ResourceModelMeta: config.DefaultMeta(resources.PostgresInstance)}
 	p.WithName(name)
+	p.WithAuthenticationAuthority(authenticationAuthority)
 	p.WithComputeFamily(computeFamily)
 	p.WithStorageSizeGb(storageSizeGb)
-	p.WithAuthenticationAuthority(authenticationAuthority)
 	return p
 }
 
@@ -96,48 +96,8 @@ func (p *PostgresInstanceModel) WithName(name string) *PostgresInstanceModel {
 	return p
 }
 
-func (p *PostgresInstanceModel) WithComputeFamily(computeFamily string) *PostgresInstanceModel {
-	p.ComputeFamily = tfconfig.StringVariable(computeFamily)
-	return p
-}
-
-func (p *PostgresInstanceModel) WithStorageSizeGb(storageSizeGb int) *PostgresInstanceModel {
-	p.StorageSizeGb = tfconfig.IntegerVariable(storageSizeGb)
-	return p
-}
-
 func (p *PostgresInstanceModel) WithAuthenticationAuthority(authenticationAuthority string) *PostgresInstanceModel {
 	p.AuthenticationAuthority = tfconfig.StringVariable(authenticationAuthority)
-	return p
-}
-
-func (p *PostgresInstanceModel) WithPostgresVersion(postgresVersion int) *PostgresInstanceModel {
-	p.PostgresVersion = tfconfig.IntegerVariable(postgresVersion)
-	return p
-}
-
-func (p *PostgresInstanceModel) WithNetworkPolicy(networkPolicy string) *PostgresInstanceModel {
-	p.NetworkPolicy = tfconfig.StringVariable(networkPolicy)
-	return p
-}
-
-func (p *PostgresInstanceModel) WithHighAvailability(highAvailability bool) *PostgresInstanceModel {
-	p.HighAvailability = tfconfig.BoolVariable(highAvailability)
-	return p
-}
-
-func (p *PostgresInstanceModel) WithStorageIntegration(storageIntegration string) *PostgresInstanceModel {
-	p.StorageIntegration = tfconfig.StringVariable(storageIntegration)
-	return p
-}
-
-func (p *PostgresInstanceModel) WithPostgresSettings(postgresSettings string) *PostgresInstanceModel {
-	p.PostgresSettings = tfconfig.StringVariable(postgresSettings)
-	return p
-}
-
-func (p *PostgresInstanceModel) WithMaintenanceWindowStart(maintenanceWindowStart int) *PostgresInstanceModel {
-	p.MaintenanceWindowStart = tfconfig.IntegerVariable(maintenanceWindowStart)
 	return p
 }
 
@@ -146,8 +106,48 @@ func (p *PostgresInstanceModel) WithComment(comment string) *PostgresInstanceMod
 	return p
 }
 
+func (p *PostgresInstanceModel) WithComputeFamily(computeFamily string) *PostgresInstanceModel {
+	p.ComputeFamily = tfconfig.StringVariable(computeFamily)
+	return p
+}
+
 func (p *PostgresInstanceModel) WithFullyQualifiedName(fullyQualifiedName string) *PostgresInstanceModel {
 	p.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+	return p
+}
+
+func (p *PostgresInstanceModel) WithHighAvailability(highAvailability bool) *PostgresInstanceModel {
+	p.HighAvailability = tfconfig.BoolVariable(highAvailability)
+	return p
+}
+
+func (p *PostgresInstanceModel) WithMaintenanceWindowStart(maintenanceWindowStart int) *PostgresInstanceModel {
+	p.MaintenanceWindowStart = tfconfig.IntegerVariable(maintenanceWindowStart)
+	return p
+}
+
+func (p *PostgresInstanceModel) WithNetworkPolicy(networkPolicy string) *PostgresInstanceModel {
+	p.NetworkPolicy = tfconfig.StringVariable(networkPolicy)
+	return p
+}
+
+func (p *PostgresInstanceModel) WithPostgresSettings(postgresSettings string) *PostgresInstanceModel {
+	p.PostgresSettings = tfconfig.StringVariable(postgresSettings)
+	return p
+}
+
+func (p *PostgresInstanceModel) WithPostgresVersion(postgresVersion int) *PostgresInstanceModel {
+	p.PostgresVersion = tfconfig.IntegerVariable(postgresVersion)
+	return p
+}
+
+func (p *PostgresInstanceModel) WithStorageIntegration(storageIntegration string) *PostgresInstanceModel {
+	p.StorageIntegration = tfconfig.StringVariable(storageIntegration)
+	return p
+}
+
+func (p *PostgresInstanceModel) WithStorageSizeGb(storageSizeGb int) *PostgresInstanceModel {
+	p.StorageSizeGb = tfconfig.IntegerVariable(storageSizeGb)
 	return p
 }
 
@@ -160,48 +160,8 @@ func (p *PostgresInstanceModel) WithNameValue(value tfconfig.Variable) *Postgres
 	return p
 }
 
-func (p *PostgresInstanceModel) WithComputeFamilyValue(value tfconfig.Variable) *PostgresInstanceModel {
-	p.ComputeFamily = value
-	return p
-}
-
-func (p *PostgresInstanceModel) WithStorageSizeGbValue(value tfconfig.Variable) *PostgresInstanceModel {
-	p.StorageSizeGb = value
-	return p
-}
-
 func (p *PostgresInstanceModel) WithAuthenticationAuthorityValue(value tfconfig.Variable) *PostgresInstanceModel {
 	p.AuthenticationAuthority = value
-	return p
-}
-
-func (p *PostgresInstanceModel) WithPostgresVersionValue(value tfconfig.Variable) *PostgresInstanceModel {
-	p.PostgresVersion = value
-	return p
-}
-
-func (p *PostgresInstanceModel) WithNetworkPolicyValue(value tfconfig.Variable) *PostgresInstanceModel {
-	p.NetworkPolicy = value
-	return p
-}
-
-func (p *PostgresInstanceModel) WithHighAvailabilityValue(value tfconfig.Variable) *PostgresInstanceModel {
-	p.HighAvailability = value
-	return p
-}
-
-func (p *PostgresInstanceModel) WithStorageIntegrationValue(value tfconfig.Variable) *PostgresInstanceModel {
-	p.StorageIntegration = value
-	return p
-}
-
-func (p *PostgresInstanceModel) WithPostgresSettingsValue(value tfconfig.Variable) *PostgresInstanceModel {
-	p.PostgresSettings = value
-	return p
-}
-
-func (p *PostgresInstanceModel) WithMaintenanceWindowStartValue(value tfconfig.Variable) *PostgresInstanceModel {
-	p.MaintenanceWindowStart = value
 	return p
 }
 
@@ -210,7 +170,47 @@ func (p *PostgresInstanceModel) WithCommentValue(value tfconfig.Variable) *Postg
 	return p
 }
 
+func (p *PostgresInstanceModel) WithComputeFamilyValue(value tfconfig.Variable) *PostgresInstanceModel {
+	p.ComputeFamily = value
+	return p
+}
+
 func (p *PostgresInstanceModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *PostgresInstanceModel {
 	p.FullyQualifiedName = value
+	return p
+}
+
+func (p *PostgresInstanceModel) WithHighAvailabilityValue(value tfconfig.Variable) *PostgresInstanceModel {
+	p.HighAvailability = value
+	return p
+}
+
+func (p *PostgresInstanceModel) WithMaintenanceWindowStartValue(value tfconfig.Variable) *PostgresInstanceModel {
+	p.MaintenanceWindowStart = value
+	return p
+}
+
+func (p *PostgresInstanceModel) WithNetworkPolicyValue(value tfconfig.Variable) *PostgresInstanceModel {
+	p.NetworkPolicy = value
+	return p
+}
+
+func (p *PostgresInstanceModel) WithPostgresSettingsValue(value tfconfig.Variable) *PostgresInstanceModel {
+	p.PostgresSettings = value
+	return p
+}
+
+func (p *PostgresInstanceModel) WithPostgresVersionValue(value tfconfig.Variable) *PostgresInstanceModel {
+	p.PostgresVersion = value
+	return p
+}
+
+func (p *PostgresInstanceModel) WithStorageIntegrationValue(value tfconfig.Variable) *PostgresInstanceModel {
+	p.StorageIntegration = value
+	return p
+}
+
+func (p *PostgresInstanceModel) WithStorageSizeGbValue(value tfconfig.Variable) *PostgresInstanceModel {
+	p.StorageSizeGb = value
 	return p
 }
