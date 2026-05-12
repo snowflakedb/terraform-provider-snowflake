@@ -1152,7 +1152,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
@@ -1205,7 +1205,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
@@ -1257,7 +1257,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
@@ -1321,7 +1321,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasComment(comment2).
@@ -1364,7 +1364,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
@@ -1448,6 +1448,14 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure_PrivateLink(t *testing.T) {
 							},
 						}),
 				),
+			},
+			// import
+			{
+				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
+				ConfigVariables:   externalVolume(config.ListVariable(azureLoc1WithPrivatelink), externalVolumeName, "", "false"),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// add a second Azure location, also with privatelink endpoint
 			{
@@ -1634,7 +1642,7 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -1771,7 +1779,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -1852,7 +1860,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -1924,7 +1932,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2008,7 +2016,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2089,7 +2097,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2161,7 +2169,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2233,7 +2241,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2317,7 +2325,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2398,7 +2406,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2470,7 +2478,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId2,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2542,7 +2550,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2621,7 +2629,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2699,7 +2707,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2771,7 +2779,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						).
 						HasAzureStorageLocationAtIndex(
 							3,
@@ -2779,7 +2787,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
@@ -2860,7 +2868,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							azureStorageBaseUrl,
 							azureEncryptionTypeNone,
 							azureTenantId,
-							r.BooleanDefault,
+							"",
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, "snowflake_external_volume.complete").
 						HasName(externalVolumeName).
