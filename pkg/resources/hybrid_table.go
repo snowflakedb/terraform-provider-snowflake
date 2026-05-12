@@ -67,9 +67,9 @@ var hybridTableSchema = map[string]*schema.Schema{
 					DiffSuppressFunc: DiffSuppressDataTypes,
 				},
 				"nullable": {
-					Type:     schema.TypeBool,
-					Optional: true,
-					Default:  true,
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     true,
 					ForceNew:    true,
 					Description: "Whether this column allows NULLs. Changing this forces recreation because hybrid tables do not support ALTER SET/DROP NOT NULL.",
 				},
@@ -82,21 +82,18 @@ var hybridTableSchema = map[string]*schema.Schema{
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"constant": {
-								Type:          schema.TypeString,
-								Optional:      true,
-								ConflictsWith: []string{"column.0.default.0.expression", "column.0.default.0.sequence"},
-								Description:   "A constant default value for the column.",
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "A constant default value for the column.",
 							},
 							"expression": {
-								Type:          schema.TypeString,
-								Optional:      true,
-								ConflictsWith: []string{"column.0.default.0.constant", "column.0.default.0.sequence"},
-								Description:   "A SQL expression default value for the column.",
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "A SQL expression default value for the column.",
 							},
 							"sequence": {
 								Type:             schema.TypeString,
 								Optional:         true,
-								ConflictsWith:    []string{"column.0.default.0.constant", "column.0.default.0.expression"},
 								DiffSuppressFunc: suppressIdentifierQuoting,
 								Description:      "The default sequence for the column (uses NEXTVAL).",
 							},
