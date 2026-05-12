@@ -117,7 +117,10 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 				*sdk.NewWebhookParamsRequest(webhookUrl).
 					WithWebhookSecret(secretId).
 					WithWebhookBodyTemplate(webhookBodyTemplate).
-					WithWebhookHeaders([]sdk.WebhookHeaderRequest{{Header: "Content-Type", Value: "application/json"}}),
+					WithWebhookHeaders([]sdk.WebhookHeaderRequest{
+						{Header: "Content-Type", Value: "application/json"},
+						{Header: "Custom-Header", Value: "custom-value"},
+					}),
 			).
 			WithComment("slack webhook")
 	}
@@ -348,8 +351,8 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 			return property.Name == "WEBHOOK_HEADERS"
 		})
 		require.NoError(t, err)
-		assert.Contains(t, headersProp.Value, "Content-Type")
-		assert.Contains(t, headersProp.Value, "application/json")
+		assert.Contains(t, headersProp.Value, "Content-Type=application/json")
+		assert.Contains(t, headersProp.Value, "Custom-Header=custom-value")
 	})
 
 	t.Run("alter notification integration: auto", func(t *testing.T) {
@@ -460,7 +463,10 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 							WithWebhookUrl(webhookOtherUrl).
 							WithWebhookSecret(secretId).
 							WithWebhookBodyTemplate(webhookOtherBodyTemplate).
-							WithWebhookHeaders([]sdk.WebhookHeaderRequest{{Header: "Content-Type", Value: "application/json"}}),
+							WithWebhookHeaders([]sdk.WebhookHeaderRequest{
+								{Header: "Content-Type", Value: "application/json"},
+								{Header: "Custom-Header", Value: "custom-value"},
+							}),
 					).
 					WithComment("changed comment"),
 			)
@@ -474,6 +480,13 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_URL", Type: "String", Value: webhookOtherUrl, Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_BODY_TEMPLATE", Type: "String", Value: webhookOtherBodyTemplate, Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "changed comment", Default: ""})
+
+		headersProp, err := collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
+			return property.Name == "WEBHOOK_HEADERS"
+		})
+		require.NoError(t, err)
+		assert.Contains(t, headersProp.Value, "Content-Type=application/json")
+		assert.Contains(t, headersProp.Value, "Custom-Header=custom-value")
 
 		secretProp, err := collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
 			return property.Name == "WEBHOOK_SECRET"
@@ -498,6 +511,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_URL", Type: "String", Value: webhookOtherUrl, Default: ""})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_BODY_TEMPLATE", Type: "String", Value: "", Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_HEADERS", Type: "Map", Value: "{}", Default: "{}"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})
 
