@@ -1191,6 +1191,13 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue_WithDatabaseLevel(t *testing.T)
 			},
 			{
 				Config: accconfig.FromModels(t, parameterSetToEmptyString),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(parameterSetToEmptyString.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", tfjson.ActionUpdate, sdk.String("en_US"), nil),
+						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
+					},
+				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
