@@ -389,9 +389,7 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 		}
 
 		if collate, ok := c["collate"].(string); ok && collate != "" {
-			if datatypes.IsTextDataType(dataType) {
-				req.WithCollate(collate)
-			}
+			req.WithCollate(collate)
 		}
 
 		if comment, ok := c["comment"].(string); ok && comment != "" {
@@ -689,7 +687,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 				return diag.FromErr(err)
 			}
 			addReq := sdk.NewHybridTableAddColumnActionRequest(col.name, sdk.DataType(col.dataType))
-			if col.collate != "" && datatypes.IsTextDataType(dataType) {
+			if col.collate != "" {
 				addReq.WithCollate(col.collate)
 			}
 			if col.comment != "" {
