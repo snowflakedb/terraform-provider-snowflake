@@ -422,24 +422,24 @@ func TestInt_PostgresInstances(t *testing.T) {
 		}, 3*time.Minute, 5*time.Second)
 		require.NoError(t, err)
 
-		// Set HIGH_AVAILABILITY separately (cannot be combined with COMPUTE_FAMILY/STORAGE_SIZE_GB)
-		// Retry because the previous compute/storage change may still be in progress
-		require.Eventually(t, func() bool {
-			err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-				WithSet(*sdk.NewPostgresInstanceSetRequest().
-					WithHighAvailability(true)))
-			return err == nil
-		}, 6*time.Minute, 5*time.Second)
-		require.NoError(t, err)
-
 		// Set postgres settings separately (cannot be combined with COMPUTE_FAMILY/STORAGE_SIZE_GB/HIGH_AVAILABILITY)
-		// Retry because the previous HA operation may still be in progress
+		// Retry because a previous operation may still be in progress
 		require.Eventually(t, func() bool {
 			err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
 				WithSet(*sdk.NewPostgresInstanceSetRequest().
 					WithPostgresSettings(`{"postgres:work_mem": "128MB"}`)))
 			return err == nil
 		}, 5*time.Minute, 5*time.Second)
+		require.NoError(t, err)
+
+		// Set HIGH_AVAILABILITY separately (cannot be combined with COMPUTE_FAMILY/STORAGE_SIZE_GB)
+		// Retry because the previous postgres_settings or compute/storage change may still be in progress
+		require.Eventually(t, func() bool {
+			err = client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
+				WithSet(*sdk.NewPostgresInstanceSetRequest().
+					WithHighAvailability(true)))
+			return err == nil
+		}, 6*time.Minute, 5*time.Second)
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
