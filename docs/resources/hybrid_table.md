@@ -122,9 +122,9 @@ Optional:
 
 Optional:
 
-- `constant` (String) The default constant value for the column.
-- `expression` (String) The default expression value for the column.
-- `sequence` (String) The default sequence to use for the column.
+- `constant` (String) A constant default value for the column.
+- `expression` (String) A SQL expression default value for the column.
+- `sequence` (String) The default sequence for the column (uses NEXTVAL).
 
 
 
