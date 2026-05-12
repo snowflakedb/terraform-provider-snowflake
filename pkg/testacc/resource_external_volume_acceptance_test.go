@@ -11,8 +11,12 @@ import (
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -3091,6 +3095,127 @@ func TestAcc_ExternalVolume_Validations(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
 				ConfigVariables: externalVolume(config.ListVariable(s3CompatStorageLocationWithAwsExternalId), externalVolumeName, "", ""),
 				ExpectError:     regexp.MustCompile("unable to extract storage location, storage_aws_external_id is not supported for s3compat storage location"),
+			},
+		},
+	})
+}
+
+func TestAcc_ExternalVolume_migrateFromVersion_2_15_0_Azure_PrivateLink(t *testing.T) {
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakePreProdAzureEnvironment {
+		t.Skip("Skipping test, requires Azure pre-prod deployment (SnowflakePreProdAzureEnvironment)")
+	}
+	azureStorageBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
+	azureTenantId := testenvs.GetOrSkipTest(t, testenvs.AzureExternalTenantId)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	azureLocName := "azureMigratePrivateLinkTest"
+
+	// In v2.15.x, use_privatelink_endpoint was not sent to Snowflake and not read back for Azure
+	// locations. The config declares use_privatelink_endpoint = "true", but the old provider silently
+	// ignored it, so Snowflake never enabled privatelink. After upgrading, the Read refreshes state
+	// from Snowflake (privatelink is absent/false), and the DiffSuppressFunc suppresses the diff
+	// between empty state and "false" config — so the plan must be empty.
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ExternalVolumeResource))
+
+	storageLocations := []sdk.ExternalVolumeStorageLocationRequest{
+		*sdk.NewExternalVolumeStorageLocationRequest(azureLocName).
+			WithAzureStorageLocationParams(
+				*sdk.NewAzureStorageLocationParamsRequest(azureTenantId, azureStorageBaseUrl).
+					WithUsePrivatelinkEndpoint(true),
+			),
+	}
+	volumeModel := model.ExternalVolumeWithDefaultMeta(id.Name(), storageLocations).
+		WithAllowWrites(r.BooleanFalse)
+
+	ref := volumeModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders:  ExternalProviderWithExactVersion("2.15.0"),
+				Config:             tfconfig.FromModels(t, providerModel, volumeModel),
+				ExpectNonEmptyPlan: true,
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeResourceIdentifier(id))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "name", id.Name())),
+					resourceassert.ExternalVolumeResource(t, ref).
+						HasStorageLocationLength(1).
+						HasAzureStorageLocationAtIndex(
+							0,
+							azureLocName,
+							azureStorageBaseUrl,
+							"NONE",
+							azureTenantId,
+							// In 2.15.0, use_privatelink_endpoint for Azure was silently ignored:
+							// not sent to Snowflake and not read back into state.
+							"",
+						),
+					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            azureLocName,
+								StorageProvider: string(sdk.StorageProviderAzure),
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  "NONE",
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+									// privatelink was never enabled on Snowflake's side
+									// because the old provider silently ignored the field
+								},
+							},
+						}),
+				),
+			},
+			{
+				// Enable privatelink externally (outside Terraform) to simulate the state users will
+				// be in after upgrading: they had use_privatelink_endpoint = "true" in config all along,
+				// but the old provider never sent it, so they now need to enable it manually.
+				PreConfig: func() {
+					testClient().ExternalVolume.ReplaceLocation(t, id, *sdk.NewExternalVolumeStorageLocationRequest(azureLocName).
+						WithAzureStorageLocationParams(
+							*sdk.NewAzureStorageLocationParamsRequest(azureTenantId, azureStorageBaseUrl).
+								WithUsePrivatelinkEndpoint(true),
+						))
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   tfconfig.FromModels(t, volumeModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeResourceIdentifier(id))),
+					resourceassert.ExternalVolumeResource(t, ref).
+						HasNameString(id.Name()).
+						HasStorageLocationLength(1).
+						HasAzureStorageLocationAtIndex(
+							0,
+							azureLocName,
+							azureStorageBaseUrl,
+							"NONE",
+							azureTenantId,
+							r.BooleanTrue,
+						),
+					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            azureLocName,
+								StorageProvider: string(sdk.StorageProviderAzure),
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  "NONE",
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId:          azureTenantId,
+									UsePrivatelinkEndpoint: sdk.Bool(true),
+								},
+							},
+						}),
+				),
 			},
 		},
 	})
