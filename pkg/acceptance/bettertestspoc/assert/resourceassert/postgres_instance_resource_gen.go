@@ -37,48 +37,8 @@ func (p *PostgresInstanceResourceAssert) HasName(expected string) *PostgresInsta
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasComputeFamily(expected string) *PostgresInstanceResourceAssert {
-	p.StringValueSet("compute_family", expected)
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasStorageSizeGb(expected int) *PostgresInstanceResourceAssert {
-	p.IntValueSet("storage_size_gb", expected)
-	return p
-}
-
 func (p *PostgresInstanceResourceAssert) HasAuthenticationAuthority(expected string) *PostgresInstanceResourceAssert {
 	p.StringValueSet("authentication_authority", expected)
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasPostgresVersion(expected int) *PostgresInstanceResourceAssert {
-	p.IntValueSet("postgres_version", expected)
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNetworkPolicy(expected string) *PostgresInstanceResourceAssert {
-	p.StringValueSet("network_policy", expected)
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasHighAvailability(expected bool) *PostgresInstanceResourceAssert {
-	p.BoolValueSet("high_availability", expected)
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasStorageIntegration(expected string) *PostgresInstanceResourceAssert {
-	p.StringValueSet("storage_integration", expected)
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasPostgresSettings(expected string) *PostgresInstanceResourceAssert {
-	p.StringValueSet("postgres_settings", expected)
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStart(expected int) *PostgresInstanceResourceAssert {
-	p.IntValueSet("maintenance_window_start", expected)
 	return p
 }
 
@@ -87,8 +47,48 @@ func (p *PostgresInstanceResourceAssert) HasComment(expected string) *PostgresIn
 	return p
 }
 
+func (p *PostgresInstanceResourceAssert) HasComputeFamily(expected string) *PostgresInstanceResourceAssert {
+	p.StringValueSet("compute_family", expected)
+	return p
+}
+
 func (p *PostgresInstanceResourceAssert) HasFullyQualifiedName(expected string) *PostgresInstanceResourceAssert {
 	p.StringValueSet("fully_qualified_name", expected)
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasHighAvailability(expected bool) *PostgresInstanceResourceAssert {
+	p.BoolValueSet("high_availability", expected)
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStart(expected int) *PostgresInstanceResourceAssert {
+	p.IntValueSet("maintenance_window_start", expected)
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNetworkPolicy(expected string) *PostgresInstanceResourceAssert {
+	p.StringValueSet("network_policy", expected)
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasPostgresSettings(expected string) *PostgresInstanceResourceAssert {
+	p.StringValueSet("postgres_settings", expected)
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasPostgresVersion(expected int) *PostgresInstanceResourceAssert {
+	p.IntValueSet("postgres_version", expected)
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasStorageIntegration(expected string) *PostgresInstanceResourceAssert {
+	p.StringValueSet("storage_integration", expected)
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasStorageSizeGb(expected int) *PostgresInstanceResourceAssert {
+	p.IntValueSet("storage_size_gb", expected)
 	return p
 }
 
@@ -101,48 +101,8 @@ func (p *PostgresInstanceResourceAssert) HasNameString(expected string) *Postgre
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasComputeFamilyString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("compute_family", expected))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasStorageSizeGbString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("storage_size_gb", expected))
-	return p
-}
-
 func (p *PostgresInstanceResourceAssert) HasAuthenticationAuthorityString(expected string) *PostgresInstanceResourceAssert {
 	p.AddAssertion(assert.ValueSet("authentication_authority", expected))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasPostgresVersionString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_version", expected))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNetworkPolicyString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("network_policy", expected))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasHighAvailabilityString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("high_availability", expected))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasStorageIntegrationString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("storage_integration", expected))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasPostgresSettingsString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_settings", expected))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStartString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("maintenance_window_start", expected))
 	return p
 }
 
@@ -151,8 +111,48 @@ func (p *PostgresInstanceResourceAssert) HasCommentString(expected string) *Post
 	return p
 }
 
+func (p *PostgresInstanceResourceAssert) HasComputeFamilyString(expected string) *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("compute_family", expected))
+	return p
+}
+
 func (p *PostgresInstanceResourceAssert) HasFullyQualifiedNameString(expected string) *PostgresInstanceResourceAssert {
 	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasHighAvailabilityString(expected string) *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("high_availability", expected))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStartString(expected string) *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("maintenance_window_start", expected))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNetworkPolicyString(expected string) *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("network_policy", expected))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasPostgresSettingsString(expected string) *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("postgres_settings", expected))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasPostgresVersionString(expected string) *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("postgres_version", expected))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasStorageIntegrationString(expected string) *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("storage_integration", expected))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasStorageSizeGbString(expected string) *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("storage_size_gb", expected))
 	return p
 }
 
@@ -165,48 +165,8 @@ func (p *PostgresInstanceResourceAssert) HasNoName() *PostgresInstanceResourceAs
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasNoComputeFamily() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("compute_family"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNoStorageSizeGb() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("storage_size_gb"))
-	return p
-}
-
 func (p *PostgresInstanceResourceAssert) HasNoAuthenticationAuthority() *PostgresInstanceResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("authentication_authority"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNoPostgresVersion() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("postgres_version"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNoNetworkPolicy() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("network_policy"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNoHighAvailability() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("high_availability"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNoStorageIntegration() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("storage_integration"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNoPostgresSettings() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("postgres_settings"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNoMaintenanceWindowStart() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("maintenance_window_start"))
 	return p
 }
 
@@ -215,8 +175,48 @@ func (p *PostgresInstanceResourceAssert) HasNoComment() *PostgresInstanceResourc
 	return p
 }
 
+func (p *PostgresInstanceResourceAssert) HasNoComputeFamily() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("compute_family"))
+	return p
+}
+
 func (p *PostgresInstanceResourceAssert) HasNoFullyQualifiedName() *PostgresInstanceResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNoHighAvailability() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("high_availability"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNoMaintenanceWindowStart() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("maintenance_window_start"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNoNetworkPolicy() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("network_policy"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNoPostgresSettings() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("postgres_settings"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNoPostgresVersion() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("postgres_version"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNoStorageIntegration() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("storage_integration"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNoStorageSizeGb() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("storage_size_gb"))
 	return p
 }
 
@@ -234,18 +234,33 @@ func (p *PostgresInstanceResourceAssert) HasFullyQualifiedNameEmpty() *PostgresI
 	return p
 }
 
+func (p *PostgresInstanceResourceAssert) HasHighAvailabilityEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("high_availability", ""))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStartEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("maintenance_window_start", ""))
+	return p
+}
+
 func (p *PostgresInstanceResourceAssert) HasNetworkPolicyEmpty() *PostgresInstanceResourceAssert {
 	p.AddAssertion(assert.ValueSet("network_policy", ""))
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasStorageIntegrationEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("storage_integration", ""))
+func (p *PostgresInstanceResourceAssert) HasPostgresSettingsEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("postgres_settings", ""))
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasPostgresSettingsEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_settings", ""))
+func (p *PostgresInstanceResourceAssert) HasPostgresVersionEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("postgres_version", ""))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasStorageIntegrationEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValueSet("storage_integration", ""))
 	return p
 }
 
@@ -258,48 +273,8 @@ func (p *PostgresInstanceResourceAssert) HasNameNotEmpty() *PostgresInstanceReso
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasComputeFamilyNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("compute_family"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasStorageSizeGbNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("storage_size_gb"))
-	return p
-}
-
 func (p *PostgresInstanceResourceAssert) HasAuthenticationAuthorityNotEmpty() *PostgresInstanceResourceAssert {
 	p.AddAssertion(assert.ValuePresent("authentication_authority"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasPostgresVersionNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("postgres_version"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasNetworkPolicyNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("network_policy"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasHighAvailabilityNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("high_availability"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasStorageIntegrationNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("storage_integration"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasPostgresSettingsNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("postgres_settings"))
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStartNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("maintenance_window_start"))
 	return p
 }
 
@@ -308,7 +283,47 @@ func (p *PostgresInstanceResourceAssert) HasCommentNotEmpty() *PostgresInstanceR
 	return p
 }
 
+func (p *PostgresInstanceResourceAssert) HasComputeFamilyNotEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValuePresent("compute_family"))
+	return p
+}
+
 func (p *PostgresInstanceResourceAssert) HasFullyQualifiedNameNotEmpty() *PostgresInstanceResourceAssert {
 	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasHighAvailabilityNotEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValuePresent("high_availability"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStartNotEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValuePresent("maintenance_window_start"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasNetworkPolicyNotEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValuePresent("network_policy"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasPostgresSettingsNotEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValuePresent("postgres_settings"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasPostgresVersionNotEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValuePresent("postgres_version"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasStorageIntegrationNotEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValuePresent("storage_integration"))
+	return p
+}
+
+func (p *PostgresInstanceResourceAssert) HasStorageSizeGbNotEmpty() *PostgresInstanceResourceAssert {
+	p.AddAssertion(assert.ValuePresent("storage_size_gb"))
 	return p
 }

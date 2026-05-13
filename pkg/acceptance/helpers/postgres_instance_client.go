@@ -85,6 +85,12 @@ func (c *PostgresInstanceClient) WaitForForkReady(t *testing.T, id sdk.AccountOb
 	return instance
 }
 
+func (c *PostgresInstanceClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.PostgresInstanceDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeDetails(ctx, id)
+}
+
 func (c *PostgresInstanceClient) DescribeDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.PostgresInstanceDetails, error) {
 	t.Helper()
 	ctx := context.Background()

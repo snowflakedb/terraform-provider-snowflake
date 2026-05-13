@@ -86,3 +86,9 @@ var AdditionalStructs = []any{
 	sdk.StorageIntegrationAzureDetails{},
 	sdk.StorageIntegrationGcsDetails{},
 }
+
+// DescribeResultStructs are SDK structs representing DESCRIBE output that should have
+// schemas generated with the "Describe" prefix (e.g. DescribePostgresInstanceDetailsSchema).
+var DescribeResultStructs = []any{
+	sdk.PostgresInstanceDetails{},
+}
