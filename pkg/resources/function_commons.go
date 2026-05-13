@@ -233,6 +233,7 @@ func functionBaseSchema() map[string]schema.Schema {
 						Required:         true,
 						ValidateDiagFunc: IsDataTypeValid,
 						DiffSuppressFunc: DiffSuppressDataTypes,
+						StateFunc:        DataTypeStateFunc,
 						Description:      "The argument type.",
 					},
 					"arg_default_value": {
@@ -252,6 +253,7 @@ func functionBaseSchema() map[string]schema.Schema {
 			ForceNew:         true,
 			ValidateDiagFunc: IsDataTypeValid,
 			DiffSuppressFunc: DiffSuppressDataTypes,
+			StateFunc:        DataTypeStateFunc,
 			Description:      "Specifies the results returned by the UDF, which determines the UDF type. Use `<result_data_type>` to create a scalar UDF that returns a single value with the specified data type. Use `TABLE (col_name col_data_type, ...)` to creates a table UDF that returns tabular results with the specified table column(s) and column type(s). For the details, consult the [docs](https://docs.snowflake.com/en/sql-reference/sql/create-function#all-languages).",
 		},
 		"null_input_behavior": {
@@ -268,7 +270,7 @@ func functionBaseSchema() map[string]schema.Schema {
 			ForceNew:         true,
 			ValidateDiagFunc: sdkValidation(sdk.ToReturnResultsBehavior),
 			DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToReturnResultsBehavior)), // TODO [SNOW-1348103]: IgnoreChangeToCurrentSnowflakeValueInShow("return_results_behavior") but not in show
-			Description:      fmt.Sprintf("Specifies the behavior of the function when returning results. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllAllowedReturnResultsBehaviors)),
+			Description:      fmt.Sprintf("Specifies the behavior of the function when returning results. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllReturnResultsBehaviors)),
 		},
 		"runtime_version": {
 			Type:     schema.TypeString,
@@ -526,6 +528,7 @@ func ImportFunction(ctx context.Context, d *schema.ResourceData, meta any) ([]*s
 		setOptionalFromStringPtr(d, "null_input_behavior", functionDetails.NullHandling),
 		setOptionalFromStringPtr(d, "return_results_behavior", functionDetails.Volatility),
 		importFunctionOrProcedureArguments(d, functionDetails.NormalizedArguments),
+		d.Set("return_type", functionDetails.ReturnDataType.ToSql()),
 		// all others are set in read
 	)
 	if err != nil {

@@ -106,9 +106,10 @@ func setActionsOutputThroughStruct(ctx context.Context, response *resource.Creat
 func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {
 	existingEntries := data.ActionsLog.Elements()
 
-	actions := make([]common.ActionLogEntry, 0)
-	actions = append(actions, common.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
-	actions = append(actions, common.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
+	actions := []common.ActionLogEntry{
+		common.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"),
+		common.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"),
+	}
 
 	for _, a := range actions {
 		entry, diags := types.ObjectValue(common.GetActionLogEntryTypes(), map[string]attr.Value{
@@ -132,10 +133,10 @@ func setActionsOutputExplicit(ctx context.Context, response *resource.CreateResp
 
 func setActionsOutputDedicated(ctx context.Context, response *resource.CreateResponse, data *computedNestedListResourceModelV0) {
 	response.Diagnostics.Append(common.AppendActions(ctx, &data.ActionsLogEmbeddable, func() []common.ActionLogEntry {
-		actions := make([]common.ActionLogEntry, 0)
-		actions = append(actions, common.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"))
-		actions = append(actions, common.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"))
-		return actions
+		return []common.ActionLogEntry{
+			common.ActionEntry("SOME ACTION", "ON FIELD", "WITH VALUE"),
+			common.ActionEntry("SOME OTHER ACTION", "ON OTHER FIELD", "WITH OTHER VALUE"),
+		}
 	})...)
 }
 
@@ -160,10 +161,10 @@ func (r *computedNestedListResource) Update(ctx context.Context, request resourc
 func setActionsOutputUpdate(ctx context.Context, response *resource.UpdateResponse, plan *computedNestedListResourceModelV0, state *computedNestedListResourceModelV0) {
 	plan.ActionsLogEmbeddable = state.ActionsLogEmbeddable
 	response.Diagnostics.Append(common.AppendActions(ctx, &plan.ActionsLogEmbeddable, func() []common.ActionLogEntry {
-		actions := make([]common.ActionLogEntry, 0)
-		actions = append(actions, common.ActionEntry("UPDATE: SOME ACTION", "UPDATE: ON FIELD", "UPDATE: WITH VALUE"))
-		actions = append(actions, common.ActionEntry("UPDATE: SOME OTHER ACTION", "UPDATE: ON OTHER FIELD", "UPDATE: WITH OTHER VALUE"))
-		return actions
+		return []common.ActionLogEntry{
+			common.ActionEntry("UPDATE: SOME ACTION", "UPDATE: ON FIELD", "UPDATE: WITH VALUE"),
+			common.ActionEntry("UPDATE: SOME OTHER ACTION", "UPDATE: ON OTHER FIELD", "UPDATE: WITH OTHER VALUE"),
+		}
 	})...)
 }
 

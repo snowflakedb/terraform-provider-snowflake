@@ -17,8 +17,7 @@ type SemanticViews interface {
 	Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
-
-	// DescribeSemanticViewDetails is added manually; it returns converted describe output for semantic views
+	// DescribeSemanticViewDetails returns converted describe output for semantic views.
 	DescribeSemanticViewDetails(ctx context.Context, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error)
 }
 
@@ -108,6 +107,7 @@ type SemanticSqlExpression struct {
 }
 
 type FactDefinition struct {
+	// adjusted manually
 	isPrivate          *bool               `ddl:"keyword" sql:"PRIVATE"`
 	semanticExpression *SemanticExpression `ddl:"keyword"`
 }
@@ -117,6 +117,7 @@ type DimensionDefinition struct {
 }
 
 type MetricDefinition struct {
+	// adjusted manually
 	isPrivate                      *bool                           `ddl:"keyword" sql:"PRIVATE"`
 	semanticExpression             *SemanticExpression             `ddl:"keyword"`
 	windowFunctionMetricDefinition *WindowFunctionMetricDefinition `ddl:"keyword"`

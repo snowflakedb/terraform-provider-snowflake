@@ -41,6 +41,8 @@ func TestSweepAll(t *testing.T) {
 		err = SweepAfterAcceptanceTests(secondaryClient, acceptancetests.ObjectsSuffix)
 		assert.NoError(t, err)
 	})
+
+	t.Run("Send test results", SendTestResults)
 }
 
 func SweepAfterIntegrationTests(client *sdk.Client, suffix string) error {
@@ -327,6 +329,10 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 						nil,
 					)
 					if err != nil {
+						if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
+							log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", db.ID().FullyQualifiedName(), err)
+							continue
+						}
 						errs = append(errs, fmt.Errorf("granting ownership on database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
 						continue
 					}

@@ -163,7 +163,7 @@ func (r gitRepositoriesRow) convert() (*GitRepository, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse api integration in git repository: %w", err)
 	} else {
-		gitRepository.ApiIntegration = &id
+		gitRepository.ApiIntegration = id
 	}
 
 	if r.GitCredentials.Valid {

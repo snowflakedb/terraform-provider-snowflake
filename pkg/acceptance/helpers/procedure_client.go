@@ -288,3 +288,20 @@ BEGIN
 END;
 `)
 }
+
+func (c *ProcedureClient) SampleSqlDefinitionReturningTable(t *testing.T) string {
+	t.Helper()
+
+	return c.formatProcedureDefinition(`
+DECLARE
+  rs RESULTSET;
+BEGIN
+  rs := (
+    SELECT
+      1::NUMBER,
+      'error'::VARCHAR
+  );
+  RETURN TABLE(rs);
+END;
+`)
+}

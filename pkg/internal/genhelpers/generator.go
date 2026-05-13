@@ -43,6 +43,7 @@ type GenerationPart[T ObjectNameProvider, M HasPreambleModel] struct {
 	name             string
 	filenameProvider func(T, M) string
 	templates        []*template.Template
+	condition        func(T) bool
 }
 
 func (g *GenerationPart[_, _]) GetName() string {
@@ -88,6 +89,14 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 // TODO [SNOW-2324252]: Probably remove later when we have vararg support in the NewGenerator constructor
 func (g *Generator[T, M]) WithGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	g.generationParts = append(g.generationParts, NewGenerationPart(partName, filenameProvider, templates))
+	return g
+}
+
+// WithConditionalGenerationPart registers a generation part that is only executed for an object when condition returns true.
+func (g *Generator[T, M]) WithConditionalGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
+	part := NewGenerationPart(partName, filenameProvider, templates)
+	part.condition = condition
+	g.generationParts = append(g.generationParts, part)
 	return g
 }
 
@@ -246,8 +255,9 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 // References:
 // - https://pkg.go.dev/cmd/go/internal/generate
 func preprocessArgs() {
+	newArgs := make([]string, 0, len(os.Args))
+	newArgs = append(newArgs, os.Args[0])
 	rest := os.Args[1:]
-	newArgs := []string{os.Args[0]}
 	for _, a := range rest {
 		newArgs = append(newArgs, strings.Split(a, " ")...)
 	}
@@ -267,6 +277,10 @@ func (g *Generator[T, M]) generateAndSave(objects []T, parts []GenerationPart[T,
 		model := g.modelProvider(s, g.preamble)
 
 		for _, p := range g.effectivePartsForObject(s, parts) {
+			if p.condition != nil && !p.condition(s) {
+				log.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
+				continue
+			}
 			buffer := bytes.Buffer{}
 
 			if err := executeAllTemplates(model, &buffer, p.templates...); err != nil {
@@ -290,6 +304,10 @@ func (g *Generator[T, M]) generateAndPrint(objects []T, parts []GenerationPart[T
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
 		for _, p := range g.effectivePartsForObject(s, parts) {
+			if p.condition != nil && !p.condition(s) {
+				log.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
+				continue
+			}
 			if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, p.templates...); err != nil {
 				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
 				continue

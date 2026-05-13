@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -21,7 +20,7 @@ func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*te
 	t.Helper()
 
 	return func(s *terraform.State) error {
-		errs := make([]error, 0)
+		errs := make([]error, 0, len(resources))
 		for _, resource := range resources {
 			checkFunc := CheckDestroy(t, resource)
 			errs = append(errs, checkFunc(s))
@@ -109,7 +108,6 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.ManagedAccount,
 		resources.MaterializedView,
 		resources.NotificationIntegration,
-		resources.PasswordPolicy,
 		resources.Pipe,
 		resources.Sequence,
 		resources.Share,
@@ -378,6 +376,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ServiceUser: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Users.ShowByID)
 	},
+	resources.SessionPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.SessionPolicies.ShowByID)
+	},
 	resources.Share: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Shares.ShowByID)
 	},
@@ -428,6 +429,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.View: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Views.ShowByID)
+	},
+	resources.WarehouseAdaptive: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Warehouses.ShowByID)
 	},
 	resources.Warehouse: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Warehouses.ShowByID)
@@ -603,54 +607,19 @@ func CheckSharePrivilegesRevoked(t *testing.T) func(*terraform.State) error {
 // CheckUserPasswordPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
 func CheckUserPasswordPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "snowflake_user_password_policy_attachment" {
-				continue
-			}
-			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
-			if err != nil {
-				if strings.Contains(err.Error(), "does not exist or not authorized") {
-					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
-					continue
-				}
-				return err
-			}
-
-			_, err = collections.FindFirst(policyReferences, func(reference sdk.PolicyReference) bool {
-				return reference.PolicyKind == sdk.PolicyKindPasswordPolicy &&
-					sdk.NewSchemaObjectIdentifier(*reference.PolicyDb, *reference.PolicySchema, reference.PolicyName).FullyQualifiedName() == rs.Primary.Attributes["password_policy_name"]
-			})
-			if err == nil {
-				return fmt.Errorf("user password policy attachment %v still exists", policyReferences[0].PolicyName)
-			}
-		}
-		return nil
-	}
+	return checkUserPolicyAttachmentDestroy(t, resources.UserPasswordPolicyAttachment, sdk.PolicyKindPasswordPolicy)
 }
 
 // CheckUserAuthenticationPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
 func CheckUserAuthenticationPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "snowflake_user_authentication_policy_attachment" {
-				continue
-			}
-			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
-			if err != nil {
-				if strings.Contains(err.Error(), "does not exist or not authorized") {
-					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
-					continue
-				}
-				return err
-			}
-			if len(policyReferences) > 0 {
-				return fmt.Errorf("user authentication policy attachment %v still exists", policyReferences[0].PolicyName)
-			}
-		}
-		return nil
-	}
+	return checkUserPolicyAttachmentDestroy(t, resources.UserAuthenticationPolicyAttachment, sdk.PolicyKindAuthenticationPolicy)
+}
+
+// CheckUserSessionPolicyAttachmentDestroy is a custom check that should be later incorporated into generic CheckDestroy
+func CheckUserSessionPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkUserPolicyAttachmentDestroy(t, resources.UserSessionPolicyAttachment, sdk.PolicyKindSessionPolicy)
 }
 
 // CheckResourceTagUnset is a custom check that should be later incorporated into generic CheckDestroy
@@ -801,6 +770,32 @@ func CheckUserProgrammaticAccessTokenDestroy(t *testing.T) func(*terraform.State
 			if token != nil ||
 				(err != nil && !errors.Is(err, sdk.ErrObjectNotFound)) {
 				return fmt.Errorf("programmatic access token %v for user %s still exists", token, userId.Name())
+			}
+		}
+		return nil
+	}
+}
+
+func checkUserPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, policyKind sdk.PolicyKind) func(*terraform.State) error {
+	t.Helper()
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != resource.String() {
+				continue
+			}
+			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
+			if err != nil {
+				if strings.Contains(err.Error(), "does not exist or not authorized") {
+					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
+					continue
+				}
+				return err
+			}
+
+			for _, ref := range policyReferences {
+				if ref.PolicyKind == policyKind {
+					return fmt.Errorf("user %s attachment %v still exists", policyKind, policyReferences[0].PolicyName)
+				}
 			}
 		}
 		return nil

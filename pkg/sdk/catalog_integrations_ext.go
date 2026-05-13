@@ -44,14 +44,6 @@ func (v *catalogIntegrations) DescribeIcebergRestDetails(ctx context.Context, id
 	return parseIcebergRestProperties(properties, id)
 }
 
-func (v *catalogIntegrations) DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error) {
-	properties, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return parseSapBdcProperties(properties, id)
-}
-
 func (v *catalogIntegrations) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
@@ -239,22 +231,6 @@ func parseIcebergRestProperties(properties []CatalogIntegrationProperty, id Acco
 	return details, errors.Join(errs...)
 }
 
-func parseSapBdcProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error) {
-	commons, err := parseCommonProperties(properties)
-	if err != nil {
-		return nil, err
-	}
-	params := &CatalogIntegrationSapBdcDetails{
-		Id:                     id,
-		CatalogSource:          commons.CatalogSource,
-		TableFormat:            commons.TableFormat,
-		Enabled:                commons.Enabled,
-		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
-		Comment:                commons.Comment,
-	}
-	return params, nil
-}
-
 func parseAllCatalogIntegrationProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
 	commons, err := parseCommonProperties(properties)
 	if err != nil {
@@ -365,7 +341,7 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAut
 		k, v, _ := strings.Cut(part, "=")
 		if k == "TYPE" {
 			switch v {
-			case string(CatalogIntegrationRestAuthenticationTypeOAuth):
+			case string(CatalogIntegrationRestAuthenticationTypeOauth):
 				if restAuth, err := parseOAuthRestAuthenticationProperty(parts); err != nil {
 					errs = append(errs, err)
 				} else {
@@ -377,7 +353,7 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAut
 				} else {
 					bearerRestAuthentication = restAuth
 				}
-			case string(CatalogIntegrationRestAuthenticationTypeSigV4):
+			case string(CatalogIntegrationRestAuthenticationTypeSigv4):
 				if restAuth, err := parseSigV4RestAuthenticationProperty(parts); err != nil {
 					errs = append(errs, err)
 				} else {
@@ -432,11 +408,4 @@ func parseCommaSeparatedEnumMap(property CatalogIntegrationProperty) []string {
 	s := strings.TrimPrefix(property.Value, "{")
 	s = strings.TrimSuffix(s, "}")
 	return ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
-}
-
-func emptyIfNull(s string) string {
-	if s == "null" {
-		return ""
-	}
-	return s
 }

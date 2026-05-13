@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"maps"
 	"os"
 	"slices"
 
@@ -16,14 +17,11 @@ type PluginFrameworkProviderModel struct {
 }
 
 func ModelFromSdkV2Schema(sdkV2ProviderSchema SdkV2ProviderSchema, preamble *genhelpers.PreambleModel) PluginFrameworkProviderModel {
-	orderedAttributeNames := make([]string, 0)
-	for key := range sdkV2ProviderSchema {
-		orderedAttributeNames = append(orderedAttributeNames, key)
-	}
+	orderedAttributeNames := slices.Collect(maps.Keys(sdkV2ProviderSchema))
 	slices.Sort(orderedAttributeNames)
 
-	modelFields := make([]ProviderModelField, 0)
-	schemaEntries := make([]ProviderSchemaEntry, 0)
+	modelFields := make([]ProviderModelField, 0, len(orderedAttributeNames))
+	schemaEntries := make([]ProviderSchemaEntry, 0, len(orderedAttributeNames))
 	for _, key := range orderedAttributeNames {
 		sdkV2SchemaAttribute := sdkV2ProviderSchema[key]
 		modelField, err := MapToPluginFrameworkProviderModelField(key, sdkV2SchemaAttribute)

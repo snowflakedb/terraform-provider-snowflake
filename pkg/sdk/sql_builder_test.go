@@ -527,6 +527,146 @@ func TestBuilder_sql(t *testing.T) {
 	})
 }
 
+func TestBuilder_instanceMethodInvocation(t *testing.T) {
+	t.Run("instance method with no arguments", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		type noArg struct{}
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"MY_METHOD"`
+			args *noArg                  `ddl:"list,must_parentheses"`
+		}{name: id, args: &noArg{}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName()+"!MY_METHOD ()", sql)
+	})
+
+	t.Run("instance method with one argument", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		type oneArg struct {
+			V *string `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"ADD_NOTIFICATION_INTEGRATION"`
+			args *oneArg                 `ddl:"list,parentheses"`
+		}{name: id, args: &oneArg{V: String("integration_name")}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName()+"!ADD_NOTIFICATION_INTEGRATION ('integration_name')", sql)
+	})
+
+	t.Run("instance method with multiple arguments", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		type twoArgs struct {
+			A *string `ddl:"keyword,single_quotes"`
+			B *string `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"MY_METHOD"`
+			args *twoArgs                `ddl:"list,parentheses,comma"`
+		}{name: id, args: &twoArgs{A: String("first"), B: String("second")}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName()+"!MY_METHOD ('first', 'second')", sql)
+	})
+}
+
+func TestBuilder_systemReferenceInvocation(t *testing.T) {
+	t.Run("system reference: schema object identifier with no arguments", func(t *testing.T) {
+		id := randomSchemaObjectIdentifierWithArguments()
+		s := &struct {
+			name SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+
+	t.Run("system reference: schema object identifier with one argument", func(t *testing.T) {
+		id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR)
+		s := &struct {
+			name SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+
+	t.Run("system reference: schema object identifier with more arguments", func(t *testing.T) {
+		id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
+		s := &struct {
+			name SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+
+	t.Run("system reference: account object identifier", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"TABLE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('TABLE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+}
+
+func TestBuilder_singleQuotedIdentifier(t *testing.T) {
+	t.Run("standalone account object identifier without quotes renders as-is", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName(), sql)
+	})
+
+	t.Run("standalone schema object identifier without quotes renders as-is", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, id.FullyQualifiedName(), sql)
+	})
+
+	t.Run("standalone account object identifier with single_quotes is wrapped", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,single_quotes"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "'\\\""+id.Name()+"\\\"'", sql)
+	})
+
+	t.Run("standalone schema object identifier with single_quotes is wrapped", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "'\\\""+id.DatabaseName()+"\\\".\\\""+id.SchemaName()+"\\\".\\\""+id.Name()+"\\\"'", sql)
+	})
+
+	// TODO [next PRs]: handle single quotes for identifier lists correctly
+	t.Run("identifier in list with single_quotes wraps each element", func(t *testing.T) {
+		t.Skip("Handle single quotes for identifier lists correctly")
+		id1 := randomAccountObjectIdentifier()
+		id2 := randomAccountObjectIdentifier()
+		s := &struct {
+			names []AccountObjectIdentifier `ddl:"list,single_quotes"`
+		}{names: []AccountObjectIdentifier{id1, id2}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "'\\\""+id1.Name()+"\\\"', '\\\""+id2.Name()+"\\\"'", sql)
+	})
+}
+
 func TestBuilder_DataType(t *testing.T) {
 	type dataTypeTestHelper struct {
 		DataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`

@@ -9,7 +9,7 @@ type ConfigFile struct {
 }
 
 func (c *ConfigFile) MarshalToml() ([]byte, error) {
-	return toml.Marshal(c.Profiles)
+	return toml.Marshal(c.Profiles) //nolint:gosec // Password field is intentional in the Snowflake TOML config format
 }
 
 // TODO(SNOW-1787920): improve TOML parsing

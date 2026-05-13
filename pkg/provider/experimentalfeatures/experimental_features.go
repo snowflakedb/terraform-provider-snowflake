@@ -18,10 +18,12 @@ const (
 	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
 	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
-	ParametersReducedOutput     ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
-	TagsAllowEmptyAllowedValues ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
-	ImportBooleanDefault        ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
-	GrantsSafeDestroy           ExperimentalFeature = "GRANTS_SAFE_DESTROY"
+	ParametersReducedOutput        ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	TagsAllowEmptyAllowedValues    ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
+	ImportBooleanDefault           ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
+	GrantsSafeDestroy              ExperimentalFeature = "GRANTS_SAFE_DESTROY"
+	TagAssociationSafeDestroy      ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
+	GrantAccountRoleSafePublicRole ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
 )
 
 type experimentalFeatureState string
@@ -114,7 +116,7 @@ var allExperiments = []Experiment{
 		joinWithDoubleNewline(
 			"Changes import behavior for boolean fields using the special `\"default\"` value.",
 			"When enabled, boolean fields using the special `\"default\"` value are set to `\"default\"` during import instead of the actual Snowflake value (e.g., `\"false\"`). This prevents unavoidable diffs on every plan after import.",
-			"Note: this is supported only on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`).",
+			"Note: this is supported on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`) and stream resources (`snowflake_stream_on_table` and `snowflake_stream_on_view`).",
 		),
 	},
 	{
@@ -122,9 +124,28 @@ var allExperiments = []Experiment{
 		ExperimentalFeatureStateActive,
 		joinWithDoubleNewline(
 			"When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.",
-			"Currently supported by: `snowflake_grant_privileges_to_account_role`. This experiment is designed to be extended to other grant resources in the future.",
+			"Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.",
 			"This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.",
 			"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
+		),
+	},
+	{
+		TagAssociationSafeDestroy,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.",
+			"Currently supported by: `snowflake_tag_association`.",
+			"This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.",
+			"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
+		),
+	},
+	{
+		GrantAccountRoleSafePublicRole,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.",
+			"Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.",
+			"With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.",
 		),
 	},
 }

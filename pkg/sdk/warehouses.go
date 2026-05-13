@@ -158,8 +158,6 @@ func (e ScalingPolicy) FromString(s string) (ScalingPolicy, error) {
 type WarehouseResourceConstraint string
 
 const (
-	WarehouseResourceConstraintStandardGen1 WarehouseResourceConstraint = "STANDARD_GEN_1"
-	WarehouseResourceConstraintStandardGen2 WarehouseResourceConstraint = "STANDARD_GEN_2"
 	WarehouseResourceConstraintMemory1X     WarehouseResourceConstraint = "MEMORY_1X"
 	WarehouseResourceConstraintMemory1Xx86  WarehouseResourceConstraint = "MEMORY_1X_x86"
 	WarehouseResourceConstraintMemory16X    WarehouseResourceConstraint = "MEMORY_16X"
@@ -169,31 +167,6 @@ const (
 )
 
 func ToWarehouseResourceConstraint(s string) (WarehouseResourceConstraint, error) {
-	// Handle case-insensitive comparison for resource constraints
-	// The x86 variants should keep x86 lowercase
-	switch strings.ToUpper(s) {
-	case "STANDARD_GEN_1":
-		return WarehouseResourceConstraintStandardGen1, nil
-	case "STANDARD_GEN_2":
-		return WarehouseResourceConstraintStandardGen2, nil
-	case "MEMORY_1X":
-		return WarehouseResourceConstraintMemory1X, nil
-	case "MEMORY_1X_X86":
-		return WarehouseResourceConstraintMemory1Xx86, nil
-	case "MEMORY_16X":
-		return WarehouseResourceConstraintMemory16X, nil
-	case "MEMORY_16X_X86":
-		return WarehouseResourceConstraintMemory16Xx86, nil
-	case "MEMORY_64X":
-		return WarehouseResourceConstraintMemory64X, nil
-	case "MEMORY_64X_X86":
-		return WarehouseResourceConstraintMemory64Xx86, nil
-	default:
-		return "", fmt.Errorf("invalid resource constraint: %s", s)
-	}
-}
-
-func ToWarehouseResourceConstraintWithoutGeneration(s string) (WarehouseResourceConstraint, error) {
 	switch strings.ToUpper(s) {
 	case "MEMORY_1X":
 		return WarehouseResourceConstraintMemory1X, nil
@@ -248,37 +221,6 @@ var AllWarehouseGenerations = []string{
 	string(WarehouseGenerationStandardGen2),
 }
 
-var AllWarehouseResourceConstraintsForStandardWarehouses = []string{
-	string(WarehouseResourceConstraintStandardGen1),
-	string(WarehouseResourceConstraintStandardGen2),
-}
-
-func IsWarehouseResourceConstraintForStandard(s WarehouseResourceConstraint) bool {
-	return slices.Contains(AllWarehouseResourceConstraintsForStandardWarehouses, string(s))
-}
-
-func (s WarehouseResourceConstraint) ToWarehouseGeneration() (WarehouseGeneration, error) {
-	switch s {
-	case WarehouseResourceConstraintStandardGen1:
-		return WarehouseGenerationStandardGen1, nil
-	case WarehouseResourceConstraintStandardGen2:
-		return WarehouseGenerationStandardGen2, nil
-	default:
-		return "", fmt.Errorf("invalid resource constraint for generation: %s", s)
-	}
-}
-
-func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceConstraint, error) {
-	switch s {
-	case WarehouseGenerationStandardGen1:
-		return WarehouseResourceConstraintStandardGen1, nil
-	case WarehouseGenerationStandardGen2:
-		return WarehouseResourceConstraintStandardGen2, nil
-	default:
-		return "", fmt.Errorf("invalid generation for resource constraint: %s", s)
-	}
-}
-
 type MaxQueryPerformanceLevel string
 
 const (
@@ -305,10 +247,26 @@ var AllMaxQueryPerformanceLevels = []string{
 
 func ToMaxQueryPerformanceLevel(s string) (MaxQueryPerformanceLevel, error) {
 	s = strings.ToUpper(s)
-	if slices.Contains(AllMaxQueryPerformanceLevels, s) {
-		return MaxQueryPerformanceLevel(s), nil
+	switch s {
+	case string(MaxQueryPerformanceLevelXSmall), "X-SMALL":
+		return MaxQueryPerformanceLevelXSmall, nil
+	case string(MaxQueryPerformanceLevelSmall):
+		return MaxQueryPerformanceLevelSmall, nil
+	case string(MaxQueryPerformanceLevelMedium):
+		return MaxQueryPerformanceLevelMedium, nil
+	case string(MaxQueryPerformanceLevelLarge):
+		return MaxQueryPerformanceLevelLarge, nil
+	case string(MaxQueryPerformanceLevelXLarge), "X-LARGE":
+		return MaxQueryPerformanceLevelXLarge, nil
+	case string(MaxQueryPerformanceLevelXXLarge), "2X-LARGE":
+		return MaxQueryPerformanceLevelXXLarge, nil
+	case string(MaxQueryPerformanceLevelXXXLarge), "3X-LARGE":
+		return MaxQueryPerformanceLevelXXXLarge, nil
+	case string(MaxQueryPerformanceLevelX4Large), "4X-LARGE":
+		return MaxQueryPerformanceLevelX4Large, nil
+	default:
+		return "", fmt.Errorf("invalid max query performance level: %s", s)
 	}
-	return "", fmt.Errorf("invalid max query performance level: %s", s)
 }
 
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
@@ -498,12 +456,13 @@ type WarehouseSet struct {
 	QueryAccelerationMaxScaleFactor *int                         `ddl:"parameter" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
 	ResourceConstraint              *WarehouseResourceConstraint `ddl:"parameter,single_quotes" sql:"RESOURCE_CONSTRAINT"`
 	Generation                      *WarehouseGeneration         `ddl:"parameter,single_quotes" sql:"GENERATION"`
+	QueryThroughputMultiplier       *int                         `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
+	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel    `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 
 	// Object params
 	MaxConcurrencyLevel             *int `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-	QueryThroughputMultiplier       *int `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 }
 
 func (v *WarehouseSet) validate() error {
@@ -528,8 +487,8 @@ func (v *WarehouseSet) validate() error {
 			return fmt.Errorf("QueryThroughputMultiplier must be greater than or equal to 0")
 		}
 	}
-	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.QueryThroughputMultiplier) {
-		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier")
+	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.QueryThroughputMultiplier, v.MaxQueryPerformanceLevel) {
+		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")
 	}
 	return nil
 }
@@ -555,11 +514,12 @@ type WarehouseUnset struct {
 	StatementQueuedTimeoutInSeconds *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 	QueryThroughputMultiplier       *bool `ddl:"keyword" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
+	MaxQueryPerformanceLevel        *bool `ddl:"keyword" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 }
 
 func (v *WarehouseUnset) validate() error {
-	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.QueryThroughputMultiplier) {
-		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier")
+	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.QueryThroughputMultiplier, v.MaxQueryPerformanceLevel) {
+		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")
 	}
 	return nil
 }
@@ -837,21 +797,14 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 		wh.Generation = &generation
 	}
 	if row.ResourceConstraint.Valid {
-		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
-		if err != nil {
-			return nil, err
-		}
 		switch wh.Type {
 		case WarehouseTypeStandard:
-			// Before BCR 2025_07, the generation column was not present, so we converted the resource constraint to generation.
-			if wh.Generation == nil {
-				generation, err := resourceConstraint.ToWarehouseGeneration()
-				if err != nil {
-					return nil, err
-				}
-				wh.Generation = &generation
-			}
+			// After BCR 2026_02, resource_constraint is NULL for Standard warehouses; generation column is used instead.
 		case WarehouseTypeSnowparkOptimized:
+			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+			if err != nil {
+				return nil, err
+			}
 			wh.ResourceConstraint = &resourceConstraint
 		case WarehouseTypeAdaptive:
 			// Adaptive warehouses don't use resource constraints; ignore.

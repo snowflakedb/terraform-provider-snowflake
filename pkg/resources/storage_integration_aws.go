@@ -41,7 +41,7 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToS3Protocol),
 		ValidateDiagFunc: sdkValidation(sdk.ToS3Protocol),
-		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
+		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageIntegrationProviders)),
 	},
 	"storage_allowed_locations": {
 		Type:        schema.TypeSet,

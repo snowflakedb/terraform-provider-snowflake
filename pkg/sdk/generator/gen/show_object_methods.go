@@ -39,7 +39,7 @@ func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, i
 }
 
 func containsFieldNames(fields []Field, names ...string) bool {
-	fieldNames := []string{}
+	fieldNames := make([]string, 0, len(fields))
 	for _, field := range fields {
 		fieldNames = append(fieldNames, field.Name)
 	}
@@ -54,8 +54,9 @@ func containsFieldNames(fields []Field, names ...string) bool {
 
 type ShowObjectTypeMethod struct {
 	StructName string
+	TypeName   string
 }
 
-func NewShowObjectTypeMethod(structName string) *ShowObjectTypeMethod {
-	return &ShowObjectTypeMethod{StructName: structName}
+func NewShowObjectTypeMethod(structName, typeName string) *ShowObjectTypeMethod {
+	return &ShowObjectTypeMethod{StructName: structName, TypeName: typeName}
 }

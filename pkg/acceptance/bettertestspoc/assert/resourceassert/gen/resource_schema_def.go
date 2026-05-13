@@ -34,6 +34,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AccountRole().Schema,
 	},
 	{
+		name:   "AccountSessionPolicyAttachment",
+		schema: resources.AccountSessionPolicyAttachment().Schema,
+	},
+	{
 		name:   "ApiAuthenticationIntegrationWithAuthorizationCodeGrant",
 		schema: resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant().Schema,
 	},
@@ -182,6 +186,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.OauthIntegrationForPartnerApplications().Schema,
 	},
 	{
+		name:   "PasswordPolicy",
+		schema: resources.PasswordPolicy().Schema,
+	},
+	{
 		name:   "PrimaryConnection",
 		schema: resources.PrimaryConnection().Schema,
 	},
@@ -254,6 +262,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.SemanticView().Schema,
 	},
 	{
+		name:   "SessionPolicy",
+		schema: resources.SessionPolicy().Schema,
+	},
+	{
 		name:   "Service",
 		schema: resources.Service().Schema,
 	},
@@ -322,12 +334,20 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.UserProgrammaticAccessToken().Schema,
 	},
 	{
+		name:   "UserSessionPolicyAttachment",
+		schema: resources.UserSessionPolicyAttachment().Schema,
+	},
+	{
 		name:   "View",
 		schema: resources.View().Schema,
 	},
 	{
 		name:   "Warehouse",
 		schema: resources.Warehouse().Schema,
+	},
+	{
+		name:   "WarehouseAdaptive",
+		schema: resources.WarehouseAdaptive().Schema,
 	},
 	{
 		name:   "GrantPrivilegesToAccountRole",
@@ -352,6 +372,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "GrantApplicationRole",
 		schema: resources.GrantApplicationRole().Schema,
+	},
+	{
+		name:   "GrantOwnership",
+		schema: resources.GrantOwnership().Schema,
 	},
 	{
 		name:   "StorageIntegration",

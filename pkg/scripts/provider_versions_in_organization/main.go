@@ -121,12 +121,15 @@ func ghSearchInOrganization(accessToken string, organization string, phrase stri
 func ghSearch(accessToken string, phraseUrl string, page int) (*SearchResult, error) {
 	ghSearchFullUrl := fmt.Sprintf("%s&per_page=%d&page=%d", phraseUrl, perPage, page)
 	common.ScriptsDebug("Searching url: %s", ghSearchFullUrl)
-	req, _ := http.NewRequest("GET", ghSearchFullUrl, nil)
+	req, err := http.NewRequest("GET", ghSearchFullUrl, nil) //nolint:gosec // development script, not production code
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Accept", "application/vnd.github.text-match+json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req) //nolint:gosec // development script, not production code
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +146,7 @@ func ghSearch(accessToken string, phraseUrl string, page int) (*SearchResult, er
 }
 
 func transformToResult(registry string, resultItem searchResultItem) []result {
-	results := make([]result, 0)
+	results := make([]result, 0, len(resultItem.TextMatches))
 
 	for _, m := range resultItem.TextMatches {
 		if len(m.Matches) != 1 {

@@ -17,16 +17,14 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 	ctx := testContext(t)
 
 	const (
-		glueAwsRoleArn       = "arn:aws:iam::123456789012:role/sqsAccess"
-		glueCatalogId        = "123456789012"
-		glueRegion           = "us-east-2"
-		polarisCatalogUri    = "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
-		restCatalogUri       = "https://api.tabular.io/ws"
-		sapBdcInvitationLink = "https://example.hanacloud.ondemand.com/?code=123e4567-e89b-12d3-a456-426614174000"
-		sapBdcCatalogUri     = "https://example.hanacloud.ondemand.com"
-		oAuthClientId        = "my_client_id"
-		oAuthClientSecret    = "my_client_secret"
-		oAuthAllowedScope    = "PRINCIPAL_ROLE:ALL"
+		glueAwsRoleArn    = "arn:aws:iam::123456789012:role/sqsAccess"
+		glueCatalogId     = "123456789012"
+		glueRegion        = "us-east-2"
+		polarisCatalogUri = "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
+		restCatalogUri    = "https://api.tabular.io/ws"
+		oAuthClientId     = "my_client_id"
+		oAuthClientSecret = "my_client_secret"
+		oAuthAllowedScope = "PRINCIPAL_ROLE:ALL"
 	)
 
 	assertCatalogIntegration := func(t *testing.T, s *sdk.CatalogIntegration, name sdk.AccountObjectIdentifier, comment string) {
@@ -97,15 +95,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 				WithBearerRestAuthentication(sdk.BearerRestAuthenticationRequest{BearerToken: "test-token"}))
 	}
 
-	createCatalogIntegrationSapBdcRequest := func(t *testing.T) *sdk.CreateCatalogIntegrationRequest {
-		t.Helper()
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-
-		return sdk.NewCreateCatalogIntegrationRequest(id, false).
-			WithSapBdcCatalogSourceParams(*sdk.NewSapBdcParamsRequest().
-				WithRestConfig(sdk.SapBdcRestConfigRequest{SapBdcInvitationLink: sapBdcInvitationLink}))
-	}
-
 	createAwsGlueCatalogIntegration := func(t *testing.T) *sdk.CatalogIntegration {
 		t.Helper()
 		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationAwsGlueRequest(t))
@@ -126,11 +115,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationIcebergRestRequest(t))
 	}
 
-	createSapBdcCatalogIntegration := func(t *testing.T) *sdk.CatalogIntegration {
-		t.Helper()
-		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationSapBdcRequest(t))
-	}
-
 	t.Run("create catalog integration: AWS Glue basic", func(t *testing.T) {
 		request := createCatalogIntegrationAwsGlueRequest(t)
 
@@ -138,7 +122,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 		assertThatObject(t, objectassert.CatalogIntegrationAwsGlueDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -156,7 +140,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "")
 		assertThatObject(t, objectassert.CatalogIntegrationObjectStorageDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -202,7 +186,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetailsFromObject(t, icebergRestDetails).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -215,20 +199,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasCatalogName("").
 			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))
-	})
-
-	t.Run("create catalog integration: SAP Business Data Cloud basic", func(t *testing.T) {
-		request := createCatalogIntegrationSapBdcRequest(t)
-
-		integration := createCatalogIntegrationWithRequest(t, request)
-
-		assertCatalogIntegration(t, integration, request.GetName(), "")
-		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSAPBusinessDataCloud).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
-			HasEnabled(false).
-			HasRefreshIntervalSeconds(30).
-			HasComment(""))
 	})
 
 	t.Run("create catalog integration: AWS Glue all options", func(t *testing.T) {
@@ -245,7 +215,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "test comment")
 		assertThatObject(t, objectassert.CatalogIntegrationAwsGlueDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(120).
@@ -266,7 +236,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		assertCatalogIntegration(t, integration, request.GetName(), "test comment")
 		assertThatObject(t, objectassert.CatalogIntegrationObjectStorageDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(120).
@@ -355,7 +325,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetailsFromObject(t, icebergRestDetails).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(120).
@@ -371,22 +341,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.SigV4RestAuthenticationDetailsFromObject(t, icebergRestDetails.SigV4RestAuthentication).
 			HasSigv4IamRole(sigV4IamRole).
 			HasSigv4SigningRegion(sigV4SigningRole))
-	})
-
-	t.Run("create catalog integration: SAP Business Data Cloud all options", func(t *testing.T) {
-		request := createCatalogIntegrationSapBdcRequest(t).
-			WithIfNotExists(true).
-			WithRefreshIntervalSeconds(120).
-			WithComment("test comment")
-
-		integration := createCatalogIntegrationWithRequest(t, request)
-
-		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSAPBusinessDataCloud).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
-			HasEnabled(false).
-			HasRefreshIntervalSeconds(120).
-			HasComment("test comment"))
 	})
 
 	t.Run("alter catalog integration: shared options", func(t *testing.T) {
@@ -409,7 +363,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		integrationObjectStorage := createObjectStorageCatalogIntegration(t)
 		integrationOpenCatalog := createOpenCatalogCatalogIntegration(t)
 		integrationIcebergRest := createIcebergRestCatalogIntegration(t)
-		integrationSapBdc := createSapBdcCatalogIntegration(t)
 
 		request := *sdk.NewCatalogIntegrationSetRequest().
 			WithSetBearerRestAuthentication(*sdk.NewSetBearerRestAuthenticationRequest("new token"))
@@ -420,7 +373,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		// Token is not returned by DESCRIBE, nothing to check
 
 		invalid := []*sdk.CatalogIntegration{
-			integrationAwsGlue, integrationObjectStorage, integrationOpenCatalog, integrationSapBdc,
+			integrationAwsGlue, integrationObjectStorage, integrationOpenCatalog,
 		}
 		for _, integration := range invalid {
 			id := integration.ID()
@@ -539,7 +492,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		id := createAwsGlueCatalogIntegration(t).ID()
 
 		assertThatObject(t, objectassert.CatalogIntegrationAwsGlueDetails(t, id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -554,7 +507,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		id := createObjectStorageCatalogIntegration(t).ID()
 
 		assertThatObject(t, objectassert.CatalogIntegrationObjectStorageDetails(t, id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -592,7 +545,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetailsFromObject(t, icebergRestDetails).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergREST).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
@@ -605,17 +558,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasCatalogName("").
 			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))
-	})
-
-	t.Run("describe catalog integration: SAP Business Data Cloud", func(t *testing.T) {
-		id := createSapBdcCatalogIntegration(t).ID()
-
-		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSAPBusinessDataCloud).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
-			HasEnabled(false).
-			HasRefreshIntervalSeconds(30).
-			HasComment(""))
 	})
 
 	t.Run("describe catalog integration: non-existing", func(t *testing.T) {

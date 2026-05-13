@@ -6,21 +6,28 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationCatalogSourceType]{"CatalogIntegrationCatalogSourceType", AllCatalogIntegrationCatalogSourceTypes, ToCatalogIntegrationCatalogSourceType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationTableFormat]{"CatalogIntegrationTableFormat", AllCatalogIntegrationTableFormats, ToCatalogIntegrationTableFormat})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationRestAuthenticationType]{"CatalogIntegrationRestAuthenticationType", AllCatalogIntegrationRestAuthenticationTypes, ToCatalogIntegrationRestAuthenticationType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationAccessDelegationMode]{"CatalogIntegrationAccessDelegationMode", AllCatalogIntegrationAccessDelegationModes, ToCatalogIntegrationAccessDelegationMode})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CatalogIntegrationCatalogApiType]{"CatalogIntegrationCatalogApiType", AllCatalogIntegrationCatalogApiTypes, ToCatalogIntegrationCatalogApiType})
+}
+
 // Added manually
 const (
-	glueAwsRoleArn       = "arn:aws:iam::123456789012:role/sqsAccess"
-	glueCatalogId        = "123456789012"
-	glueRegion           = "us-east-2"
-	polarisCatalogUri    = "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
-	restCatalogUri       = "https://api.tabular.io/ws"
-	sapBdcInvitationLink = "https://example.hanacloud.ondemand.com/?code=123e4567-e89b-12d3-a456-426614174000"
-	oAuthClientId        = "my_client_id"
-	oAuthClientSecret    = "my_client_secret"
-	oAuthAllowedScope    = "PRINCIPAL_ROLE:ALL"
-	oAuthTokenUri        = "https://api.tabular.io/ws/v1/oauth/tokens"
-	sigV4IamRole         = "arn:aws:iam::123456789012:role/my-role"
-	sigV4SigningRegion   = "us-west-2"
-	sigV4ExternalId      = "external_id"
+	glueAwsRoleArn     = "arn:aws:iam::123456789012:role/sqsAccess"
+	glueCatalogId      = "123456789012"
+	glueRegion         = "us-east-2"
+	polarisCatalogUri  = "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
+	restCatalogUri     = "https://api.tabular.io/ws"
+	oAuthClientId      = "my_client_id"
+	oAuthClientSecret  = "my_client_secret"
+	oAuthAllowedScope  = "PRINCIPAL_ROLE:ALL"
+	oAuthTokenUri      = "https://api.tabular.io/ws/v1/oauth/tokens"
+	sigV4IamRole       = "arn:aws:iam::123456789012:role/my-role"
+	sigV4SigningRegion = "us-west-2"
+	sigV4ExternalId    = "external_id"
 )
 
 func TestCatalogIntegrations_Create(t *testing.T) {
@@ -85,19 +92,6 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 		}
 	}
 
-	// Minimal valid CreateCatalogIntegrationOptions for SAP Business Data Cloud
-	defaultOptsSapBdc := func() *CreateCatalogIntegrationOptions {
-		return &CreateCatalogIntegrationOptions{
-			name: id,
-			SapBdcCatalogSourceParams: &SapBdcParams{
-				RestConfig: SapBdcRestConfig{
-					SapBdcInvitationLink: sapBdcInvitationLink,
-				},
-			},
-			Enabled: true,
-		}
-	}
-
 	defaultOpts := defaultOptsAws
 
 	t.Run("validation: nil options", func(t *testing.T) {
@@ -118,18 +112,18 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateCatalogIntegrationOptions", "IfNotExists", "OrReplace"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AwsGlueCatalogSourceParams opts.ObjectStorageCatalogSourceParams opts.OpenCatalogCatalogSourceParams opts.IcebergRestCatalogSourceParams opts.SapBdcCatalogSourceParams] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AwsGlueCatalogSourceParams opts.ObjectStorageCatalogSourceParams opts.OpenCatalogCatalogSourceParams opts.IcebergRestCatalogSourceParams] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AwsGlueCatalogSourceParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams"))
 	})
 
 	// variant added manually
-	t.Run("validation: exactly one field from [opts.AwsGlueCatalogSourceParams opts.ObjectStorageCatalogSourceParams opts.OpenCatalogCatalogSourceParams opts.IcebergRestCatalogSourceParams opts.SapBdcCatalogSourceParams] should be present - more present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AwsGlueCatalogSourceParams opts.ObjectStorageCatalogSourceParams opts.OpenCatalogCatalogSourceParams opts.IcebergRestCatalogSourceParams] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AwsGlueCatalogSourceParams = new(AwsGlueParams)
 		opts.ObjectStorageCatalogSourceParams = new(ObjectStorageParams)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams"))
 	})
 
 	t.Run("validation: exactly one field from [opts.IcebergRestCatalogSourceParams.OAuthRestAuthentication opts.IcebergRestCatalogSourceParams.BearerRestAuthentication opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication] should be present", func(t *testing.T) {
@@ -177,16 +171,6 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 			"REST_AUTHENTICATION = (TYPE = SIGV4 SIGV4_IAM_ROLE = '%s') "+
 			"ENABLED = true",
 			id.FullyQualifiedName(), restCatalogUri, sigV4IamRole)
-	})
-
-	t.Run("basic - SAP Business Data Cloud", func(t *testing.T) {
-		opts := defaultOptsSapBdc()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION %s "+
-			"CATALOG_SOURCE = SAP_BDC "+
-			"TABLE_FORMAT = DELTA "+
-			"REST_CONFIG = (SAP_BDC_INVITATION_LINK = '%s' ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS) "+
-			"ENABLED = true",
-			id.FullyQualifiedName(), sapBdcInvitationLink)
 	})
 
 	// Manually added all options for each variant
@@ -327,22 +311,6 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 			"REFRESH_INTERVAL_SECONDS = 60 "+
 			"COMMENT = 'test comment'",
 			id.FullyQualifiedName(), restCatalogUri, CatalogIntegrationCatalogApiTypeAwsApiGateway, CatalogIntegrationAccessDelegationModeVendedCredentials)
-	})
-
-	t.Run("all options - SAP Business Data Cloud", func(t *testing.T) {
-		opts := defaultOptsSapBdc()
-		opts.IfNotExists = Bool(true)
-		opts.Enabled = false
-		opts.RefreshIntervalSeconds = Int(60)
-		opts.Comment = String("test comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s "+
-			"CATALOG_SOURCE = SAP_BDC "+
-			"TABLE_FORMAT = DELTA "+
-			"REST_CONFIG = (SAP_BDC_INVITATION_LINK = '%s' ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS) "+
-			"ENABLED = false "+
-			"REFRESH_INTERVAL_SECONDS = 60 "+
-			"COMMENT = 'test comment'",
-			id.FullyQualifiedName(), sapBdcInvitationLink)
 	})
 }
 

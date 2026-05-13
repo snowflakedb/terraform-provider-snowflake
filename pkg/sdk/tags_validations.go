@@ -12,6 +12,8 @@ var (
 	_ validatable = new(dropTagOptions)
 	_ validatable = new(undropTagOptions)
 	_ validatable = new(AllowedValues)
+	_ validatable = new(TagPropagate)
+	_ validatable = new(TagOnConflict)
 	_ validatable = new(TagSet)
 	_ validatable = new(TagUnset)
 )
@@ -32,6 +34,11 @@ func (opts *createTagOptions) validate() error {
 			errs = append(errs, err)
 		}
 	}
+	if valueSet(opts.Propagate) {
+		if err := opts.Propagate.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	return errors.Join(errs...)
 }
 
@@ -42,14 +49,51 @@ func (v *AllowedValues) validate() error {
 	return nil
 }
 
+func (v *TagPropagate) validate() error {
+	if v == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if valueSet(v.OnConflict) {
+		if err := v.OnConflict.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
+}
+
+func (v *TagOnConflict) validate() error {
+	if v == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if !exactlyOneValueSet(v.CustomValue, v.AllowedValuesSequence) {
+		errs = append(errs, errExactlyOneOf("TagOnConflict", "CustomValue", "AllowedValuesSequence"))
+	}
+	return errors.Join(errs...)
+}
+
 func (v *TagSet) validate() error {
 	var errs []error
-	if !exactlyOneValueSet(v.MaskingPolicies, v.Comment) {
-		errs = append(errs, errOneOf("TagSet", "MaskingPolicies", "Comment"))
+	if valueSet(v.MaskingPolicies) && anyValueSet(v.AllowedValues, v.Propagate, v.Comment) {
+		errs = append(errs, errOneOf("TagSet", "MaskingPolicies", "AllowedValues", "Propagate", "Comment"))
+	}
+	if !anyValueSet(v.MaskingPolicies, v.AllowedValues, v.Propagate, v.Comment) {
+		errs = append(errs, errAtLeastOneOf("TagSet", "MaskingPolicies", "AllowedValues", "Propagate", "Comment"))
 	}
 	if valueSet(v.MaskingPolicies) {
 		if !validateIntGreaterThan(len(v.MaskingPolicies.MaskingPolicies), 0) {
 			errs = append(errs, errIntValue("TagSet.MaskingPolicies", "MaskingPolicies", IntErrGreater, 0))
+		}
+	}
+	if valueSet(v.AllowedValues) {
+		if err := v.AllowedValues.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if valueSet(v.Propagate) {
+		if err := v.Propagate.validate(); err != nil {
+			errs = append(errs, err)
 		}
 	}
 	return errors.Join(errs...)
@@ -57,8 +101,8 @@ func (v *TagSet) validate() error {
 
 func (v *TagUnset) validate() error {
 	var errs []error
-	if !exactlyOneValueSet(v.MaskingPolicies, v.AllowedValues, v.Comment) {
-		errs = append(errs, errExactlyOneOf("TagUnset", "MaskingPolicies", "AllowedValues", "Comment"))
+	if !exactlyOneValueSet(v.MaskingPolicies, v.AllowedValues, v.Propagate, v.OnConflict, v.Comment) {
+		errs = append(errs, errExactlyOneOf("TagUnset", "MaskingPolicies", "AllowedValues", "Propagate", "OnConflict", "Comment"))
 	}
 	if valueSet(v.MaskingPolicies) {
 		if !validateIntGreaterThan(len(v.MaskingPolicies.MaskingPolicies), 0) {
