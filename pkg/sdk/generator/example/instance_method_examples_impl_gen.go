@@ -40,8 +40,9 @@ func (r *AddNotificationIntegrationInstanceMethodExampleRequest) toOpts() *AddNo
 }
 
 func (r addNotificationIntegrationRow) convert() (*AddNotificationIntegrationResult, error) {
-	// TODO: Mapping
-	return &AddNotificationIntegrationResult{}, nil
+	result := &AddNotificationIntegrationResult{}
+	result.Status = r.Status
+	return result, nil
 }
 
 func (r *GetSpendingLimitInstanceMethodExampleRequest) toOpts() *GetSpendingLimitInstanceMethodExampleOptions {
