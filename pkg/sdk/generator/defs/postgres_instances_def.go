@@ -44,7 +44,7 @@ var postgresInstancePairs = g.StructPair("postgresInstancesRow", "PostgresInstan
 
 var postgresInstanceDetailsPairs = g.StructPair("postgresInstanceDetailsRow", "PostgresInstanceProperty").
 	Text("property").
-	Text("value")
+	OptionalText("value", g.WithRequiredInPlain())
 
 var postgresInstancesDef = g.NewInterface(
 	"PostgresInstances",
@@ -57,7 +57,7 @@ var postgresInstancesDef = g.NewInterface(
 		SQL("POSTGRES INSTANCE").
 		Name().
 		TextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
-		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
+		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions().Required()).
 		Assignment(
 			"AUTHENTICATION_AUTHORITY",
 			PostgresInstanceAuthenticationAuthorityEnumDef.Kind(),
@@ -82,18 +82,18 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"At",
 			g.NewQueryStruct("PostgresInstanceForkAt").
-				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().NoQuotes().ArrowEquals()).
+				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().SingleQuotes().ArrowEquals()).
 				OptionalTextAssignment("OFFSET", g.ParameterOptions().NoQuotes().ArrowEquals()).
 				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset"),
-			g.KeywordOptions().SQL("AT").MustParentheses(),
+			g.ListOptions().Parentheses().NoComma().SQL("AT"),
 		).
 		OptionalQueryStructField(
 			"Before",
 			g.NewQueryStruct("PostgresInstanceForkBefore").
-				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().NoQuotes().ArrowEquals()).
+				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().SingleQuotes().ArrowEquals()).
 				OptionalTextAssignment("OFFSET", g.ParameterOptions().NoQuotes().ArrowEquals()).
 				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset"),
-			g.KeywordOptions().SQL("BEFORE").MustParentheses(),
+			g.ListOptions().Parentheses().NoComma().SQL("BEFORE"),
 		).
 		OptionalTextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
 		OptionalNumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
@@ -133,7 +133,7 @@ var postgresInstancesDef = g.NewInterface(
 					"Apply",
 					g.NewQueryStruct("PostgresInstanceApply").
 						OptionalSQL("IMMEDIATELY").
-						OptionalTextAssignment("ON", g.ParameterOptions().SingleQuotes()).
+						OptionalTextAssignment("ON", g.ParameterOptions().SingleQuotes().NoEquals()).
 						WithValidation(g.ExactlyOneValueSet, "Immediately", "On"),
 					g.KeywordOptions().SQL("APPLY"),
 				).
@@ -156,7 +156,11 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"ResetAccess",
 			g.NewQueryStruct("PostgresInstanceResetAccess").
-				OptionalTextAssignment("FOR", g.ParameterOptions().NoEquals().SingleQuotes()),
+				Assignment(
+					"FOR",
+					PostgresInstanceResetAccessRoleEnumDef.Kind(),
+					g.ParameterOptions().NoEquals().SingleQuotes().Required(),
+				),
 			g.KeywordOptions().SQL("RESET ACCESS"),
 		).
 		OptionalSetTags().

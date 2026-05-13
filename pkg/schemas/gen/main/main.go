@@ -17,6 +17,7 @@ const (
 )
 
 func main() {
+	// Generate Show schemas (existing behavior)
 	genhelpers.NewGenerator(
 		genhelpers.NewPreambleModel(name, version).
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk").
@@ -29,6 +30,20 @@ func main() {
 		WithAdditionalObjectsDebugLogs(printAllStructsFields).
 		WithAdditionalObjectsDebugLogs(printUniqueTypes).
 		RunAndHandleOsReturn()
+
+	// Generate Describe schemas for DESCRIBE output structs
+	if len(gen.DescribeResultStructs) > 0 {
+		genhelpers.NewGenerator(
+			genhelpers.NewPreambleModel(name, version).
+				WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk").
+				WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),
+			getDescribeStructDetails,
+			gen.ModelFromStructDetailsWithPrefix("Describe"),
+			getDescribeFilename,
+			gen.AllTemplates,
+		).
+			RunAndHandleOsReturn()
+	}
 }
 
 func getStructDetails() []genhelpers.StructDetails {
@@ -40,8 +55,20 @@ func getStructDetails() []genhelpers.StructDetails {
 	return allStructsDetails
 }
 
+func getDescribeStructDetails() []genhelpers.StructDetails {
+	allStructsDetails := make([]genhelpers.StructDetails, len(gen.DescribeResultStructs))
+	for idx, s := range gen.DescribeResultStructs {
+		allStructsDetails[idx] = genhelpers.ExtractStructDetails(s)
+	}
+	return allStructsDetails
+}
+
 func getFilename(_ genhelpers.StructDetails, model gen.ShowResultSchemaModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_gen.go"
+}
+
+func getDescribeFilename(_ genhelpers.StructDetails, model gen.ShowResultSchemaModel) string {
+	return genhelpers.ToSnakeCase(model.Name) + "_describe_gen.go"
 }
 
 func printAllStructsFields(allStructs []genhelpers.StructDetails) {

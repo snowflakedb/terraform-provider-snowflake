@@ -254,6 +254,20 @@ func (p *PairedStructs) OptionalSchemaObjectIdentifier(dbColumnName string, opts
 	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifier", allOpts)
 }
 
+// AsMappingFieldPairs returns the field-level type pairs for use in convert() generation.
+func (p *PairedStructs) AsMappingFieldPairs() []MappingFieldPair {
+	pairs := make([]MappingFieldPair, len(p.fields))
+	for i, f := range p.fields {
+		pairs[i] = MappingFieldPair{
+			DbFieldName:    f.resolvedDbFieldName(),
+			PlainFieldName: f.resolvedPlainFieldName(),
+			DbKind:         f.dbKind,
+			PlainKind:      f.plainKind,
+		}
+	}
+	return pairs
+}
+
 // asDbStruct materializes the definition as a *dbStruct following the old implementation.
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
@@ -274,20 +288,50 @@ func (p *PairedStructs) asPlainStruct() *plainStruct {
 
 // ShowOperationWithPairedStructs is equivalent to ShowOperation but accepts a single PairedStructs
 // definition instead of separate DbStruct and PlainStruct arguments. The PairedStructs is
-// materialized into both structs and forwarded to the existing ShowOperation unchanged.
+// materialized into both structs and forwarded to the existing ShowOperation. Additionally, the
+// field pair metadata is attached to the ShowMapping to enable convert() code generation.
 func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
-	return i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, filtering...)
+	numOpsBefore := len(i.Operations)
+	i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, filtering...)
+	// Find the Show operation (which has a ShowMapping) among the newly added operations.
+	for idx := numOpsBefore; idx < len(i.Operations); idx++ {
+		if i.Operations[idx].ShowMapping != nil {
+			i.Operations[idx].ShowMapping.FieldPairs = pairedStructs.AsMappingFieldPairs()
+			break
+		}
+	}
+	return i
 }
 
 // DescribeOperationWithPairedStructs is equivalent to DescribeOperation but accepts a single
 // PairedStructs definition instead of separate DbStruct and PlainStruct arguments. The
 // PairedStructs is materialized into both structs and forwarded to the existing DescribeOperation.
+// Additionally, the field pair metadata is attached to the DescribeMapping.
 func (i *Interface) DescribeOperationWithPairedStructs(describeKind DescriptionMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
-	return i.DescribeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, helperStructs...)
+	numOpsBefore := len(i.Operations)
+	i.DescribeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, helperStructs...)
+	// Find the Describe operation among the newly added operations.
+	for idx := numOpsBefore; idx < len(i.Operations); idx++ {
+		if i.Operations[idx].DescribeMapping != nil {
+			i.Operations[idx].DescribeMapping.FieldPairs = pairedStructs.AsMappingFieldPairs()
+			break
+		}
+	}
+	return i
 }
 
 // CustomShowOperationWithPairedStructs is equivalent to CustomShowOperation but accepts a
 // single PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
+// Additionally, the field pair metadata is attached to the ShowMapping.
 func (i *Interface) CustomShowOperationWithPairedStructs(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct) *Interface {
-	return i.CustomShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct)
+	numOpsBefore := len(i.Operations)
+	i.CustomShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct)
+	// Find the Show operation among the newly added operations.
+	for idx := numOpsBefore; idx < len(i.Operations); idx++ {
+		if i.Operations[idx].ShowMapping != nil {
+			i.Operations[idx].ShowMapping.FieldPairs = pairedStructs.AsMappingFieldPairs()
+			break
+		}
+	}
+	return i
 }

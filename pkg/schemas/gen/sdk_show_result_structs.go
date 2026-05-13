@@ -80,3 +80,9 @@ var AdditionalStructs = []any{
 	sdk.SessionPolicyDetails{},
 	sdk.PasswordPolicyDetails{},
 }
+
+// DescribeResultStructs are SDK structs representing DESCRIBE output that should have
+// schemas generated with the "Describe" prefix (e.g. DescribePostgresInstanceDetailsSchema).
+var DescribeResultStructs = []any{
+	sdk.PostgresInstanceDetails{},
+}

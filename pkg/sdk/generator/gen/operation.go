@@ -68,6 +68,21 @@ type Mapping struct {
 	MappingFuncName string
 	From            *Field
 	To              *Field
+	// FieldPairs holds the per-field type mapping from PairedStructs, enabling
+	// the convert template to generate real conversion logic instead of a stub.
+	FieldPairs []MappingFieldPair
+}
+
+// MappingFieldPair captures the db→plain type mapping for a single field in a PairedStructs definition.
+type MappingFieldPair struct {
+	// DbFieldName is the Go field name in the db row struct.
+	DbFieldName string
+	// PlainFieldName is the Go field name in the plain SDK struct.
+	PlainFieldName string
+	// DbKind is the Go type in the db row struct (e.g. "string", "sql.NullString", "time.Time").
+	DbKind string
+	// PlainKind is the Go type in the plain SDK struct (e.g. "string", "*string", "bool").
+	PlainKind string
 }
 
 func newOperation(kind string, doc string) *Operation {
@@ -84,6 +99,13 @@ func newMapping(mappingFuncName string, from, to *Field) *Mapping {
 		From:            from,
 		To:              to,
 	}
+}
+
+// HasFieldPairs returns true when field-level type mapping metadata is available
+// (i.e., the operation was defined via PairedStructs), enabling the template to
+// generate a real convert() implementation instead of a stub.
+func (m *Mapping) HasFieldPairs() bool {
+	return len(m.FieldPairs) > 0
 }
 
 func (s *Operation) withOptionsStruct(optsField *Field) *Operation {
