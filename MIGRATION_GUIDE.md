@@ -24,6 +24,20 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.16.0 ➞ v2.17.0
+
+### *(enhancement)* Improved identifier handling in `snowflake_stream_on_directory_table`
+
+Thanks to the changes introduced in [BCR-2170](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2170) (part of [Bundle 2026_01](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01_bundle)),
+Snowflake now returns a fully qualified name for the stage behind a directory table stream in `SHOW STREAMS` output (previously, only a partially qualified name was returned).
+This allowed us to resolve the long-standing limitation in `snowflake_stream_on_directory_table` tracked as [SNOW-1733130](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2328):
+
+- The `stage` attribute now expects, stores, and reads a fully qualified identifier (e.g. `"MY_DB"."MY_SCHEMA"."MY_STAGE"`), consistent with other identifier attributes in the provider.
+- The previous requirement that the stage must live in the same schema as the stream has been lifted - stages from a different schema than the stream are now fully supported.
+
+The state is automatically rewrites any existing `stage` value into its fully qualified form,
+so no manual changes to the configuration or state are required when upgrading from v2.15.x
+
 ## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* snowflake_password_policy resource rework
@@ -137,18 +151,6 @@ Snowflake implicitly grants PUBLIC to every role and user, so `GRANT ROLE PUBLIC
 To enable, add `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` to the `experimental_features_enabled` field in the provider configuration. No changes are required for existing configurations that do not grant the PUBLIC role.
 
 References: [#3001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3001)
-
-### *(enhancement)* Improved identifier handling in `snowflake_stream_on_directory_table`
-
-Thanks to the changes introduced in [BCR-2170](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2170) (part of [Bundle 2026_01](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01_bundle)),
-Snowflake now returns a fully qualified name for the stage behind a directory table stream in `SHOW STREAMS` output (previously, only a partially qualified name was returned).
-This allowed us to resolve the long-standing limitation in `snowflake_stream_on_directory_table` tracked as [SNOW-1733130](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2328):
-
-- The `stage` attribute now expects, stores, and reads a fully qualified identifier (e.g. `"MY_DB"."MY_SCHEMA"."MY_STAGE"`), consistent with other identifier attributes in the provider.
-- The previous requirement that the stage must live in the same schema as the stream has been lifted - stages from a different schema than the stream are now fully supported.
-
-The state is automatically rewrites any existing `stage` value into its fully qualified form,
-so no manual changes to the configuration or state are required when upgrading from v2.15.x
 
 ## v2.14.x ➞ v2.15.0
 
