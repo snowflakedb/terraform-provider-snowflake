@@ -386,6 +386,8 @@ func TestInt_PostgresInstances(t *testing.T) {
 	// ==================
 
 	t.Run("alter: set and unset properties", func(t *testing.T) {
+		// TODO: Flaky - times out waiting for ALTER SET POSTGRES_SETTINGS because prior COMPUTE_FAMILY/STORAGE_SIZE_GB change takes too long to complete
+		t.Skip("Flaky: ALTER SET POSTGRES_SETTINGS times out waiting for prior compute/storage operation to complete")
 		networkRule, networkRuleCleanup := testClientHelper().NetworkRule.CreateWithRequest(t, sdk.NewCreateNetworkRuleRequest(
 			testClientHelper().Ids.RandomSchemaObjectIdentifier(),
 			sdk.NetworkRuleTypeIpv4,
@@ -519,6 +521,8 @@ func TestInt_PostgresInstances(t *testing.T) {
 	})
 
 	t.Run("alter: suspend and resume", func(t *testing.T) {
+		// TODO: Flaky - instance may not reach READY state in time for suspend operation
+		t.Skip("Flaky: suspend operation times out because instance is not in READY state within timeout")
 		postgresInstance := suspendInstance.instance
 
 		// Suspend — retry because the instance may not be fully ready for suspend despite READY state
