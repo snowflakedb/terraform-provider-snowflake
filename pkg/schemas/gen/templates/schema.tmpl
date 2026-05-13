@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas/gen.ShowResultSchemaModel*/ -}}
 
-// Show{{ .Name }}Schema represents output of SHOW query for the single {{ .Name }}.
-var Show{{ .Name }}Schema = map[string]*schema.Schema{
+// {{ .SchemaPrefix }}{{ .Name }}Schema represents output of {{ .SchemaPrefix }} query for the single {{ .Name }}.
+var {{ .SchemaPrefix }}{{ .Name }}Schema = map[string]*schema.Schema{
 {{- range .SchemaFields }}
     "{{ .Name }}": {
     Type:     schema.{{ .SchemaType }},
@@ -10,4 +10,4 @@ var Show{{ .Name }}Schema = map[string]*schema.Schema{
 {{- end }}
 }
 
-var _ = Show{{ .Name }}Schema
+var _ = {{ .SchemaPrefix }}{{ .Name }}Schema

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type PostgresInstanceShowOutputAssert struct {
@@ -92,8 +93,8 @@ func (p *PostgresInstanceShowOutputAssert) HasAuthenticationAuthority(expected s
 	return p
 }
 
-func (p *PostgresInstanceShowOutputAssert) HasStorageSize(expected string) *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("storage_size", expected))
+func (p *PostgresInstanceShowOutputAssert) HasStorageSize(expected int) *PostgresInstanceShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputIntValueSet("storage_size", expected))
 	return p
 }
 
@@ -107,18 +108,18 @@ func (p *PostgresInstanceShowOutputAssert) HasPostgresSettings(expected string) 
 	return p
 }
 
-func (p *PostgresInstanceShowOutputAssert) HasIsHa(expected string) *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("is_ha", expected))
+func (p *PostgresInstanceShowOutputAssert) HasIsHa(expected bool) *PostgresInstanceShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_ha", expected))
 	return p
 }
 
-func (p *PostgresInstanceShowOutputAssert) HasRetentionTime(expected string) *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("retention_time", expected))
+func (p *PostgresInstanceShowOutputAssert) HasRetentionTime(expected int) *PostgresInstanceShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputIntValueSet("retention_time", expected))
 	return p
 }
 
-func (p *PostgresInstanceShowOutputAssert) HasState(expected string) *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("state", expected))
+func (p *PostgresInstanceShowOutputAssert) HasState(expected sdk.PostgresInstanceState) *PostgresInstanceShowOutputAssert {
+	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("state", expected))
 	return p
 }
 
@@ -187,7 +188,7 @@ func (p *PostgresInstanceShowOutputAssert) HasNoAuthenticationAuthority() *Postg
 }
 
 func (p *PostgresInstanceShowOutputAssert) HasNoStorageSize() *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("storage_size"))
+	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("storage_size"))
 	return p
 }
 
@@ -202,17 +203,17 @@ func (p *PostgresInstanceShowOutputAssert) HasNoPostgresSettings() *PostgresInst
 }
 
 func (p *PostgresInstanceShowOutputAssert) HasNoIsHa() *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("is_ha"))
+	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_ha"))
 	return p
 }
 
 func (p *PostgresInstanceShowOutputAssert) HasNoRetentionTime() *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("retention_time"))
+	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("retention_time"))
 	return p
 }
 
 func (p *PostgresInstanceShowOutputAssert) HasNoState() *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("state"))
+	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
 	return p
 }
 

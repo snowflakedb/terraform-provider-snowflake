@@ -19,10 +19,12 @@ func PostgresInstanceDetails(t *testing.T, id sdk.AccountObjectIdentifier) *Post
 	t.Helper()
 	return &PostgresInstanceDetailsAssert{
 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("PostgresInstanceDetails"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.PostgresInstanceDetails, sdk.AccountObjectIdentifier] {
-			return testClient.PostgresInstance.DescribeDetails
+			return testClient.PostgresInstance.Describe
 		}),
 	}
 }
+
+// Adjusted manually: removed PostgresInstanceDetailsFromObject — PostgresInstanceDetails has no ID() method.
 
 func PostgresInstanceDetailsFromObject(t *testing.T, id sdk.AccountObjectIdentifier, postgresInstanceDetails *sdk.PostgresInstanceDetails) *PostgresInstanceDetailsAssert {
 	t.Helper()
