@@ -57,8 +57,14 @@ func suppressQuoting(_, oldValue, newValue string, _ *schema.ResourceData) bool 
 	}
 }
 
+// ctyGoPrimitive constrains ctyValueToGo to the Go types that map to the cty
+// kinds we read from Terraform config
+type ctyGoPrimitive interface {
+	string | int | bool
+}
+
 // ctyValueToGo converts a non-null cty.Value to the requested Go type.
-func ctyValueToGo[T any](v cty.Value) (T, error) {
+func ctyValueToGo[T ctyGoPrimitive](v cty.Value) (T, error) {
 	var zero T
 	switch any(zero).(type) {
 	case string:
