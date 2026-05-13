@@ -21,11 +21,8 @@ var dataMetricFunctionReferenceParametersDef = g.NewQueryStruct("dataMetricFunct
 
 var dataMetricFunctionReferenceFunctionArgumentsDef = g.NewQueryStruct("dataMetricFunctionReferenceFunctionArguments").
 	PredefinedQueryStructField("refEntityName", "[]ObjectIdentifier", g.ParameterOptions().ArrowEquals().SingleQuotes().SQL("REF_ENTITY_NAME").Required()).
-	OptionalAssignment(
-		"REF_ENTITY_DOMAIN",
-		DataMetricFunctionRefEntityDomainOptionEnumDef.Kind(),
-		g.ParameterOptions().SingleQuotes().ArrowEquals().Required(),
-	).WithValidation(g.ValidateValueSet, "RefEntityDomain").
+	OptionalEnumAssignment("REF_ENTITY_DOMAIN", DataMetricFunctionRefEntityDomainOptionEnumDef, g.ParameterOptions().SingleQuotes().ArrowEquals().Required()).
+	WithValidation(g.ValidateValueSet, "RefEntityDomain").
 	WithValidation(g.ValidateValueSet, "refEntityName")
 
 var dataMetricFunctionReferencesDef = g.NewInterface(

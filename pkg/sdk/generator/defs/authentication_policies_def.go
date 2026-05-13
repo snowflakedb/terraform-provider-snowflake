@@ -70,12 +70,8 @@ var (
 							OptionalNumberAssignment("DEFAULT_EXPIRY_IN_DAYS", g.ParameterOptions().NoQuotes()).
 							OptionalNumberAssignment("MAX_EXPIRY_IN_DAYS", g.ParameterOptions().NoQuotes()).
 							OptionalBooleanAssignment("REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS", g.ParameterOptions()).
-							OptionalAssignment(
-			"NETWORK_POLICY_EVALUATION",
-			NetworkPolicyEvaluationOptionEnumDef.Kind(),
-			g.ParameterOptions().NoQuotes(),
-		).
-		WithValidation(g.AtLeastOneValueSet, "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation")
+							OptionalEnumAssignment("NETWORK_POLICY_EVALUATION", NetworkPolicyEvaluationOptionEnumDef, g.ParameterOptions().NoQuotes()).
+							WithValidation(g.AtLeastOneValueSet, "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation")
 	AuthenticationPolicyAllowedProviderListItemDef = g.NewQueryStruct("AuthenticationPolicyAllowedProviderListItem").Enum("Provider", AllowedProviderOptionEnumDef, g.KeywordOptions().SingleQuotes().Required())
 	AuthenticationPolicyClientPolicyEntryDef       = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntry").
 							Enum("ClientType", ClientPolicyDriverTypeEnumDef, g.KeywordOptions().NoQuotes().Required()).

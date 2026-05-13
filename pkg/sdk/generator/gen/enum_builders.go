@@ -27,3 +27,39 @@ func (v *QueryStruct) WithField(field *Field) *QueryStruct {
 	v.fields = append(v.fields, field)
 	return v
 }
+
+// EnumAssignment adds a required enum parameter assignment.
+func (v *QueryStruct) EnumAssignment(sqlPrefix string, enum *Enum, transformer *ParameterTransformer) *QueryStruct {
+	return v.Assignment(sqlPrefix, enum.Kind(), transformer)
+}
+
+// OptionalEnumAssignment adds an optional enum parameter assignment (pointer kind).
+func (v *QueryStruct) OptionalEnumAssignment(sqlPrefix string, enum *Enum, transformer *ParameterTransformer) *QueryStruct {
+	return v.Assignment(sqlPrefix, enum.KindPtr(), transformer)
+}
+
+// EnumAssignmentWithFieldName adds a required enum parameter assignment with a custom Go field name.
+func (v *QueryStruct) EnumAssignmentWithFieldName(sqlPrefix string, enum *Enum, transformer *ParameterTransformer, fieldName string) *QueryStruct {
+	return v.AssignmentWithFieldName(sqlPrefix, enum.Kind(), transformer, fieldName)
+}
+
+// Enum adds a required enum field to a PairedStructs.
+//
+//	db:    <FieldName> string          `db:"<dbColumnName>"`
+//	plain: <FieldName> <EnumType>
+func (p *PairedStructs) Enum(dbColumnName string, enum *Enum, opts ...PairedFieldOption) *PairedStructs {
+	return p.PlainField(dbColumnName, enum.Kind(), opts...)
+}
+
+// OptionalEnum adds an optional enum field to a PairedStructs.
+//
+//	db:    <FieldName> sql.NullString  `db:"<dbColumnName>"`
+//	plain: <FieldName> *<EnumType>
+func (p *PairedStructs) OptionalEnum(dbColumnName string, enum *Enum, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", enum.KindPtr(), opts)
+}
+
+// Enum adds a required enum field to a plainStruct.
+func (v *plainStruct) Enum(name string, enum *Enum) *plainStruct {
+	return v.Field(name, enum.Kind())
+}

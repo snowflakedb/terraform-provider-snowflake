@@ -29,9 +29,9 @@ var networkRulesDef = g.NewInterface(
 			OrReplace().
 			SQL("NETWORK RULE").
 			Name().
-			AssignmentWithFieldName("TYPE", NetworkRuleTypeEnumDef.Kind(), g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
+			EnumAssignmentWithFieldName("TYPE", NetworkRuleTypeEnumDef, g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
 			ListAssignment("VALUE_LIST", "NetworkRuleValue", g.ParameterOptions().Required().Parentheses()).
-			Assignment("MODE", NetworkRuleModeEnumDef.Kind(), g.ParameterOptions().Required().NoQuotes()).
+			EnumAssignment("MODE", NetworkRuleModeEnumDef, g.ParameterOptions().Required().NoQuotes()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name"),
 		g.NewQueryStruct("NetworkRuleValue").
