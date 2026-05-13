@@ -103,6 +103,22 @@ func NewGetNotificationIntegrationsBudgetRequest(
 	return &s
 }
 
+func NewGetNotificationEmailBudgetRequest(
+	name SchemaObjectIdentifier,
+) *GetNotificationEmailBudgetRequest {
+	s := GetNotificationEmailBudgetRequest{}
+	s.name = name
+	return &s
+}
+
+func NewGetNotificationIntegrationNameBudgetRequest(
+	name SchemaObjectIdentifier,
+) *GetNotificationIntegrationNameBudgetRequest {
+	s := GetNotificationIntegrationNameBudgetRequest{}
+	s.name = name
+	return &s
+}
+
 func NewSetCycleStartActionBudgetRequest(
 	name SchemaObjectIdentifier,
 	args BudgetSetCycleStartActionArgsRequest,
@@ -114,7 +130,7 @@ func NewSetCycleStartActionBudgetRequest(
 }
 
 func NewBudgetSetCycleStartActionArgsRequest(
-	procedure SchemaObjectIdentifier,
+	procedure SchemaObjectIdentifierWithArguments,
 	arguments []string,
 ) *BudgetSetCycleStartActionArgsRequest {
 	s := BudgetSetCycleStartActionArgsRequest{}

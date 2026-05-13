@@ -138,7 +138,7 @@ func ConfigVariablesFromModel(t *testing.T, model ResourceModel) tfconfig.Variab
 // It's useful when there's a need to create associations between objects of the same type in Snowflake.
 func ConfigVariablesFromModels(t *testing.T, variableName string, models ...ResourceModel) tfconfig.Variables {
 	t.Helper()
-	allVariables := make([]tfconfig.Variable, 0)
+	allVariables := make([]tfconfig.Variable, 0, len(models))
 	for _, model := range models {
 		allVariables = append(allVariables, tfconfig.ObjectVariable(ConfigVariablesFromModel(t, model)))
 	}

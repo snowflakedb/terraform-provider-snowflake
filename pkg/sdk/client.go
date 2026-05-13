@@ -35,6 +35,7 @@ type Client struct {
 	Comments                     Comments
 	ComputePools                 ComputePools
 	Connections                  Connections
+	CortexAgents                 CortexAgents
 	CortexSearchServices         CortexSearchServices
 	DatabaseRoles                DatabaseRoles
 	Databases                    Databases
@@ -59,6 +60,9 @@ type Client struct {
 	NetworkRules                 NetworkRules
 	Notebooks                    Notebooks
 	NotificationIntegrations     NotificationIntegrations
+	OpenflowConnectors           OpenflowConnectors
+	OpenflowDeployments          OpenflowDeployments
+	OpenflowRuntimes             OpenflowRuntimes
 	OrganizationAccounts         OrganizationAccounts
 	Parameters                   Parameters
 	PasswordPolicies             PasswordPolicies
@@ -171,6 +175,7 @@ func (c *Client) initialize() {
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
+	c.CortexAgents = &cortexAgents{client: c}
 	c.CortexSearchServices = &cortexSearchServices{client: c}
 	c.DatabaseRoles = &databaseRoles{client: c}
 	c.Databases = &databases{client: c}
@@ -195,6 +200,9 @@ func (c *Client) initialize() {
 	c.NetworkRules = &networkRules{client: c}
 	c.Notebooks = &notebooks{client: c}
 	c.NotificationIntegrations = &notificationIntegrations{client: c}
+	c.OpenflowConnectors = &openflowConnectors{client: c}
+	c.OpenflowDeployments = &openflowDeployments{client: c}
+	c.OpenflowRuntimes = &openflowRuntimes{client: c}
 	c.OrganizationAccounts = &organizationAccounts{client: c}
 	c.Parameters = &parameters{client: c}
 	c.PasswordPolicies = &passwordPolicies{client: c}

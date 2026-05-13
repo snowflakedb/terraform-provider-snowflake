@@ -499,7 +499,7 @@ func (s *CreateTableRequest) toOpts() *createTableOptions {
 			On:   s.RowAccessPolicy.On,
 		}
 	}
-	outOfLineConstraints := make([]OutOfLineConstraint, 0)
+	outOfLineConstraints := make([]OutOfLineConstraint, 0, len(s.OutOfLineConstraints))
 	for _, outOfLineConstraintRequest := range s.OutOfLineConstraints {
 		var foreignKey *OutOfLineForeignKey
 		if outOfLineConstraintRequest.ForeignKey != nil {

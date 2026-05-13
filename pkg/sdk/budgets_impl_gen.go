@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 )
 
 var _ Budgets = (*budgets)(nil)
@@ -49,6 +50,14 @@ func (v *budgets) GetNotificationIntegrations(ctx context.Context, request *GetN
 		return nil, err
 	}
 	return convertRows[getNotificationIntegrationsRow, BudgetNotificationIntegration](dbRows)
+}
+
+func (v *budgets) GetNotificationEmail(ctx context.Context, request *GetNotificationEmailBudgetRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *budgets) GetNotificationIntegrationName(ctx context.Context, request *GetNotificationIntegrationNameBudgetRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
 }
 
 func (v *budgets) SetCycleStartAction(ctx context.Context, request *SetCycleStartActionBudgetRequest) (*string, error) {
@@ -126,8 +135,26 @@ func (r *GetNotificationIntegrationsBudgetRequest) toOpts() *GetNotificationInte
 }
 
 func (r getNotificationIntegrationsRow) convert() (*BudgetNotificationIntegration, error) {
-	// TODO: Mapping
-	return &BudgetNotificationIntegration{}, nil
+	// added manually
+	return &BudgetNotificationIntegration{
+		IntegrationName:      r.IntegrationName,
+		LastNotificationTime: r.LastNotificationTime,
+		AddedDate:            r.AddedDate,
+	}, nil
+}
+
+func (r *GetNotificationEmailBudgetRequest) toOpts() *GetNotificationEmailBudgetOptions {
+	opts := &GetNotificationEmailBudgetOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r *GetNotificationIntegrationNameBudgetRequest) toOpts() *GetNotificationIntegrationNameBudgetOptions {
+	opts := &GetNotificationIntegrationNameBudgetOptions{
+		name: r.name,
+	}
+	return opts
 }
 
 func (r *SetCycleStartActionBudgetRequest) toOpts() *SetCycleStartActionBudgetOptions {
@@ -149,6 +176,18 @@ func (r *GetCycleStartActionBudgetRequest) toOpts() *GetCycleStartActionBudgetOp
 }
 
 func (r getCycleStartActionRow) convert() (*BudgetCycleStartAction, error) {
-	// TODO: Mapping
-	return &BudgetCycleStartAction{}, nil
+	// added manually
+	budget := &BudgetCycleStartAction{
+		ActionUuid:             r.ActionUuid,
+		ProcedureArgs:          ParseCommaSeparatedStringArray(r.ProcedureArgs, false),
+		AddedTimestamp:         r.AddedTimestamp,
+		LastTriggeredTimestamp: r.LastTriggeredTimestamp,
+	}
+	id, err := ParseSchemaObjectIdentifierWithArguments(r.ProcedureFqn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse procedure fully qualified name for budget: %w", err)
+	} else {
+		budget.ProcedureId = id
+	}
+	return budget, nil
 }

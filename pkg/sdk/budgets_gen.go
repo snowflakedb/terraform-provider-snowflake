@@ -15,6 +15,8 @@ type Budgets interface {
 	GetSpendingLimit(ctx context.Context, request *GetSpendingLimitBudgetRequest) (*int, error)
 	SetEmailNotifications(ctx context.Context, request *SetEmailNotificationsBudgetRequest) (*string, error)
 	GetNotificationIntegrations(ctx context.Context, request *GetNotificationIntegrationsBudgetRequest) ([]BudgetNotificationIntegration, error)
+	GetNotificationEmail(ctx context.Context, request *GetNotificationEmailBudgetRequest) (*string, error)
+	GetNotificationIntegrationName(ctx context.Context, request *GetNotificationIntegrationNameBudgetRequest) (*string, error)
 	SetCycleStartAction(ctx context.Context, request *SetCycleStartActionBudgetRequest) (*string, error)
 	GetCycleStartAction(ctx context.Context, request *GetCycleStartActionBudgetRequest) (*BudgetCycleStartAction, error)
 }
@@ -95,6 +97,24 @@ type BudgetNotificationIntegration struct {
 
 type budgetGetNotificationIntegrationsArgs struct{}
 
+// GetNotificationEmailBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_notification_email.
+type GetNotificationEmailBudgetOptions struct {
+	call bool                           `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier         `ddl:"identifier,instance_method" sql:"GET_NOTIFICATION_EMAIL"`
+	args budgetGetNotificationEmailArgs `ddl:"list,must_parentheses"`
+}
+
+type budgetGetNotificationEmailArgs struct{}
+
+// GetNotificationIntegrationNameBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_notification_integration_name.
+type GetNotificationIntegrationNameBudgetOptions struct {
+	call bool                                     `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier                   `ddl:"identifier,instance_method" sql:"GET_NOTIFICATION_INTEGRATION_NAME"`
+	args budgetGetNotificationIntegrationNameArgs `ddl:"list,must_parentheses"`
+}
+
+type budgetGetNotificationIntegrationNameArgs struct{}
+
 // SetCycleStartActionBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/methods/set_cycle_start_action.
 type SetCycleStartActionBudgetOptions struct {
 	call bool                          `ddl:"static" sql:"CALL"`
@@ -103,8 +123,8 @@ type SetCycleStartActionBudgetOptions struct {
 }
 
 type BudgetSetCycleStartActionArgs struct {
-	Procedure SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"PROCEDURE"`
-	Arguments []string               `ddl:"list"`
+	Procedure SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
+	Arguments []string                            `ddl:"list"`
 }
 
 // GetCycleStartActionBudgetOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/methods/get_cycle_start_action.
@@ -115,16 +135,16 @@ type GetCycleStartActionBudgetOptions struct {
 }
 
 type getCycleStartActionRow struct {
-	ActionUuid             string    `db:"action_uuid"`
-	ProcedureFqn           string    `db:"procedure_fqn"`
-	ProcedureArgs          string    `db:"procedure_args"`
-	AddedTimestamp         time.Time `db:"added_timestamp"`
-	LastTriggeredTimestamp time.Time `db:"last_triggered_timestamp"`
+	ActionUuid             string    `db:"ACTION_UUID"`
+	ProcedureFqn           string    `db:"PROCEDURE_FQN"`
+	ProcedureArgs          string    `db:"PROCEDURE_ARGS"`
+	AddedTimestamp         time.Time `db:"ADDED_TIMESTAMP"`
+	LastTriggeredTimestamp time.Time `db:"LAST_TRIGGERED_TIMESTAMP"`
 }
 
 type BudgetCycleStartAction struct {
 	ActionUuid             string
-	ProcedureFqn           string
+	ProcedureId            SchemaObjectIdentifierWithArguments
 	ProcedureArgs          []string
 	AddedTimestamp         time.Time
 	LastTriggeredTimestamp time.Time

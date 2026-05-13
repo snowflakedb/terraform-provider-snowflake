@@ -97,6 +97,9 @@ const (
 	ObjectTypeMcpServer              ObjectType = "MCP SERVER"
 	ObjectTypeStorageLifecyclePolicy ObjectType = "STORAGE LIFECYCLE POLICY"
 	ObjectTypeWorkspace              ObjectType = "WORKSPACE"
+	ObjectTypeOpenflowDeployment     ObjectType = "OPENFLOW DEPLOYMENT"
+	ObjectTypeOpenflowRuntime        ObjectType = "OPENFLOW RUNTIME"
+	ObjectTypeOpenflowConnector      ObjectType = "OPENFLOW CONNECTOR"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
@@ -204,6 +207,9 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeMcpServer,
 	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeWorkspace,
+	ObjectTypeOpenflowDeployment,
+	ObjectTypeOpenflowRuntime,
+	ObjectTypeOpenflowConnector,
 	ObjectTypeProgrammaticAccessToken,
 	ObjectTypeCatalogIntegration,
 }
@@ -299,6 +305,9 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeMcpServer:               PluralObjectTypeMcpServers,
 		ObjectTypeStorageLifecyclePolicy:  PluralObjectTypeStorageLifecyclePolicies,
 		ObjectTypeWorkspace:               PluralObjectTypeWorkspaces,
+		ObjectTypeOpenflowDeployment:      PluralObjectTypeOpenflowDeployments,
+		ObjectTypeOpenflowRuntime:         PluralObjectTypeOpenflowRuntimes,
+		ObjectTypeOpenflowConnector:       PluralObjectTypeOpenflowConnectors,
 		ObjectTypeCatalogIntegration:      PluralObjectTypeCatalogIntegrations,
 	}
 }
@@ -429,6 +438,9 @@ const (
 	PluralObjectTypeGateways                 PluralObjectType = "GATEWAYS"
 	PluralObjectTypeMcpServers               PluralObjectType = "MCP SERVERS"
 	PluralObjectTypeCatalogIntegrations      PluralObjectType = "CATALOG INTEGRATIONS"
+	PluralObjectTypeOpenflowDeployments      PluralObjectType = "OPENFLOW DEPLOYMENTS"
+	PluralObjectTypeOpenflowRuntimes         PluralObjectType = "OPENFLOW RUNTIMES"
+	PluralObjectTypeOpenflowConnectors       PluralObjectType = "OPENFLOW CONNECTORS"
 )
 
 func (p PluralObjectType) String() string {

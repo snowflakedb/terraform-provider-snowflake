@@ -38,17 +38,68 @@ func TestInt_Budgets(t *testing.T) {
 		require.Equal(t, 500, *spendingLimit)
 	})
 
-	t.Run("SetEmailNotifications and GetNotificationIntegrations", func(t *testing.T) {
-		t.Skip("TODO [next PR]: implement")
+	// TODO [next PR]: consider wrapping the outputs in cases where the scalar output is parsable (e.g. comma-separated list here)
+	t.Run("SetEmailNotifications, GetNotificationEmail, and GetNotificationIntegrationName", func(t *testing.T) {
 		budgetId, budgetCleanup := testClientHelper().Budget.Create(t)
 		t.Cleanup(budgetCleanup)
-		_ = budgetId
+
+		integration, integrationCleanup := testClientHelper().NotificationIntegration.Create(t)
+		t.Cleanup(integrationCleanup)
+
+		revokePrivilege := testClientHelper().Grant.GrantUsageOnIntegrationToSnowflakeApplication(t, integration.ID())
+		t.Cleanup(revokePrivilege)
+
+		result, err := client.Budgets.SetEmailNotifications(ctx, sdk.NewSetEmailNotificationsBudgetRequest(
+			budgetId,
+			*sdk.NewBudgetSetEmailNotificationsArgsRequestFromEmails("artur.sawicki@snowflake.com").
+				WithNotificationIntegration(integration.ID()),
+		))
+		require.NoError(t, err)
+		require.NotNil(t, result)
+
+		email, err := client.Budgets.GetNotificationEmail(ctx, sdk.NewGetNotificationEmailBudgetRequest(budgetId))
+		require.NoError(t, err)
+		require.NotNil(t, email)
+		require.Equal(t, *email, "artur.sawicki@snowflake.com")
+
+		integrationName, err := client.Budgets.GetNotificationIntegrationName(ctx, sdk.NewGetNotificationIntegrationNameBudgetRequest(budgetId))
+		require.NoError(t, err)
+		require.NotNil(t, integrationName)
+		require.Equal(t, integration.ID().Name(), *integrationName)
 	})
 
+	// TODO [next PR]: try procedure with one arg
+	// TODO [next PR]: try procedure with 2 args (string and int)
+	// TODO [next PR]: get rid of the ARRAY_CONSTRUCT() workaround for empty list
 	t.Run("SetCycleStartAction and GetCycleStartAction", func(t *testing.T) {
-		t.Skip("TODO [next PR]: implement")
 		budgetId, budgetCleanup := testClientHelper().Budget.Create(t)
 		t.Cleanup(budgetCleanup)
-		_ = budgetId
+
+		procedure, procCleanup := testClientHelper().Procedure.Create(t)
+		t.Cleanup(procCleanup)
+
+		revokeDatabasePrivilege := testClientHelper().Grant.GrantUsageOnDatabaseToSnowflakeApplication(t, procedure.ID().DatabaseId())
+		t.Cleanup(revokeDatabasePrivilege)
+
+		revokeSchemaPrivilege := testClientHelper().Grant.GrantUsageOnSchemaToSnowflakeApplication(t, procedure.ID().SchemaId())
+		t.Cleanup(revokeSchemaPrivilege)
+
+		revokeProcedurePrivilege := testClientHelper().Grant.GrantUsageOnProcedureToSnowflakeApplication(t, procedure.ID())
+		t.Cleanup(revokeProcedurePrivilege)
+
+		result, err := client.Budgets.SetCycleStartAction(ctx, sdk.NewSetCycleStartActionBudgetRequest(
+			budgetId, *sdk.NewBudgetSetCycleStartActionArgsRequest(procedure.ID(), []string{"ARRAY_CONSTRUCT()"}),
+		))
+		require.NoError(t, err)
+		require.NotNil(t, result)
+
+		action, err := client.Budgets.GetCycleStartAction(ctx, sdk.NewGetCycleStartActionBudgetRequest(budgetId))
+		require.NoError(t, err)
+		require.NotNil(t, action)
+		require.Empty(t, action.ActionUuid)
+		require.Equal(t, procedure.ID().FullyQualifiedName(), action.ProcedureId.FullyQualifiedName())
+		require.Empty(t, action.ProcedureArgs)
+		require.NotEmpty(t, action.AddedTimestamp)
+		require.Empty(t, action.LastTriggeredTimestamp)
 	})
 }

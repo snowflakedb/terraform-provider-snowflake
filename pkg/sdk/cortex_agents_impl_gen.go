@@ -131,12 +131,8 @@ func (r showCortexAgentDBRow) convert() (*CortexAgent, error) {
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
 	}
-	if r.Comment.Valid {
-		cortexAgent.Comment = &r.Comment.String
-	}
-	if r.Profile.Valid {
-		cortexAgent.Profile = &r.Profile.String
-	}
+	mapNullString(&cortexAgent.Comment, r.Comment)
+	mapNullString(&cortexAgent.Profile, r.Profile)
 	return cortexAgent, nil
 }
 
@@ -157,20 +153,10 @@ func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
 		AgentSpec:    r.AgentSpec,
 		CreatedOn:    r.CreatedOn,
 	}
-	if r.Comment.Valid {
-		details.Comment = &r.Comment.String
-	}
-	if r.Profile.Valid {
-		details.Profile = &r.Profile.String
-	}
-	if r.DefaultVersionName.Valid {
-		details.DefaultVersionName = &r.DefaultVersionName.String
-	}
-	if r.Versions.Valid {
-		details.Versions = &r.Versions.String
-	}
-	if r.Aliases.Valid {
-		details.Aliases = &r.Aliases.String
-	}
+	mapNullString(&details.Comment, r.Comment)
+	mapNullString(&details.Profile, r.Profile)
+	mapNullString(&details.DefaultVersionName, r.DefaultVersionName)
+	mapNullString(&details.Versions, r.Versions)
+	mapNullString(&details.Aliases, r.Aliases)
 	return details, nil
 }

@@ -16,7 +16,6 @@ type TestClient struct {
 	AccountInformation
 
 	Account                      *AccountClient
-	Agent                        *AgentClient
 	AggregationPolicy            *AggregationPolicyClient
 	Alert                        *AlertClient
 	ApiIntegration               *ApiIntegrationClient
@@ -28,6 +27,7 @@ type TestClient struct {
 	ComputePool                  *ComputePoolClient
 	Connection                   *ConnectionClient
 	Context                      *ContextClient
+	CortexAgent                  *AgentClient
 	CortexSearchService          *CortexSearchServiceClient
 	CatalogIntegration           *CatalogIntegrationClient
 	Database                     *DatabaseClient
@@ -116,7 +116,6 @@ func NewTestClient(
 		AccountInformation: context.client,
 
 		Account:                      NewAccountClient(context, idsGenerator),
-		Agent:                        NewAgentClient(context, idsGenerator),
 		AggregationPolicy:            NewAggregationPolicyClient(context, idsGenerator),
 		Alert:                        NewAlertClient(context, idsGenerator),
 		ApiIntegration:               NewApiIntegrationClient(context, idsGenerator),
@@ -128,6 +127,7 @@ func NewTestClient(
 		ComputePool:                  NewComputePoolClient(context, idsGenerator),
 		Connection:                   NewConnectionClient(context, idsGenerator),
 		Context:                      NewContextClient(context),
+		CortexAgent:                  NewAgentClient(context, idsGenerator),
 		CortexSearchService:          NewCortexSearchServiceClient(context, idsGenerator),
 		CatalogIntegration:           NewCatalogIntegrationClient(context, idsGenerator),
 		Database:                     NewDatabaseClient(context, idsGenerator),
