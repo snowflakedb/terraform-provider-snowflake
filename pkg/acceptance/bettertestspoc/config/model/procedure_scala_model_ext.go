@@ -97,7 +97,7 @@ func (f *ProcedureScalaModel) WithExternalAccessIntegrations(ids ...sdk.AccountO
 }
 
 func (f *ProcedureScalaModel) WithSecrets(secrets map[string]sdk.SchemaObjectIdentifier) *ProcedureScalaModel {
-	objects := make([]tfconfig.Variable, 0)
+	objects := make([]tfconfig.Variable, 0, len(secrets))
 	for k, v := range secrets {
 		objects = append(objects, tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{

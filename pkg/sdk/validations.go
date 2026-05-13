@@ -76,7 +76,7 @@ func valueSet(value interface{}) bool {
 		return false
 	}
 	reflectedValue := reflect.ValueOf(value)
-	if reflectedValue.Kind() == reflect.Ptr {
+	if reflectedValue.Kind() == reflect.Pointer {
 		reflectedValue = reflectedValue.Elem()
 	}
 	switch reflectedValue.Kind() {

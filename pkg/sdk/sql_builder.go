@@ -262,7 +262,7 @@ func (b sqlBuilder) parseInterface(v interface{}, tag reflect.StructTag) (sqlCla
 func (b sqlBuilder) parseStruct(s interface{}) ([]sqlClause, error) {
 	clauses := make([]sqlClause, 0)
 	v := reflect.ValueOf(s)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 	if v.Kind() != reflect.Struct {
@@ -273,7 +273,7 @@ func (b sqlBuilder) parseStruct(s interface{}) ([]sqlClause, error) {
 		field := t.Field(i)
 		value := v.Field(i)
 		// Derefence pointers as long as they are not nil
-		if value.Kind() == reflect.Ptr {
+		if value.Kind() == reflect.Pointer {
 			if value.IsNil() {
 				continue
 			}
@@ -423,10 +423,9 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 
 func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Value) (sqlClause, error) {
 	// dereference any pointers
-	if value.Kind() == reflect.Ptr {
+	if value.Kind() == reflect.Pointer {
 		value = value.Elem()
 	}
-	clauses := make([]sqlClause, 0)
 	listClauses := make([]sqlClause, 0)
 	// loop through the slice call parseStruct on each element (since the elements could be structs)
 	for i := 0; i < value.Len(); i++ {
@@ -444,7 +443,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 		}
 		k := value.Index(i)
 		// if it is a pointer, dereference it
-		if k.Kind() == reflect.Ptr {
+		if k.Kind() == reflect.Pointer {
 			k = k.Elem()
 		}
 
@@ -484,12 +483,11 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			return nil, nil
 		}
 	}
-	clauses = append(clauses, sqlListClause{
+	sClause := b.renderStaticClause(sqlListClause{
 		clauses: listClauses,
 		cm:      b.getModifier(field.Tag, "ddl", commaModifierType, Comma).(commaModifier),
 		pm:      b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier),
 	})
-	sClause := b.renderStaticClause(clauses...)
 	ddlTag := strings.Split(field.Tag.Get("ddl"), ",")[0]
 	sqlTag := field.Tag.Get("sql")
 	// depending on the ddl tag we may want to add a parameter clause or a keyword clause before rendered list clause
@@ -518,11 +516,10 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 		return nil, nil
 	}
 
-	clauses := make([]sqlClause, 0)
 	var clause sqlClause
 
 	// dereference any pointers
-	if value.Kind() == reflect.Ptr {
+	if value.Kind() == reflect.Pointer {
 		value = value.Elem()
 	}
 
@@ -589,7 +586,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 	default:
 		return nil, nil
 	}
-	return b.renderStaticClause(append(clauses, clause)...), nil
+	return b.renderStaticClause(clause), nil
 }
 
 func (b sqlBuilder) getInterface(field reflect.Value) interface{} {

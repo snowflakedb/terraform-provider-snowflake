@@ -46,7 +46,7 @@ func loadIssuesToClose() []Issue {
 	if err != nil {
 		panic(err)
 	}
-	issues := make([]Issue, 0)
+	issues := make([]Issue, 0, len(records))
 	for _, record := range records {
 		number, err := strconv.Atoi(record[0])
 		if err != nil {

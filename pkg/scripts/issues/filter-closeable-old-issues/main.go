@@ -43,7 +43,7 @@ func loadPreSnowflakeBucket() []PreSnowflakeIssue {
 	if err != nil {
 		panic(err)
 	}
-	issues := make([]PreSnowflakeIssue, 0)
+	issues := make([]PreSnowflakeIssue, 0, len(records))
 	for _, record := range records {
 		number, err := strconv.Atoi(record[0])
 		if err != nil {
