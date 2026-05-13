@@ -83,6 +83,10 @@ type Mapping struct {
 	MappingFuncName string
 	From            *Field
 	To              *Field
+	// FieldPairs carries the per-field conversion metadata.
+	// The mapping needs to be built from a PairedStructs definition with WithConvertGeneration() enabled.
+	// Otherwise, the old placeholder is used.
+	FieldPairs []FieldPair
 }
 
 func newOperation(kind string, doc string) *Operation {

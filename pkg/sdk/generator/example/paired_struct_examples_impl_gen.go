@@ -4,6 +4,8 @@ package example
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -60,8 +62,40 @@ func (r *ShowPairedStructExampleRequest) toOpts() *ShowPairedStructExampleOption
 }
 
 func (r pairedStructExampleRow) convert() (*PairedStructExample, error) {
-	// TODO: Mapping
-	return &PairedStructExample{}, nil
+	result := &PairedStructExample{}
+	result.Name = r.Name
+	result.ObjectName = r.ObjectName
+	result.OverriddenNonNullableStringPlainName = r.BothNonNullableStrings
+	result.StorageTypePlain = r.StorageTypeDb
+	mapNullString(&result.BothNullableStrings, r.BothNullableStrings)
+	mapNullStringToNonNullableField(&result.OrganizationName, r.OrganizationName)
+	result.IsPrimary = r.IsPrimary
+	mapNullBool(&result.IsDefault, r.IsDefault)
+	mapNullBoolToNonNullableField(&result.Enabled, r.Enabled)
+	result.NextValue = r.NextValue
+	mapNullInt(&result.Port, r.Port)
+	mapNullIntToNonNullableField(&result.RetryLimit, r.RetryLimit)
+	result.CreatedOn = r.CreatedOn
+	mapNullTime(&result.UpdatedAt, r.UpdatedAt)
+	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
+	// TODO: Mapping for FailoverAllowedToAccounts (string -> []AccountIdentifier)
+	result.Tags = ParseCommaSeparatedStringArray(r.Tags, false)
+	mapStringWithMapping(&result.Id, r.AccountId, ParseAccountObjectIdentifier)
+	mapStringWithMapping(&result.OverriddenSecondAccountId, r.SecondAccountId, ParseAccountObjectIdentifier)
+	mapNullStringWithMapping(&result.OptionalAccountId, r.OptionalAccountId, ParseAccountObjectIdentifier)
+	mapNullStringWithMapping(&result.OverriddenOptionalAccountId, r.OptionalSecondAccountId, ParseAccountObjectIdentifier)
+	mapStringWithMapping(&result.SchemaObjectId, r.SchemaObjectId, ParseSchemaObjectIdentifier)
+	mapStringWithMapping(&result.OverriddenSchemaObjectId, r.SecondSchemaObjectId, ParseSchemaObjectIdentifier)
+	mapNullStringWithMapping(&result.OptionalSchemaObjectId, r.OptionalSchemaObjectId, ParseSchemaObjectIdentifier)
+	mapNullStringWithMapping(&result.OverriddenOptionalSchemaObjectId, r.OptionalSecondSchemaObjectId, ParseSchemaObjectIdentifier)
+	mapStringWithMapping(&result.DatabaseObjectId, r.DatabaseObjectId, ParseDatabaseObjectIdentifier)
+	mapStringWithMapping(&result.OverriddenDatabaseObjectId, r.SecondDatabaseObjectId, ParseDatabaseObjectIdentifier)
+	mapStringWithMapping(&result.Status, r.Status, ToExampleStatus)
+	mapNullStringWithMapping(&result.OptionalStatus, r.OptionalStatus, ToExampleStatus)
+	if err := json.Unmarshal([]byte(r.Metadata), &result.Metadata); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal Metadata: %w", err)
+	}
+	return result, nil
 }
 
 func (r *DescribePairedStructExampleRequest) toOpts() *DescribePairedStructExampleOptions {
@@ -72,6 +106,38 @@ func (r *DescribePairedStructExampleRequest) toOpts() *DescribePairedStructExamp
 }
 
 func (r pairedStructExampleDetailRow) convert() (*PairedStructExampleDetail, error) {
-	// TODO: Mapping
-	return &PairedStructExampleDetail{}, nil
+	result := &PairedStructExampleDetail{}
+	result.Name = r.Name
+	result.ObjectName = r.ObjectName
+	result.OverriddenNonNullableStringPlainName = r.BothNonNullableStrings
+	result.StorageTypePlain = r.StorageTypeDb
+	mapNullString(&result.BothNullableStrings, r.BothNullableStrings)
+	mapNullStringToNonNullableField(&result.OrganizationName, r.OrganizationName)
+	result.IsPrimary = r.IsPrimary
+	mapNullBool(&result.IsDefault, r.IsDefault)
+	mapNullBoolToNonNullableField(&result.Enabled, r.Enabled)
+	result.NextValue = r.NextValue
+	mapNullInt(&result.Port, r.Port)
+	mapNullIntToNonNullableField(&result.RetryLimit, r.RetryLimit)
+	result.CreatedOn = r.CreatedOn
+	mapNullTime(&result.UpdatedAt, r.UpdatedAt)
+	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
+	// TODO: Mapping for FailoverAllowedToAccounts (string -> []AccountIdentifier)
+	result.Tags = ParseCommaSeparatedStringArray(r.Tags, false)
+	mapStringWithMapping(&result.Id, r.AccountId, ParseAccountObjectIdentifier)
+	mapStringWithMapping(&result.OverriddenSecondAccountId, r.SecondAccountId, ParseAccountObjectIdentifier)
+	mapNullStringWithMapping(&result.OptionalAccountId, r.OptionalAccountId, ParseAccountObjectIdentifier)
+	mapNullStringWithMapping(&result.OverriddenOptionalAccountId, r.OptionalSecondAccountId, ParseAccountObjectIdentifier)
+	mapStringWithMapping(&result.SchemaObjectId, r.SchemaObjectId, ParseSchemaObjectIdentifier)
+	mapStringWithMapping(&result.OverriddenSchemaObjectId, r.SecondSchemaObjectId, ParseSchemaObjectIdentifier)
+	mapNullStringWithMapping(&result.OptionalSchemaObjectId, r.OptionalSchemaObjectId, ParseSchemaObjectIdentifier)
+	mapNullStringWithMapping(&result.OverriddenOptionalSchemaObjectId, r.OptionalSecondSchemaObjectId, ParseSchemaObjectIdentifier)
+	mapStringWithMapping(&result.DatabaseObjectId, r.DatabaseObjectId, ParseDatabaseObjectIdentifier)
+	mapStringWithMapping(&result.OverriddenDatabaseObjectId, r.SecondDatabaseObjectId, ParseDatabaseObjectIdentifier)
+	mapStringWithMapping(&result.Status, r.Status, ToExampleStatus)
+	mapNullStringWithMapping(&result.OptionalStatus, r.OptionalStatus, ToExampleStatus)
+	if err := json.Unmarshal([]byte(r.Metadata), &result.Metadata); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal Metadata: %w", err)
+	}
+	return result, nil
 }

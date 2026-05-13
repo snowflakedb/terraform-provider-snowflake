@@ -60,7 +60,14 @@ func pairedStructExampleAllOptions(dbName, plainName string) *g.PairedStructs {
 		// db string, plain DatabaseObjectIdentifier; plain name overridden (default would be "Id")
 		DatabaseObjectIdentifier("database_object_id", g.WithPlainFieldName("DatabaseObjectId")).
 		// db string, plain DatabaseObjectIdentifier; plain name overridden
-		DatabaseObjectIdentifier("second_database_object_id", g.WithPlainFieldName("OverriddenDatabaseObjectId"))
+		DatabaseObjectIdentifier("second_database_object_id", g.WithPlainFieldName("OverriddenDatabaseObjectId")).
+		// db string, plain ExampleStatus enum; auto-derived field name
+		EnumField("status", "ExampleStatus").
+		// db sql.NullString, plain *ExampleStatus; optional enum with plain name override
+		OptionalEnumField("optional_status", "ExampleStatus", g.WithPlainFieldName("OptionalStatus")).
+		// db string, JSON-decoded into []PairedStructExampleMetadata
+		JsonField("metadata", "[]PairedStructExampleMetadata").
+		WithConvertGeneration()
 }
 
 // PairedStructExample demonstrates the PairedStructs single-definition approach.

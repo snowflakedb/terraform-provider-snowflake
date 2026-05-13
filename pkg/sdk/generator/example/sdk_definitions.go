@@ -2,8 +2,11 @@ package example
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -179,3 +182,94 @@ type typedEnumTestProvider[T ~string] struct {
 func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 	t.Helper()
 }
+
+// TODO [this PR]: leave only the signatures with minimal/empty implementation
+// Mapping helper stubs — the real implementations live in pkg/sdk/mapping_helpers.go.
+// These stubs exist solely to make generated convert() code compile within this example package.
+
+func mapNullString(f **string, v sql.NullString) {
+	if v.Valid {
+		*f = &v.String
+	}
+}
+
+func mapNullStringToNonNullableField(f *string, v sql.NullString) {
+	if v.Valid {
+		*f = v.String
+	}
+}
+
+func mapNullStringWithMapping[T any](f **T, v sql.NullString, m func(string) (T, error)) {
+	if v.Valid {
+		if mapped, err := m(v.String); err == nil {
+			*f = &mapped
+		}
+	}
+}
+
+func mapNullInt(f **int, v sql.NullInt64) {
+	if v.Valid {
+		i := int(v.Int64)
+		*f = &i
+	}
+}
+
+func mapNullBool(f **bool, v sql.NullBool) {
+	if v.Valid {
+		*f = &v.Bool
+	}
+}
+
+func mapNullBoolToNonNullableField(f *bool, v sql.NullBool) {
+	if v.Valid {
+		*f = v.Bool
+	}
+}
+
+func mapNullIntToNonNullableField(f *int, v sql.NullInt64) {
+	if v.Valid {
+		i := int(v.Int64)
+		*f = i
+	}
+}
+
+func mapNullTime(f **time.Time, v sql.NullTime) {
+	if v.Valid {
+		*f = &v.Time
+	}
+}
+
+func mapNullTimeToNonNullableField(f *time.Time, v sql.NullTime) {
+	if v.Valid {
+		*f = v.Time
+	}
+}
+
+func mapStringWithMapping[T any](f *T, v string, m func(string) (T, error)) {
+	if mapped, err := m(v); err == nil {
+		*f = mapped
+	}
+}
+
+func ParseCommaSeparatedStringArray(s string, trim bool) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	if trim {
+		for i, p := range parts {
+			parts[i] = strings.TrimSpace(p)
+		}
+	}
+	return parts
+}
+
+// Identifier parse function stubs — the real implementations live in pkg/sdk/identifier_parsers.go.
+var (
+	ParseAccountObjectIdentifier  = sdk.ParseAccountObjectIdentifier
+	ParseDatabaseObjectIdentifier = sdk.ParseDatabaseObjectIdentifier
+	ParseSchemaObjectIdentifier   = sdk.ParseSchemaObjectIdentifier
+	ParseExternalObjectIdentifier = sdk.ParseExternalObjectIdentifier
+	ParseAccountIdentifier        = sdk.ParseAccountIdentifier
+	ParseTableColumnIdentifier    = sdk.ParseTableColumnIdentifier
+)
