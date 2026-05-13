@@ -3129,6 +3129,7 @@ func TestAcc_ExternalVolume_migrateFromVersion_2_15_0_Azure_PrivateLink(t *testi
 		WithAllowWrites(r.BooleanFalse)
 
 	ref := volumeModel.ResourceReference()
+	descOutputFieldPrefix := "describe_output.0."
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -3137,7 +3138,7 @@ func TestAcc_ExternalVolume_migrateFromVersion_2_15_0_Azure_PrivateLink(t *testi
 		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders:  ExternalProviderWithExactVersion("2.15.0"),
+				ExternalProviders:  ExternalProviderWithExactVersion("2.16.0"),
 				Config:             tfconfig.FromModels(t, providerModel, volumeModel),
 				ExpectNonEmptyPlan: true,
 				Check: assertThat(t,
@@ -3155,20 +3156,15 @@ func TestAcc_ExternalVolume_migrateFromVersion_2_15_0_Azure_PrivateLink(t *testi
 							// not sent to Snowflake and not read back into state.
 							"",
 						),
-					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
-						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
-							{
-								Name:            azureLocName,
-								StorageProvider: string(sdk.StorageProviderAzure),
-								StorageBaseUrl:  azureStorageBaseUrl,
-								EncryptionType:  "NONE",
-								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
-									AzureTenantId: azureTenantId,
-									// privatelink was never enabled on Snowflake's side
-									// because the old provider silently ignored the field
-								},
-							},
-						}),
+					// Here, we are using explicit assertions because in case of absent privatelink, the current assertions
+					// assume that the handling is fixed in 2.17.0, but in 2.16.0 it was not, which impacts the .
+					assert.Check(resource.TestCheckResourceAttr(ref, descOutputFieldPrefix+"storage_locations.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(ref, descOutputFieldPrefix+"storage_locations.0.name", azureLocName)),
+					assert.Check(resource.TestCheckResourceAttr(ref, descOutputFieldPrefix+"storage_locations.0.storage_provider", string(sdk.StorageProviderAzure))),
+					assert.Check(resource.TestCheckResourceAttr(ref, descOutputFieldPrefix+"storage_locations.0.storage_base_url", azureStorageBaseUrl)),
+					assert.Check(resource.TestCheckResourceAttr(ref, descOutputFieldPrefix+"storage_locations.0.encryption_type", "NONE")),
+					assert.Check(resource.TestCheckResourceAttr(ref, descOutputFieldPrefix+"storage_locations.0.azure_storage_location.0.azure_tenant_id", azureTenantId)),
+					assert.Check(resource.TestCheckNoResourceAttr(ref, descOutputFieldPrefix+"storage_locations.0.azure_storage_location.0.use_privatelink_endpoint")),
 				),
 			},
 			{
