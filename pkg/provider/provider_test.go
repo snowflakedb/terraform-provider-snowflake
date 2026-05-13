@@ -85,7 +85,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 }
 
 func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]interface{}{
+	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]interface{}{ //nolint:gosec // test credentials
 		"account_name":                      "test_account",
 		"organization_name":                 "test_org",
 		"user":                              "test_user",

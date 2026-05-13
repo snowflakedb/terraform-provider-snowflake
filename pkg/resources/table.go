@@ -286,7 +286,7 @@ type changedColumn struct {
 }
 
 func (c columns) getChangedColumnProperties(new columns) (changed changedColumns) {
-	changed = changedColumns{}
+	changed = make(changedColumns, 0, len(new)*len(c))
 	for _, cO := range c {
 		for _, cN := range new {
 			changeColumn := changedColumn{cN, false, false, false, false, false, false}

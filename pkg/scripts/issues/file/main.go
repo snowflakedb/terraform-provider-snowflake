@@ -34,10 +34,10 @@ func loadIssues() []i.Issue {
 }
 
 func processIssues(issues []i.Issue) []ProcessedIssue {
-	processedIssues := make([]ProcessedIssue, 0)
+	processedIssues := make([]ProcessedIssue, 0, len(issues))
 	for idx, issue := range issues {
 		fmt.Printf("Processing issue (%d): %d\n", idx+1, issue.Number)
-		labels := make([]string, 0)
+		labels := make([]string, 0, len(issue.Labels))
 		for _, label := range issue.Labels {
 			labels = append(labels, label.Name)
 		}

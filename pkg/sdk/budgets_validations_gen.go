@@ -9,6 +9,8 @@ var (
 	_ validatable = new(GetSpendingLimitBudgetOptions)
 	_ validatable = new(SetEmailNotificationsBudgetOptions)
 	_ validatable = new(GetNotificationIntegrationsBudgetOptions)
+	_ validatable = new(GetNotificationEmailBudgetOptions)
+	_ validatable = new(GetNotificationIntegrationNameBudgetOptions)
 	_ validatable = new(SetCycleStartActionBudgetOptions)
 	_ validatable = new(GetCycleStartActionBudgetOptions)
 )
@@ -72,6 +74,28 @@ func (opts *SetEmailNotificationsBudgetOptions) validate() error {
 }
 
 func (opts *GetNotificationIntegrationsBudgetOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *GetNotificationEmailBudgetOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *GetNotificationIntegrationNameBudgetOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
