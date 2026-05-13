@@ -135,6 +135,14 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 // be manually corrected back to db:"null?" because the DESCRIBE TABLE output column
 // is literally named "null?" in Snowflake. The convert() method in hybrid_tables_impl_gen.go
 // uses r.Null == "Y" to derive the IsNullable bool.
+//
+// NOTE: HybridTableDetails carries a Collation *string field that is not derivable from
+// the DESCRIBE TABLE output via the generator (DESCRIBE returns the collation glued onto
+// the "type" column, e.g. "VARCHAR(200) COLLATE 'en-ci'"). After running make generate-sdk,
+// the Collation field must be re-added manually to HybridTableDetails in hybrid_tables_gen.go,
+// and the convert() method in hybrid_tables_impl_gen.go must call splitTypeAndCollation()
+// (in hybrid_tables_ext.go) to populate Type (without the suffix) and Collation. This
+// mirrors pkg/sdk/tables.go:736 for classic tables.
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
 	"HybridTable",

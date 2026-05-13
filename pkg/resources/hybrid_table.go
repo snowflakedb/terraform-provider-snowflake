@@ -70,8 +70,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 					Type:        schema.TypeBool,
 					Optional:    true,
 					Default:     true,
-					ForceNew:    true,
-					Description: "Whether this column allows NULLs. Changing this forces recreation because hybrid tables do not support ALTER SET/DROP NOT NULL.",
+					Description: "Whether this column allows NULLs. Changing this on an existing column forces recreation because hybrid tables do not support ALTER SET/DROP NOT NULL.",
 				},
 				"default": {
 					Type:        schema.TypeList,
@@ -256,6 +255,7 @@ func HybridTable() *schema.Resource {
 			ComputedIfAnyAttributeChanged(hybridTableSchema, DescribeOutputAttributeName, "name", "comment", "column"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
 			forceNewIfColumnCollateChanged(),
+			forceNewIfColumnNullableChanged(),
 		)),
 
 		Schema: collections.MergeMaps(hybridTableSchema, hybridTableParametersSchema),
@@ -829,12 +829,19 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 				colType = colInfo.dataType
 			}
 		}
+		// Prefer the user's config value for collate (it preserves the exact spelling
+		// the user wrote, e.g. "en-ci"). Fall back to the SDK-split Collation from
+		// DESCRIBE for imported tables where no config exists.
+		collate := colInfo.collate
+		if collate == "" && td.Collation != nil {
+			collate = *td.Collation
+		}
 		flat := map[string]any{
 			"name":     td.Name,
 			"type":     colType,
 			"nullable": colInfo.nullable,
 			"comment":  td.Comment,
-			"collate":  colInfo.collate,
+			"collate":  collate,
 		}
 
 		if def := toHybridColumnDefaultConfig(td); def != nil {
@@ -930,6 +937,18 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) []any {
 func forceNewIfColumnCollateChanged() schema.CustomizeDiffFunc {
 	return forceNewIfColumnFieldChanged(func(o, n hybridTableColumn) bool {
 		return o.collate != n.collate
+	})
+}
+
+// forceNewIfColumnNullableChanged forces recreation when nullable changes on an
+// existing column. Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL,
+// so toggling nullable requires recreation. Using a custom diff (rather than
+// ForceNew on the schema field) ensures that adding a brand-new column does not
+// spuriously trigger ForceNew when its nullable field initializes from the
+// schema default.
+func forceNewIfColumnNullableChanged() schema.CustomizeDiffFunc {
+	return forceNewIfColumnFieldChanged(func(o, n hybridTableColumn) bool {
+		return o.nullable != n.nullable
 	})
 }
 

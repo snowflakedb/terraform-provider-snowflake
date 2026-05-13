@@ -8,6 +8,7 @@ import (
 var DescribeHybridTableSchema = map[string]*schema.Schema{
 	"name":                    {Type: schema.TypeString, Computed: true},
 	"type":                    {Type: schema.TypeString, Computed: true},
+	"collation":               {Type: schema.TypeString, Computed: true},
 	"kind":                    {Type: schema.TypeString, Computed: true},
 	"is_nullable":             {Type: schema.TypeBool, Computed: true},
 	"default":                 {Type: schema.TypeString, Computed: true},
@@ -22,9 +23,14 @@ var DescribeHybridTableSchema = map[string]*schema.Schema{
 }
 
 func HybridTableDetailsToSchema(detail sdk.HybridTableDetails) map[string]any {
+	collation := ""
+	if detail.Collation != nil {
+		collation = *detail.Collation
+	}
 	return map[string]any{
 		"name":                    detail.Name,
 		"type":                    detail.Type,
+		"collation":               collation,
 		"kind":                    detail.Kind,
 		"is_nullable":             detail.IsNullable,
 		"default":                 detail.Default,

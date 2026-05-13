@@ -324,9 +324,15 @@ func (r hybridTableRow) convert() (*HybridTable, error) {
 
 // adjusted manually
 func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
+	// NOTE: DESCRIBE TABLE returns collated columns with the COLLATE suffix glued to
+	// the type, e.g. "VARCHAR(200) COLLATE 'en-ci'". splitTypeAndCollation() (defined in
+	// hybrid_tables_ext.go) splits these into a clean Type and a separate Collation,
+	// mirroring the behavior of pkg/sdk/tables.go:704 for classic tables.
+	type_, collation := r.splitTypeAndCollation()
 	details := &HybridTableDetails{
 		Name:       r.Name,
-		Type:       r.Type,
+		Type:       type_,
+		Collation:  collation,
 		Kind:       r.Kind,
 		IsNullable: r.Null == "Y",
 		PrimaryKey: r.PrimaryKey == "Y",

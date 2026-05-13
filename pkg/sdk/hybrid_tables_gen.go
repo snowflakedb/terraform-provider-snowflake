@@ -248,8 +248,14 @@ type hybridTableDetailsRow struct {
 }
 
 type HybridTableDetails struct {
-	Name                  string
-	Type                  string
+	Name string
+	Type string
+	// NOTE: Collation is added manually here because the generator cannot derive it
+	// from the raw "type" column returned by DESCRIBE TABLE. The convert() method in
+	// hybrid_tables_impl_gen.go invokes splitTypeAndCollation() (defined in
+	// hybrid_tables_ext.go) to populate Type (without the COLLATE suffix) and Collation
+	// separately. See pkg/sdk/tables.go:736 for the same pattern on classic tables.
+	Collation             *string
 	Kind                  string
 	IsNullable            bool
 	Default               string
