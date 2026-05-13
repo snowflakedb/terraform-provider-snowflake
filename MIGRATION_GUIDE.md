@@ -24,6 +24,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.16.0 ➞ v2.17.0
+
+### *(new feature)* snowflake_system_get_privatelink_config: new attributes
+
+The `snowflake_system_get_privatelink_config` data source now exposes additional attributes returned by `SYSTEM$GET_PRIVATELINK_CONFIG()`:
+
+- `privatelink_account_principal` - The AWS principal ARN for outbound private connections.
+- `app_service_privatelink_url` - Wildcard URL for routing Streamlit and Snowpark Container Services through private connectivity.
+- `privatelink_snowflake_managed_storage_volume_fs` - Endpoint for failsafe Snowflake-managed storage volumes on Azure.
+- `privatelink_snowflake_managed_storage_volume_nfs` - Endpoint for non-failsafe Snowflake-managed storage volumes on Azure.
+- `privatelink_dashed_urls_for_duo` - Dashed URLs for Duo integration.
+- `privatelink_gcp_service_attachment` - Endpoint for Google Cloud Private Service Connect.
+- `privatelink_connection_ocsp_urls` - OCSP URLs for client redirect connections.
+- `privatelink_connection_urls` - Connection URLs for client redirect.
+- `regionless_privatelink_ocsp_url` - Regionless OCSP URL for private connectivity.
+
+No changes are required for existing configurations that only reference the previously available attributes.
+
 ## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* snowflake_password_policy resource rework
