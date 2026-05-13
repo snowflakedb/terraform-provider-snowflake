@@ -64,7 +64,7 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"CsvOptions",
 			g.NewQueryStruct("FileFormatCsvOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = CSV")).
+				SQLWithCustomFieldName("formatType", "TYPE = CSV").
 				OptionalAssignment("COMPRESSION", CsvCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 				OptionalQueryStructField("RecordDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("RECORD_DELIMITER =")).
 				OptionalQueryStructField("FieldDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_DELIMITER =")).
@@ -93,7 +93,7 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"JsonOptions",
 			g.NewQueryStruct("FileFormatJsonOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = JSON")).
+				SQLWithCustomFieldName("formatType", "TYPE = JSON").
 				OptionalAssignment("COMPRESSION", JsonCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 				OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
 				OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
@@ -116,7 +116,7 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"AvroOptions",
 			g.NewQueryStruct("FileFormatAvroOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = AVRO")).
+				SQLWithCustomFieldName("formatType", "TYPE = AVRO").
 				OptionalAssignment("COMPRESSION", AvroCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
@@ -126,7 +126,7 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"OrcOptions",
 			g.NewQueryStruct("FileFormatOrcOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = ORC")).
+				SQLWithCustomFieldName("formatType", "TYPE = ORC").
 				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
@@ -135,7 +135,7 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"ParquetOptions",
 			g.NewQueryStruct("FileFormatParquetOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = PARQUET")).
+				SQLWithCustomFieldName("formatType", "TYPE = PARQUET").
 				OptionalAssignment("COMPRESSION", ParquetCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("SNAPPY_COMPRESSION", g.ParameterOptions()).
 				OptionalBooleanAssignment("BINARY_AS_TEXT", g.ParameterOptions()).
@@ -150,7 +150,7 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"XmlOptions",
 			g.NewQueryStruct("FileFormatXmlOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = XML")).
+				SQLWithCustomFieldName("formatType", "TYPE = XML").
 				OptionalAssignment("COMPRESSION", XmlCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
 				OptionalBooleanAssignment("PRESERVE_SPACE", g.ParameterOptions()).

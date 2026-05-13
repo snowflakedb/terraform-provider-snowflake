@@ -27,7 +27,7 @@ type CreateManagedAccountOptions struct {
 type CreateManagedAccountParams struct {
 	AdminName     string  `ddl:"parameter,single_quotes" sql:"ADMIN_NAME"`
 	AdminPassword string  `ddl:"parameter,single_quotes" sql:"ADMIN_PASSWORD"`
-	typeProvider  string  `ddl:"static" sql:"TYPE = READER"`
+	typeProvider  bool    `ddl:"static" sql:"TYPE = READER"`
 	Comment       *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 

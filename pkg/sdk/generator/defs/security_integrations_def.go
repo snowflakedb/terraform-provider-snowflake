@@ -320,8 +320,8 @@ var securityIntegrationsDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-api-auth",
 		createSecurityIntegrationOperation("CreateApiAuthenticationWithClientCredentialsFlow", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = API_AUTHENTICATION")).
-				PredefinedQueryStructField("authType", "string", g.StaticOptions().SQL("AUTH_TYPE = OAUTH2")).
+				SQLWithCustomFieldName("integrationType", "TYPE = API_AUTHENTICATION").
+				SQLWithCustomFieldName("authType", "AUTH_TYPE = OAUTH2").
 				BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 				OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment(
@@ -343,8 +343,8 @@ var securityIntegrationsDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-api-auth",
 		createSecurityIntegrationOperation("CreateApiAuthenticationWithAuthorizationCodeGrantFlow", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = API_AUTHENTICATION")).
-				PredefinedQueryStructField("authType", "string", g.StaticOptions().SQL("AUTH_TYPE = OAUTH2")).
+				SQLWithCustomFieldName("integrationType", "TYPE = API_AUTHENTICATION").
+				SQLWithCustomFieldName("authType", "AUTH_TYPE = OAUTH2").
 				BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 				OptionalTextAssignment("OAUTH_AUTHORIZATION_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
@@ -366,8 +366,8 @@ var securityIntegrationsDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-api-auth",
 		createSecurityIntegrationOperation("CreateApiAuthenticationWithJwtBearerFlow", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = API_AUTHENTICATION")).
-				PredefinedQueryStructField("authType", "string", g.StaticOptions().SQL("AUTH_TYPE = OAUTH2")).
+				SQLWithCustomFieldName("integrationType", "TYPE = API_AUTHENTICATION").
+				SQLWithCustomFieldName("authType", "AUTH_TYPE = OAUTH2").
 				BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 				TextAssignment("OAUTH_ASSERTION_ISSUER", g.ParameterOptions().Required().SingleQuotes()).
 				OptionalTextAssignment("OAUTH_AUTHORIZATION_ENDPOINT", g.ParameterOptions().SingleQuotes()).
@@ -389,7 +389,7 @@ var securityIntegrationsDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-external",
 		createSecurityIntegrationOperation("CreateExternalOauth", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = EXTERNAL_OAUTH")).
+				SQLWithCustomFieldName("integrationType", "TYPE = EXTERNAL_OAUTH").
 				BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 				Assignment(
 					"EXTERNAL_OAUTH_TYPE",
@@ -432,7 +432,7 @@ var securityIntegrationsDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake",
 		createSecurityIntegrationOperation("CreateOauthForPartnerApplications", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = OAUTH")).
+				SQLWithCustomFieldName("integrationType", "TYPE = OAUTH").
 				Assignment(
 					"OAUTH_CLIENT",
 					OauthSecurityIntegrationClientOptionEnumDef.Kind(),
@@ -457,8 +457,8 @@ var securityIntegrationsDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake",
 		createSecurityIntegrationOperation("CreateOauthForCustomClients", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = OAUTH")).
-				PredefinedQueryStructField("oauthClient", "string", g.StaticOptions().SQL("OAUTH_CLIENT = CUSTOM")).
+				SQLWithCustomFieldName("integrationType", "TYPE = OAUTH").
+				SQLWithCustomFieldName("oauthClient", "OAUTH_CLIENT = CUSTOM").
 				Assignment(
 					"OAUTH_CLIENT_TYPE",
 					OauthSecurityIntegrationClientTypeOptionEnumDef.Kind(),
@@ -487,7 +487,7 @@ var securityIntegrationsDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-saml2",
 		createSecurityIntegrationOperation("CreateSaml2", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = SAML2")).
+				SQLWithCustomFieldName("integrationType", "TYPE = SAML2").
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				TextAssignment("SAML2_ISSUER", g.ParameterOptions().Required().SingleQuotes()).
 				TextAssignment("SAML2_SSO_URL", g.ParameterOptions().Required().SingleQuotes()).
@@ -521,7 +521,7 @@ var securityIntegrationsDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-scim",
 		createSecurityIntegrationOperation("CreateScim", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = SCIM")).
+				SQLWithCustomFieldName("integrationType", "TYPE = SCIM").
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				Assignment(
 					"SCIM_CLIENT",
