@@ -227,3 +227,136 @@ func Test_CommonPrefixLastIndex(t *testing.T) {
 		require.Equal(t, 1, CommonPrefixLastIndex(a, b, cmpByKey))
 	})
 }
+
+func Test_MapHasAllEntriesOf(t *testing.T) {
+	testCases := []struct {
+		name     string
+		base     map[string]string
+		subset   map[string]string
+		expected bool
+	}{
+		{name: "nil base and nil subset", base: nil, subset: nil, expected: true},
+		{name: "empty base and empty subset", base: map[string]string{}, subset: map[string]string{}, expected: true},
+		{name: "nil base and empty subset", base: nil, subset: map[string]string{}, expected: true},
+		{name: "empty base and nil subset", base: map[string]string{}, subset: nil, expected: true},
+		{name: "nil subset, non-empty base", base: map[string]string{"a": "1"}, subset: nil, expected: true},
+		{name: "empty subset, non-empty base", base: map[string]string{"a": "1"}, subset: map[string]string{}, expected: true},
+		{name: "nil base, non-empty subset", base: nil, subset: map[string]string{"a": "1"}, expected: false},
+		{name: "empty base, non-empty subset", base: map[string]string{}, subset: map[string]string{"a": "1"}, expected: false},
+		{name: "equal single-key maps", base: map[string]string{"a": "1"}, subset: map[string]string{"a": "1"}, expected: true},
+		{name: "equal multi-key maps", base: map[string]string{"a": "1", "b": "2"}, subset: map[string]string{"a": "1", "b": "2"}, expected: true},
+		{name: "subset is proper subset (one key)", base: map[string]string{"a": "1", "b": "2"}, subset: map[string]string{"a": "1"}, expected: true},
+		{name: "subset is proper subset (multiple keys)", base: map[string]string{"a": "1", "b": "2", "c": "3"}, subset: map[string]string{"a": "1", "c": "3"}, expected: true},
+		{name: "subset key missing in base", base: map[string]string{"a": "1"}, subset: map[string]string{"b": "1"}, expected: false},
+		{name: "subset key with different value", base: map[string]string{"a": "1"}, subset: map[string]string{"a": "2"}, expected: false},
+		{name: "subset has more keys than base", base: map[string]string{"a": "1"}, subset: map[string]string{"a": "1", "b": "2"}, expected: false},
+		{name: "one of subset values differs", base: map[string]string{"a": "1", "b": "2"}, subset: map[string]string{"a": "1", "b": "3"}, expected: false},
+		{name: "empty string values match", base: map[string]string{"a": ""}, subset: map[string]string{"a": ""}, expected: true},
+		{name: "empty string value vs missing key", base: map[string]string{}, subset: map[string]string{"a": ""}, expected: false},
+		{name: "case-sensitive key mismatch", base: map[string]string{"A": "1"}, subset: map[string]string{"a": "1"}, expected: false},
+		{name: "case-sensitive value mismatch", base: map[string]string{"a": "X"}, subset: map[string]string{"a": "x"}, expected: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expected, MapHasAllEntriesOf(tc.base, tc.subset))
+		})
+	}
+
+	t.Run("int keys - subset", func(t *testing.T) {
+		base := map[int]string{1: "a", 2: "b"}
+		subset := map[int]string{1: "a"}
+		require.True(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("int keys - value mismatch", func(t *testing.T) {
+		base := map[int]string{1: "a", 2: "b"}
+		subset := map[int]string{1: "different"}
+		require.False(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("int values - subset", func(t *testing.T) {
+		base := map[string]int{"a": 1, "b": 2}
+		subset := map[string]int{"a": 1}
+		require.True(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("int values - value mismatch", func(t *testing.T) {
+		base := map[string]int{"a": 1, "b": 2}
+		subset := map[string]int{"a": 99}
+		require.False(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("nested map values - matching subset", func(t *testing.T) {
+		base := map[string]map[string]string{
+			"outer1": {"inner1": "v1", "inner2": "v2"},
+			"outer2": {"inner3": "v3"},
+		}
+		subset := map[string]map[string]string{
+			"outer1": {"inner1": "v1", "inner2": "v2"},
+		}
+		require.True(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("nested map values - inner mismatch", func(t *testing.T) {
+		base := map[string]map[string]string{
+			"outer1": {"inner1": "v1", "inner2": "v2"},
+		}
+		subset := map[string]map[string]string{
+			"outer1": {"inner1": "v1", "inner2": "different"},
+		}
+		require.False(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("nested map values - inner subset is not enough", func(t *testing.T) {
+		// MapHasAllEntriesOf does not recurse into map values, it compares them by reflect.DeepEqual.
+		base := map[string]map[string]string{
+			"outer1": {"inner1": "v1", "inner2": "v2"},
+		}
+		subset := map[string]map[string]string{
+			"outer1": {"inner1": "v1"},
+		}
+		require.False(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("slice values - equal slices", func(t *testing.T) {
+		base := map[string][]int{"a": {1, 2, 3}, "b": {4, 5}}
+		subset := map[string][]int{"a": {1, 2, 3}}
+		require.True(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("slice values - different order", func(t *testing.T) {
+		base := map[string][]int{"a": {1, 2, 3}}
+		subset := map[string][]int{"a": {3, 2, 1}}
+		require.False(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("struct values - matching subset", func(t *testing.T) {
+		type item struct {
+			Name  string
+			Value int
+		}
+		base := map[string]item{
+			"x": {Name: "x-name", Value: 1},
+			"y": {Name: "y-name", Value: 2},
+		}
+		subset := map[string]item{
+			"x": {Name: "x-name", Value: 1},
+		}
+		require.True(t, MapHasAllEntriesOf(base, subset))
+	})
+
+	t.Run("struct values - field mismatch", func(t *testing.T) {
+		type item struct {
+			Name  string
+			Value int
+		}
+		base := map[string]item{
+			"x": {Name: "x-name", Value: 1},
+		}
+		subset := map[string]item{
+			"x": {Name: "x-name", Value: 99},
+		}
+		require.False(t, MapHasAllEntriesOf(base, subset))
+	})
+}

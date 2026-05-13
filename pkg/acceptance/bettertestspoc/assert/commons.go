@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"golang.org/x/exp/maps"
@@ -107,100 +108,108 @@ func AssertThatObject(t *testing.T, objectAssert InPlaceAssertionVerifier, testC
 	objectAssert.VerifyAll(t, testClient)
 }
 
+// ContainsExactlyInAnyOrder verifies that the list/set under attributePath in resourceKey contains exactly the expected
+// items (order independent). Each item is compared strictly against the full schema (all keys must match).
+// If you don't need a strict full-schema comparison, use ContainsAtLeastInAnyOrder instead.
 func ContainsExactlyInAnyOrder(resourceKey string, attributePath string, expectedItems []map[string]string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		var actualItems []map[string]string
-		var resourceValue *terraform.ResourceState
-
-		if value, ok := state.RootModule().Resources[resourceKey]; ok {
-			resourceValue = value
-		} else {
-			return fmt.Errorf("resource %s not found", resourceKey)
+		actualItems, err := gatherActualItems(state, resourceKey, attributePath)
+		if err != nil {
+			return err
 		}
 
-		// Allocate space for actualItems and assert length
-		for attrKey, attrValue := range resourceValue.Primary.Attributes {
-			if strings.HasPrefix(attrKey, attributePath) {
-				attr := strings.TrimPrefix(attrKey, attributePath+".")
-
-				if attr == "#" {
-					attrValueLen, err := strconv.Atoi(attrValue)
-					if err != nil {
-						return fmt.Errorf("failed to convert length of the attribute %s: %w", attrKey, err)
-					}
-					if len(expectedItems) != attrValueLen {
-						return fmt.Errorf("expected to find %d items in %s, but found %d", len(expectedItems), attributePath, attrValueLen)
-					}
-
-					actualItems = make([]map[string]string, attrValueLen)
-					for i := range actualItems {
-						actualItems[i] = make(map[string]string)
-					}
-				}
-			}
-		}
-
-		// Gather all actual items
-		for attrKey, attrValue := range resourceValue.Primary.Attributes {
-			if strings.HasPrefix(attrKey, attributePath) {
-				attr := strings.TrimPrefix(attrKey, attributePath+".")
-
-				if strings.HasSuffix(attr, "%") || strings.HasSuffix(attr, "#") {
-					continue
-				}
-
-				attrParts := strings.SplitN(attr, ".", 2)
-				index, indexErr := strconv.Atoi(attrParts[0])
-				isIndex := indexErr == nil
-
-				if len(attrParts) > 1 && isIndex {
-					itemKey := attrParts[1]
-					actualItems[index][itemKey] = attrValue
-				}
-			}
-		}
-
-		// Determine which keys to compare: only those that appear in at least one expected item.
-		// This allows callers to omit schema fields they don't care about (e.g. optional fields that
-		// default to an empty string in state) without causing spurious mismatches.
-		keysToCompare := make(map[string]bool)
-		for _, expectedItem := range expectedItems {
-			for k := range expectedItem {
-				keysToCompare[k] = true
-			}
-		}
-		filteredActualItems := make([]map[string]string, len(actualItems))
-		for i, actual := range actualItems {
-			filtered := make(map[string]string)
-			for k, v := range actual {
-				if keysToCompare[k] {
-					filtered[k] = v
-				}
-			}
-			filteredActualItems[i] = filtered
+		if len(expectedItems) != len(actualItems) {
+			return fmt.Errorf("expected to find %d items in %s, but found %d", len(expectedItems), attributePath, len(actualItems))
 		}
 
 		errs := make([]error, 0)
-		for _, filteredActualItem := range filteredActualItems {
-			found := false
-			if slices.ContainsFunc(expectedItems, func(expected map[string]string) bool { return maps.Equal(expected, filteredActualItem) }) {
-				found = true
-			}
-			if !found {
-				errs = append(errs, fmt.Errorf("unexpected item found: %s", filteredActualItem))
+		for _, actualItem := range actualItems {
+			if !slices.ContainsFunc(expectedItems, func(expected map[string]string) bool { return maps.Equal(expected, actualItem) }) {
+				errs = append(errs, fmt.Errorf("unexpected item found: %s", actualItem))
 			}
 		}
 
 		for _, expectedItem := range expectedItems {
-			found := false
-			if slices.ContainsFunc(filteredActualItems, func(actual map[string]string) bool { return maps.Equal(actual, expectedItem) }) {
-				found = true
-			}
-			if !found {
+			if !slices.ContainsFunc(actualItems, func(actual map[string]string) bool { return maps.Equal(actual, expectedItem) }) {
 				errs = append(errs, fmt.Errorf("expected item to be found, but it wasn't: %s", expectedItem))
 			}
 		}
 
 		return errors.Join(errs...)
 	}
+}
+
+// ContainsAtLeastInAnyOrder verifies that the list/set under attributePath in resourceKey contains at least the expected
+// items (order independent). The actual list may contain more items than expected, and each actual item may contain more
+// keys than the corresponding expected item. An expected item matches if all of its key/value pairs are present in some
+// actual item. Use this when you only care about a subset of the schema fields and/or about specific items being present
+// in a larger collection. For strict full-schema comparison, use ContainsExactlyInAnyOrder.
+func ContainsAtLeastInAnyOrder(resourceKey string, attributePath string, expectedItems []map[string]string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		actualItems, err := gatherActualItems(state, resourceKey, attributePath)
+		if err != nil {
+			return err
+		}
+
+		errs := make([]error, 0)
+		for _, expectedItem := range expectedItems {
+			if !slices.ContainsFunc(actualItems, func(actual map[string]string) bool { return collections.MapHasAllEntriesOf(actual, expectedItem) }) {
+				errs = append(errs, fmt.Errorf("expected item to be found, but it wasn't: %s", expectedItem))
+			}
+		}
+
+		return errors.Join(errs...)
+	}
+}
+
+// gatherActualItems extracts the list/set items stored under attributePath in the given resource's state.
+// It returns a slice where each element is a map of all schema keys to their string values as stored in the state.
+func gatherActualItems(state *terraform.State, resourceKey string, attributePath string) ([]map[string]string, error) {
+	resourceValue, ok := state.RootModule().Resources[resourceKey]
+	if !ok {
+		return nil, fmt.Errorf("resource %s not found", resourceKey)
+	}
+
+	var actualItems []map[string]string
+
+	// Allocate space for actualItems based on the collection length attribute (e.g. "list.#").
+	for attrKey, attrValue := range resourceValue.Primary.Attributes {
+		if strings.HasPrefix(attrKey, attributePath) {
+			attr := strings.TrimPrefix(attrKey, attributePath+".")
+
+			if attr == "#" {
+				attrValueLen, err := strconv.Atoi(attrValue)
+				if err != nil {
+					return nil, fmt.Errorf("failed to convert length of the attribute %s: %w", attrKey, err)
+				}
+
+				actualItems = make([]map[string]string, attrValueLen)
+				for i := range actualItems {
+					actualItems[i] = make(map[string]string)
+				}
+			}
+		}
+	}
+
+	// Gather all actual items.
+	for attrKey, attrValue := range resourceValue.Primary.Attributes {
+		if strings.HasPrefix(attrKey, attributePath) {
+			attr := strings.TrimPrefix(attrKey, attributePath+".")
+
+			if strings.HasSuffix(attr, "%") || strings.HasSuffix(attr, "#") {
+				continue
+			}
+
+			attrParts := strings.SplitN(attr, ".", 2)
+			index, indexErr := strconv.Atoi(attrParts[0])
+			isIndex := indexErr == nil
+
+			if len(attrParts) > 1 && isIndex {
+				itemKey := attrParts[1]
+				actualItems[index][itemKey] = attrValue
+			}
+		}
+	}
+
+	return actualItems, nil
 }

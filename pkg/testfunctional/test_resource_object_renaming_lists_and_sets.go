@@ -627,7 +627,7 @@ func ignoreOrderAfterFirstApplyWithOrderedList(parentKey string) schema.SchemaDi
 		// Raw state is not null after first apply
 		if !d.GetRawState().IsNull() {
 			// Parse item index from the key
-			keyParts := strings.Split(strings.TrimLeft(key, parentKey+"."), ".")
+			keyParts := strings.Split(strings.TrimPrefix(key, parentKey+"."), ".")
 			if len(keyParts) >= 2 {
 				index, err := strconv.Atoi(keyParts[0])
 				if err != nil {
@@ -663,7 +663,7 @@ func ignoreOrderAfterFirstApplyWithManuallyOrderedList(parentKey string) schema.
 		// Raw state is not null after first apply
 		if !d.GetRawState().IsNull() {
 			// Parse item index from the key
-			keyParts := strings.Split(strings.TrimLeft(key, parentKey+"."), ".")
+			keyParts := strings.Split(strings.TrimPrefix(key, parentKey+"."), ".")
 			if len(keyParts) >= 2 {
 				index, err := strconv.Atoi(keyParts[0])
 				if err != nil {
