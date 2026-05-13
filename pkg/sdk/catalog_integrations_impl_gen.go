@@ -143,12 +143,6 @@ func (r *CreateCatalogIntegrationRequest) toOpts() *CreateCatalogIntegrationOpti
 			}
 		}
 	}
-	if r.SapBdcCatalogSourceParams != nil {
-		opts.SapBdcCatalogSourceParams = &SapBdcParams{}
-		opts.SapBdcCatalogSourceParams.RestConfig = SapBdcRestConfig{
-			SapBdcInvitationLink: r.SapBdcCatalogSourceParams.RestConfig.SapBdcInvitationLink,
-		}
-	}
 	return opts
 }
 

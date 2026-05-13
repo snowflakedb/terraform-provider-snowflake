@@ -44,14 +44,6 @@ func (v *catalogIntegrations) DescribeIcebergRestDetails(ctx context.Context, id
 	return parseIcebergRestProperties(properties, id)
 }
 
-func (v *catalogIntegrations) DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error) {
-	properties, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return parseSapBdcProperties(properties, id)
-}
-
 func (v *catalogIntegrations) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
@@ -237,22 +229,6 @@ func parseIcebergRestProperties(properties []CatalogIntegrationProperty, id Acco
 		}
 	}
 	return details, errors.Join(errs...)
-}
-
-func parseSapBdcProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error) {
-	commons, err := parseCommonProperties(properties)
-	if err != nil {
-		return nil, err
-	}
-	params := &CatalogIntegrationSapBdcDetails{
-		Id:                     id,
-		CatalogSource:          commons.CatalogSource,
-		TableFormat:            commons.TableFormat,
-		Enabled:                commons.Enabled,
-		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
-		Comment:                commons.Comment,
-	}
-	return params, nil
 }
 
 func parseAllCatalogIntegrationProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
