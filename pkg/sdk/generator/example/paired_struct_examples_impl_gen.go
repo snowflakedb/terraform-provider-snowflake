@@ -62,20 +62,21 @@ func (r *ShowPairedStructExampleRequest) toOpts() *ShowPairedStructExampleOption
 }
 
 func (r pairedStructExampleRow) convert() (*PairedStructExample, error) {
-	result := &PairedStructExample{}
-	result.Name = r.Name
-	result.ObjectName = r.ObjectName
-	result.OverriddenNonNullableStringPlainName = r.BothNonNullableStrings
-	result.StorageTypePlain = r.StorageTypeDb
+	result := &PairedStructExample{
+		Name:                                 r.Name,
+		ObjectName:                           r.ObjectName,
+		OverriddenNonNullableStringPlainName: r.BothNonNullableStrings,
+		StorageTypePlain:                     r.StorageTypeDb,
+		IsPrimary:                            r.IsPrimary,
+		NextValue:                            r.NextValue,
+		CreatedOn:                            r.CreatedOn,
+	}
 	mapNullString(&result.BothNullableStrings, r.BothNullableStrings)
 	mapNullStringToNonNullableField(&result.OrganizationName, r.OrganizationName)
-	result.IsPrimary = r.IsPrimary
 	mapNullBool(&result.IsDefault, r.IsDefault)
 	mapNullBoolToNonNullableField(&result.Enabled, r.Enabled)
-	result.NextValue = r.NextValue
 	mapNullInt(&result.Port, r.Port)
 	mapNullIntToNonNullableField(&result.RetryLimit, r.RetryLimit)
-	result.CreatedOn = r.CreatedOn
 	mapNullTime(&result.UpdatedAt, r.UpdatedAt)
 	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
 	// TODO: Mapping for FailoverAllowedToAccounts (string -> []AccountIdentifier)
@@ -106,20 +107,21 @@ func (r *DescribePairedStructExampleRequest) toOpts() *DescribePairedStructExamp
 }
 
 func (r pairedStructExampleDetailRow) convert() (*PairedStructExampleDetail, error) {
-	result := &PairedStructExampleDetail{}
-	result.Name = r.Name
-	result.ObjectName = r.ObjectName
-	result.OverriddenNonNullableStringPlainName = r.BothNonNullableStrings
-	result.StorageTypePlain = r.StorageTypeDb
+	result := &PairedStructExampleDetail{
+		Name:                                 r.Name,
+		ObjectName:                           r.ObjectName,
+		OverriddenNonNullableStringPlainName: r.BothNonNullableStrings,
+		StorageTypePlain:                     r.StorageTypeDb,
+		IsPrimary:                            r.IsPrimary,
+		NextValue:                            r.NextValue,
+		CreatedOn:                            r.CreatedOn,
+	}
 	mapNullString(&result.BothNullableStrings, r.BothNullableStrings)
 	mapNullStringToNonNullableField(&result.OrganizationName, r.OrganizationName)
-	result.IsPrimary = r.IsPrimary
 	mapNullBool(&result.IsDefault, r.IsDefault)
 	mapNullBoolToNonNullableField(&result.Enabled, r.Enabled)
-	result.NextValue = r.NextValue
 	mapNullInt(&result.Port, r.Port)
 	mapNullIntToNonNullableField(&result.RetryLimit, r.RetryLimit)
-	result.CreatedOn = r.CreatedOn
 	mapNullTime(&result.UpdatedAt, r.UpdatedAt)
 	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
 	// TODO: Mapping for FailoverAllowedToAccounts (string -> []AccountIdentifier)

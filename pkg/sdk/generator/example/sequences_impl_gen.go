@@ -112,17 +112,18 @@ func (r *ShowSequenceRequest) toOpts() *ShowSequenceOptions {
 }
 
 func (r sequenceRow) convert() (*Sequence, error) {
-	result := &Sequence{}
-	result.CreatedOn = r.CreatedOn
-	result.Name = r.Name
-	result.SchemaName = r.SchemaName
-	result.DatabaseName = r.DatabaseName
-	result.NextValue = r.NextValue
-	result.Interval = r.Interval
-	result.Owner = r.Owner
-	result.OwnerRoleType = r.OwnerRoleType
-	result.Comment = r.Comment
-	result.Ordered = r.Ordered == "Y"
+	result := &Sequence{
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		SchemaName:    r.SchemaName,
+		DatabaseName:  r.DatabaseName,
+		NextValue:     r.NextValue,
+		Interval:      r.Interval,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
+		Comment:       r.Comment,
+		Ordered:       r.Ordered == "Y",
+	}
 	return result, nil
 }
 
@@ -134,17 +135,18 @@ func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
 }
 
 func (r sequenceDetailRow) convert() (*SequenceDetail, error) {
-	result := &SequenceDetail{}
-	result.CreatedOn = r.CreatedOn
-	result.Name = r.Name
-	result.SchemaName = r.SchemaName
-	result.DatabaseName = r.DatabaseName
-	result.NextValue = r.NextValue
-	result.Interval = r.Interval
-	result.Owner = r.Owner
-	result.OwnerRoleType = r.OwnerRoleType
-	result.Comment = r.Comment
-	result.Ordered = r.Ordered == "Y"
+	result := &SequenceDetail{
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		SchemaName:    r.SchemaName,
+		DatabaseName:  r.DatabaseName,
+		NextValue:     r.NextValue,
+		Interval:      r.Interval,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
+		Comment:       r.Comment,
+		Ordered:       r.Ordered == "Y",
+	}
 	return result, nil
 }
 

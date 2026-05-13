@@ -40,8 +40,9 @@ func (r *AddNotificationIntegrationInstanceMethodExampleRequest) toOpts() *AddNo
 }
 
 func (r addNotificationIntegrationRow) convert() (*AddNotificationIntegrationResult, error) {
-	result := &AddNotificationIntegrationResult{}
-	result.Status = r.Status
+	result := &AddNotificationIntegrationResult{
+		Status: r.Status,
+	}
 	return result, nil
 }
 

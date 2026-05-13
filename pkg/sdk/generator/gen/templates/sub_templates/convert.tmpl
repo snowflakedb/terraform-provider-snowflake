@@ -2,12 +2,18 @@
 
 func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error) {
 {{- if .FieldPairs }}
-    result := &{{ .To.KindNoPtr }}{}
-    {{- range .FieldPairs -}}
+    result := &{{ .To.KindNoPtr }}{
+    {{- range .FieldPairs }}
         {{- if .AssignmentKindDirect }}
-            result.{{ .PlainFieldName }} = r.{{ .DbFieldName }}
+            {{ .PlainFieldName }}: r.{{ .DbFieldName }},
         {{- else if .AssignmentKindStringToBool }}
-            result.{{ .PlainFieldName }} = r.{{ .DbFieldName }} == "Y"
+            {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "Y",
+        {{- end }}
+    {{- end }}
+    }
+    {{- range .FieldPairs }}
+        {{- if .AssignmentKindDirect }}
+        {{- else if .AssignmentKindStringToBool }}
         {{- else if .AssignmentKindStringToStringArray }}
             result.{{ .PlainFieldName }} = ParseCommaSeparatedStringArray(r.{{ .DbFieldName }}, false)
         {{- else if .AssignmentKindStringToIdentifier }}
@@ -16,7 +22,7 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
         {{- else if .AssignmentKindStringToJson }}
             if err := json.Unmarshal([]byte(r.{{ .DbFieldName }}), &result.{{ .PlainFieldName }}); err != nil {
-                return nil, fmt.Errorf("failed to unmarshal {{ .PlainFieldName }}: %w", err)
+            	return nil, fmt.Errorf("failed to unmarshal {{ .PlainFieldName }}: %w", err)
             }
         {{- else if .AssignmentKindNullableToNullable }}
             {{ .NullMapFunc }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
@@ -28,7 +34,7 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             mapNullStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
         {{- else if .AssignmentKindNullableToStringArray }}
             if r.{{ .DbFieldName }}.Valid {
-                result.{{ .PlainFieldName }} = ParseCommaSeparatedStringArray(r.{{ .DbFieldName }}.String, false)
+            	result.{{ .PlainFieldName }} = ParseCommaSeparatedStringArray(r.{{ .DbFieldName }}.String, false)
             }
         {{- else }}
             // TODO: Mapping for {{ .PlainFieldName }} ({{ .DbKind }} -> {{ .PlainKind }})
