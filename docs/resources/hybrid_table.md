@@ -83,7 +83,7 @@ resource "snowflake_hybrid_table" "complete" {
 - `column` (Block List, Min: 1) Definitions of a column to create in the hybrid table. Minimum one required. (see [below for nested schema](#nestedblock--column))
 - `database` (String) The database in which to create the hybrid table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the hybrid table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `primary_key` (Block List, Min: 1, Max: 1) Defines the primary key constraint for the hybrid table. Required. Any change forces recreation. (see [below for nested schema](#nestedblock--primary_key))
+- `primary_key` (Block List, Min: 1, Max: 1) Defines the primary key constraint for the hybrid table. Snowflake requires every hybrid table to have a primary key — this block is mandatory and cannot be omitted or removed. Snowflake does not support altering the primary key in place, so any change to `keys` (including reordering, adding, or removing columns) or to `name` forces recreation of the hybrid table. (see [below for nested schema](#nestedblock--primary_key))
 - `schema` (String) The schema in which to create the hybrid table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 
 ### Optional
@@ -115,7 +115,7 @@ Optional:
 - `collate` (String) (Default: ``) Column collation specification, e.g. en-ci.
 - `comment` (String) (Default: ``) Column-level comment.
 - `default` (Block List, Max: 1) Defines the column default value. Only one of constant, expression, or sequence may be set. (see [below for nested schema](#nestedblock--column--default))
-- `nullable` (Boolean) (Default: `true`) Whether this column allows NULLs. Changing this forces recreation because hybrid tables do not support ALTER SET/DROP NOT NULL.
+- `nullable` (Boolean) (Default: `true`) Whether this column allows NULLs. Changing this on an existing column forces recreation because hybrid tables do not support ALTER SET/DROP NOT NULL.
 
 <a id="nestedblock--column--default"></a>
 ### Nested Schema for `column.default`
@@ -191,6 +191,7 @@ Optional:
 Read-Only:
 
 - `check` (String)
+- `collation` (String)
 - `comment` (String)
 - `default` (String)
 - `expression` (String)
