@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -18,13 +21,34 @@ func TestAcc_MaterializedView(t *testing.T) {
 	viewId := testClient().Ids.RandomSchemaObjectIdentifier()
 	viewName := viewId.Name()
 
-	queryEscaped := fmt.Sprintf("SELECT ID, DATA FROM \\\"%s\\\"", tableId.Name())
 	query := fmt.Sprintf(`SELECT ID, DATA FROM "%s"`, tableId.Name())
-	otherQueryEscaped := fmt.Sprintf("SELECT ID, DATA FROM \\\"%s\\\" WHERE ID LIKE 'foo%%'", tableId.Name())
 	otherQuery := fmt.Sprintf(`SELECT ID, DATA FROM "%s" WHERE ID LIKE 'foo%%'`, tableId.Name())
 
 	comment := random.Comment()
 	otherComment := random.Comment()
+
+	tableModel := model.TableWithId("test", tableId, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber},
+		{Name: "DATA", Type: testdatatypes.DataTypeVarchar},
+	})
+
+	modelBasic := model.MaterializedViewWithId("test", viewId, query, TestWarehouseName).
+		WithComment(comment).
+		WithIsSecure(true).
+		WithOrReplace(false).
+		WithDependsOn(tableModel.ResourceReference())
+
+	modelUpdatedParams := model.MaterializedViewWithId("test", viewId, query, TestWarehouseName).
+		WithComment(otherComment).
+		WithIsSecure(false).
+		WithOrReplace(false).
+		WithDependsOn(tableModel.ResourceReference())
+
+	modelUpdatedStatement := model.MaterializedViewWithId("test", viewId, otherQuery, TestWarehouseName).
+		WithComment(otherComment).
+		WithIsSecure(false).
+		WithOrReplace(false).
+		WithDependsOn(tableModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: viewsProviderFactory,
@@ -34,7 +58,7 @@ func TestAcc_MaterializedView(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.MaterializedView),
 		Steps: []resource.TestStep{
 			{
-				Config: materializedViewConfig(tableId, viewId, queryEscaped, comment, true, false),
+				Config: accconfig.FromModels(t, tableModel, modelBasic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "name", viewName),
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "statement", query),
@@ -47,7 +71,7 @@ func TestAcc_MaterializedView(t *testing.T) {
 			},
 			// update parameters
 			{
-				Config: materializedViewConfig(tableId, viewId, queryEscaped, otherComment, false, false),
+				Config: accconfig.FromModels(t, tableModel, modelUpdatedParams),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "name", viewName),
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "statement", query),
@@ -60,7 +84,7 @@ func TestAcc_MaterializedView(t *testing.T) {
 			},
 			// change statement
 			{
-				Config: materializedViewConfig(tableId, viewId, otherQueryEscaped, otherComment, false, false),
+				Config: accconfig.FromModels(t, tableModel, modelUpdatedStatement),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "name", viewName),
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "statement", otherQuery),
@@ -76,7 +100,7 @@ func TestAcc_MaterializedView(t *testing.T) {
 				PreConfig: func() {
 					testClient().MaterializedView.CreateMaterializedViewWithName(t, viewId, query, true)
 				},
-				Config: materializedViewConfig(tableId, viewId, otherQueryEscaped, otherComment, false, false),
+				Config: accconfig.FromModels(t, tableModel, modelUpdatedStatement),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "name", viewName),
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "statement", otherQuery),
@@ -104,7 +128,22 @@ func TestAcc_MaterializedView_Tags(t *testing.T) {
 	tag1Id := testClient().Ids.RandomSchemaObjectIdentifier()
 	tag2Id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	queryEscaped := fmt.Sprintf("SELECT ID FROM \\\"%s\\\"", tableId.Name())
+	query := fmt.Sprintf(`SELECT ID FROM "%s"`, tableId.Name())
+
+	tableModel := model.TableWithId("test", tableId, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber},
+	})
+
+	tagModel1 := model.TagBase("test_tag", tag1Id)
+	tagModel2 := model.TagBase("test_tag_2", tag2Id)
+
+	modelWithTag1 := model.MaterializedViewWithId("test", viewId, query, TestWarehouseName).
+		WithTagReference(tagModel1.ResourceReference(), "some_value").
+		WithDependsOn(tableModel.ResourceReference())
+
+	modelWithTag2 := model.MaterializedViewWithId("test", viewId, query, TestWarehouseName).
+		WithTagReference(tagModel2.ResourceReference(), "some_value").
+		WithDependsOn(tableModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: viewsProviderFactory,
@@ -115,7 +154,7 @@ func TestAcc_MaterializedView_Tags(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create tags
 			{
-				Config: materializedViewConfigWithTags(tableId, viewId, queryEscaped, "test_tag", tag1Id, tag2Id),
+				Config: accconfig.FromModels(t, tableModel, tagModel1, tagModel2, modelWithTag1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "name", viewId.Name()),
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "tag.#", "1"),
@@ -124,7 +163,7 @@ func TestAcc_MaterializedView_Tags(t *testing.T) {
 			},
 			// update tags
 			{
-				Config: materializedViewConfigWithTags(tableId, viewId, queryEscaped, "test_tag_2", tag1Id, tag2Id),
+				Config: accconfig.FromModels(t, tableModel, tagModel1, tagModel2, modelWithTag2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "name", viewId.Name()),
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "tag.#", "1"),
@@ -147,8 +186,24 @@ func TestAcc_MaterializedView_Rename(t *testing.T) {
 	viewId := testClient().Ids.RandomSchemaObjectIdentifier()
 	newViewId := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	queryEscaped := fmt.Sprintf("SELECT ID FROM \\\"%s\\\"", tableId.Name())
+	query := fmt.Sprintf(`SELECT ID FROM "%s"`, tableId.Name())
 	comment := random.Comment()
+
+	tableModel := model.TableWithId("test", tableId, []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber},
+	})
+
+	modelBasic := model.MaterializedViewWithId("test", viewId, query, TestWarehouseName).
+		WithComment(comment).
+		WithIsSecure(true).
+		WithOrReplace(false).
+		WithDependsOn(tableModel.ResourceReference())
+
+	modelRenamed := model.MaterializedViewWithId("test", newViewId, query, TestWarehouseName).
+		WithComment(comment).
+		WithIsSecure(false).
+		WithOrReplace(false).
+		WithDependsOn(tableModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: viewsProviderFactory,
@@ -158,7 +213,7 @@ func TestAcc_MaterializedView_Rename(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.MaterializedView),
 		Steps: []resource.TestStep{
 			{
-				Config: materializedViewConfig(tableId, viewId, queryEscaped, comment, true, false),
+				Config: accconfig.FromModels(t, tableModel, modelBasic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "name", viewId.Name()),
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "fully_qualified_name", viewId.FullyQualifiedName()),
@@ -166,7 +221,7 @@ func TestAcc_MaterializedView_Rename(t *testing.T) {
 			},
 			// rename with one param change
 			{
-				Config: materializedViewConfig(tableId, newViewId, queryEscaped, comment, false, false),
+				Config: accconfig.FromModels(t, tableModel, modelRenamed),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "name", newViewId.Name()),
 					resource.TestCheckResourceAttr("snowflake_materialized_view.test", "fully_qualified_name", newViewId.FullyQualifiedName()),
@@ -174,85 +229,4 @@ func TestAcc_MaterializedView_Rename(t *testing.T) {
 			},
 		},
 	})
-}
-
-func materializedViewConfig(tableId sdk.SchemaObjectIdentifier, viewId sdk.SchemaObjectIdentifier, q string, comment string, isSecure bool, orReplace bool) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test" {
-	name     = "%[1]s"
-	database = "%[2]s"
-	schema   = "%[3]s"
-
-	column {
-		name = "ID"
-		type = "NUMBER(38,0)"
-	}
-
-	column {
-		name = "DATA"
-		type = "VARCHAR(16777216)"
-	}
-}
-
-resource "snowflake_materialized_view" "test" {
-	name      = "%[4]s"
-	comment   = "%[5]s"
-	database  = "%[2]s"
-	schema    = "%[3]s"
-	warehouse = "%[6]s"
-	is_secure = %[7]t
-	or_replace = %[8]t
-	statement = "%[9]s"
-
-	depends_on = [
-  		snowflake_table.test
-  	]
-}
-`, tableId.Name(), viewId.DatabaseName(), viewId.SchemaName(), viewId.Name(), comment, TestWarehouseName, isSecure, orReplace, q)
-}
-
-func materializedViewConfigWithTags(tableId sdk.SchemaObjectIdentifier, viewId sdk.SchemaObjectIdentifier, q string, tagResourceName string, tag1Id sdk.SchemaObjectIdentifier, tag2Id sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-
-	column {
-		name = "ID"
-		type = "NUMBER(38,0)"
-	}
-}
-
-resource "snowflake_tag" "test_tag" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[8]s"
-}
-
-resource "snowflake_tag" "test_tag_2" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[9]s"
-}
-
-resource "snowflake_materialized_view" "test" {
-	database  = "%[1]s"
-	schema    = "%[2]s"
-	name      = "%[4]s"
-	warehouse = "%[5]s"
-	statement = "%[6]s"
-
-	tag {
-		name = snowflake_tag.%[7]s.name
-		schema = snowflake_tag.%[7]s.schema
-		database = snowflake_tag.%[7]s.database
-		value = "some_value"
-	}
-
-	depends_on = [
-		snowflake_table.test
-	]
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), viewId.Name(), TestWarehouseName, q, tagResourceName, tag1Id.Name(), tag2Id.Name())
 }
