@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strings"
 	"testing"
 	"time"
 
@@ -183,85 +182,19 @@ func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 	t.Helper()
 }
 
-// TODO [this PR]: leave only the signatures with minimal/empty implementation
-// Mapping helper stubs — the real implementations live in pkg/sdk/mapping_helpers.go.
-// These stubs exist solely to make generated convert() code compile within this example package.
+func mapNullString(_ **string, _ sql.NullString)                                         {}
+func mapNullStringToNonNullableField(_ *string, _ sql.NullString)                        {}
+func mapNullStringWithMapping[T any](_ **T, _ sql.NullString, _ func(string) (T, error)) {}
+func mapNullInt(_ **int, _ sql.NullInt64)                                                {}
+func mapNullBool(_ **bool, _ sql.NullBool)                                               {}
+func mapNullBoolToNonNullableField(_ *bool, _ sql.NullBool)                              {}
+func mapNullIntToNonNullableField(_ *int, _ sql.NullInt64)                               {}
+func mapNullTime(_ **time.Time, _ sql.NullTime)                                          {}
+func mapNullTimeToNonNullableField(_ *time.Time, _ sql.NullTime)                         {}
+func mapStringWithMapping[T any](_ *T, _ string, _ func(string) (T, error))              {}
 
-func mapNullString(f **string, v sql.NullString) {
-	if v.Valid {
-		*f = &v.String
-	}
-}
-
-func mapNullStringToNonNullableField(f *string, v sql.NullString) {
-	if v.Valid {
-		*f = v.String
-	}
-}
-
-func mapNullStringWithMapping[T any](f **T, v sql.NullString, m func(string) (T, error)) {
-	if v.Valid {
-		if mapped, err := m(v.String); err == nil {
-			*f = &mapped
-		}
-	}
-}
-
-func mapNullInt(f **int, v sql.NullInt64) {
-	if v.Valid {
-		i := int(v.Int64)
-		*f = &i
-	}
-}
-
-func mapNullBool(f **bool, v sql.NullBool) {
-	if v.Valid {
-		*f = &v.Bool
-	}
-}
-
-func mapNullBoolToNonNullableField(f *bool, v sql.NullBool) {
-	if v.Valid {
-		*f = v.Bool
-	}
-}
-
-func mapNullIntToNonNullableField(f *int, v sql.NullInt64) {
-	if v.Valid {
-		i := int(v.Int64)
-		*f = i
-	}
-}
-
-func mapNullTime(f **time.Time, v sql.NullTime) {
-	if v.Valid {
-		*f = &v.Time
-	}
-}
-
-func mapNullTimeToNonNullableField(f *time.Time, v sql.NullTime) {
-	if v.Valid {
-		*f = v.Time
-	}
-}
-
-func mapStringWithMapping[T any](f *T, v string, m func(string) (T, error)) {
-	if mapped, err := m(v); err == nil {
-		*f = mapped
-	}
-}
-
-func ParseCommaSeparatedStringArray(s string, trim bool) []string {
-	if s == "" {
-		return nil
-	}
-	parts := strings.Split(s, ",")
-	if trim {
-		for i, p := range parts {
-			parts[i] = strings.TrimSpace(p)
-		}
-	}
-	return parts
+func ParseCommaSeparatedStringArray(_ string, _ bool) []string {
+	return nil
 }
 
 // Identifier parse function stubs — the real implementations live in pkg/sdk/identifier_parsers.go.
