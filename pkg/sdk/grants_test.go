@@ -64,6 +64,21 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `GRANT ALL PRIVILEGES ON COMPUTE POOL "compute pool" TO ROLE "role1"`)
 	})
 
+	t.Run("on account object - connection", func(t *testing.T) {
+		opts := &GrantPrivilegesToAccountRoleOptions{
+			privileges: &AccountRoleGrantPrivileges{
+				AllPrivileges: Bool(true),
+			},
+			on: &AccountRoleGrantOn{
+				AccountObject: &GrantOnAccountObject{
+					Connection: Pointer(NewAccountObjectIdentifier("myconn")),
+				},
+			},
+			accountRole: NewAccountObjectIdentifier("role1"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT ALL PRIVILEGES ON CONNECTION "myconn" TO ROLE "role1"`)
+	})
+
 	t.Run("on account object - exactly one of validation", func(t *testing.T) {
 		opts := &GrantPrivilegesToAccountRoleOptions{
 			privileges: &AccountRoleGrantPrivileges{
@@ -77,7 +92,7 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 			},
 			accountRole: NewAccountObjectIdentifier("role1"),
 		}
-		assertOptsInvalid(t, opts, errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "FailoverGroup", "ReplicationGroup", "ExternalVolume"))
+		assertOptsInvalid(t, opts, errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume"))
 	})
 
 	t.Run("on account object - exactly one of validation - empty options", func(t *testing.T) {
@@ -90,7 +105,7 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 			},
 			accountRole: NewAccountObjectIdentifier("role1"),
 		}
-		assertOptsInvalid(t, opts, errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "FailoverGroup", "ReplicationGroup", "ExternalVolume"))
+		assertOptsInvalid(t, opts, errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume"))
 	})
 
 	t.Run("on schema", func(t *testing.T) {
