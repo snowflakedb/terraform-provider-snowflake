@@ -89,11 +89,24 @@ func (h *HybridTableModel) WithColumn(column []sdk.TableColumnSignature) *Hybrid
 }
 
 // WithPrimaryKey satisfies the generated constructor's call for the complex list attribute.
-// When called from the constructor, primaryKey is []sdk.TableColumnSignature where Name = column name.
+// Only the Name field of each TableColumnSignature is used — the Type field is
+// ignored. Tests that build the PK separately should prefer WithPrimaryKeyNames,
+// which takes plain column names and avoids the misleading Type-less signature.
 func (h *HybridTableModel) WithPrimaryKey(primaryKey []sdk.TableColumnSignature) *HybridTableModel {
-	keys := make([]tfconfig.Variable, len(primaryKey))
+	names := make([]string, len(primaryKey))
 	for i, v := range primaryKey {
-		keys[i] = tfconfig.StringVariable(v.Name)
+		names[i] = v.Name
+	}
+	return h.WithPrimaryKeyNames(names...)
+}
+
+// WithPrimaryKeyNames sets the primary_key block from a slice of column names.
+// This is the preferred form for tests that compose models incrementally: the
+// resource's primary_key.keys is just a list of column names, not signatures.
+func (h *HybridTableModel) WithPrimaryKeyNames(names ...string) *HybridTableModel {
+	keys := make([]tfconfig.Variable, len(names))
+	for i, n := range names {
+		keys[i] = tfconfig.StringVariable(n)
 	}
 	h.PrimaryKey = tfconfig.SetVariable(
 		tfconfig.MapVariable(map[string]tfconfig.Variable{

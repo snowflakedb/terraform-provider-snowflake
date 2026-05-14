@@ -93,9 +93,9 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasPrimaryKeyKeys("ID"),
 		objectparametersassert.HybridTableParameters(t, id).
 			HasDataRetentionTimeInDays(1).
-			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeHybridTable).
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeTable).
 			HasMaxDataExtensionTimeInDays(10).
-			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeHybridTable),
+			HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeTable),
 		resourceshowoutputassert.HybridTableShowOutput(t, modelComplete.ResourceReference()).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -316,9 +316,9 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasPrimaryKeyKeys("ID"),
 					objectparametersassert.HybridTableParameters(t, id).
 						HasDataRetentionTimeInDays(5).
-						HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeHybridTable).
+						HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeTable).
 						HasMaxDataExtensionTimeInDays(10).
-						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeHybridTable),
+						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeTable),
 					resourceshowoutputassert.HybridTableShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -367,9 +367,9 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasPrimaryKeyKeys("ID"),
 					objectparametersassert.HybridTableParameters(t, id).
 						HasDataRetentionTimeInDays(10).
-						HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeHybridTable).
+						HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeTable).
 						HasMaxDataExtensionTimeInDays(20).
-						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeHybridTable),
+						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeTable),
 					resourceshowoutputassert.HybridTableShowOutput(t, modelChanged.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -589,9 +589,17 @@ func TestAcc_HybridTable_ColumnDefault(t *testing.T) {
 
 // TestAcc_HybridTable_ColumnDefaultVariants exercises each mutually-exclusive variant
 // of the column `default` block with its own model. The `default` block has three
-// sub-variants (constant, expression, sequence) and ConflictsWith enforces that at
-// most one is set per column. One subtest per variant per jmichalak's review comment
-// (thread 3188827027): separate models for mutually-exclusive field sets.
+// sub-variants (constant, expression, sequence) and exactly one must be set per
+// column. Mutual exclusivity is enforced via a CustomizeDiff in the resource
+// (see validateColumnDefaultExactlyOneOf in pkg/resources/hybrid_table.go) — the
+// declarative ExactlyOneOf/ConflictsWith options on schema fields cannot be used
+// inside a multi-element TypeList because terraform-plugin-sdk/v2 rejects paths
+// with non-zero indices at provider boot.
+//
+// One subtest per variant per jmichalak's review comment (thread 3188827027):
+// separate models for mutually-exclusive field sets. The "conflicting fields"
+// subtest asserts the CustomizeDiff validation fires when more than one of
+// {constant, expression, sequence} is set in the same default block.
 func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 	t.Run("constant", func(t *testing.T) {
 		id := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -668,6 +676,45 @@ func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 		// grows a Create helper.
 		t.Skip("sequence default variant deferred: needs helpers.SequenceClient.Create (see test comment)")
 	})
+
+	// Negative test: setting more than one of {constant, expression, sequence}
+	// in the same default block must be rejected by validateColumnDefaultExactlyOneOf.
+	t.Run("conflicting fields", func(t *testing.T) {
+		id := testClient().Ids.RandomSchemaObjectIdentifier()
+		pk := []sdk.TableColumnSignature{{Name: "ID"}}
+		cols := []sdk.TableColumnSignature{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger},
+			{Name: "SCORE", Type: testdatatypes.DataTypeInteger},
+		}
+		zero := "0"
+		expr := "0"
+		m := model.HybridTableFromId("test", id, cols, pk).
+			WithColumnConfigs([]model.HybridTableColumnConfig{
+				{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+				{
+					Name: "SCORE",
+					Type: testdatatypes.DataTypeInteger.ToSql(),
+					Default: &model.HybridTableColumnDefaultConfig{
+						Constant:   &zero,
+						Expression: &expr,
+					},
+				},
+			})
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+			TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+				tfversion.RequireAbove(tfversion.Version1_5_0),
+			},
+			Steps: []resource.TestStep{
+				{
+					Config:      accconfig.FromModels(t, m),
+					PlanOnly:    true,
+					ExpectError: regexp.MustCompile(`only one of "constant", "expression", or "sequence" may be set`),
+				},
+			},
+		})
+	})
 }
 
 func TestAcc_HybridTable_PrimaryKeyForceNew(t *testing.T) {
@@ -678,10 +725,12 @@ func TestAcc_HybridTable_PrimaryKeyForceNew(t *testing.T) {
 	}
 
 	// Single-column PK
-	model1 := model.HybridTableFromId("test", id, cols, []sdk.TableColumnSignature{{Name: "ID"}})
+	model1 := model.HybridTableFromId("test", id, cols, []sdk.TableColumnSignature{{Name: "ID"}}).
+		WithPrimaryKeyNames("ID")
 
 	// Composite PK — any change to primary_key forces recreation
-	model2 := model.HybridTableFromId("test", id, cols, []sdk.TableColumnSignature{{Name: "ID"}, {Name: "NAME"}})
+	model2 := model.HybridTableFromId("test", id, cols, []sdk.TableColumnSignature{{Name: "ID"}}).
+		WithPrimaryKeyNames("ID", "NAME")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -734,10 +783,21 @@ func TestAcc_HybridTable_ColumnAdd(t *testing.T) {
 		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
 		{Name: "AGE", Type: testdatatypes.DataTypeInteger},
 	}
+	// cols4 inserts MIDDLE_COL between NAME and EMAIL (not at the end of cols3).
+	// Snowflake ADD COLUMN appends physically, so the post-apply state column order
+	// differs from the config order, and the next plan must be non-empty.
+	cols4 := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+		{Name: "MIDDLE_COL", Type: testdatatypes.DataTypeInteger},
+		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar},
+		{Name: "AGE", Type: testdatatypes.DataTypeInteger},
+	}
 
 	model1 := model.HybridTableFromId("test", id, cols1, pk)
 	model2 := model.HybridTableFromId("test", id, cols2, pk)
 	model3 := model.HybridTableFromId("test", id, cols3, pk)
+	model4 := model.HybridTableFromId("test", id, cols4, pk)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -782,6 +842,22 @@ func TestAcc_HybridTable_ColumnAdd(t *testing.T) {
 						HasColumns(cols3).
 						HasPrimaryKeyKeys("ID"),
 				),
+			},
+			// Insert a column NOT at the end. Snowflake's ALTER TABLE ADD COLUMN
+			// appends physically, so the resulting on-disk order
+			// (ID, NAME, EMAIL, AGE, MIDDLE_COL) differs from the config order
+			// (ID, NAME, MIDDLE_COL, EMAIL, AGE). The apply succeeds (the column
+			// is added), but the post-apply plan is non-empty: subsequent indices
+			// in the TypeList show drift. Achieving a true mid-list insertion
+			// would require recreation, which the resource does not currently do.
+			{
+				Config:             accconfig.FromModels(t, model4),
+				ExpectNonEmptyPlan: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model4.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
 			},
 		},
 	})
@@ -966,6 +1042,27 @@ func TestAcc_HybridTable_ExternalColumnChanges(t *testing.T) {
 					resourceassert.HybridTableResource(t, model3.ResourceReference()).
 						HasColumns(cols3WithEmail),
 				),
+			},
+			// 6. At cols3WithEmail baseline, externally DROP NAME (a non-trailing column).
+			//    Config still at model3; expect Update to re-add NAME. Snowflake's ADD COLUMN
+			//    appends physically, so the resulting on-disk order is (ID, EMAIL, NAME)
+			//    while the config order is (ID, NAME, EMAIL) — the next plan is non-empty.
+			//    Verifies drift detection still fires on a non-trailing column drop in a
+			//    larger table (covers the "more complex" external-drift scenarios from
+			//    jmichalak's review comment).
+			{
+				PreConfig: func() {
+					testClient().HybridTable.Alter(t, sdk.NewAlterHybridTableRequest(id).WithDropColumnAction(
+						*sdk.NewHybridTableDropColumnActionRequest([]string{"NAME"}),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(model3.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config:             accconfig.FromModels(t, model3),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
