@@ -63,8 +63,8 @@ func schemaParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.Database
 	return c.Schemas.ShowParameters
 }
 
-func handleSchemaParameterRead(d *schema.ResourceData, databaseParameters []*sdk.Parameter) diag.Diagnostics {
-	for _, parameter := range databaseParameters {
+func handleSchemaParameterRead(d *schema.ResourceData, schemaParameters []*sdk.Parameter) diag.Diagnostics {
+	for _, parameter := range schemaParameters {
 		switch parameter.Key {
 		case
 			string(sdk.ObjectParameterDataRetentionTimeInDays),

@@ -26,6 +26,29 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(bug fix)* `snowflake_schema`: setting `default_ddl_collation = ""` now overrides a value inherited from the parent database
+
+Previously, setting `default_ddl_collation = ""` on a `snowflake_schema` was silently skipped when the parent database had a non-empty `DEFAULT_DDL_COLLATION` (e.g. `"pl"`). The update was a no-op and the schema kept inheriting the parent value.
+
+The fix forces the plan to recognize the override whenever the parameter is inherited from a higher level (account/database), so the resulting `ALTER SCHEMA ... SET DEFAULT_DDL_COLLATION = ''` is executed and the parameter is pinned at the schema level with an empty value.
+
+Example:
+
+```terraform
+resource "snowflake_database" "parent" {
+  name                  = "PARENT_DB"
+  default_ddl_collation = "en_US"
+}
+
+resource "snowflake_schema" "s" {
+  database              = snowflake_database.parent.name
+  name                  = "S"
+  default_ddl_collation = "" # previously ignored; now correctly sets "" at schema level
+}
+```
+
+No changes in configuration are required.
+
 ### *(new feature)* snowflake_system_get_privatelink_config: new attributes
 
 The `snowflake_system_get_privatelink_config` data source now exposes additional attributes returned by `SYSTEM$GET_PRIVATELINK_CONFIG()`:
