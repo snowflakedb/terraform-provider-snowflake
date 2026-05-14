@@ -52,7 +52,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment("").
 			HasAllowedValues().
-			HasPropagateEnum(sdk.TagPropagationNone),
+			HasPropagate(sdk.TagPropagationNone),
 
 		resourceassert.TagResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
@@ -84,7 +84,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
 			HasAllowedValuesUnordered("value1", "value2", "FAIL").
-			HasPropagateEnum(sdk.TagPropagationOnDependency),
+			HasPropagate(sdk.TagPropagationOnDependency),
 
 		resourceassert.TagResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
@@ -1056,7 +1056,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				Config: config.FromModels(t, withSeqInitial),
 				Check: assertThat(t,
 					objectassert.Tag(t, tagId).
-						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasPropagate(sdk.TagPropagationOnDependency).
 						HasAllowedValuesUnordered("confidential", "internal", "public"),
 					resourceassert.TagResource(t, withSeqInitial.ResourceReference()).
 						HasOnConflictAllowedValuesSequence().
@@ -1136,7 +1136,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check: assertThat(t,
 					objectassert.Tag(t, tagId).
-						HasPropagateEnum(sdk.TagPropagationNone),
+						HasPropagate(sdk.TagPropagationNone),
 					resourceassert.TagResource(t, basic.ResourceReference()).
 						HasPropagateEnum(sdk.TagPropagationNone).
 						HasOnConflictEmpty(),
