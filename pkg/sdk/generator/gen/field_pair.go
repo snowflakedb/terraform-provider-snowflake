@@ -36,33 +36,43 @@ const (
 func (fp FieldPair) AssignmentKindDirect() bool {
 	return fp.AssignmentKind() == AssignmentKindDirect
 }
+
 func (fp FieldPair) AssignmentKindStringToBool() bool {
 	return fp.AssignmentKind() == AssignmentKindStringToBool
 }
+
 func (fp FieldPair) AssignmentKindStringToStringArray() bool {
 	return fp.AssignmentKind() == AssignmentKindStringToStringArray
 }
+
 func (fp FieldPair) AssignmentKindStringToEnum() bool {
 	return fp.AssignmentKind() == AssignmentKindStringToEnum
 }
+
 func (fp FieldPair) AssignmentKindStringToJson() bool {
 	return fp.AssignmentKind() == AssignmentKindStringToJson
 }
+
 func (fp FieldPair) AssignmentKindStringToIdentifier() bool {
 	return fp.AssignmentKind() == AssignmentKindStringToIdentifier
 }
+
 func (fp FieldPair) AssignmentKindNullableToNullable() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableToNullable
 }
+
 func (fp FieldPair) AssignmentKindNullableToRequired() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableToRequired
 }
+
 func (fp FieldPair) AssignmentKindNullableToIdentifier() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableToIdentifier
 }
+
 func (fp FieldPair) AssignmentKindNullableToEnum() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableToEnum
 }
+
 func (fp FieldPair) AssignmentKindNullableToStringArray() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableToStringArray
 }
