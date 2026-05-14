@@ -935,7 +935,7 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) []any {
 // existing column. The SDK's HybridTableAlterColumnActionRequest has no WithCollate
 // method, so collation can only be set at column creation time.
 func forceNewIfColumnCollateChanged() schema.CustomizeDiffFunc {
-	return forceNewIfColumnFieldChanged(func(o, n hybridTableColumn) bool {
+	return forceNewIfColumnFieldChanged("collate", func(o, n hybridTableColumn) bool {
 		return o.collate != n.collate
 	})
 }
@@ -947,12 +947,17 @@ func forceNewIfColumnCollateChanged() schema.CustomizeDiffFunc {
 // spuriously trigger ForceNew when its nullable field initializes from the
 // schema default.
 func forceNewIfColumnNullableChanged() schema.CustomizeDiffFunc {
-	return forceNewIfColumnFieldChanged(func(o, n hybridTableColumn) bool {
+	return forceNewIfColumnFieldChanged("nullable", func(o, n hybridTableColumn) bool {
 		return o.nullable != n.nullable
 	})
 }
 
-func forceNewIfColumnFieldChanged(changed func(old, new hybridTableColumn) bool) schema.CustomizeDiffFunc {
+// forceNewIfColumnFieldChanged returns a CustomizeDiffFunc that forces recreation
+// when a nested column field changes. It must call diff.ForceNew on the specific
+// nested path (e.g. "column.0.nullable"), not on the parent "column" list — the
+// terraform-plugin-sdk/v2 ForceNew sets RequiresNew on the resolved leaf schema,
+// and a TypeList parent does not propagate that flag down to its diff entries.
+func forceNewIfColumnFieldChanged(fieldName string, changed func(old, new hybridTableColumn) bool) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 		if !diff.HasChange("column") {
 			return nil
@@ -961,9 +966,9 @@ func forceNewIfColumnFieldChanged(changed func(old, new hybridTableColumn) bool)
 		oldCols := parseHybridColumns(oldRaw)
 		newCols := parseHybridColumns(newRaw)
 		for _, o := range oldCols {
-			for _, n := range newCols {
+			for newIdx, n := range newCols {
 				if o.name == n.name && changed(o, n) {
-					return diff.ForceNew("column")
+					return diff.ForceNew(fmt.Sprintf("column.%d.%s", newIdx, fieldName))
 				}
 			}
 		}
