@@ -93,6 +93,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 							"sequence": {
 								Type:             schema.TypeString,
 								Optional:         true,
+								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 								DiffSuppressFunc: suppressIdentifierQuoting,
 								Description:      "The default sequence for the column (uses NEXTVAL).",
 							},
@@ -120,7 +121,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 		ForceNew:    true,
 		MaxItems:    1,
 		MinItems:    1,
-		Description: "Defines the primary key constraint for the hybrid table. Required. Any change forces recreation.",
+		Description: "Defines the primary key constraint for the hybrid table. Snowflake requires every hybrid table to have a primary key — this block is mandatory and cannot be omitted or removed. Snowflake does not support altering the primary key in place, so any change to `keys` (including reordering, adding, or removing columns) or to `name` forces recreation of the hybrid table.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
@@ -256,11 +257,12 @@ func HybridTable() *schema.Resource {
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
 			forceNewIfColumnCollateChanged(),
 			forceNewIfColumnNullableChanged(),
+			validateColumnDefaultExactlyOneOf(),
 		)),
 
 		Schema: collections.MergeMaps(hybridTableSchema, hybridTableParametersSchema),
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.HybridTable, ImportHybridTable),
+			StateContext: TrackingImportWrapper(resources.HybridTable, ImportName[sdk.SchemaObjectIdentifier]),
 		},
 
 		Timeouts: defaultTimeouts,
@@ -584,12 +586,17 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 			}
 		}
 
+		columnState, err := buildHybridColumnStateFromDescribe(details, d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.HybridTableToSchema(hybridTable)}),
 			d.Set(DescribeOutputAttributeName, schemas.HybridTableDetailsListToSchema(details)),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set("comment", hybridTable.Comment),
-			d.Set("column", buildHybridColumnStateFromDescribe(details, d)),
+			d.Set("column", columnState),
 			d.Set("primary_key", buildPrimaryKeyStateFromDescribe(details, d)),
 		)
 		if errs != nil {
@@ -754,18 +761,11 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	return GetReadHybridTableFunc(false)(ctx, d, meta)
 }
 
-func ImportHybridTable(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
-		return nil, err
-	}
-	return []*schema.ResourceData{d}, nil
-}
-
 // ---------------------------------------------------------------------------
 // Read helpers
 // ---------------------------------------------------------------------------
 
-func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) []any {
+func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) ([]any, error) {
 	flattened := make([]any, 0)
 
 	// Build lookups from config for fields where DESCRIBE returns a normalized/different value
@@ -844,13 +844,17 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			"collate":  collate,
 		}
 
-		if def := toHybridColumnDefaultConfig(td); def != nil {
+		def, err := toHybridColumnDefaultConfig(td)
+		if err != nil {
+			return nil, err
+		}
+		if def != nil {
 			flat["default"] = def
 		}
 
 		flattened = append(flattened, flat)
 	}
-	return flattened
+	return flattened, nil
 }
 
 // buildPrimaryKeyStateFromDescribe reconstructs the primary_key block from DESCRIBE output.
@@ -889,9 +893,16 @@ func buildPrimaryKeyStateFromDescribe(details []sdk.HybridTableDetails, d *schem
 // toHybridColumnDefaultConfig converts HybridTableDetails.Default (string, not *string)
 // into a config-compatible []any (single-element list or nil). Empty string means no default.
 // This is NOT the same as table.go's toColumnDefaultConfig which checks == nil.
-func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) []any {
+//
+// Returns an error if the DESCRIBE output advertises a sequence default whose
+// identifier portion cannot be parsed. The schema-level ValidateDiagFunc on the
+// `sequence` field guarantees user-supplied values are valid identifiers, so a
+// parse failure on round-trip indicates either a Snowflake bug or a previously
+// drifted state — both warrant surfacing the error rather than silently falling
+// back to a malformed value.
+func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) ([]any, error) {
 	if td.Default == "" {
-		return nil
+		return nil, nil
 	}
 
 	defaultRaw := td.Default
@@ -902,29 +913,28 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) []any {
 		sequenceIdRaw := defaultRaw[:len(defaultRaw)-len(nextvalSuffix)]
 		id, err := sdk.ParseSchemaObjectIdentifier(sequenceIdRaw)
 		if err != nil {
-			log.Printf("[WARN] hybrid_table Read: failed to parse sequence identifier %q: %v", sequenceIdRaw, err)
-			return []any{map[string]any{"sequence": sequenceIdRaw}}
+			return nil, fmt.Errorf("hybrid_table column %q: failed to parse sequence identifier %q from DESCRIBE: %w", td.Name, sequenceIdRaw, err)
 		}
-		return []any{map[string]any{"sequence": id.FullyQualifiedName()}}
+		return []any{map[string]any{"sequence": id.FullyQualifiedName()}}, nil
 	}
 
 	// Expression detection: contains parentheses
 	if strings.Contains(defaultRaw, "(") && strings.Contains(defaultRaw, ")") {
 		return []any{map[string]any{
 			"expression": defaultRaw,
-		}}
+		}}, nil
 	}
 
 	// Constant: unescape for string types
 	if sdk.IsStringType(td.Type) {
 		return []any{map[string]any{
 			"constant": snowflake.UnescapeSnowflakeString(defaultRaw),
-		}}
+		}}, nil
 	}
 
 	return []any{map[string]any{
 		"constant": defaultRaw,
-	}}
+	}}, nil
 }
 
 // ---------------------------------------------------------------------------
@@ -970,6 +980,52 @@ func forceNewIfColumnFieldChanged(fieldName string, changed func(old, new hybrid
 				if o.name == n.name && changed(o, n) {
 					return diff.ForceNew(fmt.Sprintf("column.%d.%s", newIdx, fieldName))
 				}
+			}
+		}
+		return nil
+	}
+}
+
+// validateColumnDefaultExactlyOneOf enforces that each column.default block has
+// exactly one of {constant, expression, sequence} set. This validation cannot
+// be expressed declaratively via ExactlyOneOf in the schema, because
+// terraform-plugin-sdk/v2 rejects ExactlyOneOf paths with non-zero indices
+// inside multi-element TypeLists at provider boot.
+func validateColumnDefaultExactlyOneOf() schema.CustomizeDiffFunc {
+	return func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+		raw, ok := diff.GetOk("column")
+		if !ok {
+			return nil
+		}
+		cols, ok := raw.([]any)
+		if !ok {
+			return nil
+		}
+		for i, rawCol := range cols {
+			colMap, ok := rawCol.(map[string]any)
+			if !ok {
+				continue
+			}
+			defaultList, ok := colMap["default"].([]any)
+			if !ok || len(defaultList) == 0 {
+				continue
+			}
+			defMap, ok := defaultList[0].(map[string]any)
+			if !ok {
+				continue
+			}
+			set := 0
+			for _, key := range []string{"constant", "expression", "sequence"} {
+				if v, ok := defMap[key].(string); ok && v != "" {
+					set++
+				}
+			}
+			colName, _ := colMap["name"].(string)
+			if set == 0 {
+				return fmt.Errorf("column %q (index %d): exactly one of \"constant\", \"expression\", or \"sequence\" must be set in default block", colName, i)
+			}
+			if set > 1 {
+				return fmt.Errorf("column %q (index %d): only one of \"constant\", \"expression\", or \"sequence\" may be set in default block", colName, i)
 			}
 		}
 		return nil
