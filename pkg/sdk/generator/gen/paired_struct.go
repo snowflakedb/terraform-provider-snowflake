@@ -377,47 +377,48 @@ func (p *PairedStructs) asPlainStruct() *plainStruct {
 	return s
 }
 
-// TODO [this PR]: extract showOperation which accepts the addmapping variant, so that most of the logic can sit in one place and not be copied; the same for the below methods
+func (p *PairedStructs) addMappingFunc() func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		addShowMapping(op, from, to)
+		if p.generateConvert {
+			op.ShowMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
+func (p *PairedStructs) addDescribeMappingFunc() func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		addDescriptionMapping(op, from, to)
+		if p.generateConvert {
+			op.DescribeMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
+func (p *PairedStructs) instanceMethodMappingFunc(kind InstanceMethodKind) func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		op.InstanceMethodMapping = newMapping("convert", from, to)
+		op.InstanceMethodKind = &kind
+		if p.generateConvert {
+			op.InstanceMethodMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
 // ShowOperationWithPairedStructs is equivalent to ShowOperation but accepts a single PairedStructs
 // definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
-	addMappingFunc := func(op *Operation, from, to *Field) {
-		addShowMapping(op, from, to)
-		if pairedStructs.generateConvert {
-			op.ShowMapping.FieldPairs = pairedStructs.toFieldPairs()
-		}
-	}
-	op := i.newOperationWithDBMapping(string(OperationKindShow), doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, addMappingFunc)
-	kind := ShowMappingKindSlice
-	i.ShowObjectName = op.ShowMapping.To.Name
-	op.ShowKind = &kind
-	return i.appendShowByID(filtering)
+	return i.showOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addMappingFunc(), filtering...)
 }
 
 // DescribeOperationWithPairedStructs is equivalent to DescribeOperation but accepts a single
 // PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) DescribeOperationWithPairedStructs(describeKind DescriptionMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
-	addMappingFunc := func(op *Operation, from, to *Field) {
-		addDescriptionMapping(op, from, to)
-		if pairedStructs.generateConvert {
-			op.DescribeMapping.FieldPairs = pairedStructs.toFieldPairs()
-		}
-	}
-	op := i.newOperationWithDBMapping(string(OperationKindDescribe), doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, addMappingFunc, helperStructs...)
-	op.DescribeKind = &describeKind
-	return i
+	return i.describeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addDescribeMappingFunc(), helperStructs...)
 }
 
 // CustomShowOperationWithPairedStructs is equivalent to CustomShowOperation but accepts a
 // single PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) CustomShowOperationWithPairedStructs(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct) *Interface {
-	addMappingFunc := func(op *Operation, from, to *Field) {
-		addShowMapping(op, from, to)
-		if pairedStructs.generateConvert {
-			op.ShowMapping.FieldPairs = pairedStructs.toFieldPairs()
-		}
-	}
-	op := i.newOperationWithDBMapping(operationName, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, addMappingFunc)
-	op.ShowKind = &showKind
-	return i
+	return i.customShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addMappingFunc())
 }

@@ -33,14 +33,7 @@ func (i *Interface) InstanceMethodOperation(doc string, methodName string, argsQ
 	operationName := sqlToFieldName(methodName, true)
 	qs := i.newInstanceMethodCallStruct(operationName+"Options", methodName, argsQueryStruct).
 		WithValidation(ValidIdentifier, "name")
-	// TODO [this PR]: can we just adjust the existing mapping func in this case?
-	addMappingFunc := func(op *Operation, from, to *Field) {
-		instanceMethodMappingForKind(kind)(op, from, to)
-		if pairedStructs.generateConvert {
-			op.InstanceMethodMapping.FieldPairs = pairedStructs.toFieldPairs()
-		}
-	}
-	i.newOperationWithDBMapping(operationName, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), qs, addMappingFunc, helperStructs...)
+	i.newOperationWithDBMapping(operationName, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), qs, pairedStructs.instanceMethodMappingFunc(kind), helperStructs...)
 	return i
 }
 
