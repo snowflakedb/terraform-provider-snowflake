@@ -500,14 +500,6 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, basicAssertions...),
 			},
-			// Import
-			{
-				Config:                  config.FromModels(t, basic),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"rest_config", "oauth_rest_authentication"},
-			},
 			// Change alterable props
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -547,14 +539,6 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				},
 				Config: config.FromModels(t, allAttributes),
 				Check:  assertThat(t, completeAssertions...),
-			},
-			// Import
-			{
-				Config:                  config.FromModels(t, allAttributes),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"refresh_interval_seconds", "rest_config", "oauth_rest_authentication"},
 			},
 			// Change alterable props externally
 			{
@@ -718,6 +702,75 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				},
 				Config: config.FromModels(t, withBearerToken),
 				Check:  assertThat(t, withBearerTokenAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationIcebergRest_ImportOAuth(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	catalogUri := "https://api.tabular.io/ws"
+	catalogName := random.AlphanumericN(15)
+	prefix := "prefix"
+	catalogNamespace := random.AlphanumericN(15)
+
+	oAuthTokenUri := catalogUri + "/v2/oauth/tokens"
+	oAuthClientId := random.AlphanumericN(15)
+	oAuthClientSecret := random.AlphanumericN(15)
+	oAuthAllowedScope := "PRINCIPAL_ROLE:ALL"
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	completeRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+		WithOauthTokenUri(oAuthTokenUri)
+
+	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithPrefix(prefix).
+		WithCatalogName(catalogName).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+		WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)
+
+	allAttributes := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, completeRestConfig, completeRestAuth).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds).
+		WithCatalogNamespace(catalogNamespace)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationIcebergRest),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithRefreshIntervalSeconds(refreshIntervalSeconds).
+						WithComment(comment).
+						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
+							WithRestConfig(completeRestConfig).
+							WithOAuthRestAuthentication(completeRestAuth).
+							WithCatalogNamespace(catalogNamespace))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				Config:             config.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.PrintPlanDetails(ref, "rest_config", "oauth_rest_authentication"),
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})
