@@ -52,7 +52,3 @@ func (t *TagAssert) HasAllowedValuesEmpty() *TagAssert {
 	})
 	return t
 }
-
-func (t *TagAssert) HasPropagateEnum(expected sdk.TagPropagation) *TagAssert {
-	return t.HasPropagate(string(expected))
-}

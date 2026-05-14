@@ -314,11 +314,16 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 
+	var propagate *string
+	if tag.Propagate != nil {
+		propagate = sdk.Pointer(string(*tag.Propagate))
+	}
+
 	errs := errors.Join(
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
-		d.Set("propagate", tag.Propagate),
+		d.Set("propagate", propagate),
 		func() error {
 			// Use ordered_allowed_values by default (including import where rawConfig is null).
 			// Determine the usage by checking config values, but if not provided by Terraform,

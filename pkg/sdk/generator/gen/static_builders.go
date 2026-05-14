@@ -13,6 +13,10 @@ func (v *QueryStruct) Create() *QueryStruct {
 	return v.SQL("CREATE")
 }
 
+func (v *QueryStruct) Call() *QueryStruct {
+	return v.SQL("CALL")
+}
+
 func (v *QueryStruct) CreateOrAlter() *QueryStruct {
 	return v.SQL("CREATE OR ALTER")
 }
