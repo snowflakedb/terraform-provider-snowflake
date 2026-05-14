@@ -156,6 +156,20 @@ To enable, add `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` to the `experimental_featur
 
 References: [#3001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3001)
 
+### *(bugfix)* Fixed `snowflake_tag` crash on Standard accounts
+
+In v2.15.0 we added the `propagate` field to the `snowflake_tag` resource. On [Standard accounts](https://docs.snowflake.com/en/user-guide/intro-editions#standard-edition), Snowflake always returns the `propagate` column in `SHOW TAGS` with `null` value. The provider attempted to scan a SQL `NULL` into a non-nullable Go string, resulting in a fatal error whenever any `snowflake_tag` resource was refreshed on such accounts:
+
+```text
+│ Error: sql: Scan error on column index 8, name "propagate": converting NULL to string is unsupported
+```
+
+The `propagate` field is now treated as nullable.
+
+No changes in configuration are required. Users on standard accounts who experienced a crash on plan or apply should be able to use the `snowflake_tag` resource normally after upgrading.
+
+References: [#4651](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4651)
+
 ## v2.14.x ➞ v2.15.0
 
 ### **IMPORTANT** *(improvement)* Go driver bumped to v2
