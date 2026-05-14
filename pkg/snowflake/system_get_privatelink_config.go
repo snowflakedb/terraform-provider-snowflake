@@ -15,24 +15,24 @@ type RawPrivateLinkConfig struct {
 }
 
 type privateLinkConfigInternal struct {
-	AccountName                    string `json:"privatelink-account-name"`
-	AccountPrincipal               string `json:"privatelink-account-principal,omitempty"`
-	AccountURL                     string `json:"privatelink-account-url"`
-	AppServiceURL                  string `json:"app-service-privatelink-url,omitempty"`
-	AwsVpceID                      string `json:"privatelink-vpce-id,omitempty"`
-	AzurePrivateLinkServiceID      string `json:"privatelink-pls-id,omitempty"`
-	AzureStorageVolumeFS           string `json:"privatelink-snowflake-managed-storage-volume-fs,omitempty"`
-	AzureStorageVolumeNFS          string `json:"privatelink-snowflake-managed-storage-volume-nfs,omitempty"`
-	ConnectionOCSPURLs             string `json:"privatelink-connection-ocsp-urls,omitempty"`
-	ConnectionURLs                 string `json:"privatelink-connection-urls,omitempty"`
-	DashedDuoURLs                  string `json:"privatelink-dashed-urls-for-duo"`
-	GCPServiceAttachment           string `json:"privatelink-gcp-service-attachment,omitempty"`
-	InternalStage                  string `json:"privatelink-internal-stage,omitempty"`
-	OCSPURL                        string `json:"privatelink_ocsp-url,omitempty"`
-	RegionlessOCSPURL              string `json:"regionless-privatelink-ocsp-url"`
-	RegionlessAccountURL           string `json:"regionless-privatelink-account-url,omitempty"`
-	RegionlessSnowsightURL         string `json:"regionless-snowsight-privatelink-url,omitempty"`
-	SnowsightURL                   string `json:"snowsight-privatelink-url,omitempty"`
+	AccountName               string `json:"privatelink-account-name"`
+	AccountPrincipal          string `json:"privatelink-account-principal,omitempty"`
+	AccountURL                string `json:"privatelink-account-url"`
+	AppServiceURL             string `json:"app-service-privatelink-url,omitempty"`
+	AwsVpceID                 string `json:"privatelink-vpce-id,omitempty"`
+	AzurePrivateLinkServiceID string `json:"privatelink-pls-id,omitempty"`
+	AzureStorageVolumeFS      string `json:"privatelink-snowflake-managed-storage-volume-fs,omitempty"`
+	AzureStorageVolumeNFS     string `json:"privatelink-snowflake-managed-storage-volume-nfs,omitempty"`
+	ConnectionOCSPURLs        string `json:"privatelink-connection-ocsp-urls,omitempty"`
+	ConnectionURLs            string `json:"privatelink-connection-urls,omitempty"`
+	DashedDuoURLs             string `json:"privatelink-dashed-urls-for-duo"`
+	GCPServiceAttachment      string `json:"privatelink-gcp-service-attachment,omitempty"`
+	InternalStage             string `json:"privatelink-internal-stage,omitempty"`
+	OCSPURL                   string `json:"privatelink_ocsp-url,omitempty"`
+	RegionlessOCSPURL         string `json:"regionless-privatelink-ocsp-url"`
+	RegionlessAccountURL      string `json:"regionless-privatelink-account-url,omitempty"`
+	RegionlessSnowsightURL    string `json:"regionless-snowsight-privatelink-url,omitempty"`
+	SnowsightURL              string `json:"snowsight-privatelink-url,omitempty"`
 }
 
 type PrivateLinkConfig struct {
