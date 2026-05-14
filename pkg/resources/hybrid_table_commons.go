@@ -16,8 +16,8 @@ var (
 	hybridTableParametersSchema     = make(map[string]*schema.Schema)
 	hybridTableParametersCustomDiff = ParametersCustomDiff(
 		hybridTableParametersProvider,
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterDataRetentionTimeInDays, valueTypeInt, sdk.ParameterTypeHybridTable},
-		parameter[sdk.ObjectParameter]{sdk.ObjectParameterMaxDataExtensionTimeInDays, valueTypeInt, sdk.ParameterTypeHybridTable},
+		parameter[sdk.ObjectParameter]{sdk.ObjectParameterDataRetentionTimeInDays, valueTypeInt, sdk.ParameterTypeTable},
+		parameter[sdk.ObjectParameter]{sdk.ObjectParameterMaxDataExtensionTimeInDays, valueTypeInt, sdk.ParameterTypeTable},
 	)
 )
 

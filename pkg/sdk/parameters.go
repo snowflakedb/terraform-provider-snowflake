@@ -2170,7 +2170,7 @@ const (
 	ParameterTypeWarehouse        ParameterType = "WAREHOUSE"
 	ParameterTypeDatabase         ParameterType = "DATABASE"
 	ParameterTypeSchema           ParameterType = "SCHEMA"
-	ParameterTypeHybridTable      ParameterType = "TABLE"
+	ParameterTypeTable            ParameterType = "TABLE"
 	ParameterTypeTask             ParameterType = "TASK"
 	ParameterTypeFunction         ParameterType = "FUNCTION"
 	ParameterTypeProcedure        ParameterType = "PROCEDURE"
@@ -2185,7 +2185,7 @@ var AllParameterTypes = []ParameterType{
 	ParameterTypeWarehouse,
 	ParameterTypeDatabase,
 	ParameterTypeSchema,
-	ParameterTypeHybridTable,
+	ParameterTypeTable,
 	ParameterTypeTask,
 	ParameterTypeFunction,
 	ParameterTypeProcedure,
