@@ -19,10 +19,6 @@ type CortexAgentProfile struct {
 
 // UnmarshalCortexAgentProfile parses profile JSON into CortexAgentProfile.
 func UnmarshalCortexAgentProfile(profileAsJson string) (*CortexAgentProfile, error) {
-	if profileAsJson == "" {
-		return &CortexAgentProfile{}, nil
-	}
-
 	var profile CortexAgentProfile
 
 	if err := json.Unmarshal([]byte(profileAsJson), &profile); err != nil {

@@ -60,19 +60,22 @@ var cortexAgentSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"display_name": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Specifies a display name for the Cortex agent.",
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Specifies a display name for the Cortex agent.",
+					AtLeastOneOf: []string{"profile.0.display_name", "profile.0.avatar", "profile.0.color"},
 				},
 				"avatar": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Specifies an avatar image file name or identifier.",
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Specifies an avatar image file name or identifier.",
+					AtLeastOneOf: []string{"profile.0.display_name", "profile.0.avatar", "profile.0.color"},
 				},
 				"color": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Specifies a color theme for the Cortex agent.",
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Specifies a color theme for the Cortex agent.",
+					AtLeastOneOf: []string{"profile.0.display_name", "profile.0.avatar", "profile.0.color"},
 				},
 			},
 		},

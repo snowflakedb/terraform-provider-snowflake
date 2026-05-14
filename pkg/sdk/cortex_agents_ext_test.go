@@ -30,11 +30,6 @@ func TestUnmarshalCortexAgentProfile(t *testing.T) {
 			},
 		},
 		{
-			name:     "empty string",
-			json:     "",
-			expected: &CortexAgentProfile{},
-		},
-		{
 			name:     "empty object",
 			json:     `{}`,
 			expected: &CortexAgentProfile{},
@@ -52,6 +47,7 @@ func TestUnmarshalCortexAgentProfile(t *testing.T) {
 
 	invalidProfiles := []string{
 		`{"broken"`,
+		"",
 		`[{"color":"blue"}]`,
 	}
 
