@@ -415,18 +415,32 @@ func TestInt_HybridTables(t *testing.T) {
 			})
 			require.NoError(t, err, "DATA_RETENTION_TIME_IN_DAYS parameter must be present after SET")
 			require.Equal(t, "3", (*retention).Value)
-			require.Equal(t, sdk.ParameterTypeHybridTable, (*retention).Level,
-				"expected Level=%q (SHOW PARAMETERS returns TABLE for hybrid tables)", sdk.ParameterTypeHybridTable)
+			require.Equal(t, sdk.ParameterTypeTable, (*retention).Level,
+				"expected Level=%q (SHOW PARAMETERS returns TABLE for hybrid tables)", sdk.ParameterTypeTable)
 		})
 
 		t.Run("unset properties", func(t *testing.T) {
-			id, cleanup := testClientHelper().HybridTable.Create(t)
-			t.Cleanup(cleanup)
+			// Arrange: create the table with COMMENT already set, then SET the
+			// retention properties (DATA_RETENTION_TIME_IN_DAYS and
+			// MAX_DATA_EXTENSION_TIME_IN_DAYS are not accepted on CREATE HYBRID TABLE,
+			// so they must be applied via a follow-up ALTER).
+			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{
+						Name: "id",
+						Type: sdk.DataType("INT"),
+						InlineConstraint: &sdk.ColumnInlineConstraint{
+							Type: sdk.ColumnConstraintTypePrimaryKey,
+						},
+					},
+				},
+			}).WithComment("to be unset"))
+			require.NoError(t, err)
+			t.Cleanup(testClientHelper().HybridTable.DropFunc(t, id))
 
-			// Arrange: set all three unsettable properties so there is something to unset.
-			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().
-					WithComment("to be unset").
 					WithDataRetentionTimeInDays(3).
 					WithMaxDataExtensionTimeInDays(7)))
 			require.NoError(t, err, "SET must succeed so UNSET has non-default values to target")
@@ -465,7 +479,7 @@ func TestInt_HybridTables(t *testing.T) {
 			require.NoError(t, err)
 			for _, p := range parametersAfterUnset {
 				if p.Key == string(sdk.ObjectParameterDataRetentionTimeInDays) || p.Key == string(sdk.ObjectParameterMaxDataExtensionTimeInDays) {
-					require.NotEqual(t, sdk.ParameterTypeHybridTable, p.Level, "TABLE-level override for %s must be cleared after UNSET", p.Key)
+					require.NotEqual(t, sdk.ParameterTypeTable, p.Level, "TABLE-level override for %s must be cleared after UNSET", p.Key)
 				}
 			}
 
