@@ -31,6 +31,7 @@ const (
 	CurrentAccountResource                        feature = "snowflake_current_account_resource"
 	CurrentAccountDatasource                      feature = "snowflake_current_account_datasource"
 	CurrentOrganizationAccountResource            feature = "snowflake_current_organization_account_resource"
+	DatabaseFromListingResource                   feature = "snowflake_database_from_listing_resource"
 	DatabaseDatasource                            feature = "snowflake_database_datasource"
 	DatabaseRoleDatasource                        feature = "snowflake_database_role_datasource"
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
@@ -139,6 +140,7 @@ var allPreviewFeatures = []feature{
 	CurrentAccountResource,
 	CurrentAccountDatasource,
 	CurrentOrganizationAccountResource,
+	DatabaseFromListingResource,
 	DatabaseDatasource,
 	DatabaseRoleDatasource,
 	DynamicTableResource,

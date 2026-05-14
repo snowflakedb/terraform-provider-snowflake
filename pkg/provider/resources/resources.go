@@ -24,6 +24,7 @@ const (
 	CurrentAccount                                         resource = "snowflake_current_account"
 	CurrentOrganizationAccount                             resource = "snowflake_current_organization_account"
 	Database                                               resource = "snowflake_database"
+	DatabaseFromListing                                    resource = "snowflake_database_from_listing"
 	DatabaseRole                                           resource = "snowflake_database_role"
 	DynamicTable                                           resource = "snowflake_dynamic_table"
 	EmailNotificationIntegration                           resource = "snowflake_email_notification_integration"
