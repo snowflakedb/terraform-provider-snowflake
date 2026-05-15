@@ -76,12 +76,21 @@ resource "aws_route53_record" "snowflake_private_link_ocsp_url" {
 ### Read-Only
 
 - `account_name` (String) The name of your Snowflake account.
-- `account_url` (String) The URL used to connect to Snowflake through AWS PrivateLink or Azure Private Link.
+- `account_url` (String) The URL to connect to your Snowflake account using AWS PrivateLink, Azure Private Link, or Google Cloud Private Service Connect.
+- `app_service_privatelink_url` (String) The PrivateLink endpoint URL used to route traffic to Snowflake-hosted app services, such as Streamlit or Notebooks.
 - `aws_vpce_id` (String) The AWS VPCE ID for your account.
-- `azure_pls_id` (String) The Azure Private Link Service ID for your account.
+- `azure_pls_id` (String) The Microsoft Azure Private Link Service ID for your account identifier in the format of an alias.
 - `id` (String) The ID of this resource.
 - `internal_stage` (String) The endpoint to connect to your Snowflake internal stage using AWS PrivateLink or Azure Private Link.
-- `ocsp_url` (String) The OCSP URL corresponding to your Snowflake account that uses AWS PrivateLink or Azure Private Link.
+- `ocsp_url` (String) The OCSP URL corresponding to your Snowflake account identifier.
+- `privatelink_account_principal` (String) The AWS principal ARN to allow for outbound private connections to your VPC endpoint services.
+- `privatelink_connection_ocsp_urls` (String) The list of OCSP URLs for use with redirecting client connections when using client redirect.
+- `privatelink_connection_urls` (String) The private connectivity connection URLs for your account when using client redirect.
+- `privatelink_dashed_urls_for_duo` (String) The list of dashed variant URLs for Duo Multi-Factor Authentication, shown only when the hostname contains an underscore.
+- `privatelink_gcp_service_attachment` (String) The endpoint for the Snowflake service when using Google Cloud Private Service Connect.
+- `privatelink_snowflake_managed_storage_volume_fs` (String) The endpoint for failsafe Snowflake-managed storage volumes when using Azure Private Link.
+- `privatelink_snowflake_managed_storage_volume_nfs` (String) The endpoint for non-failsafe Snowflake-managed storage volumes when using Azure Private Link.
 - `regionless_account_url` (String) The regionless URL to connect to your Snowflake account using AWS PrivateLink, Azure Private Link, or Google Cloud Private Service Connect.
+- `regionless_privatelink_ocsp_url` (String) The regionless OCSP URL to connect to Snowflake OCSP using private connectivity.
 - `regionless_snowsight_url` (String) The URL for your organization to access Snowsight using Private Connectivity to the Snowflake Service.
 - `snowsight_url` (String) The URL containing the cloud region to access Snowsight and the Snowflake Marketplace using Private Connectivity to the Snowflake Service.

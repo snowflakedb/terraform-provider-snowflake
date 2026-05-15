@@ -4,6 +4,9 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -44,12 +47,16 @@ func (v *passwordPolicies) Show(ctx context.Context, request *ShowPasswordPolicy
 	if err != nil {
 		return nil, err
 	}
+	// adjusted manually
+	dbRows = slices.DeleteFunc(dbRows, func(row passwordPolicyDBRow) bool {
+		return !row.DatabaseName.Valid || !row.SchemaName.Valid
+	})
 	return convertRows[passwordPolicyDBRow, PasswordPolicy](dbRows)
 }
 
 func (v *passwordPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicy, error) {
 	request := NewShowPasswordPolicyRequest().
-		WithIn(In{Schema: id.SchemaId()}).
+		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
 		WithLike(Like{Pattern: String(id.Name())})
 	passwordPolicies, err := v.Show(ctx, request)
 	if err != nil {
@@ -145,26 +152,42 @@ func (r *DropPasswordPolicyRequest) toOpts() *DropPasswordPolicyOptions {
 
 func (r *ShowPasswordPolicyRequest) toOpts() *ShowPasswordPolicyOptions {
 	opts := &ShowPasswordPolicyOptions{
-		Like:  r.Like,
-		In:    r.In,
-		Limit: r.Limit,
+		Like:       r.Like,
+		In:         r.In,
+		On:         r.On,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
 	}
 	return opts
 }
 
 func (r passwordPolicyDBRow) convert() (*PasswordPolicy, error) {
 	// adjusted manually
-	return &PasswordPolicy{
-		CreatedOn:     r.CreatedOn,
-		Name:          r.Name,
-		DatabaseName:  r.DatabaseName,
-		SchemaName:    r.SchemaName,
-		Kind:          r.Kind,
-		Owner:         r.Owner,
-		Comment:       r.Comment,
-		OwnerRoleType: r.OwnerRoleType,
-		Options:       r.Options,
-	}, nil
+	policy := &PasswordPolicy{
+		Name:    r.Name,
+		Kind:    r.Kind,
+		Options: r.Options,
+		Comment: r.Comment,
+	}
+
+	var errs []error
+	if !r.DatabaseName.Valid {
+		errs = append(errs, fmt.Errorf("Missing database name for password policy with name: %s", r.Name))
+	}
+	if !r.SchemaName.Valid {
+		errs = append(errs, fmt.Errorf("Missing schema name for password policy with name: %s", r.Name))
+	}
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
+	}
+
+	mapNullStringToNonNullableField(&policy.DatabaseName, r.DatabaseName)
+	mapNullStringToNonNullableField(&policy.SchemaName, r.SchemaName)
+	mapNullTimeToNonNullableField(&policy.CreatedOn, r.CreatedOn)
+	mapNullStringToNonNullableField(&policy.Owner, r.Owner)
+	mapNullStringToNonNullableField(&policy.OwnerRoleType, r.OwnerRoleType)
+
+	return policy, nil
 }
 
 func (r *DescribePasswordPolicyRequest) toOpts() *DescribePasswordPolicyOptions {

@@ -14,12 +14,10 @@ type UserProgrammaticAccessTokens interface {
 	Rotate(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) (*RotateProgrammaticAccessTokenResult, error)
 	Remove(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 	Show(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
-	// adjusted manually
+	// adjusted manually - adding userId
 	ShowByID(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
-	// adjusted manually
+	// adjusted manually - adding userId
 	ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
-
-	// added manually
 	RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 }
 
@@ -138,7 +136,6 @@ type ProgrammaticAccessToken struct {
 	RotatedTo                            *string
 }
 
-// adjusted manually
 func (v *ProgrammaticAccessToken) ObjectType() ObjectType {
 	return ObjectTypeProgrammaticAccessToken
 }

@@ -104,19 +104,21 @@ func HandleNestedDataTypeCreate[T any](d *schema.ResourceData, collectionKey str
 }
 
 // HandleNestedDataTypeSet should be used while handling nested data type attribute read.
-func HandleNestedDataTypeSet[T any](d *schema.ResourceData, collectionKey string, dataTypeKey string, externalCollection []T, extractDataType func(T) datatypes.DataType, setOtherFields func(T, map[string]any)) error {
+// setOtherFields accepts external item on current index, item being build on the current index, and the current config on the given index
+func HandleNestedDataTypeSet[T any](d *schema.ResourceData, collectionKey string, dataTypeKey string, externalCollection []T, extractDataType func(T) datatypes.DataType, setOtherFields func(T, map[string]any, map[string]any)) error {
 	currentConfigDatatypes := d.Get(collectionKey).([]any)
 	nestedDatatypesSchema := make([]map[string]any, 0)
 
 	for i, externalItem := range externalCollection {
 		externalDataType := extractDataType(externalItem)
 		item := make(map[string]any)
+		var currentConfigItem map[string]any
 		if i+1 > len(currentConfigDatatypes) {
 			log.Printf("[DEBUG] reading %d: external datatype %s outside of original range, adding", i, externalDataType.ToSqlWithoutUnknowns())
 			item[dataTypeKey] = externalDataType.ToSqlWithoutUnknowns()
 		} else {
-			v := currentConfigDatatypes[i].(map[string]any)
-			currentConfigDataType, err := readNestedDatatypeCommon(v, dataTypeKey)
+			currentConfigItem = currentConfigDatatypes[i].(map[string]any)
+			currentConfigDataType, err := readNestedDatatypeCommon(currentConfigItem, dataTypeKey)
 			if err != nil {
 				return err
 			}
@@ -133,7 +135,7 @@ func HandleNestedDataTypeSet[T any](d *schema.ResourceData, collectionKey string
 				item[dataTypeKey] = currentConfigDataType.ToSql()
 			}
 		}
-		setOtherFields(externalItem, item)
+		setOtherFields(externalItem, item, currentConfigItem)
 		nestedDatatypesSchema = append(nestedDatatypesSchema, item)
 	}
 

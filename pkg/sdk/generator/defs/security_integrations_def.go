@@ -691,9 +691,6 @@ var securityIntegrationsDef = g.NewInterface(
 			SQL("SECURITY INTEGRATIONS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
 	WithEnums(
 		ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionEnumDef,
 		ExternalOauthSecurityIntegrationTypeOptionEnumDef,
@@ -704,4 +701,5 @@ var securityIntegrationsDef = g.NewInterface(
 		OauthSecurityIntegrationClientOptionEnumDef,
 		Saml2SecurityIntegrationSaml2ProviderOptionEnumDef,
 		ScimSecurityIntegrationScimClientOptionEnumDef,
-	)
+	).
+	WithShowObjectType("Integration")

@@ -63,6 +63,10 @@ func randomDatabaseObjectIdentifier() DatabaseObjectIdentifier {
 	return DatabaseObjectIdentifier{}
 }
 
+func randomAccountObjectIdentifier() AccountObjectIdentifier {
+	return AccountObjectIdentifier{}
+}
+
 func randomSchemaObjectIdentifier() SchemaObjectIdentifier {
 	return SchemaObjectIdentifier{}
 }

@@ -129,7 +129,7 @@ func ReadContextProcedurePython(ctx context.Context, d *schema.ResourceData, met
 	errs := errors.Join(
 		// not reading is_secure on purpose (handled as external change to show output)
 		readFunctionOrProcedureArguments(d, allProcedureDetails.procedureDetails.NormalizedArguments),
-		d.Set("return_type", allProcedureDetails.procedureDetails.ReturnDataType.ToSql()),
+		HandleDatatypeSet(d, "return_type", allProcedureDetails.procedureDetails.ReturnDataType),
 		// not reading null_input_behavior on purpose (handled as external change to show output)
 		// not reading execute_as on purpose (handled as external change to show output)
 		setRequiredFromStringPtr(d, "runtime_version", allProcedureDetails.procedureDetails.RuntimeVersion),

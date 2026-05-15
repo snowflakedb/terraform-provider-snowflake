@@ -34,6 +34,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AccountRole().Schema,
 	},
 	{
+		name:   "AccountSessionPolicyAttachment",
+		schema: resources.AccountSessionPolicyAttachment().Schema,
+	},
+	{
 		name:   "ApiAuthenticationIntegrationWithAuthorizationCodeGrant",
 		schema: resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant().Schema,
 	},
@@ -182,6 +186,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.OauthIntegrationForPartnerApplications().Schema,
 	},
 	{
+		name:   "PasswordPolicy",
+		schema: resources.PasswordPolicy().Schema,
+	},
+	{
 		name:   "PrimaryConnection",
 		schema: resources.PrimaryConnection().Schema,
 	},
@@ -324,6 +332,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "UserProgrammaticAccessToken",
 		schema: resources.UserProgrammaticAccessToken().Schema,
+	},
+	{
+		name:   "UserSessionPolicyAttachment",
+		schema: resources.UserSessionPolicyAttachment().Schema,
 	},
 	{
 		name:   "View",

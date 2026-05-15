@@ -14,5 +14,9 @@
         {{ if .DescribeMapping }}
             {{ template "convert" .DescribeMapping }}
         {{ end }}
+
+        {{ if .InstanceMethodMapping }}
+            {{ template "convert" .InstanceMethodMapping }}
+        {{ end }}
     {{- end}}
 {{ end }}

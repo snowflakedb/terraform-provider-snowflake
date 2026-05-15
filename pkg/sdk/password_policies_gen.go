@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -16,7 +17,6 @@ type PasswordPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]PasswordPolicyProperty, error)
-	// DescribeDetails is added manually
 	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicyDetails, error)
 }
 
@@ -92,23 +92,25 @@ type DropPasswordPolicyOptions struct {
 
 // ShowPasswordPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-password-policies.
 type ShowPasswordPolicyOptions struct {
-	show             bool       `ddl:"static" sql:"SHOW"`
-	passwordPolicies bool       `ddl:"static" sql:"PASSWORD POLICIES"`
-	Like             *Like      `ddl:"keyword" sql:"LIKE"`
-	In               *In        `ddl:"keyword" sql:"IN"`
-	Limit            *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+	show             bool        `ddl:"static" sql:"SHOW"`
+	passwordPolicies bool        `ddl:"static" sql:"PASSWORD POLICIES"`
+	Like             *Like       `ddl:"keyword" sql:"LIKE"`
+	In               *ExtendedIn `ddl:"keyword" sql:"IN"`
+	On               *On         `ddl:"keyword" sql:"ON"`
+	StartsWith       *string     `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit            *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
 type passwordPolicyDBRow struct {
-	CreatedOn     time.Time `db:"created_on"`
-	Name          string    `db:"name"`
-	DatabaseName  string    `db:"database_name"`
-	SchemaName    string    `db:"schema_name"`
-	Kind          string    `db:"kind"`
-	Owner         string    `db:"owner"`
-	Comment       string    `db:"comment"`
-	OwnerRoleType string    `db:"owner_role_type"`
-	Options       string    `db:"options"`
+	CreatedOn     sql.NullTime   `db:"created_on"`
+	Name          string         `db:"name"`
+	DatabaseName  sql.NullString `db:"database_name"`
+	SchemaName    sql.NullString `db:"schema_name"`
+	Kind          string         `db:"kind"`
+	Owner         sql.NullString `db:"owner"`
+	Comment       string         `db:"comment"`
+	OwnerRoleType sql.NullString `db:"owner_role_type"`
+	Options       string         `db:"options"`
 }
 
 type PasswordPolicy struct {

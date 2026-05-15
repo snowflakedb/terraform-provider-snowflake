@@ -279,6 +279,12 @@ func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) sc
 	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)
 }
 
+// RecreateWhenCatalogSourceChangedExternally recreates a catalog integration when argument catalogSource is different
+// than in the state.
+func RecreateWhenCatalogSourceChangedExternally(catalogSource sdk.CatalogIntegrationCatalogSourceType) schema.CustomizeDiffFunc {
+	return RecreateWhenResourceTypeChangedExternally("catalog_source", catalogSource, sdk.ToCatalogIntegrationCatalogSourceType)
+}
+
 // RecreateWhenStageCloudChangedExternally recreates a stage when argument stageCloud is different than in the state.
 func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.CustomizeDiffFunc {
 	return RecreateWhenResourceTypeChangedExternally("cloud", stageCloud, sdk.ToStageCloud)

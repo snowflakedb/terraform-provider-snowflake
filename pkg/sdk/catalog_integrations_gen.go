@@ -17,18 +17,11 @@ type CatalogIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]CatalogIntegrationProperty, error)
-
-	// DescribeAwsGlueDetails is added manually
 	DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error)
-	// DescribeObjectStorageDetails is added manually
 	DescribeObjectStorageDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error)
-	// DescribeOpenCatalogDetails is added manually
 	DescribeOpenCatalogDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error)
-	// DescribeIcebergRestDetails is added manually
 	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
-	// DescribeSapBdcDetails is added manually
-	DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error)
-	// DescribeDetails is added manually; it returns combined describe output for all types of catalog integrations.
+	// DescribeDetails returns combined describe output for all types of catalog integrations.
 	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error)
 }
 
@@ -43,7 +36,6 @@ type CreateCatalogIntegrationOptions struct {
 	ObjectStorageCatalogSourceParams *ObjectStorageParams    `ddl:"keyword"`
 	OpenCatalogCatalogSourceParams   *OpenCatalogParams      `ddl:"keyword"`
 	IcebergRestCatalogSourceParams   *IcebergRestParams      `ddl:"keyword"`
-	SapBdcCatalogSourceParams        *SapBdcParams           `ddl:"keyword"`
 	Enabled                          bool                    `ddl:"parameter" sql:"ENABLED"`
 	RefreshIntervalSeconds           *int                    `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
 	Comment                          *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -114,17 +106,6 @@ type SigV4RestAuthentication struct {
 	Sigv4IamRole       string  `ddl:"parameter,single_quotes" sql:"SIGV4_IAM_ROLE"`
 	Sigv4SigningRegion *string `ddl:"parameter,single_quotes" sql:"SIGV4_SIGNING_REGION"`
 	Sigv4ExternalId    *string `ddl:"parameter,single_quotes" sql:"SIGV4_EXTERNAL_ID"`
-}
-
-type SapBdcParams struct {
-	catalogSource bool             `ddl:"static" sql:"CATALOG_SOURCE = SAP_BDC"`
-	tableFormat   bool             `ddl:"static" sql:"TABLE_FORMAT = DELTA"`
-	RestConfig    SapBdcRestConfig `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
-}
-
-type SapBdcRestConfig struct {
-	SapBdcInvitationLink string `ddl:"parameter,single_quotes" sql:"SAP_BDC_INVITATION_LINK"`
-	accessDelegationMode bool   `ddl:"static" sql:"ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS"`
 }
 
 // AlterCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-catalog-integration.
@@ -262,15 +243,6 @@ type CatalogIntegrationIcebergRestDetails struct {
 	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
 	BearerRestAuthentication *BearerRestAuthenticationDetails
 	SigV4RestAuthentication  *SigV4RestAuthenticationDetails
-}
-
-type CatalogIntegrationSapBdcDetails struct {
-	Id                     AccountObjectIdentifier
-	CatalogSource          CatalogIntegrationCatalogSourceType
-	TableFormat            CatalogIntegrationTableFormat
-	Enabled                bool
-	RefreshIntervalSeconds int
-	Comment                string
 }
 
 type CatalogIntegrationAllDetails struct {
