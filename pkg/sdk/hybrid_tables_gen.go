@@ -20,6 +20,9 @@ type HybridTables interface {
 	CreateIndex(ctx context.Context, request *CreateIndexHybridTableRequest) error
 	DropIndex(ctx context.Context, request *DropIndexHybridTableRequest) error
 	ShowIndexes(ctx context.Context, request *ShowIndexesHybridTableRequest) ([]HybridTableIndex, error)
+	// NOTE: ShowParameters is a hand-written extension in hybrid_tables_ext.go. The code generator
+	// does not emit SHOW PARAMETERS methods; see pkg/sdk/functions_ext.go:155 for the same pattern.
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.
@@ -77,6 +80,8 @@ type AlterHybridTableOptions struct {
 	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
+	// NOTE: Hybrid tables only support UNSET for one property per ALTER statement. Use separate Alter calls per property.
+	Unset *HybridTableUnsetProperties `ddl:"keyword"`
 }
 
 type HybridTableAddColumnAction struct {
@@ -159,6 +164,13 @@ type HybridTableSetProperties struct {
 	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
+// NOTE: Each field generates its own UNSET keyword; populate only one field per Alter call (Snowflake rejects multi-property UNSET for hybrid tables).
+type HybridTableUnsetProperties struct {
+	Comment                    *bool `ddl:"keyword" sql:"UNSET COMMENT"`
+	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"UNSET DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"UNSET MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+}
+
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.
 type DropHybridTableOptions struct {
 	drop     bool                   `ddl:"static" sql:"DROP"`
@@ -236,8 +248,14 @@ type hybridTableDetailsRow struct {
 }
 
 type HybridTableDetails struct {
-	Name                  string
-	Type                  string
+	Name string
+	Type string
+	// NOTE: Collation is added manually here because the generator cannot derive it
+	// from the raw "type" column returned by DESCRIBE TABLE. The convert() method in
+	// hybrid_tables_impl_gen.go invokes splitTypeAndCollation() (defined in
+	// hybrid_tables_ext.go) to populate Type (without the COLLATE suffix) and Collation
+	// separately. See pkg/sdk/tables.go:736 for the same pattern on classic tables.
+	Collation             *string
 	Kind                  string
 	IsNullable            bool
 	Default               string
