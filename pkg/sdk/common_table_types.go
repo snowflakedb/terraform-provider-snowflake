@@ -184,5 +184,5 @@ func AsStringList[T ~string](input []T) []string {
 // TableContact represents a CONTACT <purpose> = <contact_name> assignment.
 type TableContact struct {
 	Purpose string `ddl:"keyword"`
-	Contact string `ddl:"parameter,no_equals,single_quotes"`
+	Contact string `ddl:"parameter,single_quotes"`
 }
