@@ -64,8 +64,8 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"CsvOptions",
 			g.NewQueryStruct("FileFormatCsvOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = CSV")).
-				OptionalAssignment("COMPRESSION", CsvCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+				SQLWithCustomFieldName("formatType", "TYPE = CSV").
+				OptionalEnumAssignment("COMPRESSION", CsvCompressionEnumDef, g.ParameterOptions().NoQuotes()).
 				OptionalQueryStructField("RecordDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("RECORD_DELIMITER =")).
 				OptionalQueryStructField("FieldDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_DELIMITER =")).
 				OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
@@ -76,7 +76,7 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
 				OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
 				OptionalQueryStructField("TimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
-				OptionalAssignment("BINARY_FORMAT", BinaryFormatEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+				OptionalEnumAssignment("BINARY_FORMAT", BinaryFormatEnumDef, g.ParameterOptions().NoQuotes()).
 				OptionalQueryStructField("Escape", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE =")).
 				OptionalQueryStructField("EscapeUnenclosedField", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE_UNENCLOSED_FIELD =")).
 				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
@@ -86,19 +86,19 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				OptionalBooleanAssignment("EMPTY_FIELD_AS_NULL", g.ParameterOptions()).
 				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
-				OptionalAssignment("ENCODING", CsvEncodingEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+				OptionalEnumAssignment("ENCODING", CsvEncodingEnumDef, g.ParameterOptions().NoQuotes()).
 				WithValidation(g.ConflictingFields, "SkipHeader", "ParseHeader"),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"JsonOptions",
 			g.NewQueryStruct("FileFormatJsonOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = JSON")).
-				OptionalAssignment("COMPRESSION", JsonCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+				SQLWithCustomFieldName("formatType", "TYPE = JSON").
+				OptionalEnumAssignment("COMPRESSION", JsonCompressionEnumDef, g.ParameterOptions().NoQuotes()).
 				OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
 				OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
 				OptionalQueryStructField("TimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
-				OptionalAssignment("BINARY_FORMAT", BinaryFormatEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+				OptionalEnumAssignment("BINARY_FORMAT", BinaryFormatEnumDef, g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 				OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
 				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
@@ -116,8 +116,8 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"AvroOptions",
 			g.NewQueryStruct("FileFormatAvroOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = AVRO")).
-				OptionalAssignment("COMPRESSION", AvroCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+				SQLWithCustomFieldName("formatType", "TYPE = AVRO").
+				OptionalEnumAssignment("COMPRESSION", AvroCompressionEnumDef, g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
@@ -126,7 +126,7 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"OrcOptions",
 			g.NewQueryStruct("FileFormatOrcOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = ORC")).
+				SQLWithCustomFieldName("formatType", "TYPE = ORC").
 				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
@@ -135,8 +135,8 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"ParquetOptions",
 			g.NewQueryStruct("FileFormatParquetOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = PARQUET")).
-				OptionalAssignment("COMPRESSION", ParquetCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+				SQLWithCustomFieldName("formatType", "TYPE = PARQUET").
+				OptionalEnumAssignment("COMPRESSION", ParquetCompressionEnumDef, g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("SNAPPY_COMPRESSION", g.ParameterOptions()).
 				OptionalBooleanAssignment("BINARY_AS_TEXT", g.ParameterOptions()).
 				OptionalBooleanAssignment("USE_LOGICAL_TYPE", g.ParameterOptions()).
@@ -150,8 +150,8 @@ func fileFormatDef() *g.QueryStruct {
 		OptionalQueryStructField(
 			"XmlOptions",
 			g.NewQueryStruct("FileFormatXmlOptions").
-				PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = XML")).
-				OptionalAssignment("COMPRESSION", XmlCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+				SQLWithCustomFieldName("formatType", "TYPE = XML").
+				OptionalEnumAssignment("COMPRESSION", XmlCompressionEnumDef, g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
 				OptionalBooleanAssignment("PRESERVE_SPACE", g.ParameterOptions()).
 				OptionalBooleanAssignment("STRIP_OUTER_ELEMENT", g.ParameterOptions()).

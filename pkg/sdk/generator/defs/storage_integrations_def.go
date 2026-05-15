@@ -25,7 +25,7 @@ var storageIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"S3StorageProviderParams",
 				g.NewQueryStruct("S3StorageParams").
-					PredefinedQueryStructField("Protocol", g.KindOfT[sdkcommons.S3Protocol](), g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required()).
+					WithField(g.EnumLegacy[sdkcommons.S3Protocol]("Protocol", g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required())).
 					TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
