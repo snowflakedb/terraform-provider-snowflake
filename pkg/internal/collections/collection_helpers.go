@@ -2,6 +2,7 @@ package collections
 
 import (
 	"errors"
+	"reflect"
 	"strings"
 )
 
@@ -89,4 +90,15 @@ func GroupByProperty[T any, K comparable](items []T, getProperty func(T) K) map[
 	}
 
 	return grouped
+}
+
+// MapHasAllEntriesOf reports whether baseMap contains every key/value pair from subsetMap.
+func MapHasAllEntriesOf[Key comparable, Value any](baseMap map[Key]Value, subsetMap map[Key]Value) bool {
+	for k, v := range subsetMap {
+		baseValue, ok := baseMap[k]
+		if !ok || !reflect.DeepEqual(baseValue, v) {
+			return false
+		}
+	}
+	return true
 }
