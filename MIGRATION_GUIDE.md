@@ -85,6 +85,22 @@ The `snowflake_system_get_privatelink_config` data source now exposes additional
 
 No changes are required for existing configurations that only reference the previously available attributes.
 
+### *(bug fix)* snowflake_grant_privileges_to_account_role: CONNECTION object type support
+
+Previously, attempting to grant privileges on a `CONNECTION` object type in the `on_account_object` block would fail with the following error, despite `CONNECTION` being listed as an allowed value in the schema:
+
+```
+Error: [grants_validations.go:315] exactly one of GrantOnAccountObject
+fields [User ResourceMonitor Warehouse ComputePool Database Integration
+FailoverGroup ReplicationGroup ExternalVolume] must be set
+```
+
+This has been fixed — the resource now correctly handles `CONNECTION` as an account object type.
+
+No changes are required for existing configurations.
+
+References: [#4727](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4727)
+
 ## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* snowflake_password_policy resource rework
