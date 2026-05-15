@@ -71,8 +71,8 @@ func (s *StreamOnTableModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnTableModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -90,23 +90,8 @@ func (s *StreamOnTableModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock)
 	return s
 }
 
-func (s *StreamOnTableModel) WithTimeoutCreate(duration string) *StreamOnTableModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *StreamOnTableModel) WithTimeoutRead(duration string) *StreamOnTableModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *StreamOnTableModel) WithTimeoutUpdate(duration string) *StreamOnTableModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *StreamOnTableModel) WithTimeoutDelete(duration string) *StreamOnTableModel {
-	s.SetTimeoutDelete(duration)
+func (s *StreamOnTableModel) WithTimeout(timeout config.Timeouts) *StreamOnTableModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

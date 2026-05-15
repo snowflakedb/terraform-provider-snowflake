@@ -66,8 +66,8 @@ func (s *ScimSecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias ScimSecurityIntegrationModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -85,23 +85,8 @@ func (s *ScimSecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.Dyn
 	return s
 }
 
-func (s *ScimSecurityIntegrationModel) WithTimeoutCreate(duration string) *ScimSecurityIntegrationModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *ScimSecurityIntegrationModel) WithTimeoutRead(duration string) *ScimSecurityIntegrationModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *ScimSecurityIntegrationModel) WithTimeoutUpdate(duration string) *ScimSecurityIntegrationModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *ScimSecurityIntegrationModel) WithTimeoutDelete(duration string) *ScimSecurityIntegrationModel {
-	s.SetTimeoutDelete(duration)
+func (s *ScimSecurityIntegrationModel) WithTimeout(timeout config.Timeouts) *ScimSecurityIntegrationModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

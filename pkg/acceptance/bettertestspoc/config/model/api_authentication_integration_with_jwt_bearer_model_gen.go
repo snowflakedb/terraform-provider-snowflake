@@ -74,8 +74,8 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerModel) MarshalJSON() ([]byte, 
 	type Alias ApiAuthenticationIntegrationWithJwtBearerModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(a),
 		DependsOn: a.DependsOn(),
@@ -93,23 +93,8 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithDynamicBlock(dynami
 	return a
 }
 
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithTimeoutCreate(duration string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.SetTimeoutCreate(duration)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithTimeoutRead(duration string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.SetTimeoutRead(duration)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithTimeoutUpdate(duration string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.SetTimeoutUpdate(duration)
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithTimeoutDelete(duration string) *ApiAuthenticationIntegrationWithJwtBearerModel {
-	a.SetTimeoutDelete(duration)
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithTimeout(timeout config.Timeouts) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.SetTimeout(timeout)
 	return a
 }
 

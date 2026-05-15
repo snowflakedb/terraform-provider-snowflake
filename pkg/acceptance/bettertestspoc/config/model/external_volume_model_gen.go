@@ -56,8 +56,8 @@ func (e *ExternalVolumeModel) MarshalJSON() ([]byte, error) {
 	type Alias ExternalVolumeModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(e),
 		DependsOn: e.DependsOn(),
@@ -75,23 +75,8 @@ func (e *ExternalVolumeModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock
 	return e
 }
 
-func (e *ExternalVolumeModel) WithTimeoutCreate(duration string) *ExternalVolumeModel {
-	e.SetTimeoutCreate(duration)
-	return e
-}
-
-func (e *ExternalVolumeModel) WithTimeoutRead(duration string) *ExternalVolumeModel {
-	e.SetTimeoutRead(duration)
-	return e
-}
-
-func (e *ExternalVolumeModel) WithTimeoutUpdate(duration string) *ExternalVolumeModel {
-	e.SetTimeoutUpdate(duration)
-	return e
-}
-
-func (e *ExternalVolumeModel) WithTimeoutDelete(duration string) *ExternalVolumeModel {
-	e.SetTimeoutDelete(duration)
+func (e *ExternalVolumeModel) WithTimeout(timeout config.Timeouts) *ExternalVolumeModel {
+	e.SetTimeout(timeout)
 	return e
 }
 

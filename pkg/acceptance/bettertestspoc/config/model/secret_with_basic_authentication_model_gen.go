@@ -70,8 +70,8 @@ func (s *SecretWithBasicAuthenticationModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithBasicAuthenticationModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -89,23 +89,8 @@ func (s *SecretWithBasicAuthenticationModel) WithDynamicBlock(dynamicBlock *conf
 	return s
 }
 
-func (s *SecretWithBasicAuthenticationModel) WithTimeoutCreate(duration string) *SecretWithBasicAuthenticationModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *SecretWithBasicAuthenticationModel) WithTimeoutRead(duration string) *SecretWithBasicAuthenticationModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *SecretWithBasicAuthenticationModel) WithTimeoutUpdate(duration string) *SecretWithBasicAuthenticationModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *SecretWithBasicAuthenticationModel) WithTimeoutDelete(duration string) *SecretWithBasicAuthenticationModel {
-	s.SetTimeoutDelete(duration)
+func (s *SecretWithBasicAuthenticationModel) WithTimeout(timeout config.Timeouts) *SecretWithBasicAuthenticationModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

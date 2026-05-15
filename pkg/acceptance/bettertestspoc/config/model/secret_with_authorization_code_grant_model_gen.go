@@ -75,8 +75,8 @@ func (s *SecretWithAuthorizationCodeGrantModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithAuthorizationCodeGrantModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -94,23 +94,8 @@ func (s *SecretWithAuthorizationCodeGrantModel) WithDynamicBlock(dynamicBlock *c
 	return s
 }
 
-func (s *SecretWithAuthorizationCodeGrantModel) WithTimeoutCreate(duration string) *SecretWithAuthorizationCodeGrantModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *SecretWithAuthorizationCodeGrantModel) WithTimeoutRead(duration string) *SecretWithAuthorizationCodeGrantModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *SecretWithAuthorizationCodeGrantModel) WithTimeoutUpdate(duration string) *SecretWithAuthorizationCodeGrantModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *SecretWithAuthorizationCodeGrantModel) WithTimeoutDelete(duration string) *SecretWithAuthorizationCodeGrantModel {
-	s.SetTimeoutDelete(duration)
+func (s *SecretWithAuthorizationCodeGrantModel) WithTimeout(timeout config.Timeouts) *SecretWithAuthorizationCodeGrantModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

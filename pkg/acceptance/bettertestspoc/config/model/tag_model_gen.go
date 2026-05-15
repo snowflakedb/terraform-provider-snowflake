@@ -65,8 +65,8 @@ func (t *TagModel) MarshalJSON() ([]byte, error) {
 	type Alias TagModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(t),
 		DependsOn: t.DependsOn(),
@@ -84,23 +84,8 @@ func (t *TagModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *TagModel
 	return t
 }
 
-func (t *TagModel) WithTimeoutCreate(duration string) *TagModel {
-	t.SetTimeoutCreate(duration)
-	return t
-}
-
-func (t *TagModel) WithTimeoutRead(duration string) *TagModel {
-	t.SetTimeoutRead(duration)
-	return t
-}
-
-func (t *TagModel) WithTimeoutUpdate(duration string) *TagModel {
-	t.SetTimeoutUpdate(duration)
-	return t
-}
-
-func (t *TagModel) WithTimeoutDelete(duration string) *TagModel {
-	t.SetTimeoutDelete(duration)
+func (t *TagModel) WithTimeout(timeout config.Timeouts) *TagModel {
+	t.SetTimeout(timeout)
 	return t
 }
 

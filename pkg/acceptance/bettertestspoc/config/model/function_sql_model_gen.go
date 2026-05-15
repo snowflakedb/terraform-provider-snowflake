@@ -77,8 +77,8 @@ func (f *FunctionSqlModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionSqlModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
@@ -96,23 +96,8 @@ func (f *FunctionSqlModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *
 	return f
 }
 
-func (f *FunctionSqlModel) WithTimeoutCreate(duration string) *FunctionSqlModel {
-	f.SetTimeoutCreate(duration)
-	return f
-}
-
-func (f *FunctionSqlModel) WithTimeoutRead(duration string) *FunctionSqlModel {
-	f.SetTimeoutRead(duration)
-	return f
-}
-
-func (f *FunctionSqlModel) WithTimeoutUpdate(duration string) *FunctionSqlModel {
-	f.SetTimeoutUpdate(duration)
-	return f
-}
-
-func (f *FunctionSqlModel) WithTimeoutDelete(duration string) *FunctionSqlModel {
-	f.SetTimeoutDelete(duration)
+func (f *FunctionSqlModel) WithTimeout(timeout config.Timeouts) *FunctionSqlModel {
+	f.SetTimeout(timeout)
 	return f
 }
 

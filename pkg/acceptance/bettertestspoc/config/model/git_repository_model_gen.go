@@ -70,8 +70,8 @@ func (g *GitRepositoryModel) MarshalJSON() ([]byte, error) {
 	type Alias GitRepositoryModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(g),
 		DependsOn: g.DependsOn(),
@@ -89,23 +89,8 @@ func (g *GitRepositoryModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock)
 	return g
 }
 
-func (g *GitRepositoryModel) WithTimeoutCreate(duration string) *GitRepositoryModel {
-	g.SetTimeoutCreate(duration)
-	return g
-}
-
-func (g *GitRepositoryModel) WithTimeoutRead(duration string) *GitRepositoryModel {
-	g.SetTimeoutRead(duration)
-	return g
-}
-
-func (g *GitRepositoryModel) WithTimeoutUpdate(duration string) *GitRepositoryModel {
-	g.SetTimeoutUpdate(duration)
-	return g
-}
-
-func (g *GitRepositoryModel) WithTimeoutDelete(duration string) *GitRepositoryModel {
-	g.SetTimeoutDelete(duration)
+func (g *GitRepositoryModel) WithTimeout(timeout config.Timeouts) *GitRepositoryModel {
+	g.SetTimeout(timeout)
 	return g
 }
 
