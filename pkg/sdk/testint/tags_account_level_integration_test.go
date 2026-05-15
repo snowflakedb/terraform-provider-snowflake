@@ -101,11 +101,11 @@ func TestInt_Tags_OnConflict_Bcr2291(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
-					WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("will_be_cleared")})),
+					WithOnConflict(sdk.TagOnConflict{AllowedValuesSequence: sdk.Bool(true)})),
 		)
 		t.Cleanup(tagCleanup)
 
-		assertThatObject(t, objectassert.Tag(t, tag.ID()).HasOnConflict("will_be_cleared"))
+		assertThatObject(t, objectassert.Tag(t, tag.ID()).HasOnConflict("ALLOWED_VALUES_SEQUENCE"))
 
 		testClientHelper().Tag.Alter(t, sdk.NewAlterTagRequest(tag.ID()).
 			WithUnset(*sdk.NewTagUnsetRequest().WithPropagate(true)))
