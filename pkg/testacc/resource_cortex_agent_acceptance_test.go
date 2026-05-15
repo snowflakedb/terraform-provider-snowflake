@@ -27,14 +27,14 @@ import (
 func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	response := "You are a helpful assistant"
-	hclSpec := testClient().CortexAgent.SampleSpecAsYamlencodeHCL(t, response)
+	hclSpec := model.SampleSpecAsYamlencodeHCL(response)
 	descSpec := testClient().CortexAgent.SampleSpecAsJson(t, response)
 	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
 		testClient().CortexAgent.SampleSpecWithResponse(t, response))
 	require.NoError(t, err)
 
 	newResponse := "You will respond in a friendly but concise manner"
-	newHclSpec := testClient().CortexAgent.SampleSpecAsYamlencodeHCL(t, newResponse)
+	newHclSpec := model.SampleSpecAsYamlencodeHCL(newResponse)
 	newDescSpec := testClient().CortexAgent.SampleSpecAsJson(t, newResponse)
 	newNormalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
 		testClient().CortexAgent.SampleSpecWithResponse(t, newResponse))
@@ -56,16 +56,13 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 		Color:       sdk.String("red"),
 	}
 
-	basic := model.CortexAgent("t", id.DatabaseName(), id.SchemaName(), id.Name(), "").
-		WithSpecificationValue(config.UnquotedWrapperVariable(hclSpec))
+	basic := model.CortexAgentWithSpecification("t", id.DatabaseName(), id.SchemaName(), id.Name(), hclSpec)
 
-	complete := model.CortexAgent("t", id.DatabaseName(), id.SchemaName(), id.Name(), "").
-		WithSpecificationValue(config.UnquotedWrapperVariable(newHclSpec)).
+	complete := model.CortexAgentWithSpecification("t", id.DatabaseName(), id.SchemaName(), id.Name(), newHclSpec).
 		WithComment(comment).
 		WithProfile(completeProfile)
 
-	withPartialProfile := model.CortexAgent("t", id.DatabaseName(), id.SchemaName(), id.Name(), "").
-		WithSpecificationValue(config.UnquotedWrapperVariable(newHclSpec)).
+	withPartialProfile := model.CortexAgentWithSpecification("t", id.DatabaseName(), id.SchemaName(), id.Name(), newHclSpec).
 		WithComment(comment).
 		WithProfile(partialProfile)
 
@@ -77,7 +74,7 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 			HasSchema(id.SchemaName()).
 			HasDatabase(id.DatabaseName()).
 			HasSpecification(normalizedSpec).
-			HasNoComment().
+			HasCommentEmpty().
 			HasProfileEmpty(),
 		resourceshowoutputassert.CortexAgentShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
@@ -307,6 +304,115 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, completeAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_CortexAgent_CompleteUseCase_EmptyAndNullCommentsHandling(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	response := "You are a helpful assistant"
+	hclSpec := model.SampleSpecAsYamlencodeHCL(response)
+	descSpec := testClient().CortexAgent.SampleSpecAsJson(t, response)
+	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
+		testClient().CortexAgent.SampleSpecWithResponse(t, response))
+	require.NoError(t, err)
+
+	basic := model.CortexAgentWithSpecification("t", id.DatabaseName(), id.SchemaName(), id.Name(), hclSpec)
+
+	basicWithEmptyComment := model.CortexAgentWithSpecification("t", id.DatabaseName(), id.SchemaName(), id.Name(), hclSpec).
+		WithComment("")
+
+	ref := basic.ResourceReference()
+
+	basicAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.CortexAgentResource(t, ref).
+			HasName(id.Name()).
+			HasSchema(id.SchemaName()).
+			HasDatabase(id.DatabaseName()).
+			HasSpecification(normalizedSpec).
+			HasCommentEmpty().
+			HasProfileEmpty(),
+		resourceshowoutputassert.CortexAgentShowOutput(t, ref).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment("").
+			HasProfile(""),
+		resourceshowoutputassert.CortexAgentDescribeOutput(t, ref).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment("").
+			HasProfile("").
+			HasAgentSpec(descSpec).
+			HasCreatedOnNotEmpty().
+			HasDefaultVersionName("LAST").
+			HasVersions(`["VERSION$1"]`).
+			HasAliases(`{"DEFAULT":"VERSION$1","FIRST":"VERSION$1","LAST":"VERSION$1"}`),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CortexAgent),
+		Steps: []resource.TestStep{
+			// Create
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, basicAssertions...),
+			},
+			// Set empty comment externally and expect no drift
+			{
+				PreConfig: func() {
+					alterRequest := sdk.NewAlterCortexAgentRequest(id).WithSet(*sdk.NewCortexAgentSetRequest().
+						WithComment(sdk.StringAllowEmpty{Value: ""}),
+					)
+					testClient().CortexAgent.Alter(t, alterRequest)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, basicAssertions...),
+			},
+			// Set empty comment and expect empty plan
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: config.FromModels(t, basicWithEmptyComment),
+				Check:  assertThat(t, basicAssertions...),
+			},
+			// Set comment to NULL externally and expect no drift
+			{
+				PreConfig: func() {
+					// There's no way to set a comment to NULL other than recreating an object.
+					replaceRequest := sdk.NewCreateCortexAgentRequest(id, normalizedSpec).
+						WithOrReplace(true)
+					testClient().CortexAgent.CreateWithRequest(t, replaceRequest)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: config.FromModels(t, basicWithEmptyComment),
+				Check:  assertThat(t, basicAssertions...),
 			},
 		},
 	})

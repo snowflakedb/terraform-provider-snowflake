@@ -179,10 +179,9 @@ func ReadCortexAgent(ctx context.Context, d *schema.ResourceData, meta any) diag
 		return diag.FromErr(err)
 	}
 
+	var comment string
 	if details.Comment != nil {
-		if err := d.Set("comment", *details.Comment); err != nil {
-			return diag.FromErr(err)
-		}
+		comment = *details.Comment
 	}
 
 	profileList := make([]any, 0)
@@ -205,9 +204,6 @@ func ReadCortexAgent(ctx context.Context, d *schema.ResourceData, meta any) diag
 			profileList = append(profileList, block)
 		}
 	}
-	if err := d.Set("profile", profileList); err != nil {
-		return diag.FromErr(err)
-	}
 
 	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(details.AgentSpec)
 	if err != nil {
@@ -216,6 +212,8 @@ func ReadCortexAgent(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 	errs := errors.Join(
 		d.Set("specification", normalizedSpec),
+		d.Set("comment", comment),
+		d.Set("profile", profileList),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.CortexAgentToSchema(agent)}),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CortexAgentDetailsToSchema(details)}),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),

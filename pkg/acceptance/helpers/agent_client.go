@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -82,23 +81,6 @@ func (c *AgentClient) SampleSpecWithResponse(t *testing.T, response string) stri
 instructions:
   response: "%s"
 `, response)
-}
-
-// SampleSpecAsYamlencodeHCL returns a multiline Terraform/HCL expression for use with
-// model.CortexAgent(...).WithSpecificationValue(config.UnquotedWrapperVariable(...)).
-func (c *AgentClient) SampleSpecAsYamlencodeHCL(t *testing.T, response string) string {
-	t.Helper()
-	return fmt.Sprintf(`yamlencode({
-  orchestration = {
-    budget = {
-      seconds = 30
-      tokens  = 16000
-    }
-  }
-  instructions = {
-    response = %[1]s%[2]s%[1]s
-  }
-})`, config.SnowflakeProviderConfigQuoteMarker, response)
 }
 
 func (c *AgentClient) SampleSpecAsJson(t *testing.T, response string) string {
