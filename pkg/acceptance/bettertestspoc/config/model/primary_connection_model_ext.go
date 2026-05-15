@@ -6,7 +6,7 @@ import (
 )
 
 func (c *PrimaryConnectionModel) WithEnableFailover(toAccount ...sdk.AccountIdentifier) *PrimaryConnectionModel {
-	variables := make([]config.Variable, 0)
+	variables := make([]config.Variable, 0, len(toAccount))
 	for _, v := range toAccount {
 		variables = append(variables, config.StringVariable(v.Name()))
 	}

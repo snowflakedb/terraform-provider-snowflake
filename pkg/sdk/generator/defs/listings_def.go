@@ -33,7 +33,7 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 	Text("created_on").
 	Text("updated_on").
 	OptionalText("published_on").
-	PlainField("state", ListingStateEnumDef.Kind()).
+	Enum("state", ListingStateEnumDef).
 	OptionalText("review_state").
 	OptionalText("comment").
 	Text("owner").
@@ -222,7 +222,7 @@ var listingsDef = g.NewInterface(
 			Describe().
 			SQL("LISTING").
 			Name().
-			OptionalAssignment("REVISION", ListingRevisionEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
+			OptionalEnumAssignment("REVISION", ListingRevisionEnumDef, g.ParameterOptions().NoQuotes()).
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	CustomShowOperationWithPairedStructs(

@@ -85,7 +85,7 @@ func main() {
 func buildSchemas() []Schema {
 	p := provider.Provider()
 
-	schemas := make([]Schema, 0)
+	schemas := make([]Schema, 0, 1+len(p.ResourcesMap)+len(p.DataSourcesMap))
 	schemas = append(schemas, Schema{
 		ResourceName: "provider",
 		SchemaMap:    p.Schema,
@@ -109,7 +109,7 @@ func buildSchemas() []Schema {
 }
 
 func extractStringFields(schemas []Schema) []StringField {
-	fields := make([]StringField, 0)
+	fields := make([]StringField, 0, len(schemas))
 
 	for _, s := range schemas {
 		fields = append(fields, extractStringFieldsFromSchemaMap(s.ResourceName, "", s.SchemaMap)...)

@@ -3,8 +3,10 @@
 package testacc
 
 import (
+	"slices"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -24,21 +26,25 @@ import (
 // For the test that checks behavior for promoting secondary to primary, see `secondary_connection_promotion` manual test.
 
 func TestAcc_SecondaryConnection_Basic(t *testing.T) {
-	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed; also, different regions needed
-	t.Skipf("Skipped due to 003813 (23001): The connection cannot be failed over to an account in the same region")
+	if slices.Contains([]testenvs.SnowflakeEnvironment{
+		testenvs.SnowflakeProdEnvironment,
+		testenvs.SnowflakePreProdGovEnvironment,
+	}, testenvs.GetSnowflakeEnvironmentWithProdDefault()) {
+		t.Skip("Missing azure configuration on all testing environments")
+	}
 
 	// create primary connection
-	connection, connectionCleanup := secondaryTestClient().Connection.Create(t)
+	connection, connectionCleanup := azureTestClient().Connection.Create(t)
 	t.Cleanup(connectionCleanup)
 
 	accountId := testClient().Account.GetAccountIdentifier(t)
-	secondaryTestClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).
+	azureTestClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).
 		WithEnableConnectionFailover(
 			*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{accountId}),
 		),
 	)
 
-	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(secondaryTestClient().Account.GetAccountIdentifier(t), connection.ID())
+	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(azureTestClient().Account.GetAccountIdentifier(t), connection.ID())
 	comment := random.Comment()
 
 	secondaryConnectionModel := model.SecondaryConnection("t", connection.ID().Name(), primaryConnectionAsExternalId.FullyQualifiedName())
@@ -72,7 +78,7 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 							HasIsPrimary(false).
 							HasPrimaryIdentifier(primaryConnectionAsExternalId).
 							HasFailoverAllowedToAccounts().
-							HasConnectionUrl(secondaryTestClient().Connection.GetConnectionUrl(accountId.OrganizationName(), connection.ID().Name())),
+							HasConnectionUrl(azureTestClient().Connection.GetConnectionUrl(accountId.OrganizationName(), connection.ID().Name())),
 					),
 				),
 			},

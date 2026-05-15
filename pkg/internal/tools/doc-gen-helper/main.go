@@ -27,7 +27,7 @@ func main() {
 	path := os.Args[1]
 	additionalExamplesPath := filepath.Join(path, "examples", "additional")
 
-	orderedResources := make([]string, 0)
+	orderedResources := make([]string, 0, len(provider.Provider().ResourcesMap))
 	for key := range provider.Provider().ResourcesMap {
 		orderedResources = append(orderedResources, key)
 	}
@@ -51,7 +51,7 @@ func main() {
 		}
 	}
 
-	orderedDataSources := make([]string, 0)
+	orderedDataSources := make([]string, 0, len(provider.Provider().DataSourcesMap))
 	for key := range provider.Provider().DataSourcesMap {
 		orderedDataSources = append(orderedDataSources, key)
 	}
@@ -120,11 +120,11 @@ func newDeprecatedDataSource(nameRelativeLink string, dataSource *schema.Resourc
 	}
 }
 
-func printTo(template *template.Template, model any, filepath string) error {
+func printTo(template *template.Template, model any, path string) error {
 	var writer bytes.Buffer
 	err := template.Execute(&writer, model)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath, writer.Bytes(), 0o600)
+	return os.WriteFile(filepath.Clean(path), writer.Bytes(), 0o600)
 }

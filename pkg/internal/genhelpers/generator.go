@@ -255,8 +255,9 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 // References:
 // - https://pkg.go.dev/cmd/go/internal/generate
 func preprocessArgs() {
+	newArgs := make([]string, 0, len(os.Args))
+	newArgs = append(newArgs, os.Args[0])
 	rest := os.Args[1:]
-	newArgs := []string{os.Args[0]}
 	for _, a := range rest {
 		newArgs = append(newArgs, strings.Split(a, " ")...)
 	}

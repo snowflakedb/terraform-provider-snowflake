@@ -20,7 +20,7 @@ func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*te
 	t.Helper()
 
 	return func(s *terraform.State) error {
-		errs := make([]error, 0)
+		errs := make([]error, 0, len(resources))
 		for _, resource := range resources {
 			checkFunc := CheckDestroy(t, resource)
 			errs = append(errs, checkFunc(s))
@@ -43,7 +43,7 @@ func CheckDestroyUsingLegacyIdParsing(t *testing.T, resource resources.Resource)
 func checkDestroy(t *testing.T, resource resources.Resource, decodeSnowflakeIdFunc decodeSnowflakeIdFunc) func(*terraform.State) error {
 	t.Helper()
 	// TODO [SNOW-1653619]: use TestClient() here
-	client := atc.client
+	client := atc.defaultTestEnv.client
 	t.Logf("running check destroy for resource %s", resource)
 
 	return func(s *terraform.State) error {
