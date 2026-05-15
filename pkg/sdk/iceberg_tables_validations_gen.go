@@ -50,8 +50,8 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.AddColumnAction, opts.AlterColumnAction, opts.SetMaskingPolicyOnColumn, opts.UnsetMaskingPolicyOnColumn, opts.SetProjectionPolicyOnColumn, opts.UnsetProjectionPolicyOnColumn, opts.SetTagsOnColumn, opts.UnsetTagsOnColumn, opts.ClusteringAction, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies) {
-		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies"))
+	if !exactlyOneValueSet(opts.AddColumnAction, opts.DropColumnAction, opts.RenameColumnAction, opts.AlterColumnAction, opts.SetMaskingPolicyOnColumn, opts.UnsetMaskingPolicyOnColumn, opts.SetProjectionPolicyOnColumn, opts.UnsetProjectionPolicyOnColumn, opts.SetTagsOnColumn, opts.UnsetTagsOnColumn, opts.ClusteringAction, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy, opts.SearchOptimizationAction) {
+		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
 	}
 	// Adjusted manually: AlterColumnAction is a slice, validate each element
 	for i, col := range opts.AlterColumnAction {
@@ -72,6 +72,29 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.ReplaceInvalidCharacters, opts.Unset.CatalogSync, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.TargetFileSize, opts.Unset.LogEventLevel, opts.Unset.ErrorLogging, opts.Unset.EnableDataCompaction, opts.Unset.EnableIcebergMergeOnRead, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
+		}
+	}
+	if valueSet(opts.SetAggregationPolicy) {
+		if !ValidObjectIdentifier(opts.SetAggregationPolicy.AggregationPolicy) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+	}
+	if valueSet(opts.SetJoinPolicy) {
+		if !ValidObjectIdentifier(opts.SetJoinPolicy.JoinPolicy) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+	}
+	if valueSet(opts.SearchOptimizationAction) {
+		if !exactlyOneValueSet(opts.SearchOptimizationAction.Add, opts.SearchOptimizationAction.Drop) {
+			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction", "Add", "Drop"))
+		}
+		// Adjusted manually: each Drop.On entry must have exactly one of SearchMethodWithTarget, ColumnName, or ExpressionId set.
+		if valueSet(opts.SearchOptimizationAction.Drop) {
+			for _, on := range opts.SearchOptimizationAction.Drop.On {
+				if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
+					errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)

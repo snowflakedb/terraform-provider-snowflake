@@ -112,6 +112,18 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				Tag:          v.Tag,
 				Comment:      v.Comment,
 			}
+			// Adjusted manually: convert *Request sub-structs to *Options
+			if v.MaskingPolicy != nil {
+				s[i].MaskingPolicy = &TableColumnMaskingPolicy{
+					MaskingPolicy: v.MaskingPolicy.MaskingPolicy,
+					Using:         v.MaskingPolicy.Using,
+				}
+			}
+			if v.ProjectionPolicy != nil {
+				s[i].ProjectionPolicy = &TableColumnProjectionPolicy{
+					ProjectionPolicy: v.ProjectionPolicy.ProjectionPolicy,
+				}
+			}
 		}
 		opts.ColumnsAndConstraints.Columns = s
 	}
@@ -175,6 +187,29 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			ColumnType:   r.AddColumnAction.ColumnType,
 			DefaultValue: r.AddColumnAction.DefaultValue,
 			Tag:          r.AddColumnAction.Tag,
+		}
+		if r.AddColumnAction.MaskingPolicy != nil {
+			opts.AddColumnAction.MaskingPolicy = &TableColumnMaskingPolicy{
+				MaskingPolicy: r.AddColumnAction.MaskingPolicy.MaskingPolicy,
+				Using:         r.AddColumnAction.MaskingPolicy.Using,
+			}
+		}
+		if r.AddColumnAction.ProjectionPolicy != nil {
+			opts.AddColumnAction.ProjectionPolicy = &TableColumnProjectionPolicy{
+				ProjectionPolicy: r.AddColumnAction.ProjectionPolicy.ProjectionPolicy,
+			}
+		}
+	}
+	if r.DropColumnAction != nil {
+		opts.DropColumnAction = &TableDropColumnAction{
+			IfExists: r.DropColumnAction.IfExists,
+			Columns:  r.DropColumnAction.Columns,
+		}
+	}
+	if r.RenameColumnAction != nil {
+		opts.RenameColumnAction = &TableRenameColumnAction{
+			OldName: r.RenameColumnAction.OldName,
+			NewName: r.RenameColumnAction.NewName,
 		}
 	}
 	if r.AlterColumnAction != nil {
@@ -272,6 +307,68 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			Comment:                    r.Unset.Comment,
 		}
 	}
+	if r.SetAggregationPolicy != nil {
+		opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+			AggregationPolicy: r.SetAggregationPolicy.AggregationPolicy,
+			EntityKey:         r.SetAggregationPolicy.EntityKey,
+			Force:             r.SetAggregationPolicy.Force,
+		}
+	}
+	if r.UnsetAggregationPolicy != nil {
+		opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{}
+	}
+	if r.SetJoinPolicy != nil {
+		opts.SetJoinPolicy = &TableSetJoinPolicy{
+			JoinPolicy: r.SetJoinPolicy.JoinPolicy,
+			Force:      r.SetJoinPolicy.Force,
+		}
+	}
+	if r.UnsetJoinPolicy != nil {
+		opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{}
+	}
+	if r.SearchOptimizationAction != nil {
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
+		if r.SearchOptimizationAction.Add != nil {
+			opts.SearchOptimizationAction.Add = &TableAddSearchOptimization{}
+			if r.SearchOptimizationAction.Add.On != nil {
+				s := make([]TableSearchMethodWithTarget, len(r.SearchOptimizationAction.Add.On))
+				for i, v := range r.SearchOptimizationAction.Add.On {
+					// Adjusted manually: convert Args from Request to Options shape
+					s[i] = TableSearchMethodWithTarget{
+						Method: v.Method,
+						Args: TableSearchMethodArgs{
+							Targets:  v.Args.Targets,
+							Analyzer: v.Args.Analyzer,
+						},
+					}
+				}
+				opts.SearchOptimizationAction.Add.On = s
+			}
+		}
+		if r.SearchOptimizationAction.Drop != nil {
+			opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
+			if r.SearchOptimizationAction.Drop.On != nil {
+				s := make([]TableDropSearchOptimizationOn, len(r.SearchOptimizationAction.Drop.On))
+				for i, v := range r.SearchOptimizationAction.Drop.On {
+					// Adjusted manually: polymorphic On — one of search_method_with_target | column_name | expression_id
+					s[i] = TableDropSearchOptimizationOn{
+						ColumnName:   v.ColumnName,
+						ExpressionId: v.ExpressionId,
+					}
+					if v.SearchMethodWithTarget != nil {
+						s[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
+							Method: v.SearchMethodWithTarget.Method,
+							Args: TableSearchMethodArgs{
+								Targets:  v.SearchMethodWithTarget.Args.Targets,
+								Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
+							},
+						}
+					}
+				}
+				opts.SearchOptimizationAction.Drop.On = s
+			}
+		}
+	}
 	return opts
 }
 
@@ -287,6 +384,7 @@ func (r *DropIcebergTableRequest) toOpts() *DropIcebergTableOptions {
 
 func (r *ShowIcebergTableRequest) toOpts() *ShowIcebergTableOptions {
 	opts := &ShowIcebergTableOptions{
+		Terse:      r.Terse,
 		Like:       r.Like,
 		In:         r.In,
 		StartsWith: r.StartsWith,

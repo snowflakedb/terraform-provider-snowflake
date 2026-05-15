@@ -262,7 +262,7 @@ func (opts *alterTableOptions) validate() error {
 			searchOptimizationAction.Add,
 			searchOptimizationAction.Drop,
 		); !ok {
-			errs = append(errs, errExactlyOneOf("TableSearchOptimizationAction", "Add", "Drop"))
+			errs = append(errs, errExactlyOneOf("TableSearchOptimizationActionLegacy", "Add", "Drop"))
 		}
 	}
 	return errors.Join(errs...)
