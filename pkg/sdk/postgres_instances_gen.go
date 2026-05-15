@@ -54,12 +54,12 @@ type ForkPostgresInstanceOptions struct {
 }
 
 type PostgresInstanceForkAt struct {
-	Timestamp *string `ddl:"parameter,no_quotes,arrow_equals" sql:"TIMESTAMP"`
+	Timestamp *string `ddl:"parameter,single_quotes,arrow_equals" sql:"TIMESTAMP"`
 	Offset    *string `ddl:"parameter,no_quotes,arrow_equals" sql:"OFFSET"`
 }
 
 type PostgresInstanceForkBefore struct {
-	Timestamp *string `ddl:"parameter,no_quotes,arrow_equals" sql:"TIMESTAMP"`
+	Timestamp *string `ddl:"parameter,single_quotes,arrow_equals" sql:"TIMESTAMP"`
 	Offset    *string `ddl:"parameter,no_quotes,arrow_equals" sql:"OFFSET"`
 }
 
@@ -185,8 +185,8 @@ type DescribePostgresInstanceOptions struct {
 }
 
 type postgresInstanceDetailsRow struct {
-	Property string `db:"property"`
-	Value    string `db:"value"`
+	Property string         `db:"property"`
+	Value    sql.NullString `db:"value"`
 }
 
 type PostgresInstanceProperty struct {
