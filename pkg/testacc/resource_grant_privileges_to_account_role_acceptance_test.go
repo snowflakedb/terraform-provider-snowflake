@@ -1727,6 +1727,8 @@ func TestAcc_GrantPrivilegesToAccountRole_OnExternalVolume(t *testing.T) {
 
 // proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/4727 is fixed
 func TestAcc_GrantPrivilegesToAccountRole_OnConnection(t *testing.T) {
+	t.Skip("TODO(SNOW-1002023): Unskip; Connection object type is not supported in non Business Critical Snowflake Edition")
+
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 	connection, connectionCleanup := testClient().Connection.Create(t)

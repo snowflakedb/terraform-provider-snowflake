@@ -124,6 +124,8 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 	})
 
 	t.Run("on account object - connection", func(t *testing.T) {
+		t.Skip("TODO(SNOW-1002023): Unskip; Connection object type is not supported in non Business Critical Snowflake Edition")
+
 		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
