@@ -337,6 +337,46 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterEnableConsoleOutput, "true")
 }
 
+func TestInt_DatabasesCreateFromListing(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	// Create a share and grant usage on a database to it
+	share, shareCleanup := testClientHelper().Share.CreateShare(t)
+	t.Cleanup(shareCleanup)
+	t.Cleanup(testClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, testClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
+
+	// Create a listing targeting the current account so we can consume it from the same account
+	accountId := testClientHelper().Context.CurrentAccountId(t)
+	manifest, _ := testClientHelper().Listing.BasicManifestWithTargetAccounts(t, accountId)
+
+	listingId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(listingId).
+		WithAs(manifest).
+		WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+		WithPublish(true).
+		WithReview(false))
+	require.NoError(t, err)
+	t.Cleanup(testClientHelper().Listing.DropFunc(t, listingId))
+
+	// Retrieve the listing's global name
+	listing, err := client.Listings.ShowByID(ctx, listingId)
+	require.NoError(t, err)
+	require.NotEmpty(t, listing.GlobalName)
+
+	t.Run("basic", func(t *testing.T) {
+		databaseID := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Databases.CreateFromListing(ctx, databaseID, listing.GlobalName, &sdk.CreateDatabaseFromListingOptions{})
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, databaseID))
+
+		database, err := client.Databases.ShowByID(ctx, databaseID)
+		require.NoError(t, err)
+		assert.Equal(t, databaseID.Name(), database.Name)
+		assert.Equal(t, "IMPORTED DATABASE", database.Kind)
+	})
+}
+
 func TestInt_DatabasesAlter(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)

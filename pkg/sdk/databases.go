@@ -16,6 +16,7 @@ var (
 	_ validatable = new(CreateDatabaseOptions)
 	_ validatable = new(CreateSharedDatabaseOptions)
 	_ validatable = new(CreateSecondaryDatabaseOptions)
+	_ validatable = new(CreateDatabaseFromListingOptions)
 	_ validatable = new(AlterDatabaseOptions)
 	_ validatable = new(AlterDatabaseReplicationOptions)
 	_ validatable = new(AlterDatabaseFailoverOptions)
@@ -31,6 +32,7 @@ type Databases interface {
 	Create(ctx context.Context, id AccountObjectIdentifier, opts *CreateDatabaseOptions) error
 	CreateShared(ctx context.Context, id AccountObjectIdentifier, shareID ExternalObjectIdentifier, opts *CreateSharedDatabaseOptions) error
 	CreateSecondary(ctx context.Context, id AccountObjectIdentifier, primaryID ExternalObjectIdentifier, opts *CreateSecondaryDatabaseOptions) error
+	CreateFromListing(ctx context.Context, id AccountObjectIdentifier, listingGlobalName string, opts *CreateDatabaseFromListingOptions) error
 	Alter(ctx context.Context, id AccountObjectIdentifier, opts *AlterDatabaseOptions) error
 	AlterReplication(ctx context.Context, id AccountObjectIdentifier, opts *AlterDatabaseReplicationOptions) error
 	AlterFailover(ctx context.Context, id AccountObjectIdentifier, opts *AlterDatabaseFailoverOptions) error
@@ -382,6 +384,47 @@ func (v *databases) CreateSecondary(ctx context.Context, id AccountObjectIdentif
 	}
 	opts.name = id
 	opts.primaryDatabase = primaryID
+	if err := opts.validate(); err != nil {
+		return err
+	}
+	sql, err := structToSQL(opts)
+	if err != nil {
+		return err
+	}
+	_, err = v.client.exec(ctx, sql)
+	return err
+}
+
+// CreateDatabaseFromListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-database.
+// Supports both external listings and organization listings via the same FROM LISTING syntax.
+// SQL: CREATE DATABASE <name> FROM LISTING '<listing_global_name>'
+type CreateDatabaseFromListingOptions struct {
+	create      bool                    `ddl:"static" sql:"CREATE"`
+	database    bool                    `ddl:"static" sql:"DATABASE"`
+	name        AccountObjectIdentifier `ddl:"identifier"`
+	fromListing string                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM LISTING"`
+}
+
+func (opts *CreateDatabaseFromListingOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.fromListing == "" {
+		errs = append(errs, fmt.Errorf("CreateDatabaseFromListingOptions: listing global name must not be empty"))
+	}
+	return errors.Join(errs...)
+}
+
+func (v *databases) CreateFromListing(ctx context.Context, id AccountObjectIdentifier, listingGlobalName string, opts *CreateDatabaseFromListingOptions) error {
+	if opts == nil {
+		opts = &CreateDatabaseFromListingOptions{}
+	}
+	opts.name = id
+	opts.fromListing = listingGlobalName
 	if err := opts.validate(); err != nil {
 		return err
 	}
