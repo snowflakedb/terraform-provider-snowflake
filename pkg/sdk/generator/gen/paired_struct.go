@@ -58,6 +58,10 @@ type pairedField struct {
 	dbKind string
 	// plainKind is the Go type used in the plain SDK struct (e.g. "string", "*string", "bool").
 	plainKind string
+	// isEnum marks that the plain field is an enum type.
+	isEnum bool
+	// isJson marks that the db string column should be JSON-unmarshaled into the plain field.
+	isJson bool
 }
 
 // resolvedPlainFieldName returns the explicit override or the CamelCase conversion of dbColumnName.
@@ -83,6 +87,8 @@ type PairedStructs struct {
 	dbName    string
 	plainName string
 	fields    []pairedField
+	// generateConvert controls whether convert() body generation is enabled for this pair.
+	generateConvert bool
 }
 
 // StructPair creates a new PairedStructs with the given DB row struct name and plain struct name.
@@ -275,6 +281,84 @@ func (p *PairedStructs) OptionalSchemaObjectIdentifierWithArguments(dbColumnName
 	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifierWithArguments", allOpts)
 }
 
+// Enum adds a field where the db kind is string and the plain kind is a custom enum type.
+// Use this when the plain struct field is an SDK enum backed by a string column in the db.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> <enumType>
+func (p *PairedStructs) Enum(dbColumnName string, enum *Enum, opts ...PairedFieldOption) *PairedStructs {
+	f := pairedField{
+		dbColumnName: dbColumnName,
+		dbKind:       "string",
+		plainKind:    enum.Kind(),
+		isEnum:       true,
+	}
+	for _, opt := range opts {
+		opt(&f)
+	}
+	p.fields = append(p.fields, f)
+	return p
+}
+
+// OptionalEnum adds a nullable enum field. The db kind is sql.NullString and the plain kind is *<enumType>.
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> *<enumType>
+func (p *PairedStructs) OptionalEnum(dbColumnName string, enum *Enum, opts ...PairedFieldOption) *PairedStructs {
+	f := pairedField{
+		dbColumnName: dbColumnName,
+		dbKind:       "sql.NullString",
+		plainKind:    enum.KindPtr(),
+		isEnum:       true,
+	}
+	for _, opt := range opts {
+		opt(&f)
+	}
+	p.fields = append(p.fields, f)
+	return p
+}
+
+// JsonField adds a field where the db kind is string and the plain kind is a custom type that will be populated via JSON unmarshalling.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> <kind>
+func (p *PairedStructs) JsonField(dbColumnName, kind string, opts ...PairedFieldOption) *PairedStructs {
+	f := pairedField{
+		dbColumnName: dbColumnName,
+		dbKind:       "string",
+		plainKind:    kind,
+		isJson:       true,
+	}
+	for _, opt := range opts {
+		opt(&f)
+	}
+	p.fields = append(p.fields, f)
+	return p
+}
+
+// WithConvertGeneration opts this PairedStructs into automatic convert() body generation.
+// By default, convert generation is disabled so existing PairedStructs usages in production defs continue to emit the placeholder.
+func (p *PairedStructs) WithConvertGeneration() *PairedStructs {
+	p.generateConvert = true
+	return p
+}
+
+// toFieldPairs converts the paired field definitions into a slice of FieldPair values used in conversion generation.
+func (p *PairedStructs) toFieldPairs() []FieldPair {
+	pairs := make([]FieldPair, len(p.fields))
+	for i, f := range p.fields {
+		pairs[i] = FieldPair{
+			DbFieldName:    f.resolvedDbFieldName(),
+			PlainFieldName: f.resolvedPlainFieldName(),
+			DbKind:         f.dbKind,
+			PlainKind:      f.plainKind,
+			IsEnum:         f.isEnum,
+			IsJson:         f.isJson,
+		}
+	}
+	return pairs
+}
+
 // asDbStruct materializes the definition as a *dbStruct following the old implementation.
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
@@ -293,22 +377,48 @@ func (p *PairedStructs) asPlainStruct() *plainStruct {
 	return s
 }
 
+func (p *PairedStructs) addMappingFunc() func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		addShowMapping(op, from, to)
+		if p.generateConvert {
+			op.ShowMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
+func (p *PairedStructs) addDescribeMappingFunc() func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		addDescriptionMapping(op, from, to)
+		if p.generateConvert {
+			op.DescribeMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
+func (p *PairedStructs) instanceMethodMappingFunc(kind InstanceMethodKind) func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		op.InstanceMethodMapping = newMapping("convert", from, to)
+		op.InstanceMethodKind = &kind
+		if p.generateConvert {
+			op.InstanceMethodMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
 // ShowOperationWithPairedStructs is equivalent to ShowOperation but accepts a single PairedStructs
-// definition instead of separate DbStruct and PlainStruct arguments. The PairedStructs is
-// materialized into both structs and forwarded to the existing ShowOperation unchanged.
+// definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
-	return i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, filtering...)
+	return i.showOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addMappingFunc(), filtering...)
 }
 
 // DescribeOperationWithPairedStructs is equivalent to DescribeOperation but accepts a single
-// PairedStructs definition instead of separate DbStruct and PlainStruct arguments. The
-// PairedStructs is materialized into both structs and forwarded to the existing DescribeOperation.
+// PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) DescribeOperationWithPairedStructs(describeKind DescriptionMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
-	return i.DescribeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, helperStructs...)
+	return i.describeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addDescribeMappingFunc(), helperStructs...)
 }
 
 // CustomShowOperationWithPairedStructs is equivalent to CustomShowOperation but accepts a
 // single PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) CustomShowOperationWithPairedStructs(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct) *Interface {
-	return i.CustomShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct)
+	return i.customShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addMappingFunc())
 }
