@@ -112,6 +112,7 @@ func init() {
 		"describe_mapping_deref":     deref[DescriptionMappingKind],
 		"show_mapping_deref":         deref[ShowMappingKind],
 		"instance_method_kind_deref": deref[InstanceMethodKind],
+		"TypeWithoutPointer":         genhelpers.TypeWithoutPointer,
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
 	subTemplates, _ = subTemplates.New("convert").Parse(convertTemplateContent)

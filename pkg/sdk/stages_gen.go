@@ -49,11 +49,11 @@ type InternalStageEncryption struct {
 }
 
 type InternalStageEncryptionSnowflakeFull struct {
-	encryptionType string `ddl:"static" sql:"TYPE = 'SNOWFLAKE_FULL'"`
+	encryptionType bool `ddl:"static" sql:"TYPE = 'SNOWFLAKE_FULL'"`
 }
 
 type InternalStageEncryptionSnowflakeSse struct {
-	encryptionType string `ddl:"static" sql:"TYPE = 'SNOWFLAKE_SSE'"`
+	encryptionType bool `ddl:"static" sql:"TYPE = 'SNOWFLAKE_SSE'"`
 }
 
 type InternalDirectoryTableOptions struct {
@@ -105,21 +105,21 @@ type ExternalStageS3Encryption struct {
 }
 
 type ExternalStageS3EncryptionAwsCse struct {
-	encryptionType string `ddl:"static" sql:"TYPE = 'AWS_CSE'"`
+	encryptionType bool   `ddl:"static" sql:"TYPE = 'AWS_CSE'"`
 	MasterKey      string `ddl:"parameter,single_quotes" sql:"MASTER_KEY"`
 }
 
 type ExternalStageS3EncryptionAwsSseS3 struct {
-	encryptionType string `ddl:"static" sql:"TYPE = 'AWS_SSE_S3'"`
+	encryptionType bool `ddl:"static" sql:"TYPE = 'AWS_SSE_S3'"`
 }
 
 type ExternalStageS3EncryptionAwsSseKms struct {
-	encryptionType string  `ddl:"static" sql:"TYPE = 'AWS_SSE_KMS'"`
+	encryptionType bool    `ddl:"static" sql:"TYPE = 'AWS_SSE_KMS'"`
 	KmsKeyId       *string `ddl:"parameter,single_quotes" sql:"KMS_KEY_ID"`
 }
 
 type ExternalStageS3EncryptionNone struct {
-	encryptionType string `ddl:"static" sql:"TYPE = 'NONE'"`
+	encryptionType bool `ddl:"static" sql:"TYPE = 'NONE'"`
 }
 
 type StageS3CommonDirectoryTableOptions struct {
@@ -155,12 +155,12 @@ type ExternalStageGCSEncryption struct {
 }
 
 type ExternalStageGCSEncryptionGcsSseKms struct {
-	encryptionType string  `ddl:"static" sql:"TYPE = 'GCS_SSE_KMS'"`
+	encryptionType bool    `ddl:"static" sql:"TYPE = 'GCS_SSE_KMS'"`
 	KmsKeyId       *string `ddl:"parameter,single_quotes" sql:"KMS_KEY_ID"`
 }
 
 type ExternalStageGCSEncryptionNone struct {
-	encryptionType string `ddl:"static" sql:"TYPE = 'NONE'"`
+	encryptionType bool `ddl:"static" sql:"TYPE = 'NONE'"`
 }
 
 type ExternalGCSDirectoryTableOptions struct {
@@ -203,12 +203,12 @@ type ExternalStageAzureEncryption struct {
 }
 
 type ExternalStageAzureEncryptionAzureCse struct {
-	encryptionType string `ddl:"static" sql:"TYPE = 'AZURE_CSE'"`
+	encryptionType bool   `ddl:"static" sql:"TYPE = 'AZURE_CSE'"`
 	MasterKey      string `ddl:"parameter,single_quotes" sql:"MASTER_KEY"`
 }
 
 type ExternalStageAzureEncryptionNone struct {
-	encryptionType string `ddl:"static" sql:"TYPE = 'NONE'"`
+	encryptionType bool `ddl:"static" sql:"TYPE = 'NONE'"`
 }
 
 type ExternalAzureDirectoryTableOptions struct {

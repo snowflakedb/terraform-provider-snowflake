@@ -43,7 +43,7 @@ func CheckDestroyUsingLegacyIdParsing(t *testing.T, resource resources.Resource)
 func checkDestroy(t *testing.T, resource resources.Resource, decodeSnowflakeIdFunc decodeSnowflakeIdFunc) func(*terraform.State) error {
 	t.Helper()
 	// TODO [SNOW-1653619]: use TestClient() here
-	client := atc.client
+	client := atc.defaultTestEnv.client
 	t.Logf("running check destroy for resource %s", resource)
 
 	return func(s *terraform.State) error {

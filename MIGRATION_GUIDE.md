@@ -34,6 +34,18 @@ This feature will be marked as stable in future releases. To use this feature, a
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
+### *(enhancement)* Improved identifier handling in `snowflake_stream_on_directory_table`
+
+Thanks to the changes introduced in [BCR-2170](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2170) (part of [Bundle 2026_01](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01_bundle)),
+Snowflake now returns a fully qualified name for the stage behind a directory table stream in `SHOW STREAMS` output (previously, only a partially qualified name was returned).
+This allowed us to resolve the long-standing limitation in `snowflake_stream_on_directory_table` tracked as [SNOW-1733130](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2328):
+
+- The `stage` attribute now expects, stores, and reads a fully qualified identifier (e.g. `"MY_DB"."MY_SCHEMA"."MY_STAGE"`), consistent with other identifier attributes in the provider.
+- The previous requirement that the stage must live in the same schema as the stream has been lifted - stages from a different schema than the stream are now fully supported.
+
+The state is automatically rewrites any existing `stage` value into its fully qualified form,
+so no manual changes to the configuration or state are required when upgrading.
+
 ### *(bug fix)* `snowflake_schema`: setting `default_ddl_collation = ""` now overrides a value inherited from the parent database
 
 Previously, setting `default_ddl_collation = ""` on a `snowflake_schema` was silently skipped when the parent database had a non-empty `DEFAULT_DDL_COLLATION` (e.g. `"pl"`). The update was a no-op and the schema kept inheriting the parent value.
