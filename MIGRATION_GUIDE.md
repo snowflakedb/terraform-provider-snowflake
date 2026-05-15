@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(new feature)* snowflake_cortex_agent preview resource
+
+We have added a new preview resource for managing Cortex agents: [snowflake_cortex_agent](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_agent).
+
+This feature will be marked as stable in future releases. To use this feature, add `snowflake_cortex_agent_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(bug fix)* `snowflake_schema`: setting `default_ddl_collation = ""` now overrides a value inherited from the parent database
 
 Previously, setting `default_ddl_collation = ""` on a `snowflake_schema` was silently skipped when the parent database had a non-empty `DEFAULT_DDL_COLLATION` (e.g. `"pl"`). The update was a no-op and the schema kept inheriting the parent value.
