@@ -34,7 +34,7 @@ var (
 )
 
 var externalS3StorageLocationDef = g.NewQueryStruct("S3StorageLocationParams").
-	Assignment("STORAGE_PROVIDER", S3StorageProviderEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required()).
+	EnumAssignment("STORAGE_PROVIDER", S3StorageProviderEnumDef, g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
@@ -43,7 +43,7 @@ var externalS3StorageLocationDef = g.NewQueryStruct("S3StorageLocationParams").
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalVolumeS3Encryption").
-			AssignmentWithFieldName("TYPE", S3EncryptionTypeEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
+			EnumAssignmentWithFieldName("TYPE", S3EncryptionTypeEnumDef, g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 	)
@@ -54,7 +54,7 @@ var externalGCSStorageLocationDef = g.NewQueryStruct("GCSStorageLocationParams")
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalVolumeGCSEncryption").
-			AssignmentWithFieldName("TYPE", GCSEncryptionTypeEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
+			EnumAssignmentWithFieldName("TYPE", GCSEncryptionTypeEnumDef, g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 	)
