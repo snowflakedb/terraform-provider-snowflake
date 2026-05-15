@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func v2_15_0_StreamOnDirectoryTableStateUpgrader(ctx context.Context, state map[string]any, meta any) (map[string]any, error) {
+func v2_16_0_StreamOnDirectoryTableStateUpgrader(ctx context.Context, state map[string]any, meta any) (map[string]any, error) {
 	if state == nil {
 		return state, nil
 	}

@@ -36,7 +36,7 @@ This allowed us to resolve the long-standing limitation in `snowflake_stream_on_
 - The previous requirement that the stage must live in the same schema as the stream has been lifted - stages from a different schema than the stream are now fully supported.
 
 The state is automatically rewrites any existing `stage` value into its fully qualified form,
-so no manual changes to the configuration or state are required when upgrading from v2.15.x
+so no manual changes to the configuration or state are required when upgrading.
 
 ### *(bug fix)* `snowflake_schema`: setting `default_ddl_collation = ""` now overrides a value inherited from the parent database
 

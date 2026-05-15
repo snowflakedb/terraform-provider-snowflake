@@ -449,7 +449,7 @@ func TestAcc_StreamOnDirectoryTable_ExternalStreamTypeChange(t *testing.T) {
 	})
 }
 
-func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0(t *testing.T) {
+func TestAcc_StreamOnDirectoryTable_migrateFromV2_16_0(t *testing.T) {
 	stage, stageCleanup := testClient().Stage.CreateStageWithDirectory(t)
 	t.Cleanup(stageCleanup)
 
@@ -464,7 +464,7 @@ func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.StreamOnDirectoryTable),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.16.0"),
 				Config:            config.FromModels(t, streamModel),
 				Check: assertThat(t,
 					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
@@ -494,7 +494,7 @@ func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0(t *testing.T) {
 	})
 }
 
-func TestAcc_StreamOnDirectoryTable_migrateFromV2_15_0_CrossSchemaStage(t *testing.T) {
+func TestAcc_StreamOnDirectoryTable_migrateFromV2_16_0_CrossSchemaStage(t *testing.T) {
 	schema, cleanupSchema := testClient().Schema.CreateSchema(t)
 	t.Cleanup(cleanupSchema)
 
@@ -512,7 +512,7 @@ func TestAcc_StreamOnDirectoryTable_migrateFromV2_15_0_CrossSchemaStage(t *testi
 		CheckDestroy: CheckDestroy(t, resources.StreamOnDirectoryTable),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("2.16.0"),
 				Config:            config.FromModels(t, streamModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
