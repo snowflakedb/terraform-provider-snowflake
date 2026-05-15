@@ -281,16 +281,16 @@ func (p *PairedStructs) OptionalSchemaObjectIdentifierWithArguments(dbColumnName
 	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifierWithArguments", allOpts)
 }
 
-// EnumField adds a field where the db kind is string and the plain kind is a custom enum type.
+// Enum adds a field where the db kind is string and the plain kind is a custom enum type.
 // Use this when the plain struct field is an SDK enum backed by a string column in the db.
 //
 //	db:    <FieldName> string `db:"<dbColumnName>"`
 //	plain: <FieldName> <enumType>
-func (p *PairedStructs) EnumField(dbColumnName, enumType string, opts ...PairedFieldOption) *PairedStructs {
+func (p *PairedStructs) Enum(dbColumnName string, enum *Enum, opts ...PairedFieldOption) *PairedStructs {
 	f := pairedField{
 		dbColumnName: dbColumnName,
 		dbKind:       "string",
-		plainKind:    enumType,
+		plainKind:    enum.Kind(),
 		isEnum:       true,
 	}
 	for _, opt := range opts {
@@ -300,15 +300,15 @@ func (p *PairedStructs) EnumField(dbColumnName, enumType string, opts ...PairedF
 	return p
 }
 
-// OptionalEnumField adds a nullable enum field. The db kind is sql.NullString and the plain kind is *<enumType>.
+// OptionalEnum adds a nullable enum field. The db kind is sql.NullString and the plain kind is *<enumType>.
 //
 //	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
 //	plain: <FieldName> *<enumType>
-func (p *PairedStructs) OptionalEnumField(dbColumnName, enumType string, opts ...PairedFieldOption) *PairedStructs {
+func (p *PairedStructs) OptionalEnum(dbColumnName string, enum *Enum, opts ...PairedFieldOption) *PairedStructs {
 	f := pairedField{
 		dbColumnName: dbColumnName,
 		dbKind:       "sql.NullString",
-		plainKind:    "*" + enumType,
+		plainKind:    enum.KindPtr(),
 		isEnum:       true,
 	}
 	for _, opt := range opts {
