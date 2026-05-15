@@ -56,7 +56,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeTable).
 			HasMode(sdk.StreamModeAppendOnly).
-			HasTableId(tableId),
+			HasTableName(tableId),
 		)
 
 		// at stream
@@ -131,7 +131,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeExternalTable).
 			HasMode(sdk.StreamModeInsertOnly).
-			HasTableId(externalTableId),
+			HasTableName(externalTableId),
 		)
 	})
 
@@ -152,8 +152,8 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeStage).
 			HasMode(sdk.StreamModeDefault).
-			HasTableId(stage.ID()).
-			HasBaseTables(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())),
+			HasTableName(stage.ID()).
+			HasBaseTables(stage.ID()),
 		)
 	})
 
@@ -180,7 +180,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeView).
 			HasMode(sdk.StreamModeAppendOnly).
-			HasTableId(view.ID()),
+			HasTableName(view.ID()),
 		)
 	})
 
@@ -206,7 +206,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeTable).
 			HasMode(sdk.StreamModeDefault).
-			HasTableId(table.ID()),
+			HasTableName(table.ID()),
 		)
 	})
 
@@ -323,7 +323,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeTable).
 			HasMode(sdk.StreamModeDefault).
-			HasTableId(table.ID()),
+			HasTableName(table.ID()),
 		)
 	})
 
@@ -414,8 +414,47 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeTable).
 			HasMode(sdk.StreamModeDefault).
-			HasTableId(table.ID()),
+			HasTableName(table.ID()),
 		)
+	})
+
+	t.Run("ShowByID - error when underlying table is dropped", func(t *testing.T) {
+		table, cleanupTable := testClientHelper().Table.CreateInSchema(t, schemaId)
+		t.Cleanup(cleanupTable)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		_, cleanupStream := testClientHelper().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
+		t.Cleanup(cleanupStream)
+
+		err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(table.ID()))
+		require.NoError(t, err)
+
+		_, err = client.Streams.ShowByID(ctx, id)
+		assert.ErrorContains(t, err, "is dropped or you don't have permission to access it")
+	})
+
+	t.Run("ShowByID - error when used role has no access to the underlying table", func(t *testing.T) {
+		table, cleanupTable := testClientHelper().Table.CreateInSchema(t, schemaId)
+		t.Cleanup(cleanupTable)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, cleanupStream := testClientHelper().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
+		t.Cleanup(cleanupStream)
+
+		role, roleCleanup := testClientHelper().Role.CreateRoleGrantedToCurrentUser(t)
+		t.Cleanup(roleCleanup)
+
+		// Grant necessary privileges to be able to query stream (no privilege for table)
+		testClientHelper().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), table.ID().DatabaseId(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
+		testClientHelper().Grant.GrantPrivilegesOnSchemaToAccountRole(t, role.ID(), table.ID().SchemaId(), []sdk.SchemaPrivilege{sdk.SchemaPrivilegeUsage}, false)
+		testClientHelper().Grant.GrantPrivilegesOnSchemaObjectToAccountRole(t, role.ID(), sdk.ObjectTypeStream, id, []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}, false)
+
+		// There's no other way to "hide" an object from the ACCOUNTADMIN role, so we have to use less privileged role.
+		t.Cleanup(testClientHelper().Role.UseRole(t, role.ID()))
+
+		_, err := client.Streams.ShowByID(ctx, id)
+		assert.ErrorContains(t, err, "is dropped or you don't have permission to access it")
 	})
 
 	t.Run("show by id - same name in different schemas", func(t *testing.T) {

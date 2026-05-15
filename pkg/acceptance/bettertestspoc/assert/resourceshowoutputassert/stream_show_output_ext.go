@@ -1,7 +1,6 @@
 package resourceshowoutputassert
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -33,15 +32,7 @@ func (s *StreamShowOutputAssert) HasStaleAfterNotEmpty() *StreamShowOutputAssert
 func (s *StreamShowOutputAssert) HasBaseTables(ids ...sdk.SchemaObjectIdentifier) *StreamShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("base_tables.#", strconv.FormatInt(int64(len(ids)), 10)))
 	for i := range ids {
-		s.AddAssertion(assert.ResourceShowOutputValueSet(fmt.Sprintf("base_tables.%d", i), ids[i].FullyQualifiedName()))
-	}
-	return s
-}
-
-func (s *StreamShowOutputAssert) HasBaseTablesPartiallyQualified(ids ...string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("base_tables.#", strconv.FormatInt(int64(len(ids)), 10)))
-	for i := range ids {
-		s.AddAssertion(assert.ResourceShowOutputValueSet(fmt.Sprintf("base_tables.%d", i), ids[i]))
+		s.AddAssertion(assert.ResourceShowOutputSetElem("base_tables", ids[i].FullyQualifiedName()))
 	}
 	return s
 }
