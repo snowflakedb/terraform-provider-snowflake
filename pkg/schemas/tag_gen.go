@@ -65,9 +65,11 @@ func TagToSchema(tag *sdk.Tag) map[string]any {
 	tagSchema["comment"] = tag.Comment
 	tagSchema["allowed_values"] = tag.AllowedValues
 	tagSchema["owner_role_type"] = tag.OwnerRoleType
-	tagSchema["propagate"] = string(tag.Propagate)
+	if tag.Propagate != nil {
+		tagSchema["propagate"] = string((*tag.Propagate))
+	}
 	if tag.OnConflict != nil {
-		tagSchema["on_conflict"] = (*tag.OnConflict)
+		tagSchema["on_conflict"] = string((*tag.OnConflict))
 	}
 	return tagSchema
 }

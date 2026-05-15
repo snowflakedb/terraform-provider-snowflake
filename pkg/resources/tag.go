@@ -314,11 +314,16 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 
+	var propagate *string
+	if tag.Propagate != nil {
+		propagate = sdk.Pointer(string(*tag.Propagate))
+	}
+
 	errs := errors.Join(
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
-		d.Set("propagate", tag.Propagate),
+		d.Set("propagate", propagate),
 		func() error {
 			// on_conflict is only available when BCR-2291 is enabled. When the column is absent,
 			// tag.OnConflict is nil and we leave the state unchanged to avoid spurious diffs.

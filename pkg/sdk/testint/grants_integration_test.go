@@ -123,6 +123,48 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		assert.Empty(t, grants)
 	})
 
+	t.Run("on account object - connection", func(t *testing.T) {
+		t.Skip("TODO(SNOW-1002023): Unskip; Connection object type is not supported in non Business Critical Snowflake Edition")
+
+		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		connection, connectionCleanup := testClientHelper().Connection.Create(t)
+		t.Cleanup(connectionCleanup)
+
+		privileges := &sdk.AccountRoleGrantPrivileges{
+			AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeFailover},
+		}
+		on := &sdk.AccountRoleGrantOn{
+			AccountObject: &sdk.GrantOnAccountObject{
+				Connection: sdk.Pointer(connection.ID()),
+			},
+		}
+
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		require.NoError(t, err)
+
+		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			To: &sdk.ShowGrantsTo{
+				Role: roleTest.ID(),
+			},
+		})
+		require.NoError(t, err)
+		assert.Len(t, grants, 1)
+		assert.Equal(t, sdk.AccountObjectPrivilegeFailover.String(), grants[0].Privilege)
+
+		// now revoke and verify that the grant(s) are gone
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		require.NoError(t, err)
+		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			To: &sdk.ShowGrantsTo{
+				Role: roleTest.ID(),
+			},
+		})
+		require.NoError(t, err)
+		assert.Empty(t, grants)
+	})
+
 	t.Run("on schema", func(t *testing.T) {
 		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)

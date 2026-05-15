@@ -124,11 +124,14 @@ func (t *TagAssert) HasOwnerRoleType(expected string) *TagAssert {
 	return t
 }
 
-func (t *TagAssert) HasPropagate(expected string) *TagAssert {
+func (t *TagAssert) HasPropagate(expected sdk.TagPropagation) *TagAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
 		t.Helper()
-		if string(o.Propagate) != expected {
-			return fmt.Errorf("expected propagate: %v; got: %v", expected, o.Propagate)
+		if o.Propagate == nil {
+			return fmt.Errorf("expected propagate to have value; got: nil")
+		}
+		if *o.Propagate != expected {
+			return fmt.Errorf("expected propagate: %v; got: %v", expected, *o.Propagate)
 		}
 		return nil
 	})

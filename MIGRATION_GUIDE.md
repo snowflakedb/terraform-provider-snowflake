@@ -26,6 +26,29 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(bug fix)* `snowflake_schema`: setting `default_ddl_collation = ""` now overrides a value inherited from the parent database
+
+Previously, setting `default_ddl_collation = ""` on a `snowflake_schema` was silently skipped when the parent database had a non-empty `DEFAULT_DDL_COLLATION` (e.g. `"pl"`). The update was a no-op and the schema kept inheriting the parent value.
+
+The fix forces the plan to recognize the override whenever the parameter is inherited from a higher level (account/database), so the resulting `ALTER SCHEMA ... SET DEFAULT_DDL_COLLATION = ''` is executed and the parameter is pinned at the schema level with an empty value.
+
+Example:
+
+```terraform
+resource "snowflake_database" "parent" {
+  name                  = "PARENT_DB"
+  default_ddl_collation = "en_US"
+}
+
+resource "snowflake_schema" "s" {
+  database              = snowflake_database.parent.name
+  name                  = "S"
+  default_ddl_collation = "" # previously ignored; now correctly sets "" at schema level
+}
+```
+
+No changes in configuration are required.
+
 ### *(new feature)* snowflake_system_get_privatelink_config: new attributes
 
 The `snowflake_system_get_privatelink_config` data source now exposes additional attributes returned by `SYSTEM$GET_PRIVATELINK_CONFIG()`:
@@ -41,6 +64,22 @@ The `snowflake_system_get_privatelink_config` data source now exposes additional
 - `regionless_privatelink_ocsp_url` - Regionless OCSP URL for private connectivity.
 
 No changes are required for existing configurations that only reference the previously available attributes.
+
+### *(bug fix)* snowflake_grant_privileges_to_account_role: CONNECTION object type support
+
+Previously, attempting to grant privileges on a `CONNECTION` object type in the `on_account_object` block would fail with the following error, despite `CONNECTION` being listed as an allowed value in the schema:
+
+```
+Error: [grants_validations.go:315] exactly one of GrantOnAccountObject
+fields [User ResourceMonitor Warehouse ComputePool Database Integration
+FailoverGroup ReplicationGroup ExternalVolume] must be set
+```
+
+This has been fixed — the resource now correctly handles `CONNECTION` as an account object type.
+
+No changes are required for existing configurations.
+
+References: [#4727](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4727)
 
 ## v2.15.x ➞ v2.16.0
 
@@ -155,6 +194,20 @@ Snowflake implicitly grants PUBLIC to every role and user, so `GRANT ROLE PUBLIC
 To enable, add `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` to the `experimental_features_enabled` field in the provider configuration. No changes are required for existing configurations that do not grant the PUBLIC role.
 
 References: [#3001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3001)
+
+### *(bugfix)* Fixed `snowflake_tag` crash on Standard accounts
+
+In v2.15.0 we added the `propagate` field to the `snowflake_tag` resource. On [Standard accounts](https://docs.snowflake.com/en/user-guide/intro-editions#standard-edition), Snowflake always returns the `propagate` column in `SHOW TAGS` with `null` value. The provider attempted to scan a SQL `NULL` into a non-nullable Go string, resulting in a fatal error whenever any `snowflake_tag` resource was refreshed on such accounts:
+
+```text
+│ Error: sql: Scan error on column index 8, name "propagate": converting NULL to string is unsupported
+```
+
+The `propagate` field is now treated as nullable.
+
+No changes in configuration are required. Users on standard accounts who experienced a crash on plan or apply should be able to use the `snowflake_tag` resource normally after upgrading.
+
+References: [#4651](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4651)
 
 ## v2.14.x ➞ v2.15.0
 
