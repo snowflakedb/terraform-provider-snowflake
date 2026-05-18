@@ -138,7 +138,7 @@ type AlterIcebergTableOptions struct {
 	IfExists                      *bool                             `ddl:"keyword" sql:"IF EXISTS"`
 	name                          SchemaObjectIdentifier            `ddl:"identifier"`
 	AddColumnAction               *IcebergTableAddColumnAction      `ddl:"keyword"`
-	AlterColumnAction             []IcebergTableAlterColumnAction   `ddl:"keyword" sql:"ALTER"`
+	AlterColumnAction             []IcebergTableAlterColumnAction   `ddl:"keyword"`
 	SetMaskingPolicyOnColumn      *TableSetColumnMaskingPolicy      `ddl:"keyword"`
 	UnsetMaskingPolicyOnColumn    *TableUnsetColumnMaskingPolicy    `ddl:"keyword"`
 	SetProjectionPolicyOnColumn   *TableSetColumnProjectionPolicy   `ddl:"keyword"`
@@ -166,7 +166,7 @@ type IcebergTableAddColumnAction struct {
 }
 
 type IcebergTableAlterColumnAction struct {
-	column           bool                `ddl:"static" sql:"COLUMN"`
+	alterColumn      bool                `ddl:"static" sql:"ALTER COLUMN"`
 	ColumnName       string              `ddl:"keyword,double_quotes"`
 	SetNotNull       *bool               `ddl:"keyword" sql:"SET NOT NULL"`
 	DropNotNull      *bool               `ddl:"keyword" sql:"DROP NOT NULL"`
@@ -272,6 +272,7 @@ type DropIcebergTableOptions struct {
 // ShowIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-iceberg-tables.
 type ShowIcebergTableOptions struct {
 	show          bool       `ddl:"static" sql:"SHOW"`
+	Terse         *bool      `ddl:"keyword" sql:"TERSE"`
 	icebergTables bool       `ddl:"static" sql:"ICEBERG TABLES"`
 	Like          *Like      `ddl:"keyword" sql:"LIKE"`
 	In            *In        `ddl:"keyword" sql:"IN"`
