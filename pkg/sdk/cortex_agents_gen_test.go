@@ -89,7 +89,7 @@ func TestCortexAgents_Alter(t *testing.T) {
 	t.Run("validation: exactly one field from [opts.Set opts.ModifyLiveVersionSet] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &CortexAgentSet{
-			Comment: String("some comment"),
+			Comment: &StringAllowEmpty{Value: "some comment"},
 		}
 		opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{
 			Specification: `models:
@@ -111,10 +111,10 @@ func TestCortexAgents_Alter(t *testing.T) {
 		profile := `{"display_name": "My Business Assistant", "avatar": "business-icon.png", "color": "blue"}`
 		expectedProfile := strings.ReplaceAll(profile, `"`, `\"`)
 		opts.Set = &CortexAgentSet{
-			Comment: String("some comment"),
+			Comment: &StringAllowEmpty{Value: "some comment"},
 			Profile: String(profile),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AGENT IF EXISTS %s SET COMMENT = 'some comment' PROFILE = '%s'", id.FullyQualifiedName(), expectedProfile)
+		assertOptsValidAndSQLEquals(t, opts, "ALTER AGENT IF EXISTS %s SET COMMENT = 'some comment', PROFILE = '%s'", id.FullyQualifiedName(), expectedProfile)
 	})
 
 	t.Run("alter modify live version set", func(t *testing.T) {

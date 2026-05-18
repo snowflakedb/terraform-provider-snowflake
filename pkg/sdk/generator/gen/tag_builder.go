@@ -34,6 +34,16 @@ func (v *TagBuilder) Identifier() *TagBuilder {
 	return v
 }
 
+func (v *TagBuilder) InstanceMethod() *TagBuilder {
+	v.ddl = append(v.ddl, "instance_method")
+	return v
+}
+
+func (v *TagBuilder) SystemReference() *TagBuilder {
+	v.ddl = append(v.ddl, "system_reference")
+	return v
+}
+
 func (v *TagBuilder) List() *TagBuilder {
 	v.ddl = append(v.ddl, "list")
 	return v

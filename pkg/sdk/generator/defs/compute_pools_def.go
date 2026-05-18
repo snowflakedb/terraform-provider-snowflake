@@ -84,7 +84,7 @@ var computePoolsDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools",
 	g.StructPair("computePoolsRow", "ComputePool").
 		Text("name").
-		PlainField("state", ComputePoolStateEnumDef.Kind()).
+		Enum("state", ComputePoolStateEnumDef).
 		Number("min_nodes").
 		Number("max_nodes").
 		PlainField("instance_family", "ComputePoolInstanceFamily").
@@ -113,7 +113,7 @@ var computePoolsDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-compute-pool",
 	g.StructPair("computePoolDescRow", "ComputePoolDetails").
 		Text("name").
-		PlainField("state", ComputePoolStateEnumDef.Kind()).
+		Enum("state", ComputePoolStateEnumDef).
 		Number("min_nodes").
 		Number("max_nodes").
 		PlainField("instance_family", "ComputePoolInstanceFamily").

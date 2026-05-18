@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -25,6 +26,9 @@ func main() {
 		var entry TestResultEntry
 		if err := json.Unmarshal(scanner.Bytes(), &entry); err != nil {
 			continue // Skip malformed JSON entries
+		}
+		if entry.Action == "output" {
+			log.Print(entry.Output)
 		}
 		testResults = append(testResults, entry)
 	}

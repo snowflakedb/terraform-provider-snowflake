@@ -33,7 +33,7 @@ var managedAccountsDef = g.NewInterface(
 				g.NewQueryStruct("CreateManagedAccountParams").
 					TextAssignment("ADMIN_NAME", g.ParameterOptions().SingleQuotes().Required()).
 					TextAssignment("ADMIN_PASSWORD", g.ParameterOptions().SingleQuotes().Required()).
-					PredefinedQueryStructField("typeProvider", "string", g.StaticOptions().SQL("TYPE = READER")).
+					SQLWithCustomFieldName("typeProvider", "TYPE = READER").
 					OptionalComment().
 					WithValidation(g.ValidateValueSet, "AdminName").
 					WithValidation(g.ValidateValueSet, "AdminPassword"),

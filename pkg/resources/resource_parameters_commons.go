@@ -32,19 +32,28 @@ func handleParameterCreateWithMapping[T, R any, P ~string](d *schema.ResourceDat
 }
 
 // handleParameterUpdate calls internally handleParameterUpdateWithMapping with identity mapping
-func handleParameterUpdate[T any, P ~string](d *schema.ResourceData, parameterName P, setField **T, unsetField **bool) diag.Diagnostics {
-	return handleParameterUpdateWithMapping[T, T](d, parameterName, setField, unsetField, identityMapping[T])
+func handleParameterUpdate[T ctyGoPrimitive, P ~string](d *schema.ResourceData, parameterName P, setField **T, unsetField **bool) diag.Diagnostics {
+	return handleParameterUpdateWithMapping(d, parameterName, setField, unsetField, identityMapping[T])
 }
 
 // handleParameterUpdateWithMapping checks schema.ResourceData for change in key's value. If there's a change detected
 // (or unknown value that basically indicates diff.SetNewComputed was called on the key), it checks if the value is set in the configuration.
 // If the value is set, setField (representing setter for a value) is set to the new planned value applying mapping beforehand in cases where enum values,
 // identifiers, etc. have to be set. Otherwise, unsetField is populated.
-func handleParameterUpdateWithMapping[T, R any, P ~string](d *schema.ResourceData, parameterName P, setField **R, unsetField **bool, mapping func(value T) (R, error)) diag.Diagnostics {
+func handleParameterUpdateWithMapping[T ctyGoPrimitive, R any, P ~string](d *schema.ResourceData, parameterName P, setField **R, unsetField **bool, mapping func(value T) (R, error)) diag.Diagnostics {
 	key := strings.ToLower(string(parameterName))
 	if d.HasChange(key) || !d.GetRawPlan().AsValueMap()[key].IsKnown() {
-		if !d.GetRawConfig().AsValueMap()[key].IsNull() {
-			mappedValue, err := mapping(d.Get(key).(T))
+		configValue := d.GetRawConfig().AsValueMap()[key]
+		if !configValue.IsNull() {
+			// Read the value from raw config instead of d.Get to avoid SDKv2 fallback to state value
+			// when the plan is unknown (e.g. after SetNewComputed was called in the custom diff).
+			// d.Get can return the state value when the plan is unknown, which is wrong when the user
+			// is explicitly changing the config to a new value (e.g. from "en_US" inherited to "" explicit).
+			v, err := ctyValueToGo[T](configValue)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			mappedValue, err := mapping(v)
 			if err != nil {
 				return diag.FromErr(err)
 			}

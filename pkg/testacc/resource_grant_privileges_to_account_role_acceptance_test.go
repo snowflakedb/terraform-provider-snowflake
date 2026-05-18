@@ -1725,6 +1725,40 @@ func TestAcc_GrantPrivilegesToAccountRole_OnExternalVolume(t *testing.T) {
 	})
 }
 
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/4727 is fixed
+func TestAcc_GrantPrivilegesToAccountRole_OnConnection(t *testing.T) {
+	t.Skip("TODO(SNOW-1002023): Unskip; Connection object type is not supported in non Business Critical Snowflake Edition")
+
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+	connection, connectionCleanup := testClient().Connection.Create(t)
+	t.Cleanup(connectionCleanup)
+
+	grantModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeFailover)).
+		WithOnAccountObject(sdk.ObjectTypeConnection, connection.ID())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, grantModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, grantModel.ResourceReference()).
+						HasAccountRoleName(role.ID().Name()).
+						HasPrivileges(string(sdk.AccountObjectPrivilegeFailover)).
+						HasOnAccountObject(sdk.ObjectTypeConnection, connection.ID()).
+						HasResourceId(fmt.Sprintf("%s|false|false|FAILOVER|OnAccountObject|CONNECTION|%s", role.ID().FullyQualifiedName(), connection.ID().FullyQualifiedName())),
+				),
+			},
+		},
+	})
+}
+
 // proved https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2651
 func TestAcc_GrantPrivilegesToAccountRole_MLPrivileges(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
@@ -3435,7 +3469,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnObject_Agent_v2_14_0_
 	t.Cleanup(roleCleanup)
 
 	agentId := testClient().Ids.RandomSchemaObjectIdentifier()
-	agentCleanup := testClient().Agent.Create(t, agentId)
+	agentCleanup := testClient().CortexAgent.CreateWithId(t, agentId)
 	t.Cleanup(agentCleanup)
 
 	accountRoleName := role.ID().Name()

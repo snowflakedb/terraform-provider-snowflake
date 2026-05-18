@@ -18,7 +18,6 @@ type CreateCatalogIntegrationRequest struct {
 	ObjectStorageCatalogSourceParams *ObjectStorageParamsRequest
 	OpenCatalogCatalogSourceParams   *OpenCatalogParamsRequest
 	IcebergRestCatalogSourceParams   *IcebergRestParamsRequest
-	SapBdcCatalogSourceParams        *SapBdcParamsRequest
 	Enabled                          bool // required
 	RefreshIntervalSeconds           *int
 	Comment                          *string
@@ -79,14 +78,6 @@ type SigV4RestAuthenticationRequest struct {
 	Sigv4IamRole       string // required
 	Sigv4SigningRegion *string
 	Sigv4ExternalId    *string
-}
-
-type SapBdcParamsRequest struct {
-	RestConfig SapBdcRestConfigRequest
-}
-
-type SapBdcRestConfigRequest struct {
-	SapBdcInvitationLink string // required
 }
 
 type AlterCatalogIntegrationRequest struct {

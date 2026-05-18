@@ -60,7 +60,7 @@ func NewCortexAgentSetRequest() *CortexAgentSetRequest {
 	return &s
 }
 
-func (s *CortexAgentSetRequest) WithComment(comment string) *CortexAgentSetRequest {
+func (s *CortexAgentSetRequest) WithComment(comment StringAllowEmpty) *CortexAgentSetRequest {
 	s.Comment = &comment
 	return s
 }
