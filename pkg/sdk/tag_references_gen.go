@@ -51,6 +51,6 @@ type tagReferenceParameters struct {
 }
 
 type tagReferenceFunctionArguments struct {
-	ObjectName   *string                   `ddl:"keyword,single_quotes"`
-	ObjectDomain *TagReferenceObjectDomain `ddl:"keyword,single_quotes"`
+	ObjectName   string                   `ddl:"keyword,single_quotes"`
+	ObjectDomain TagReferenceObjectDomain `ddl:"keyword,single_quotes"`
 }

@@ -13,6 +13,6 @@ type tagReferenceParametersRequest struct {
 }
 
 type tagReferenceFunctionArgumentsRequest struct {
-	ObjectName   *string                   // required
-	ObjectDomain *TagReferenceObjectDomain // required
+	ObjectName   string                   // required
+	ObjectDomain TagReferenceObjectDomain // required
 }

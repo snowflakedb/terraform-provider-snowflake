@@ -7,8 +7,8 @@ func NewGetForEntityTagReferenceRequestFull(
 	return NewGetForEntityTagReferenceRequest(
 		NewtagReferenceParametersRequest(
 			NewtagReferenceFunctionArgumentsRequest(
-				&objectName,
-				&objectDomain,
+				objectName,
+				objectDomain,
 			),
 		),
 	)

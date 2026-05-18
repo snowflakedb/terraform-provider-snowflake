@@ -50,13 +50,13 @@ var tagReferenceParametersDef = g.NewQueryStruct("tagReferenceParameters").
 	).WithValidation(g.ValidateValueSet, "arguments")
 
 var tagReferenceFunctionArgumentsDef = g.NewQueryStruct("tagReferenceFunctionArguments").
-	OptionalText(
+	Text(
 		"ObjectName",
 		g.KeywordOptions().SingleQuotes().Required(),
 	).
-	OptionalEnum(
+	PredefinedQueryStructField(
 		"ObjectDomain",
-		"TagReferenceObjectDomain",
+		TagReferenceObjectDomainDef.Kind(),
 		g.KeywordOptions().SingleQuotes().Required(),
 	).
 	WithValidation(g.ValidateValueSet, "ObjectName").
@@ -66,34 +66,22 @@ var tagReferencesDef = g.NewInterface(
 	"TagReferences",
 	"TagReference",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).CustomShowOperation(
+).CustomShowOperationWithPairedStructs(
 	"GetForEntity",
 	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/functions/tag_references",
-	g.DbStruct("tagReferenceDBRow").
+	g.StructPair("tagReferenceDBRow", "TagReference").
 		Text("TAG_DATABASE").
 		Text("TAG_SCHEMA").
 		Text("TAG_NAME").
 		Text("TAG_VALUE").
-		Text("LEVEL").
+		PlainField("LEVEL", "TagReferenceObjectDomain").
 		OptionalText("OBJECT_DATABASE").
 		OptionalText("OBJECT_SCHEMA").
 		Text("OBJECT_NAME").
-		Text("DOMAIN").
+		PlainField("DOMAIN", "TagReferenceObjectDomain").
 		OptionalText("COLUMN_NAME").
-		Text("APPLY_METHOD"),
-	g.PlainStruct("TagReference").
-		Text("TagDatabase").
-		Text("TagSchema").
-		Text("TagName").
-		Text("TagValue").
-		Field("Level", "TagReferenceObjectDomain").
-		Field("ObjectDatabase", "*string").
-		Field("ObjectSchema", "*string").
-		Text("ObjectName").
-		Field("Domain", "TagReferenceObjectDomain").
-		Field("ColumnName", "*string").
-		Field("ApplyMethod", "TagReferenceApplyMethod"),
+		PlainField("APPLY_METHOD", "TagReferenceApplyMethod"),
 	g.NewQueryStruct("GetForEntity").
 		SQLWithCustomFieldName("selectEverythingFrom", "SELECT * FROM TABLE").
 		OptionalQueryStructField(

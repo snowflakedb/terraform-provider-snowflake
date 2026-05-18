@@ -11,7 +11,6 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TagReferenceApplyMethod]{"TagReferenceApplyMethod", AllTagReferenceApplyMethods, ToTagReferenceApplyMethod})
 }
 
-
 func TestTagReferences_GetForEntity(t *testing.T) {
 	// id and defaultOpts removed manually
 
@@ -36,7 +35,7 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{
 				arguments: &tagReferenceFunctionArguments{
-					ObjectDomain: Pointer(TagReferenceObjectDomainTable),
+					ObjectDomain: TagReferenceObjectDomainTable,
 				},
 			},
 		}
@@ -47,7 +46,7 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{
 				arguments: &tagReferenceFunctionArguments{
-					ObjectName: Pointer("some_name"),
+					ObjectName: "some_name",
 				},
 			},
 		}
@@ -59,8 +58,8 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{
 				arguments: &tagReferenceFunctionArguments{
-					ObjectName:   Pointer(id.FullyQualifiedName()),
-					ObjectDomain: Pointer(TagReferenceObjectDomainTable),
+					ObjectName:   id.FullyQualifiedName(),
+					ObjectDomain: TagReferenceObjectDomainTable,
 				},
 			},
 		}
@@ -71,8 +70,8 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 		opts := &GetForEntityTagReferenceOptions{
 			parameters: &tagReferenceParameters{
 				arguments: &tagReferenceFunctionArguments{
-					ObjectName:   Pointer(NewAccountObjectIdentifier("my_warehouse").FullyQualifiedName()),
-					ObjectDomain: Pointer(TagReferenceObjectDomainWarehouse),
+					ObjectName:   NewAccountObjectIdentifier("my_warehouse").FullyQualifiedName(),
+					ObjectDomain: TagReferenceObjectDomainWarehouse,
 				},
 			},
 		}

@@ -59,7 +59,6 @@ func (e *Enum) KindPtr() string {
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
 func (e *Enum) valueName(value string) string {
 	value = strings.ReplaceAll(value, " ", "_")
-	value = strings.ReplaceAll(value, "-", "_")
 	return e.Name + genhelpers.SnakeCaseToCamel(value)
 }
 

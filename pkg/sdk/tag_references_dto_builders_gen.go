@@ -19,8 +19,8 @@ func NewtagReferenceParametersRequest(
 }
 
 func NewtagReferenceFunctionArgumentsRequest(
-	objectName *string,
-	objectDomain *TagReferenceObjectDomain,
+	objectName string,
+	objectDomain TagReferenceObjectDomain,
 ) *tagReferenceFunctionArgumentsRequest {
 	s := tagReferenceFunctionArgumentsRequest{}
 	s.ObjectName = objectName
