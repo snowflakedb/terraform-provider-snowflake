@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(new feature)* snowflake_cortex_agent preview resource
+
+We have added a new preview resource for managing Cortex agents: [snowflake_cortex_agent](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_agent).
+
+This feature will be marked as stable in future releases. To use this feature, add `snowflake_cortex_agent_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(bugfix)* `snowflake_external_volume` — support for `use_privatelink_endpoint` in Azure deployments
 
 Previously, setting `use_privatelink_endpoint = "true"` on an Azure storage location in `snowflake_external_volume` was silently ignored — the field was not sent to Snowflake and was not read back into state. The field is now correctly sent on create and update, and reflected in state after a read.

@@ -19,20 +19,6 @@ func TestInt_CortexAgents(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	expectedSpecAsMap := func(response string) map[string]any {
-		return map[string]any{
-			"orchestration": map[string]any{
-				"budget": map[string]any{
-					"seconds": float64(30),
-					"tokens":  float64(16000),
-				},
-			},
-			"instructions": map[string]any{
-				"response": response,
-			},
-		}
-	}
-
 	createCortexAgent := func(t *testing.T) sdk.SchemaObjectIdentifier {
 		t.Helper()
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
@@ -48,9 +34,10 @@ func TestInt_CortexAgents(t *testing.T) {
 		comment := random.Comment()
 		profile := `{"display_name":"My Business Assistant","avatar":"business-icon.png","color":"blue"}`
 		response := "Complete integration test"
-		spec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, response)
+		yamlSpec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, response)
+		descSpec := testClientHelper().CortexAgent.SampleSpecAsJson(t, response)
 
-		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, spec).
+		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, yamlSpec).
 			WithIfNotExists(true).
 			WithComment(comment).
 			WithProfile(profile))
@@ -77,7 +64,7 @@ func TestInt_CortexAgents(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasCortexAgentProfile(expectedProfile).
-			HasCortexAgentSpec(expectedSpecAsMap(response)).
+			HasCortexAgentSpec(descSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).
@@ -88,9 +75,10 @@ func TestInt_CortexAgents(t *testing.T) {
 	t.Run("create cortex agent: no optionals", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		response := "Without optionals"
-		spec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, response)
+		yamlSpec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, response)
+		descSpec := testClientHelper().CortexAgent.SampleSpecAsJson(t, response)
 
-		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, spec))
+		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, yamlSpec))
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.CortexAgent(t, id).
@@ -109,7 +97,7 @@ func TestInt_CortexAgents(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasNoComment().
 			HasNoProfile().
-			HasCortexAgentSpec(expectedSpecAsMap(response)).
+			HasCortexAgentSpec(descSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).
@@ -158,14 +146,15 @@ func TestInt_CortexAgents(t *testing.T) {
 	t.Run("alter cortex agent: modify live version set", func(t *testing.T) {
 		id := createCortexAgent(t)
 		newResponse := "Updated live version"
-		newSpec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, newResponse)
+		newYamlSpec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, newResponse)
+		newDescSpec := testClientHelper().CortexAgent.SampleSpecAsJson(t, newResponse)
 
 		err := client.CortexAgents.Alter(ctx, sdk.NewAlterCortexAgentRequest(id).
-			WithModifyLiveVersionSet(*sdk.NewCortexAgentModifyLiveVersionSetRequest(newSpec)))
+			WithModifyLiveVersionSet(*sdk.NewCortexAgentModifyLiveVersionSetRequest(newYamlSpec)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
-			HasCortexAgentSpec(expectedSpecAsMap(newResponse)))
+			HasCortexAgentSpec(newDescSpec))
 	})
 
 	t.Run("drop cortex agent: existing", func(t *testing.T) {

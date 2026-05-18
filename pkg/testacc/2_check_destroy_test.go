@@ -205,6 +205,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ComputePool: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ComputePools.ShowByID)
 	},
+	resources.CortexAgent: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CortexAgents.ShowByID)
+	},
 	resources.CortexSearchService: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CortexSearchServices.ShowByID)
 	},

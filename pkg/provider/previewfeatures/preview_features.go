@@ -26,6 +26,7 @@ const (
 	CatalogIntegrationsDatasource                 feature = "snowflake_catalog_integrations_datasource"
 	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
+	CortexAgentResource                           feature = "snowflake_cortex_agent_resource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
 	CortexSearchServicesDatasource                feature = "snowflake_cortex_search_services_datasource"
 	CurrentAccountResource                        feature = "snowflake_current_account_resource"
@@ -134,6 +135,7 @@ var allPreviewFeatures = []feature{
 	CatalogIntegrationOpenCatalogResource,
 	CatalogIntegrationIcebergRestResource,
 	CatalogIntegrationsDatasource,
+	CortexAgentResource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
