@@ -19,6 +19,11 @@ import (
 func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
 	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifier()
 
+	// Ensure the bundle is always re-enabled after the test, even on failure.
+	t.Cleanup(func() {
+		secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2026_03")
+	})
+
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
 
 	withPropagateOnly := model.TagBase("test", id).
@@ -102,6 +107,62 @@ func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
 						)),
 					)
 				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withPropagateOnly.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, providerModel, withPropagateOnly),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, withPropagateOnly.ResourceReference()).
+						HasOnConflictEmpty(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Tag_OnConflictAllowedValuesSequence_Bcr2291(t *testing.T) {
+	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifier()
+
+	// Ensure the bundle is always re-enabled after the test, even on failure.
+	t.Cleanup(func() {
+		secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2026_03")
+	})
+
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+
+	withAllowedValues := model.TagBase("test", id).
+		WithOrderedAllowedValues("confidential", "internal", "public").
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOnConflictAllowedValuesSequence()
+
+	withPropagateOnly := model.TagBase("test", id).
+		WithPropagateEnum(sdk.TagPropagationOnDependency)
+
+	resourceRef := withAllowedValues.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Step 1: with the bundle enabled, create a tag with allowed_values + allowed_values_sequence on_conflict.
+			{
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
+				PreConfig: func() {
+					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2026_03")
+				},
+				Config: config.FromModels(t, providerModel, withAllowedValues),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, resourceRef).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasOnConflictAllowedValuesSequence(),
+				),
+			},
+			// Step 2: drop on_conflict; the value is cleared.
+			{
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(withPropagateOnly.ResourceReference(), plancheck.ResourceActionUpdate),

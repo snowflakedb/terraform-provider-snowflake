@@ -329,7 +329,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			// tag.OnConflict is nil and we leave the state unchanged to avoid spurious diffs.
 			if tag.OnConflict != nil {
 				onConflict := make(map[string]any)
-				if *tag.OnConflict == "ALLOWED_VALUES_SEQUENCE" {
+				if *tag.OnConflict == sdk.TagOnConflictAllowedValuesSequence {
 					onConflict["allowed_values_sequence"] = true
 				} else {
 					onConflict["custom_value"] = *tag.OnConflict

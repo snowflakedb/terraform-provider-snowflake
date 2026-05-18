@@ -81,6 +81,14 @@ No changes are required for existing configurations.
 
 References: [#4727](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4727)
 
+### *(improvement)* New `on_conflict` field in `show_output` for `snowflake_tag` and `snowflake_tags`
+
+A new `on_conflict` field has been added to the `show_output` attribute on both the [`snowflake_tag`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag) resource and the [`snowflake_tags`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tags) data source. It reflects the propagation on-conflict strategy returned by `SHOW TAGS`.
+
+The field is only populated when the [BCR-2291](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03/bcr-2291) change (bundle `2026_03`) is enabled on your account. When the bundle is disabled, `on_conflict` is absent from the `SHOW TAGS` output and the provider leaves the existing state value unchanged to avoid spurious diffs.
+
+No configuration changes are required.
+
 ## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* snowflake_password_policy resource rework

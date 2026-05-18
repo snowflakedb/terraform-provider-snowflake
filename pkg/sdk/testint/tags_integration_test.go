@@ -1392,3 +1392,73 @@ func TestInt_TagsPropagation(t *testing.T) {
 		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "public")
 	})
 }
+
+// TestInt_Tags_OnConflict_Bcr2291 verifies that the on_conflict field added to SHOW TAGS by BCR-2291
+// (bundle 2026_03) is correctly parsed and surfaced through ShowByID when the bundle is enabled.
+func TestInt_Tags_OnConflict_Bcr2291(t *testing.T) {
+	t.Run("create with custom_value is returned by ShowByID", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+					WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("HIGHLY CONFIDENTIAL")})),
+		)
+		t.Cleanup(tagCleanup)
+
+		assertThatObject(t, objectassert.Tag(t, tag.ID()).
+			HasOnConflict("HIGHLY CONFIDENTIAL"),
+		)
+	})
+
+	t.Run("create with allowed_values_sequence is returned by ShowByID", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithAllowedValues([]string{"confidential", "internal", "public"}).
+				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+					WithOnConflict(sdk.TagOnConflict{AllowedValuesSequence: sdk.Bool(true)})),
+		)
+		t.Cleanup(tagCleanup)
+
+		assertThatObject(t, objectassert.Tag(t, tag.ID()).
+			HasOnConflict(sdk.TagOnConflictAllowedValuesSequence),
+		)
+	})
+
+	t.Run("alter on_conflict custom value", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency)),
+		)
+		t.Cleanup(tagCleanup)
+
+		assertThatObject(t, objectassert.Tag(t, tag.ID()).HasNoOnConflict())
+
+		testClientHelper().Tag.Alter(t, sdk.NewAlterTagRequest(tag.ID()).
+			WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+				WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("my_custom_value")}))))
+
+		assertThatObject(t, objectassert.Tag(t, tag.ID()).
+			HasOnConflict("my_custom_value"),
+		)
+
+		testClientHelper().Tag.Alter(t, sdk.NewAlterTagRequest(tag.ID()).
+			WithUnset(*sdk.NewTagUnsetRequest().WithPropagate(true)))
+
+		assertThatObject(t, objectassert.Tag(t, tag.ID()).HasNoOnConflict())
+	})
+
+	t.Run("alter on_conflict allowed values sequence", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+					WithOnConflict(sdk.TagOnConflict{AllowedValuesSequence: sdk.Bool(true)})),
+		)
+		t.Cleanup(tagCleanup)
+
+		assertThatObject(t, objectassert.Tag(t, tag.ID()).HasOnConflict(sdk.TagOnConflictAllowedValuesSequence))
+
+		testClientHelper().Tag.Alter(t, sdk.NewAlterTagRequest(tag.ID()).
+			WithUnset(*sdk.NewTagUnsetRequest().WithPropagate(true)))
+
+		assertThatObject(t, objectassert.Tag(t, tag.ID()).HasNoOnConflict())
+	})
+}

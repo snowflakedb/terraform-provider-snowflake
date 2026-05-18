@@ -53,7 +53,7 @@ func (t *TagAssert) HasAllowedValuesEmpty() *TagAssert {
 	return t
 }
 
-func (t *TagAssert) HasOnConflictNil() *TagAssert {
+func (t *TagAssert) HasNoOnConflict() *TagAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
 		t.Helper()
 		if o.OnConflict != nil {
