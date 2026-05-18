@@ -137,3 +137,17 @@ func (t *TagAssert) HasPropagate(expected sdk.TagPropagation) *TagAssert {
 	})
 	return t
 }
+
+func (t *TagAssert) HasOnConflict(expected string) *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if o.OnConflict == nil {
+			return fmt.Errorf("expected on conflict to have value; got: nil")
+		}
+		if *o.OnConflict != expected {
+			return fmt.Errorf("expected on conflict: %v; got: %v", expected, *o.OnConflict)
+		}
+		return nil
+	})
+	return t
+}

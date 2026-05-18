@@ -151,6 +151,7 @@ Read-Only:
 - `created_on` (String)
 - `database_name` (String)
 - `name` (String)
+- `on_conflict` (String)
 - `owner` (String)
 - `owner_role_type` (String)
 - `propagate` (String)
