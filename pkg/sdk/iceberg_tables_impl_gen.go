@@ -149,8 +149,10 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 			On:   r.RowAccessPolicy.On,
 		}
 	}
-	opts.AggregationPolicy = IcebergTableAggregationPolicy{
-		AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
+	if r.AggregationPolicy != nil {
+		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
+			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
+		}
 	}
 	return opts
 }
@@ -193,7 +195,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		opts.AlterColumnAction = s
 	}
 	if r.SetMaskingPolicyOnColumn != nil {
-		opts.SetMaskingPolicyOnColumn = &IcebergTableSetColumnMaskingPolicy{
+		opts.SetMaskingPolicyOnColumn = &TableSetColumnMaskingPolicy{
 			Name:          r.SetMaskingPolicyOnColumn.Name,
 			MaskingPolicy: r.SetMaskingPolicyOnColumn.MaskingPolicy,
 			Using:         r.SetMaskingPolicyOnColumn.Using,
@@ -201,30 +203,30 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		}
 	}
 	if r.UnsetMaskingPolicyOnColumn != nil {
-		opts.UnsetMaskingPolicyOnColumn = &IcebergTableUnsetColumnMaskingPolicy{
+		opts.UnsetMaskingPolicyOnColumn = &TableUnsetColumnMaskingPolicy{
 			Name: r.UnsetMaskingPolicyOnColumn.Name,
 		}
 	}
 	if r.SetProjectionPolicyOnColumn != nil {
-		opts.SetProjectionPolicyOnColumn = &IcebergTableSetColumnProjectionPolicy{
+		opts.SetProjectionPolicyOnColumn = &TableSetColumnProjectionPolicy{
 			Name:             r.SetProjectionPolicyOnColumn.Name,
 			ProjectionPolicy: r.SetProjectionPolicyOnColumn.ProjectionPolicy,
 			Force:            r.SetProjectionPolicyOnColumn.Force,
 		}
 	}
 	if r.UnsetProjectionPolicyOnColumn != nil {
-		opts.UnsetProjectionPolicyOnColumn = &IcebergTableUnsetColumnProjectionPolicy{
+		opts.UnsetProjectionPolicyOnColumn = &TableUnsetColumnProjectionPolicy{
 			Name: r.UnsetProjectionPolicyOnColumn.Name,
 		}
 	}
 	if r.SetTagsOnColumn != nil {
-		opts.SetTagsOnColumn = &IcebergTableSetColumnTags{
+		opts.SetTagsOnColumn = &TableSetColumnTags{
 			Name:    r.SetTagsOnColumn.Name,
 			SetTags: r.SetTagsOnColumn.SetTags,
 		}
 	}
 	if r.UnsetTagsOnColumn != nil {
-		opts.UnsetTagsOnColumn = &IcebergTableUnsetColumnTags{
+		opts.UnsetTagsOnColumn = &TableUnsetColumnTags{
 			Name:      r.UnsetTagsOnColumn.Name,
 			UnsetTags: r.UnsetTagsOnColumn.UnsetTags,
 		}

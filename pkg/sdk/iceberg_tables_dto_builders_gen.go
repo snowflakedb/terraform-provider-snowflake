@@ -351,32 +351,32 @@ func (s *AlterIcebergTableRequest) WithAlterColumnAction(alterColumnAction []Ice
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithSetMaskingPolicyOnColumn(setMaskingPolicyOnColumn IcebergTableSetColumnMaskingPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithSetMaskingPolicyOnColumn(setMaskingPolicyOnColumn TableSetColumnMaskingPolicyRequest) *AlterIcebergTableRequest {
 	s.SetMaskingPolicyOnColumn = &setMaskingPolicyOnColumn
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithUnsetMaskingPolicyOnColumn(unsetMaskingPolicyOnColumn IcebergTableUnsetColumnMaskingPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithUnsetMaskingPolicyOnColumn(unsetMaskingPolicyOnColumn TableUnsetColumnMaskingPolicyRequest) *AlterIcebergTableRequest {
 	s.UnsetMaskingPolicyOnColumn = &unsetMaskingPolicyOnColumn
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithSetProjectionPolicyOnColumn(setProjectionPolicyOnColumn IcebergTableSetColumnProjectionPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithSetProjectionPolicyOnColumn(setProjectionPolicyOnColumn TableSetColumnProjectionPolicyRequest) *AlterIcebergTableRequest {
 	s.SetProjectionPolicyOnColumn = &setProjectionPolicyOnColumn
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithUnsetProjectionPolicyOnColumn(unsetProjectionPolicyOnColumn IcebergTableUnsetColumnProjectionPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithUnsetProjectionPolicyOnColumn(unsetProjectionPolicyOnColumn TableUnsetColumnProjectionPolicyRequest) *AlterIcebergTableRequest {
 	s.UnsetProjectionPolicyOnColumn = &unsetProjectionPolicyOnColumn
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithSetTagsOnColumn(setTagsOnColumn IcebergTableSetColumnTagsRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithSetTagsOnColumn(setTagsOnColumn TableSetColumnTagsRequest) *AlterIcebergTableRequest {
 	s.SetTagsOnColumn = &setTagsOnColumn
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithUnsetTagsOnColumn(unsetTagsOnColumn IcebergTableUnsetColumnTagsRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithUnsetTagsOnColumn(unsetTagsOnColumn TableUnsetColumnTagsRequest) *AlterIcebergTableRequest {
 	s.UnsetTagsOnColumn = &unsetTagsOnColumn
 	return s
 }
@@ -494,72 +494,72 @@ func (s *IcebergTableAlterColumnActionRequest) WithDropWriteDefault(dropWriteDef
 	return s
 }
 
-func NewIcebergTableSetColumnMaskingPolicyRequest(
+func NewTableSetColumnMaskingPolicyRequest(
 	name string,
 	maskingPolicy SchemaObjectIdentifier,
-) *IcebergTableSetColumnMaskingPolicyRequest {
-	s := IcebergTableSetColumnMaskingPolicyRequest{}
+) *TableSetColumnMaskingPolicyRequest {
+	s := TableSetColumnMaskingPolicyRequest{}
 	s.Name = name
 	s.MaskingPolicy = maskingPolicy
 	return &s
 }
 
-func (s *IcebergTableSetColumnMaskingPolicyRequest) WithUsing(using []Column) *IcebergTableSetColumnMaskingPolicyRequest {
+func (s *TableSetColumnMaskingPolicyRequest) WithUsing(using []Column) *TableSetColumnMaskingPolicyRequest {
 	s.Using = using
 	return s
 }
 
-func (s *IcebergTableSetColumnMaskingPolicyRequest) WithForce(force bool) *IcebergTableSetColumnMaskingPolicyRequest {
+func (s *TableSetColumnMaskingPolicyRequest) WithForce(force bool) *TableSetColumnMaskingPolicyRequest {
 	s.Force = &force
 	return s
 }
 
-func NewIcebergTableUnsetColumnMaskingPolicyRequest(
+func NewTableUnsetColumnMaskingPolicyRequest(
 	name string,
-) *IcebergTableUnsetColumnMaskingPolicyRequest {
-	s := IcebergTableUnsetColumnMaskingPolicyRequest{}
+) *TableUnsetColumnMaskingPolicyRequest {
+	s := TableUnsetColumnMaskingPolicyRequest{}
 	s.Name = name
 	return &s
 }
 
-func NewIcebergTableSetColumnProjectionPolicyRequest(
+func NewTableSetColumnProjectionPolicyRequest(
 	name string,
 	projectionPolicy SchemaObjectIdentifier,
-) *IcebergTableSetColumnProjectionPolicyRequest {
-	s := IcebergTableSetColumnProjectionPolicyRequest{}
+) *TableSetColumnProjectionPolicyRequest {
+	s := TableSetColumnProjectionPolicyRequest{}
 	s.Name = name
 	s.ProjectionPolicy = projectionPolicy
 	return &s
 }
 
-func (s *IcebergTableSetColumnProjectionPolicyRequest) WithForce(force bool) *IcebergTableSetColumnProjectionPolicyRequest {
+func (s *TableSetColumnProjectionPolicyRequest) WithForce(force bool) *TableSetColumnProjectionPolicyRequest {
 	s.Force = &force
 	return s
 }
 
-func NewIcebergTableUnsetColumnProjectionPolicyRequest(
+func NewTableUnsetColumnProjectionPolicyRequest(
 	name string,
-) *IcebergTableUnsetColumnProjectionPolicyRequest {
-	s := IcebergTableUnsetColumnProjectionPolicyRequest{}
+) *TableUnsetColumnProjectionPolicyRequest {
+	s := TableUnsetColumnProjectionPolicyRequest{}
 	s.Name = name
 	return &s
 }
 
-func NewIcebergTableSetColumnTagsRequest(
+func NewTableSetColumnTagsRequest(
 	name string,
 	setTags []TagAssociation,
-) *IcebergTableSetColumnTagsRequest {
-	s := IcebergTableSetColumnTagsRequest{}
+) *TableSetColumnTagsRequest {
+	s := TableSetColumnTagsRequest{}
 	s.Name = name
 	s.SetTags = setTags
 	return &s
 }
 
-func NewIcebergTableUnsetColumnTagsRequest(
+func NewTableUnsetColumnTagsRequest(
 	name string,
 	unsetTags []ObjectIdentifier,
-) *IcebergTableUnsetColumnTagsRequest {
-	s := IcebergTableUnsetColumnTagsRequest{}
+) *TableUnsetColumnTagsRequest {
+	s := TableUnsetColumnTagsRequest{}
 	s.Name = name
 	s.UnsetTags = unsetTags
 	return &s

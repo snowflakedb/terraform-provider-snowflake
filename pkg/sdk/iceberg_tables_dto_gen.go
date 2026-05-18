@@ -117,12 +117,12 @@ type AlterIcebergTableRequest struct {
 	name                          SchemaObjectIdentifier // required
 	AddColumnAction               *IcebergTableAddColumnActionRequest
 	AlterColumnAction             []IcebergTableAlterColumnActionRequest
-	SetMaskingPolicyOnColumn      *IcebergTableSetColumnMaskingPolicyRequest
-	UnsetMaskingPolicyOnColumn    *IcebergTableUnsetColumnMaskingPolicyRequest
-	SetProjectionPolicyOnColumn   *IcebergTableSetColumnProjectionPolicyRequest
-	UnsetProjectionPolicyOnColumn *IcebergTableUnsetColumnProjectionPolicyRequest
-	SetTagsOnColumn               *IcebergTableSetColumnTagsRequest
-	UnsetTagsOnColumn             *IcebergTableUnsetColumnTagsRequest
+	SetMaskingPolicyOnColumn      *TableSetColumnMaskingPolicyRequest
+	UnsetMaskingPolicyOnColumn    *TableUnsetColumnMaskingPolicyRequest
+	SetProjectionPolicyOnColumn   *TableSetColumnProjectionPolicyRequest
+	UnsetProjectionPolicyOnColumn *TableUnsetColumnProjectionPolicyRequest
+	SetTagsOnColumn               *TableSetColumnTagsRequest
+	UnsetTagsOnColumn             *TableUnsetColumnTagsRequest
 	ClusteringAction              *IcebergTableClusteringActionRequest
 	Set                           *IcebergTableSetPropertiesRequest
 	Unset                         *IcebergTableUnsetPropertiesRequest
@@ -153,33 +153,33 @@ type IcebergTableAlterColumnActionRequest struct {
 	DropWriteDefault *bool
 }
 
-type IcebergTableSetColumnMaskingPolicyRequest struct {
+type TableSetColumnMaskingPolicyRequest struct {
 	Name          string                 // required
 	MaskingPolicy SchemaObjectIdentifier // required
 	Using         []Column
 	Force         *bool
 }
 
-type IcebergTableUnsetColumnMaskingPolicyRequest struct {
+type TableUnsetColumnMaskingPolicyRequest struct {
 	Name string // required
 }
 
-type IcebergTableSetColumnProjectionPolicyRequest struct {
+type TableSetColumnProjectionPolicyRequest struct {
 	Name             string                 // required
 	ProjectionPolicy SchemaObjectIdentifier // required
 	Force            *bool
 }
 
-type IcebergTableUnsetColumnProjectionPolicyRequest struct {
+type TableUnsetColumnProjectionPolicyRequest struct {
 	Name string // required
 }
 
-type IcebergTableSetColumnTagsRequest struct {
+type TableSetColumnTagsRequest struct {
 	Name    string           // required
 	SetTags []TagAssociation // required
 }
 
-type IcebergTableUnsetColumnTagsRequest struct {
+type TableUnsetColumnTagsRequest struct {
 	Name      string             // required
 	UnsetTags []ObjectIdentifier // required
 }

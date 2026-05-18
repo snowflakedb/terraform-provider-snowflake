@@ -135,43 +135,6 @@ var icebergTableAlterColumnAction = g.NewQueryStruct("IcebergTableAlterColumnAct
 	OptionalSQL("DROP WRITE DEFAULT").
 	WithValidation(g.ExactlyOneValueSet, "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault")
 
-var icebergTableSetColumnMaskingPolicy = g.NewQueryStruct("IcebergTableSetColumnMaskingPolicy").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	SQL("SET").
-	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
-	ListAssignment("USING", "Column", g.ParameterOptions().NoEquals().Parentheses()).
-	OptionalSQL("FORCE")
-
-var icebergTableUnsetColumnMaskingPolicy = g.NewQueryStruct("IcebergTableUnsetColumnMaskingPolicy").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	SQL("UNSET").
-	SQL("MASKING POLICY")
-
-var icebergTableSetColumnProjectionPolicy = g.NewQueryStruct("IcebergTableSetColumnProjectionPolicy").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	SQL("SET").
-	Identifier("ProjectionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required()).
-	OptionalSQL("FORCE")
-
-var icebergTableUnsetColumnProjectionPolicy = g.NewQueryStruct("IcebergTableUnsetColumnProjectionPolicy").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	SQL("UNSET").
-	SQL("PROJECTION POLICY")
-
-var icebergTableSetColumnTags = g.NewQueryStruct("IcebergTableSetColumnTags").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	SetTags()
-
-var icebergTableUnsetColumnTags = g.NewQueryStruct("IcebergTableUnsetColumnTags").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	UnsetTags()
-
 var icebergTableClusteringAction = g.NewQueryStruct("IcebergTableClusteringAction").
 	ListAssignment("CLUSTER BY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
 	OptionalQueryStructField(
@@ -188,7 +151,7 @@ var icebergTableAggregationPolicy = g.NewQueryStruct("IcebergTableAggregationPol
 	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
 	WithValidation(g.ValidIdentifier, "AggregationPolicy")
 
-var icebergTableRowAccessPolicy = g.NewQueryStruct("IcebergTableRowAccessPolicy").
+var tableRowAccessPolicy = g.NewQueryStruct("IcebergTableRowAccessPolicy").
 	Identifier("Name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "Name")
@@ -224,7 +187,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalComment().
 		OptionalNumberAssignment("ICEBERG_VERSION", g.ParameterOptions()).
 		OptionalBooleanAssignment("ENABLE_ICEBERG_MERGE_ON_READ", g.ParameterOptions()).
-		OptionalQueryStructField("RowAccessPolicy", icebergTableRowAccessPolicy, g.KeywordOptions()).
+		OptionalQueryStructField("RowAccessPolicy", tableRowAccessPolicy, g.KeywordOptions()).
 		OptionalQueryStructField("AggregationPolicy", icebergTableAggregationPolicy, g.KeywordOptions()).
 		OptionalTags().
 		OptionalBooleanAssignment("ENABLE_DATA_COMPACTION", g.ParameterOptions()).
@@ -250,32 +213,32 @@ var icebergTablesDef = g.NewInterface(
 		).
 		OptionalQueryStructField(
 			"SetMaskingPolicyOnColumn",
-			icebergTableSetColumnMaskingPolicy,
+			tableSetColumnMaskingPolicy,
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"UnsetMaskingPolicyOnColumn",
-			icebergTableUnsetColumnMaskingPolicy,
+			tableUnsetColumnMaskingPolicy,
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"SetProjectionPolicyOnColumn",
-			icebergTableSetColumnProjectionPolicy,
+			tableSetColumnProjectionPolicy,
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"UnsetProjectionPolicyOnColumn",
-			icebergTableUnsetColumnProjectionPolicy,
+			tableUnsetColumnProjectionPolicy,
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"SetTagsOnColumn",
-			icebergTableSetColumnTags,
+			tableSetColumnTags,
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"UnsetTagsOnColumn",
-			icebergTableUnsetColumnTags,
+			tableUnsetColumnTags,
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
