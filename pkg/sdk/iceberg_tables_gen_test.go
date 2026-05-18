@@ -115,6 +115,31 @@ func TestIcebergTables_Create(t *testing.T) {
 					Args: IcebergTablePartitionBucketArgs{NumBuckets: 4, Column: "NAME"},
 				},
 			},
+			{
+				Truncate: &IcebergTablePartitionTruncate{
+					Args: IcebergTablePartitionTruncateArgs{Width: 10, Column: "C1"},
+				},
+			},
+			{
+				Year: &IcebergTablePartitionYear{
+					Args: IcebergTablePartitionTimeArgs{Column: "C2"},
+				},
+			},
+			{
+				Month: &IcebergTablePartitionMonth{
+					Args: IcebergTablePartitionTimeArgs{Column: "C3"},
+				},
+			},
+			{
+				Day: &IcebergTablePartitionDay{
+					Args: IcebergTablePartitionTimeArgs{Column: "C4"},
+				},
+			},
+			{
+				Hour: &IcebergTablePartitionHour{
+					Args: IcebergTablePartitionTimeArgs{Column: "C5"},
+				},
+			},
 		}
 		opts.PathLayout = new(IcebergTablePathLayoutHierarchical)
 		opts.ClusterBy = []Column{{"col1"}, {"col2"}}
@@ -136,6 +161,9 @@ func TestIcebergTables_Create(t *testing.T) {
 			Name: rowAccessPolicyId,
 			On:   []Column{{"ID"}, {"NAME"}},
 		}
+		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
+			AggregationPolicy: aggregationPolicyId,
+		}
 		opts.Tag = []TagAssociation{
 			{Name: tagId1, Value: "v1"},
 			{Name: tagId2, Value: "v2"},
@@ -150,7 +178,7 @@ func TestIcebergTables_Create(t *testing.T) {
 			`CREATE OR REPLACE TRANSIENT ICEBERG TABLE %s `+
 				`("ID" NUMBER(38, 0) DEFAULT 1 NOT NULL TAG (%s = 'v1', %s = 'v2') COMMENT 'id column', `+
 				`"NAME" VARCHAR(16777216) COMMENT 'name column') `+
-				`PARTITION BY ("ID", BUCKET (4, "NAME")) `+
+				`PARTITION BY ("ID", BUCKET (4, "NAME"), TRUNCATE (10, "C1"), YEAR ("C2"), MONTH ("C3"), DAY ("C4"), HOUR ("C5")) `+
 				`PATH_LAYOUT = HIERARCHICAL `+
 				`CLUSTER BY ("col1", "col2") `+
 				`EXTERNAL_VOLUME = '"vol1"' `+
@@ -178,40 +206,6 @@ func TestIcebergTables_Create(t *testing.T) {
 			aggregationPolicyId.FullyQualifiedName(),
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
 		)
-	})
-
-	t.Run("partition by truncate, year, month, day, hour", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.PartitionBy = []IcebergTablePartitionExpression{
-			{
-				Truncate: &IcebergTablePartitionTruncate{
-					Args: IcebergTablePartitionTruncateArgs{Width: 10, Column: "C1"},
-				},
-			},
-			{
-				Year: &IcebergTablePartitionYear{
-					Args: IcebergTablePartitionTimeArgs{Column: "C2"},
-				},
-			},
-			{
-				Month: &IcebergTablePartitionMonth{
-					Args: IcebergTablePartitionTimeArgs{Column: "C3"},
-				},
-			},
-			{
-				Day: &IcebergTablePartitionDay{
-					Args: IcebergTablePartitionTimeArgs{Column: "C4"},
-				},
-			},
-			{
-				Hour: &IcebergTablePartitionHour{
-					Args: IcebergTablePartitionTimeArgs{Column: "C5"},
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts,
-			`CREATE ICEBERG TABLE %s PARTITION BY (TRUNCATE (10, "C1"), YEAR ("C2"), MONTH ("C3"), DAY ("C4"), HOUR ("C5")) AGGREGATION POLICY %s`,
-			id.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName())
 	})
 }
 

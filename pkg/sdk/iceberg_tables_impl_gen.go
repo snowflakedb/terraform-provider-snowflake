@@ -292,8 +292,29 @@ func (r *ShowIcebergTableRequest) toOpts() *ShowIcebergTableOptions {
 }
 
 func (r icebergTableRow) convert() (*IcebergTable, error) {
-	// TODO: Mapping
-	return &IcebergTable{}, nil
+	result := &IcebergTable{
+		CreatedOn:                 r.CreatedOn,
+		Name:                      r.Name,
+		DatabaseName:              r.DatabaseName,
+		SchemaName:                r.SchemaName,
+		BaseLocation:              r.BaseLocation,
+		CanWriteMetadata:          r.CanWriteMetadata == "Y",
+		OwnerRoleType:             r.OwnerRoleType,
+		CatalogSyncName:           r.CatalogSyncName,
+		AutoRefreshStatus:         r.AutoRefreshStatus,
+		PartitionSpecs:            r.PartitionSpecs,
+		CurrentPartitionSpecId:    r.CurrentPartitionSpecId,
+		IcebergTableFormatVersion: r.IcebergTableFormatVersion,
+	}
+	mapNullString(&result.Owner, r.Owner)
+	mapNullStringWithMapping(&result.ExternalVolumeName, r.ExternalVolumeName, ParseAccountObjectIdentifier)
+	mapNullStringWithMapping(&result.CatalogName, r.CatalogName, ParseAccountObjectIdentifier)
+	// TODO: Mapping for IcebergTableType (string -> IcebergTableType)
+	mapNullString(&result.CatalogTableName, r.CatalogTableName)
+	mapNullString(&result.CatalogNamespace, r.CatalogNamespace)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.NameMapping, r.NameMapping)
+	return result, nil
 }
 
 func (r *DescribeIcebergTableRequest) toOpts() *DescribeIcebergTableOptions {
@@ -305,6 +326,22 @@ func (r *DescribeIcebergTableRequest) toOpts() *DescribeIcebergTableOptions {
 }
 
 func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
-	// TODO: Mapping
-	return &IcebergTableDetails{}, nil
+	result := &IcebergTableDetails{
+		Name:              r.Name,
+		Type:              r.Type,
+		SourceIcebergType: r.SourceIcebergType,
+		Kind:              r.Kind,
+		IsNullable:        r.Null == "Y",
+		PrimaryKey:        r.PrimaryKey == "Y",
+		UniqueKey:         r.UniqueKey == "Y",
+	}
+	mapNullString(&result.Default, r.Default)
+	mapNullString(&result.Check, r.Check)
+	mapNullString(&result.Expression, r.Expression)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.PolicyName, r.PolicyName)
+	mapNullString(&result.PrivacyDomain, r.PrivacyDomain)
+	mapNullString(&result.NameMapping, r.NameMapping)
+	mapNullString(&result.WriteDefault, r.WriteDefault)
+	return result, nil
 }

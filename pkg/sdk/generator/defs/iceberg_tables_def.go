@@ -282,22 +282,23 @@ var icebergTablesDef = g.NewInterface(
 		Text("name").
 		Text("database_name").
 		Text("schema_name").
-		OptionalText("owner", g.WithRequiredInPlain()).
-		OptionalAccountObjectIdentifier("external_volume_name", g.WithPlainFieldName("ExternalVolumeName"), g.WithRequiredInPlain()).
-		OptionalAccountObjectIdentifier("catalog_name", g.WithPlainFieldName("CatalogName"), g.WithRequiredInPlain()).
+		OptionalText("owner").
+		OptionalAccountObjectIdentifier("external_volume_name", g.WithPlainFieldName("ExternalVolumeName")).
+		OptionalAccountObjectIdentifier("catalog_name", g.WithPlainFieldName("CatalogName")).
 		PlainField("iceberg_table_type", IcebergTableTypeEnumDef.Kind()).
-		OptionalText("catalog_table_name", g.WithRequiredInPlain()).
-		OptionalText("catalog_namespace", g.WithRequiredInPlain()).
+		OptionalText("catalog_table_name").
+		OptionalText("catalog_namespace").
 		Text("base_location").
 		Field("can_write_metadata", "string", "bool").
-		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("name_mapping", g.WithRequiredInPlain()).
+		OptionalText("comment").
+		OptionalText("name_mapping").
 		Text("owner_role_type").
 		Text("catalog_sync_name").
 		Text("auto_refresh_status").
 		Text("partition_specs").
 		Number("current_partition_spec_id").
-		Number("iceberg_table_format_version"),
+		Number("iceberg_table_format_version").
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowIcebergTables").
 		Show().
 		Terse().
@@ -328,7 +329,8 @@ var icebergTablesDef = g.NewInterface(
 		OptionalText("policy name", g.WithPlainFieldName("PolicyName")).
 		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain")).
 		OptionalText("name mapping", g.WithPlainFieldName("NameMapping")).
-		OptionalText("write default", g.WithPlainFieldName("WriteDefault")),
+		OptionalText("write default", g.WithPlainFieldName("WriteDefault")).
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeIcebergTable").
 		Describe().
 		SQL("ICEBERG TABLE").

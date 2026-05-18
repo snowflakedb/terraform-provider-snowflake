@@ -303,16 +303,16 @@ type IcebergTable struct {
 	Name                      string
 	DatabaseName              string
 	SchemaName                string
-	Owner                     string
-	ExternalVolumeName        AccountObjectIdentifier
-	CatalogName               AccountObjectIdentifier
+	Owner                     *string
+	ExternalVolumeName        *AccountObjectIdentifier
+	CatalogName               *AccountObjectIdentifier
 	IcebergTableType          IcebergTableType
-	CatalogTableName          string
-	CatalogNamespace          string
+	CatalogTableName          *string
+	CatalogNamespace          *string
 	BaseLocation              string
 	CanWriteMetadata          bool
-	Comment                   string
-	NameMapping               string
+	Comment                   *string
+	NameMapping               *string
 	OwnerRoleType             string
 	CatalogSyncName           string
 	AutoRefreshStatus         string
