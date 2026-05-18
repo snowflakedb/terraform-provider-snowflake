@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type TableRowAccessPolicy struct {
+type TableRowAccessPolicyLegacy struct {
 	rowAccessPolicy bool                   `ddl:"static" sql:"ROW ACCESS POLICY"`
 	Name            SchemaObjectIdentifier `ddl:"identifier"`
 	On              []string               `ddl:"keyword,parentheses" sql:"ON"`

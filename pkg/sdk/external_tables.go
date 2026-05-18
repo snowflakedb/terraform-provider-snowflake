@@ -79,7 +79,7 @@ type CreateExternalTableOptions struct {
 	AwsSnsTopic     *string               `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC"`
 	CopyGrants      *bool                 `ddl:"keyword" sql:"COPY GRANTS"`
 	Comment         *string               `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	RowAccessPolicy *TableRowAccessPolicy `ddl:"keyword"`
+	RowAccessPolicy *TableRowAccessPolicyLegacy `ddl:"keyword"`
 	Tag             []TagAssociation      `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
@@ -215,7 +215,7 @@ type CreateWithManualPartitioningExternalTableOptions struct {
 	RawFileFormat   *RawFileFormat        `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	CopyGrants      *bool                 `ddl:"keyword" sql:"COPY GRANTS"`
 	Comment         *string               `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	RowAccessPolicy *TableRowAccessPolicy `ddl:"keyword"`
+	RowAccessPolicy *TableRowAccessPolicyLegacy `ddl:"keyword"`
 	Tag             []TagAssociation      `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
@@ -240,7 +240,7 @@ type CreateDeltaLakeExternalTableOptions struct {
 	deltaTableFormat bool                  `ddl:"static" sql:"TABLE_FORMAT = DELTA"`
 	CopyGrants       *bool                 `ddl:"keyword" sql:"COPY GRANTS"`
 	Comment          *string               `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	RowAccessPolicy  *TableRowAccessPolicy `ddl:"keyword"`
+	RowAccessPolicy  *TableRowAccessPolicyLegacy `ddl:"keyword"`
 	Tag              []TagAssociation      `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
@@ -265,7 +265,7 @@ type CreateExternalTableUsingTemplateOptions struct {
 	RawFileFormat   *RawFileFormat        `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	AwsSnsTopic     *string               `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC"`
 	Comment         *string               `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	RowAccessPolicy *TableRowAccessPolicy `ddl:"keyword"`
+	RowAccessPolicy *TableRowAccessPolicyLegacy `ddl:"keyword"`
 	Tag             []TagAssociation      `ddl:"keyword,parentheses" sql:"TAG"`
 }
 

@@ -39,7 +39,7 @@ type createTableAsSelectOptions struct {
 	Columns         []TableAsSelectColumn  `ddl:"list,parentheses"`
 	ClusterBy       []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	CopyGrants      *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy *TableRowAccessPolicy  `ddl:"keyword"`
+	RowAccessPolicy *TableRowAccessPolicyLegacy  `ddl:"keyword"`
 	Query           string                 `ddl:"parameter,no_equals" sql:"AS"`
 }
 
@@ -115,7 +115,7 @@ type createTableOptions struct {
 	ChangeTracking             *bool                            `ddl:"parameter" sql:"CHANGE_TRACKING"`
 	DefaultDDLCollation        *string                          `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	CopyGrants                 *bool                            `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy            *TableRowAccessPolicy            `ddl:"keyword"`
+	RowAccessPolicy            *TableRowAccessPolicyLegacy            `ddl:"keyword"`
 	Tags                       []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
 	Comment                    *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
