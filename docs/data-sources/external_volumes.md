@@ -130,6 +130,7 @@ Read-Only:
 - `azure_consent_url` (String)
 - `azure_multi_tenant_app_name` (String)
 - `azure_tenant_id` (String)
+- `use_privatelink_endpoint` (String)
 
 
 <a id="nestedobjatt--external_volumes--describe_output--storage_locations--gcs_storage_location"></a>
