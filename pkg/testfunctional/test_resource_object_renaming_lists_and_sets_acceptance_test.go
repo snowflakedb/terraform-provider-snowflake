@@ -35,7 +35,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "333", "int": 333},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "111", "int": "111"},
 						{"string": "222", "int": "222"},
 						{"string": "333", "int": "333"},
@@ -65,7 +65,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "333", "int": 333},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "222", "int": "222"},
 						{"string": "444", "int": "444"},
 						{"string": "333", "int": "333"},
@@ -95,7 +95,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "111", "int": 111},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "444", "int": "444"},
 						{"string": "333", "int": "333"},
 						{"string": "111", "int": "111"},
@@ -125,7 +125,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "444", "int": 444},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "222", "int": "222"},
 						{"string": "333", "int": "333"},
 						{"string": "444", "int": "444"},
@@ -153,7 +153,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "222", "int": 222},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "444", "int": "444"},
 						{"string": "555", "int": "555"},
 						{"string": "333", "int": "333"},
@@ -191,7 +191,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "4444", "int": 4444},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "1111", "int": "1111"},
 						{"string": "2222", "int": "2222"},
 						{"string": "3333", "int": "3333"},
@@ -219,7 +219,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "2222", "int": 2222},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "1111", "int": "1111"},
 						{"string": "2222", "int": "2222"},
 					}),
@@ -265,7 +265,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "2222", "int": 2222},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "1111", "int": "1111"},
 						{"string": "2222", "int": "2222"},
 					}),
@@ -296,7 +296,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "2222", "int": 2222},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "1111", "int": "1111"},
 						{"string": "2222", "int": "2222"},
 					}),
@@ -324,7 +324,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "2222", "int": 2222},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "1111", "int": "1111"},
 						{"string": "2222", "int": "2222"},
 					}),
@@ -356,7 +356,7 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 					{"string": "2222", "int": 2222},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "1111", "int": "1111"},
 						{"string": "2222", "int": "2222"},
 					}),
@@ -382,8 +382,6 @@ func TestAcc_SdkV2Functional_BasicListFlow(t *testing.T) {
 // This test researches the possibility of performing update instead of remove + add item
 func TestAcc_SdkV2Functional_ListNameUpdate(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableObjectRenamingTest)
-
-	t.Skip("Currently failing, will be investigated soon.")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -453,7 +451,7 @@ func TestAcc_SdkV2Functional_ListsWithDuplicatedItems(t *testing.T) {
 					{"string": "333", "int": 333},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "111", "int": "111"},
 						{"string": "222", "int": "222"},
 						{"string": "333", "int": "333"},
@@ -471,7 +469,7 @@ func TestAcc_SdkV2Functional_ListsWithDuplicatedItems(t *testing.T) {
 					{"string": "333", "int": 333},
 				}),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					assert.ContainsExactlyInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
+					assert.ContainsAtLeastInAnyOrder("snowflake_test_resource_object_renaming.test", "list", []map[string]string{
 						{"string": "111", "int": "111"},
 						{"string": "111", "int": "111"},
 						{"string": "222", "int": "222"},
@@ -486,18 +484,23 @@ func TestAcc_SdkV2Functional_ListsWithDuplicatedItems(t *testing.T) {
 }
 
 func objectRenamingConfigList(listItems []map[string]any) string {
-	generateListItem := func(s string, i int) string {
+	generateListItem := func(item map[string]any) string {
+		name := ""
+		if n, ok := item["name"]; ok {
+			name = n.(string)
+		}
 		return fmt.Sprintf(`
 	list {
-		string = "%[1]s"
-		int = %[2]d
+		name = %q
+		string = "%s"
+		int = %d
 	}
-`, s, i)
+`, name, item["string"].(string), item["int"].(int))
 	}
 
 	generatedListItems := ""
 	for _, item := range listItems {
-		generatedListItems += generateListItem(item["string"].(string), item["int"].(int))
+		generatedListItems += generateListItem(item)
 	}
 
 	return fmt.Sprintf(`

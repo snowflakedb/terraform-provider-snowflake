@@ -1,6 +1,48 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Mapping*/ -}}
 
 func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error) {
+{{- if .FieldPairs }}
+    result := &{{ .To.KindNoPtr }}{
+    {{- range .FieldPairs }}
+        {{- if .AssignmentKindDirect }}
+            {{ .PlainFieldName }}: r.{{ .DbFieldName }},
+        {{- else if .AssignmentKindStringToBool }}
+            {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "Y",
+        {{- end }}
+    {{- end }}
+    }
+    {{- range .FieldPairs }}
+        {{- if .AssignmentKindDirect }}
+        {{- else if .AssignmentKindStringToBool }}
+        {{- else if .AssignmentKindStringToStringArray }}
+            result.{{ .PlainFieldName }} = ParseCommaSeparatedStringArray(r.{{ .DbFieldName }}, false)
+        {{- else if .AssignmentKindStringToIdentifier }}
+            mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, Parse{{ TypeWithoutPointer .PlainKind }})
+        {{- else if .AssignmentKindStringToEnum }}
+            mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
+        {{- else if .AssignmentKindStringToJson }}
+            if err := json.Unmarshal([]byte(r.{{ .DbFieldName }}), &result.{{ .PlainFieldName }}); err != nil {
+            	return nil, fmt.Errorf("failed to unmarshal {{ .PlainFieldName }}: %w", err)
+            }
+        {{- else if .AssignmentKindNullableToNullable }}
+            {{ .NullMapFunc }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
+        {{- else if .AssignmentKindNullableToRequired }}
+            {{ .NullRequiredMapFunc }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
+        {{- else if .AssignmentKindNullableToIdentifier }}
+            mapNullStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, Parse{{ TypeWithoutPointer .PlainKind }})
+        {{- else if .AssignmentKindNullableToEnum }}
+            mapNullStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
+        {{- else if .AssignmentKindNullableToStringArray }}
+            if r.{{ .DbFieldName }}.Valid {
+            	result.{{ .PlainFieldName }} = ParseCommaSeparatedStringArray(r.{{ .DbFieldName }}.String, false)
+            }
+        {{- else }}
+            // TODO: Mapping for {{ .PlainFieldName }} ({{ .DbKind }} -> {{ .PlainKind }})
+        {{- end }}
+    {{- end }}
+    return result, nil
+{{- else }}
     // TODO: Mapping
     return &{{ .To.KindNoPtr }}{}, nil
+{{- end }}
 }

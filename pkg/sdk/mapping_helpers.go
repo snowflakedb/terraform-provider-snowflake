@@ -49,6 +49,24 @@ func mapNullBool(boolField **bool, sqlValue sql.NullBool) {
 	}
 }
 
+func mapNullBoolToNonNullableField(boolField *bool, sqlValue sql.NullBool) {
+	if sqlValue.Valid {
+		*boolField = sqlValue.Bool
+	}
+}
+
+func mapNullIntToNonNullableField(intField *int, sqlValue sql.NullInt64) {
+	if sqlValue.Valid {
+		*intField = int(sqlValue.Int64)
+	}
+}
+
+func mapNullTime(timeField **time.Time, sqlValue sql.NullTime) {
+	if sqlValue.Valid {
+		*timeField = &sqlValue.Time
+	}
+}
+
 // mapStringWithMapping maps a string to a type T using a provided mapper function.
 // Be careful with the sensitive values as the mapper function can return an error, which is then logged by this function.
 // TODO [SNOW-3108659]: return error?

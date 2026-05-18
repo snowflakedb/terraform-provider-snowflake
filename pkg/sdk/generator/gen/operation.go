@@ -83,6 +83,10 @@ type Mapping struct {
 	MappingFuncName string
 	From            *Field
 	To              *Field
+	// FieldPairs carries the per-field conversion metadata.
+	// The mapping needs to be built from a PairedStructs definition with WithConvertGeneration() enabled.
+	// Otherwise, the old placeholder is used.
+	FieldPairs []FieldPair
 }
 
 func newOperation(kind string, doc string) *Operation {
@@ -132,13 +136,6 @@ func addShowMapping(op *Operation, from, to *Field) {
 
 func addDescriptionMapping(op *Operation, from, to *Field) {
 	op.DescribeMapping = newMapping("convert", from, to)
-}
-
-func instanceMethodMappingForKind(kind InstanceMethodKind) func(op *Operation, from, to *Field) {
-	return func(op *Operation, from, to *Field) {
-		op.InstanceMethodMapping = newMapping("convert", from, to)
-		op.InstanceMethodKind = &kind
-	}
 }
 
 func newNoSqlOperation(kind string) *Operation {
@@ -248,7 +245,11 @@ func (i *Interface) appendShowByID(filtering []ShowByIDFilteringKind) *Interface
 }
 
 func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
-	op := i.newOperationWithDBMapping(string(OperationKindShow), doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
+	return i.showOperation(doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping, filtering...)
+}
+
+func (i *Interface) showOperation(doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), filtering ...ShowByIDFilteringKind) *Interface {
+	op := i.newOperationWithDBMapping(string(OperationKindShow), doc, dbRepresentation, resourceRepresentation, queryStruct, addMappingFunc)
 	kind := ShowMappingKindSlice
 	i.ShowObjectName = op.ShowMapping.To.Name
 	op.ShowKind = &kind
@@ -256,7 +257,11 @@ func (i *Interface) ShowOperation(doc string, dbRepresentation *dbStruct, resour
 }
 
 func (i *Interface) CustomShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
-	op := i.newOperationWithDBMapping(operationName, doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
+	return i.customShowOperation(operationName, showKind, doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
+}
+
+func (i *Interface) customShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field)) *Interface {
+	op := i.newOperationWithDBMapping(operationName, doc, dbRepresentation, resourceRepresentation, queryStruct, addMappingFunc)
 	op.ShowKind = &showKind
 	return i
 }
@@ -278,7 +283,11 @@ func (i *Interface) ShowByIdOperationWithFiltering(filter ShowByIDFilteringKind,
 }
 
 func (i *Interface) DescribeOperation(describeKind DescriptionMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
-	op := i.newOperationWithDBMapping(string(OperationKindDescribe), doc, dbRepresentation, resourceRepresentation, queryStruct, addDescriptionMapping, helperStructs...)
+	return i.describeOperation(describeKind, doc, dbRepresentation, resourceRepresentation, queryStruct, addDescriptionMapping, helperStructs...)
+}
+
+func (i *Interface) describeOperation(describeKind DescriptionMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), helperStructs ...IntoField) *Interface {
+	op := i.newOperationWithDBMapping(string(OperationKindDescribe), doc, dbRepresentation, resourceRepresentation, queryStruct, addMappingFunc, helperStructs...)
 	op.DescribeKind = &describeKind
 	return i
 }

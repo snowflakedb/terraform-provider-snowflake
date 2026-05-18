@@ -1,5 +1,3 @@
-//go:build sdk_generation_examples
-
 package defs
 
 import (

@@ -60,11 +60,7 @@ var dataMetricFunctionDef = g.NewQueryStruct("ViewDataMetricFunction").
 var modifyDataMetricFunctionDef = g.NewQueryStruct("ViewModifyDataMetricFunction").
 	Identifier("DataMetricFunction", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
-	Assignment(
-		"",
-		ViewDataMetricScheduleStatusOperationOptionEnumDef.Kind(),
-		g.ParameterOptions().NoEquals().NoQuotes(),
-	).
+	EnumAssignment("", ViewDataMetricScheduleStatusOperationOptionEnumDef, g.ParameterOptions().NoEquals().NoQuotes()).
 	WithValidation(g.ValidIdentifier, "DataMetricFunction")
 
 var viewColumn = g.NewQueryStruct("ViewColumn").

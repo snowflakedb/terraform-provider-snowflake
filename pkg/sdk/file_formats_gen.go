@@ -25,7 +25,7 @@ type FileFormatOptions struct {
 }
 
 type FileFormatCsvOptions struct {
-	formatType                 string                       `ddl:"static" sql:"TYPE = CSV"`
+	formatType                 bool                         `ddl:"static" sql:"TYPE = CSV"`
 	Compression                *CsvCompression              `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
 	RecordDelimiter            *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"RECORD_DELIMITER ="`
 	FieldDelimiter             *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"FIELD_DELIMITER ="`
@@ -61,7 +61,7 @@ type StageFileFormatStringOrAuto struct {
 }
 
 type FileFormatJsonOptions struct {
-	formatType               string                       `ddl:"static" sql:"TYPE = JSON"`
+	formatType               bool                         `ddl:"static" sql:"TYPE = JSON"`
 	Compression              *JsonCompression             `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
 	DateFormat               *StageFileFormatStringOrAuto `ddl:"list,no_parentheses" sql:"DATE_FORMAT ="`
 	TimeFormat               *StageFileFormatStringOrAuto `ddl:"list,no_parentheses" sql:"TIME_FORMAT ="`
@@ -81,7 +81,7 @@ type FileFormatJsonOptions struct {
 }
 
 type FileFormatAvroOptions struct {
-	formatType               string           `ddl:"static" sql:"TYPE = AVRO"`
+	formatType               bool             `ddl:"static" sql:"TYPE = AVRO"`
 	Compression              *AvroCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
 	TrimSpace                *bool            `ddl:"parameter" sql:"TRIM_SPACE"`
 	ReplaceInvalidCharacters *bool            `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
@@ -89,14 +89,14 @@ type FileFormatAvroOptions struct {
 }
 
 type FileFormatOrcOptions struct {
-	formatType               string       `ddl:"static" sql:"TYPE = ORC"`
+	formatType               bool         `ddl:"static" sql:"TYPE = ORC"`
 	TrimSpace                *bool        `ddl:"parameter" sql:"TRIM_SPACE"`
 	ReplaceInvalidCharacters *bool        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	NullIf                   []NullString `ddl:"parameter,parentheses" sql:"NULL_IF"`
 }
 
 type FileFormatParquetOptions struct {
-	formatType               string              `ddl:"static" sql:"TYPE = PARQUET"`
+	formatType               bool                `ddl:"static" sql:"TYPE = PARQUET"`
 	Compression              *ParquetCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
 	SnappyCompression        *bool               `ddl:"parameter" sql:"SNAPPY_COMPRESSION"`
 	BinaryAsText             *bool               `ddl:"parameter" sql:"BINARY_AS_TEXT"`
@@ -108,7 +108,7 @@ type FileFormatParquetOptions struct {
 }
 
 type FileFormatXmlOptions struct {
-	formatType               string          `ddl:"static" sql:"TYPE = XML"`
+	formatType               bool            `ddl:"static" sql:"TYPE = XML"`
 	Compression              *XmlCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
 	IgnoreUtf8Errors         *bool           `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
 	PreserveSpace            *bool           `ddl:"parameter" sql:"PRESERVE_SPACE"`
