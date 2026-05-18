@@ -97,10 +97,10 @@ func parseCommonProperties(properties []CatalogIntegrationProperty) (*commonDeta
 }
 
 type awsGlueSpecificDetails struct {
-	glueAwsRoleArn   string
-	glueCatalogId    string
-	glueRegion       string
-	catalogNamespace string
+	glueAwsRoleArn    string
+	glueCatalogId     string
+	glueRegion        string
+	catalogNamespace  string
 	glueAwsIamUserArn string
 	glueAwsExternalId string
 }

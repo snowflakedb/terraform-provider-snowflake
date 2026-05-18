@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(new feature)* snowflake_catalog_integration_aws_glue: new `describe_output` attributes
+
+The `snowflake_catalog_integration_aws_glue` resource now exposes two additional attributes under `describe_output`:
+- `glue_aws_iam_user_arn`
+- `glue_aws_external_id`
+
+No changes are required for existing configurations.
+
+References: [#4745](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4745)
+
 ### *(bug fix)* `snowflake_schema`: setting `default_ddl_collation = ""` now overrides a value inherited from the parent database
 
 Previously, setting `default_ddl_collation = ""` on a `snowflake_schema` was silently skipped when the parent database had a non-empty `DEFAULT_DDL_COLLATION` (e.g. `"pl"`). The update was a no-op and the schema kept inheriting the parent value.
