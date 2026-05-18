@@ -1449,8 +1449,11 @@ func TestInt_Tags_OnConflict_Bcr2291(t *testing.T) {
 	t.Run("alter on_conflict allowed values sequence", func(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
-				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
-					WithOnConflict(sdk.TagOnConflict{AllowedValuesSequence: sdk.Bool(true)})),
+				WithAllowedValues([]string{"confidential", "internal", "public"}).
+				WithPropagate(
+					*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+						WithOnConflict(sdk.TagOnConflict{AllowedValuesSequence: sdk.Bool(true)}),
+				),
 		)
 		t.Cleanup(tagCleanup)
 
