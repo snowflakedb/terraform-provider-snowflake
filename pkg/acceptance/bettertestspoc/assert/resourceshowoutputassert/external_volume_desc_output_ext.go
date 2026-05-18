@@ -112,6 +112,11 @@ func (e *ExternalVolumeDescribeOutputAssert) HasStorageLocations(expected []sdk.
 			// AzureMultiTenantAppName and AzureConsentUrl are Snowflake-generated - assert presence only
 			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(azurePrefix + ".azure_multi_tenant_app_name"))
 			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(azurePrefix + ".azure_consent_url"))
+			if loc.AzureStorageLocation.UsePrivatelinkEndpoint != nil {
+				e.AddAssertion(assert.ResourceDescribeOutputValueSet(azurePrefix+".use_privatelink_endpoint", fmt.Sprintf("%t", *loc.AzureStorageLocation.UsePrivatelinkEndpoint)))
+			} else {
+				e.AddAssertion(assert.ResourceDescribeOutputValueSet(azurePrefix+".use_privatelink_endpoint", ""))
+			}
 		} else {
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".azure_storage_location.#", "0"))
 		}

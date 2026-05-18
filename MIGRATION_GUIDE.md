@@ -36,6 +36,53 @@ No changes are required for existing configurations.
 
 References: [#4745](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4745)
 
+### *(new feature)* snowflake_cortex_agent preview resource
+
+We have added a new preview resource for managing Cortex agents: [snowflake_cortex_agent](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_agent).
+
+This feature will be marked as stable in future releases. To use this feature, add `snowflake_cortex_agent_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
+### *(bugfix)* `snowflake_external_volume` — support for `use_privatelink_endpoint` in Azure deployments
+
+Previously, setting `use_privatelink_endpoint = "true"` on an Azure storage location in `snowflake_external_volume` was silently ignored — the field was not sent to Snowflake and was not read back into state. The field is now correctly sent on create and update, and reflected in state after a read.
+
+No configuration changes are required. After upgrading the provider, a `terraform apply` will update the state of existing Azure storage locations to reflect the value Snowflake returns for `USE_PRIVATELINK_ENDPOINT`.
+
+Additionally, now when `use_privatelink_endpoint` is set to false explicitly, and the privatelink endpoint is not actually enabled in a Snowflake object, the plan will be empty. Previously, the plan was computed incorrectly as:
+```
+        Terraform will perform the following actions:
+
+          # snowflake_external_volume.complete will be updated in-place
+          ~ resource "snowflake_external_volume" "complete" {
+                id                   = "MILRGWAT_3B02DC25_AF70_A697_0D4F_6DFE71E1DF67"
+                name                 = "MILRGWAT_3B02DC25_AF70_A697_0D4F_6DFE71E1DF67"
+                # (5 unchanged attributes hidden)
+
+              ~ storage_location {
+                  + use_privatelink_endpoint     = "false"
+                    # (12 unchanged attributes hidden)
+                }
+
+                # (1 unchanged block hidden)
+            }
+```
+
+Ref: [#4663](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4663)
+
+### *(enhancement)* Improved identifier handling in `snowflake_stream_on_directory_table`
+
+Thanks to the changes introduced in [BCR-2170](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2170) (part of [Bundle 2026_01](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01_bundle)),
+Snowflake now returns a fully qualified name for the stage behind a directory table stream in `SHOW STREAMS` output (previously, only a partially qualified name was returned).
+This allowed us to resolve the long-standing limitation in `snowflake_stream_on_directory_table` tracked as [SNOW-1733130](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2328):
+
+- The `stage` attribute now expects, stores, and reads a fully qualified identifier (e.g. `"MY_DB"."MY_SCHEMA"."MY_STAGE"`), consistent with other identifier attributes in the provider.
+- The previous requirement that the stage must live in the same schema as the stream has been lifted - stages from a different schema than the stream are now fully supported.
+
+The state is automatically rewrites any existing `stage` value into its fully qualified form,
+so no manual changes to the configuration or state are required when upgrading.
+
 ### *(bug fix)* `snowflake_schema`: setting `default_ddl_collation = ""` now overrides a value inherited from the parent database
 
 Previously, setting `default_ddl_collation = ""` on a `snowflake_schema` was silently skipped when the parent database had a non-empty `DEFAULT_DDL_COLLATION` (e.g. `"pl"`). The update was a no-op and the schema kept inheriting the parent value.
@@ -169,8 +216,6 @@ We have added a new preview data source for session policies: [snowflake_session
 This feature will be marked as stable in future releases. To use it, add `snowflake_session_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
 
 No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
-
-## v2.15.x ➞ v2.15.1
 
 ### *(bug fix)* `snowflake_stream_on_table` and `snowflake_stream_on_view` import fix
 

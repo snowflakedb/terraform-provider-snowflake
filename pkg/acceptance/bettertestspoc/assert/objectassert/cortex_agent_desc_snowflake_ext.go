@@ -2,11 +2,11 @@ package objectassert
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/stretchr/testify/require"
 )
 
 func (c *CortexAgentDetailsAssert) HasNoComment() *CortexAgentDetailsAssert {
@@ -50,27 +50,18 @@ func (c *CortexAgentDetailsAssert) HasCortexAgentProfile(expected sdk.CortexAgen
 	return c
 }
 
-func (c *CortexAgentDetailsAssert) HasCortexAgentSpec(expected map[string]any) *CortexAgentDetailsAssert {
+func (c *CortexAgentDetailsAssert) HasCortexAgentSpec(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
-		return assertCortexAgentSpecMapEqual(o.AgentSpec, expected)
+		normalizedActual, err := sdk.NormalizeCortexAgentSpecification(o.AgentSpec)
+		require.NoError(t, err)
+		normalizedExpected, err := sdk.NormalizeCortexAgentSpecification(expected)
+		require.NoError(t, err)
+
+		if normalizedActual != normalizedExpected {
+			return fmt.Errorf("expected agent spec: %v; got: %v", normalizedExpected, normalizedActual)
+		}
+		return nil
 	})
 	return c
-}
-
-func assertCortexAgentSpecMapEqual(agentSpec string, expected map[string]any) error {
-	exp := expected
-	if exp == nil {
-		exp = map[string]any{}
-	}
-
-	actual, err := sdk.UnmarshalCortexAgentSpec(agentSpec)
-	if err != nil {
-		return fmt.Errorf("unmarshal cortex agent spec: %w", err)
-	}
-
-	if !reflect.DeepEqual(actual, exp) {
-		return fmt.Errorf("expected agent spec %+v; got %+v", exp, actual)
-	}
-	return nil
 }

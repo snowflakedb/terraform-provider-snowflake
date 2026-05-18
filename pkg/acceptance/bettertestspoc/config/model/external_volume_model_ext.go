@@ -1,6 +1,8 @@
 package model
 
 import (
+	"strconv"
+
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -26,6 +28,9 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 					m["encryption_kms_key_id"] = tfconfig.StringVariable(*v.S3StorageLocationParams.Encryption.KmsKeyId)
 				}
 			}
+			if v.S3StorageLocationParams.UsePrivatelinkEndpoint != nil {
+				m["use_privatelink_endpoint"] = tfconfig.StringVariable(strconv.FormatBool(*v.S3StorageLocationParams.UsePrivatelinkEndpoint))
+			}
 			maps[i] = tfconfig.MapVariable(m)
 		case v.GCSStorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
@@ -46,6 +51,9 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderAzure)),
 				"azure_tenant_id":       tfconfig.StringVariable(v.AzureStorageLocationParams.AzureTenantId),
 				"storage_base_url":      tfconfig.StringVariable(v.AzureStorageLocationParams.StorageBaseUrl),
+			}
+			if v.AzureStorageLocationParams.UsePrivatelinkEndpoint != nil {
+				m["use_privatelink_endpoint"] = tfconfig.StringVariable(strconv.FormatBool(*v.AzureStorageLocationParams.UsePrivatelinkEndpoint))
 			}
 			maps[i] = tfconfig.MapVariable(m)
 		case v.S3CompatStorageLocationParams != nil:

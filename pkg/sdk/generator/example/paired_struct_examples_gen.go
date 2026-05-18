@@ -50,6 +50,9 @@ type pairedStructExampleRow struct {
 	OptionalSecondSchemaObjectId sql.NullString `db:"optional_second_schema_object_id"`
 	DatabaseObjectId             string         `db:"database_object_id"`
 	SecondDatabaseObjectId       string         `db:"second_database_object_id"`
+	Status                       string         `db:"status"`
+	OptionalStatus               sql.NullString `db:"optional_status"`
+	Metadata                     string         `db:"metadata"`
 }
 
 type PairedStructExample struct {
@@ -80,6 +83,9 @@ type PairedStructExample struct {
 	OverriddenOptionalSchemaObjectId     *SchemaObjectIdentifier
 	DatabaseObjectId                     DatabaseObjectIdentifier
 	OverriddenDatabaseObjectId           DatabaseObjectIdentifier
+	Status                               ExampleStatus
+	OptionalStatus                       *ExampleStatus
+	Metadata                             []PairedStructExampleMetadata
 }
 
 func (v *PairedStructExample) ID() AccountObjectIdentifier {
@@ -125,6 +131,9 @@ type pairedStructExampleDetailRow struct {
 	OptionalSecondSchemaObjectId sql.NullString `db:"optional_second_schema_object_id"`
 	DatabaseObjectId             string         `db:"database_object_id"`
 	SecondDatabaseObjectId       string         `db:"second_database_object_id"`
+	Status                       string         `db:"status"`
+	OptionalStatus               sql.NullString `db:"optional_status"`
+	Metadata                     string         `db:"metadata"`
 }
 
 type PairedStructExampleDetail struct {
@@ -155,4 +164,7 @@ type PairedStructExampleDetail struct {
 	OverriddenOptionalSchemaObjectId     *SchemaObjectIdentifier
 	DatabaseObjectId                     DatabaseObjectIdentifier
 	OverriddenDatabaseObjectId           DatabaseObjectIdentifier
+	Status                               ExampleStatus
+	OptionalStatus                       *ExampleStatus
+	Metadata                             []PairedStructExampleMetadata
 }
