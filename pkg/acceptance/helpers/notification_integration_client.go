@@ -36,6 +36,13 @@ func (c *NotificationIntegrationClient) CreateWithGcpPubSub(t *testing.T) (*sdk.
 	)
 }
 
+func (c *NotificationIntegrationClient) CreateWebhook(t *testing.T, webhookUrl string) (*sdk.NotificationIntegration, func()) {
+	t.Helper()
+	return c.CreateWithRequest(t, sdk.NewCreateNotificationIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
+		WithWebhookParams(*sdk.NewWebhookParamsRequest(webhookUrl)),
+	)
+}
+
 func (c *NotificationIntegrationClient) Create(t *testing.T) (*sdk.NotificationIntegration, func()) {
 	t.Helper()
 	ctx := context.Background()

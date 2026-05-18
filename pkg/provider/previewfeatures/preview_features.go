@@ -26,6 +26,7 @@ const (
 	CatalogIntegrationsDatasource                 feature = "snowflake_catalog_integrations_datasource"
 	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
+	CortexAgentResource                           feature = "snowflake_cortex_agent_resource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
 	CortexSearchServicesDatasource                feature = "snowflake_cortex_search_services_datasource"
 	CurrentAccountResource                        feature = "snowflake_current_account_resource"
@@ -74,6 +75,7 @@ const (
 	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
+	PasswordPoliciesDatasource                    feature = "snowflake_password_policies_datasource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
 	PipeResource                                  feature = "snowflake_pipe_resource"
 	PipesDatasource                               feature = "snowflake_pipes_datasource"
@@ -86,6 +88,7 @@ const (
 	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
 	SemanticViewResource                          feature = "snowflake_semantic_view_resource"
 	SemanticViewDatasource                        feature = "snowflake_semantic_views_datasource"
+	SessionPoliciesDatasource                     feature = "snowflake_session_policies_datasource"
 	SessionPolicyResource                         feature = "snowflake_session_policy_resource"
 	ServiceResource                               feature = "snowflake_service_resource"
 	ServicesDatasource                            feature = "snowflake_services_datasource"
@@ -132,6 +135,7 @@ var allPreviewFeatures = []feature{
 	CatalogIntegrationOpenCatalogResource,
 	CatalogIntegrationIcebergRestResource,
 	CatalogIntegrationsDatasource,
+	CortexAgentResource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -174,12 +178,14 @@ var allPreviewFeatures = []feature{
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
+	PasswordPoliciesDatasource,
 	PasswordPolicyResource,
 	PipeResource,
 	PipesDatasource,
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,
+	SessionPoliciesDatasource,
 	SessionPolicyResource,
 	SequenceResource,
 	SequencesDatasource,

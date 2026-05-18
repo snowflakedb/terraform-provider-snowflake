@@ -262,7 +262,7 @@ func (b sqlBuilder) parseInterface(v interface{}, tag reflect.StructTag) (sqlCla
 func (b sqlBuilder) parseStruct(s interface{}) ([]sqlClause, error) {
 	clauses := make([]sqlClause, 0)
 	v := reflect.ValueOf(s)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 	if v.Kind() != reflect.Struct {
@@ -273,7 +273,7 @@ func (b sqlBuilder) parseStruct(s interface{}) ([]sqlClause, error) {
 		field := t.Field(i)
 		value := v.Field(i)
 		// Derefence pointers as long as they are not nil
-		if value.Kind() == reflect.Ptr {
+		if value.Kind() == reflect.Pointer {
 			if value.IsNil() {
 				continue
 			}
@@ -335,10 +335,31 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 				if reflectedValue.(Identifier).Name() == "" {
 					return nil, nil
 				}
+				// instance_method classifier: render as identifier!METHOD
+				for _, part := range ddlTagParts {
+					if strings.TrimSpace(part) == "instance_method" {
+						objectID, ok := reflectedValue.(ObjectIdentifier)
+						if !ok {
+							return nil, fmt.Errorf("instance_method classifier requires ObjectIdentifier, got %T", reflectedValue)
+						}
+						return sqlInstanceMethodClause{object: objectID, method: sqlTag}, nil
+					}
+				}
+				// system_reference classifier: render as SYSTEM$REFERENCE('<objectType>', '<fqn>')
+				for _, part := range ddlTagParts {
+					if strings.TrimSpace(part) == "system_reference" {
+						objectID, ok := reflectedValue.(ObjectIdentifier)
+						if !ok {
+							return nil, fmt.Errorf("system_reference classifier requires ObjectIdentifier, got %T", reflectedValue)
+						}
+						return sqlSystemReferenceClause{objectType: sqlTag, object: objectID}, nil
+					}
+				}
 				return sqlIdentifierClause{
 					key:   sqlTag,
 					value: reflectedValue.(Identifier),
 					em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+					qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 				}, nil
 			}
 		case "list":
@@ -348,6 +369,13 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 			fieldStructClauses, err := b.parseStruct(reflectedValue)
 			if err != nil {
 				return nil, err
+			}
+			if len(fieldStructClauses) == 0 {
+				// handle the case where the list is empty and parentheses are a must
+				pm := b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier)
+				if pm == MustParentheses {
+					fieldStructClauses = append(fieldStructClauses, sqlStaticClause(""))
+				}
 			}
 			clauses = append(clauses, sqlListClause{
 				clauses: fieldStructClauses,
@@ -395,10 +423,9 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 
 func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Value) (sqlClause, error) {
 	// dereference any pointers
-	if value.Kind() == reflect.Ptr {
+	if value.Kind() == reflect.Pointer {
 		value = value.Elem()
 	}
-	clauses := make([]sqlClause, 0)
 	listClauses := make([]sqlClause, 0)
 	// loop through the slice call parseStruct on each element (since the elements could be structs)
 	for i := 0; i < value.Len(); i++ {
@@ -409,12 +436,14 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			listClauses = append(listClauses, sqlIdentifierClause{
 				value: identifier,
 				em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+				// TODO [next PRs]: handle single quotes for identifier lists correctly
+				// qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 			})
 			continue
 		}
 		k := value.Index(i)
 		// if it is a pointer, dereference it
-		if k.Kind() == reflect.Ptr {
+		if k.Kind() == reflect.Pointer {
 			k = k.Elem()
 		}
 
@@ -454,12 +483,11 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			return nil, nil
 		}
 	}
-	clauses = append(clauses, sqlListClause{
+	sClause := b.renderStaticClause(sqlListClause{
 		clauses: listClauses,
 		cm:      b.getModifier(field.Tag, "ddl", commaModifierType, Comma).(commaModifier),
 		pm:      b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier),
 	})
-	sClause := b.renderStaticClause(clauses...)
 	ddlTag := strings.Split(field.Tag.Get("ddl"), ",")[0]
 	sqlTag := field.Tag.Get("sql")
 	// depending on the ddl tag we may want to add a parameter clause or a keyword clause before rendered list clause
@@ -488,11 +516,10 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 		return nil, nil
 	}
 
-	clauses := make([]sqlClause, 0)
 	var clause sqlClause
 
 	// dereference any pointers
-	if value.Kind() == reflect.Ptr {
+	if value.Kind() == reflect.Pointer {
 		value = value.Elem()
 	}
 
@@ -541,6 +568,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 			key:   sqlTag,
 			value: reflectedValue.(Identifier),
 			em:    b.getModifier(field.Tag, "ddl", equalsModifierType, NoEquals).(equalsModifier),
+			qm:    b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 		}
 	case "parameter":
 		if _, ok := reflectedValue.(ObjectType); ok {
@@ -558,7 +586,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 	default:
 		return nil, nil
 	}
-	return b.renderStaticClause(append(clauses, clause)...), nil
+	return b.renderStaticClause(clause), nil
 }
 
 func (b sqlBuilder) getInterface(field reflect.Value) interface{} {
@@ -612,6 +640,7 @@ type sqlIdentifierClause struct {
 	key   string
 	value Identifier
 	em    equalsModifier
+	qm    quoteModifier
 }
 
 func (v sqlIdentifierClause) String() string {
@@ -622,6 +651,7 @@ func (v sqlIdentifierClause) String() string {
 	} else {
 		name = DoubleQuotes.Modify(v.value.Name())
 	}
+	name = v.qm.Modify(name)
 	// else try to get the string value
 	if v.key != "" {
 		return v.em.Modify(v.key) + name
@@ -667,4 +697,22 @@ func (v sqlParameterClause) String() string {
 	// key = "value"
 	s += v.qm.Modify(value)
 	return s
+}
+
+type sqlInstanceMethodClause struct {
+	object ObjectIdentifier
+	method string
+}
+
+func (v sqlInstanceMethodClause) String() string {
+	return fmt.Sprintf("%s!%s", v.object.FullyQualifiedName(), v.method)
+}
+
+type sqlSystemReferenceClause struct {
+	objectType string
+	object     ObjectIdentifier
+}
+
+func (v sqlSystemReferenceClause) String() string {
+	return fmt.Sprintf("SYSTEM$REFERENCE('%s', '%s')", v.objectType, v.object.FullyQualifiedName())
 }

@@ -110,27 +110,27 @@ var externalS3StageParamsDef = func() *g.QueryStruct {
 			OptionalQueryStructField(
 				"AwsCse",
 				g.NewQueryStruct("ExternalStageS3EncryptionAwsCse").
-					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_CSE'")).
+					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_CSE'").
 					TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
 				"AwsSseS3",
 				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseS3").
-					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_SSE_S3'")),
+					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_SSE_S3'"),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
 				"AwsSseKms",
 				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseKms").
-					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_SSE_KMS'")).
+					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_SSE_KMS'").
 					OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
 				"None",
 				g.NewQueryStruct("ExternalStageS3EncryptionNone").
-					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+					SQLWithCustomFieldName("encryptionType", "TYPE = 'NONE'"),
 				g.KeywordOptions(),
 			).
 			WithValidation(g.ExactlyOneValueSet, "AwsCse", "AwsSseS3", "AwsSseKms", "None"),
@@ -151,14 +151,14 @@ var externalGCSStageParamsDef = func() *g.QueryStruct {
 				OptionalQueryStructField(
 					"GcsSseKms",
 					g.NewQueryStruct("ExternalStageGCSEncryptionGcsSseKms").
-						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'GCS_SSE_KMS'")).
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'GCS_SSE_KMS'").
 						OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 					g.KeywordOptions(),
 				).
 				OptionalQueryStructField(
 					"None",
 					g.NewQueryStruct("ExternalStageGCSEncryptionNone").
-						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'NONE'"),
 					g.KeywordOptions(),
 				).
 				WithValidation(g.ExactlyOneValueSet, "GcsSseKms", "None"),
@@ -182,14 +182,14 @@ var externalAzureStageParamsDef = func() *g.QueryStruct {
 				OptionalQueryStructField(
 					"AzureCse",
 					g.NewQueryStruct("ExternalStageAzureEncryptionAzureCse").
-						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AZURE_CSE'")).
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'AZURE_CSE'").
 						TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
 					g.KeywordOptions(),
 				).
 				OptionalQueryStructField(
 					"None",
 					g.NewQueryStruct("ExternalStageAzureEncryptionNone").
-						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'NONE'"),
 					g.KeywordOptions(),
 				).
 				WithValidation(g.ExactlyOneValueSet, "AzureCse", "None"),
@@ -229,13 +229,13 @@ var stagesDef = g.NewInterface(
 						OptionalQueryStructField(
 							"SnowflakeFull",
 							g.NewQueryStruct("InternalStageEncryptionSnowflakeFull").
-								PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'SNOWFLAKE_FULL'")),
+								SQLWithCustomFieldName("encryptionType", "TYPE = 'SNOWFLAKE_FULL'"),
 							g.KeywordOptions(),
 						).
 						OptionalQueryStructField(
 							"SnowflakeSse",
 							g.NewQueryStruct("InternalStageEncryptionSnowflakeSse").
-								PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'SNOWFLAKE_SSE'")),
+								SQLWithCustomFieldName("encryptionType", "TYPE = 'SNOWFLAKE_SSE'"),
 							g.KeywordOptions(),
 						).
 						WithValidation(g.ExactlyOneValueSet, "SnowflakeFull", "SnowflakeSse"),
@@ -420,8 +420,6 @@ var stagesDef = g.NewInterface(
 			SQL("STAGES").
 			OptionalLike().
 			OptionalExtendedIn(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 		g.ShowByIDExtendedInFiltering,
 	).

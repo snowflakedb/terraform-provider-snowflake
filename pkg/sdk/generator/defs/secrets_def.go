@@ -91,7 +91,7 @@ var secretsDef = g.NewInterface(
 		SQL("SECRET").
 		IfNotExists().
 		Name().
-		PredefinedQueryStructField("secretType", "string", g.StaticOptions().SQL(fmt.Sprintf("TYPE = %s", sdkcommons.SecretTypeOAuth2))).
+		SQLWithCustomFieldName("secretType", fmt.Sprintf("TYPE = %s", sdkcommons.SecretTypeOAuth2)).
 		Identifier("ApiIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required().Equals().SQL("API_AUTHENTICATION")).
 		OptionalQueryStructField("OauthScopes", oauthScopesListDef, g.ParameterOptions().SQL("OAUTH_SCOPES").Parentheses()).
 		OptionalComment().
@@ -107,7 +107,7 @@ var secretsDef = g.NewInterface(
 		SQL("SECRET").
 		IfNotExists().
 		Name().
-		PredefinedQueryStructField("secretType", "string", g.StaticOptions().SQL(fmt.Sprintf("TYPE = %s", sdkcommons.SecretTypeOAuth2))).
+		SQLWithCustomFieldName("secretType", fmt.Sprintf("TYPE = %s", sdkcommons.SecretTypeOAuth2)).
 		TextAssignment("OAUTH_REFRESH_TOKEN", g.ParameterOptions().NoParentheses().SingleQuotes().Required()).
 		TextAssignment("OAUTH_REFRESH_TOKEN_EXPIRY_TIME", g.ParameterOptions().NoParentheses().SingleQuotes().Required()).
 		Identifier("ApiIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required().Equals().SQL("API_AUTHENTICATION")).
@@ -123,7 +123,7 @@ var secretsDef = g.NewInterface(
 		SQL("SECRET").
 		IfNotExists().
 		Name().
-		PredefinedQueryStructField("secretType", "string", g.StaticOptions().SQL(fmt.Sprintf("TYPE = %s", sdkcommons.SecretTypePassword))).
+		SQLWithCustomFieldName("secretType", fmt.Sprintf("TYPE = %s", sdkcommons.SecretTypePassword)).
 		TextAssignment("USERNAME", g.ParameterOptions().NoParentheses().SingleQuotes().Required()).
 		TextAssignment("PASSWORD", g.ParameterOptions().NoParentheses().SingleQuotes().Required()).
 		OptionalComment().
@@ -138,7 +138,7 @@ var secretsDef = g.NewInterface(
 		SQL("SECRET").
 		IfNotExists().
 		Name().
-		PredefinedQueryStructField("secretType", "string", g.StaticOptions().SQL(fmt.Sprintf("TYPE = %s", sdkcommons.SecretTypeGenericString))).
+		SQLWithCustomFieldName("secretType", fmt.Sprintf("TYPE = %s", sdkcommons.SecretTypeGenericString)).
 		TextAssignment("SECRET_STRING", g.ParameterOptions().SingleQuotes().Required()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
@@ -177,7 +177,6 @@ var secretsDef = g.NewInterface(
 		SQL("SECRETS").
 		OptionalLike().
 		OptionalExtendedIn(),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDExtendedInFiltering,
 ).DescribeOperationWithPairedStructs(

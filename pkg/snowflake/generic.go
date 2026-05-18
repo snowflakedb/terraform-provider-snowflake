@@ -108,38 +108,6 @@ func (ab *AlterPropertiesBuilder) GetTagValueString() string {
 	return strings.TrimSuffix(q.String(), ", ")
 }
 
-func (ab *AlterPropertiesBuilder) Statement() string {
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf(`ALTER %s "%s" SET`, ab.entityType, ab.name)) // TODO handle error
-
-	sb.WriteString(ab.rawStatement)
-
-	for _, k := range sortStrings(ab.stringProperties) {
-		sb.WriteString(fmt.Sprintf(" %s='%s'", strings.ToUpper(k), EscapeString(ab.stringProperties[k])))
-	}
-
-	for _, k := range sortStringList(ab.stringListProperties) {
-		sb.WriteString(fmt.Sprintf(" %s=%s", strings.ToUpper(k), formatStringList(ab.stringListProperties[k])))
-	}
-
-	for _, k := range sortStringsBool(ab.boolProperties) {
-		sb.WriteString(fmt.Sprintf(" %s=%t", strings.ToUpper(k), ab.boolProperties[k]))
-	}
-
-	for _, k := range sortStringsInt(ab.intProperties) {
-		sb.WriteString(fmt.Sprintf(" %s=%d", strings.ToUpper(k), ab.intProperties[k]))
-	}
-
-	for _, k := range sortStringsFloat(ab.floatProperties) {
-		sb.WriteString(fmt.Sprintf(" %s=%.2f", strings.ToUpper(k), ab.floatProperties[k]))
-	}
-
-	if len(ab.tags) > 0 {
-		sb.WriteString(fmt.Sprintf(` TAG %s`, ab.GetTagValueString()))
-	}
-	return sb.String()
-}
-
 type CreateBuilder struct {
 	name                 string
 	entityType           EntityType
@@ -206,39 +174,6 @@ func (b *CreateBuilder) GetTagValueString() string {
 		q.WriteString(fmt.Sprintf(`"%v" = "%v", `, v.Name, v.Value))
 	}
 	return strings.TrimSuffix(q.String(), ", ")
-}
-
-func (b *CreateBuilder) Statement() string {
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf(`CREATE %s "%s"`, b.entityType, b.name)) // TODO handle error
-
-	sb.WriteString(b.rawStatement)
-
-	for _, k := range sortStrings(b.stringProperties) {
-		sb.WriteString(fmt.Sprintf(" %s='%s'", strings.ToUpper(k), EscapeString(b.stringProperties[k])))
-	}
-
-	for _, k := range sortStringList(b.stringListProperties) {
-		sb.WriteString(fmt.Sprintf(" %s=%s", strings.ToUpper(k), formatStringList(b.stringListProperties[k])))
-	}
-
-	for _, k := range sortStringsBool(b.boolProperties) {
-		sb.WriteString(fmt.Sprintf(" %s=%t", strings.ToUpper(k), b.boolProperties[k]))
-	}
-
-	for _, k := range sortStringsInt(b.intProperties) {
-		sb.WriteString(fmt.Sprintf(" %s=%d", strings.ToUpper(k), b.intProperties[k]))
-	}
-
-	for _, k := range sortStringsFloat(b.floatProperties) {
-		sb.WriteString(fmt.Sprintf(" %s=%.2f", strings.ToUpper(k), b.floatProperties[k]))
-	}
-
-	if len(b.tags) > 0 {
-		sb.WriteString(fmt.Sprintf(` WITH TAG (%s)`, b.GetTagValueString()))
-	}
-
-	return sb.String()
 }
 
 func formatStringList(list []string) string {

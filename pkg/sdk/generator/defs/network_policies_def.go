@@ -119,9 +119,6 @@ var (
 				SQL("NETWORK POLICIES").
 				OptionalLike(),
 		).
-		ShowByIdOperationWithFiltering(
-			g.ShowByIDLikeFiltering,
-		).
 		DescribeOperationWithPairedStructs(
 			g.DescriptionMappingKindSlice,
 			"https://docs.snowflake.com/en/sql-reference/sql/desc-network-policy",

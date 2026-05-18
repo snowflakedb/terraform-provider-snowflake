@@ -198,7 +198,7 @@ func UpdateContextPrimaryConnection(ctx context.Context, d *schema.ResourceData,
 		before, after := d.GetChange("enable_failover_to_accounts")
 
 		getFailoverToAccounts := func(failoverConfig []any) []sdk.AccountIdentifier {
-			failoverEnabledToAccounts := make([]sdk.AccountIdentifier, 0)
+			failoverEnabledToAccounts := make([]sdk.AccountIdentifier, 0, len(failoverConfig))
 
 			for _, allowedAccount := range failoverConfig {
 				accountIdentifier := sdk.NewAccountIdentifierFromFullyQualifiedName(allowedAccount.(string))

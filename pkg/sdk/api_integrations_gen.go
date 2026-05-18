@@ -46,14 +46,14 @@ type AwsApiParams struct {
 }
 
 type AzureApiParams struct {
-	apiProvider          string  `ddl:"static" sql:"API_PROVIDER = azure_api_management"`
+	apiProvider          bool    `ddl:"static" sql:"API_PROVIDER = azure_api_management"`
 	AzureTenantId        string  `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
 	AzureAdApplicationId string  `ddl:"parameter,single_quotes" sql:"AZURE_AD_APPLICATION_ID"`
 	ApiKey               *string `ddl:"parameter,single_quotes" sql:"API_KEY"`
 }
 
 type GoogleApiParams struct {
-	apiProvider    string `ddl:"static" sql:"API_PROVIDER = google_api_gateway"`
+	apiProvider    bool   `ddl:"static" sql:"API_PROVIDER = google_api_gateway"`
 	GoogleAudience string `ddl:"parameter,single_quotes" sql:"GOOGLE_AUDIENCE"`
 }
 
@@ -139,7 +139,6 @@ func (v *ApiIntegration) ID() AccountObjectIdentifier {
 }
 
 func (v *ApiIntegration) ObjectType() ObjectType {
-	// Manually edited
 	return ObjectTypeIntegration
 }
 

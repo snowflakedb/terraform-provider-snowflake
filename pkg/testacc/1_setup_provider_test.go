@@ -47,6 +47,7 @@ var (
 	servicesProviderFactory                          = providerFactoryUsingCache("Services")
 	userPasswordPoliciesProviderFactory              = providerFactoryUsingCache("UserPasswordPolicies")
 	userAuthenticationPoliciesProviderFactory        = providerFactoryUsingCache("UserAuthenticationPolicies")
+	sessionPoliciesProviderFactory                   = providerFactoryUsingCache("SessionPolicies")
 	explicitAccountAdminRoleProviderFactory          = providerFactoryUsingCache("ExplicitAccountAdminRole")
 	strictPrivilegeManagementGrantProviderFactory    = providerFactoryUsingCache("StrictPrivilegeManagementGrantProvider")
 	grantsImportValidationProviderFactory            = providerFactoryUsingCache("GrantsImportValidationProvider")
@@ -55,6 +56,7 @@ var (
 	s3StageProviderFactory                           = providerFactoryUsingCache("StageExternalS3")
 	grantsSafeDestroyProviderFactory                 = providerFactoryUsingCache("GrantsSafeDestroy")
 	tagAssociationSafeDestroyProviderFactory         = providerFactoryUsingCache("TagAssociationSafeDestroy")
+	grantAccountRoleSafePublicRoleProviderFactory    = providerFactoryUsingCache("GrantAccountRoleSafePublicRole")
 	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
 )
 

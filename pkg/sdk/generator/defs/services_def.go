@@ -150,7 +150,7 @@ var servicesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-services",
 	g.StructPair("servicesRow", "Service").
 		Text("name").
-		PlainField("status", ServiceStatusEnumDef.Kind()).
+		Enum("status", ServiceStatusEnumDef).
 		Text("database_name").
 		Text("schema_name").
 		Text("owner").
@@ -187,7 +187,6 @@ var servicesDef = g.NewInterface(
 		OptionalStartsWith().
 		OptionalLimitFrom().
 		WithValidation(g.ConflictingFields, "Job", "ExcludeJobs"),
-).ShowByIdOperationWithFiltering(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDServiceInFiltering,
 ).DescribeOperationWithPairedStructs(
@@ -195,7 +194,7 @@ var servicesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-service",
 	g.StructPair("serviceDescRow", "ServiceDetails").
 		Text("name").
-		PlainField("status", ServiceStatusEnumDef.Kind()).
+		Enum("status", ServiceStatusEnumDef).
 		Text("database_name").
 		Text("schema_name").
 		Text("owner").

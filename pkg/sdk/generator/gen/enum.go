@@ -45,6 +45,17 @@ func (e *Enum) HasAliases() bool {
 	return false
 }
 
+// IsLowercase returns true if all enum values are lowercase.
+// When true, the generated conversion function uses strings.ToLower instead of strings.ToUpper.
+func (e *Enum) IsLowercase() bool {
+	for _, v := range e.Values {
+		if v != strings.ToLower(v) {
+			return false
+		}
+	}
+	return true
+}
+
 // Kind should be used in SDK object definitions instead of KindOfT
 func (e *Enum) Kind() string {
 	return e.Name

@@ -40,8 +40,8 @@ type CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions 
 	securityIntegration         bool                                                             `ddl:"static" sql:"SECURITY INTEGRATION"`
 	IfNotExists                 *bool                                                            `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                        AccountObjectIdentifier                                          `ddl:"identifier"`
-	integrationType             string                                                           `ddl:"static" sql:"TYPE = API_AUTHENTICATION"`
-	authType                    string                                                           `ddl:"static" sql:"AUTH_TYPE = OAUTH2"`
+	integrationType             bool                                                             `ddl:"static" sql:"TYPE = API_AUTHENTICATION"`
+	authType                    bool                                                             `ddl:"static" sql:"AUTH_TYPE = OAUTH2"`
 	Enabled                     bool                                                             `ddl:"parameter" sql:"ENABLED"`
 	OauthTokenEndpoint          *string                                                          `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_ENDPOINT"`
 	OauthClientAuthMethod       *ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption `ddl:"parameter" sql:"OAUTH_CLIENT_AUTH_METHOD"`
@@ -65,8 +65,8 @@ type CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOpt
 	securityIntegration         bool                                                             `ddl:"static" sql:"SECURITY INTEGRATION"`
 	IfNotExists                 *bool                                                            `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                        AccountObjectIdentifier                                          `ddl:"identifier"`
-	integrationType             string                                                           `ddl:"static" sql:"TYPE = API_AUTHENTICATION"`
-	authType                    string                                                           `ddl:"static" sql:"AUTH_TYPE = OAUTH2"`
+	integrationType             bool                                                             `ddl:"static" sql:"TYPE = API_AUTHENTICATION"`
+	authType                    bool                                                             `ddl:"static" sql:"AUTH_TYPE = OAUTH2"`
 	Enabled                     bool                                                             `ddl:"parameter" sql:"ENABLED"`
 	OauthAuthorizationEndpoint  *string                                                          `ddl:"parameter,single_quotes" sql:"OAUTH_AUTHORIZATION_ENDPOINT"`
 	OauthTokenEndpoint          *string                                                          `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_ENDPOINT"`
@@ -87,8 +87,8 @@ type CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions struct {
 	securityIntegration        bool                                                             `ddl:"static" sql:"SECURITY INTEGRATION"`
 	IfNotExists                *bool                                                            `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                       AccountObjectIdentifier                                          `ddl:"identifier"`
-	integrationType            string                                                           `ddl:"static" sql:"TYPE = API_AUTHENTICATION"`
-	authType                   string                                                           `ddl:"static" sql:"AUTH_TYPE = OAUTH2"`
+	integrationType            bool                                                             `ddl:"static" sql:"TYPE = API_AUTHENTICATION"`
+	authType                   bool                                                             `ddl:"static" sql:"AUTH_TYPE = OAUTH2"`
 	Enabled                    bool                                                             `ddl:"parameter" sql:"ENABLED"`
 	OauthAssertionIssuer       string                                                           `ddl:"parameter,single_quotes" sql:"OAUTH_ASSERTION_ISSUER"`
 	OauthAuthorizationEndpoint *string                                                          `ddl:"parameter,single_quotes" sql:"OAUTH_AUTHORIZATION_ENDPOINT"`
@@ -109,7 +109,7 @@ type CreateExternalOauthSecurityIntegrationOptions struct {
 	securityIntegration                        bool                                                                `ddl:"static" sql:"SECURITY INTEGRATION"`
 	IfNotExists                                *bool                                                               `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                                       AccountObjectIdentifier                                             `ddl:"identifier"`
-	integrationType                            string                                                              `ddl:"static" sql:"TYPE = EXTERNAL_OAUTH"`
+	integrationType                            bool                                                                `ddl:"static" sql:"TYPE = EXTERNAL_OAUTH"`
 	Enabled                                    bool                                                                `ddl:"parameter" sql:"ENABLED"`
 	ExternalOauthType                          ExternalOauthSecurityIntegrationTypeOption                          `ddl:"parameter" sql:"EXTERNAL_OAUTH_TYPE"`
 	ExternalOauthIssuer                        string                                                              `ddl:"parameter,single_quotes" sql:"EXTERNAL_OAUTH_ISSUER"`
@@ -158,7 +158,7 @@ type CreateOauthForPartnerApplicationsSecurityIntegrationOptions struct {
 	securityIntegration       bool                                             `ddl:"static" sql:"SECURITY INTEGRATION"`
 	IfNotExists               *bool                                            `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                      AccountObjectIdentifier                          `ddl:"identifier"`
-	integrationType           string                                           `ddl:"static" sql:"TYPE = OAUTH"`
+	integrationType           bool                                             `ddl:"static" sql:"TYPE = OAUTH"`
 	OauthClient               OauthSecurityIntegrationClientOption             `ddl:"parameter" sql:"OAUTH_CLIENT"`
 	OauthRedirectUri          *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_REDIRECT_URI"`
 	Enabled                   *bool                                            `ddl:"parameter" sql:"ENABLED"`
@@ -180,8 +180,8 @@ type CreateOauthForCustomClientsSecurityIntegrationOptions struct {
 	securityIntegration         bool                                             `ddl:"static" sql:"SECURITY INTEGRATION"`
 	IfNotExists                 *bool                                            `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                        AccountObjectIdentifier                          `ddl:"identifier"`
-	integrationType             string                                           `ddl:"static" sql:"TYPE = OAUTH"`
-	oauthClient                 string                                           `ddl:"static" sql:"OAUTH_CLIENT = CUSTOM"`
+	integrationType             bool                                             `ddl:"static" sql:"TYPE = OAUTH"`
+	oauthClient                 bool                                             `ddl:"static" sql:"OAUTH_CLIENT = CUSTOM"`
 	OauthClientType             OauthSecurityIntegrationClientTypeOption         `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_TYPE"`
 	OauthRedirectUri            string                                           `ddl:"parameter,single_quotes" sql:"OAUTH_REDIRECT_URI"`
 	Enabled                     *bool                                            `ddl:"parameter" sql:"ENABLED"`
@@ -205,7 +205,7 @@ type CreateSaml2SecurityIntegrationOptions struct {
 	securityIntegration            bool                                                      `ddl:"static" sql:"SECURITY INTEGRATION"`
 	IfNotExists                    *bool                                                     `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                           AccountObjectIdentifier                                   `ddl:"identifier"`
-	integrationType                string                                                    `ddl:"static" sql:"TYPE = SAML2"`
+	integrationType                bool                                                      `ddl:"static" sql:"TYPE = SAML2"`
 	Enabled                        *bool                                                     `ddl:"parameter" sql:"ENABLED"`
 	Saml2Issuer                    string                                                    `ddl:"parameter,single_quotes" sql:"SAML2_ISSUER"`
 	Saml2SsoUrl                    string                                                    `ddl:"parameter,single_quotes" sql:"SAML2_SSO_URL"`
@@ -240,7 +240,7 @@ type CreateScimSecurityIntegrationOptions struct {
 	securityIntegration bool                                    `ddl:"static" sql:"SECURITY INTEGRATION"`
 	IfNotExists         *bool                                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                AccountObjectIdentifier                 `ddl:"identifier"`
-	integrationType     string                                  `ddl:"static" sql:"TYPE = SCIM"`
+	integrationType     bool                                    `ddl:"static" sql:"TYPE = SCIM"`
 	Enabled             *bool                                   `ddl:"parameter" sql:"ENABLED"`
 	ScimClient          ScimSecurityIntegrationScimClientOption `ddl:"parameter,single_quotes" sql:"SCIM_CLIENT"`
 	RunAsRole           string                                  `ddl:"parameter,no_quotes" sql:"RUN_AS_ROLE"`
@@ -562,6 +562,5 @@ func (v *SecurityIntegration) ID() AccountObjectIdentifier {
 }
 
 func (v *SecurityIntegration) ObjectType() ObjectType {
-	// adjusted manually
 	return ObjectTypeIntegration
 }

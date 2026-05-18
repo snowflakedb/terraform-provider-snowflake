@@ -32,7 +32,7 @@ func TestInt_Tags(t *testing.T) {
 			HasComment(expectedComment).
 			HasAllowedValuesUnordered(expectedAllowedValues...).
 			HasOwnerRoleType("ROLE").
-			HasPropagate(string(expectedPropagate)),
+			HasPropagate(expectedPropagate),
 		)
 	}
 
@@ -263,7 +263,8 @@ func TestInt_Tags(t *testing.T) {
 
 		tag, err = client.Tags.ShowByID(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, sdk.TagPropagationOnDependency, tag.Propagate)
+		require.NotNil(t, tag.Propagate)
+		assert.Equal(t, sdk.TagPropagationOnDependency, *tag.Propagate)
 
 		unset := sdk.NewTagUnsetRequest().WithPropagate(true)
 		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*unset))
@@ -271,7 +272,8 @@ func TestInt_Tags(t *testing.T) {
 
 		tag, err = client.Tags.ShowByID(ctx, id)
 		require.NoError(t, err)
-		assert.Equal(t, sdk.TagPropagationNone, tag.Propagate)
+		require.NotNil(t, tag.Propagate)
+		assert.Equal(t, sdk.TagPropagationNone, *tag.Propagate)
 	})
 
 	t.Run("show tag: without like", func(t *testing.T) {

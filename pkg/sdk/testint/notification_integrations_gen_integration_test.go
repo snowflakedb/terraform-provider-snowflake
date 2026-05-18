@@ -25,6 +25,15 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 	const awsSnsOtherTopicArn = "arn:aws:sns:us-east-2:123456789012:MyOtherTopic"
 	const awsSnsRoleArn = "arn:aws:iam::000000000001:/role/test"
 	const awsSnsOtherRoleArn = "arn:aws:iam::000000000001:/role/other"
+	// Slack-format webhook URLs (Snowflake validates URL format per provider).
+	// Last path segment is normally a per-channel token; for tests we use a
+	// fully-formed URL that does not depend on Snowflake secret substitution.
+	const webhookUrl = "https://hooks.slack.com/services/T00000000/B00000000/AAAAAAAAAAAAAAAAAAAAAAAA"
+	const webhookOtherUrl = "https://hooks.slack.com/services/T11111111/B11111111/BBBBBBBBBBBBBBBBBBBBBBBB"
+	// Snowflake requires the body template to contain the literal placeholder
+	// SNOWFLAKE_WEBHOOK_MESSAGE somewhere in the string.
+	const webhookBodyTemplate = `{"text": "SNOWFLAKE_WEBHOOK_MESSAGE"}`
+	const webhookOtherBodyTemplate = `{"message": "SNOWFLAKE_WEBHOOK_MESSAGE", "channel": "#other"}`
 
 	assertNotificationIntegration := func(t *testing.T, s *sdk.NotificationIntegration, name sdk.AccountObjectIdentifier, notificationType string, comment string) {
 		t.Helper()
@@ -91,6 +100,31 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 			WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: "artur.sawicki@snowflake.com"}}))
 	}
 
+	createNotificationIntegrationWebhookMinimalRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
+		t.Helper()
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		return sdk.NewCreateNotificationIntegrationRequest(id, true).
+			WithWebhookParams(*sdk.NewWebhookParamsRequest(webhookUrl))
+	}
+
+	createNotificationIntegrationWebhookCompleteRequest := func(t *testing.T, secretId sdk.SchemaObjectIdentifier) *sdk.CreateNotificationIntegrationRequest {
+		t.Helper()
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		return sdk.NewCreateNotificationIntegrationRequest(id, true).
+			WithWebhookParams(
+				*sdk.NewWebhookParamsRequest(webhookUrl).
+					WithWebhookSecret(secretId).
+					WithWebhookBodyTemplate(webhookBodyTemplate).
+					WithWebhookHeaders([]sdk.WebhookHeaderRequest{
+						{Header: "Content-Type", Value: "application/json"},
+						{Header: "Custom-Header", Value: "custom-value"},
+					}),
+			).
+			WithComment("slack webhook")
+	}
+
 	createNotificationIntegrationWithRequest := func(t *testing.T, request *sdk.CreateNotificationIntegrationRequest) *sdk.NotificationIntegration {
 		t.Helper()
 		id := request.GetName()
@@ -123,6 +157,11 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 	createNotificationIntegrationEmail := func(t *testing.T) *sdk.NotificationIntegration {
 		t.Helper()
 		return createNotificationIntegrationWithRequest(t, createNotificationIntegrationEmailRequest(t))
+	}
+
+	createNotificationIntegrationWebhookMinimal := func(t *testing.T) *sdk.NotificationIntegration {
+		t.Helper()
+		return createNotificationIntegrationWithRequest(t, createNotificationIntegrationWebhookMinimalRequest(t))
 	}
 
 	t.Run("create and describe notification integration - auto google", func(t *testing.T) {
@@ -268,6 +307,54 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: "", Default: "[]"})
 	})
 
+	t.Run("create and describe notification integration - webhook minimal", func(t *testing.T) {
+		request := createNotificationIntegrationWebhookMinimalRequest(t)
+
+		integration := createNotificationIntegrationWithRequest(t, request)
+
+		assertNotificationIntegration(t, integration, request.GetName(), "WEBHOOK", "")
+
+		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
+		require.NoError(t, err)
+
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_URL", Type: "String", Value: webhookUrl, Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
+	})
+
+	t.Run("create and describe notification integration - webhook with secret, body template, and headers", func(t *testing.T) {
+		secretId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, secretCleanup := testClientHelper().Secret.CreateWithGenericString(t, secretId, "test_secret_string")
+		t.Cleanup(secretCleanup)
+
+		request := createNotificationIntegrationWebhookCompleteRequest(t, secretId)
+
+		integration := createNotificationIntegrationWithRequest(t, request)
+
+		assertNotificationIntegration(t, integration, request.GetName(), "WEBHOOK", "slack webhook")
+
+		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
+		require.NoError(t, err)
+
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_URL", Type: "String", Value: webhookUrl, Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_BODY_TEMPLATE", Type: "String", Value: webhookBodyTemplate, Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "slack webhook", Default: ""})
+
+		secretProp, err := collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
+			return property.Name == "WEBHOOK_SECRET"
+		})
+		require.NoError(t, err)
+		assert.NotEmpty(t, secretProp.Value)
+
+		headersProp, err := collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
+			return property.Name == "WEBHOOK_HEADERS"
+		})
+		require.NoError(t, err)
+		assert.Contains(t, headersProp.Value, "Content-Type=application/json")
+		assert.Contains(t, headersProp.Value, "Custom-Header=custom-value")
+	})
+
 	t.Run("alter notification integration: auto", func(t *testing.T) {
 		integration := createNotificationIntegrationAutoGoogle(t)
 
@@ -360,6 +447,74 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})
 
+	t.Run("alter notification integration: webhook", func(t *testing.T) {
+		integration := createNotificationIntegrationWebhookMinimal(t)
+
+		secretId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, secretCleanup := testClientHelper().Secret.CreateWithGenericString(t, secretId, "test_secret_string")
+		t.Cleanup(secretCleanup)
+
+		setRequest := sdk.NewAlterNotificationIntegrationRequest(integration.ID()).
+			WithSet(
+				*sdk.NewNotificationIntegrationSetRequest().
+					WithEnabled(false).
+					WithSetWebhookParams(
+						*sdk.NewSetWebhookParamsRequest().
+							WithWebhookUrl(webhookOtherUrl).
+							WithWebhookSecret(secretId).
+							WithWebhookBodyTemplate(webhookOtherBodyTemplate).
+							WithWebhookHeaders([]sdk.WebhookHeaderRequest{
+								{Header: "Content-Type", Value: "application/json"},
+								{Header: "Custom-Header", Value: "custom-value"},
+							}),
+					).
+					WithComment("changed comment"),
+			)
+		err := client.NotificationIntegrations.Alter(ctx, setRequest)
+		require.NoError(t, err)
+
+		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
+		require.NoError(t, err)
+
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_URL", Type: "String", Value: webhookOtherUrl, Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_BODY_TEMPLATE", Type: "String", Value: webhookOtherBodyTemplate, Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "changed comment", Default: ""})
+
+		headersProp, err := collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
+			return property.Name == "WEBHOOK_HEADERS"
+		})
+		require.NoError(t, err)
+		assert.Contains(t, headersProp.Value, "Content-Type=application/json")
+		assert.Contains(t, headersProp.Value, "Custom-Header=custom-value")
+
+		secretProp, err := collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
+			return property.Name == "WEBHOOK_SECRET"
+		})
+		require.NoError(t, err)
+		assert.NotEmpty(t, secretProp.Value)
+
+		unsetRequest := sdk.NewAlterNotificationIntegrationRequest(integration.ID()).
+			WithUnsetWebhookParams(
+				*sdk.NewNotificationIntegrationUnsetWebhookParamsRequest().
+					WithWebhookSecret(true).
+					WithWebhookBodyTemplate(true).
+					WithWebhookHeaders(true).
+					WithComment(true),
+			)
+		err = client.NotificationIntegrations.Alter(ctx, unsetRequest)
+		require.NoError(t, err)
+
+		details, err = client.NotificationIntegrations.Describe(ctx, integration.ID())
+		require.NoError(t, err)
+
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_URL", Type: "String", Value: webhookOtherUrl, Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_BODY_TEMPLATE", Type: "String", Value: "", Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "WEBHOOK_HEADERS", Type: "Map", Value: "{}", Default: "{}"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
+	})
+
 	t.Run("drop notification integration: existing", func(t *testing.T) {
 		request := createNotificationIntegrationEmailRequest(t)
 		id := request.GetName()
@@ -387,6 +542,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		notificationAutoAzure := createNotificationIntegrationAutoAzure(t)
 		notificationPushAmazon := createNotificationIntegrationPushAmazon(t)
 		notificationEmail := createNotificationIntegrationEmail(t)
+		notificationWebhook := createNotificationIntegrationWebhookMinimal(t)
 
 		showRequest := sdk.NewShowNotificationIntegrationRequest()
 		returnedIntegrations, err := client.NotificationIntegrations.Show(ctx, showRequest)
@@ -396,6 +552,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		assert.Contains(t, returnedIntegrations, *notificationAutoAzure)
 		assert.Contains(t, returnedIntegrations, *notificationPushAmazon)
 		assert.Contains(t, returnedIntegrations, *notificationEmail)
+		assert.Contains(t, returnedIntegrations, *notificationWebhook)
 	})
 
 	t.Run("show notification integration: with options", func(t *testing.T) {

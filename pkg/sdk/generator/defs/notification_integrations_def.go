@@ -11,7 +11,7 @@ var NotificationIntegrationAllowedRecipientDef = g.NewQueryStruct("NotificationI
 
 var NotificationIntegrationWebhookHeaderDef = g.NewQueryStruct("WebhookHeader").
 	Text("Header", g.KeywordOptions().SingleQuotes().Required()).
-	PredefinedQueryStructField("equals", "bool", g.StaticOptions().SQL("=")).
+	SQLWithCustomFieldName("equals", "=").
 	Text("Value", g.KeywordOptions().SingleQuotes().Required())
 
 // TODO [SNOW-1016561]: all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
@@ -32,18 +32,18 @@ var notificationIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AutomatedDataLoadsParams",
 				g.NewQueryStruct("AutomatedDataLoadsParams").
-					PredefinedQueryStructField("notificationType", "string", g.StaticOptions().SQL("TYPE = QUEUE")).
+					SQLWithCustomFieldName("notificationType", "TYPE = QUEUE").
 					OptionalQueryStructField(
 						"GoogleAutoParams",
 						g.NewQueryStruct("GoogleAutoParams").
-							PredefinedQueryStructField("notificationProvider", "string", g.StaticOptions().SQL("NOTIFICATION_PROVIDER = GCP_PUBSUB")).
+							SQLWithCustomFieldName("notificationProvider", "NOTIFICATION_PROVIDER = GCP_PUBSUB").
 							TextAssignment("GCP_PUBSUB_SUBSCRIPTION_NAME", g.ParameterOptions().SingleQuotes().Required()),
 						g.KeywordOptions(),
 					).
 					OptionalQueryStructField(
 						"AzureAutoParams",
 						g.NewQueryStruct("AzureAutoParams").
-							PredefinedQueryStructField("notificationProvider", "string", g.StaticOptions().SQL("NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE")).
+							SQLWithCustomFieldName("notificationProvider", "NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE").
 							TextAssignment("AZURE_STORAGE_QUEUE_PRIMARY_URI", g.ParameterOptions().SingleQuotes().Required()).
 							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()),
 						g.KeywordOptions(),
@@ -54,12 +54,12 @@ var notificationIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"PushNotificationParams",
 				g.NewQueryStruct("PushNotificationParams").
-					PredefinedQueryStructField("direction", "string", g.StaticOptions().SQL("DIRECTION = OUTBOUND")).
-					PredefinedQueryStructField("notificationType", "string", g.StaticOptions().SQL("TYPE = QUEUE")).
+					SQLWithCustomFieldName("direction", "DIRECTION = OUTBOUND").
+					SQLWithCustomFieldName("notificationType", "TYPE = QUEUE").
 					OptionalQueryStructField(
 						"AmazonPushParams",
 						g.NewQueryStruct("AmazonPushParams").
-							PredefinedQueryStructField("notificationProvider", "string", g.StaticOptions().SQL("NOTIFICATION_PROVIDER = AWS_SNS")).
+							SQLWithCustomFieldName("notificationProvider", "NOTIFICATION_PROVIDER = AWS_SNS").
 							TextAssignment("AWS_SNS_TOPIC_ARN", g.ParameterOptions().SingleQuotes().Required()).
 							TextAssignment("AWS_SNS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()),
 						g.KeywordOptions(),
@@ -67,14 +67,14 @@ var notificationIntegrationsDef = g.NewInterface(
 					OptionalQueryStructField(
 						"GooglePushParams",
 						g.NewQueryStruct("GooglePushParams").
-							PredefinedQueryStructField("notificationProvider", "string", g.StaticOptions().SQL("NOTIFICATION_PROVIDER = GCP_PUBSUB")).
+							SQLWithCustomFieldName("notificationProvider", "NOTIFICATION_PROVIDER = GCP_PUBSUB").
 							TextAssignment("GCP_PUBSUB_TOPIC_NAME", g.ParameterOptions().SingleQuotes().Required()),
 						g.KeywordOptions(),
 					).
 					OptionalQueryStructField(
 						"AzurePushParams",
 						g.NewQueryStruct("AzurePushParams").
-							PredefinedQueryStructField("notificationProvider", "string", g.StaticOptions().SQL("NOTIFICATION_PROVIDER = AZURE_EVENT_GRID")).
+							SQLWithCustomFieldName("notificationProvider", "NOTIFICATION_PROVIDER = AZURE_EVENT_GRID").
 							TextAssignment("AZURE_EVENT_GRID_TOPIC_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
 							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()),
 						g.KeywordOptions(),
@@ -85,7 +85,7 @@ var notificationIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"EmailParams",
 				g.NewQueryStruct("EmailParams").
-					PredefinedQueryStructField("notificationType", "string", g.StaticOptions().SQL("TYPE = EMAIL")).
+					SQLWithCustomFieldName("notificationType", "TYPE = EMAIL").
 					ListAssignment("ALLOWED_RECIPIENTS", "NotificationIntegrationAllowedRecipient", g.ParameterOptions().Parentheses()),
 				g.KeywordOptions(),
 			).
@@ -211,9 +211,6 @@ var notificationIntegrationsDef = g.NewInterface(
 			SQL("NOTIFICATION INTEGRATIONS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
@@ -227,4 +224,5 @@ var notificationIntegrationsDef = g.NewInterface(
 			SQL("NOTIFICATION INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithShowObjectType("Integration")

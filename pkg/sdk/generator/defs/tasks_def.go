@@ -199,8 +199,6 @@ var tasksDef = g.NewInterface(
 			OptionalStartsWith().
 			OptionalSQL("ROOT ONLY").
 			OptionalLimit(),
-	).
-	ShowByIdOperationWithFiltering(
 		g.ShowByIDExtendedInFiltering,
 		g.ShowByIDLikeFiltering,
 	).

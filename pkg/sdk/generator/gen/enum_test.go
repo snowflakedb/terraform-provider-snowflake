@@ -91,3 +91,20 @@ func TestEnum_WithAliases(t *testing.T) {
 		})
 	})
 }
+
+func TestEnum_IsLowercase(t *testing.T) {
+	t.Run("all uppercase values", func(t *testing.T) {
+		enum := NewEnum("Status", "Statuses", "ACTIVE", "INACTIVE")
+		require.False(t, enum.IsLowercase())
+	})
+
+	t.Run("all lowercase values", func(t *testing.T) {
+		enum := NewEnum("Role", "Roles", "snowflake_admin", "application")
+		require.True(t, enum.IsLowercase())
+	})
+
+	t.Run("mixed case values", func(t *testing.T) {
+		enum := NewEnum("Mixed", "Mixeds", "Active", "inactive")
+		require.False(t, enum.IsLowercase())
+	})
+}

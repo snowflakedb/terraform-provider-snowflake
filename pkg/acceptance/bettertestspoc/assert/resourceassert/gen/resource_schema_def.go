@@ -74,6 +74,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ComputePool().Schema,
 	},
 	{
+		name:   "CortexAgent",
+		schema: resources.CortexAgent().Schema,
+	},
+	{
 		name:   "CurrentAccount",
 		schema: resources.CurrentAccount().Schema,
 	},
@@ -170,6 +174,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.MaskingPolicy().Schema,
 	},
 	{
+		name:   "MaterializedView",
+		schema: resources.MaterializedView().Schema,
+	},
+	{
 		name:   "NetworkPolicy",
 		schema: resources.NetworkPolicy().Schema,
 	},
@@ -178,12 +186,20 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Notebook().Schema,
 	},
 	{
+		name:   "Pipe",
+		schema: resources.Pipe().Schema,
+	},
+	{
 		name:   "OauthIntegrationForCustomClients",
 		schema: resources.OauthIntegrationForCustomClients().Schema,
 	},
 	{
 		name:   "OauthIntegrationForPartnerApplications",
 		schema: resources.OauthIntegrationForPartnerApplications().Schema,
+	},
+	{
+		name:   "PasswordPolicy",
+		schema: resources.PasswordPolicy().Schema,
 	},
 	{
 		name:   "PrimaryConnection",
@@ -252,6 +268,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "SecretWithGenericString",
 		schema: resources.SecretWithGenericString().Schema,
+	},
+	{
+		name:   "Sequence",
+		schema: resources.Sequence().Schema,
 	},
 	{
 		name:   "SemanticView",

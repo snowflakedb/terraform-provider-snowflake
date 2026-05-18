@@ -42,11 +42,6 @@ func (s *CreateCatalogIntegrationRequest) WithIcebergRestCatalogSourceParams(ice
 	return s
 }
 
-func (s *CreateCatalogIntegrationRequest) WithSapBdcCatalogSourceParams(sapBdcCatalogSourceParams SapBdcParamsRequest) *CreateCatalogIntegrationRequest {
-	s.SapBdcCatalogSourceParams = &sapBdcCatalogSourceParams
-	return s
-}
-
 func (s *CreateCatalogIntegrationRequest) WithRefreshIntervalSeconds(refreshIntervalSeconds int) *CreateCatalogIntegrationRequest {
 	s.RefreshIntervalSeconds = &refreshIntervalSeconds
 	return s
@@ -224,24 +219,6 @@ func (s *SigV4RestAuthenticationRequest) WithSigv4SigningRegion(sigv4SigningRegi
 func (s *SigV4RestAuthenticationRequest) WithSigv4ExternalId(sigv4ExternalId string) *SigV4RestAuthenticationRequest {
 	s.Sigv4ExternalId = &sigv4ExternalId
 	return s
-}
-
-func NewSapBdcParamsRequest() *SapBdcParamsRequest {
-	s := SapBdcParamsRequest{}
-	return &s
-}
-
-func (s *SapBdcParamsRequest) WithRestConfig(restConfig SapBdcRestConfigRequest) *SapBdcParamsRequest {
-	s.RestConfig = restConfig
-	return s
-}
-
-func NewSapBdcRestConfigRequest(
-	sapBdcInvitationLink string,
-) *SapBdcRestConfigRequest {
-	s := SapBdcRestConfigRequest{}
-	s.SapBdcInvitationLink = sapBdcInvitationLink
-	return &s
 }
 
 func NewAlterCatalogIntegrationRequest(

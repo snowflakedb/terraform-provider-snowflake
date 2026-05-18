@@ -44,10 +44,15 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 
 		configValue, ok := d.GetRawConfig().AsValueMap()[key]
 
-		// For cases where currently set value (in the config) is equal to the parameter, but not set on the right level.
-		// The parameter is set somewhere higher in the hierarchy, and we need to "forcefully" set the value to
-		// perform the actual set on Snowflake (and set the parameter on the correct level).
-		if ok && !configValue.IsNull() && parameter.Level != objectParameterLevel && parameter.Value == valueToString(d.Get(key)) {
+		// When the value is set in the configuration but the parameter is not set on the object level,
+		// the parameter is inherited from a higher level (account/database/etc.). In this case we must
+		// "forcefully" mark the value as computed so the update can set the parameter on the correct level.
+		// This covers two sub-cases:
+		//   1. The configured value equals the inherited value: we still need the SET to lock it in at the object level.
+		//   2. The configured value differs from the inherited value (e.g. empty string overriding a non-empty parent
+		//      value): SDKv2 would otherwise suppress the diff because the field is Computed+Optional and "" is treated
+		//      as "no value", so d.HasChange returns false during update. SetNewComputed forces the update path to run.
+		if ok && !configValue.IsNull() && parameter.Level != objectParameterLevel {
 			return d.SetNewComputed(key)
 		}
 
@@ -277,6 +282,12 @@ func RecreateWhenServiceTypeChangedExternally(serviceType sdk.ServiceType) schem
 // RecreateWhenStreamTypeChangedExternally recreates a stream when argument streamType is different than in the state.
 func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) schema.CustomizeDiffFunc {
 	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)
+}
+
+// RecreateWhenCatalogSourceChangedExternally recreates a catalog integration when argument catalogSource is different
+// than in the state.
+func RecreateWhenCatalogSourceChangedExternally(catalogSource sdk.CatalogIntegrationCatalogSourceType) schema.CustomizeDiffFunc {
+	return RecreateWhenResourceTypeChangedExternally("catalog_source", catalogSource, sdk.ToCatalogIntegrationCatalogSourceType)
 }
 
 // RecreateWhenStageCloudChangedExternally recreates a stage when argument stageCloud is different than in the state.

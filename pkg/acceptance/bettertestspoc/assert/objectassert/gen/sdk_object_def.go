@@ -181,6 +181,10 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.NetworkRule{},
 	},
 	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.Pipe{},
+	},
+	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
 	},
@@ -226,11 +230,6 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationSapBdcDetails{},
-		IsDataSourceOutput: true,
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
 		IsDataSourceOutput: true,
 	},
@@ -255,8 +254,30 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.PasswordPolicyDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.PasswordPolicy{},
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.HybridTable{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.PostgresInstance{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.CortexAgent{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.CortexAgentDetails{},
+		IsDataSourceOutput: true,
 	},
 }
 

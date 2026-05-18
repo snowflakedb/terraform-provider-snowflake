@@ -20,7 +20,7 @@ func ComposeCheckDestroy(t *testing.T, resources ...resources.Resource) func(*te
 	t.Helper()
 
 	return func(s *terraform.State) error {
-		errs := make([]error, 0)
+		errs := make([]error, 0, len(resources))
 		for _, resource := range resources {
 			checkFunc := CheckDestroy(t, resource)
 			errs = append(errs, checkFunc(s))
@@ -43,7 +43,7 @@ func CheckDestroyUsingLegacyIdParsing(t *testing.T, resource resources.Resource)
 func checkDestroy(t *testing.T, resource resources.Resource, decodeSnowflakeIdFunc decodeSnowflakeIdFunc) func(*terraform.State) error {
 	t.Helper()
 	// TODO [SNOW-1653619]: use TestClient() here
-	client := atc.client
+	client := atc.defaultTestEnv.client
 	t.Logf("running check destroy for resource %s", resource)
 
 	return func(s *terraform.State) error {
@@ -108,7 +108,6 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.ManagedAccount,
 		resources.MaterializedView,
 		resources.NotificationIntegration,
-		resources.PasswordPolicy,
 		resources.Pipe,
 		resources.Sequence,
 		resources.Share,
@@ -205,6 +204,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.ComputePool: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ComputePools.ShowByID)
+	},
+	resources.CortexAgent: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CortexAgents.ShowByID)
 	},
 	resources.CortexSearchService: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CortexSearchServices.ShowByID)

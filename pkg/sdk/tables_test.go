@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -1048,9 +1049,7 @@ func TestTableAlter(t *testing.T) {
 				NotNullConstraint: &TableColumnNotNullConstraint{Drop: Bool(true)},
 			},
 		}
-		var actions []TableColumnAlterAction
-		actions = append(actions, alterActionsForColumnOne...)
-		actions = append(actions, alterActionsForColumnTwo...)
+		actions := slices.Concat(alterActionsForColumnOne, alterActionsForColumnTwo)
 
 		opts := &alterTableOptions{
 			name: id,

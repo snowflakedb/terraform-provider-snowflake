@@ -8,5 +8,8 @@
         {{- if .DescribeMapping -}}
             {{- template "convertGuard" .DescribeMapping -}}
         {{- end }}
+        {{- if .InstanceMethodMapping -}}
+            {{- template "convertGuard" .InstanceMethodMapping -}}
+        {{- end }}
     {{ end -}}
 {{- end }}

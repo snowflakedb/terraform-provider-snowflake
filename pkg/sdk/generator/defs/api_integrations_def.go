@@ -33,7 +33,7 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AzureApiProviderParams",
 				g.NewQueryStruct("AzureApiParams").
-					PredefinedQueryStructField("apiProvider", "string", g.StaticOptions().SQL("API_PROVIDER = azure_api_management")).
+					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = azure_api_management").
 					TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
 					TextAssignment("AZURE_AD_APPLICATION_ID", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("API_KEY", g.ParameterOptions().SingleQuotes()),
@@ -42,7 +42,7 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"GoogleApiProviderParams",
 				g.NewQueryStruct("GoogleApiParams").
-					PredefinedQueryStructField("apiProvider", "string", g.StaticOptions().SQL("API_PROVIDER = google_api_gateway")).
+					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = google_api_gateway").
 					TextAssignment("GOOGLE_AUDIENCE", g.ParameterOptions().SingleQuotes().Required()),
 				g.KeywordOptions(),
 			).
@@ -137,9 +137,6 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATIONS").
 			OptionalLike(),
 	).
-	ShowByIdOperationWithFiltering(
-		g.ShowByIDLikeFiltering,
-	).
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
@@ -153,4 +150,5 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithShowObjectType("Integration")

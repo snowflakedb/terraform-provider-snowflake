@@ -45,49 +45,49 @@ type WebhookHeader struct {
 }
 
 type AutomatedDataLoadsParams struct {
-	notificationType string            `ddl:"static" sql:"TYPE = QUEUE"`
+	notificationType bool              `ddl:"static" sql:"TYPE = QUEUE"`
 	GoogleAutoParams *GoogleAutoParams `ddl:"keyword"`
 	AzureAutoParams  *AzureAutoParams  `ddl:"keyword"`
 }
 
 type GoogleAutoParams struct {
-	notificationProvider      string `ddl:"static" sql:"NOTIFICATION_PROVIDER = GCP_PUBSUB"`
+	notificationProvider      bool   `ddl:"static" sql:"NOTIFICATION_PROVIDER = GCP_PUBSUB"`
 	GcpPubsubSubscriptionName string `ddl:"parameter,single_quotes" sql:"GCP_PUBSUB_SUBSCRIPTION_NAME"`
 }
 
 type AzureAutoParams struct {
-	notificationProvider        string `ddl:"static" sql:"NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE"`
+	notificationProvider        bool   `ddl:"static" sql:"NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE"`
 	AzureStorageQueuePrimaryUri string `ddl:"parameter,single_quotes" sql:"AZURE_STORAGE_QUEUE_PRIMARY_URI"`
 	AzureTenantId               string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
 }
 
 type PushNotificationParams struct {
-	direction        string            `ddl:"static" sql:"DIRECTION = OUTBOUND"`
-	notificationType string            `ddl:"static" sql:"TYPE = QUEUE"`
+	direction        bool              `ddl:"static" sql:"DIRECTION = OUTBOUND"`
+	notificationType bool              `ddl:"static" sql:"TYPE = QUEUE"`
 	AmazonPushParams *AmazonPushParams `ddl:"keyword"`
 	GooglePushParams *GooglePushParams `ddl:"keyword"`
 	AzurePushParams  *AzurePushParams  `ddl:"keyword"`
 }
 
 type AmazonPushParams struct {
-	notificationProvider string `ddl:"static" sql:"NOTIFICATION_PROVIDER = AWS_SNS"`
+	notificationProvider bool   `ddl:"static" sql:"NOTIFICATION_PROVIDER = AWS_SNS"`
 	AwsSnsTopicArn       string `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC_ARN"`
 	AwsSnsRoleArn        string `ddl:"parameter,single_quotes" sql:"AWS_SNS_ROLE_ARN"`
 }
 
 type GooglePushParams struct {
-	notificationProvider string `ddl:"static" sql:"NOTIFICATION_PROVIDER = GCP_PUBSUB"`
+	notificationProvider bool   `ddl:"static" sql:"NOTIFICATION_PROVIDER = GCP_PUBSUB"`
 	GcpPubsubTopicName   string `ddl:"parameter,single_quotes" sql:"GCP_PUBSUB_TOPIC_NAME"`
 }
 
 type AzurePushParams struct {
-	notificationProvider        string `ddl:"static" sql:"NOTIFICATION_PROVIDER = AZURE_EVENT_GRID"`
+	notificationProvider        bool   `ddl:"static" sql:"NOTIFICATION_PROVIDER = AZURE_EVENT_GRID"`
 	AzureEventGridTopicEndpoint string `ddl:"parameter,single_quotes" sql:"AZURE_EVENT_GRID_TOPIC_ENDPOINT"`
 	AzureTenantId               string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
 }
 
 type EmailParams struct {
-	notificationType  string                                    `ddl:"static" sql:"TYPE = EMAIL"`
+	notificationType  bool                                      `ddl:"static" sql:"TYPE = EMAIL"`
 	AllowedRecipients []NotificationIntegrationAllowedRecipient `ddl:"parameter,parentheses" sql:"ALLOWED_RECIPIENTS"`
 }
 
@@ -201,7 +201,6 @@ func (v *NotificationIntegration) ID() AccountObjectIdentifier {
 }
 
 func (v *NotificationIntegration) ObjectType() ObjectType {
-	// adjusted manually
 	return ObjectTypeIntegration
 }
 
