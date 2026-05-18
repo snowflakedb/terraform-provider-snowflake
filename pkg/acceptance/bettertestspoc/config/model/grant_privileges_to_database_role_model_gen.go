@@ -55,8 +55,8 @@ func (g *GrantPrivilegesToDatabaseRoleModel) MarshalJSON() ([]byte, error) {
 	type Alias GrantPrivilegesToDatabaseRoleModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(g),
 		DependsOn: g.DependsOn(),
@@ -74,23 +74,8 @@ func (g *GrantPrivilegesToDatabaseRoleModel) WithDynamicBlock(dynamicBlock *conf
 	return g
 }
 
-func (g *GrantPrivilegesToDatabaseRoleModel) WithTimeoutCreate(duration string) *GrantPrivilegesToDatabaseRoleModel {
-	g.SetTimeoutCreate(duration)
-	return g
-}
-
-func (g *GrantPrivilegesToDatabaseRoleModel) WithTimeoutRead(duration string) *GrantPrivilegesToDatabaseRoleModel {
-	g.SetTimeoutRead(duration)
-	return g
-}
-
-func (g *GrantPrivilegesToDatabaseRoleModel) WithTimeoutUpdate(duration string) *GrantPrivilegesToDatabaseRoleModel {
-	g.SetTimeoutUpdate(duration)
-	return g
-}
-
-func (g *GrantPrivilegesToDatabaseRoleModel) WithTimeoutDelete(duration string) *GrantPrivilegesToDatabaseRoleModel {
-	g.SetTimeoutDelete(duration)
+func (g *GrantPrivilegesToDatabaseRoleModel) WithTimeout(timeout config.Timeouts) *GrantPrivilegesToDatabaseRoleModel {
+	g.SetTimeout(timeout)
 	return g
 }
 

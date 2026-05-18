@@ -452,7 +452,7 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
 		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
 		WithDependsOn(tableModel.ResourceReference()).
-		WithTimeoutCreate("50ms")
+		WithTimeout(accconfig.Timeouts{Create: "50ms", Read: "50ms", Update: "50ms", Delete: "50ms"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

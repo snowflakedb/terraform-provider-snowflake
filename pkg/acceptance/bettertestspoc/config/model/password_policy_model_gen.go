@@ -72,8 +72,8 @@ func (p *PasswordPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias PasswordPolicyModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
@@ -91,23 +91,8 @@ func (p *PasswordPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock
 	return p
 }
 
-func (p *PasswordPolicyModel) WithTimeoutCreate(duration string) *PasswordPolicyModel {
-	p.SetTimeoutCreate(duration)
-	return p
-}
-
-func (p *PasswordPolicyModel) WithTimeoutRead(duration string) *PasswordPolicyModel {
-	p.SetTimeoutRead(duration)
-	return p
-}
-
-func (p *PasswordPolicyModel) WithTimeoutUpdate(duration string) *PasswordPolicyModel {
-	p.SetTimeoutUpdate(duration)
-	return p
-}
-
-func (p *PasswordPolicyModel) WithTimeoutDelete(duration string) *PasswordPolicyModel {
-	p.SetTimeoutDelete(duration)
+func (p *PasswordPolicyModel) WithTimeout(timeout config.Timeouts) *PasswordPolicyModel {
+	p.SetTimeout(timeout)
 	return p
 }
 

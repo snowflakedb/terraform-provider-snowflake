@@ -61,8 +61,8 @@ func (s *StorageIntegrationGcsModel) MarshalJSON() ([]byte, error) {
 	type Alias StorageIntegrationGcsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -80,23 +80,8 @@ func (s *StorageIntegrationGcsModel) WithDynamicBlock(dynamicBlock *config.Dynam
 	return s
 }
 
-func (s *StorageIntegrationGcsModel) WithTimeoutCreate(duration string) *StorageIntegrationGcsModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithTimeoutRead(duration string) *StorageIntegrationGcsModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithTimeoutUpdate(duration string) *StorageIntegrationGcsModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithTimeoutDelete(duration string) *StorageIntegrationGcsModel {
-	s.SetTimeoutDelete(duration)
+func (s *StorageIntegrationGcsModel) WithTimeout(timeout config.Timeouts) *StorageIntegrationGcsModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

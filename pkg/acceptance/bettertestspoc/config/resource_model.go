@@ -11,6 +11,15 @@ import (
 // TODO [SNOW-1501905]: add a convenience method to use multiple configs from multiple models
 // TODO [SNOW-1501905]: add provider to resource/datasource models (use in the grant_ownership_acceptance_test)
 
+// Timeouts holds the duration strings for each resource lifecycle operation.
+// It maps directly to the Terraform `timeouts` block in HCL.
+type Timeouts struct {
+	Create string `json:"create,omitempty"`
+	Read   string `json:"read,omitempty"`
+	Update string `json:"update,omitempty"`
+	Delete string `json:"delete,omitempty"`
+}
+
 // ResourceModel is the base interface all of our resource config models will implement.
 // To allow easy implementation, ResourceModelMeta can be embedded inside the struct (and the struct will automatically implement it).
 type ResourceModel interface {
@@ -26,7 +35,7 @@ type ResourceModelMeta struct {
 	name      string
 	resource  resources.Resource
 	dependsOn []string
-	timeouts  map[string]string
+	timeouts  *Timeouts
 }
 
 func (m *ResourceModelMeta) Resource() resources.Resource {
@@ -53,31 +62,12 @@ func (m *ResourceModelMeta) SetDependsOn(values ...string) {
 	m.dependsOn = values
 }
 
-func (m *ResourceModelMeta) Timeouts() map[string]string {
+func (m *ResourceModelMeta) Timeouts() *Timeouts {
 	return m.timeouts
 }
 
-func (m *ResourceModelMeta) SetTimeoutCreate(duration string) {
-	m.setTimeoutKey("create", duration)
-}
-
-func (m *ResourceModelMeta) SetTimeoutRead(duration string) {
-	m.setTimeoutKey("read", duration)
-}
-
-func (m *ResourceModelMeta) SetTimeoutUpdate(duration string) {
-	m.setTimeoutKey("update", duration)
-}
-
-func (m *ResourceModelMeta) SetTimeoutDelete(duration string) {
-	m.setTimeoutKey("delete", duration)
-}
-
-func (m *ResourceModelMeta) setTimeoutKey(key, duration string) {
-	if m.timeouts == nil {
-		m.timeouts = make(map[string]string)
-	}
-	m.timeouts[key] = duration
+func (m *ResourceModelMeta) SetTimeout(timeout Timeouts) {
+	m.timeouts = &timeout
 }
 
 // DefaultResourceName is exported to allow assertions against the resources using the default name.

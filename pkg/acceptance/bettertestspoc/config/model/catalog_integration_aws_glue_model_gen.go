@@ -68,8 +68,8 @@ func (c *CatalogIntegrationAwsGlueModel) MarshalJSON() ([]byte, error) {
 	type Alias CatalogIntegrationAwsGlueModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
@@ -87,23 +87,8 @@ func (c *CatalogIntegrationAwsGlueModel) WithDynamicBlock(dynamicBlock *config.D
 	return c
 }
 
-func (c *CatalogIntegrationAwsGlueModel) WithTimeoutCreate(duration string) *CatalogIntegrationAwsGlueModel {
-	c.SetTimeoutCreate(duration)
-	return c
-}
-
-func (c *CatalogIntegrationAwsGlueModel) WithTimeoutRead(duration string) *CatalogIntegrationAwsGlueModel {
-	c.SetTimeoutRead(duration)
-	return c
-}
-
-func (c *CatalogIntegrationAwsGlueModel) WithTimeoutUpdate(duration string) *CatalogIntegrationAwsGlueModel {
-	c.SetTimeoutUpdate(duration)
-	return c
-}
-
-func (c *CatalogIntegrationAwsGlueModel) WithTimeoutDelete(duration string) *CatalogIntegrationAwsGlueModel {
-	c.SetTimeoutDelete(duration)
+func (c *CatalogIntegrationAwsGlueModel) WithTimeout(timeout config.Timeouts) *CatalogIntegrationAwsGlueModel {
+	c.SetTimeout(timeout)
 	return c
 }
 

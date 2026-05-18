@@ -121,8 +121,8 @@ func (s *ServiceUserModel) MarshalJSON() ([]byte, error) {
 	type Alias ServiceUserModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -140,23 +140,8 @@ func (s *ServiceUserModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *
 	return s
 }
 
-func (s *ServiceUserModel) WithTimeoutCreate(duration string) *ServiceUserModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *ServiceUserModel) WithTimeoutRead(duration string) *ServiceUserModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *ServiceUserModel) WithTimeoutUpdate(duration string) *ServiceUserModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *ServiceUserModel) WithTimeoutDelete(duration string) *ServiceUserModel {
-	s.SetTimeoutDelete(duration)
+func (s *ServiceUserModel) WithTimeout(timeout config.Timeouts) *ServiceUserModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

@@ -65,8 +65,8 @@ func (s *SecretWithGenericStringModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithGenericStringModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -84,23 +84,8 @@ func (s *SecretWithGenericStringModel) WithDynamicBlock(dynamicBlock *config.Dyn
 	return s
 }
 
-func (s *SecretWithGenericStringModel) WithTimeoutCreate(duration string) *SecretWithGenericStringModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *SecretWithGenericStringModel) WithTimeoutRead(duration string) *SecretWithGenericStringModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *SecretWithGenericStringModel) WithTimeoutUpdate(duration string) *SecretWithGenericStringModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *SecretWithGenericStringModel) WithTimeoutDelete(duration string) *SecretWithGenericStringModel {
-	s.SetTimeoutDelete(duration)
+func (s *SecretWithGenericStringModel) WithTimeout(timeout config.Timeouts) *SecretWithGenericStringModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

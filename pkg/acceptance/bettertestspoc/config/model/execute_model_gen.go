@@ -54,8 +54,8 @@ func (e *ExecuteModel) MarshalJSON() ([]byte, error) {
 	type Alias ExecuteModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(e),
 		DependsOn: e.DependsOn(),
@@ -73,23 +73,8 @@ func (e *ExecuteModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *Exec
 	return e
 }
 
-func (e *ExecuteModel) WithTimeoutCreate(duration string) *ExecuteModel {
-	e.SetTimeoutCreate(duration)
-	return e
-}
-
-func (e *ExecuteModel) WithTimeoutRead(duration string) *ExecuteModel {
-	e.SetTimeoutRead(duration)
-	return e
-}
-
-func (e *ExecuteModel) WithTimeoutUpdate(duration string) *ExecuteModel {
-	e.SetTimeoutUpdate(duration)
-	return e
-}
-
-func (e *ExecuteModel) WithTimeoutDelete(duration string) *ExecuteModel {
-	e.SetTimeoutDelete(duration)
+func (e *ExecuteModel) WithTimeout(timeout config.Timeouts) *ExecuteModel {
+	e.SetTimeout(timeout)
 	return e
 }
 

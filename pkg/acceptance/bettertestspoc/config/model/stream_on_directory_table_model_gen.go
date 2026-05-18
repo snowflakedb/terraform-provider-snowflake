@@ -67,8 +67,8 @@ func (s *StreamOnDirectoryTableModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnDirectoryTableModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -86,23 +86,8 @@ func (s *StreamOnDirectoryTableModel) WithDynamicBlock(dynamicBlock *config.Dyna
 	return s
 }
 
-func (s *StreamOnDirectoryTableModel) WithTimeoutCreate(duration string) *StreamOnDirectoryTableModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *StreamOnDirectoryTableModel) WithTimeoutRead(duration string) *StreamOnDirectoryTableModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *StreamOnDirectoryTableModel) WithTimeoutUpdate(duration string) *StreamOnDirectoryTableModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *StreamOnDirectoryTableModel) WithTimeoutDelete(duration string) *StreamOnDirectoryTableModel {
-	s.SetTimeoutDelete(duration)
+func (s *StreamOnDirectoryTableModel) WithTimeout(timeout config.Timeouts) *StreamOnDirectoryTableModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

@@ -69,8 +69,8 @@ func (j *JobServiceModel) MarshalJSON() ([]byte, error) {
 	type Alias JobServiceModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(j),
 		DependsOn: j.DependsOn(),
@@ -88,23 +88,8 @@ func (j *JobServiceModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *J
 	return j
 }
 
-func (j *JobServiceModel) WithTimeoutCreate(duration string) *JobServiceModel {
-	j.SetTimeoutCreate(duration)
-	return j
-}
-
-func (j *JobServiceModel) WithTimeoutRead(duration string) *JobServiceModel {
-	j.SetTimeoutRead(duration)
-	return j
-}
-
-func (j *JobServiceModel) WithTimeoutUpdate(duration string) *JobServiceModel {
-	j.SetTimeoutUpdate(duration)
-	return j
-}
-
-func (j *JobServiceModel) WithTimeoutDelete(duration string) *JobServiceModel {
-	j.SetTimeoutDelete(duration)
+func (j *JobServiceModel) WithTimeout(timeout config.Timeouts) *JobServiceModel {
+	j.SetTimeout(timeout)
 	return j
 }
 

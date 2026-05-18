@@ -58,8 +58,8 @@ func (l *ListingModel) MarshalJSON() ([]byte, error) {
 	type Alias ListingModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(l),
 		DependsOn: l.DependsOn(),
@@ -77,23 +77,8 @@ func (l *ListingModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *List
 	return l
 }
 
-func (l *ListingModel) WithTimeoutCreate(duration string) *ListingModel {
-	l.SetTimeoutCreate(duration)
-	return l
-}
-
-func (l *ListingModel) WithTimeoutRead(duration string) *ListingModel {
-	l.SetTimeoutRead(duration)
-	return l
-}
-
-func (l *ListingModel) WithTimeoutUpdate(duration string) *ListingModel {
-	l.SetTimeoutUpdate(duration)
-	return l
-}
-
-func (l *ListingModel) WithTimeoutDelete(duration string) *ListingModel {
-	l.SetTimeoutDelete(duration)
+func (l *ListingModel) WithTimeout(timeout config.Timeouts) *ListingModel {
+	l.SetTimeout(timeout)
 	return l
 }
 

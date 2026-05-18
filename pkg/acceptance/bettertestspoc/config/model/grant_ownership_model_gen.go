@@ -51,8 +51,8 @@ func (g *GrantOwnershipModel) MarshalJSON() ([]byte, error) {
 	type Alias GrantOwnershipModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(g),
 		DependsOn: g.DependsOn(),
@@ -70,23 +70,8 @@ func (g *GrantOwnershipModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock
 	return g
 }
 
-func (g *GrantOwnershipModel) WithTimeoutCreate(duration string) *GrantOwnershipModel {
-	g.SetTimeoutCreate(duration)
-	return g
-}
-
-func (g *GrantOwnershipModel) WithTimeoutRead(duration string) *GrantOwnershipModel {
-	g.SetTimeoutRead(duration)
-	return g
-}
-
-func (g *GrantOwnershipModel) WithTimeoutUpdate(duration string) *GrantOwnershipModel {
-	g.SetTimeoutUpdate(duration)
-	return g
-}
-
-func (g *GrantOwnershipModel) WithTimeoutDelete(duration string) *GrantOwnershipModel {
-	g.SetTimeoutDelete(duration)
+func (g *GrantOwnershipModel) WithTimeout(timeout config.Timeouts) *GrantOwnershipModel {
+	g.SetTimeout(timeout)
 	return g
 }
 

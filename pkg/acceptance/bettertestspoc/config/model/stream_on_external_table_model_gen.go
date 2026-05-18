@@ -70,8 +70,8 @@ func (s *StreamOnExternalTableModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamOnExternalTableModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
@@ -89,23 +89,8 @@ func (s *StreamOnExternalTableModel) WithDynamicBlock(dynamicBlock *config.Dynam
 	return s
 }
 
-func (s *StreamOnExternalTableModel) WithTimeoutCreate(duration string) *StreamOnExternalTableModel {
-	s.SetTimeoutCreate(duration)
-	return s
-}
-
-func (s *StreamOnExternalTableModel) WithTimeoutRead(duration string) *StreamOnExternalTableModel {
-	s.SetTimeoutRead(duration)
-	return s
-}
-
-func (s *StreamOnExternalTableModel) WithTimeoutUpdate(duration string) *StreamOnExternalTableModel {
-	s.SetTimeoutUpdate(duration)
-	return s
-}
-
-func (s *StreamOnExternalTableModel) WithTimeoutDelete(duration string) *StreamOnExternalTableModel {
-	s.SetTimeoutDelete(duration)
+func (s *StreamOnExternalTableModel) WithTimeout(timeout config.Timeouts) *StreamOnExternalTableModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

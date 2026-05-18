@@ -71,8 +71,8 @@ func (o *OauthIntegrationForCustomClientsModel) MarshalJSON() ([]byte, error) {
 	type Alias OauthIntegrationForCustomClientsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(o),
 		DependsOn: o.DependsOn(),
@@ -90,23 +90,8 @@ func (o *OauthIntegrationForCustomClientsModel) WithDynamicBlock(dynamicBlock *c
 	return o
 }
 
-func (o *OauthIntegrationForCustomClientsModel) WithTimeoutCreate(duration string) *OauthIntegrationForCustomClientsModel {
-	o.SetTimeoutCreate(duration)
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsModel) WithTimeoutRead(duration string) *OauthIntegrationForCustomClientsModel {
-	o.SetTimeoutRead(duration)
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsModel) WithTimeoutUpdate(duration string) *OauthIntegrationForCustomClientsModel {
-	o.SetTimeoutUpdate(duration)
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsModel) WithTimeoutDelete(duration string) *OauthIntegrationForCustomClientsModel {
-	o.SetTimeoutDelete(duration)
+func (o *OauthIntegrationForCustomClientsModel) WithTimeout(timeout config.Timeouts) *OauthIntegrationForCustomClientsModel {
+	o.SetTimeout(timeout)
 	return o
 }
 

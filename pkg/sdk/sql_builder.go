@@ -262,7 +262,7 @@ func (b sqlBuilder) parseInterface(v interface{}, tag reflect.StructTag) (sqlCla
 func (b sqlBuilder) parseStruct(s interface{}) ([]sqlClause, error) {
 	clauses := make([]sqlClause, 0)
 	v := reflect.ValueOf(s)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 	if v.Kind() != reflect.Struct {
@@ -273,7 +273,7 @@ func (b sqlBuilder) parseStruct(s interface{}) ([]sqlClause, error) {
 		field := t.Field(i)
 		value := v.Field(i)
 		// Derefence pointers as long as they are not nil
-		if value.Kind() == reflect.Ptr {
+		if value.Kind() == reflect.Pointer {
 			if value.IsNil() {
 				continue
 			}
@@ -395,7 +395,7 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 
 func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Value) (sqlClause, error) {
 	// dereference any pointers
-	if value.Kind() == reflect.Ptr {
+	if value.Kind() == reflect.Pointer {
 		value = value.Elem()
 	}
 	clauses := make([]sqlClause, 0)
@@ -414,7 +414,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 		}
 		k := value.Index(i)
 		// if it is a pointer, dereference it
-		if k.Kind() == reflect.Ptr {
+		if k.Kind() == reflect.Pointer {
 			k = k.Elem()
 		}
 
@@ -492,7 +492,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 	var clause sqlClause
 
 	// dereference any pointers
-	if value.Kind() == reflect.Ptr {
+	if value.Kind() == reflect.Pointer {
 		value = value.Elem()
 	}
 

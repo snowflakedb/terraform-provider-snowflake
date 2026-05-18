@@ -78,8 +78,8 @@ func (f *FunctionJavascriptModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionJavascriptModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string          `json:"depends_on,omitempty"`
-		Timeouts  map[string]string `json:"timeouts,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
@@ -97,23 +97,8 @@ func (f *FunctionJavascriptModel) WithDynamicBlock(dynamicBlock *config.DynamicB
 	return f
 }
 
-func (f *FunctionJavascriptModel) WithTimeoutCreate(duration string) *FunctionJavascriptModel {
-	f.SetTimeoutCreate(duration)
-	return f
-}
-
-func (f *FunctionJavascriptModel) WithTimeoutRead(duration string) *FunctionJavascriptModel {
-	f.SetTimeoutRead(duration)
-	return f
-}
-
-func (f *FunctionJavascriptModel) WithTimeoutUpdate(duration string) *FunctionJavascriptModel {
-	f.SetTimeoutUpdate(duration)
-	return f
-}
-
-func (f *FunctionJavascriptModel) WithTimeoutDelete(duration string) *FunctionJavascriptModel {
-	f.SetTimeoutDelete(duration)
+func (f *FunctionJavascriptModel) WithTimeout(timeout config.Timeouts) *FunctionJavascriptModel {
+	f.SetTimeout(timeout)
 	return f
 }
 
