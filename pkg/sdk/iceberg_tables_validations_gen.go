@@ -2,6 +2,8 @@
 
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(CreateIcebergTableOptions)
 	_ validatable = new(AlterIcebergTableOptions)
@@ -22,9 +24,9 @@ func (opts *CreateIcebergTableOptions) validate() error {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
 	// Adjusted manually: PartitionBy is a slice, validate each element
-	for _, p := range opts.PartitionBy {
+	for i, p := range opts.PartitionBy {
 		if !exactlyOneValueSet(p.Identity, p.Bucket, p.Truncate, p.Year, p.Month, p.Day, p.Hour) {
-			errs = append(errs, errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
+			errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.PartitionBy[%d]", i), "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
 		}
 	}
 	if valueSet(opts.RowAccessPolicy) {
@@ -52,9 +54,9 @@ func (opts *AlterIcebergTableOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies"))
 	}
 	// Adjusted manually: AlterColumnAction is a slice, validate each element
-	for _, col := range opts.AlterColumnAction {
+	for i, col := range opts.AlterColumnAction {
 		if !exactlyOneValueSet(col.SetNotNull, col.DropNotNull, col.DataType, col.Comment, col.UnsetComment, col.SetWriteDefault, col.DropWriteDefault) {
-			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
+			errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterIcebergTableOptions.AlterColumnAction[%d]", i), "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
 		}
 	}
 	if valueSet(opts.ClusteringAction) {

@@ -95,7 +95,7 @@ var icebergTableSetProperties = g.NewQueryStruct("IcebergTableSetProperties").
 	OptionalTextAssignment("CATALOG_SYNC", g.ParameterOptions().SingleQuotes()).
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 	OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
-	OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions()).
+	OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 	PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("CONTACT")).
 	OptionalAssignment("LOG_EVENT_LEVEL", IcebergTableLogEventLevelEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 	OptionalBooleanAssignment("ERROR_LOGGING", g.ParameterOptions()).

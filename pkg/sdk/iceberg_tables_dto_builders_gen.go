@@ -123,7 +123,7 @@ func (s *CreateIcebergTableRequest) WithRowAccessPolicy(rowAccessPolicy IcebergT
 }
 
 func (s *CreateIcebergTableRequest) WithAggregationPolicy(aggregationPolicy IcebergTableAggregationPolicyRequest) *CreateIcebergTableRequest {
-	s.AggregationPolicy = aggregationPolicy
+	s.AggregationPolicy = &aggregationPolicy
 	return s
 }
 

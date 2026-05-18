@@ -36,7 +36,7 @@ type CreateIcebergTableRequest struct {
 	IcebergVersion             *int
 	EnableIcebergMergeOnRead   *bool
 	RowAccessPolicy            *IcebergTableRowAccessPolicyRequest
-	AggregationPolicy          IcebergTableAggregationPolicyRequest
+	AggregationPolicy          *IcebergTableAggregationPolicyRequest
 	Tag                        []TagAssociation
 	EnableDataCompaction       *bool
 	Contact                    []TableContact
