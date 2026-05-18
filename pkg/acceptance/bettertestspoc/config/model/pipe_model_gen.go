@@ -70,10 +70,12 @@ func (p *PipeModel) MarshalJSON() ([]byte, error) {
 	type Alias PipeModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -84,6 +86,11 @@ func (p *PipeModel) WithDependsOn(values ...string) *PipeModel {
 
 func (p *PipeModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *PipeModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *PipeModel) WithTimeout(timeout config.Timeouts) *PipeModel {
+	p.SetTimeout(timeout)
 	return p
 }
 
