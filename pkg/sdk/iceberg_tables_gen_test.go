@@ -45,8 +45,8 @@ func TestIcebergTables_Create(t *testing.T) {
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	})
 
@@ -74,39 +74,39 @@ func TestIcebergTables_Create(t *testing.T) {
 
 	t.Run("if not exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
+		opts.IfNotExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE IF NOT EXISTS %s AGGREGATION POLICY %s`, id.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Transient = Bool(true)
+		opts.OrReplace = new(true)
+		opts.Transient = new(true)
 		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
 			Columns: []IcebergTableColumn{
 				{
 					Name:       "ID",
 					ColumnType: dataTypeNumber,
 					DefaultValue: &ColumnDefaultValue{
-						Expression: String("1"),
+						Expression: new("1"),
 					},
-					NotNull: Bool(true),
+					NotNull: new(true),
 					Tag: []TagAssociation{
 						{Name: tagId1, Value: "v1"},
 						{Name: tagId2, Value: "v2"},
 					},
-					Comment: String("id column"),
+					Comment: new("id column"),
 				},
 				{
 					Name:       "NAME",
 					ColumnType: dataTypeVarchar,
-					Comment:    String("name column"),
+					Comment:    new("name column"),
 				},
 			},
 		}
 		opts.PartitionBy = []IcebergTablePartitionExpression{
 			{
-				Identity: String("ID"),
+				Identity: new("ID"),
 			},
 			{
 				Bucket: &IcebergTablePartitionBucket{
@@ -114,22 +114,22 @@ func TestIcebergTables_Create(t *testing.T) {
 				},
 			},
 		}
-		opts.PathLayout = Pointer(IcebergTablePathLayoutHierarchical)
+		opts.PathLayout = new(IcebergTablePathLayoutHierarchical)
 		opts.ClusterBy = []Column{{"col1"}, {"col2"}}
-		opts.ExternalVolume = icebergTableExternalVolumeQuoted(Pointer(NewAccountObjectIdentifier("vol1")))
-		opts.CatalogSnowflake = Bool(true)
-		opts.BaseLocation = String("base/loc")
-		opts.TargetFileSize = Pointer(IcebergTableTargetFileSize64mb)
-		opts.CatalogSync = String("integration1")
-		opts.StorageSerializationPolicy = Pointer(StorageSerializationPolicyOptimized)
-		opts.DataRetentionTimeInDays = Int(1)
-		opts.MaxDataExtensionTimeInDays = Int(2)
-		opts.ChangeTracking = Bool(true)
-		opts.CopyGrants = Bool(true)
-		opts.ErrorLogging = Bool(true)
-		opts.Comment = String("test comment")
-		opts.IcebergVersion = Int(2)
-		opts.EnableIcebergMergeOnRead = Bool(true)
+		opts.ExternalVolume = icebergTableExternalVolumeQuoted(new(NewAccountObjectIdentifier("vol1")))
+		opts.CatalogSnowflake = new(true)
+		opts.BaseLocation = new("base/loc")
+		opts.TargetFileSize = new(IcebergTableTargetFileSize64mb)
+		opts.CatalogSync = new("integration1")
+		opts.StorageSerializationPolicy = new(StorageSerializationPolicyOptimized)
+		opts.DataRetentionTimeInDays = new(1)
+		opts.MaxDataExtensionTimeInDays = new(2)
+		opts.ChangeTracking = new(true)
+		opts.CopyGrants = new(true)
+		opts.ErrorLogging = new(true)
+		opts.Comment = new("test comment")
+		opts.IcebergVersion = new(2)
+		opts.EnableIcebergMergeOnRead = new(true)
 		opts.RowAccessPolicy = &IcebergTableRowAccessPolicy{
 			Name: rowAccessPolicyId,
 			On:   []Column{{"ID"}, {"NAME"}},
@@ -138,7 +138,7 @@ func TestIcebergTables_Create(t *testing.T) {
 			{Name: tagId1, Value: "v1"},
 			{Name: tagId2, Value: "v2"},
 		}
-		opts.EnableDataCompaction = Bool(true)
+		opts.EnableDataCompaction = new(true)
 		opts.Contact = []TableContact{
 			{Purpose: "SUPPORT", Contact: "support_team"},
 			{Purpose: "ACCESS_APPROVAL", Contact: "access_team"},
@@ -273,13 +273,13 @@ func TestIcebergTables_Alter(t *testing.T) {
 
 	t.Run("alter: add column", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.AddColumnAction = &IcebergTableAddColumnAction{
-			IfNotExists: Bool(true),
+			IfNotExists: new(true),
 			Name:        "NEW_COL",
 			ColumnType:  dataTypeVarchar,
 			DefaultValue: &ColumnDefaultValue{
-				Expression: String("'a'"),
+				Expression: new("'a'"),
 			},
 			Tag: []TagAssociation{
 				{Name: tagId1, Value: "v1"},
@@ -295,8 +295,8 @@ func TestIcebergTables_Alter(t *testing.T) {
 	t.Run("alter: alter column - set not null", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
-			{ColumnName: "col1", SetNotNull: Bool(true)},
-			{ColumnName: "col2", SetNotNull: Bool(true)},
+			{ColumnName: "col1", SetNotNull: new(true)},
+			{ColumnName: "col2", SetNotNull: new(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET NOT NULL, ALTER COLUMN "col2" SET NOT NULL`, id.FullyQualifiedName())
 	})
@@ -304,8 +304,8 @@ func TestIcebergTables_Alter(t *testing.T) {
 	t.Run("alter: alter column - drop not null", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
-			{ColumnName: "col1", DropNotNull: Bool(true)},
-			{ColumnName: "col2", DropNotNull: Bool(true)},
+			{ColumnName: "col1", DropNotNull: new(true)},
+			{ColumnName: "col2", DropNotNull: new(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" DROP NOT NULL, ALTER COLUMN "col2" DROP NOT NULL`, id.FullyQualifiedName())
 	})
@@ -322,8 +322,8 @@ func TestIcebergTables_Alter(t *testing.T) {
 	t.Run("alter: alter column - comment / unset comment", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
-			{ColumnName: "col1", Comment: String("comment1")},
-			{ColumnName: "col2", UnsetComment: Bool(true)},
+			{ColumnName: "col1", Comment: new("comment1")},
+			{ColumnName: "col2", UnsetComment: new(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" COMMENT 'comment1', ALTER COLUMN "col2" UNSET COMMENT`, id.FullyQualifiedName())
 	})
@@ -331,8 +331,8 @@ func TestIcebergTables_Alter(t *testing.T) {
 	t.Run("alter: alter column - set/drop write default", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
-			{ColumnName: "col1", SetWriteDefault: String("1")},
-			{ColumnName: "col2", DropWriteDefault: Bool(true)},
+			{ColumnName: "col1", SetWriteDefault: new("1")},
+			{ColumnName: "col2", DropWriteDefault: new(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET WRITE DEFAULT 1, ALTER COLUMN "col2" DROP WRITE DEFAULT`, id.FullyQualifiedName())
 	})
@@ -343,7 +343,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 			Name:          "col1",
 			MaskingPolicy: maskingPolicyId,
 			Using:         []Column{{"col1"}, {"col2"}},
-			Force:         Bool(true),
+			Force:         new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET MASKING POLICY %s USING ("col1", "col2") FORCE`, id.FullyQualifiedName(), maskingPolicyId.FullyQualifiedName())
 	})
@@ -361,7 +361,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 		opts.SetProjectionPolicyOnColumn = &IcebergTableSetColumnProjectionPolicy{
 			Name:             "col1",
 			ProjectionPolicy: projectionPolicyId,
-			Force:            Bool(true),
+			Force:            new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET PROJECTION POLICY %s FORCE`, id.FullyQualifiedName(), projectionPolicyId.FullyQualifiedName())
 	})
@@ -410,7 +410,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.ClusteringAction = &IcebergTableClusteringAction{
 			ChangeReclusterState: &IcebergTableReclusterChangeState{
-				State: Pointer(ReclusterStateSuspend),
+				State: new(ReclusterStateSuspend),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s SUSPEND RECLUSTER`, id.FullyQualifiedName())
@@ -420,7 +420,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.ClusteringAction = &IcebergTableClusteringAction{
 			ChangeReclusterState: &IcebergTableReclusterChangeState{
-				State: Pointer(ReclusterStateResume),
+				State: new(ReclusterStateResume),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s RESUME RECLUSTER`, id.FullyQualifiedName())
@@ -429,29 +429,29 @@ func TestIcebergTables_Alter(t *testing.T) {
 	t.Run("alter: drop clustering key", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ClusteringAction = &IcebergTableClusteringAction{
-			DropClusteringKey: Bool(true),
+			DropClusteringKey: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP CLUSTERING KEY`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: set - all properties", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &IcebergTableSetProperties{
-			ReplaceInvalidCharacters: Bool(true),
-			CatalogSync:              String("integration1"),
-			DataRetentionTimeInDays:  Int(7),
-			AutoRefresh:              Bool(true),
-			TargetFileSize:           Pointer(IcebergTableTargetFileSize128mb),
+			ReplaceInvalidCharacters: new(true),
+			CatalogSync:              new("integration1"),
+			DataRetentionTimeInDays:  new(7),
+			AutoRefresh:              new(true),
+			TargetFileSize:           new(IcebergTableTargetFileSize128mb),
 			Contact: []TableContact{
 				{Purpose: "SUPPORT", Contact: "support_team"},
 				{Purpose: "ACCESS_APPROVAL", Contact: "access_team"},
 			},
-			LogEventLevel:            Pointer(IcebergTableLogEventLevelError),
-			ErrorLogging:             Bool(true),
-			EnableDataCompaction:     Bool(true),
-			EnableIcebergMergeOnRead: Bool(true),
-			Comment:                  String("updated comment"),
+			LogEventLevel:            new(IcebergTableLogEventLevelError),
+			ErrorLogging:             new(true),
+			EnableDataCompaction:     new(true),
+			EnableIcebergMergeOnRead: new(true),
+			Comment:                  new("updated comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`ALTER ICEBERG TABLE IF EXISTS %s SET `+
@@ -472,14 +472,14 @@ func TestIcebergTables_Alter(t *testing.T) {
 
 	t.Run("alter: unset - all properties", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Unset = &IcebergTableUnsetProperties{
-			ReplaceInvalidCharacters: Bool(true),
-			CatalogSync:              Bool(true),
-			LogEventLevel:            Bool(true),
-			ErrorLogging:             Bool(true),
-			EnableDataCompaction:     Bool(true),
-			EnableIcebergMergeOnRead: Bool(true),
+			ReplaceInvalidCharacters: new(true),
+			CatalogSync:              new(true),
+			LogEventLevel:            new(true),
+			ErrorLogging:             new(true),
+			EnableDataCompaction:     new(true),
+			EnableIcebergMergeOnRead: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`ALTER ICEBERG TABLE IF EXISTS %s UNSET `+
@@ -544,7 +544,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 
 	t.Run("alter: drop all row access policies", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.DropAllRowAccessPolicies = Bool(true)
+		opts.DropAllRowAccessPolicies = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
 	})
 
@@ -572,8 +572,8 @@ func TestIcebergTables_Drop(t *testing.T) {
 
 	t.Run("validation: conflicting fields for [opts.Cascade opts.Restrict]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Cascade = Bool(true)
-		opts.Restrict = Bool(true)
+		opts.Cascade = new(true)
+		opts.Restrict = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("DropIcebergTableOptions", "Cascade", "Restrict"))
 	})
 
@@ -584,15 +584,15 @@ func TestIcebergTables_Drop(t *testing.T) {
 
 	t.Run("all options - cascade", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Cascade = Bool(true)
+		opts.IfExists = new(true)
+		opts.Cascade = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP ICEBERG TABLE IF EXISTS %s CASCADE`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - restrict", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Restrict = Bool(true)
+		opts.IfExists = new(true)
+		opts.Restrict = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP ICEBERG TABLE IF EXISTS %s RESTRICT`, id.FullyQualifiedName())
 	})
 }
@@ -615,20 +615,20 @@ func TestIcebergTables_Show(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		opts.Like = &Like{Pattern: String("some_pattern")}
+		opts.Terse = new(true)
+		opts.Like = &Like{Pattern: new("some_pattern")}
 		opts.In = &In{
 			Schema: NewDatabaseObjectIdentifier("db", "schema"),
 		}
-		opts.StartsWith = String("prefix")
-		opts.Limit = &LimitFrom{Rows: Int(10), From: String("table_name")}
+		opts.StartsWith = new("prefix")
+		opts.Limit = &LimitFrom{Rows: new(10), From: new("table_name")}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE ICEBERG TABLES LIKE 'some_pattern' IN SCHEMA "db"."schema" STARTS WITH 'prefix' LIMIT 10 FROM 'table_name'`)
 	})
 
 	t.Run("show with in account", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.In = &In{
-			Account: Bool(true),
+			Account: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES IN ACCOUNT`)
 	})
@@ -643,13 +643,13 @@ func TestIcebergTables_Show(t *testing.T) {
 
 	t.Run("show with like", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("pattern_test")}
+		opts.Like = &Like{Pattern: new("pattern_test")}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES LIKE 'pattern_test'`)
 	})
 
 	t.Run("show with limit only rows", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Limit = &LimitFrom{Rows: Int(5)}
+		opts.Limit = &LimitFrom{Rows: new(5)}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES LIMIT 5`)
 	})
 }
@@ -681,13 +681,13 @@ func TestIcebergTables_Describe(t *testing.T) {
 
 	t.Run("all options - columns", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.DescribeType = Pointer(IcebergTableDescribeTypeColumns)
+		opts.DescribeType = new(IcebergTableDescribeTypeColumns)
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE ICEBERG TABLE %s TYPE = COLUMNS`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - stage", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.DescribeType = Pointer(IcebergTableDescribeTypeStage)
+		opts.DescribeType = new(IcebergTableDescribeTypeStage)
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE ICEBERG TABLE %s TYPE = STAGE`, id.FullyQualifiedName())
 	})
 }
