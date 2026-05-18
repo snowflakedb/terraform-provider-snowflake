@@ -215,7 +215,9 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("GlueAwsRoleArn").
 			Text("GlueCatalogId").
 			Text("GlueRegion").
-			Text("CatalogNamespace"),
+			Text("CatalogNamespace").
+			Text("GlueAwsIamUserArn").
+			Text("GlueAwsExternalId"),
 		g.PlainStruct("CatalogIntegrationObjectStorageDetails").
 			AccountObjectIdentifier().
 			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
@@ -256,6 +258,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("GlueCatalogId").
 			Text("GlueRegion").
 			Text("CatalogNamespace").
+			Text("GlueAwsIamUserArn").
+			Text("GlueAwsExternalId").
 			// IcebergRestRestConfigDetails contains all properties of OpenCatalogRestConfigDetails
 			OptionalField("RestConfig", "IcebergRestRestConfigDetails").
 			OptionalField("OAuthRestAuthentication", "OAuthRestAuthenticationDetails").

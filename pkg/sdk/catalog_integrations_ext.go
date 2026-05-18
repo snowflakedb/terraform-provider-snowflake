@@ -97,10 +97,12 @@ func parseCommonProperties(properties []CatalogIntegrationProperty) (*commonDeta
 }
 
 type awsGlueSpecificDetails struct {
-	glueAwsRoleArn   string
-	glueCatalogId    string
-	glueRegion       string
-	catalogNamespace string
+	glueAwsRoleArn    string
+	glueCatalogId     string
+	glueRegion        string
+	catalogNamespace  string
+	glueAwsIamUserArn string
+	glueAwsExternalId string
 }
 
 func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
@@ -121,6 +123,8 @@ func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountO
 	details.GlueCatalogId = awsGlueDetails.glueCatalogId
 	details.GlueRegion = awsGlueDetails.glueRegion
 	details.CatalogNamespace = awsGlueDetails.catalogNamespace
+	details.GlueAwsIamUserArn = awsGlueDetails.glueAwsIamUserArn
+	details.GlueAwsExternalId = awsGlueDetails.glueAwsExternalId
 	return details, nil
 }
 
@@ -136,6 +140,10 @@ func parseAwsGlueSpecificProperties(properties []CatalogIntegrationProperty) *aw
 			details.glueRegion = prop.Value
 		case "CATALOG_NAMESPACE":
 			details.catalogNamespace = prop.Value
+		case "GLUE_AWS_IAM_USER_ARN":
+			details.glueAwsIamUserArn = prop.Value
+		case "GLUE_AWS_EXTERNAL_ID":
+			details.glueAwsExternalId = prop.Value
 		}
 	}
 	return details
@@ -250,6 +258,8 @@ func parseAllCatalogIntegrationProperties(properties []CatalogIntegrationPropert
 	details.GlueCatalogId = awsGlueDetails.glueCatalogId
 	details.GlueRegion = awsGlueDetails.glueRegion
 	details.CatalogNamespace = awsGlueDetails.catalogNamespace
+	details.GlueAwsIamUserArn = awsGlueDetails.glueAwsIamUserArn
+	details.GlueAwsExternalId = awsGlueDetails.glueAwsExternalId
 
 	var errs []error
 	for _, prop := range properties {

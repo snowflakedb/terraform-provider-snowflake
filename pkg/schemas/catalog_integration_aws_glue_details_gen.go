@@ -50,6 +50,14 @@ var DescribeCatalogIntegrationAwsGlueDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"glue_aws_iam_user_arn": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"glue_aws_external_id": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 // edited manually
@@ -67,6 +75,8 @@ func CatalogIntegrationAwsGlueDetailsToSchema(catalogIntegrationAwsGlueDetails *
 	catalogIntegrationAwsGlueDetailsSchema["glue_catalog_id"] = catalogIntegrationAwsGlueDetails.GlueCatalogId
 	catalogIntegrationAwsGlueDetailsSchema["glue_region"] = catalogIntegrationAwsGlueDetails.GlueRegion
 	catalogIntegrationAwsGlueDetailsSchema["catalog_namespace"] = catalogIntegrationAwsGlueDetails.CatalogNamespace
+	catalogIntegrationAwsGlueDetailsSchema["glue_aws_iam_user_arn"] = catalogIntegrationAwsGlueDetails.GlueAwsIamUserArn
+	catalogIntegrationAwsGlueDetailsSchema["glue_aws_external_id"] = catalogIntegrationAwsGlueDetails.GlueAwsExternalId
 	return catalogIntegrationAwsGlueDetailsSchema
 }
 

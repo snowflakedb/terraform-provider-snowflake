@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(new feature)* snowflake_catalog_integration_aws_glue: new `describe_output` attributes
+
+The `snowflake_catalog_integration_aws_glue` resource now exposes two additional attributes under `describe_output`:
+- `glue_aws_iam_user_arn`
+- `glue_aws_external_id`
+
+No changes are required for existing configurations.
+
+References: [#4745](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4745)
+
 ### *(new feature)* snowflake_cortex_agent preview resource
 
 We have added a new preview resource for managing Cortex agents: [snowflake_cortex_agent](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_agent).
@@ -43,18 +53,18 @@ No configuration changes are required. After upgrading the provider, a `terrafor
 Additionally, now when `use_privatelink_endpoint` is set to false explicitly, and the privatelink endpoint is not actually enabled in a Snowflake object, the plan will be empty. Previously, the plan was computed incorrectly as:
 ```
         Terraform will perform the following actions:
-        
+
           # snowflake_external_volume.complete will be updated in-place
           ~ resource "snowflake_external_volume" "complete" {
                 id                   = "MILRGWAT_3B02DC25_AF70_A697_0D4F_6DFE71E1DF67"
                 name                 = "MILRGWAT_3B02DC25_AF70_A697_0D4F_6DFE71E1DF67"
                 # (5 unchanged attributes hidden)
-        
+
               ~ storage_location {
                   + use_privatelink_endpoint     = "false"
                     # (12 unchanged attributes hidden)
                 }
-        
+
                 # (1 unchanged block hidden)
             }
 ```
