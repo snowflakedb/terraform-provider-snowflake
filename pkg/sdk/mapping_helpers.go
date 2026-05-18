@@ -24,16 +24,14 @@ func mapNullString(stringField **string, sqlValue sql.NullString) {
 	}
 }
 
-func mapNullStringWithMapping[T any](stringField **T, sqlValue sql.NullString, mapper func(string) (T, error)) error {
+func mapNullStringWithMapping[T any](stringField **T, sqlValue sql.NullString, mapper func(string) (T, error)) {
 	if sqlValue.Valid {
-		mappedValue, err := mapper(sqlValue.String)
-		if err != nil {
+		if mappedValue, err := mapper(sqlValue.String); err == nil {
+			*stringField = &mappedValue
+		} else {
 			log.Printf("[WARN] Failed to map string value, err = %s", err)
-			return err
 		}
-		*stringField = &mappedValue
 	}
-	return nil
 }
 
 func mapNullInt(intField **int, sqlValue sql.NullInt64) {
@@ -67,12 +65,10 @@ func mapNullTime(timeField **time.Time, sqlValue sql.NullTime) {
 	}
 }
 
-func mapStringWithMapping[T any](stringField *T, sqlValue string, mapper func(string) (T, error)) error {
-	mappedValue, err := mapper(sqlValue)
-	if err != nil {
+func mapStringWithMapping[T any](stringField *T, sqlValue string, mapper func(string) (T, error)) {
+	if mappedValue, err := mapper(sqlValue); err == nil {
+		*stringField = mappedValue
+	} else {
 		log.Printf("[WARN] Failed to map string value, err = %s", err)
-		return err
 	}
-	*stringField = mappedValue
-	return nil
 }

@@ -4,7 +4,6 @@ package sdk
 
 import (
 	"context"
-	"errors"
 )
 
 var (
@@ -47,13 +46,9 @@ func (row tagReferenceDBRow) convert() (*TagReference, error) {
 		TagValue:    row.TagValue,
 		ObjectName:  row.ObjectName,
 	}
-	if errs := errors.Join(
-		mapStringWithMapping(&tagReference.Level, row.Level, ToTagReferenceObjectDomain),
-		mapStringWithMapping(&tagReference.Domain, row.Domain, ToTagReferenceObjectDomain),
-		mapStringWithMapping(&tagReference.ApplyMethod, row.ApplyMethod, ToTagReferenceApplyMethod),
-	); errs != nil {
-		return nil, errs
-	}
+	mapStringWithMapping(&tagReference.Level, row.Level, ToTagReferenceObjectDomain)
+	mapStringWithMapping(&tagReference.Domain, row.Domain, ToTagReferenceObjectDomain)
+	mapStringWithMapping(&tagReference.ApplyMethod, row.ApplyMethod, ToTagReferenceApplyMethod)
 	mapNullString(&tagReference.ObjectDatabase, row.ObjectDatabase)
 	mapNullString(&tagReference.ObjectSchema, row.ObjectSchema)
 	mapNullString(&tagReference.ColumnName, row.ColumnName)
