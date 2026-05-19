@@ -179,7 +179,6 @@ jobs:
         id: update_check_run
         env:
           pr_number: ${{ github.event.client_payload.pull_request.number }}
-          number: ${{ github.event.client_payload.pull_request.number }}
           check_run_id: ${{ job.check_run_id }}
           # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
           conclusion: ${{ job.status }}
@@ -203,7 +202,7 @@ jobs:
             const externalId = `fork-pr-${process.env.pr_number}-${jobName}`;
             const output = {
               title: `Tests ${conclusion}`,
-              summary: `Integration tests ${conclusion}. See the [workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.`
+              summary: `Account-level tests ${conclusion}. See the [workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.`
             };
 
             const { data: existingRuns } = await github.rest.checks.listForRef({
@@ -219,8 +218,8 @@ jobs:
                 run.external_id === externalId
               )
               .sort((left, right) => {
-                const leftDate = new Date(left.started_at || left.completed_at || 0).getTime();
-                const rightDate = new Date(right.started_at || right.completed_at || 0).getTime();
+                const leftDate = Math.max(new Date(left.started_at || 0).getTime(), new Date(left.completed_at || 0).getTime());
+                const rightDate = Math.max(new Date(right.started_at || 0).getTime(), new Date(right.completed_at || 0).getTime());
                 return rightDate - leftDate;
               })[0];
 
