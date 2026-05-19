@@ -148,8 +148,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
-						HasEnableQueryAcceleration(false).
-						HasQueryAccelerationMaxScaleFactor(8),
+						HasEnableQueryAcceleration(true).
+						HasQueryAccelerationMaxScaleFactor(2),
 					objectparametersassert.WarehouseParameters(t, warehouseId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -175,8 +175,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasAutoResumeString("true").
 						HasResourceMonitorString("").
 						HasCommentString(comment).
-						HasEnableQueryAccelerationString("false").
-						HasQueryAccelerationMaxScaleFactorString("8").
+						HasEnableQueryAccelerationString("true").
+						HasQueryAccelerationMaxScaleFactorString("2").
 						HasNoMaxConcurrencyLevel().
 						HasNoStatementQueuedTimeoutInSeconds().
 						HasNoStatementTimeoutInSeconds(),
@@ -192,8 +192,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment(comment).
-						HasEnableQueryAcceleration(false).
-						HasQueryAccelerationMaxScaleFactor(8),
+						HasEnableQueryAcceleration(true).
+						HasQueryAccelerationMaxScaleFactor(2),
 					objectparametersassert.WarehouseParameters(t, warehouseId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -234,8 +234,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasInitiallySuspendedString(r.BooleanFalse).
 						HasNoResourceMonitor().
 						HasCommentString(comment).
-						HasEnableQueryAccelerationString(r.BooleanFalse).
-						HasQueryAccelerationMaxScaleFactorString("8").
+						HasEnableQueryAccelerationString(r.BooleanTrue).
+						HasQueryAccelerationMaxScaleFactorString("2").
 						HasNoMaxConcurrencyLevel().
 						HasNoStatementQueuedTimeoutInSeconds().
 						HasNoStatementTimeoutInSeconds(),
@@ -268,8 +268,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						HasInitiallySuspendedString(r.BooleanFalse).
 						HasNoResourceMonitor().
 						HasCommentString(comment).
-						HasEnableQueryAccelerationString(r.BooleanFalse).
-						HasQueryAccelerationMaxScaleFactorString("8").
+						HasEnableQueryAccelerationString(r.BooleanTrue).
+						HasQueryAccelerationMaxScaleFactorString("2").
 						HasMaxConcurrencyLevelString("8").
 						HasStatementQueuedTimeoutInSecondsString("0").
 						HasStatementTimeoutInSecondsString("172800"),
@@ -306,8 +306,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "scaling_policy", tfjson.ActionUpdate, sdk.String(string(sdk.ScalingPolicyStandard)), sdk.String(string(sdk.ScalingPolicyEconomy))),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("600"), sdk.String("1200")),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "enable_query_acceleration", tfjson.ActionUpdate, sdk.String("false"), sdk.String("true")),
-						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "query_acceleration_max_scale_factor", tfjson.ActionUpdate, sdk.String("8"), sdk.String("4")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "enable_query_acceleration", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
+						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "query_acceleration_max_scale_factor", tfjson.ActionUpdate, sdk.String("2"), sdk.String("4")),
 
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "max_concurrency_level", tfjson.ActionUpdate, sdk.String("8"), sdk.String("4")),
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("0"), sdk.String("5")),
@@ -986,7 +986,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
 					objectassert.Warehouse(t, id).
 						HasAutoSuspend(600).
-						HasQueryAccelerationMaxScaleFactor(8),
+						HasQueryAccelerationMaxScaleFactor(2),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
 						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault),
