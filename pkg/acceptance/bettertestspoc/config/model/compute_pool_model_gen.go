@@ -68,10 +68,12 @@ func (c *ComputePoolModel) MarshalJSON() ([]byte, error) {
 	type Alias ComputePoolModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
+		Timeouts:  c.Timeouts(),
 	})
 }
 
@@ -82,6 +84,11 @@ func (c *ComputePoolModel) WithDependsOn(values ...string) *ComputePoolModel {
 
 func (c *ComputePoolModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ComputePoolModel {
 	c.DynamicBlock = dynamicBlock
+	return c
+}
+
+func (c *ComputePoolModel) WithTimeout(timeout config.Timeouts) *ComputePoolModel {
+	c.SetTimeout(timeout)
 	return c
 }
 

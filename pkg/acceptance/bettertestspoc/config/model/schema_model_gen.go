@@ -73,10 +73,12 @@ func (s *SchemaModel) MarshalJSON() ([]byte, error) {
 	type Alias SchemaModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -87,6 +89,11 @@ func (s *SchemaModel) WithDependsOn(values ...string) *SchemaModel {
 
 func (s *SchemaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SchemaModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *SchemaModel) WithTimeout(timeout config.Timeouts) *SchemaModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

@@ -69,10 +69,12 @@ func (s *SemanticViewModel) MarshalJSON() ([]byte, error) {
 	type Alias SemanticViewModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -83,6 +85,11 @@ func (s *SemanticViewModel) WithDependsOn(values ...string) *SemanticViewModel {
 
 func (s *SemanticViewModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SemanticViewModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *SemanticViewModel) WithTimeout(timeout config.Timeouts) *SemanticViewModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

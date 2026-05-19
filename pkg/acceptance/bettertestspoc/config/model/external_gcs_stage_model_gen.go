@@ -74,10 +74,12 @@ func (e *ExternalGcsStageModel) MarshalJSON() ([]byte, error) {
 	type Alias ExternalGcsStageModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(e),
 		DependsOn: e.DependsOn(),
+		Timeouts:  e.Timeouts(),
 	})
 }
 
@@ -88,6 +90,11 @@ func (e *ExternalGcsStageModel) WithDependsOn(values ...string) *ExternalGcsStag
 
 func (e *ExternalGcsStageModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalGcsStageModel {
 	e.DynamicBlock = dynamicBlock
+	return e
+}
+
+func (e *ExternalGcsStageModel) WithTimeout(timeout config.Timeouts) *ExternalGcsStageModel {
+	e.SetTimeout(timeout)
 	return e
 }
 
