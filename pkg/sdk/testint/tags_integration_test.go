@@ -1250,8 +1250,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 
 		assertTagSetWithReference(t, tag.ID(), table.ID(), sdk.TagReferenceObjectDomainTable, "schema_value", sdk.TagReferenceObjectDomainSchema, sdk.TagReferenceApplyMethodInherited)
 
-		// tag on table also propagates to view via dependency
-		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
+		view, viewCleanup := testClientHelper().View.CreateViewInSchema(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()), schema.ID())
 		t.Cleanup(viewCleanup)
 
 		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "schema_value", sdk.TagReferenceObjectDomainSchema, sdk.TagReferenceApplyMethodInherited)
