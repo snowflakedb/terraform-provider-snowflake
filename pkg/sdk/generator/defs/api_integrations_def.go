@@ -25,6 +25,7 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AwsApiProviderParams",
 				g.NewQueryStruct("AwsApiParams").
+					// TODO: Turn into generated enum
 					Assignment("API_PROVIDER", g.KindOfT[sdkcommons.ApiIntegrationAwsApiProviderType](), g.ParameterOptions().NoQuotes().Required()).
 					TextAssignment("API_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("API_KEY", g.ParameterOptions().SingleQuotes()),
@@ -33,6 +34,7 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AzureApiProviderParams",
 				g.NewQueryStruct("AzureApiParams").
+					// TODO: Turn into generated enum (?)
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = azure_api_management").
 					TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
 					TextAssignment("AZURE_AD_APPLICATION_ID", g.ParameterOptions().SingleQuotes().Required()).
@@ -42,11 +44,15 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"GoogleApiProviderParams",
 				g.NewQueryStruct("GoogleApiParams").
+					// TODO: Turn into generated enum (?)
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = google_api_gateway").
 					TextAssignment("GOOGLE_AUDIENCE", g.ParameterOptions().SingleQuotes().Required()),
 				g.KeywordOptions(),
 			).
+			// TODO: Add git repository variant (with internal 4 variants: Token, GitHub OAuth, OAuth2 parameters, Private Link)
+			// TODO: Add external MCP server variant (with internal 2 variants: OAuth2 and Dynamic Client Registration)
 			ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses().Required()).
+			// TODO: API_BLOCKED_PREFIXES for amazon api gateway is not supported (?)
 			ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			OptionalComment().
@@ -62,6 +68,7 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATION").
 			IfExists().
 			Name().
+			// TODO: Validate with create options, the docs seem to be "simplistic"
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("ApiIntegrationSet").
@@ -114,6 +121,7 @@ var apiIntegrationsDef = g.NewInterface(
 			WithValidation(g.ConflictingFields, "IfExists", "UnsetTags").
 			WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags"),
 	).
+	// TODO: Pull out common drop operation and reuse it
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-integration",
 		g.NewQueryStruct("DropApiIntegration").
@@ -123,8 +131,10 @@ var apiIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
+	// TODO: Pull out common show operation and reuse it
 	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-integrations",
+		// TODO: Generate convert function
 		g.StructPair("showApiIntegrationsDbRow", "ApiIntegration").
 			Text("name").
 			Text("type", g.WithPlainFieldName("ApiType")).
@@ -137,9 +147,12 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATIONS").
 			OptionalLike(),
 	).
+	// TODO: Pull out common describe operation and reuse it
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
+		// TODO: Generate convert function
+		// TODO: Create common struct for properties as in other property-based describes (e.g. storage_integrations_ext.go)
 		g.StructPair("descApiIntegrationsDbRow", "ApiIntegrationProperty").
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
