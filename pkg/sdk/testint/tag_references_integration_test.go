@@ -52,7 +52,7 @@ func TestInt_TagReferences(t *testing.T) {
 			HasObjectDatabase(table.ID().DatabaseName()).
 			HasObjectSchema(table.ID().SchemaName()).
 			HasApplyMethod(sdk.TagReferenceApplyMethodManual).
-			HasColumnNameNil(),
+			HasNoColumnName(),
 		)
 	})
 
