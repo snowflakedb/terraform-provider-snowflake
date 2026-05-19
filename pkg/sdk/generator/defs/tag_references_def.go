@@ -81,7 +81,8 @@ var tagReferencesDef = g.NewInterface(
 		Text("OBJECT_NAME").
 		PlainField("DOMAIN", "TagReferenceObjectDomain").
 		OptionalText("COLUMN_NAME").
-		PlainField("APPLY_METHOD", "TagReferenceApplyMethod"),
+		PlainField("APPLY_METHOD", "TagReferenceApplyMethod").
+		WithConvertGeneration(),
 	g.NewQueryStruct("GetForEntity").
 		SQLWithCustomFieldName("selectEverythingFrom", "SELECT * FROM TABLE").
 		OptionalQueryStructField(

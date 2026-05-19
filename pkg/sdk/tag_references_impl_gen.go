@@ -38,19 +38,22 @@ func (r *GetForEntityTagReferenceRequest) toOpts() *GetForEntityTagReferenceOpti
 	return opts
 }
 
-func (row tagReferenceDBRow) convert() (*TagReference, error) {
-	tagReference := TagReference{
-		TagDatabase: row.TagDatabase,
-		TagSchema:   row.TagSchema,
-		TagName:     row.TagName,
-		TagValue:    row.TagValue,
-		ObjectName:  row.ObjectName,
+func (r tagReferenceDBRow) convert() (*TagReference, error) {
+	result := &TagReference{
+		TagDatabase: r.TagDatabase,
+		TagSchema:   r.TagSchema,
+		TagName:     r.TagName,
+		TagValue:    r.TagValue,
+		ObjectName:  r.ObjectName,
 	}
-	mapStringWithMapping(&tagReference.Level, row.Level, ToTagReferenceObjectDomain)
-	mapStringWithMapping(&tagReference.Domain, row.Domain, ToTagReferenceObjectDomain)
-	mapStringWithMapping(&tagReference.ApplyMethod, row.ApplyMethod, ToTagReferenceApplyMethod)
-	mapNullString(&tagReference.ObjectDatabase, row.ObjectDatabase)
-	mapNullString(&tagReference.ObjectSchema, row.ObjectSchema)
-	mapNullString(&tagReference.ColumnName, row.ColumnName)
-	return &tagReference, nil
+	// Adjusted manually, Mapping for Level (string -> TagReferenceObjectDomain)
+	mapStringWithMapping(&result.Level, r.Level, ToTagReferenceObjectDomain)
+	mapNullString(&result.ObjectDatabase, r.ObjectDatabase)
+	mapNullString(&result.ObjectSchema, r.ObjectSchema)
+	// Adjusted manually, Mapping for Domain (string -> TagReferenceObjectDomain)
+	mapStringWithMapping(&result.Domain, r.Domain, ToTagReferenceObjectDomain)
+	mapNullString(&result.ColumnName, r.ColumnName)
+	// Adjusted manually, Mapping for ApplyMethod (string -> TagReferenceApplyMethod)
+	mapStringWithMapping(&result.ApplyMethod, r.ApplyMethod, ToTagReferenceApplyMethod)
+	return result, nil
 }

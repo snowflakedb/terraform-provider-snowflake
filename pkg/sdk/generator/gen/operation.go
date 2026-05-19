@@ -256,8 +256,8 @@ func (i *Interface) showOperation(doc string, dbRepresentation *dbStruct, resour
 	return i.appendShowByID(filtering)
 }
 
-func (i *Interface) CustomShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
-	return i.customShowOperation(operationName, showKind, doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping, helperStructs...)
+func (i *Interface) CustomShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
+	return i.customShowOperation(operationName, showKind, doc, dbRepresentation, resourceRepresentation, queryStruct, addShowMapping)
 }
 
 func (i *Interface) customShowOperation(operationName string, showKind ShowMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, addMappingFunc func(op *Operation, from, to *Field), helperStructs ...IntoField) *Interface {

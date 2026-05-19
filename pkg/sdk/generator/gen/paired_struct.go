@@ -420,5 +420,5 @@ func (i *Interface) DescribeOperationWithPairedStructs(describeKind DescriptionM
 // CustomShowOperationWithPairedStructs is equivalent to CustomShowOperation but accepts a
 // single PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) CustomShowOperationWithPairedStructs(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
-	return i.CustomShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, helperStructs...)
+	return i.customShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addMappingFunc(), helperStructs...)
 }
