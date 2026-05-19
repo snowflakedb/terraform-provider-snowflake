@@ -208,21 +208,21 @@ type alterTableOptions struct {
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 
 	// One of
-	NewName                   *SchemaObjectIdentifier         `ddl:"identifier" sql:"RENAME TO"`
-	SwapWith                  *SchemaObjectIdentifier         `ddl:"identifier" sql:"SWAP WITH"`
-	ClusteringAction          *TableClusteringAction          `ddl:"keyword"`
-	ColumnAction              *TableColumnAction              `ddl:"keyword"`
-	ConstraintAction          *TableConstraintAction          `ddl:"keyword"`
-	ExternalTableAction       *TableExternalTableAction       `ddl:"keyword"`
-	SearchOptimizationAction  *TableSearchOptimizationAction  `ddl:"keyword"`
-	Set                       *TableSet                       `ddl:"keyword" sql:"SET"`
-	SetTags                   []TagAssociation                `ddl:"parameter,no_equals" sql:"SET TAG"`
-	UnsetTags                 []ObjectIdentifier              `ddl:"keyword" sql:"UNSET TAG"`
-	Unset                     *TableUnset                     `ddl:"keyword" sql:"UNSET"`
-	AddRowAccessPolicy        *TableAddRowAccessPolicy        `ddl:"keyword"`
-	DropRowAccessPolicy       *TableDropRowAccessPolicy       `ddl:"keyword"`
-	DropAndAddRowAccessPolicy *TableDropAndAddRowAccessPolicy `ddl:"list,no_parentheses"`
-	DropAllAccessRowPolicies  *bool                           `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
+	NewName                   *SchemaObjectIdentifier              `ddl:"identifier" sql:"RENAME TO"`
+	SwapWith                  *SchemaObjectIdentifier              `ddl:"identifier" sql:"SWAP WITH"`
+	ClusteringAction          *TableClusteringAction               `ddl:"keyword"`
+	ColumnAction              *TableColumnAction                   `ddl:"keyword"`
+	ConstraintAction          *TableConstraintAction               `ddl:"keyword"`
+	ExternalTableAction       *TableExternalTableAction            `ddl:"keyword"`
+	SearchOptimizationAction  *TableSearchOptimizationActionLegacy `ddl:"keyword"`
+	Set                       *TableSet                            `ddl:"keyword" sql:"SET"`
+	SetTags                   []TagAssociation                     `ddl:"parameter,no_equals" sql:"SET TAG"`
+	UnsetTags                 []ObjectIdentifier                   `ddl:"keyword" sql:"UNSET TAG"`
+	Unset                     *TableUnset                          `ddl:"keyword" sql:"UNSET"`
+	AddRowAccessPolicy        *TableAddRowAccessPolicy             `ddl:"keyword"`
+	DropRowAccessPolicy       *TableDropRowAccessPolicy            `ddl:"keyword"`
+	DropAndAddRowAccessPolicy *TableDropAndAddRowAccessPolicy      `ddl:"list,no_parentheses"`
+	DropAllAccessRowPolicies  *bool                                `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
 }
 
 type TableClusteringAction struct {
@@ -429,7 +429,7 @@ type TableExternalTableColumnDropAction struct {
 	Names    []string `ddl:"keyword"`
 }
 
-type TableSearchOptimizationAction struct {
+type TableSearchOptimizationActionLegacy struct {
 	// One of
 	Add  *AddSearchOptimization  `ddl:"keyword"`
 	Drop *DropSearchOptimization `ddl:"keyword"`

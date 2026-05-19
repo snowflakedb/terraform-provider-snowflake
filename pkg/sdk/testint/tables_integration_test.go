@@ -819,7 +819,7 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(cleanupTableProvider(id))
 
 		alterRequest := sdk.NewAlterTableRequest(id).
-			WithSearchOptimizationAction(sdk.NewTableSearchOptimizationActionRequest().WithAddSearchOptimizationOn([]string{"SUBSTRING(*)", "GEO(*)"}))
+			WithSearchOptimizationAction(sdk.NewTableSearchOptimizationActionLegacyRequest().WithAddSearchOptimizationOn([]string{"SUBSTRING(*)", "GEO(*)"}))
 
 		err = client.Tables.Alter(ctx, alterRequest)
 		require.NoError(t, err)

@@ -34,25 +34,26 @@ type CreateIcebergTableOptions struct {
 	PathLayout            *IcebergTablePathLayout           `ddl:"parameter,no_quotes" sql:"PATH_LAYOUT"`
 	ClusterBy             []string                          `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	// Adjusted manually
-	ExternalVolume             *string                        `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
-	Catalog                    *IcebergTableCatalog           `ddl:"parameter,single_quotes" sql:"CATALOG"`
-	BaseLocation               *string                        `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
-	TargetFileSize             *IcebergTableTargetFileSize    `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
-	CatalogSync                *string                        `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
-	StorageSerializationPolicy *StorageSerializationPolicy    `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
-	DataRetentionTimeInDays    *int                           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int                           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool                          `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	CopyGrants                 *bool                          `ddl:"keyword" sql:"COPY GRANTS"`
-	ErrorLogging               *bool                          `ddl:"parameter" sql:"ERROR_LOGGING"`
-	Comment                    *string                        `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	IcebergVersion             *int                           `ddl:"parameter" sql:"ICEBERG_VERSION"`
-	EnableIcebergMergeOnRead   *bool                          `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
-	RowAccessPolicy            *IcebergTableRowAccessPolicy   `ddl:"keyword"`
-	AggregationPolicy          *IcebergTableAggregationPolicy `ddl:"keyword"`
-	Tag                        []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
-	EnableDataCompaction       *bool                          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
-	Contact                    []TableContact                 `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
+	ExternalVolume             *string                      `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
+	Catalog                    *IcebergTableCatalog         `ddl:"parameter,single_quotes" sql:"CATALOG"`
+	BaseLocation               *string                      `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
+	TargetFileSize             *IcebergTableTargetFileSize  `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
+	CatalogSync                *string                      `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
+	StorageSerializationPolicy *StorageSerializationPolicy  `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
+	DataRetentionTimeInDays    *int                         `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                         `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool                        `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	CopyGrants                 *bool                        `ddl:"keyword" sql:"COPY GRANTS"`
+	ErrorLogging               *bool                        `ddl:"parameter" sql:"ERROR_LOGGING"`
+	Comment                    *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	IcebergVersion             *int                         `ddl:"parameter" sql:"ICEBERG_VERSION"`
+	EnableIcebergMergeOnRead   *bool                        `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	RowAccessPolicy            *IcebergTableRowAccessPolicy `ddl:"keyword"`
+	// Adjusted manually
+	AggregationPolicy    *IcebergTableAggregationPolicy `ddl:"keyword"`
+	Tag                  []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
+	EnableDataCompaction *bool                          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
+	Contact              []TableContact                 `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
 }
 
 type IcebergTableColumnsAndConstraints struct {
@@ -60,12 +61,23 @@ type IcebergTableColumnsAndConstraints struct {
 }
 
 type IcebergTableColumn struct {
-	Name         string              `ddl:"keyword,double_quotes"`
-	ColumnType   datatypes.DataType  `ddl:"parameter,no_quotes,no_equals"`
-	DefaultValue *ColumnDefaultValue `ddl:"keyword"`
-	NotNull      *bool               `ddl:"keyword" sql:"NOT NULL"`
-	Tag          []TagAssociation    `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment      *string             `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	Name             string                       `ddl:"keyword,double_quotes"`
+	ColumnType       datatypes.DataType           `ddl:"parameter,no_quotes,no_equals"`
+	DefaultValue     *ColumnDefaultValue          `ddl:"keyword"`
+	NotNull          *bool                        `ddl:"keyword" sql:"NOT NULL"`
+	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"keyword"`
+	ProjectionPolicy *TableColumnProjectionPolicy `ddl:"keyword"`
+	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
+	Comment          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+}
+
+type TableColumnMaskingPolicy struct {
+	MaskingPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
+	Using         []Column               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
+}
+
+type TableColumnProjectionPolicy struct {
+	ProjectionPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"PROJECTION POLICY"`
 }
 
 type IcebergTablePartitionExpression struct {
@@ -138,6 +150,8 @@ type AlterIcebergTableOptions struct {
 	IfExists                      *bool                             `ddl:"keyword" sql:"IF EXISTS"`
 	name                          SchemaObjectIdentifier            `ddl:"identifier"`
 	AddColumnAction               *IcebergTableAddColumnAction      `ddl:"keyword"`
+	DropColumnAction              *TableDropColumnAction            `ddl:"keyword"`
+	RenameColumnAction            *TableRenameColumnAction          `ddl:"keyword"`
 	AlterColumnAction             []IcebergTableAlterColumnAction   `ddl:"keyword" sql:"ALTER"`
 	SetMaskingPolicyOnColumn      *TableSetColumnMaskingPolicy      `ddl:"keyword"`
 	UnsetMaskingPolicyOnColumn    *TableUnsetColumnMaskingPolicy    `ddl:"keyword"`
@@ -154,19 +168,38 @@ type AlterIcebergTableOptions struct {
 	DropRowAccessPolicy           *ViewDropRowAccessPolicy          `ddl:"keyword"`
 	DropAndAddRowAccessPolicy     *ViewDropAndAddRowAccessPolicy    `ddl:"list,no_parentheses"`
 	DropAllRowAccessPolicies      *bool                             `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
+	SetAggregationPolicy          *TableSetAggregationPolicy        `ddl:"keyword"`
+	UnsetAggregationPolicy        *TableUnsetAggregationPolicy      `ddl:"keyword"`
+	SetJoinPolicy                 *TableSetJoinPolicy               `ddl:"keyword"`
+	UnsetJoinPolicy               *TableUnsetJoinPolicy             `ddl:"keyword"`
+	SearchOptimizationAction      *TableSearchOptimizationAction    `ddl:"keyword"`
 }
 
 type IcebergTableAddColumnAction struct {
-	addColumn    bool                `ddl:"static" sql:"ADD COLUMN"`
-	IfNotExists  *bool               `ddl:"keyword" sql:"IF NOT EXISTS"`
-	Name         string              `ddl:"keyword,double_quotes"`
-	ColumnType   datatypes.DataType  `ddl:"parameter,no_quotes,no_equals"`
-	DefaultValue *ColumnDefaultValue `ddl:"keyword"`
-	Tag          []TagAssociation    `ddl:"keyword,parentheses" sql:"TAG"`
+	addColumn        bool                         `ddl:"static" sql:"ADD COLUMN"`
+	IfNotExists      *bool                        `ddl:"keyword" sql:"IF NOT EXISTS"`
+	Name             string                       `ddl:"keyword,double_quotes"`
+	ColumnType       datatypes.DataType           `ddl:"parameter,no_quotes,no_equals"`
+	DefaultValue     *ColumnDefaultValue          `ddl:"keyword"`
+	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"keyword"`
+	ProjectionPolicy *TableColumnProjectionPolicy `ddl:"keyword"`
+	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
+}
+
+type TableDropColumnAction struct {
+	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
+	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
+	Columns    []Column `ddl:"keyword"`
+}
+
+type TableRenameColumnAction struct {
+	renameColumn bool   `ddl:"static" sql:"RENAME COLUMN"`
+	OldName      string `ddl:"keyword,double_quotes"`
+	NewName      string `ddl:"parameter,double_quotes,no_equals" sql:"TO"`
 }
 
 type IcebergTableAlterColumnAction struct {
-	column           bool                `ddl:"static" sql:"COLUMN"`
+	alterColumn      bool                `ddl:"static" sql:"COLUMN"`
 	ColumnName       string              `ddl:"keyword,double_quotes"`
 	SetNotNull       *bool               `ddl:"keyword" sql:"SET NOT NULL"`
 	DropNotNull      *bool               `ddl:"keyword" sql:"DROP NOT NULL"`
@@ -259,6 +292,58 @@ type IcebergTableUnsetProperties struct {
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
+type TableSetAggregationPolicy struct {
+	set               bool                   `ddl:"static" sql:"SET"`
+	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
+	EntityKey         []Column               `ddl:"parameter,parentheses,no_equals" sql:"ENTITY KEY"`
+	Force             *bool                  `ddl:"keyword" sql:"FORCE"`
+}
+
+type TableUnsetAggregationPolicy struct {
+	unsetAggregationPolicy bool `ddl:"static" sql:"UNSET AGGREGATION POLICY"`
+}
+
+type TableSetJoinPolicy struct {
+	set        bool                   `ddl:"static" sql:"SET"`
+	JoinPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
+	Force      *bool                  `ddl:"keyword" sql:"FORCE"`
+}
+
+type TableUnsetJoinPolicy struct {
+	unsetJoinPolicy bool `ddl:"static" sql:"UNSET JOIN POLICY"`
+}
+
+type TableSearchOptimizationAction struct {
+	Add  *TableAddSearchOptimization  `ddl:"keyword"`
+	Drop *TableDropSearchOptimization `ddl:"keyword"`
+}
+
+type TableAddSearchOptimization struct {
+	addSearchOptimization bool                          `ddl:"static" sql:"ADD SEARCH OPTIMIZATION"`
+	On                    []TableSearchMethodWithTarget `ddl:"keyword" sql:"ON"`
+}
+
+type TableSearchMethodWithTarget struct {
+	Method TableSearchMethod     `ddl:"keyword"`
+	Args   TableSearchMethodArgs `ddl:"list,parentheses"`
+}
+
+type TableSearchMethodArgs struct {
+	Targets  []string `ddl:"keyword"`
+	Analyzer *string  `ddl:"parameter,single_quotes,arrow_equals" sql:"ANALYZER"`
+}
+
+type TableDropSearchOptimization struct {
+	dropSearchOptimization bool                            `ddl:"static" sql:"DROP SEARCH OPTIMIZATION"`
+	On                     []TableDropSearchOptimizationOn `ddl:"keyword" sql:"ON"`
+}
+
+type TableDropSearchOptimizationOn struct {
+	SearchMethodWithTarget *TableSearchMethodWithTarget `ddl:"keyword"`
+	ColumnName             *string                      `ddl:"keyword"`
+	ExpressionId           *string                      `ddl:"keyword"`
+}
+
 // DropIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-iceberg-table.
 type DropIcebergTableOptions struct {
 	drop         bool                   `ddl:"static" sql:"DROP"`
@@ -272,6 +357,7 @@ type DropIcebergTableOptions struct {
 // ShowIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-iceberg-tables.
 type ShowIcebergTableOptions struct {
 	show          bool       `ddl:"static" sql:"SHOW"`
+	Terse         *bool      `ddl:"keyword" sql:"TERSE"`
 	icebergTables bool       `ddl:"static" sql:"ICEBERG TABLES"`
 	Like          *Like      `ddl:"keyword" sql:"LIKE"`
 	In            *In        `ddl:"keyword" sql:"IN"`

@@ -172,6 +172,16 @@ func (s *IcebergTableColumnRequest) WithNotNull(notNull bool) *IcebergTableColum
 	return s
 }
 
+func (s *IcebergTableColumnRequest) WithMaskingPolicy(maskingPolicy TableColumnMaskingPolicyRequest) *IcebergTableColumnRequest {
+	s.MaskingPolicy = &maskingPolicy
+	return s
+}
+
+func (s *IcebergTableColumnRequest) WithProjectionPolicy(projectionPolicy TableColumnProjectionPolicyRequest) *IcebergTableColumnRequest {
+	s.ProjectionPolicy = &projectionPolicy
+	return s
+}
+
 func (s *IcebergTableColumnRequest) WithTag(tag []TagAssociation) *IcebergTableColumnRequest {
 	s.Tag = tag
 	return s
@@ -180,6 +190,27 @@ func (s *IcebergTableColumnRequest) WithTag(tag []TagAssociation) *IcebergTableC
 func (s *IcebergTableColumnRequest) WithComment(comment string) *IcebergTableColumnRequest {
 	s.Comment = &comment
 	return s
+}
+
+func NewTableColumnMaskingPolicyRequest(
+	maskingPolicy SchemaObjectIdentifier,
+) *TableColumnMaskingPolicyRequest {
+	s := TableColumnMaskingPolicyRequest{}
+	s.MaskingPolicy = maskingPolicy
+	return &s
+}
+
+func (s *TableColumnMaskingPolicyRequest) WithUsing(using []Column) *TableColumnMaskingPolicyRequest {
+	s.Using = using
+	return s
+}
+
+func NewTableColumnProjectionPolicyRequest(
+	projectionPolicy SchemaObjectIdentifier,
+) *TableColumnProjectionPolicyRequest {
+	s := TableColumnProjectionPolicyRequest{}
+	s.ProjectionPolicy = projectionPolicy
+	return &s
 }
 
 func NewIcebergTablePartitionExpressionRequest() *IcebergTablePartitionExpressionRequest {
@@ -346,6 +377,16 @@ func (s *AlterIcebergTableRequest) WithAddColumnAction(addColumnAction IcebergTa
 	return s
 }
 
+func (s *AlterIcebergTableRequest) WithDropColumnAction(dropColumnAction TableDropColumnActionRequest) *AlterIcebergTableRequest {
+	s.DropColumnAction = &dropColumnAction
+	return s
+}
+
+func (s *AlterIcebergTableRequest) WithRenameColumnAction(renameColumnAction TableRenameColumnActionRequest) *AlterIcebergTableRequest {
+	s.RenameColumnAction = &renameColumnAction
+	return s
+}
+
 func (s *AlterIcebergTableRequest) WithAlterColumnAction(alterColumnAction []IcebergTableAlterColumnActionRequest) *AlterIcebergTableRequest {
 	s.AlterColumnAction = alterColumnAction
 	return s
@@ -426,6 +467,31 @@ func (s *AlterIcebergTableRequest) WithDropAllRowAccessPolicies(dropAllRowAccess
 	return s
 }
 
+func (s *AlterIcebergTableRequest) WithSetAggregationPolicy(setAggregationPolicy TableSetAggregationPolicyRequest) *AlterIcebergTableRequest {
+	s.SetAggregationPolicy = &setAggregationPolicy
+	return s
+}
+
+func (s *AlterIcebergTableRequest) WithUnsetAggregationPolicy(unsetAggregationPolicy TableUnsetAggregationPolicyRequest) *AlterIcebergTableRequest {
+	s.UnsetAggregationPolicy = &unsetAggregationPolicy
+	return s
+}
+
+func (s *AlterIcebergTableRequest) WithSetJoinPolicy(setJoinPolicy TableSetJoinPolicyRequest) *AlterIcebergTableRequest {
+	s.SetJoinPolicy = &setJoinPolicy
+	return s
+}
+
+func (s *AlterIcebergTableRequest) WithUnsetJoinPolicy(unsetJoinPolicy TableUnsetJoinPolicyRequest) *AlterIcebergTableRequest {
+	s.UnsetJoinPolicy = &unsetJoinPolicy
+	return s
+}
+
+func (s *AlterIcebergTableRequest) WithSearchOptimizationAction(searchOptimizationAction TableSearchOptimizationActionRequest) *AlterIcebergTableRequest {
+	s.SearchOptimizationAction = &searchOptimizationAction
+	return s
+}
+
 func NewIcebergTableAddColumnActionRequest(
 	name string,
 	columnType datatypes.DataType,
@@ -446,8 +512,44 @@ func (s *IcebergTableAddColumnActionRequest) WithDefaultValue(defaultValue Colum
 	return s
 }
 
+func (s *IcebergTableAddColumnActionRequest) WithMaskingPolicy(maskingPolicy TableColumnMaskingPolicyRequest) *IcebergTableAddColumnActionRequest {
+	s.MaskingPolicy = &maskingPolicy
+	return s
+}
+
+func (s *IcebergTableAddColumnActionRequest) WithProjectionPolicy(projectionPolicy TableColumnProjectionPolicyRequest) *IcebergTableAddColumnActionRequest {
+	s.ProjectionPolicy = &projectionPolicy
+	return s
+}
+
 func (s *IcebergTableAddColumnActionRequest) WithTag(tag []TagAssociation) *IcebergTableAddColumnActionRequest {
 	s.Tag = tag
+	return s
+}
+
+func NewTableDropColumnActionRequest(
+	columns []Column,
+) *TableDropColumnActionRequest {
+	s := TableDropColumnActionRequest{}
+	s.Columns = columns
+	return &s
+}
+
+func (s *TableDropColumnActionRequest) WithIfExists(ifExists bool) *TableDropColumnActionRequest {
+	s.IfExists = &ifExists
+	return s
+}
+
+func NewTableRenameColumnActionRequest(
+	oldName string,
+) *TableRenameColumnActionRequest {
+	s := TableRenameColumnActionRequest{}
+	s.OldName = oldName
+	return &s
+}
+
+func (s *TableRenameColumnActionRequest) WithNewName(newName string) *TableRenameColumnActionRequest {
+	s.NewName = newName
 	return s
 }
 
@@ -715,6 +817,130 @@ func (s *IcebergTableUnsetPropertiesRequest) WithComment(comment bool) *IcebergT
 	return s
 }
 
+func NewTableSetAggregationPolicyRequest(
+	aggregationPolicy SchemaObjectIdentifier,
+) *TableSetAggregationPolicyRequest {
+	s := TableSetAggregationPolicyRequest{}
+	s.AggregationPolicy = aggregationPolicy
+	return &s
+}
+
+func (s *TableSetAggregationPolicyRequest) WithEntityKey(entityKey []Column) *TableSetAggregationPolicyRequest {
+	s.EntityKey = entityKey
+	return s
+}
+
+func (s *TableSetAggregationPolicyRequest) WithForce(force bool) *TableSetAggregationPolicyRequest {
+	s.Force = &force
+	return s
+}
+
+func NewTableUnsetAggregationPolicyRequest() *TableUnsetAggregationPolicyRequest {
+	s := TableUnsetAggregationPolicyRequest{}
+	return &s
+}
+
+func NewTableSetJoinPolicyRequest(
+	joinPolicy SchemaObjectIdentifier,
+) *TableSetJoinPolicyRequest {
+	s := TableSetJoinPolicyRequest{}
+	s.JoinPolicy = joinPolicy
+	return &s
+}
+
+func (s *TableSetJoinPolicyRequest) WithForce(force bool) *TableSetJoinPolicyRequest {
+	s.Force = &force
+	return s
+}
+
+func NewTableUnsetJoinPolicyRequest() *TableUnsetJoinPolicyRequest {
+	s := TableUnsetJoinPolicyRequest{}
+	return &s
+}
+
+func NewTableSearchOptimizationActionRequest() *TableSearchOptimizationActionRequest {
+	s := TableSearchOptimizationActionRequest{}
+	return &s
+}
+
+func (s *TableSearchOptimizationActionRequest) WithAdd(add TableAddSearchOptimizationRequest) *TableSearchOptimizationActionRequest {
+	s.Add = &add
+	return s
+}
+
+func (s *TableSearchOptimizationActionRequest) WithDrop(drop TableDropSearchOptimizationRequest) *TableSearchOptimizationActionRequest {
+	s.Drop = &drop
+	return s
+}
+
+func NewTableAddSearchOptimizationRequest() *TableAddSearchOptimizationRequest {
+	s := TableAddSearchOptimizationRequest{}
+	return &s
+}
+
+func (s *TableAddSearchOptimizationRequest) WithOn(on []TableSearchMethodWithTargetRequest) *TableAddSearchOptimizationRequest {
+	s.On = on
+	return s
+}
+
+func NewTableSearchMethodWithTargetRequest(
+	method TableSearchMethod,
+) *TableSearchMethodWithTargetRequest {
+	s := TableSearchMethodWithTargetRequest{}
+	s.Method = method
+	return &s
+}
+
+func (s *TableSearchMethodWithTargetRequest) WithArgs(args TableSearchMethodArgsRequest) *TableSearchMethodWithTargetRequest {
+	s.Args = args
+	return s
+}
+
+func NewTableSearchMethodArgsRequest() *TableSearchMethodArgsRequest {
+	s := TableSearchMethodArgsRequest{}
+	return &s
+}
+
+func (s *TableSearchMethodArgsRequest) WithTargets(targets []string) *TableSearchMethodArgsRequest {
+	s.Targets = targets
+	return s
+}
+
+func (s *TableSearchMethodArgsRequest) WithAnalyzer(analyzer string) *TableSearchMethodArgsRequest {
+	s.Analyzer = &analyzer
+	return s
+}
+
+func NewTableDropSearchOptimizationRequest() *TableDropSearchOptimizationRequest {
+	s := TableDropSearchOptimizationRequest{}
+	return &s
+}
+
+func (s *TableDropSearchOptimizationRequest) WithOn(on []TableDropSearchOptimizationOnRequest) *TableDropSearchOptimizationRequest {
+	s.On = on
+	return s
+}
+
+func NewTableDropSearchOptimizationOnRequest() *TableDropSearchOptimizationOnRequest {
+	s := TableDropSearchOptimizationOnRequest{}
+	return &s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithSearchMethodWithTarget(searchMethodWithTarget TableSearchMethodWithTargetRequest) *TableDropSearchOptimizationOnRequest {
+	s.SearchMethodWithTarget = &searchMethodWithTarget
+	return s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithColumnName(columnName string) *TableDropSearchOptimizationOnRequest {
+	s.ColumnName = &columnName
+	return s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithExpressionId(expressionId string) *TableDropSearchOptimizationOnRequest {
+	s.ExpressionId = &expressionId
+	return s
+}
+
 func NewDropIcebergTableRequest(
 	name SchemaObjectIdentifier,
 ) *DropIcebergTableRequest {
@@ -741,6 +967,11 @@ func (s *DropIcebergTableRequest) WithRestrict(restrict bool) *DropIcebergTableR
 func NewShowIcebergTableRequest() *ShowIcebergTableRequest {
 	s := ShowIcebergTableRequest{}
 	return &s
+}
+
+func (s *ShowIcebergTableRequest) WithTerse(terse bool) *ShowIcebergTableRequest {
+	s.Terse = &terse
+	return s
 }
 
 func (s *ShowIcebergTableRequest) WithLike(like Like) *ShowIcebergTableRequest {

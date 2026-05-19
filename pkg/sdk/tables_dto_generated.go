@@ -608,7 +608,8 @@ func (s *AlterTableRequest) WithExternalTableAction(externalTableAction *TableEx
 	return s
 }
 
-func (s *AlterTableRequest) WithSearchOptimizationAction(searchOptimizationAction *TableSearchOptimizationActionRequest) *AlterTableRequest {
+// Adjusted manually
+func (s *AlterTableRequest) WithSearchOptimizationAction(searchOptimizationAction *TableSearchOptimizationActionLegacyRequest) *AlterTableRequest {
 	s.SearchOptimizationAction = searchOptimizationAction
 	return s
 }
@@ -1503,16 +1504,19 @@ func (s *TableExternalTableActionRequest) WithDrop(drop *TableExternalTableColum
 	return s
 }
 
-func NewTableSearchOptimizationActionRequest() *TableSearchOptimizationActionRequest {
-	return &TableSearchOptimizationActionRequest{}
+// Adjusted manually
+func NewTableSearchOptimizationActionLegacyRequest() *TableSearchOptimizationActionLegacyRequest {
+	return &TableSearchOptimizationActionLegacyRequest{}
 }
 
-func (s *TableSearchOptimizationActionRequest) WithAddSearchOptimizationOn(addSearchOptimizationOn []string) *TableSearchOptimizationActionRequest {
+// Adjusted manually
+func (s *TableSearchOptimizationActionLegacyRequest) WithAddSearchOptimizationOn(addSearchOptimizationOn []string) *TableSearchOptimizationActionLegacyRequest {
 	s.AddSearchOptimizationOn = addSearchOptimizationOn
 	return s
 }
 
-func (s *TableSearchOptimizationActionRequest) WithDropSearchOptimizationOn(dropSearchOptimizationOn []string) *TableSearchOptimizationActionRequest {
+// Adjusted manually
+func (s *TableSearchOptimizationActionLegacyRequest) WithDropSearchOptimizationOn(dropSearchOptimizationOn []string) *TableSearchOptimizationActionLegacyRequest {
 	s.DropSearchOptimizationOn = dropSearchOptimizationOn
 	return s
 }

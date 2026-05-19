@@ -10,6 +10,7 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableTargetFileSize]{"IcebergTableTargetFileSize", AllIcebergTableTargetFileSizes, ToIcebergTableTargetFileSize})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTablePathLayout]{"IcebergTablePathLayout", AllIcebergTablePathLayouts, ToIcebergTablePathLayout})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableDescribeType]{"IcebergTableDescribeType", AllIcebergTableDescribeTypes, ToIcebergTableDescribeType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableSearchMethod]{"TableSearchMethod", AllTableSearchMethods, ToTableSearchMethod})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableLogEventLevel]{"IcebergTableLogEventLevel", AllIcebergTableLogEventLevels, ToIcebergTableLogEventLevel})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableType]{"IcebergTableType", AllIcebergTableTypes, ToIcebergTableType})
 }
@@ -18,6 +19,8 @@ func TestIcebergTables_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	aggregationPolicyId := randomSchemaObjectIdentifier()
 	rowAccessPolicyId := randomSchemaObjectIdentifier()
+	maskingPolicyId := randomSchemaObjectIdentifier()
+	projectionPolicyId := randomSchemaObjectIdentifier()
 	tagId1 := randomSchemaObjectIdentifier()
 	tagId2 := randomSchemaObjectIdentifier()
 
@@ -93,6 +96,13 @@ func TestIcebergTables_Create(t *testing.T) {
 						Expression: new("1"),
 					},
 					NotNull: new(true),
+					MaskingPolicy: &TableColumnMaskingPolicy{
+						MaskingPolicy: maskingPolicyId,
+						Using:         []Column{{"ID"}, {"NAME"}},
+					},
+					ProjectionPolicy: &TableColumnProjectionPolicy{
+						ProjectionPolicy: projectionPolicyId,
+					},
 					Tag: []TagAssociation{
 						{Name: tagId1, Value: "v1"},
 						{Name: tagId2, Value: "v2"},
@@ -176,7 +186,7 @@ func TestIcebergTables_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(
 			t, opts,
 			`CREATE OR REPLACE TRANSIENT ICEBERG TABLE %s `+
-				`("ID" NUMBER(38, 0) DEFAULT 1 NOT NULL TAG (%s = 'v1', %s = 'v2') COMMENT 'id column', `+
+				`("ID" NUMBER(38, 0) DEFAULT 1 NOT NULL MASKING POLICY %s USING ("ID", "NAME") PROJECTION POLICY %s TAG (%s = 'v1', %s = 'v2') COMMENT 'id column', `+
 				`"NAME" VARCHAR(16777216) COMMENT 'name column') `+
 				`PARTITION BY ("ID", BUCKET (4, "NAME"), TRUNCATE (10, "C1"), YEAR ("C2"), MONTH ("C3"), DAY ("C4"), HOUR ("C5")) `+
 				`PATH_LAYOUT = HIERARCHICAL `+
@@ -201,6 +211,8 @@ func TestIcebergTables_Create(t *testing.T) {
 				`ENABLE_DATA_COMPACTION = true `+
 				`WITH CONTACT (SUPPORT = 'support_team', ACCESS_APPROVAL = 'access_team')`,
 			id.FullyQualifiedName(),
+			maskingPolicyId.FullyQualifiedName(),
+			projectionPolicyId.FullyQualifiedName(),
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
 			rowAccessPolicyId.FullyQualifiedName(),
 			aggregationPolicyId.FullyQualifiedName(),
@@ -211,6 +223,8 @@ func TestIcebergTables_Create(t *testing.T) {
 
 func TestIcebergTables_Alter(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
+	aggregationPolicyId := randomSchemaObjectIdentifier()
+	joinPolicyId := randomSchemaObjectIdentifier()
 	maskingPolicyId := randomSchemaObjectIdentifier()
 	projectionPolicyId := randomSchemaObjectIdentifier()
 	rowAccessPolicy1Id := randomSchemaObjectIdentifier()
@@ -236,9 +250,9 @@ func TestIcebergTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.AddColumnAction opts.AlterColumnAction opts.SetMaskingPolicyOnColumn opts.UnsetMaskingPolicyOnColumn opts.SetProjectionPolicyOnColumn opts.UnsetProjectionPolicyOnColumn opts.SetTagsOnColumn opts.UnsetTagsOnColumn opts.ClusteringAction opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.AddRowAccessPolicy opts.DropRowAccessPolicy opts.DropAndAddRowAccessPolicy opts.DropAllRowAccessPolicies] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AddColumnAction opts.DropColumnAction opts.RenameColumnAction opts.AlterColumnAction opts.SetMaskingPolicyOnColumn opts.UnsetMaskingPolicyOnColumn opts.SetProjectionPolicyOnColumn opts.UnsetProjectionPolicyOnColumn opts.SetTagsOnColumn opts.UnsetTagsOnColumn opts.ClusteringAction opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.AddRowAccessPolicy opts.DropRowAccessPolicy opts.DropAndAddRowAccessPolicy opts.DropAllRowAccessPolicies opts.SetAggregationPolicy opts.UnsetAggregationPolicy opts.SetJoinPolicy opts.UnsetJoinPolicy opts.SearchOptimizationAction] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
 	})
 
 	t.Run("validation: exactly one field from [opts.AlterColumnAction.SetNotNull opts.AlterColumnAction.DropNotNull opts.AlterColumnAction.DataType opts.AlterColumnAction.Comment opts.AlterColumnAction.UnsetComment opts.AlterColumnAction.SetWriteDefault opts.AlterColumnAction.DropWriteDefault] should be present", func(t *testing.T) {
@@ -273,6 +287,28 @@ func TestIcebergTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
 	})
 
+	t.Run("validation: valid identifier for [opts.SetAggregationPolicy.AggregationPolicy]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+			AggregationPolicy: emptySchemaObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.SetJoinPolicy.JoinPolicy]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetJoinPolicy = &TableSetJoinPolicy{
+			JoinPolicy: emptySchemaObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.SearchOptimizationAction.Add opts.SearchOptimizationAction.Drop] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction", "Add", "Drop"))
+	})
+
 	t.Run("alter: add column", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = new(true)
@@ -283,16 +319,43 @@ func TestIcebergTables_Alter(t *testing.T) {
 			DefaultValue: &ColumnDefaultValue{
 				Expression: new("'a'"),
 			},
+			MaskingPolicy: &TableColumnMaskingPolicy{
+				MaskingPolicy: maskingPolicyId,
+				Using:         []Column{{"NEW_COL"}, {"OTHER"}},
+			},
+			ProjectionPolicy: &TableColumnProjectionPolicy{
+				ProjectionPolicy: projectionPolicyId,
+			},
 			Tag: []TagAssociation{
 				{Name: tagId1, Value: "v1"},
 				{Name: tagId2, Value: "v2"},
 			},
 		}
 		assertOptsValidAndSQLEquals(
-			t, opts, `ALTER ICEBERG TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS "NEW_COL" VARCHAR(16777216) DEFAULT 'a' TAG (%s = 'v1', %s = 'v2')`,
+			t, opts, `ALTER ICEBERG TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS "NEW_COL" VARCHAR(16777216) DEFAULT 'a' MASKING POLICY %s USING ("NEW_COL", "OTHER") PROJECTION POLICY %s TAG (%s = 'v1', %s = 'v2')`,
 			id.FullyQualifiedName(),
+			maskingPolicyId.FullyQualifiedName(),
+			projectionPolicyId.FullyQualifiedName(),
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
 		)
+	})
+
+	t.Run("alter: drop column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DropColumnAction = &TableDropColumnAction{
+			IfExists: Bool(true),
+			Columns:  []Column{{"col1"}, {"col2"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP COLUMN IF EXISTS "col1", "col2"`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: rename column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.RenameColumnAction = &TableRenameColumnAction{
+			OldName: "old_col",
+			NewName: "new_col",
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s RENAME COLUMN "old_col" TO "new_col"`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column - set not null", func(t *testing.T) {
@@ -561,6 +624,121 @@ func TestIcebergTables_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.DropAllRowAccessPolicies = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: set aggregation policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+			AggregationPolicy: aggregationPolicyId,
+			EntityKey:         []Column{{"col1"}, {"col2"}},
+			Force:             Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s SET AGGREGATION POLICY %s ENTITY KEY ("col1", "col2") FORCE`, id.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset aggregation policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s UNSET AGGREGATION POLICY`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: set join policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetJoinPolicy = &TableSetJoinPolicy{
+			JoinPolicy: joinPolicyId,
+			Force:      Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s SET JOIN POLICY %s FORCE`, id.FullyQualifiedName(), joinPolicyId.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset join policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s UNSET JOIN POLICY`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: search optimization - add", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+			Add: &TableAddSearchOptimization{
+				On: []TableSearchMethodWithTarget{
+					{
+						Method: TableSearchMethodEquality,
+						Args: TableSearchMethodArgs{
+							Targets:  []string{"col1", "col2"},
+							Analyzer: String("DEFAULT_ANALYZER"),
+						},
+					},
+					{
+						Method: TableSearchMethodSubstring,
+						Args: TableSearchMethodArgs{
+							Targets: []string{"*"},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ADD SEARCH OPTIMIZATION ON EQUALITY (col1, col2, ANALYZER => 'DEFAULT_ANALYZER'), SUBSTRING (*)`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: search optimization - drop with search methods", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+			Drop: &TableDropSearchOptimization{
+				On: []TableDropSearchOptimizationOn{
+					{
+						SearchMethodWithTarget: &TableSearchMethodWithTarget{
+							Method: TableSearchMethodFullText,
+							Args: TableSearchMethodArgs{
+								Targets: []string{"col1", "col2"},
+							},
+						},
+					},
+					{
+						SearchMethodWithTarget: &TableSearchMethodWithTarget{
+							Method: TableSearchMethodSubstring,
+							Args: TableSearchMethodArgs{
+								Targets: []string{"*"},
+							},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP SEARCH OPTIMIZATION ON FULL_TEXT (col1, col2), SUBSTRING (*)`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: search optimization - drop mixed forms (search method, column name, expression id)", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+			Drop: &TableDropSearchOptimization{
+				On: []TableDropSearchOptimizationOn{
+					{
+						SearchMethodWithTarget: &TableSearchMethodWithTarget{
+							Method: TableSearchMethodEquality,
+							Args: TableSearchMethodArgs{
+								Targets: []string{"col1"},
+							},
+						},
+					},
+					{ColumnName: String("col2")},
+					{ExpressionId: String("expr_123")},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP SEARCH OPTIMIZATION ON EQUALITY (col1), col2, expr_123`, id.FullyQualifiedName())
+	})
+
+	t.Run("validation: exactly one field from [opts.SearchOptimizationAction.Drop.On.SearchMethodWithTarget opts.SearchOptimizationAction.Drop.On.ColumnName opts.SearchOptimizationAction.Drop.On.ExpressionId] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+			Drop: &TableDropSearchOptimization{
+				On: []TableDropSearchOptimizationOn{
+					{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
 	})
 }
 
