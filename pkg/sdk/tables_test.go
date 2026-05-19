@@ -144,7 +144,7 @@ func TestTableCreate(t *testing.T) {
 
 	t.Run("validation: rowAccessPolicy's incorrect identifier", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.RowAccessPolicy = &TableRowAccessPolicy{
+		opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{
 			Name: emptySchemaObjectIdentifier,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("TableRowAccessPolicy", "Name"))
@@ -446,7 +446,7 @@ func TestTableCreate(t *testing.T) {
 		legacyTableCopyOptions := LegacyTableCopyOptions{
 			OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
 		}
-		rowAccessPolicy := TableRowAccessPolicy{
+		rowAccessPolicy := TableRowAccessPolicyLegacy{
 			Name: randomSchemaObjectIdentifier(),
 			On:   []string{"COLUMN_1", "COLUMN_2"},
 		}
@@ -561,7 +561,7 @@ func TestTableCreateAsSelect(t *testing.T) {
 		maskingPolicy := TableAsSelectColumnMaskingPolicy{
 			Name: randomSchemaObjectIdentifier(),
 		}
-		rowAccessPolicy := TableRowAccessPolicy{
+		rowAccessPolicy := TableRowAccessPolicyLegacy{
 			Name: randomSchemaObjectIdentifier(),
 			On:   []string{"COLUMN_1", "COLUMN_2"},
 		}

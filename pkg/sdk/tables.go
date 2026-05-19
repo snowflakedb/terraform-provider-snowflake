@@ -32,15 +32,15 @@ type Tables interface {
 
 // TODO: check if [...] in the docs (like in https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template) mean that we can reuse all parameters from "normal" createTableOptions
 type createTableAsSelectOptions struct {
-	create          bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace       *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table           bool                   `ddl:"static" sql:"TABLE"`
-	name            SchemaObjectIdentifier `ddl:"identifier"`
-	Columns         []TableAsSelectColumn  `ddl:"list,parentheses"`
-	ClusterBy       []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	CopyGrants      *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy *TableRowAccessPolicy  `ddl:"keyword"`
-	Query           string                 `ddl:"parameter,no_equals" sql:"AS"`
+	create          bool                        `ddl:"static" sql:"CREATE"`
+	OrReplace       *bool                       `ddl:"keyword" sql:"OR REPLACE"`
+	table           bool                        `ddl:"static" sql:"TABLE"`
+	name            SchemaObjectIdentifier      `ddl:"identifier"`
+	Columns         []TableAsSelectColumn       `ddl:"list,parentheses"`
+	ClusterBy       []string                    `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	CopyGrants      *bool                       `ddl:"keyword" sql:"COPY GRANTS"`
+	RowAccessPolicy *TableRowAccessPolicyLegacy `ddl:"keyword"`
+	Query           string                      `ddl:"parameter,no_equals" sql:"AS"`
 }
 
 type TableAsSelectColumn struct {
@@ -115,7 +115,7 @@ type createTableOptions struct {
 	ChangeTracking             *bool                            `ddl:"parameter" sql:"CHANGE_TRACKING"`
 	DefaultDDLCollation        *string                          `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	CopyGrants                 *bool                            `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy            *TableRowAccessPolicy            `ddl:"keyword"`
+	RowAccessPolicy            *TableRowAccessPolicyLegacy      `ddl:"keyword"`
 	Tags                       []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
 	Comment                    *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }

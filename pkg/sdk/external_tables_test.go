@@ -64,7 +64,7 @@ func TestExternalTablesCreate(t *testing.T) {
 			},
 			AwsSnsTopic: String("aws_sns_topic"),
 			CopyGrants:  Bool(true),
-			RowAccessPolicy: &TableRowAccessPolicy{
+			RowAccessPolicy: &TableRowAccessPolicyLegacy{
 				Name: rowAccessPolicyId,
 				On:   []string{"value1", "value2"},
 			},
@@ -170,7 +170,7 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 				},
 			},
 			CopyGrants: Bool(true),
-			RowAccessPolicy: &TableRowAccessPolicy{
+			RowAccessPolicy: &TableRowAccessPolicyLegacy{
 				Name: rowAccessPolicyId,
 				On:   []string{"value1", "value2"},
 			},
@@ -273,7 +273,7 @@ func TestExternalTablesCreateDeltaLake(t *testing.T) {
 				},
 			},
 			CopyGrants: Bool(true),
-			RowAccessPolicy: &TableRowAccessPolicy{
+			RowAccessPolicy: &TableRowAccessPolicyLegacy{
 				Name: rowAccessPolicyId,
 				On:   []string{"value1", "value2"},
 			},
@@ -370,7 +370,7 @@ func TestExternalTableUsingTemplateOpts(t *testing.T) {
 				},
 			},
 			Comment: String("some_comment"),
-			RowAccessPolicy: &TableRowAccessPolicy{
+			RowAccessPolicy: &TableRowAccessPolicyLegacy{
 				Name: rowAccessPolicyId,
 				On:   []string{"value1", "value2"},
 			},

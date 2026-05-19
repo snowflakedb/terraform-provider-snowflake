@@ -492,9 +492,9 @@ func (s *CreateTableRequest) toOpts() *createTableOptions {
 	for _, tagRequest := range s.Tags {
 		tagAssociations = append(tagAssociations, TagAssociation(tagRequest))
 	}
-	var rowAccessPolicy *TableRowAccessPolicy
+	var rowAccessPolicy *TableRowAccessPolicyLegacy
 	if s.RowAccessPolicy != nil {
-		rowAccessPolicy = &TableRowAccessPolicy{
+		rowAccessPolicy = &TableRowAccessPolicyLegacy{
 			Name: s.RowAccessPolicy.Name,
 			On:   s.RowAccessPolicy.On,
 		}

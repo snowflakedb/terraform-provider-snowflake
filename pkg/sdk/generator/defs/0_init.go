@@ -29,6 +29,7 @@ func init() {
 		functionsDef,
 		gitRepositoriesDef,
 		hybridTablesDef,
+		icebergTablesDef,
 		imageRepositoriesDef,
 		listingsDef,
 		managedAccountsDef,
