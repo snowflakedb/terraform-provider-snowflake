@@ -65,10 +65,12 @@ func (c *CortexAgentModel) MarshalJSON() ([]byte, error) {
 	type Alias CortexAgentModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
+		Timeouts:  c.Timeouts(),
 	})
 }
 
@@ -79,6 +81,11 @@ func (c *CortexAgentModel) WithDependsOn(values ...string) *CortexAgentModel {
 
 func (c *CortexAgentModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *CortexAgentModel {
 	c.DynamicBlock = dynamicBlock
+	return c
+}
+
+func (c *CortexAgentModel) WithTimeout(timeout config.Timeouts) *CortexAgentModel {
+	c.SetTimeout(timeout)
 	return c
 }
 
