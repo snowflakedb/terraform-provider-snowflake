@@ -645,28 +645,9 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			return diag.FromErr(fmt.Errorf("error setting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
-	// Snowflake hybrid tables only support UNSET for one property at a time,
-	// unlike regular tables which accept space-separated properties.
-	// Issue separate ALTER ... UNSET for each property.
-	if unset.Comment != nil {
-		u := sdk.NewHybridTableUnsetPropertiesRequest()
-		u.Comment = unset.Comment
-		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*u)); err != nil {
-			return diag.FromErr(fmt.Errorf("error unsetting hybrid table comment %v: %w", id.FullyQualifiedName(), err))
-		}
-	}
-	if unset.DataRetentionTimeInDays != nil {
-		u := sdk.NewHybridTableUnsetPropertiesRequest()
-		u.DataRetentionTimeInDays = unset.DataRetentionTimeInDays
-		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*u)); err != nil {
-			return diag.FromErr(fmt.Errorf("error unsetting hybrid table data_retention_time_in_days %v: %w", id.FullyQualifiedName(), err))
-		}
-	}
-	if unset.MaxDataExtensionTimeInDays != nil {
-		u := sdk.NewHybridTableUnsetPropertiesRequest()
-		u.MaxDataExtensionTimeInDays = unset.MaxDataExtensionTimeInDays
-		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*u)); err != nil {
-			return diag.FromErr(fmt.Errorf("error unsetting hybrid table max_data_extension_time_in_days %v: %w", id.FullyQualifiedName(), err))
+	if unset.Comment != nil || unset.DataRetentionTimeInDays != nil || unset.MaxDataExtensionTimeInDays != nil {
+		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*unset)); err != nil {
+			return diag.FromErr(fmt.Errorf("error unsetting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
 

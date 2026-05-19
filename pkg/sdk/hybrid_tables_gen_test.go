@@ -195,6 +195,12 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment"))
 	})
 
+	t.Run("validation: at least one of unset fields", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &HybridTableUnsetProperties{}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterHybridTableOptions.Unset", "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays"))
+	})
+
 	t.Run("alter: set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
@@ -204,6 +210,25 @@ func TestHybridTables_Alter(t *testing.T) {
 			Comment:                    String("updated comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 14 MAX_DATA_EXTENSION_TIME_IN_DAYS = 28 COMMENT = 'updated comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset single property", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &HybridTableUnsetProperties{
+			Comment: Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s UNSET COMMENT`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset all properties in single ALTER", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.Unset = &HybridTableUnsetProperties{
+			Comment:                    Bool(true),
+			DataRetentionTimeInDays:    Bool(true),
+			MaxDataExtensionTimeInDays: Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s UNSET COMMENT DATA_RETENTION_TIME_IN_DAYS MAX_DATA_EXTENSION_TIME_IN_DAYS`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column set comment", func(t *testing.T) {

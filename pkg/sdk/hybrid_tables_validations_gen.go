@@ -68,12 +68,9 @@ func (opts *AlterHybridTableOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment"))
 		}
 	}
-	// NOTE: Snowflake rejects multi-property UNSET on hybrid tables with
-	// "syntax error ... unexpected 'UNSET'" (see TestInt_HybridTables/alter_operations/unset_properties).
-	// The SDK must enforce exactly-one to surface a client-side error instead of a runtime SQL error.
 	if valueSet(opts.Unset) {
-		if !exactlyOneValueSet(opts.Unset.Comment, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays) {
-			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.Unset", "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays"))
+		if !anyValueSet(opts.Unset.Comment, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays) {
+			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Unset", "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays"))
 		}
 	}
 	return JoinErrors(errs...)

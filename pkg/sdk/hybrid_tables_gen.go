@@ -80,8 +80,7 @@ type AlterHybridTableOptions struct {
 	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
-	// NOTE: Hybrid tables only support UNSET for one property per ALTER statement. Use separate Alter calls per property.
-	Unset *HybridTableUnsetProperties `ddl:"keyword"`
+	Unset             *HybridTableUnsetProperties    `ddl:"keyword" sql:"UNSET"`
 }
 
 type HybridTableAddColumnAction struct {
@@ -164,11 +163,14 @@ type HybridTableSetProperties struct {
 	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-// NOTE: Each field generates its own UNSET keyword; populate only one field per Alter call (Snowflake rejects multi-property UNSET for hybrid tables).
+// HybridTableUnsetProperties is emitted as a single `UNSET` keyword followed by
+// the property names of the non-nil fields, in struct-declaration order, e.g.
+// `UNSET COMMENT DATA_RETENTION_TIME_IN_DAYS`. Multiple properties may be unset
+// in a single ALTER call. Mirrors TableUnset in pkg/sdk/tables.go.
 type HybridTableUnsetProperties struct {
-	Comment                    *bool `ddl:"keyword" sql:"UNSET COMMENT"`
-	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"UNSET DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"UNSET MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
+	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 }
 
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.

@@ -451,30 +451,27 @@ func TestInt_HybridTables(t *testing.T) {
 			require.NoError(t, err, "single-property UNSET COMMENT must succeed")
 			assertThatObject(t, objectassert.HybridTable(t, id).HasComment(""))
 
-			// Multi-property UNSET is rejected by the SDK validator (exactly-one-of in
-			// AlterHybridTableOptions.validate). The validator mirrors Snowflake's own
-			// rejection — a live run against Snowflake produced
-			// "001003 (42000): SQL compilation error: syntax error line 1 at position <n>
-			// unexpected 'UNSET'" — which is why HybridTableUnsetProperties emits one
-			// UNSET keyword per field and the resource Update path issues a separate
-			// ALTER per property. Keep this assertion as a regression guard: if the
-			// validator is ever loosened, this test will fail and the NOTE in
-			// hybrid_tables_gen.go and hybrid_tables_validations_gen.go should be revisited.
+			// Re-set COMMENT (cleared by the single-UNSET above) so the multi-UNSET
+			// has all three properties at non-default values to clear in one ALTER.
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithComment("about to be multi-unset")))
+			require.NoError(t, err, "re-SET COMMENT must succeed before multi-UNSET")
+
+			// Multi-property UNSET (COMMENT + DATA_RETENTION_TIME_IN_DAYS + MAX_DATA_EXTENSION_TIME_IN_DAYS)
+			// in a single ALTER. Snowflake prod accepts this (verified by jcieslak prior to PR #4689).
+			// The SDK emits a single UNSET followed by space-separated property names, mirroring
+			// TableUnset in pkg/sdk/tables.go (this matches the SQL Snowflake accepts).
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().
+					WithComment(true).
 					WithDataRetentionTimeInDays(true).
 					WithMaxDataExtensionTimeInDays(true)))
-			require.Error(t, err, "multi-property UNSET must be rejected; single-field UNSET is the only supported shape")
-			require.ErrorContains(t, err, "exactly one", "error must be the client-side validator form (guards against unrelated failures masking as success)")
+			require.NoError(t, err, "multi-property UNSET in a single ALTER must succeed")
 
-			// Clean up the retention properties one-at-a-time (the supported shape).
-			// Verify the TABLE-level override is cleared afterwards by fetching SHOW PARAMETERS
-			// and checking Level is no longer TABLE (the fallback level — ACCOUNT/DATABASE/SCHEMA/default —
-			// is environment-dependent, so we only assert what we changed, not the inherited level).
-			require.NoError(t, client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().WithDataRetentionTimeInDays(true))))
-			require.NoError(t, client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().WithMaxDataExtensionTimeInDays(true))))
+			// Verify COMMENT is cleared and the TABLE-level override on the two
+			// retention parameters is gone. The fallback level (ACCOUNT/DATABASE/SCHEMA/default)
+			// is environment-dependent, so we only assert what we changed, not the inherited level.
+			assertThatObject(t, objectassert.HybridTable(t, id).HasComment(""))
 			parametersAfterUnset, err := client.HybridTables.ShowParameters(ctx, id)
 			require.NoError(t, err)
 			for _, p := range parametersAfterUnset {
