@@ -32,10 +32,10 @@ type CreateIcebergTableOptions struct {
 	ColumnsAndConstraints IcebergTableColumnsAndConstraints `ddl:"list,parentheses"`
 	PartitionBy           []IcebergTablePartitionExpression `ddl:"keyword,parentheses" sql:"PARTITION BY"`
 	PathLayout            *IcebergTablePathLayout           `ddl:"parameter,no_quotes" sql:"PATH_LAYOUT"`
-	ClusterBy             []Column                          `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	ClusterBy             []string                          `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	// Adjusted manually
 	ExternalVolume             *string                        `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
-	CatalogSnowflake           *bool                          `ddl:"keyword" sql:"CATALOG = 'SNOWFLAKE'"`
+	Catalog                    *IcebergTableCatalog           `ddl:"parameter,single_quotes" sql:"CATALOG"`
 	BaseLocation               *string                        `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
 	TargetFileSize             *IcebergTableTargetFileSize    `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
 	CatalogSync                *string                        `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
@@ -138,7 +138,7 @@ type AlterIcebergTableOptions struct {
 	IfExists                      *bool                             `ddl:"keyword" sql:"IF EXISTS"`
 	name                          SchemaObjectIdentifier            `ddl:"identifier"`
 	AddColumnAction               *IcebergTableAddColumnAction      `ddl:"keyword"`
-	AlterColumnAction             []IcebergTableAlterColumnAction   `ddl:"keyword"`
+	AlterColumnAction             []IcebergTableAlterColumnAction   `ddl:"keyword" sql:"ALTER"`
 	SetMaskingPolicyOnColumn      *TableSetColumnMaskingPolicy      `ddl:"keyword"`
 	UnsetMaskingPolicyOnColumn    *TableUnsetColumnMaskingPolicy    `ddl:"keyword"`
 	SetProjectionPolicyOnColumn   *TableSetColumnProjectionPolicy   `ddl:"keyword"`
@@ -166,7 +166,7 @@ type IcebergTableAddColumnAction struct {
 }
 
 type IcebergTableAlterColumnAction struct {
-	alterColumn      bool                `ddl:"static" sql:"ALTER COLUMN"`
+	column           bool                `ddl:"static" sql:"COLUMN"`
 	ColumnName       string              `ddl:"keyword,double_quotes"`
 	SetNotNull       *bool               `ddl:"keyword" sql:"SET NOT NULL"`
 	DropNotNull      *bool               `ddl:"keyword" sql:"DROP NOT NULL"`
@@ -221,7 +221,7 @@ type TableUnsetColumnTags struct {
 }
 
 type IcebergTableClusteringAction struct {
-	ClusterBy            []Column                          `ddl:"parameter,parentheses,no_equals" sql:"CLUSTER BY"`
+	ClusterBy            []string                          `ddl:"parameter,parentheses,no_equals" sql:"CLUSTER BY"`
 	ChangeReclusterState *IcebergTableReclusterChangeState `ddl:"keyword"`
 	DropClusteringKey    *bool                             `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
 }
@@ -232,26 +232,31 @@ type IcebergTableReclusterChangeState struct {
 }
 
 type IcebergTableSetProperties struct {
-	ReplaceInvalidCharacters *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	CatalogSync              *string                     `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
-	DataRetentionTimeInDays  *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	AutoRefresh              *bool                       `ddl:"parameter" sql:"AUTO_REFRESH"`
-	TargetFileSize           *IcebergTableTargetFileSize `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
-	Contact                  []TableContact              `ddl:"keyword,parentheses" sql:"CONTACT"`
-	LogEventLevel            *IcebergTableLogEventLevel  `ddl:"parameter,no_quotes" sql:"LOG_EVENT_LEVEL"`
-	ErrorLogging             *bool                       `ddl:"parameter" sql:"ERROR_LOGGING"`
-	EnableDataCompaction     *bool                       `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
-	EnableIcebergMergeOnRead *bool                       `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
-	Comment                  *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	ReplaceInvalidCharacters   *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	CatalogSync                *string                     `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
+	DataRetentionTimeInDays    *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	AutoRefresh                *bool                       `ddl:"parameter" sql:"AUTO_REFRESH"`
+	TargetFileSize             *IcebergTableTargetFileSize `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
+	Contact                    []TableContact              `ddl:"keyword,parentheses" sql:"CONTACT"`
+	LogEventLevel              *IcebergTableLogEventLevel  `ddl:"parameter,no_quotes" sql:"LOG_EVENT_LEVEL"`
+	ErrorLogging               *bool                       `ddl:"parameter" sql:"ERROR_LOGGING"`
+	EnableDataCompaction       *bool                       `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
+	EnableIcebergMergeOnRead   *bool                       `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	Comment                    *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type IcebergTableUnsetProperties struct {
-	ReplaceInvalidCharacters *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
-	CatalogSync              *bool `ddl:"keyword" sql:"CATALOG_SYNC"`
-	LogEventLevel            *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
-	ErrorLogging             *bool `ddl:"keyword" sql:"ERROR_LOGGING"`
-	EnableDataCompaction     *bool `ddl:"keyword" sql:"ENABLE_DATA_COMPACTION"`
-	EnableIcebergMergeOnRead *bool `ddl:"keyword" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	ReplaceInvalidCharacters   *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
+	CatalogSync                *bool `ddl:"keyword" sql:"CATALOG_SYNC"`
+	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	TargetFileSize             *bool `ddl:"keyword" sql:"TARGET_FILE_SIZE"`
+	LogEventLevel              *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
+	ErrorLogging               *bool `ddl:"keyword" sql:"ERROR_LOGGING"`
+	EnableDataCompaction       *bool `ddl:"keyword" sql:"ENABLE_DATA_COMPACTION"`
+	EnableIcebergMergeOnRead   *bool `ddl:"keyword" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-iceberg-table.
@@ -267,7 +272,6 @@ type DropIcebergTableOptions struct {
 // ShowIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-iceberg-tables.
 type ShowIcebergTableOptions struct {
 	show          bool       `ddl:"static" sql:"SHOW"`
-	Terse         *bool      `ddl:"keyword" sql:"TERSE"`
 	icebergTables bool       `ddl:"static" sql:"ICEBERG TABLES"`
 	Like          *Like      `ddl:"keyword" sql:"LIKE"`
 	In            *In        `ddl:"keyword" sql:"IN"`

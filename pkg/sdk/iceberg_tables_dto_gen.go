@@ -20,9 +20,9 @@ type CreateIcebergTableRequest struct {
 	ColumnsAndConstraints      IcebergTableColumnsAndConstraintsRequest
 	PartitionBy                []IcebergTablePartitionExpressionRequest
 	PathLayout                 *IcebergTablePathLayout
-	ClusterBy                  []Column
+	ClusterBy                  []string
 	ExternalVolume             *AccountObjectIdentifier
-	CatalogSnowflake           *bool
+	Catalog                    *IcebergTableCatalog
 	BaseLocation               *string
 	TargetFileSize             *IcebergTableTargetFileSize
 	CatalogSync                *string
@@ -185,7 +185,7 @@ type TableUnsetColumnTagsRequest struct {
 }
 
 type IcebergTableClusteringActionRequest struct {
-	ClusterBy            []Column
+	ClusterBy            []string
 	ChangeReclusterState *IcebergTableReclusterChangeStateRequest
 	DropClusteringKey    *bool
 }
@@ -195,26 +195,31 @@ type IcebergTableReclusterChangeStateRequest struct {
 }
 
 type IcebergTableSetPropertiesRequest struct {
-	ReplaceInvalidCharacters *bool
-	CatalogSync              *string
-	DataRetentionTimeInDays  *int
-	AutoRefresh              *bool
-	TargetFileSize           *IcebergTableTargetFileSize
-	Contact                  []TableContact
-	LogEventLevel            *IcebergTableLogEventLevel
-	ErrorLogging             *bool
-	EnableDataCompaction     *bool
-	EnableIcebergMergeOnRead *bool
-	Comment                  *string
+	ReplaceInvalidCharacters   *bool
+	CatalogSync                *string
+	DataRetentionTimeInDays    *int
+	MaxDataExtensionTimeInDays *int
+	AutoRefresh                *bool
+	TargetFileSize             *IcebergTableTargetFileSize
+	Contact                    []TableContact
+	LogEventLevel              *IcebergTableLogEventLevel
+	ErrorLogging               *bool
+	EnableDataCompaction       *bool
+	EnableIcebergMergeOnRead   *bool
+	Comment                    *string
 }
 
 type IcebergTableUnsetPropertiesRequest struct {
-	ReplaceInvalidCharacters *bool
-	CatalogSync              *bool
-	LogEventLevel            *bool
-	ErrorLogging             *bool
-	EnableDataCompaction     *bool
-	EnableIcebergMergeOnRead *bool
+	ReplaceInvalidCharacters   *bool
+	CatalogSync                *bool
+	DataRetentionTimeInDays    *bool
+	MaxDataExtensionTimeInDays *bool
+	TargetFileSize             *bool
+	LogEventLevel              *bool
+	ErrorLogging               *bool
+	EnableDataCompaction       *bool
+	EnableIcebergMergeOnRead   *bool
+	Comment                    *bool
 }
 
 type DropIcebergTableRequest struct {
@@ -225,7 +230,6 @@ type DropIcebergTableRequest struct {
 }
 
 type ShowIcebergTableRequest struct {
-	Terse      *bool
 	Like       *Like
 	In         *In
 	StartsWith *string

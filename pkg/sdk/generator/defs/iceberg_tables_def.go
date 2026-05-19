@@ -27,6 +27,10 @@ var (
 		"IcebergTableType", "IcebergTableTypes",
 		"MANAGED", "UNMANAGED", "NOT ICEBERG",
 	)
+	IcebergTableCatalogEnumDef = g.NewEnum(
+		"IcebergTableCatalog", "IcebergTableCatalogs",
+		"SNOWFLAKE",
+	)
 )
 
 var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
@@ -36,6 +40,7 @@ var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
 	OptionalSQL("NOT NULL").
 	// TODO(next PR): add inline constraint support
 	// OptionalQueryStructField("InlineConstraint", icebergTableColumnInlineConstraint, g.KeywordOptions()).
+	// TODO(next PR): add inline masking and projection policy support
 	OptionalTags().
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
@@ -94,6 +99,7 @@ var icebergTableSetProperties = g.NewQueryStruct("IcebergTableSetProperties").
 	OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 	OptionalTextAssignment("CATALOG_SYNC", g.ParameterOptions().SingleQuotes()).
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
+	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 	OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
 	OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 	PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("CONTACT")).
@@ -102,16 +108,20 @@ var icebergTableSetProperties = g.NewQueryStruct("IcebergTableSetProperties").
 	OptionalBooleanAssignment("ENABLE_DATA_COMPACTION", g.ParameterOptions()).
 	OptionalBooleanAssignment("ENABLE_ICEBERG_MERGE_ON_READ", g.ParameterOptions()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	WithValidation(g.AtLeastOneValueSet, "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment")
+	WithValidation(g.AtLeastOneValueSet, "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment")
 
 var icebergTableUnsetProperties = g.NewQueryStruct("IcebergTableUnsetProperties").
 	OptionalSQL("REPLACE_INVALID_CHARACTERS").
 	OptionalSQL("CATALOG_SYNC").
+	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
+	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
+	OptionalSQL("TARGET_FILE_SIZE").
 	OptionalSQL("LOG_EVENT_LEVEL").
 	OptionalSQL("ERROR_LOGGING").
 	OptionalSQL("ENABLE_DATA_COMPACTION").
 	OptionalSQL("ENABLE_ICEBERG_MERGE_ON_READ").
-	WithValidation(g.AtLeastOneValueSet, "ReplaceInvalidCharacters", "CatalogSync", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead")
+	OptionalSQL("COMMENT").
+	WithValidation(g.AtLeastOneValueSet, "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment")
 
 var icebergTableAddColumnAction = g.NewQueryStruct("IcebergTableAddColumnAction").
 	SQL("ADD COLUMN").
@@ -124,7 +134,7 @@ var icebergTableAddColumnAction = g.NewQueryStruct("IcebergTableAddColumnAction"
 	OptionalTags()
 
 var icebergTableAlterColumnAction = g.NewQueryStruct("IcebergTableAlterColumnAction").
-	SQL("ALTER COLUMN").
+	SQL("COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("SET NOT NULL").
 	OptionalSQL("DROP NOT NULL").
@@ -136,7 +146,7 @@ var icebergTableAlterColumnAction = g.NewQueryStruct("IcebergTableAlterColumnAct
 	WithValidation(g.ExactlyOneValueSet, "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault")
 
 var icebergTableClusteringAction = g.NewQueryStruct("IcebergTableClusteringAction").
-	ListAssignment("CLUSTER BY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
+	ListAssignment("CLUSTER BY", "string", g.ParameterOptions().NoEquals().Parentheses()).
 	OptionalQueryStructField(
 		"ChangeReclusterState",
 		g.NewQueryStruct("IcebergTableReclusterChangeState").
@@ -172,9 +182,9 @@ var icebergTablesDef = g.NewInterface(
 		QueryStructField("ColumnsAndConstraints", icebergTableColumnsAndConstraints, g.ListOptions().Parentheses()).
 		ListQueryStructField("PartitionBy", icebergTablePartitionExpression, g.KeywordOptions().Parentheses().SQL("PARTITION BY")).
 		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
-		PredefinedQueryStructField("ClusterBy", "[]Column", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME")).
-		OptionalSQLWithCustomFieldName("CatalogSnowflake", "CATALOG = 'SNOWFLAKE'").
+		OptionalAssignment("CATALOG", IcebergTableCatalogEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("BASE_LOCATION", g.ParameterOptions().SingleQuotes()).
 		OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("CATALOG_SYNC", g.ParameterOptions().SingleQuotes()).
@@ -209,7 +219,7 @@ var icebergTablesDef = g.NewInterface(
 		ListQueryStructField(
 			"AlterColumnAction",
 			icebergTableAlterColumnAction,
-			g.KeywordOptions(),
+			g.KeywordOptions().SQL("ALTER"),
 		).
 		OptionalQueryStructField(
 			"SetMaskingPolicyOnColumn",
@@ -262,6 +272,9 @@ var icebergTablesDef = g.NewInterface(
 		PredefinedQueryStructField("DropRowAccessPolicy", "*ViewDropRowAccessPolicy", g.KeywordOptions()).
 		PredefinedQueryStructField("DropAndAddRowAccessPolicy", "*ViewDropAndAddRowAccessPolicy", g.ListOptions().NoParentheses()).
 		OptionalSQL("DROP ALL ROW ACCESS POLICIES").
+		// TODO(next PR): add RENAME COLUMN and DROP COLUMN actions
+		// TODO(next PR): add search optimization actions (ADD/DROP SEARCH OPTIMIZATION)
+		// TODO(next PR): add ALTER ICEBERG TABLE ... REFRESH (separate operation; see https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table-refresh)
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "AddColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies"),
 ).DropOperation(
@@ -301,14 +314,11 @@ var icebergTablesDef = g.NewInterface(
 		WithConvertGeneration(),
 	g.NewQueryStruct("ShowIcebergTables").
 		Show().
-		Terse().
 		SQL("ICEBERG TABLES").
 		OptionalLike().
 		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-	// NOTE: TYPE=COLUMNS returns the same data as omitting the TYPE parameter.
-	//       TYPE=STAGE returns underlying stage details, but this is not needed for the resource.
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
@@ -335,6 +345,8 @@ var icebergTablesDef = g.NewInterface(
 		Describe().
 		SQL("ICEBERG TABLE").
 		Name().
+		// NOTE: TYPE=COLUMNS returns the same data as omitting the TYPE parameter.
+		//       TYPE=STAGE returns underlying stage details, but this is not needed for the resource.
 		OptionalAssignmentWithFieldName("TYPE", IcebergTableDescribeTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes(), "DescribeType").
 		WithValidation(g.ValidIdentifier, "name"),
 ).WithEnums(
@@ -343,4 +355,5 @@ var icebergTablesDef = g.NewInterface(
 	IcebergTableDescribeTypeEnumDef,
 	IcebergTableLogEventLevelEnumDef,
 	IcebergTableTypeEnumDef,
+	IcebergTableCatalogEnumDef,
 )

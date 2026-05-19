@@ -142,9 +142,9 @@ func TestIcebergTables_Create(t *testing.T) {
 			},
 		}
 		opts.PathLayout = new(IcebergTablePathLayoutHierarchical)
-		opts.ClusterBy = []Column{{"col1"}, {"col2"}}
+		opts.ClusterBy = []string{`"col1"`, `"col2"`}
 		opts.ExternalVolume = icebergTableExternalVolumeQuoted(new(NewAccountObjectIdentifier("vol1")))
-		opts.CatalogSnowflake = new(true)
+		opts.Catalog = new(IcebergTableCatalogSnowflake)
 		opts.BaseLocation = new("base/loc")
 		opts.TargetFileSize = new(IcebergTableTargetFileSize64mb)
 		opts.CatalogSync = new("integration1")
@@ -261,16 +261,16 @@ func TestIcebergTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions.ClusteringAction", "ClusterBy", "ChangeReclusterState", "DropClusteringKey"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.ReplaceInvalidCharacters opts.Set.CatalogSync opts.Set.DataRetentionTimeInDays opts.Set.AutoRefresh opts.Set.TargetFileSize opts.Set.Contact opts.Set.LogEventLevel opts.Set.ErrorLogging opts.Set.EnableDataCompaction opts.Set.EnableIcebergMergeOnRead opts.Set.Comment] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.ReplaceInvalidCharacters opts.Set.CatalogSync opts.Set.DataRetentionTimeInDays opts.Set.MaxDataExtensionTimeInDays opts.Set.AutoRefresh opts.Set.TargetFileSize opts.Set.Contact opts.Set.LogEventLevel opts.Set.ErrorLogging opts.Set.EnableDataCompaction opts.Set.EnableIcebergMergeOnRead opts.Set.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &IcebergTableSetProperties{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterIcebergTableOptions.Set", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterIcebergTableOptions.Set", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.ReplaceInvalidCharacters opts.Unset.CatalogSync opts.Unset.LogEventLevel opts.Unset.ErrorLogging opts.Unset.EnableDataCompaction opts.Unset.EnableIcebergMergeOnRead] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Unset.ReplaceInvalidCharacters opts.Unset.CatalogSync opts.Unset.DataRetentionTimeInDays opts.Unset.MaxDataExtensionTimeInDays opts.Unset.TargetFileSize opts.Unset.LogEventLevel opts.Unset.ErrorLogging opts.Unset.EnableDataCompaction opts.Unset.EnableIcebergMergeOnRead opts.Unset.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &IcebergTableUnsetProperties{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
 	})
 
 	t.Run("alter: add column", func(t *testing.T) {
@@ -301,7 +301,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 			{ColumnName: "col1", SetNotNull: new(true)},
 			{ColumnName: "col2", SetNotNull: new(true)},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET NOT NULL, ALTER COLUMN "col2" SET NOT NULL`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET NOT NULL, COLUMN "col2" SET NOT NULL`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column - drop not null", func(t *testing.T) {
@@ -310,7 +310,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 			{ColumnName: "col1", DropNotNull: new(true)},
 			{ColumnName: "col2", DropNotNull: new(true)},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" DROP NOT NULL, ALTER COLUMN "col2" DROP NOT NULL`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" DROP NOT NULL, COLUMN "col2" DROP NOT NULL`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column - set data type", func(t *testing.T) {
@@ -319,7 +319,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 			{ColumnName: "col1", DataType: &dataTypeVarchar_100},
 			{ColumnName: "col2", DataType: &dataTypeNumber_36_2},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET DATA TYPE VARCHAR(100), ALTER COLUMN "col2" SET DATA TYPE NUMBER(36, 2)`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET DATA TYPE VARCHAR(100), COLUMN "col2" SET DATA TYPE NUMBER(36, 2)`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column - comment / unset comment", func(t *testing.T) {
@@ -328,7 +328,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 			{ColumnName: "col1", Comment: new("comment1")},
 			{ColumnName: "col2", UnsetComment: new(true)},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" COMMENT 'comment1', ALTER COLUMN "col2" UNSET COMMENT`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" COMMENT 'comment1', COLUMN "col2" UNSET COMMENT`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column - set/drop write default", func(t *testing.T) {
@@ -337,7 +337,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 			{ColumnName: "col1", SetWriteDefault: new("1")},
 			{ColumnName: "col2", DropWriteDefault: new(true)},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET WRITE DEFAULT 1, ALTER COLUMN "col2" DROP WRITE DEFAULT`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET WRITE DEFAULT 1, COLUMN "col2" DROP WRITE DEFAULT`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: set masking policy on column", func(t *testing.T) {
@@ -404,7 +404,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 	t.Run("alter: cluster by", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ClusteringAction = &IcebergTableClusteringAction{
-			ClusterBy: []Column{{"col1"}, {"col2"}},
+			ClusterBy: []string{`"col1"`, `"col2"`},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s CLUSTER BY ("col1", "col2")`, id.FullyQualifiedName())
 	})
@@ -441,11 +441,12 @@ func TestIcebergTables_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = new(true)
 		opts.Set = &IcebergTableSetProperties{
-			ReplaceInvalidCharacters: new(true),
-			CatalogSync:              new("integration1"),
-			DataRetentionTimeInDays:  new(7),
-			AutoRefresh:              new(true),
-			TargetFileSize:           new(IcebergTableTargetFileSize128mb),
+			ReplaceInvalidCharacters:   new(true),
+			CatalogSync:                new("integration1"),
+			DataRetentionTimeInDays:    new(7),
+			MaxDataExtensionTimeInDays: new(14),
+			AutoRefresh:                new(true),
+			TargetFileSize:             new(IcebergTableTargetFileSize128mb),
 			Contact: []TableContact{
 				{Purpose: "SUPPORT", Contact: "support_team"},
 				{Purpose: "ACCESS_APPROVAL", Contact: "access_team"},
@@ -462,6 +463,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 				`REPLACE_INVALID_CHARACTERS = true `+
 				`CATALOG_SYNC = 'integration1' `+
 				`DATA_RETENTION_TIME_IN_DAYS = 7 `+
+				`MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 `+
 				`AUTO_REFRESH = true `+
 				`TARGET_FILE_SIZE = '128MB' `+
 				`CONTACT (SUPPORT = 'support_team', ACCESS_APPROVAL = 'access_team') `+
@@ -478,22 +480,30 @@ func TestIcebergTables_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = new(true)
 		opts.Unset = &IcebergTableUnsetProperties{
-			ReplaceInvalidCharacters: new(true),
-			CatalogSync:              new(true),
-			LogEventLevel:            new(true),
-			ErrorLogging:             new(true),
-			EnableDataCompaction:     new(true),
-			EnableIcebergMergeOnRead: new(true),
+			ReplaceInvalidCharacters:   new(true),
+			CatalogSync:                new(true),
+			DataRetentionTimeInDays:    new(true),
+			MaxDataExtensionTimeInDays: new(true),
+			TargetFileSize:             new(true),
+			LogEventLevel:              new(true),
+			ErrorLogging:               new(true),
+			EnableDataCompaction:       new(true),
+			EnableIcebergMergeOnRead:   new(true),
+			Comment:                    new(true),
 		}
 		assertOptsValidAndSQLEquals(
 			t, opts,
 			`ALTER ICEBERG TABLE IF EXISTS %s UNSET `+
 				`REPLACE_INVALID_CHARACTERS `+
 				`CATALOG_SYNC `+
+				`DATA_RETENTION_TIME_IN_DAYS `+
+				`MAX_DATA_EXTENSION_TIME_IN_DAYS `+
+				`TARGET_FILE_SIZE `+
 				`LOG_EVENT_LEVEL `+
 				`ERROR_LOGGING `+
 				`ENABLE_DATA_COMPACTION `+
-				`ENABLE_ICEBERG_MERGE_ON_READ`,
+				`ENABLE_ICEBERG_MERGE_ON_READ `+
+				`COMMENT`,
 			id.FullyQualifiedName(),
 		)
 	})
@@ -619,14 +629,13 @@ func TestIcebergTables_Show(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Terse = new(true)
 		opts.Like = &Like{Pattern: new("some_pattern")}
 		opts.In = &In{
 			Schema: NewDatabaseObjectIdentifier("db", "schema"),
 		}
 		opts.StartsWith = new("prefix")
 		opts.Limit = &LimitFrom{Rows: new(10), From: new("table_name")}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE ICEBERG TABLES LIKE 'some_pattern' IN SCHEMA "db"."schema" STARTS WITH 'prefix' LIMIT 10 FROM 'table_name'`)
+		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES LIKE 'some_pattern' IN SCHEMA "db"."schema" STARTS WITH 'prefix' LIMIT 10 FROM 'table_name'`)
 	})
 
 	t.Run("show with in account", func(t *testing.T) {

@@ -65,13 +65,13 @@ func (opts *AlterIcebergTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.ReplaceInvalidCharacters, opts.Set.CatalogSync, opts.Set.DataRetentionTimeInDays, opts.Set.AutoRefresh, opts.Set.TargetFileSize, opts.Set.Contact, opts.Set.LogEventLevel, opts.Set.ErrorLogging, opts.Set.EnableDataCompaction, opts.Set.EnableIcebergMergeOnRead, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Set", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
+		if !anyValueSet(opts.Set.ReplaceInvalidCharacters, opts.Set.CatalogSync, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.AutoRefresh, opts.Set.TargetFileSize, opts.Set.Contact, opts.Set.LogEventLevel, opts.Set.ErrorLogging, opts.Set.EnableDataCompaction, opts.Set.EnableIcebergMergeOnRead, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Set", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.ReplaceInvalidCharacters, opts.Unset.CatalogSync, opts.Unset.LogEventLevel, opts.Unset.ErrorLogging, opts.Unset.EnableDataCompaction, opts.Unset.EnableIcebergMergeOnRead) {
-			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead"))
+		if !anyValueSet(opts.Unset.ReplaceInvalidCharacters, opts.Unset.CatalogSync, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.TargetFileSize, opts.Unset.LogEventLevel, opts.Unset.ErrorLogging, opts.Unset.EnableDataCompaction, opts.Unset.EnableIcebergMergeOnRead, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

@@ -146,3 +146,23 @@ func ToIcebergTableType(s string) (IcebergTableType, error) {
 		return "", fmt.Errorf("invalid iceberg table type: %s", s)
 	}
 }
+
+type IcebergTableCatalog string
+
+const (
+	IcebergTableCatalogSnowflake IcebergTableCatalog = "SNOWFLAKE"
+)
+
+var AllIcebergTableCatalogs = []IcebergTableCatalog{
+	IcebergTableCatalogSnowflake,
+}
+
+func ToIcebergTableCatalog(s string) (IcebergTableCatalog, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(IcebergTableCatalogSnowflake):
+		return IcebergTableCatalogSnowflake, nil
+	default:
+		return "", fmt.Errorf("invalid iceberg table catalog: %s", s)
+	}
+}

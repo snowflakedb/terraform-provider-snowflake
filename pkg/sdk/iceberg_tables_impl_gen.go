@@ -83,7 +83,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		ClusterBy:   r.ClusterBy,
 		// Adjusted manually
 		ExternalVolume:             icebergTableExternalVolumeQuoted(r.ExternalVolume),
-		CatalogSnowflake:           r.CatalogSnowflake,
+		Catalog:                    r.Catalog,
 		BaseLocation:               r.BaseLocation,
 		TargetFileSize:             r.TargetFileSize,
 		CatalogSync:                r.CatalogSync,
@@ -244,27 +244,32 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &IcebergTableSetProperties{
-			ReplaceInvalidCharacters: r.Set.ReplaceInvalidCharacters,
-			CatalogSync:              r.Set.CatalogSync,
-			DataRetentionTimeInDays:  r.Set.DataRetentionTimeInDays,
-			AutoRefresh:              r.Set.AutoRefresh,
-			TargetFileSize:           r.Set.TargetFileSize,
-			Contact:                  r.Set.Contact,
-			LogEventLevel:            r.Set.LogEventLevel,
-			ErrorLogging:             r.Set.ErrorLogging,
-			EnableDataCompaction:     r.Set.EnableDataCompaction,
-			EnableIcebergMergeOnRead: r.Set.EnableIcebergMergeOnRead,
-			Comment:                  r.Set.Comment,
+			ReplaceInvalidCharacters:   r.Set.ReplaceInvalidCharacters,
+			CatalogSync:                r.Set.CatalogSync,
+			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
+			AutoRefresh:                r.Set.AutoRefresh,
+			TargetFileSize:             r.Set.TargetFileSize,
+			Contact:                    r.Set.Contact,
+			LogEventLevel:              r.Set.LogEventLevel,
+			ErrorLogging:               r.Set.ErrorLogging,
+			EnableDataCompaction:       r.Set.EnableDataCompaction,
+			EnableIcebergMergeOnRead:   r.Set.EnableIcebergMergeOnRead,
+			Comment:                    r.Set.Comment,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &IcebergTableUnsetProperties{
-			ReplaceInvalidCharacters: r.Unset.ReplaceInvalidCharacters,
-			CatalogSync:              r.Unset.CatalogSync,
-			LogEventLevel:            r.Unset.LogEventLevel,
-			ErrorLogging:             r.Unset.ErrorLogging,
-			EnableDataCompaction:     r.Unset.EnableDataCompaction,
-			EnableIcebergMergeOnRead: r.Unset.EnableIcebergMergeOnRead,
+			ReplaceInvalidCharacters:   r.Unset.ReplaceInvalidCharacters,
+			CatalogSync:                r.Unset.CatalogSync,
+			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
+			TargetFileSize:             r.Unset.TargetFileSize,
+			LogEventLevel:              r.Unset.LogEventLevel,
+			ErrorLogging:               r.Unset.ErrorLogging,
+			EnableDataCompaction:       r.Unset.EnableDataCompaction,
+			EnableIcebergMergeOnRead:   r.Unset.EnableIcebergMergeOnRead,
+			Comment:                    r.Unset.Comment,
 		}
 	}
 	return opts
@@ -282,7 +287,6 @@ func (r *DropIcebergTableRequest) toOpts() *DropIcebergTableOptions {
 
 func (r *ShowIcebergTableRequest) toOpts() *ShowIcebergTableOptions {
 	opts := &ShowIcebergTableOptions{
-		Terse:      r.Terse,
 		Like:       r.Like,
 		In:         r.In,
 		StartsWith: r.StartsWith,

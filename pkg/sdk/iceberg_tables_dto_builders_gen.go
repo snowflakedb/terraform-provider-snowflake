@@ -42,7 +42,7 @@ func (s *CreateIcebergTableRequest) WithPathLayout(pathLayout IcebergTablePathLa
 	return s
 }
 
-func (s *CreateIcebergTableRequest) WithClusterBy(clusterBy []Column) *CreateIcebergTableRequest {
+func (s *CreateIcebergTableRequest) WithClusterBy(clusterBy []string) *CreateIcebergTableRequest {
 	s.ClusterBy = clusterBy
 	return s
 }
@@ -52,8 +52,8 @@ func (s *CreateIcebergTableRequest) WithExternalVolume(externalVolume AccountObj
 	return s
 }
 
-func (s *CreateIcebergTableRequest) WithCatalogSnowflake(catalogSnowflake bool) *CreateIcebergTableRequest {
-	s.CatalogSnowflake = &catalogSnowflake
+func (s *CreateIcebergTableRequest) WithCatalog(catalog IcebergTableCatalog) *CreateIcebergTableRequest {
+	s.Catalog = &catalog
 	return s
 }
 
@@ -570,7 +570,7 @@ func NewIcebergTableClusteringActionRequest() *IcebergTableClusteringActionReque
 	return &s
 }
 
-func (s *IcebergTableClusteringActionRequest) WithClusterBy(clusterBy []Column) *IcebergTableClusteringActionRequest {
+func (s *IcebergTableClusteringActionRequest) WithClusterBy(clusterBy []string) *IcebergTableClusteringActionRequest {
 	s.ClusterBy = clusterBy
 	return s
 }
@@ -612,6 +612,11 @@ func (s *IcebergTableSetPropertiesRequest) WithCatalogSync(catalogSync string) *
 
 func (s *IcebergTableSetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *IcebergTableSetPropertiesRequest {
 	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *IcebergTableSetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *IcebergTableSetPropertiesRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
 	return s
 }
 
@@ -670,6 +675,21 @@ func (s *IcebergTableUnsetPropertiesRequest) WithCatalogSync(catalogSync bool) *
 	return s
 }
 
+func (s *IcebergTableUnsetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *IcebergTableUnsetPropertiesRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *IcebergTableUnsetPropertiesRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithTargetFileSize(targetFileSize bool) *IcebergTableUnsetPropertiesRequest {
+	s.TargetFileSize = &targetFileSize
+	return s
+}
+
 func (s *IcebergTableUnsetPropertiesRequest) WithLogEventLevel(logEventLevel bool) *IcebergTableUnsetPropertiesRequest {
 	s.LogEventLevel = &logEventLevel
 	return s
@@ -687,6 +707,11 @@ func (s *IcebergTableUnsetPropertiesRequest) WithEnableDataCompaction(enableData
 
 func (s *IcebergTableUnsetPropertiesRequest) WithEnableIcebergMergeOnRead(enableIcebergMergeOnRead bool) *IcebergTableUnsetPropertiesRequest {
 	s.EnableIcebergMergeOnRead = &enableIcebergMergeOnRead
+	return s
+}
+
+func (s *IcebergTableUnsetPropertiesRequest) WithComment(comment bool) *IcebergTableUnsetPropertiesRequest {
+	s.Comment = &comment
 	return s
 }
 
@@ -716,11 +741,6 @@ func (s *DropIcebergTableRequest) WithRestrict(restrict bool) *DropIcebergTableR
 func NewShowIcebergTableRequest() *ShowIcebergTableRequest {
 	s := ShowIcebergTableRequest{}
 	return &s
-}
-
-func (s *ShowIcebergTableRequest) WithTerse(terse bool) *ShowIcebergTableRequest {
-	s.Terse = &terse
-	return s
 }
 
 func (s *ShowIcebergTableRequest) WithLike(like Like) *ShowIcebergTableRequest {
