@@ -29,7 +29,7 @@ package testfunctional_test
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"testing"
 
@@ -49,7 +49,7 @@ func (h *randomIntHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(testfunctional.StaleReproRead{RandomInt: rand.Int63()})
+		_ = json.NewEncoder(w).Encode(testfunctional.StaleReproRead{RandomInt: rand.Int64()}) // #nosec G404
 	case http.MethodPost:
 		w.WriteHeader(http.StatusCreated)
 	}
