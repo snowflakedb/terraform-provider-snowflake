@@ -94,6 +94,18 @@ If you manage External OAuth security integrations with the [`snowflake_external
 
 Reference: [BCR-2218](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02/bcr-2218)
 
+## [Bundle 2026_01](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01_bundle)
+
+### CREATE INTEGRATION: `ENABLED` defaults to `TRUE`
+
+When this bundle is enabled on your account, `CREATE ... INTEGRATION` statements that do not specify `ENABLED` default to `ENABLED = TRUE` (previously `FALSE`). This affects all integration types, including SAML2.
+
+The [`snowflake_saml2_integration`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/saml2_integration) resource has been adjusted to align with this default. The UNSET operation for this integration is not supported in Snowflake, so when `enabled` is removed in config, the provider now sets this as `TRUE`. See the corresponding entry in the [migration guide](./MIGRATION_GUIDE.md#bug-fix-snowflake_saml2_integration-removing-enabled-from-config-now-restores-snowflakes-default-of-true) for details and recommended action.
+
+If you want the integration to remain disabled, set `enabled = "false"` explicitly. Otherwise, no configuration changes are required.
+
+Reference: [BCR-2166](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2166)
+
 ## [Bundle 2025_07](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07_bundle)
 
 ### USAGE privilege on CATALOG INTEGRATION and EXTERNAL VOLUME required for database owner role for all operations
