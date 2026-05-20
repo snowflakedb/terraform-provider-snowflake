@@ -247,11 +247,11 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.True(t, result.AutoResume)
 		assert.Contains(t, []sdk.WarehouseState{sdk.WarehouseStateResuming, sdk.WarehouseStateStarted}, result.State)
 		assert.Equal(t, "", result.Comment)
-		assert.Equal(t, sdk.Pointer(false), result.EnableQueryAcceleration)
-		assert.Equal(t, sdk.Pointer(8), result.QueryAccelerationMaxScaleFactor)
+		assert.Equal(t, sdk.Pointer(true), result.EnableQueryAcceleration)
+		assert.Equal(t, sdk.Pointer(2), result.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, result.ResourceConstraint)
 		assert.NotNil(t, result.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *result.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *result.Generation)
 		assert.Nil(t, result.MaxQueryPerformanceLevel)
 		assert.Nil(t, result.QueryThroughputMultiplier)
 	})
@@ -344,11 +344,11 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.True(t, warehouse.AutoResume)
 		assert.Equal(t, "", warehouse.ResourceMonitor.Name())
 		assert.Equal(t, "", warehouse.Comment)
-		assert.Equal(t, sdk.Pointer(false), warehouse.EnableQueryAcceleration)
-		assert.Equal(t, sdk.Pointer(8), warehouse.QueryAccelerationMaxScaleFactor)
+		assert.Equal(t, sdk.Pointer(true), warehouse.EnableQueryAcceleration)
+		assert.Equal(t, sdk.Pointer(2), warehouse.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, warehouse.ResourceConstraint)
 		assert.NotNil(t, warehouse.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *warehouse.Generation)
 		assert.Nil(t, warehouse.MaxQueryPerformanceLevel)
 		assert.Nil(t, warehouse.QueryThroughputMultiplier)
 
@@ -386,7 +386,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.Pointer(2), warehouseAfterSet.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, warehouseAfterSet.ResourceConstraint)
 		assert.NotNil(t, warehouseAfterSet.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterSet.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *warehouseAfterSet.Generation)
 		assert.Nil(t, warehouseAfterSet.MaxQueryPerformanceLevel)
 		assert.Nil(t, warehouseAfterSet.QueryThroughputMultiplier)
 
@@ -415,11 +415,11 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.Pointer(1), warehouseAfterUnset.MinClusterCount)
 		assert.Equal(t, "", warehouseAfterUnset.ResourceMonitor.Name())
 		assert.Equal(t, "", warehouseAfterUnset.Comment)
-		assert.Equal(t, sdk.Pointer(false), warehouseAfterUnset.EnableQueryAcceleration)
-		assert.Equal(t, sdk.Pointer(8), warehouseAfterUnset.QueryAccelerationMaxScaleFactor)
+		assert.Equal(t, sdk.Pointer(true), warehouseAfterUnset.EnableQueryAcceleration)
+		assert.Equal(t, sdk.Pointer(2), warehouseAfterUnset.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, warehouseAfterUnset.ResourceConstraint)
 		assert.NotNil(t, warehouseAfterUnset.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterUnset.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *warehouseAfterUnset.Generation)
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
 		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), warehouseAfterUnset.ScalingPolicy)
 		assert.True(t, warehouseAfterUnset.AutoResume)
@@ -474,15 +474,15 @@ func TestInt_Warehouses(t *testing.T) {
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
 			HasType(sdk.WarehouseTypeStandard).
 			HasSize(sdk.WarehouseSizeMedium).
-			HasGeneration(sdk.WarehouseGenerationStandardGen1).
+			HasGeneration(sdk.WarehouseGenerationStandardGen2).
 			HasNoResourceConstraint().
 			HasMaxClusterCount(1).
 			HasMinClusterCount(1).
 			HasScalingPolicy(sdk.ScalingPolicyStandard).
 			HasAutoSuspend(600).
 			HasAutoResume(true).
-			HasEnableQueryAcceleration(false).
-			HasQueryAccelerationMaxScaleFactor(8).
+			HasEnableQueryAcceleration(true).
+			HasQueryAccelerationMaxScaleFactor(2).
 			HasNoMaxQueryPerformanceLevel().
 			HasNoQueryThroughputMultiplier(),
 		)
@@ -531,9 +531,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
-			// NOTE: The expected behavior is to reset to the default value, which is XLarge.
-			// However, the actual behavior is to reset to Small.
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelSmall).
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
 			HasQueryThroughputMultiplier(2),
 		)
 		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
@@ -712,10 +710,10 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
 		assert.Nil(t, returnedWarehouse.ResourceConstraint)
 		assert.NotNil(t, returnedWarehouse.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *returnedWarehouse.Generation)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{Generation: sdk.Pointer(sdk.WarehouseGenerationStandardGen2)},
+			Set: &sdk.WarehouseSet{Generation: sdk.Pointer(sdk.WarehouseGenerationStandardGen1)},
 		}
 		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
 		require.NoError(t, err)
@@ -723,7 +721,7 @@ func TestInt_Warehouses(t *testing.T) {
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
-			HasGeneration(sdk.WarehouseGenerationStandardGen2).
+			HasGeneration(sdk.WarehouseGenerationStandardGen1).
 			HasNoResourceConstraint().
 			HasType(sdk.WarehouseTypeStandard),
 		)
@@ -737,7 +735,7 @@ func TestInt_Warehouses(t *testing.T) {
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
 		assert.NotNil(t, returnedWarehouse.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *returnedWarehouse.Generation)
 	})
 
 	t.Run("alter: prove problems with unset auto suspend", func(t *testing.T) {
