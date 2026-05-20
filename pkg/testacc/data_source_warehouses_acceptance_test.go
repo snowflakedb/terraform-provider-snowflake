@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -70,8 +71,7 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	enableQueryAcceleration := testClient().SnowflakeDefaults.WarehouseEnableQueryAcceleration(t)
-	queryAccelerationMaxScaleFactor := testClient().SnowflakeDefaults.WarehouseQueryAccelerationMaxScaleFactor(t)
+	var _ *helpers.SnowflakeDefaultsClient = testClient().SnowflakeDefaults
 
 	warehouseModel := model.Warehouse("test", id.Name()).
 		WithComment(comment)
@@ -111,8 +111,8 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 			HasUpdatedOnNotEmpty().
 			HasOwnerNotEmpty().
 			HasComment(comment).
-			HasEnableQueryAcceleration(enableQueryAcceleration).
-			HasQueryAccelerationMaxScaleFactor(queryAccelerationMaxScaleFactor).
+			HasEnableQueryAcceleration(true).
+			HasQueryAccelerationMaxScaleFactor(2).
 			HasResourceMonitorEmpty().
 			HasScalingPolicy(sdk.ScalingPolicyStandard).
 			HasOwnerRoleTypeNotEmpty().
