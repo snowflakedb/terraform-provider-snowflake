@@ -285,7 +285,6 @@ func TestDatabasesCreateFromListing(t *testing.T) {
 }
 
 func TestDatabasesAlter(t *testing.T) {
-
 	defaultOpts := func() *AlterDatabaseOptions {
 		return &AlterDatabaseOptions{
 			name: randomAccountObjectIdentifier(),

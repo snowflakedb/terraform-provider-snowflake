@@ -5,6 +5,7 @@ package testint
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -338,31 +339,37 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 }
 
 func TestInt_DatabasesCreateFromListing(t *testing.T) {
+	t.Skip("TODO(SNOW-3556777): Use precreated listing")
+
 	client := testClient(t)
 	ctx := testContext(t)
 
-	// Create a share and grant usage on a database to it
-	share, shareCleanup := testClientHelper().Share.CreateShare(t)
+	secondaryClient := testSecondaryClient(t)
+	secondaryCtx := testSecondaryContext(t)
+
+	share, shareCleanup := secondaryTestClientHelper().Share.CreateShare(t)
 	t.Cleanup(shareCleanup)
-	t.Cleanup(testClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, testClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
+	t.Cleanup(secondaryTestClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, secondaryTestClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 
-	// Create a listing targeting the current account so we can consume it from the same account
-	accountId := testClientHelper().Context.CurrentAccountId(t)
-	manifest, _ := testClientHelper().Listing.BasicManifestWithTargetAccounts(t, accountId)
+	primaryAccountId := testClientHelper().Context.CurrentAccountId(t)
+	manifest, _ := secondaryTestClientHelper().Listing.BasicManifestWithTargetAccounts(t, primaryAccountId)
 
-	listingId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-	err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(listingId).
+	listingId := secondaryTestClientHelper().Ids.RandomAccountObjectIdentifier()
+	err := secondaryClient.Listings.Create(secondaryCtx, sdk.NewCreateListingRequest(listingId).
 		WithAs(manifest).
 		WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
-		WithPublish(true).
-		WithReview(false))
+		WithReview(true).
+		WithPublish(true))
 	require.NoError(t, err)
-	t.Cleanup(testClientHelper().Listing.DropFunc(t, listingId))
+	t.Cleanup(secondaryTestClientHelper().Listing.DropFunc(t, listingId))
 
-	// Retrieve the listing's global name
-	listing, err := client.Listings.ShowByID(ctx, listingId)
+	listing, err := secondaryClient.Listings.ShowByID(secondaryCtx, listingId)
 	require.NoError(t, err)
 	require.NotEmpty(t, listing.GlobalName)
+	require.Equal(t, sdk.ListingStatePublished, listing.State)
+
+	testClientHelper().Listing.AcceptLegalTermsWithRetry(t, listing.GlobalName, time.Minute, 5*time.Second)
+	testClientHelper().Listing.RequestListingAndWaitForSuccess(t, listing.GlobalName, 10)
 
 	t.Run("basic", func(t *testing.T) {
 		databaseID := testClientHelper().Ids.RandomAccountObjectIdentifier()
