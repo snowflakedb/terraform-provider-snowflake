@@ -3,26 +3,26 @@
 package sdk
 
 func NewGetForEntityTagReferenceRequest(
-	parameters *tagReferenceParametersRequest,
+	parameters *TagReferenceParametersRequest,
 ) *GetForEntityTagReferenceRequest {
 	s := GetForEntityTagReferenceRequest{}
 	s.parameters = parameters
 	return &s
 }
 
-func NewtagReferenceParametersRequest(
-	arguments *tagReferenceFunctionArgumentsRequest,
-) *tagReferenceParametersRequest {
-	s := tagReferenceParametersRequest{}
+func NewTagReferenceParametersRequest(
+	arguments *TagReferenceFunctionArgumentsRequest,
+) *TagReferenceParametersRequest {
+	s := TagReferenceParametersRequest{}
 	s.arguments = arguments
 	return &s
 }
 
-func NewtagReferenceFunctionArgumentsRequest(
+func NewTagReferenceFunctionArgumentsRequest(
 	objectName string,
 	objectDomain TagReferenceObjectDomain,
-) *tagReferenceFunctionArgumentsRequest {
-	s := tagReferenceFunctionArgumentsRequest{}
+) *TagReferenceFunctionArgumentsRequest {
+	s := TagReferenceFunctionArgumentsRequest{}
 	s.ObjectName = objectName
 	s.ObjectDomain = objectDomain
 	return &s

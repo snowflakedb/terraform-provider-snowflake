@@ -5,14 +5,14 @@ package sdk
 var _ optionsProvider[GetForEntityTagReferenceOptions] = new(GetForEntityTagReferenceRequest)
 
 type GetForEntityTagReferenceRequest struct {
-	parameters *tagReferenceParametersRequest // required
+	parameters *TagReferenceParametersRequest // required
 }
 
-type tagReferenceParametersRequest struct {
-	arguments *tagReferenceFunctionArgumentsRequest // required
+type TagReferenceParametersRequest struct {
+	arguments *TagReferenceFunctionArgumentsRequest // required
 }
 
-type tagReferenceFunctionArgumentsRequest struct {
+type TagReferenceFunctionArgumentsRequest struct {
 	ObjectName   string                   // required
 	ObjectDomain TagReferenceObjectDomain // required
 }

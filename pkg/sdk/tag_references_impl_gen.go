@@ -27,9 +27,9 @@ func (v *tagReferences) GetForEntity(ctx context.Context, request *GetForEntityT
 func (r *GetForEntityTagReferenceRequest) toOpts() *GetForEntityTagReferenceOptions {
 	opts := &GetForEntityTagReferenceOptions{}
 	if r.parameters != nil {
-		opts.parameters = &tagReferenceParameters{}
+		opts.parameters = &TagReferenceParameters{}
 		if r.parameters.arguments != nil {
-			opts.parameters.arguments = &tagReferenceFunctionArguments{
+			opts.parameters.arguments = &TagReferenceFunctionArguments{
 				ObjectName:   r.parameters.arguments.ObjectName,
 				ObjectDomain: r.parameters.arguments.ObjectDomain,
 			}

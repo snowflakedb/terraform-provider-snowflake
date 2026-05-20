@@ -24,6 +24,8 @@ func mapNullString(stringField **string, sqlValue sql.NullString) {
 	}
 }
 
+// mapNullStringWithMapping maps a sql.NullString to a pointer of type T using a provided mapper function.
+// Be careful with the sensitive values as the mapper function can return an error, which is then logged by this function.
 func mapNullStringWithMapping[T any](stringField **T, sqlValue sql.NullString, mapper func(string) (T, error)) {
 	if sqlValue.Valid {
 		if mappedValue, err := mapper(sqlValue.String); err == nil {

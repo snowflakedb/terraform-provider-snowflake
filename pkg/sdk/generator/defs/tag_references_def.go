@@ -41,7 +41,7 @@ var TagReferenceApplyMethodDef = g.NewEnum(
 	"PROPAGATED",
 )
 
-var tagReferenceParametersDef = g.NewQueryStruct("tagReferenceParameters").
+var tagReferenceParametersDef = g.NewQueryStruct("TagReferenceParameters").
 	SQLWithCustomFieldName("functionFullyQualifiedName", "SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES").
 	OptionalQueryStructField(
 		"arguments",
@@ -49,7 +49,7 @@ var tagReferenceParametersDef = g.NewQueryStruct("tagReferenceParameters").
 		g.ListOptions().Parentheses().Required(),
 	).WithValidation(g.ValidateValueSet, "arguments")
 
-var tagReferenceFunctionArgumentsDef = g.NewQueryStruct("tagReferenceFunctionArguments").
+var tagReferenceFunctionArgumentsDef = g.NewQueryStruct("TagReferenceFunctionArguments").
 	Text(
 		"ObjectName",
 		g.KeywordOptions().SingleQuotes().Required(),

@@ -5,8 +5,8 @@ func NewGetForEntityTagReferenceRequestFull(
 	objectDomain TagReferenceObjectDomain,
 ) *GetForEntityTagReferenceRequest {
 	return NewGetForEntityTagReferenceRequest(
-		NewtagReferenceParametersRequest(
-			NewtagReferenceFunctionArgumentsRequest(
+		NewTagReferenceParametersRequest(
+			NewTagReferenceFunctionArgumentsRequest(
 				objectName,
 				objectDomain,
 			),

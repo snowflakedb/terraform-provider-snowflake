@@ -26,15 +26,15 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 
 	t.Run("validation: [opts.parameters.arguments] should be set", func(t *testing.T) {
 		opts := &GetForEntityTagReferenceOptions{
-			parameters: &tagReferenceParameters{},
+			parameters: &TagReferenceParameters{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityTagReferenceOptions.parameters", "arguments"))
 	})
 
 	t.Run("validation: [opts.parameters.arguments.ObjectName] should be set", func(t *testing.T) {
 		opts := &GetForEntityTagReferenceOptions{
-			parameters: &tagReferenceParameters{
-				arguments: &tagReferenceFunctionArguments{
+			parameters: &TagReferenceParameters{
+				arguments: &TagReferenceFunctionArguments{
 					ObjectDomain: TagReferenceObjectDomainTable,
 				},
 			},
@@ -44,8 +44,8 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 
 	t.Run("validation: [opts.parameters.arguments.ObjectDomain] should be set", func(t *testing.T) {
 		opts := &GetForEntityTagReferenceOptions{
-			parameters: &tagReferenceParameters{
-				arguments: &tagReferenceFunctionArguments{
+			parameters: &TagReferenceParameters{
+				arguments: &TagReferenceFunctionArguments{
 					ObjectName: "some_name",
 				},
 			},
@@ -56,8 +56,8 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &GetForEntityTagReferenceOptions{
-			parameters: &tagReferenceParameters{
-				arguments: &tagReferenceFunctionArguments{
+			parameters: &TagReferenceParameters{
+				arguments: &TagReferenceFunctionArguments{
 					ObjectName:   id.FullyQualifiedName(),
 					ObjectDomain: TagReferenceObjectDomainTable,
 				},
@@ -68,8 +68,8 @@ func TestTagReferences_GetForEntity(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := &GetForEntityTagReferenceOptions{
-			parameters: &tagReferenceParameters{
-				arguments: &tagReferenceFunctionArguments{
+			parameters: &TagReferenceParameters{
+				arguments: &TagReferenceFunctionArguments{
 					ObjectName:   NewAccountObjectIdentifier("my_warehouse").FullyQualifiedName(),
 					ObjectDomain: TagReferenceObjectDomainWarehouse,
 				},

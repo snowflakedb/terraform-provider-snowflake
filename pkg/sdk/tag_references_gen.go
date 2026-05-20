@@ -14,7 +14,7 @@ type TagReferences interface {
 // GetForEntityTagReferenceOptions is based on https://docs.snowflake.com/en/sql-reference/functions/tag_references.
 type GetForEntityTagReferenceOptions struct {
 	selectEverythingFrom bool                    `ddl:"static" sql:"SELECT * FROM TABLE"`
-	parameters           *tagReferenceParameters `ddl:"list,parentheses,no_comma"`
+	parameters           *TagReferenceParameters `ddl:"list,parentheses,no_comma"`
 }
 
 type tagReferenceDBRow struct {
@@ -45,12 +45,12 @@ type TagReference struct {
 	ApplyMethod    TagReferenceApplyMethod
 }
 
-type tagReferenceParameters struct {
+type TagReferenceParameters struct {
 	functionFullyQualifiedName bool                           `ddl:"static" sql:"SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES"`
-	arguments                  *tagReferenceFunctionArguments `ddl:"list,parentheses"`
+	arguments                  *TagReferenceFunctionArguments `ddl:"list,parentheses"`
 }
 
-type tagReferenceFunctionArguments struct {
+type TagReferenceFunctionArguments struct {
 	ObjectName   string                   `ddl:"keyword,single_quotes"`
 	ObjectDomain TagReferenceObjectDomain `ddl:"keyword,single_quotes"`
 }
