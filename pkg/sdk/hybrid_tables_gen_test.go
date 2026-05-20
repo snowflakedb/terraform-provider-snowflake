@@ -228,7 +228,7 @@ func TestHybridTables_Alter(t *testing.T) {
 			DataRetentionTimeInDays:    Bool(true),
 			MaxDataExtensionTimeInDays: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s UNSET COMMENT DATA_RETENTION_TIME_IN_DAYS MAX_DATA_EXTENSION_TIME_IN_DAYS`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s UNSET COMMENT, DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column set comment", func(t *testing.T) {

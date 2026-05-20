@@ -458,9 +458,9 @@ func TestInt_HybridTables(t *testing.T) {
 			require.NoError(t, err, "re-SET COMMENT must succeed before multi-UNSET")
 
 			// Multi-property UNSET (COMMENT + DATA_RETENTION_TIME_IN_DAYS + MAX_DATA_EXTENSION_TIME_IN_DAYS)
-			// in a single ALTER. Snowflake prod accepts this (verified by jcieslak prior to PR #4689).
-			// The SDK emits a single UNSET followed by space-separated property names, mirroring
-			// TableUnset in pkg/sdk/tables.go (this matches the SQL Snowflake accepts).
+			// in a single ALTER. The SDK emits `UNSET COMMENT, DATA_RETENTION_TIME_IN_DAYS,
+			// MAX_DATA_EXTENSION_TIME_IN_DAYS` (comma-separated) — the form the parser accepts.
+			// Mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74.
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().
 					WithComment(true).

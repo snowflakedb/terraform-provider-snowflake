@@ -80,7 +80,12 @@ type AlterHybridTableOptions struct {
 	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
-	Unset             *HybridTableUnsetProperties    `ddl:"keyword" sql:"UNSET"`
+	// NOTE: `ddl:"list,no_parentheses"` causes the SQL builder to comma-join the children of
+	// HybridTableUnsetProperties, emitting `UNSET A, B, C`. The default `ddl:"keyword"` would
+	// space-join (`UNSET A B C`), which the Snowflake parser rejects for hybrid tables.
+	// The def in pkg/sdk/generator/defs/hybrid_tables_def.go encodes this with
+	// g.ListOptions().NoParentheses().SQL("UNSET"); mirrors NetworkPolicyUnset.
+	Unset *HybridTableUnsetProperties `ddl:"list,no_parentheses" sql:"UNSET"`
 }
 
 type HybridTableAddColumnAction struct {

@@ -127,6 +127,18 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment")
 
+// NOTE: Multi-property `ALTER TABLE ... UNSET` on hybrid tables requires comma-separated
+// property names (`UNSET A, B, C`) — the bare-keyword form (`UNSET A B C`) emitted by the
+// generator's default `keyword` rendering is rejected by the parser. Applying
+// `g.ListOptions().NoParentheses().SQL("UNSET")` to the parent field on
+// AlterHybridTableOptions causes the SQL builder to comma-join the children.
+// Mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74. Verified on preprod6.
+var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
+	OptionalSQL("COMMENT").
+	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
+	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
+	WithValidation(g.AtLeastOneValueSet, "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays")
+
 // NOTE: After running make generate-sdk, the hybridTableDetailsRow.Null field in
 // hybrid_tables_gen.go will have tag db:"null" (the generator strips '?'). It must
 // be manually corrected back to db:"null?" because the DESCRIBE TABLE output column
@@ -199,8 +211,13 @@ var hybridTablesDef = g.NewInterface(
 			hybridTableSetProperties,
 			g.KeywordOptions().SQL("SET"),
 		).
+		OptionalQueryStructField(
+			"Unset",
+			hybridTableUnsetProperties,
+			g.ListOptions().NoParentheses().SQL("UNSET"),
+		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
