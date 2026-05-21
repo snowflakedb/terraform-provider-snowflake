@@ -48,8 +48,7 @@ func (c *ApiIntegrationClient) CreateApiIntegrationForGitRepository(t *testing.T
 
 	id := c.ids.RandomAccountObjectIdentifier()
 	apiAllowedPrefixes := []sdk.ApiIntegrationEndpointPrefix{{Path: origin}}
-	gitParams := sdk.NewGitHttpsApiGithubAppParamsRequest().
-		WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))
+	gitParams := sdk.NewGitHttpsApiGithubAppParamsRequest()
 	req := sdk.NewCreateApiIntegrationRequest(id, apiAllowedPrefixes, true).
 		WithGitHttpsApiGithubAppProviderParams(*gitParams)
 
