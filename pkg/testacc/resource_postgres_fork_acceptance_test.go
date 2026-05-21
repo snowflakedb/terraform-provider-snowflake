@@ -10,11 +10,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -22,16 +20,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_PostgresFork_Basic(t *testing.T) {
+// createSourceForFork creates a postgres instance suitable for forking and registers cleanup.
+// It waits for the instance to be fully ready to accept fork operations.
+func createSourceForFork(t *testing.T) sdk.AccountObjectIdentifier {
+	t.Helper()
 	sourceId := testClient().Ids.RandomAccountObjectIdentifier()
-	forkId := testClient().Ids.RandomAccountObjectIdentifier()
-	comment := random.Comment()
-
-	// Create source postgres instance for forking
 	_, sourceCleanup := testClient().PostgresInstance.CreateWithRequest(t,
 		sdk.NewCreatePostgresInstanceRequest(sourceId, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
 	t.Cleanup(sourceCleanup)
 	testClient().PostgresInstance.WaitForForkReady(t, sourceId, 5*time.Minute)
+	return sourceId
+}
+
+func TestAcc_PostgresFork_Basic(t *testing.T) {
+	sourceId := createSourceForFork(t)
+	forkId := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
 
 	modelBasic := model.PostgresFork("test", forkId.Name(), sourceId.Name())
 
@@ -45,11 +49,7 @@ func TestAcc_PostgresFork_Basic(t *testing.T) {
 			HasNoBeforeTimestamp().
 			HasNoBeforeOffset().
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
-			HasCreatedOnNotEmpty().
-			HasName(forkId.Name()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"),
+		postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), forkId.Name()),
 	}
 
 	modelWithComment := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
@@ -61,12 +61,8 @@ func TestAcc_PostgresFork_Basic(t *testing.T) {
 			HasForkFromString(sourceId.Name()).
 			HasCommentString(comment).
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelWithComment.ResourceReference()).
-			HasCreatedOnNotEmpty().
-			HasName(forkId.Name()).
-			HasComment(comment).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"),
+		postgresShowOutputBaseAssert(t, modelWithComment.ResourceReference(), forkId.Name()).
+			HasComment(comment),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -124,7 +120,7 @@ func TestAcc_PostgresFork_Basic(t *testing.T) {
 				Destroy: true,
 				Config:  accconfig.FromModels(t, modelBasic),
 				Check: assertThat(t,
-					invokeactionassert.PostgresForkDoesNotExist(t, forkId),
+					invokeactionassert.PostgresInstanceDoesNotExist(t, forkId),
 				),
 			},
 		},
@@ -132,15 +128,9 @@ func TestAcc_PostgresFork_Basic(t *testing.T) {
 }
 
 func TestAcc_PostgresFork_Complete(t *testing.T) {
-	sourceId := testClient().Ids.RandomAccountObjectIdentifier()
+	sourceId := createSourceForFork(t)
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
-
-	// Create source postgres instance for forking
-	_, sourceCleanup := testClient().PostgresInstance.CreateWithRequest(t,
-		sdk.NewCreatePostgresInstanceRequest(sourceId, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
-	t.Cleanup(sourceCleanup)
-	testClient().PostgresInstance.WaitForForkReady(t, sourceId, 5*time.Minute)
 
 	// Use a recent timestamp (1 hour ago) — Snowflake requires fork timestamps within the past 10 days
 	recentTimestamp := time.Now().Add(-1 * time.Hour).UTC().Format("2006-01-02 15:04:05")
@@ -159,12 +149,8 @@ func TestAcc_PostgresFork_Complete(t *testing.T) {
 			HasAtTimestampString(recentTimestamp).
 			HasHighAvailabilityString("false").
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelComplete.ResourceReference()).
-			HasCreatedOnNotEmpty().
-			HasName(forkId.Name()).
-			HasComment(comment).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"),
+		postgresShowOutputBaseAssert(t, modelComplete.ResourceReference(), forkId.Name()).
+			HasComment(comment),
 	}
 
 	resource.Test(t, resource.TestCase{

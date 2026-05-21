@@ -21,6 +21,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// postgresShowOutputBaseAssert returns a show output assertion with the common fields
+// that every postgres instance (including forks) should have.
+func postgresShowOutputBaseAssert(t *testing.T, ref string, name string) *resourceshowoutputassert.PostgresInstanceShowOutputAssert {
+	t.Helper()
+	return resourceshowoutputassert.PostgresInstanceShowOutput(t, ref).
+		HasCreatedOnNotEmpty().
+		HasName(name).
+		HasOwner(snowflakeroles.Accountadmin.Name()).
+		HasOwnerRoleType("ROLE")
+}
+
 func TestAcc_PostgresInstance_Basic(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
@@ -39,13 +50,9 @@ func TestAcc_PostgresInstance_Basic(t *testing.T) {
 			HasNoPostgresSettings().
 			HasNoMaintenanceWindowStart().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
+		postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), id.Name()).
 			HasComputeFamily("STANDARD_M").
-			HasAuthenticationAuthority("POSTGRES").
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"),
+			HasAuthenticationAuthority("POSTGRES"),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -111,14 +118,10 @@ func TestAcc_PostgresInstance_Complete(t *testing.T) {
 			HasNoStorageIntegration().
 			HasNoMaintenanceWindowStart().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelComplete.ResourceReference()).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
+		postgresShowOutputBaseAssert(t, modelComplete.ResourceReference(), id.Name()).
 			HasComputeFamily("STANDARD_M").
 			HasAuthenticationAuthority("POSTGRES").
-			HasComment(comment).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"),
+			HasComment(comment),
 	}
 
 	modelWithMaintenance := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
@@ -135,12 +138,8 @@ func TestAcc_PostgresInstance_Complete(t *testing.T) {
 			HasPostgresSettingsString(`{"work_mem": "64MB"}`).
 			HasHighAvailabilityString("false").
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelWithMaintenance.ResourceReference()).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasComment(commentUpdated).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"),
+		postgresShowOutputBaseAssert(t, modelWithMaintenance.ResourceReference(), id.Name()).
+			HasComment(commentUpdated),
 	}
 
 	modelBasic := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
@@ -156,12 +155,8 @@ func TestAcc_PostgresInstance_Complete(t *testing.T) {
 			HasNoMaintenanceWindowStart().
 			HasNoPostgresSettings().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasComment("").
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"),
+		postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), id.Name()).
+			HasComment(""),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -256,13 +251,9 @@ func TestAcc_PostgresInstance_Rename(t *testing.T) {
 						HasComputeFamilyString("STANDARD_M").
 						HasStorageSizeGbString("10").
 						HasAuthenticationAuthorityString("POSTGRES"),
-					resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
+					postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), id.Name()).
 						HasComputeFamily("STANDARD_M").
-						HasAuthenticationAuthority("POSTGRES").
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE"),
+						HasAuthenticationAuthority("POSTGRES"),
 				),
 			},
 			// rename object - Snowflake backend does not currently support
