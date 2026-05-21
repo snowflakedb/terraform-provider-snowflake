@@ -20,6 +20,12 @@ var (
 		"PostgresInstanceResetAccessRole", "PostgresInstanceResetAccessRoles",
 		"snowflake_admin", "application",
 	)
+	PostgresInstanceComputeFamilyEnumDef = g.NewEnum(
+		"PostgresInstanceComputeFamily", "PostgresInstanceComputeFamilies",
+		"STANDARD_M", "STANDARD_L", "STANDARD_XL", "STANDARD_2XL", "STANDARD_4XL", "STANDARD_8XL", "STANDARD_12XL", "STANDARD_24XL",
+		"HIGHMEM_L", "HIGHMEM_XL", "HIGHMEM_2XL", "HIGHMEM_4XL", "HIGHMEM_8XL", "HIGHMEM_12XL", "HIGHMEM_16XL", "HIGHMEM_24XL", "HIGHMEM_32XL", "HIGHMEM_48XL",
+		"BURST_XS", "BURST_S", "BURST_M",
+	)
 )
 
 var postgresInstancesPairs = g.StructPair("postgresInstancesRow", "PostgresInstance").
@@ -191,4 +197,5 @@ var postgresInstancesDef = g.NewInterface(
 	PostgresInstanceStateEnumDef,
 	PostgresInstanceAuthenticationAuthorityEnumDef,
 	PostgresInstanceResetAccessRoleEnumDef,
+	PostgresInstanceComputeFamilyEnumDef,
 )

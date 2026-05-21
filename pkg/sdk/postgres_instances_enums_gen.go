@@ -110,3 +110,103 @@ func ToPostgresInstanceResetAccessRole(s string) (PostgresInstanceResetAccessRol
 		return "", fmt.Errorf("invalid postgres instance reset access role: %s", s)
 	}
 }
+
+type PostgresInstanceComputeFamily string
+
+const (
+	PostgresInstanceComputeFamilyStandardM    PostgresInstanceComputeFamily = "STANDARD_M"
+	PostgresInstanceComputeFamilyStandardL    PostgresInstanceComputeFamily = "STANDARD_L"
+	PostgresInstanceComputeFamilyStandardXl   PostgresInstanceComputeFamily = "STANDARD_XL"
+	PostgresInstanceComputeFamilyStandard2xl  PostgresInstanceComputeFamily = "STANDARD_2XL"
+	PostgresInstanceComputeFamilyStandard4xl  PostgresInstanceComputeFamily = "STANDARD_4XL"
+	PostgresInstanceComputeFamilyStandard8xl  PostgresInstanceComputeFamily = "STANDARD_8XL"
+	PostgresInstanceComputeFamilyStandard12xl PostgresInstanceComputeFamily = "STANDARD_12XL"
+	PostgresInstanceComputeFamilyStandard24xl PostgresInstanceComputeFamily = "STANDARD_24XL"
+	PostgresInstanceComputeFamilyHighmemL     PostgresInstanceComputeFamily = "HIGHMEM_L"
+	PostgresInstanceComputeFamilyHighmemXl    PostgresInstanceComputeFamily = "HIGHMEM_XL"
+	PostgresInstanceComputeFamilyHighmem2xl   PostgresInstanceComputeFamily = "HIGHMEM_2XL"
+	PostgresInstanceComputeFamilyHighmem4xl   PostgresInstanceComputeFamily = "HIGHMEM_4XL"
+	PostgresInstanceComputeFamilyHighmem8xl   PostgresInstanceComputeFamily = "HIGHMEM_8XL"
+	PostgresInstanceComputeFamilyHighmem12xl  PostgresInstanceComputeFamily = "HIGHMEM_12XL"
+	PostgresInstanceComputeFamilyHighmem16xl  PostgresInstanceComputeFamily = "HIGHMEM_16XL"
+	PostgresInstanceComputeFamilyHighmem24xl  PostgresInstanceComputeFamily = "HIGHMEM_24XL"
+	PostgresInstanceComputeFamilyHighmem32xl  PostgresInstanceComputeFamily = "HIGHMEM_32XL"
+	PostgresInstanceComputeFamilyHighmem48xl  PostgresInstanceComputeFamily = "HIGHMEM_48XL"
+	PostgresInstanceComputeFamilyBurstXs      PostgresInstanceComputeFamily = "BURST_XS"
+	PostgresInstanceComputeFamilyBurstS       PostgresInstanceComputeFamily = "BURST_S"
+	PostgresInstanceComputeFamilyBurstM       PostgresInstanceComputeFamily = "BURST_M"
+)
+
+var AllPostgresInstanceComputeFamilies = []PostgresInstanceComputeFamily{
+	PostgresInstanceComputeFamilyStandardM,
+	PostgresInstanceComputeFamilyStandardL,
+	PostgresInstanceComputeFamilyStandardXl,
+	PostgresInstanceComputeFamilyStandard2xl,
+	PostgresInstanceComputeFamilyStandard4xl,
+	PostgresInstanceComputeFamilyStandard8xl,
+	PostgresInstanceComputeFamilyStandard12xl,
+	PostgresInstanceComputeFamilyStandard24xl,
+	PostgresInstanceComputeFamilyHighmemL,
+	PostgresInstanceComputeFamilyHighmemXl,
+	PostgresInstanceComputeFamilyHighmem2xl,
+	PostgresInstanceComputeFamilyHighmem4xl,
+	PostgresInstanceComputeFamilyHighmem8xl,
+	PostgresInstanceComputeFamilyHighmem12xl,
+	PostgresInstanceComputeFamilyHighmem16xl,
+	PostgresInstanceComputeFamilyHighmem24xl,
+	PostgresInstanceComputeFamilyHighmem32xl,
+	PostgresInstanceComputeFamilyHighmem48xl,
+	PostgresInstanceComputeFamilyBurstXs,
+	PostgresInstanceComputeFamilyBurstS,
+	PostgresInstanceComputeFamilyBurstM,
+}
+
+func ToPostgresInstanceComputeFamily(s string) (PostgresInstanceComputeFamily, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(PostgresInstanceComputeFamilyStandardM):
+		return PostgresInstanceComputeFamilyStandardM, nil
+	case string(PostgresInstanceComputeFamilyStandardL):
+		return PostgresInstanceComputeFamilyStandardL, nil
+	case string(PostgresInstanceComputeFamilyStandardXl):
+		return PostgresInstanceComputeFamilyStandardXl, nil
+	case string(PostgresInstanceComputeFamilyStandard2xl):
+		return PostgresInstanceComputeFamilyStandard2xl, nil
+	case string(PostgresInstanceComputeFamilyStandard4xl):
+		return PostgresInstanceComputeFamilyStandard4xl, nil
+	case string(PostgresInstanceComputeFamilyStandard8xl):
+		return PostgresInstanceComputeFamilyStandard8xl, nil
+	case string(PostgresInstanceComputeFamilyStandard12xl):
+		return PostgresInstanceComputeFamilyStandard12xl, nil
+	case string(PostgresInstanceComputeFamilyStandard24xl):
+		return PostgresInstanceComputeFamilyStandard24xl, nil
+	case string(PostgresInstanceComputeFamilyHighmemL):
+		return PostgresInstanceComputeFamilyHighmemL, nil
+	case string(PostgresInstanceComputeFamilyHighmemXl):
+		return PostgresInstanceComputeFamilyHighmemXl, nil
+	case string(PostgresInstanceComputeFamilyHighmem2xl):
+		return PostgresInstanceComputeFamilyHighmem2xl, nil
+	case string(PostgresInstanceComputeFamilyHighmem4xl):
+		return PostgresInstanceComputeFamilyHighmem4xl, nil
+	case string(PostgresInstanceComputeFamilyHighmem8xl):
+		return PostgresInstanceComputeFamilyHighmem8xl, nil
+	case string(PostgresInstanceComputeFamilyHighmem12xl):
+		return PostgresInstanceComputeFamilyHighmem12xl, nil
+	case string(PostgresInstanceComputeFamilyHighmem16xl):
+		return PostgresInstanceComputeFamilyHighmem16xl, nil
+	case string(PostgresInstanceComputeFamilyHighmem24xl):
+		return PostgresInstanceComputeFamilyHighmem24xl, nil
+	case string(PostgresInstanceComputeFamilyHighmem32xl):
+		return PostgresInstanceComputeFamilyHighmem32xl, nil
+	case string(PostgresInstanceComputeFamilyHighmem48xl):
+		return PostgresInstanceComputeFamilyHighmem48xl, nil
+	case string(PostgresInstanceComputeFamilyBurstXs):
+		return PostgresInstanceComputeFamilyBurstXs, nil
+	case string(PostgresInstanceComputeFamilyBurstS):
+		return PostgresInstanceComputeFamilyBurstS, nil
+	case string(PostgresInstanceComputeFamilyBurstM):
+		return PostgresInstanceComputeFamilyBurstM, nil
+	default:
+		return "", fmt.Errorf("invalid postgres instance compute family: %s", s)
+	}
+}
