@@ -322,18 +322,40 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		id = newId
 	}
 
+	// POSTGRES_SETTINGS cannot be combined with COMPUTE_FAMILY/STORAGE_SIZE_GB/POSTGRES_VERSION/HIGH_AVAILABILITY.
+	// HIGH_AVAILABILITY cannot be combined with COMPUTE_FAMILY/STORAGE_SIZE_GB/POSTGRES_VERSION/POSTGRES_SETTINGS.
+	// Split SET operations into separate ALTER calls by parameter group:
+	//   1. POSTGRES_SETTINGS (alone)
+	//   2. Upgrade ops (COMPUTE_FAMILY, STORAGE_SIZE_GB, POSTGRES_VERSION) + non-conflicting params
+	//   3. HIGH_AVAILABILITY (alone)
+
+	// Group 1: POSTGRES_SETTINGS
+	pgSettingsSet := sdk.NewPostgresInstanceSetRequest()
+	pgSettingsUnset := sdk.NewPostgresInstanceUnsetRequest()
+	errs := errors.Join(
+		stringAttributeUpdate(d, "postgres_settings", &pgSettingsSet.PostgresSettings, &pgSettingsUnset.PostgresSettings),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if !reflect.DeepEqual(pgSettingsSet, &sdk.PostgresInstanceSetRequest{}) {
+		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*pgSettingsSet)
+		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting Postgres instance postgres_settings: %w", err))
+		}
+	}
+
+	// Group 2: Upgrade ops + non-conflicting params
 	set := sdk.NewPostgresInstanceSetRequest()
 	unset := sdk.NewPostgresInstanceUnsetRequest()
-
-	errs := errors.Join(
+	errs = errors.Join(
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		stringAttributeUpdate(d, "network_policy", &set.NetworkPolicy, &unset.NetworkPolicy),
 		stringAttributeUpdate(d, "storage_integration", &set.StorageIntegration, &unset.StorageIntegration),
-		stringAttributeUpdate(d, "postgres_settings", &set.PostgresSettings, &unset.PostgresSettings),
 		intAttributeUpdateSetOnly(d, "storage_size_gb", &set.StorageSizeGb),
 		intAttributeUpdateSetOnly(d, "postgres_version", &set.PostgresVersion),
 		intAttributeUpdate(d, "maintenance_window_start", &set.MaintenanceWindowStart, &unset.MaintenanceWindowStart),
-		booleanAttributeUpdateSetOnly(d, "high_availability", &set.HighAvailability),
 		attributeMappedValueUpdateSetOnly(d, "authentication_authority", &set.AuthenticationAuthority, sdk.ToPostgresInstanceAuthenticationAuthority),
 		stringAttributeUpdateSetOnlyNotEmpty(d, "compute_family", &set.ComputeFamily),
 	)
@@ -345,6 +367,30 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*set)
 		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting Postgres instance properties: %w", err))
+		}
+	}
+
+	// Group 3: HIGH_AVAILABILITY
+	haSet := sdk.NewPostgresInstanceSetRequest()
+	errs = errors.Join(
+		booleanAttributeUpdateSetOnly(d, "high_availability", &haSet.HighAvailability),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if !reflect.DeepEqual(haSet, &sdk.PostgresInstanceSetRequest{}) {
+		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*haSet)
+		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting Postgres instance high_availability: %w", err))
+		}
+	}
+
+	// Unset operations (non-conflicting, can be sent together)
+	if !reflect.DeepEqual(pgSettingsUnset, &sdk.PostgresInstanceUnsetRequest{}) {
+		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithUnset(*pgSettingsUnset)
+		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error unsetting Postgres instance postgres_settings: %w", err))
 		}
 	}
 
