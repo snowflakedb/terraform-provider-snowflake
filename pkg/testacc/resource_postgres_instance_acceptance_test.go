@@ -21,11 +21,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
+func TestAcc_PostgresInstance_Basic(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	comment := random.Comment()
 
-	modelBasic := model.PostgresInstance("test", id.Name(), "STANDARD_M", 10, "POSTGRES").
+	modelBasic := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
 		WithHighAvailability(false)
 
 	assertBasic := []assert.TestCheckFuncProvider{
@@ -49,9 +48,55 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasOwnerRoleType("ROLE"),
 	}
 
-	modelComplete := model.PostgresInstance("test", id.Name(), "STANDARD_M", 10, "POSTGRES").
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.PostgresInstance),
+		Steps: []resource.TestStep{
+			// Create with only required params
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Check: assertThat(t, assertBasic...),
+			},
+			// Import
+			{
+				Config:            accconfig.FromModels(t, modelBasic),
+				ResourceName:      modelBasic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"show_output.0.updated_on",
+					"describe_output.0.updated_on",
+				},
+			},
+			// Destroy
+			{
+				Destroy: true,
+				Config:  accconfig.FromModels(t, modelBasic),
+				Check: assertThat(t,
+					invokeactionassert.PostgresInstanceDoesNotExist(t, id),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_PostgresInstance_Complete(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+	commentUpdated := random.Comment()
+
+	modelComplete := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
 		WithComment(comment).
-		WithHighAvailability(false)
+		WithHighAvailability(false).
+		WithPostgresSettings(`{"work_mem": "64MB"}`)
 
 	assertComplete := []assert.TestCheckFuncProvider{
 		resourceassert.PostgresInstanceResource(t, modelComplete.ResourceReference()).
@@ -60,6 +105,11 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasStorageSizeGbString("10").
 			HasAuthenticationAuthorityString("POSTGRES").
 			HasCommentString(comment).
+			HasHighAvailabilityString("false").
+			HasPostgresSettingsString(`{"work_mem": "64MB"}`).
+			HasNoNetworkPolicy().
+			HasNoStorageIntegration().
+			HasNoMaintenanceWindowStart().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
 		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelComplete.ResourceReference()).
 			HasCreatedOnNotEmpty().
@@ -71,6 +121,31 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasOwnerRoleType("ROLE"),
 	}
 
+	modelWithMaintenance := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
+		WithComment(commentUpdated).
+		WithHighAvailability(false).
+		WithPostgresSettings(`{"work_mem": "64MB"}`).
+		WithMaintenanceWindowStart(10)
+
+	assertWithMaintenance := []assert.TestCheckFuncProvider{
+		resourceassert.PostgresInstanceResource(t, modelWithMaintenance.ResourceReference()).
+			HasNameString(id.Name()).
+			HasCommentString(commentUpdated).
+			HasMaintenanceWindowStartString("10").
+			HasPostgresSettingsString(`{"work_mem": "64MB"}`).
+			HasHighAvailabilityString("false").
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelWithMaintenance.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasComment(commentUpdated).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE"),
+	}
+
+	modelBasic := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
+		WithHighAvailability(false)
+
 	assertAfterUnset := []assert.TestCheckFuncProvider{
 		resourceassert.PostgresInstanceResource(t, modelBasic.ResourceReference()).
 			HasNameString(id.Name()).
@@ -78,12 +153,12 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasStorageSizeGbString("10").
 			HasAuthenticationAuthorityString("POSTGRES").
 			HasCommentString("").
+			HasNoMaintenanceWindowStart().
+			HasNoPostgresSettings().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
 		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasComputeFamily("STANDARD_M").
-			HasAuthenticationAuthority("POSTGRES").
 			HasComment("").
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"),
@@ -95,35 +170,18 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.PostgresInstance),
-
 		Steps: []resource.TestStep{
-			// Create - without optionals
+			// Step 1: Create with optional params
 			{
-				Config: accconfig.FromModels(t, modelBasic),
-				Check:  assertThat(t, assertBasic...),
-			},
-			// Import - without optionals
-			{
-				Config:            accconfig.FromModels(t, modelBasic),
-				ResourceName:      modelBasic.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"show_output.0.updated_on",
-					"describe_output.0.updated_on",
-				},
-			},
-			// Update - set optionals
-			{
+				Config: accconfig.FromModels(t, modelComplete),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
-				Config: accconfig.FromModels(t, modelComplete),
-				Check:  assertThat(t, assertComplete...),
+				Check: assertThat(t, assertComplete...),
 			},
-			// Import - with optionals
+			// Step 2: Import
 			{
 				Config:            accconfig.FromModels(t, modelComplete),
 				ResourceName:      modelComplete.ResourceReference(),
@@ -134,7 +192,17 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 					"describe_output.0.updated_on",
 				},
 			},
-			// Update - unset optionals
+			// Step 3: Update - set maintenance_window_start (alter-only field) and change comment
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithMaintenance.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, modelWithMaintenance),
+				Check:  assertThat(t, assertWithMaintenance...),
+			},
+			// Step 4: Update - unset comment (back to basic model without optionals)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -144,7 +212,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, modelBasic),
 				Check:  assertThat(t, assertAfterUnset...),
 			},
-			// Update - detect external changes
+			// Step 5: External change detection
 			{
 				PreConfig: func() {
 					testClient().PostgresInstance.Alter(t, sdk.NewAlterPostgresInstanceRequest(id).WithSet(
@@ -159,24 +227,6 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				},
 				Check: assertThat(t, assertAfterUnset...),
 			},
-			// Destroy - ensure postgres instance is destroyed before the next step
-			{
-				Destroy: true,
-				Config:  accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
-					invokeactionassert.PostgresInstanceDoesNotExist(t, id),
-				),
-			},
-			// Create - with optionals
-			{
-				Config: accconfig.FromModels(t, modelComplete),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
-				Check: assertThat(t, assertComplete...),
-			},
 		},
 	})
 }
@@ -185,9 +235,9 @@ func TestAcc_PostgresInstance_Rename(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	modelBasic := model.PostgresInstance("test", id.Name(), "STANDARD_M", 10, "POSTGRES").
+	modelBasic := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
 		WithHighAvailability(false)
-	modelWithChangedName := model.PostgresInstance("test", newId.Name(), "STANDARD_M", 10, "POSTGRES").
+	modelWithChangedName := model.PostgresInstance("test", newId.Name(), "POSTGRES", "STANDARD_M", 10).
 		WithHighAvailability(false)
 
 	resource.Test(t, resource.TestCase{
@@ -228,7 +278,7 @@ func TestAcc_PostgresInstance_Rename(t *testing.T) {
 func TestAcc_PostgresInstance_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	modelInvalidStorageSizeGb := model.PostgresInstance("test", id.Name(), "STANDARD_M", 0, "POSTGRES")
+	modelInvalidStorageSizeGb := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 0)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

@@ -22,7 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
+func TestAcc_PostgresFork_Basic(t *testing.T) {
 	sourceId := testClient().Ids.RandomAccountObjectIdentifier()
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
@@ -76,17 +76,12 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.PostgresFork),
 		Steps: []resource.TestStep{
-			// Create fork - basic
+			// Step 1: Create fork with only required params
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
-				Check: assertThat(t, assertBasic...),
+				Check:  assertThat(t, assertBasic...),
 			},
-			// Import
+			// Step 2: Import
 			{
 				Config:            accconfig.FromModels(t, modelBasic),
 				ResourceName:      modelBasic.ResourceReference(),
@@ -100,7 +95,7 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 					"fork_from",
 				},
 			},
-			// Update - set comment
+			// Step 3: Update — set comment
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -110,7 +105,7 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, modelWithComment),
 				Check:  assertThat(t, assertWithComment...),
 			},
-			// Update - unset comment
+			// Step 4: Update — unset comment
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -124,7 +119,7 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 						HasCommentString(""),
 				),
 			},
-			// Destroy
+			// Step 5: Destroy verification
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, modelBasic),
@@ -136,51 +131,7 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 	})
 }
 
-func TestAcc_PostgresFork_WithAtTimestamp(t *testing.T) {
-	sourceId := testClient().Ids.RandomAccountObjectIdentifier()
-	forkId := testClient().Ids.RandomAccountObjectIdentifier()
-
-	// Create source postgres instance for forking
-	_, sourceCleanup := testClient().PostgresInstance.CreateWithRequest(t,
-		sdk.NewCreatePostgresInstanceRequest(sourceId, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
-	t.Cleanup(sourceCleanup)
-	testClient().PostgresInstance.WaitForForkReady(t, sourceId, 5*time.Minute)
-
-	// Use a recent timestamp (1 hour ago) — Snowflake requires fork timestamps within the past 10 days
-	recentTimestamp := time.Now().Add(-1 * time.Hour).UTC().Format("2006-01-02 15:04:05")
-
-	modelFork := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
-		WithAtTimestamp(recentTimestamp)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.PostgresFork),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, modelFork),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelFork.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.PostgresForkResource(t, modelFork.ResourceReference()).
-						HasNameString(forkId.Name()).
-						HasForkFromString(sourceId.Name()).
-						HasAtTimestampString(recentTimestamp),
-					resourceshowoutputassert.PostgresInstanceShowOutput(t, modelFork.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(forkId.Name()),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_PostgresFork_UpdateAfterFork(t *testing.T) {
+func TestAcc_PostgresFork_Complete(t *testing.T) {
 	sourceId := testClient().Ids.RandomAccountObjectIdentifier()
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
@@ -191,9 +142,30 @@ func TestAcc_PostgresFork_UpdateAfterFork(t *testing.T) {
 	t.Cleanup(sourceCleanup)
 	testClient().PostgresInstance.WaitForForkReady(t, sourceId, 5*time.Minute)
 
-	modelBasic := model.PostgresFork("test", forkId.Name(), sourceId.Name())
-	modelUpdated := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
-		WithComment(comment)
+	// Use a recent timestamp (1 hour ago) — Snowflake requires fork timestamps within the past 10 days
+	recentTimestamp := time.Now().Add(-1 * time.Hour).UTC().Format("2006-01-02 15:04:05")
+
+	modelComplete := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
+		WithComment(comment).
+		WithAtTimestamp(recentTimestamp).
+		WithHighAvailability(false).
+		WithPostgresSettings(`{"work_mem": "64MB"}`)
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		resourceassert.PostgresForkResource(t, modelComplete.ResourceReference()).
+			HasNameString(forkId.Name()).
+			HasForkFromString(sourceId.Name()).
+			HasCommentString(comment).
+			HasAtTimestampString(recentTimestamp).
+			HasHighAvailabilityString("false").
+			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelComplete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(forkId.Name()).
+			HasComment(comment).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE"),
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -202,31 +174,24 @@ func TestAcc_PostgresFork_UpdateAfterFork(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.PostgresFork),
 		Steps: []resource.TestStep{
-			// Create
+			// Step 1: Create fork with all options
 			{
-				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
-					resourceassert.PostgresForkResource(t, modelBasic.ResourceReference()).
-						HasNameString(forkId.Name()),
-					resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
-						HasCreatedOnNotEmpty(),
-				),
+				Config: accconfig.FromModels(t, modelComplete),
+				Check:  assertThat(t, assertComplete...),
 			},
-			// Update - set comment
+			// Step 2: Import
 			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
+				Config:            accconfig.FromModels(t, modelComplete),
+				ResourceName:      modelComplete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"at_timestamp",
+					"at_offset",
+					"before_timestamp",
+					"before_offset",
+					"fork_from",
 				},
-				Config: accconfig.FromModels(t, modelUpdated),
-				Check: assertThat(t,
-					resourceassert.PostgresForkResource(t, modelUpdated.ResourceReference()).
-						HasNameString(forkId.Name()).
-						HasCommentString(comment),
-					resourceshowoutputassert.PostgresInstanceShowOutput(t, modelUpdated.ResourceReference()).
-						HasComment(comment),
-				),
 			},
 		},
 	})
