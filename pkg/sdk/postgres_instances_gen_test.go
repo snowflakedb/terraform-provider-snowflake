@@ -10,6 +10,7 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceState]{"PostgresInstanceState", AllPostgresInstanceStates, ToPostgresInstanceState})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceAuthenticationAuthority]{"PostgresInstanceAuthenticationAuthority", AllPostgresInstanceAuthenticationAuthorities, ToPostgresInstanceAuthenticationAuthority})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceResetAccessRole]{"PostgresInstanceResetAccessRole", AllPostgresInstanceResetAccessRoles, ToPostgresInstanceResetAccessRole})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceComputeFamily]{"PostgresInstanceComputeFamily", AllPostgresInstanceComputeFamilies, ToPostgresInstanceComputeFamily})
 }
 
 func TestPostgresInstances_Create(t *testing.T) {

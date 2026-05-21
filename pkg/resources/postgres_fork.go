@@ -85,8 +85,9 @@ var postgresForkSchema = map[string]*schema.Schema{
 	"compute_family": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("compute_family"),
-		Description:      "Specifies the compute family for the forked Postgres instance (e.g. STANDARD_M).",
+		ValidateDiagFunc: sdkValidation(sdk.ToPostgresInstanceComputeFamily),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToPostgresInstanceComputeFamily),
+		Description:      fmt.Sprintf("Specifies the compute family for the forked Postgres instance. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllPostgresInstanceComputeFamilies)),
 	},
 	"storage_size_gb": {
 		Type:             schema.TypeInt,
@@ -311,6 +312,12 @@ func ReadPostgresForkFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			); err != nil {
 				return diag.FromErr(err)
 			}
+		}
+
+		if err = setStateToValuesFromConfig(d, postgresForkSchema, []string{
+			"compute_family",
+		}); err != nil {
+			return diag.FromErr(err)
 		}
 
 		errs := errors.Join(

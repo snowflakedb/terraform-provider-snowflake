@@ -29,9 +29,11 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"compute_family": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "Specifies the compute family for the Postgres instance (e.g. STANDARD_M).",
+		Type:             schema.TypeString,
+		Required:         true,
+		ValidateDiagFunc: sdkValidation(sdk.ToPostgresInstanceComputeFamily),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToPostgresInstanceComputeFamily),
+		Description:      fmt.Sprintf("Specifies the compute family for the Postgres instance. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllPostgresInstanceComputeFamilies)),
 	},
 	"storage_size_gb": {
 		Type:             schema.TypeInt,
@@ -243,6 +245,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 
 		if err = setStateToValuesFromConfig(d, postgresInstanceSchema, []string{
 			"authentication_authority",
+			"compute_family",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
