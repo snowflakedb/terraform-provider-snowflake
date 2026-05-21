@@ -1,9 +1,8 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas/gen.ShowResultSchemaModel*/ -}}
 
-{{ $mapperName := .EffectiveMapperName }}
-{{ $nameLowerCase := FirstLetterLowercase $mapperName }}
+{{ $nameLowerCase := FirstLetterLowercase .Name }}
 {{ $schemaName := $nameLowerCase | printf "%sSchema" }}
-func {{ $mapperName }}ToSchema({{ $nameLowerCase }} *{{ .SdkType }}) map[string]any {
+func {{ .Name }}ToSchema({{ $nameLowerCase }} *{{ .SdkType }}) map[string]any {
 {{ $schemaName }} := make(map[string]any)
 {{- range .SchemaFields }}
     {{ if .IsOriginalTypePointer -}}
@@ -17,4 +16,4 @@ func {{ $mapperName }}ToSchema({{ $nameLowerCase }} *{{ .SdkType }}) map[string]
 return {{ $schemaName }}
 }
 
-var _ = {{ $mapperName }}ToSchema
+var _ = {{ .Name }}ToSchema
