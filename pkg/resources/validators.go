@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -138,4 +139,21 @@ func IsValidListingName(i any, path cty.Path) diag.Diagnostics {
 	}
 
 	return nil
+}
+
+func isIntBetween(min, max int) schema.SchemaValidateDiagFunc {
+	return func(value any, path cty.Path) diag.Diagnostics {
+		v, ok := value.(string)
+		if !ok {
+			return diag.Errorf("expected type of %v to be string, got %T", path, value)
+		}
+		n, err := strconv.Atoi(v)
+		if err != nil {
+			return diag.Errorf("expected %v to be a valid integer, got %s", path, v)
+		}
+		if n < min || n > max {
+			return diag.Errorf("expected %v to be between %d and %d, got %d", path, min, max, n)
+		}
+		return nil
+	}
 }

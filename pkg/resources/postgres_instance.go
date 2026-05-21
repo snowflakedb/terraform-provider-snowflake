@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -79,9 +80,9 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		Description: "Specifies custom Postgres settings as a JSON string.",
 	},
 	"maintenance_window_start": {
-		Type:             schema.TypeInt,
+		Type:             schema.TypeString,
 		Optional:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(0, 23)),
+		ValidateDiagFunc: isIntBetween(0, 23),
 		Description:      "Specifies the hour (0-23 UTC) at which the maintenance window starts.",
 	},
 	"comment": {
@@ -238,7 +239,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 				outputMapping{"network_policy", "network_policy", networkPolicy, networkPolicy, nil},
 				outputMapping{"storage_integration", "storage_integration", storageIntegration, storageIntegration, nil},
 				outputMapping{"postgres_version", "postgres_version", details.PostgresVersion, details.PostgresVersion, nil},
-				outputMapping{"maintenance_window_start", "maintenance_window_start", details.MaintenanceWindowStart, details.MaintenanceWindowStart, nil},
+				outputMapping{"maintenance_window_start", "maintenance_window_start", details.MaintenanceWindowStart, strconv.Itoa(details.MaintenanceWindowStart), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -272,8 +273,8 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			return diag.FromErr(errs)
 		}
 
-		if details.MaintenanceWindowStart != 0 {
-			if err := d.Set("maintenance_window_start", details.MaintenanceWindowStart); err != nil {
+		if details.MaintenanceWindowStart != 0 || d.Get("maintenance_window_start").(string) != "" {
+			if err := d.Set("maintenance_window_start", strconv.Itoa(details.MaintenanceWindowStart)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -335,7 +336,7 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		accountObjectIdentifierAttributeUpdate(d, "storage_integration", &set.StorageIntegration, &unset.StorageIntegration),
 		intAttributeUpdateSetOnly(d, "storage_size_gb", &set.StorageSizeGb),
 		intAttributeUpdateSetOnly(d, "postgres_version", &set.PostgresVersion),
-		intAttributeUpdate(d, "maintenance_window_start", &set.MaintenanceWindowStart, &unset.MaintenanceWindowStart),
+		attributeMappedValueUpdate(d, "maintenance_window_start", &set.MaintenanceWindowStart, &unset.MaintenanceWindowStart, strconv.Atoi),
 		attributeMappedValueUpdateSetOnly(d, "authentication_authority", &set.AuthenticationAuthority, sdk.ToPostgresInstanceAuthenticationAuthority),
 		stringAttributeUpdateSetOnlyNotEmpty(d, "compute_family", &set.ComputeFamily),
 	)

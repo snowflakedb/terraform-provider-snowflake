@@ -128,7 +128,7 @@ func TestAcc_PostgresInstance_Complete(t *testing.T) {
 		WithComment(commentUpdated).
 		WithHighAvailability(false).
 		WithPostgresSettings(`{"work_mem": "64MB"}`).
-		WithMaintenanceWindowStart(10)
+		WithMaintenanceWindowStart("10")
 
 	assertWithMaintenance := []assert.TestCheckFuncProvider{
 		resourceassert.PostgresInstanceResource(t, modelWithMaintenance.ResourceReference()).

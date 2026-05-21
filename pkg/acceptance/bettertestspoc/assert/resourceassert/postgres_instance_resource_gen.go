@@ -62,8 +62,8 @@ func (p *PostgresInstanceResourceAssert) HasHighAvailability(expected string) *P
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStart(expected int) *PostgresInstanceResourceAssert {
-	p.IntValueSet("maintenance_window_start", expected)
+func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStart(expected string) *PostgresInstanceResourceAssert {
+	p.StringValueSet("maintenance_window_start", expected)
 	return p
 }
 
