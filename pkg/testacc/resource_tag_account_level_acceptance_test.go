@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,7 +17,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
+func TestAcc_Tag_CompleteUseCase_OnConflict_Bcr2291(t *testing.T) {
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeNonProdEnvironment {
+		t.Skip("Tag propagation tests are only supported in non-prod environments")
+	}
+
 	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifier()
 
 	// Ensure the bundle is always re-enabled after the test, even on failure.
@@ -122,7 +127,11 @@ func TestAcc_Tag_OnConflict_Bcr2291(t *testing.T) {
 	})
 }
 
-func TestAcc_Tag_OnConflictAllowedValuesSequence_Bcr2291(t *testing.T) {
+func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *testing.T) {
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeNonProdEnvironment {
+		t.Skip("Tag propagation tests are only supported in non-prod environments")
+	}
+
 	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifier()
 
 	// Ensure the bundle is always re-enabled after the test, even on failure.
