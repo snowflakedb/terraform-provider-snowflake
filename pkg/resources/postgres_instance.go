@@ -27,6 +27,7 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the Postgres instance; must be unique for your account."),
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"compute_family": {
@@ -57,9 +58,11 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		Description:      "Specifies the Postgres version for the instance.",
 	},
 	"network_policy": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies the network policy to associate with the Postgres instance.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "Specifies the network policy to associate with the Postgres instance.",
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"high_availability": {
 		Type:             schema.TypeString,
@@ -70,9 +73,11 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		Default:          BooleanDefault,
 	},
 	"storage_integration": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies the storage integration for the Postgres instance.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "Specifies the storage integration for the Postgres instance.",
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"postgres_settings": {
 		Type:        schema.TypeString,
