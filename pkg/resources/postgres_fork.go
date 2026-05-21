@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -251,6 +254,21 @@ func CreatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	if err := client.PostgresInstances.Fork(ctx, request); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating forked Postgres instance %s: %w", id.FullyQualifiedName(), err))
+	}
+
+	if err := util.Retry(5, 3*time.Second, func() (error, bool) {
+		_, err = client.PostgresInstances.ShowByID(ctx, id)
+		if err != nil {
+			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				return nil, false
+			} else {
+				return err, true
+			}
+		}
+		return nil, true
+	}); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to query Postgres instance (%s) after creation, err: %w", id.FullyQualifiedName(), err))
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
