@@ -25,16 +25,20 @@ resource "snowflake_postgres_fork" "basic" {
 
 # fork with point-in-time recovery
 resource "snowflake_postgres_fork" "pitr" {
-  name         = "my_postgres_fork_pitr"
-  fork_from    = "my_source_postgres_instance"
-  at_timestamp = "2025-01-15 12:00:00"
+  name      = "my_postgres_fork_pitr"
+  fork_from = "my_source_postgres_instance"
+  at {
+    timestamp = "2025-01-15 12:00:00"
+  }
 }
 
 # fork with all options
 resource "snowflake_postgres_fork" "complete" {
-  name              = "my_postgres_fork_complete"
-  fork_from         = "my_source_postgres_instance"
-  at_offset         = "-3600"
+  name      = "my_postgres_fork_complete"
+  fork_from = "my_source_postgres_instance"
+  at {
+    offset = "-3600"
+  }
   compute_family    = "STANDARD_1"
   storage_size_gb   = 20
   high_availability = true
@@ -54,13 +58,11 @@ resource "snowflake_postgres_fork" "complete" {
 
 ### Optional
 
-- `at_offset` (String) Specifies the offset in seconds for the fork point-in-time (AT OFFSET).
-- `at_timestamp` (String) Specifies the timestamp for the fork point-in-time (AT TIMESTAMP).
-- `before_offset` (String) Specifies the offset in seconds for the fork point-in-time (BEFORE OFFSET).
-- `before_timestamp` (String) Specifies the timestamp for the fork point-in-time (BEFORE TIMESTAMP).
+- `at` (Block List, Max: 1) Specifies the point-in-time for the fork using AT. Exactly one of `timestamp` or `offset` must be set. (see [below for nested schema](#nestedblock--at))
+- `before` (Block List, Max: 1) Specifies the point-in-time for the fork using BEFORE. Exactly one of `timestamp` or `offset` must be set. (see [below for nested schema](#nestedblock--before))
 - `comment` (String) Specifies a comment for the Postgres instance.
-- `compute_family` (String) Specifies the compute family for the forked Postgres instance (e.g. STANDARD_M).
-- `high_availability` (Boolean) Specifies whether the Postgres instance should be configured for high availability.
+- `compute_family` (String) Specifies the compute family for the forked Postgres instance. Valid values are (case-insensitive): `STANDARD_M` | `STANDARD_L` | `STANDARD_XL` | `STANDARD_2XL` | `STANDARD_4XL` | `STANDARD_8XL` | `STANDARD_12XL` | `STANDARD_24XL` | `HIGHMEM_L` | `HIGHMEM_XL` | `HIGHMEM_2XL` | `HIGHMEM_4XL` | `HIGHMEM_8XL` | `HIGHMEM_12XL` | `HIGHMEM_16XL` | `HIGHMEM_24XL` | `HIGHMEM_32XL` | `HIGHMEM_48XL` | `BURST_XS` | `BURST_S` | `BURST_M`.
+- `high_availability` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the Postgres instance should be configured for high availability. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `postgres_settings` (String) Specifies custom Postgres settings as a JSON string.
 - `storage_size_gb` (Number) Specifies the storage size in GB for the forked Postgres instance.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -71,6 +73,24 @@ resource "snowflake_postgres_fork" "complete" {
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW POSTGRES INSTANCES` for the given Postgres instance. (see [below for nested schema](#nestedatt--show_output))
+
+<a id="nestedblock--at"></a>
+### Nested Schema for `at`
+
+Optional:
+
+- `offset` (String) Specifies the difference in seconds from the current time to use for Time Travel, in the form -N where N can be an integer or arithmetic expression (e.g. -120 is 120 seconds, -30*60 is 1800 seconds or 30 minutes).
+- `timestamp` (String) Specifies an exact date and time to use for Time Travel. The value must be explicitly cast to a TIMESTAMP, TIMESTAMP_LTZ, TIMESTAMP_NTZ, or TIMESTAMP_TZ data type.
+
+
+<a id="nestedblock--before"></a>
+### Nested Schema for `before`
+
+Optional:
+
+- `offset` (String) Specifies the difference in seconds from the current time to use for Time Travel, in the form -N where N can be an integer or arithmetic expression (e.g. -120 is 120 seconds, -30*60 is 1800 seconds or 30 minutes).
+- `timestamp` (String) Specifies an exact date and time to use for Time Travel. The value must be explicitly cast to a TIMESTAMP, TIMESTAMP_LTZ, TIMESTAMP_NTZ, or TIMESTAMP_TZ data type.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

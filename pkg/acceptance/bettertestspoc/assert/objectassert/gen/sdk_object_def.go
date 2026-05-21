@@ -334,6 +334,7 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.TagReference{},
 	},
+	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.PostgresInstanceDetails{},
 		IsDataSourceOutput: true,

@@ -60,10 +60,12 @@ func (p *PostgresForkModel) MarshalJSON() ([]byte, error) {
 	type Alias PostgresForkModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -74,6 +76,11 @@ func (p *PostgresForkModel) WithDependsOn(values ...string) *PostgresForkModel {
 
 func (p *PostgresForkModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *PostgresForkModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *PostgresForkModel) WithTimeout(timeout config.Timeouts) *PostgresForkModel {
+	p.SetTimeout(timeout)
 	return p
 }
 
