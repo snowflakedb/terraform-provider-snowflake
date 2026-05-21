@@ -61,9 +61,12 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		Description: "Specifies the network policy to associate with the Postgres instance.",
 	},
 	"high_availability": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Description: "Specifies whether the Postgres instance should be configured for high availability.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("is_ha"),
+		Description:      booleanStringFieldDescription("Specifies whether the Postgres instance should be configured for high availability."),
+		Default:          BooleanDefault,
 	},
 	"storage_integration": {
 		Type:        schema.TypeString,
@@ -158,10 +161,8 @@ func CreatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		attributeMappedValueCreateBuilder(d, "storage_integration", request.WithStorageIntegration, sdk.ParseAccountObjectIdentifier),
 		stringAttributeCreateBuilder(d, "postgres_settings", request.WithPostgresSettings),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+		booleanStringAttributeCreateBuilder(d, "high_availability", request.WithHighAvailability),
 	)
-	if v, ok := d.GetOk("high_availability"); ok {
-		request.WithHighAvailability(v.(bool))
-	}
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
@@ -222,7 +223,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 				outputMapping{"compute_family", "compute_family", pi.ComputeFamily, pi.ComputeFamily, nil},
 				outputMapping{"storage_size", "storage_size_gb", pi.StorageSize, pi.StorageSize, nil},
 				outputMapping{"authentication_authority", "authentication_authority", pi.AuthenticationAuthority, pi.AuthenticationAuthority, nil},
-				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable(), pi.IsHighlyAvailable(), nil},
+				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable(), booleanStringFromBool(pi.IsHighlyAvailable()), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -246,6 +247,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 		if err = setStateToValuesFromConfig(d, postgresInstanceSchema, []string{
 			"authentication_authority",
 			"compute_family",
+			"high_availability",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -256,7 +258,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			d.Set("compute_family", pi.ComputeFamily),
 			d.Set("storage_size_gb", pi.StorageSize),
 			d.Set("authentication_authority", pi.AuthenticationAuthority),
-			d.Set("high_availability", pi.IsHighlyAvailable()),
+			d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable())),
 			setOptionalFromPtr(d, "comment", pi.Comment),
 			setOptionalFromPtr(d, "postgres_settings", postgresSettings),
 			d.Set("postgres_version", details.PostgresVersion),
@@ -351,7 +353,7 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 	// Group 3: HIGH_AVAILABILITY
 	highAvailabilitySet := sdk.NewPostgresInstanceSetRequest()
 	errs = errors.Join(
-		booleanAttributeUpdateSetOnly(d, "high_availability", &highAvailabilitySet.HighAvailability),
+		booleanStringAttributeUpdateSetOnly(d, "high_availability", &highAvailabilitySet.HighAvailability),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)

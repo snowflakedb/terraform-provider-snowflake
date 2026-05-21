@@ -97,9 +97,12 @@ var postgresForkSchema = map[string]*schema.Schema{
 		Description:      "Specifies the storage size in GB for the forked Postgres instance.",
 	},
 	"high_availability": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Description: "Specifies whether the Postgres instance should be configured for high availability.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("is_ha"),
+		Description:      booleanStringFieldDescription("Specifies whether the Postgres instance should be configured for high availability."),
+		Default:          BooleanDefault,
 	},
 	"postgres_settings": {
 		Type:        schema.TypeString,
@@ -182,7 +185,7 @@ func ImportPostgresFork(ctx context.Context, d *schema.ResourceData, meta any) (
 		d.Set("fork_from", forkFrom),
 		d.Set("compute_family", pi.ComputeFamily),
 		d.Set("storage_size_gb", pi.StorageSize),
-		d.Set("high_availability", pi.IsHighlyAvailable()),
+		d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable())),
 		setOptionalFromPtr(d, "comment", pi.Comment),
 		setOptionalFromPtr(d, "postgres_settings", normalizePostgresSettings(pi.PostgresSettings)),
 	)
@@ -237,20 +240,17 @@ func CreatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	// Handle optional fork-time parameters
-	if v, ok := d.GetOk("compute_family"); ok {
-		request.WithComputeFamily(v.(string))
-	}
+	errs := errors.Join(
+		stringAttributeCreateBuilder(d, "compute_family", request.WithComputeFamily),
+		booleanStringAttributeCreateBuilder(d, "high_availability", request.WithHighAvailability),
+		stringAttributeCreateBuilder(d, "postgres_settings", request.WithPostgresSettings),
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+	)
 	if v, ok := d.GetOk("storage_size_gb"); ok {
 		request.WithStorageSizeGb(v.(int))
 	}
-	if v, ok := d.GetOk("high_availability"); ok {
-		request.WithHighAvailability(v.(bool))
-	}
-	if v, ok := d.GetOk("postgres_settings"); ok {
-		request.WithPostgresSettings(v.(string))
-	}
-	if v, ok := d.GetOk("comment"); ok {
-		request.WithComment(v.(string))
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	if err := client.PostgresInstances.Fork(ctx, request); err != nil {
@@ -308,7 +308,7 @@ func ReadPostgresForkFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"compute_family", "compute_family", pi.ComputeFamily, pi.ComputeFamily, nil},
 				outputMapping{"storage_size", "storage_size_gb", pi.StorageSize, pi.StorageSize, nil},
-				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable(), pi.IsHighlyAvailable(), nil},
+				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable(), booleanStringFromBool(pi.IsHighlyAvailable()), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -316,6 +316,7 @@ func ReadPostgresForkFunc(withExternalChangesMarking bool) schema.ReadContextFun
 
 		if err = setStateToValuesFromConfig(d, postgresForkSchema, []string{
 			"compute_family",
+			"high_availability",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -324,7 +325,7 @@ func ReadPostgresForkFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			d.Set("name", pi.Name),
 			d.Set("compute_family", pi.ComputeFamily),
 			d.Set("storage_size_gb", pi.StorageSize),
-			d.Set("high_availability", pi.IsHighlyAvailable()),
+			d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable())),
 			setOptionalFromPtr(d, "comment", pi.Comment),
 			setOptionalFromPtr(d, "postgres_settings", normalizePostgresSettings(pi.PostgresSettings)),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),
@@ -405,7 +406,7 @@ func UpdatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 	// Group 3: HIGH_AVAILABILITY
 	highAvailabilitySet := sdk.NewPostgresInstanceSetRequest()
 	errs = errors.Join(
-		booleanAttributeUpdateSetOnly(d, "high_availability", &highAvailabilitySet.HighAvailability),
+		booleanStringAttributeUpdateSetOnly(d, "high_availability", &highAvailabilitySet.HighAvailability),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)

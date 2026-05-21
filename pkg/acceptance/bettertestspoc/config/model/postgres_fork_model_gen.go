@@ -110,8 +110,8 @@ func (p *PostgresForkModel) WithFullyQualifiedName(fullyQualifiedName string) *P
 	return p
 }
 
-func (p *PostgresForkModel) WithHighAvailability(highAvailability bool) *PostgresForkModel {
-	p.HighAvailability = tfconfig.BoolVariable(highAvailability)
+func (p *PostgresForkModel) WithHighAvailability(highAvailability string) *PostgresForkModel {
+	p.HighAvailability = tfconfig.StringVariable(highAvailability)
 	return p
 }
 

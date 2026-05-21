@@ -57,8 +57,8 @@ func (p *PostgresInstanceResourceAssert) HasFullyQualifiedName(expected string) 
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasHighAvailability(expected bool) *PostgresInstanceResourceAssert {
-	p.BoolValueSet("high_availability", expected)
+func (p *PostgresInstanceResourceAssert) HasHighAvailability(expected string) *PostgresInstanceResourceAssert {
+	p.StringValueSet("high_availability", expected)
 	return p
 }
 
