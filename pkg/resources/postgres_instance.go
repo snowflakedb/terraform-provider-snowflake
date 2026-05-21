@@ -152,7 +152,7 @@ func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		d.Set("compute_family", pi.ComputeFamily),
 		d.Set("storage_size_gb", pi.StorageSize),
 		d.Set("authentication_authority", pi.AuthenticationAuthority),
-		d.Set("high_availability", pi.IsHa),
+		d.Set("high_availability", pi.IsHighlyAvailable()),
 		setOptionalFromPtr(d, "comment", pi.Comment),
 		setOptionalFromPtr(d, "postgres_settings", postgresSettings),
 		d.Set("postgres_version", details.PostgresVersion),
@@ -245,7 +245,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 				outputMapping{"compute_family", "compute_family", pi.ComputeFamily, pi.ComputeFamily, nil},
 				outputMapping{"storage_size", "storage_size_gb", pi.StorageSize, pi.StorageSize, nil},
 				outputMapping{"authentication_authority", "authentication_authority", pi.AuthenticationAuthority, pi.AuthenticationAuthority, nil},
-				outputMapping{"is_ha", "high_availability", pi.IsHa, pi.IsHa, nil},
+				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable(), pi.IsHighlyAvailable(), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -278,7 +278,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			d.Set("compute_family", pi.ComputeFamily),
 			d.Set("storage_size_gb", pi.StorageSize),
 			d.Set("authentication_authority", pi.AuthenticationAuthority),
-			d.Set("high_availability", pi.IsHa),
+			d.Set("high_availability", pi.IsHighlyAvailable()),
 			setOptionalFromPtr(d, "comment", pi.Comment),
 			setOptionalFromPtr(d, "postgres_settings", postgresSettings),
 			d.Set("postgres_version", details.PostgresVersion),
@@ -371,16 +371,16 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	// Group 3: HIGH_AVAILABILITY
-	haSet := sdk.NewPostgresInstanceSetRequest()
+	highAvailabilitySet := sdk.NewPostgresInstanceSetRequest()
 	errs = errors.Join(
-		booleanAttributeUpdateSetOnly(d, "high_availability", &haSet.HighAvailability),
+		booleanAttributeUpdateSetOnly(d, "high_availability", &highAvailabilitySet.HighAvailability),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
 
-	if !reflect.DeepEqual(haSet, &sdk.PostgresInstanceSetRequest{}) {
-		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*haSet)
+	if !reflect.DeepEqual(highAvailabilitySet, &sdk.PostgresInstanceSetRequest{}) {
+		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*highAvailabilitySet)
 		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting Postgres instance high_availability: %w", err))
 		}
