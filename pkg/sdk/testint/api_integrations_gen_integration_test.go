@@ -55,7 +55,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateApiIntegrationRequest(id, prefixes(awsPrefix), true).
-			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiGateway, apiAwsRoleArn))
+			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, apiAwsRoleArn))
 	}
 
 	createApiIntegrationAzureRequest := func(t *testing.T) *sdk.CreateApiIntegrationRequest {
@@ -405,7 +405,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_KEY", Type: "String", Value: "", Default: ""})
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_PROVIDER", Type: "String", Value: strings.ToUpper(string(sdk.ApiIntegrationAwsApiGateway)), Default: ""})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_PROVIDER", Type: "String", Value: strings.ToUpper(string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway)), Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_AWS_ROLE_ARN", Type: "String", Value: apiAwsRoleArn, Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_ALLOWED_PREFIXES", Type: "List", Value: awsPrefix, Default: "[]"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_BLOCKED_PREFIXES", Type: "List", Value: "", Default: "[]"})

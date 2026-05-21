@@ -6,7 +6,59 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var (
+	ApiIntegrationAwsApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationAwsApiProviderType", "ApiIntegrationAwsApiProviderTypes",
+		"aws_api_gateway",
+		"aws_private_api_gateway",
+		"aws_gov_api_gateway",
+		"aws_gov_private_api_gateway",
+	)
+	ApiIntegrationOauthClientAuthMethodEnum = g.NewEnum(
+		"ApiIntegrationOauthClientAuthMethod", "ApiIntegrationOauthClientAuthMethods",
+		"CLIENT_SECRET_BASIC",
+		"CLIENT_SECRET_POST",
+	)
+)
+
 var ApiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
+
+// ALLOWED_AUTHENTICATION_SECRETS = ALL | NONE | ( secrets... )
+// Pattern follows sessionPolicySecondaryRoles in session_policies_def.go
+var apiIntegrationAllowedAuthSecretsDef = g.NewQueryStruct("ApiIntegrationAllowedAuthenticationSecrets").
+	OptionalSQLWithCustomFieldName("AllSecrets", "ALL").
+	OptionalSQLWithCustomFieldName("NoSecrets", "NONE").
+	List("AllowedList", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ListOptions().Parentheses()).
+	WithValidation(g.ExactlyOneValueSet, "AllSecrets", "NoSecrets", "AllowedList")
+
+// API_USER_AUTHENTICATION = ( TYPE = OAUTH2 ... ) for git_https_api
+// OAUTH_ALLOWED_SCOPES reuses ApiIntegrationScope from secrets_gen.go
+var oauth2GitAuthDef = g.NewQueryStruct("OAuth2GitUserAuthentication").
+	SQLWithCustomFieldName("authType", "TYPE = OAUTH2").
+	TextAssignment("OAUTH_AUTHORIZATION_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
+	TextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
+	TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes().Required()).
+	TextAssignment("OAUTH_CLIENT_SECRET", g.ParameterOptions().SingleQuotes().Required()).
+	OptionalNumberAssignment("OAUTH_ACCESS_TOKEN_VALIDITY", g.ParameterOptions().NoQuotes()).
+	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions().NoQuotes()).
+	ListAssignment("OAUTH_ALLOWED_SCOPES", "ApiIntegrationScope", g.ParameterOptions().Parentheses()).
+	OptionalTextAssignment("OAUTH_USERNAME", g.ParameterOptions().SingleQuotes())
+
+// API_USER_AUTHENTICATION = ( TYPE = OAUTH2 ... ) for external_mcp
+var oauth2McpAuthDef = g.NewQueryStruct("OAuth2McpUserAuthentication").
+	SQLWithCustomFieldName("authType", "TYPE = OAUTH2").
+	TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes().Required()).
+	TextAssignment("OAUTH_CLIENT_SECRET", g.ParameterOptions().SingleQuotes().Required()).
+	TextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
+	TextAssignment("OAUTH_AUTHORIZATION_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
+	OptionalEnumAssignment("OAUTH_CLIENT_AUTH_METHOD", ApiIntegrationOauthClientAuthMethodEnum, g.ParameterOptions().NoQuotes()).
+	OptionalTextAssignment("OAUTH_DISCOVERY_URL", g.ParameterOptions().SingleQuotes()).
+	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions().NoQuotes())
+
+// API_USER_AUTHENTICATION = ( TYPE = OAUTH_DYNAMIC_CLIENT ... ) for external_mcp
+var dynamicClientMcpAuthDef = g.NewQueryStruct("DynamicClientMcpUserAuthentication").
+	SQLWithCustomFieldName("authType", "TYPE = OAUTH_DYNAMIC_CLIENT").
+	TextAssignment("OAUTH_RESOURCE_URL", g.ParameterOptions().SingleQuotes().Required())
 
 // TODO [SNOW-1016561]: all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
 var apiIntegrationsDef = g.NewInterface(
@@ -14,6 +66,7 @@ var apiIntegrationsDef = g.NewInterface(
 	"ApiIntegration",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
+	WithEnums(ApiIntegrationAwsApiProviderTypeEnum, ApiIntegrationOauthClientAuthMethodEnum).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-api-integration",
 		g.NewQueryStruct("CreateApiIntegration").
@@ -25,8 +78,7 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AwsApiProviderParams",
 				g.NewQueryStruct("AwsApiParams").
-					// TODO: Turn into generated enum
-					Assignment("API_PROVIDER", g.KindOfT[sdkcommons.ApiIntegrationAwsApiProviderType](), g.ParameterOptions().NoQuotes().Required()).
+					EnumAssignment("API_PROVIDER", ApiIntegrationAwsApiProviderTypeEnum, g.ParameterOptions().NoQuotes().Required()).
 					TextAssignment("API_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("API_KEY", g.ParameterOptions().SingleQuotes()),
 				g.KeywordOptions(),
@@ -34,7 +86,6 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AzureApiProviderParams",
 				g.NewQueryStruct("AzureApiParams").
-					// TODO: Turn into generated enum (?)
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = azure_api_management").
 					TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
 					TextAssignment("AZURE_AD_APPLICATION_ID", g.ParameterOptions().SingleQuotes().Required()).
@@ -44,22 +95,88 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"GoogleApiProviderParams",
 				g.NewQueryStruct("GoogleApiParams").
-					// TODO: Turn into generated enum (?)
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = google_api_gateway").
 					TextAssignment("GOOGLE_AUDIENCE", g.ParameterOptions().SingleQuotes().Required()),
 				g.KeywordOptions(),
 			).
-			// TODO: Add git repository variant (with internal 4 variants: Token, GitHub OAuth, OAuth2 parameters, Private Link)
-			// TODO: Add external MCP server variant (with internal 2 variants: OAuth2 and Dynamic Client Registration)
+			OptionalQueryStructField(
+				"GitHttpsApiTokenBasedProviderParams",
+				g.NewQueryStruct("GitHttpsApiTokenBasedParams").
+					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
+					OptionalQueryStructField(
+						"AllowedAuthenticationSecrets",
+						apiIntegrationAllowedAuthSecretsDef,
+						g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
+					),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"GitHttpsApiGithubAppProviderParams",
+				g.NewQueryStruct("GitHttpsApiGithubAppParams").
+					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
+					SQLWithCustomFieldName("apiUserAuthentication", "API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"GitHttpsApiOAuth2ProviderParams",
+				g.NewQueryStruct("GitHttpsApiOAuth2Params").
+					// TODO: Turn into generated enum (? and in other cases?)
+					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
+					QueryStructField(
+						"ApiUserAuthentication",
+						oauth2GitAuthDef,
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+					),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"GitHttpsApiPrivateLinkProviderParams",
+				g.NewQueryStruct("GitHttpsApiPrivateLinkParams").
+					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
+					OptionalQueryStructField(
+						"AllowedAuthenticationSecrets",
+						apiIntegrationAllowedAuthSecretsDef,
+						g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
+					).
+					BooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions().Required()).
+					ListAssignment("TLS_TRUSTED_CERTIFICATES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses()),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"ExternalMcpOAuth2ProviderParams",
+				g.NewQueryStruct("ExternalMcpOAuth2Params").
+					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = external_mcp").
+					QueryStructField(
+						"ApiUserAuthentication",
+						oauth2McpAuthDef,
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+					),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"ExternalMcpDynamicClientProviderParams",
+				g.NewQueryStruct("ExternalMcpDynamicClientParams").
+					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = external_mcp").
+					QueryStructField(
+						"ApiUserAuthentication",
+						dynamicClientMcpAuthDef,
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+					),
+				g.KeywordOptions(),
+			).
 			ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses().Required()).
-			// TODO: API_BLOCKED_PREFIXES for amazon api gateway is not supported (?)
+			// API_BLOCKED_PREFIXES is not supported for Amazon API Gateway; enforced in validation and github and maybe other types (maybe should be a part of particular type params)
 			ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
-			WithValidation(g.ExactlyOneValueSet, "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams"),
+			WithValidation(g.ExactlyOneValueSet, "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitHttpsApiTokenBasedProviderParams", "GitHttpsApiGithubAppProviderParams", "GitHttpsApiOAuth2ProviderParams", "GitHttpsApiPrivateLinkProviderParams", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"),
 		ApiIntegrationEndpointPrefixDef,
+		apiIntegrationAllowedAuthSecretsDef,
+		oauth2GitAuthDef,
+		oauth2McpAuthDef,
+		dynamicClientMcpAuthDef,
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-api-integration",
@@ -95,13 +212,73 @@ var apiIntegrationsDef = g.NewInterface(
 							TextAssignment("GOOGLE_AUDIENCE", g.ParameterOptions().SingleQuotes().Required()),
 						g.KeywordOptions(),
 					).
+					OptionalQueryStructField(
+						"GitHttpsApiTokenBasedParams",
+						g.NewQueryStruct("SetGitHttpsApiTokenBasedParams").
+							OptionalQueryStructField(
+								"AllowedAuthenticationSecrets",
+								apiIntegrationAllowedAuthSecretsDef,
+								g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
+							).
+							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets"),
+						g.KeywordOptions(),
+					).
+					OptionalQueryStructField(
+						"GitHttpsApiGithubAppParams",
+						g.NewQueryStruct("SetGitHttpsApiGithubAppParams").
+							SQLWithCustomFieldName("ApiUserAuthentication", "API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"),
+						g.KeywordOptions(),
+					).
+					OptionalQueryStructField(
+						"GitHttpsApiOAuth2Params",
+						g.NewQueryStruct("SetGitHttpsApiOAuth2Params").
+							QueryStructField(
+								"ApiUserAuthentication",
+								oauth2GitAuthDef,
+								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+							),
+						g.KeywordOptions(),
+					).
+					OptionalQueryStructField(
+						"GitHttpsApiPrivateLinkParams",
+						g.NewQueryStruct("SetGitHttpsApiPrivateLinkParams").
+							OptionalQueryStructField(
+								"AllowedAuthenticationSecrets",
+								apiIntegrationAllowedAuthSecretsDef,
+								g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
+							).
+							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
+							ListAssignment("TLS_TRUSTED_CERTIFICATES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses()).
+							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "TlsTrustedCertificates"),
+						g.KeywordOptions(),
+					).
+					OptionalQueryStructField(
+						"ExternalMcpOAuth2Params",
+						g.NewQueryStruct("SetExternalMcpOAuth2Params").
+							QueryStructField(
+								"ApiUserAuthentication",
+								oauth2McpAuthDef,
+								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+							),
+						g.KeywordOptions(),
+					).
+					OptionalQueryStructField(
+						"ExternalMcpDynamicClientParams",
+						g.NewQueryStruct("SetExternalMcpDynamicClientParams").
+							QueryStructField(
+								"ApiUserAuthentication",
+								dynamicClientMcpAuthDef,
+								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+							),
+						g.KeywordOptions(),
+					).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 					ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					OptionalComment().
-					// resulting validation changed to moreThanOneValueSet (not yet supported in the generator)
-					WithValidation(g.ConflictingFields, "AwsParams", "AzureParams", "GoogleParams").
-					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GoogleParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"),
+					// TODO [SNOW-2324252]: ConflictingFields generates everyValueSet; change to moreThanOneValueSet manually after regeneration
+					WithValidation(g.ConflictingFields, "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiGithubAppParams", "GitHttpsApiOAuth2Params", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "ExternalMcpDynamicClientParams").
+					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiGithubAppParams", "GitHttpsApiOAuth2Params", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "ExternalMcpDynamicClientParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).
 			OptionalQueryStructField(
@@ -110,8 +287,10 @@ var apiIntegrationsDef = g.NewInterface(
 					OptionalSQL("API_KEY").
 					OptionalSQL("ENABLED").
 					OptionalSQL("API_BLOCKED_PREFIXES").
+					OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
+					OptionalSQL("USE_PRIVATELINK_ENDPOINT").
 					OptionalSQL("COMMENT").
-					WithValidation(g.AtLeastOneValueSet, "ApiKey", "Enabled", "ApiBlockedPrefixes", "Comment"),
+					WithValidation(g.AtLeastOneValueSet, "ApiKey", "Enabled", "ApiBlockedPrefixes", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "Comment"),
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			OptionalSetTags().

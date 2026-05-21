@@ -1,9 +1,8 @@
 package sdkcommons
 
 type (
-	ColumnConstraintType                                     string
-	ApiIntegrationAwsApiProviderType                         string
-	AutoEventLogging                                         string
+	ColumnConstraintType string
+	AutoEventLogging     string
 	ComputePoolInstanceFamily                                string
 	DataType                                                 string
 	ImageRepositoryEncryptionType                            string
