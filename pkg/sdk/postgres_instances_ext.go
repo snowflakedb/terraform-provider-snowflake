@@ -120,6 +120,10 @@ func (v *postgresInstances) DescribeDetails(ctx context.Context, id AccountObjec
 	return ParsePostgresInstanceDetails(properties)
 }
 
+func (v *PostgresInstance) IsHighlyAvailable() bool {
+	return v.IsHa
+}
+
 func (r postgresInstancesRow) convert() (*PostgresInstance, error) {
 	pi := &PostgresInstance{
 		Name:                    r.Name,
