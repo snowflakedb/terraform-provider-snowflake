@@ -13,21 +13,24 @@ var programmaticAccessTokenPairs = g.StructPair("programmaticAccessTokenResultDB
 	AccountObjectIdentifier("user_name", g.WithPlainFieldName("UserName")).
 	OptionalAccountObjectIdentifier("role_restriction", g.WithPlainFieldName("RoleRestriction")).
 	Time("expires_at").
-	PlainField("status", "ProgrammaticAccessTokenStatus").
+	Enum("status", ProgrammaticAccessTokenStatusDef).
 	OptionalText("comment").
 	Time("created_on").
 	Text("created_by").
 	OptionalNumber("mins_to_bypass_network_policy_requirement").
-	OptionalText("rotated_to")
+	OptionalText("rotated_to").
+	WithConvertGeneration()
 
 var addProgrammaticAccessTokenResultPairs = g.StructPair("addProgrammaticAccessTokenResultDBRow", "AddProgrammaticAccessTokenResult").
 	Text("token_name").
-	Text("token_secret")
+	Text("token_secret").
+	WithConvertGeneration()
 
 var rotateProgrammaticAccessTokenResultPairs = g.StructPair("rotateProgrammaticAccessTokenResultDBRow", "RotateProgrammaticAccessTokenResult").
 	Text("token_name").
 	Text("token_secret").
-	Text("rotated_token_name")
+	Text("rotated_token_name").
+	WithConvertGeneration()
 
 var userProgrammaticAccessTokensDef = g.NewInterface(
 	"UserProgrammaticAccessTokens",
