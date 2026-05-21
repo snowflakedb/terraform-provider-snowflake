@@ -46,8 +46,8 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 	"postgres_version": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		Computed:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("postgres_version"),
 		Description:      "Specifies the Postgres version for the instance.",
 	},
 	"network_policy": {
