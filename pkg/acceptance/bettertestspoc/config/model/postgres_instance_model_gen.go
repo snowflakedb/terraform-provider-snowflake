@@ -116,8 +116,8 @@ func (p *PostgresInstanceModel) WithFullyQualifiedName(fullyQualifiedName string
 	return p
 }
 
-func (p *PostgresInstanceModel) WithHighAvailability(highAvailability bool) *PostgresInstanceModel {
-	p.HighAvailability = tfconfig.BoolVariable(highAvailability)
+func (p *PostgresInstanceModel) WithHighAvailability(highAvailability string) *PostgresInstanceModel {
+	p.HighAvailability = tfconfig.StringVariable(highAvailability)
 	return p
 }
 
