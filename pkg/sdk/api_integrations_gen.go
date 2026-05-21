@@ -29,8 +29,10 @@ type CreateApiIntegrationOptions struct {
 	AwsApiProviderParams                   *AwsApiParams                   `ddl:"keyword"`
 	AzureApiProviderParams                 *AzureApiParams                 `ddl:"keyword"`
 	GoogleApiProviderParams                *GoogleApiParams                `ddl:"keyword"`
+	GitHttpsApiTokenBasedProviderParams    *GitHttpsApiTokenBasedParams    `ddl:"keyword"`
 	GitHttpsApiGithubAppProviderParams     *GitHttpsApiGithubAppParams     `ddl:"keyword"`
 	GitHttpsApiOAuth2ProviderParams        *GitHttpsApiOAuth2Params        `ddl:"keyword"`
+	GitHttpsApiPrivateLinkProviderParams   *GitHttpsApiPrivateLinkParams   `ddl:"keyword"`
 	ExternalMcpOAuth2ProviderParams        *ExternalMcpOAuth2Params        `ddl:"keyword"`
 	ExternalMcpDynamicClientProviderParams *ExternalMcpDynamicClientParams `ddl:"keyword"`
 	ApiAllowedPrefixes                     []ApiIntegrationEndpointPrefix  `ddl:"parameter,parentheses" sql:"API_ALLOWED_PREFIXES"`
@@ -95,19 +97,25 @@ type GoogleApiParams struct {
 	GoogleAudience string `ddl:"parameter,single_quotes" sql:"GOOGLE_AUDIENCE"`
 }
 
-type GitHttpsApiGithubAppParams struct {
+type GitHttpsApiTokenBasedParams struct {
 	apiProvider                  bool                                        `ddl:"static" sql:"API_PROVIDER = git_https_api"`
 	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecrets `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS ="`
-	apiUserAuthentication        bool                                        `ddl:"static" sql:"API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"`
-	UsePrivatelinkEndpoint       *bool                                       `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
-	TlsTrustedCertificates       []SchemaObjectIdentifier                    `ddl:"parameter,parentheses" sql:"TLS_TRUSTED_CERTIFICATES"`
+}
+
+type GitHttpsApiGithubAppParams struct {
+	apiProvider           bool `ddl:"static" sql:"API_PROVIDER = git_https_api"`
+	apiUserAuthentication bool `ddl:"static" sql:"API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"`
 }
 
 type GitHttpsApiOAuth2Params struct {
+	apiProvider           bool                        `ddl:"static" sql:"API_PROVIDER = git_https_api"`
+	ApiUserAuthentication OAuth2GitUserAuthentication `ddl:"list,parentheses,no_comma" sql:"API_USER_AUTHENTICATION ="`
+}
+
+type GitHttpsApiPrivateLinkParams struct {
 	apiProvider                  bool                                        `ddl:"static" sql:"API_PROVIDER = git_https_api"`
 	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecrets `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS ="`
-	ApiUserAuthentication        OAuth2GitUserAuthentication                 `ddl:"list,parentheses,no_comma" sql:"API_USER_AUTHENTICATION ="`
-	UsePrivatelinkEndpoint       *bool                                       `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
+	UsePrivatelinkEndpoint       bool                                        `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 	TlsTrustedCertificates       []SchemaObjectIdentifier                    `ddl:"parameter,parentheses" sql:"TLS_TRUSTED_CERTIFICATES"`
 }
 
@@ -137,8 +145,10 @@ type ApiIntegrationSet struct {
 	AwsParams                      *SetAwsApiParams                   `ddl:"keyword"`
 	AzureParams                    *SetAzureApiParams                 `ddl:"keyword"`
 	GoogleParams                   *SetGoogleApiParams                `ddl:"keyword"`
+	GitHttpsApiTokenBasedParams    *SetGitHttpsApiTokenBasedParams    `ddl:"keyword"`
 	GitHttpsApiGithubAppParams     *SetGitHttpsApiGithubAppParams     `ddl:"keyword"`
 	GitHttpsApiOAuth2Params        *SetGitHttpsApiOAuth2Params        `ddl:"keyword"`
+	GitHttpsApiPrivateLinkParams   *SetGitHttpsApiPrivateLinkParams   `ddl:"keyword"`
 	ExternalMcpOAuth2Params        *SetExternalMcpOAuth2Params        `ddl:"keyword"`
 	ExternalMcpDynamicClientParams *SetExternalMcpDynamicClientParams `ddl:"keyword"`
 	Enabled                        *bool                              `ddl:"parameter" sql:"ENABLED"`
@@ -162,16 +172,20 @@ type SetGoogleApiParams struct {
 	GoogleAudience string `ddl:"parameter,single_quotes" sql:"GOOGLE_AUDIENCE"`
 }
 
-type SetGitHttpsApiGithubAppParams struct {
+type SetGitHttpsApiTokenBasedParams struct {
 	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecrets `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS ="`
-	ApiUserAuthentication        *bool                                       `ddl:"keyword" sql:"API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"`
-	UsePrivatelinkEndpoint       *bool                                       `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
-	TlsTrustedCertificates       []SchemaObjectIdentifier                    `ddl:"parameter,parentheses" sql:"TLS_TRUSTED_CERTIFICATES"`
+}
+
+type SetGitHttpsApiGithubAppParams struct {
+	ApiUserAuthentication bool `ddl:"static" sql:"API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"`
 }
 
 type SetGitHttpsApiOAuth2Params struct {
+	ApiUserAuthentication OAuth2GitUserAuthentication `ddl:"list,parentheses,no_comma" sql:"API_USER_AUTHENTICATION ="`
+}
+
+type SetGitHttpsApiPrivateLinkParams struct {
 	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecrets `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS ="`
-	ApiUserAuthentication        *OAuth2GitUserAuthentication                `ddl:"list,parentheses,no_comma" sql:"API_USER_AUTHENTICATION ="`
 	UsePrivatelinkEndpoint       *bool                                       `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 	TlsTrustedCertificates       []SchemaObjectIdentifier                    `ddl:"parameter,parentheses" sql:"TLS_TRUSTED_CERTIFICATES"`
 }

@@ -97,7 +97,7 @@ func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStru
 	}
 
 	for idx, f := range field.Fields {
-		if f.IsStruct() && !slices.Contains(generatedStructs, f.Name) {
+		if f.IsStruct() && !slices.Contains(generatedStructs, f.KindNoPtr()) {
 			structsToGenerate, generatedStructs = addStructToGenerate(&(field.Fields[idx]), structsToGenerate, generatedStructs)
 		}
 	}

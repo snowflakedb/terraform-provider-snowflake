@@ -39,6 +39,11 @@ func (s *CreateApiIntegrationRequest) WithGoogleApiProviderParams(googleApiProvi
 	return s
 }
 
+func (s *CreateApiIntegrationRequest) WithGitHttpsApiTokenBasedProviderParams(gitHttpsApiTokenBasedProviderParams GitHttpsApiTokenBasedParamsRequest) *CreateApiIntegrationRequest {
+	s.GitHttpsApiTokenBasedProviderParams = &gitHttpsApiTokenBasedProviderParams
+	return s
+}
+
 func (s *CreateApiIntegrationRequest) WithGitHttpsApiGithubAppProviderParams(gitHttpsApiGithubAppProviderParams GitHttpsApiGithubAppParamsRequest) *CreateApiIntegrationRequest {
 	s.GitHttpsApiGithubAppProviderParams = &gitHttpsApiGithubAppProviderParams
 	return s
@@ -46,6 +51,11 @@ func (s *CreateApiIntegrationRequest) WithGitHttpsApiGithubAppProviderParams(git
 
 func (s *CreateApiIntegrationRequest) WithGitHttpsApiOAuth2ProviderParams(gitHttpsApiOAuth2ProviderParams GitHttpsApiOAuth2ParamsRequest) *CreateApiIntegrationRequest {
 	s.GitHttpsApiOAuth2ProviderParams = &gitHttpsApiOAuth2ProviderParams
+	return s
+}
+
+func (s *CreateApiIntegrationRequest) WithGitHttpsApiPrivateLinkProviderParams(gitHttpsApiPrivateLinkProviderParams GitHttpsApiPrivateLinkParamsRequest) *CreateApiIntegrationRequest {
+	s.GitHttpsApiPrivateLinkProviderParams = &gitHttpsApiPrivateLinkProviderParams
 	return s
 }
 
@@ -107,23 +117,13 @@ func NewGoogleApiParamsRequest(
 	return &s
 }
 
-func NewGitHttpsApiGithubAppParamsRequest() *GitHttpsApiGithubAppParamsRequest {
-	s := GitHttpsApiGithubAppParamsRequest{}
+func NewGitHttpsApiTokenBasedParamsRequest() *GitHttpsApiTokenBasedParamsRequest {
+	s := GitHttpsApiTokenBasedParamsRequest{}
 	return &s
 }
 
-func (s *GitHttpsApiGithubAppParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *GitHttpsApiGithubAppParamsRequest {
+func (s *GitHttpsApiTokenBasedParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *GitHttpsApiTokenBasedParamsRequest {
 	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
-	return s
-}
-
-func (s *GitHttpsApiGithubAppParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *GitHttpsApiGithubAppParamsRequest {
-	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
-	return s
-}
-
-func (s *GitHttpsApiGithubAppParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates []SchemaObjectIdentifier) *GitHttpsApiGithubAppParamsRequest {
-	s.TlsTrustedCertificates = tlsTrustedCertificates
 	return s
 }
 
@@ -147,28 +147,18 @@ func (s *ApiIntegrationAllowedAuthenticationSecretsRequest) WithAllowedList(allo
 	return s
 }
 
+func NewGitHttpsApiGithubAppParamsRequest() *GitHttpsApiGithubAppParamsRequest {
+	s := GitHttpsApiGithubAppParamsRequest{}
+	return &s
+}
+
 func NewGitHttpsApiOAuth2ParamsRequest() *GitHttpsApiOAuth2ParamsRequest {
 	s := GitHttpsApiOAuth2ParamsRequest{}
 	return &s
 }
 
-func (s *GitHttpsApiOAuth2ParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *GitHttpsApiOAuth2ParamsRequest {
-	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
-	return s
-}
-
 func (s *GitHttpsApiOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2GitUserAuthenticationRequest) *GitHttpsApiOAuth2ParamsRequest {
 	s.ApiUserAuthentication = apiUserAuthentication
-	return s
-}
-
-func (s *GitHttpsApiOAuth2ParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *GitHttpsApiOAuth2ParamsRequest {
-	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
-	return s
-}
-
-func (s *GitHttpsApiOAuth2ParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates []SchemaObjectIdentifier) *GitHttpsApiOAuth2ParamsRequest {
-	s.TlsTrustedCertificates = tlsTrustedCertificates
 	return s
 }
 
@@ -203,6 +193,24 @@ func (s *OAuth2GitUserAuthenticationRequest) WithOauthAllowedScopes(oauthAllowed
 
 func (s *OAuth2GitUserAuthenticationRequest) WithOauthUsername(oauthUsername string) *OAuth2GitUserAuthenticationRequest {
 	s.OauthUsername = &oauthUsername
+	return s
+}
+
+func NewGitHttpsApiPrivateLinkParamsRequest(
+	usePrivatelinkEndpoint bool,
+) *GitHttpsApiPrivateLinkParamsRequest {
+	s := GitHttpsApiPrivateLinkParamsRequest{}
+	s.UsePrivatelinkEndpoint = usePrivatelinkEndpoint
+	return &s
+}
+
+func (s *GitHttpsApiPrivateLinkParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *GitHttpsApiPrivateLinkParamsRequest {
+	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
+	return s
+}
+
+func (s *GitHttpsApiPrivateLinkParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates []SchemaObjectIdentifier) *GitHttpsApiPrivateLinkParamsRequest {
+	s.TlsTrustedCertificates = tlsTrustedCertificates
 	return s
 }
 
@@ -316,6 +324,11 @@ func (s *ApiIntegrationSetRequest) WithGoogleParams(googleParams SetGoogleApiPar
 	return s
 }
 
+func (s *ApiIntegrationSetRequest) WithGitHttpsApiTokenBasedParams(gitHttpsApiTokenBasedParams SetGitHttpsApiTokenBasedParamsRequest) *ApiIntegrationSetRequest {
+	s.GitHttpsApiTokenBasedParams = &gitHttpsApiTokenBasedParams
+	return s
+}
+
 func (s *ApiIntegrationSetRequest) WithGitHttpsApiGithubAppParams(gitHttpsApiGithubAppParams SetGitHttpsApiGithubAppParamsRequest) *ApiIntegrationSetRequest {
 	s.GitHttpsApiGithubAppParams = &gitHttpsApiGithubAppParams
 	return s
@@ -323,6 +336,11 @@ func (s *ApiIntegrationSetRequest) WithGitHttpsApiGithubAppParams(gitHttpsApiGit
 
 func (s *ApiIntegrationSetRequest) WithGitHttpsApiOAuth2Params(gitHttpsApiOAuth2Params SetGitHttpsApiOAuth2ParamsRequest) *ApiIntegrationSetRequest {
 	s.GitHttpsApiOAuth2Params = &gitHttpsApiOAuth2Params
+	return s
+}
+
+func (s *ApiIntegrationSetRequest) WithGitHttpsApiPrivateLinkParams(gitHttpsApiPrivateLinkParams SetGitHttpsApiPrivateLinkParamsRequest) *ApiIntegrationSetRequest {
+	s.GitHttpsApiPrivateLinkParams = &gitHttpsApiPrivateLinkParams
 	return s
 }
 
@@ -399,29 +417,19 @@ func NewSetGoogleApiParamsRequest(
 	return &s
 }
 
-func NewSetGitHttpsApiGithubAppParamsRequest() *SetGitHttpsApiGithubAppParamsRequest {
-	s := SetGitHttpsApiGithubAppParamsRequest{}
+func NewSetGitHttpsApiTokenBasedParamsRequest() *SetGitHttpsApiTokenBasedParamsRequest {
+	s := SetGitHttpsApiTokenBasedParamsRequest{}
 	return &s
 }
 
-func (s *SetGitHttpsApiGithubAppParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *SetGitHttpsApiGithubAppParamsRequest {
+func (s *SetGitHttpsApiTokenBasedParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *SetGitHttpsApiTokenBasedParamsRequest {
 	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
 	return s
 }
 
-func (s *SetGitHttpsApiGithubAppParamsRequest) WithApiUserAuthentication(apiUserAuthentication bool) *SetGitHttpsApiGithubAppParamsRequest {
-	s.ApiUserAuthentication = &apiUserAuthentication
-	return s
-}
-
-func (s *SetGitHttpsApiGithubAppParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *SetGitHttpsApiGithubAppParamsRequest {
-	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
-	return s
-}
-
-func (s *SetGitHttpsApiGithubAppParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates []SchemaObjectIdentifier) *SetGitHttpsApiGithubAppParamsRequest {
-	s.TlsTrustedCertificates = tlsTrustedCertificates
-	return s
+func NewSetGitHttpsApiGithubAppParamsRequest() *SetGitHttpsApiGithubAppParamsRequest {
+	s := SetGitHttpsApiGithubAppParamsRequest{}
+	return &s
 }
 
 func NewSetGitHttpsApiOAuth2ParamsRequest() *SetGitHttpsApiOAuth2ParamsRequest {
@@ -429,22 +437,27 @@ func NewSetGitHttpsApiOAuth2ParamsRequest() *SetGitHttpsApiOAuth2ParamsRequest {
 	return &s
 }
 
-func (s *SetGitHttpsApiOAuth2ParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *SetGitHttpsApiOAuth2ParamsRequest {
+func (s *SetGitHttpsApiOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2GitUserAuthenticationRequest) *SetGitHttpsApiOAuth2ParamsRequest {
+	s.ApiUserAuthentication = apiUserAuthentication
+	return s
+}
+
+func NewSetGitHttpsApiPrivateLinkParamsRequest() *SetGitHttpsApiPrivateLinkParamsRequest {
+	s := SetGitHttpsApiPrivateLinkParamsRequest{}
+	return &s
+}
+
+func (s *SetGitHttpsApiPrivateLinkParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *SetGitHttpsApiPrivateLinkParamsRequest {
 	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
 	return s
 }
 
-func (s *SetGitHttpsApiOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2GitUserAuthenticationRequest) *SetGitHttpsApiOAuth2ParamsRequest {
-	s.ApiUserAuthentication = &apiUserAuthentication
-	return s
-}
-
-func (s *SetGitHttpsApiOAuth2ParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *SetGitHttpsApiOAuth2ParamsRequest {
+func (s *SetGitHttpsApiPrivateLinkParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *SetGitHttpsApiPrivateLinkParamsRequest {
 	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
 }
 
-func (s *SetGitHttpsApiOAuth2ParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates []SchemaObjectIdentifier) *SetGitHttpsApiOAuth2ParamsRequest {
+func (s *SetGitHttpsApiPrivateLinkParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates []SchemaObjectIdentifier) *SetGitHttpsApiPrivateLinkParamsRequest {
 	s.TlsTrustedCertificates = tlsTrustedCertificates
 	return s
 }
