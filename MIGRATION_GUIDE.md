@@ -44,6 +44,18 @@ This feature will be marked as stable in future releases. To use this feature, a
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
+### *(new feature)* Postgres preview features
+
+Added new preview resources for managing Postgres instances:
+
+- **`snowflake_postgres_instance`** — for creating new Postgres instances. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance).
+- **`snowflake_postgres_fork`** — for creating a fork (point-in-time copy) of an existing Postgres instance. See reference [docs](https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-point-in-time-recovery).
+
+These features will be marked as stable features in future releases. Breaking changes are expected, even without bumping the major version. To use these features, add the corresponding values to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_postgres_instance_resource` for `snowflake_postgres_instance`
+- `snowflake_postgres_fork_resource` for `snowflake_postgres_fork`
+
 ### *(bugfix)* `snowflake_external_volume` — support for `use_privatelink_endpoint` in Azure deployments
 
 Previously, setting `use_privatelink_endpoint = "true"` on an Azure storage location in `snowflake_external_volume` was silently ignored — the field was not sent to Snowflake and was not read back into state. The field is now correctly sent on create and update, and reflected in state after a read.
@@ -147,12 +159,6 @@ The field is only populated when the [BCR-2291](https://docs.snowflake.com/en/re
 No configuration changes are required.
 
 ## v2.15.x ➞ v2.16.0
-
-### *(new feature)* Postgres instance preview feature
-
-Added a new preview resource for managing Postgres instances. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance).
-
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_postgres_instance_resource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(improvement)* Catalog integration resources: computed `catalog_source`
 
