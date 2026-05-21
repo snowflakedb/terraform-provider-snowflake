@@ -44,10 +44,6 @@ func TestAcc_PostgresFork_Basic(t *testing.T) {
 			HasNameString(forkId.Name()).
 			HasForkFromString(sourceId.Name()).
 			HasNoComment().
-			HasNoAtTimestamp().
-			HasNoAtOffset().
-			HasNoBeforeTimestamp().
-			HasNoBeforeOffset().
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
 		postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), forkId.Name()),
 	}
@@ -84,10 +80,8 @@ func TestAcc_PostgresFork_Basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"at_timestamp",
-					"at_offset",
-					"before_timestamp",
-					"before_offset",
+					"at",
+					"before",
 					"fork_from",
 				},
 			},
@@ -146,7 +140,6 @@ func TestAcc_PostgresFork_Complete(t *testing.T) {
 			HasNameString(forkId.Name()).
 			HasForkFromString(sourceId.Name()).
 			HasCommentString(comment).
-			HasAtTimestampString(recentTimestamp).
 			HasHighAvailabilityString("false").
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
 		postgresShowOutputBaseAssert(t, modelComplete.ResourceReference(), forkId.Name()).
@@ -163,7 +156,10 @@ func TestAcc_PostgresFork_Complete(t *testing.T) {
 			// Step 1: Create fork with all options
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check:  assertThat(t, assertComplete...),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertThat(t, assertComplete...),
+					resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "at.0.timestamp", recentTimestamp),
+				),
 			},
 			// Step 2: Import
 			{
@@ -172,10 +168,8 @@ func TestAcc_PostgresFork_Complete(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"at_timestamp",
-					"at_offset",
-					"before_timestamp",
-					"before_offset",
+					"at",
+					"before",
 					"fork_from",
 				},
 			},
@@ -187,7 +181,7 @@ func TestAcc_PostgresFork_Validations(t *testing.T) {
 	sourceId := testClient().Ids.RandomAccountObjectIdentifier()
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	// Model with both at_timestamp and before_timestamp set — should fail validation
+	// Model with both at and before set — should fail validation
 	modelConflict := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
 		WithAtTimestamp("2025-01-15 12:00:00").
 		WithBeforeTimestamp("2025-01-15 11:00:00")
@@ -202,7 +196,7 @@ func TestAcc_PostgresFork_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelConflict),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`"at_timestamp": conflicts with before_timestamp`),
+				ExpectError: regexp.MustCompile(`"at": conflicts with before`),
 			},
 		},
 	})

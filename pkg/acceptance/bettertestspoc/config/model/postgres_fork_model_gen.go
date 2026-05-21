@@ -12,10 +12,8 @@ import (
 
 type PostgresForkModel struct {
 	Name               tfconfig.Variable `json:"name,omitempty"`
-	AtOffset           tfconfig.Variable `json:"at_offset,omitempty"`
-	AtTimestamp        tfconfig.Variable `json:"at_timestamp,omitempty"`
-	BeforeOffset       tfconfig.Variable `json:"before_offset,omitempty"`
-	BeforeTimestamp    tfconfig.Variable `json:"before_timestamp,omitempty"`
+	At                 tfconfig.Variable `json:"at,omitempty"`
+	Before             tfconfig.Variable `json:"before,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	ComputeFamily      tfconfig.Variable `json:"compute_family,omitempty"`
 	ForkFrom           tfconfig.Variable `json:"fork_from,omitempty"`
@@ -88,25 +86,9 @@ func (p *PostgresForkModel) WithName(name string) *PostgresForkModel {
 	return p
 }
 
-func (p *PostgresForkModel) WithAtOffset(atOffset string) *PostgresForkModel {
-	p.AtOffset = tfconfig.StringVariable(atOffset)
-	return p
-}
+// at attribute type is not yet supported, so WithAt can't be generated
 
-func (p *PostgresForkModel) WithAtTimestamp(atTimestamp string) *PostgresForkModel {
-	p.AtTimestamp = tfconfig.StringVariable(atTimestamp)
-	return p
-}
-
-func (p *PostgresForkModel) WithBeforeOffset(beforeOffset string) *PostgresForkModel {
-	p.BeforeOffset = tfconfig.StringVariable(beforeOffset)
-	return p
-}
-
-func (p *PostgresForkModel) WithBeforeTimestamp(beforeTimestamp string) *PostgresForkModel {
-	p.BeforeTimestamp = tfconfig.StringVariable(beforeTimestamp)
-	return p
-}
+// before attribute type is not yet supported, so WithBefore can't be generated
 
 func (p *PostgresForkModel) WithComment(comment string) *PostgresForkModel {
 	p.Comment = tfconfig.StringVariable(comment)
@@ -152,23 +134,13 @@ func (p *PostgresForkModel) WithNameValue(value tfconfig.Variable) *PostgresFork
 	return p
 }
 
-func (p *PostgresForkModel) WithAtOffsetValue(value tfconfig.Variable) *PostgresForkModel {
-	p.AtOffset = value
+func (p *PostgresForkModel) WithAtValue(value tfconfig.Variable) *PostgresForkModel {
+	p.At = value
 	return p
 }
 
-func (p *PostgresForkModel) WithAtTimestampValue(value tfconfig.Variable) *PostgresForkModel {
-	p.AtTimestamp = value
-	return p
-}
-
-func (p *PostgresForkModel) WithBeforeOffsetValue(value tfconfig.Variable) *PostgresForkModel {
-	p.BeforeOffset = value
-	return p
-}
-
-func (p *PostgresForkModel) WithBeforeTimestampValue(value tfconfig.Variable) *PostgresForkModel {
-	p.BeforeTimestamp = value
+func (p *PostgresForkModel) WithBeforeValue(value tfconfig.Variable) *PostgresForkModel {
+	p.Before = value
 	return p
 }
 
