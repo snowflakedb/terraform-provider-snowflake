@@ -1,59 +1,5 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Mapping*/ -}}
 
-{{ if .HasFieldPairs -}}
-func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error) {
-    s := &{{ .To.KindNoPtr }}{}
-    {{- range .FieldPairs }}
-    {{- if and (eq .DbKind "string") (eq .PlainKind "string") }}
-    s.{{ .PlainFieldName }} = r.{{ .DbFieldName }}
-    {{- else if and (eq .DbKind "int") (eq .PlainKind "int") }}
-    s.{{ .PlainFieldName }} = r.{{ .DbFieldName }}
-    {{- else if and (eq .DbKind "bool") (eq .PlainKind "bool") }}
-    s.{{ .PlainFieldName }} = r.{{ .DbFieldName }}
-    {{- else if and (eq .DbKind "time.Time") (eq .PlainKind "time.Time") }}
-    s.{{ .PlainFieldName }} = r.{{ .DbFieldName }}
-    {{- else if and (eq .DbKind "sql.NullString") (eq .PlainKind "*string") }}
-    if r.{{ .DbFieldName }}.Valid {
-        s.{{ .PlainFieldName }} = &r.{{ .DbFieldName }}.String
-    }
-    {{- else if and (eq .DbKind "sql.NullString") (eq .PlainKind "string") }}
-    if r.{{ .DbFieldName }}.Valid {
-        s.{{ .PlainFieldName }} = r.{{ .DbFieldName }}.String
-    }
-    {{- else if and (eq .DbKind "sql.NullInt64") (eq .PlainKind "*int") }}
-    if r.{{ .DbFieldName }}.Valid {
-        v := int(r.{{ .DbFieldName }}.Int64)
-        s.{{ .PlainFieldName }} = &v
-    }
-    {{- else if and (eq .DbKind "sql.NullInt64") (eq .PlainKind "int") }}
-    if r.{{ .DbFieldName }}.Valid {
-        s.{{ .PlainFieldName }} = int(r.{{ .DbFieldName }}.Int64)
-    }
-    {{- else if and (eq .DbKind "sql.NullBool") (eq .PlainKind "*bool") }}
-    if r.{{ .DbFieldName }}.Valid {
-        s.{{ .PlainFieldName }} = &r.{{ .DbFieldName }}.Bool
-    }
-    {{- else if and (eq .DbKind "sql.NullBool") (eq .PlainKind "bool") }}
-    if r.{{ .DbFieldName }}.Valid {
-        s.{{ .PlainFieldName }} = r.{{ .DbFieldName }}.Bool
-    }
-    {{- else if and (eq .DbKind "sql.NullTime") (eq .PlainKind "*time.Time") }}
-    if r.{{ .DbFieldName }}.Valid {
-        s.{{ .PlainFieldName }} = &r.{{ .DbFieldName }}.Time
-    }
-    {{- else if and (eq .DbKind "sql.NullTime") (eq .PlainKind "time.Time") }}
-    if r.{{ .DbFieldName }}.Valid {
-        s.{{ .PlainFieldName }} = r.{{ .DbFieldName }}.Time
-    }
-    {{- else if and (eq .DbKind "string") (eq .PlainKind "bool") }}
-    s.{{ .PlainFieldName }} = r.{{ .DbFieldName }} == "true"
-    {{- else }}
-    // TODO: map r.{{ .DbFieldName }} ({{ .DbKind }}) -> s.{{ .PlainFieldName }} ({{ .PlainKind }})
-    {{- end }}
-    {{- end }}
-    return s, nil
-}
-{{- else -}}
 func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error) {
 {{- if .FieldPairs }}
     result := &{{ .To.KindNoPtr }}{
@@ -100,4 +46,3 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
     return &{{ .To.KindNoPtr }}{}, nil
 {{- end }}
 }
-{{- end }}
