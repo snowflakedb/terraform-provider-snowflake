@@ -226,11 +226,6 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationSapBdcDetails{},
-		IsDataSourceOutput: true,
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
 		IsDataSourceOutput: true,
 	},
@@ -275,6 +270,7 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.TagReference{},
 	},
+	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.PostgresInstanceDetails{},
 		IsDataSourceOutput: true,

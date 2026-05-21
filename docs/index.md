@@ -6,6 +6,7 @@ description: Manage SnowflakeDB with Terraform.
 ## Support
 
 For official support and urgent, production-impacting issues, please [contact Snowflake Support](https://community.snowflake.com/s/article/How-To-Submit-a-Support-Case-in-Snowflake-Lodge).
+This support channel is limited to issues directly related to the provider. For third-party solutions using this provider, please reach out to the associated third-party support team.
 
 ~> **Keep in mind** that the official support starts with the [v2.0.0](https://registry.terraform.io/providers/snowflakedb/snowflake/2.0.0) version for stable resources only. All previous versions and preview resources are not officially supported. Also, consult [supported architectures](#supported-architectures).
 

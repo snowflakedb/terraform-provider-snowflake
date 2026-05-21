@@ -45,15 +45,15 @@ resource "snowflake_postgres_instance" "complete" {
 ### Required
 
 - `authentication_authority` (String) Specifies the authentication authority for the Postgres instance. Valid values are (case-insensitive): `POSTGRES` | `POSTGRES_OR_SNOWFLAKE`.
-- `compute_family` (String) Specifies the compute family for the Postgres instance (e.g. STANDARD_M).
+- `compute_family` (String) Specifies the compute family for the Postgres instance. Valid values are (case-insensitive): `STANDARD_M` | `STANDARD_L` | `STANDARD_XL` | `STANDARD_2XL` | `STANDARD_4XL` | `STANDARD_8XL` | `STANDARD_12XL` | `STANDARD_24XL` | `HIGHMEM_L` | `HIGHMEM_XL` | `HIGHMEM_2XL` | `HIGHMEM_4XL` | `HIGHMEM_8XL` | `HIGHMEM_12XL` | `HIGHMEM_16XL` | `HIGHMEM_24XL` | `HIGHMEM_32XL` | `HIGHMEM_48XL` | `BURST_XS` | `BURST_S` | `BURST_M`.
 - `name` (String) Specifies the identifier for the Postgres instance; must be unique for your account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `storage_size_gb` (Number) Specifies the storage size in GB for the Postgres instance.
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the Postgres instance.
-- `high_availability` (Boolean) Specifies whether the Postgres instance should be configured for high availability.
-- `maintenance_window_start` (Number) Specifies the hour (0-23 UTC) at which the maintenance window starts.
+- `high_availability` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the Postgres instance should be configured for high availability. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `maintenance_window_start` (String) Specifies the hour (0-23 UTC) at which the maintenance window starts.
 - `network_policy` (String) Specifies the network policy to associate with the Postgres instance.
 - `postgres_settings` (String) Specifies custom Postgres settings as a JSON string.
 - `postgres_version` (Number) Specifies the Postgres version for the instance.

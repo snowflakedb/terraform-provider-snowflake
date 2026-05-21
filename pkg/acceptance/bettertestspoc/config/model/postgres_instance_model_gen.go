@@ -70,10 +70,12 @@ func (p *PostgresInstanceModel) MarshalJSON() ([]byte, error) {
 	type Alias PostgresInstanceModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -84,6 +86,11 @@ func (p *PostgresInstanceModel) WithDependsOn(values ...string) *PostgresInstanc
 
 func (p *PostgresInstanceModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *PostgresInstanceModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *PostgresInstanceModel) WithTimeout(timeout config.Timeouts) *PostgresInstanceModel {
+	p.SetTimeout(timeout)
 	return p
 }
 
