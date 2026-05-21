@@ -120,7 +120,7 @@ func PostgresInstance() *schema.Resource {
 
 		Schema: postgresInstanceSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.PostgresInstance, ImportPostgresInstance),
+			StateContext: TrackingImportWrapper(resources.PostgresInstance, ImportName[sdk.AccountObjectIdentifier]),
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.PostgresInstance, customdiff.All(
@@ -130,49 +130,6 @@ func PostgresInstance() *schema.Resource {
 		)),
 		Timeouts: defaultTimeouts,
 	}
-}
-
-func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	pi, err := client.PostgresInstances.ShowByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	details, err := client.PostgresInstances.DescribeDetails(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	postgresSettings := normalizePostgresSettings(pi.PostgresSettings)
-	errs := errors.Join(
-		d.Set("name", pi.Name),
-		d.Set("compute_family", pi.ComputeFamily),
-		d.Set("storage_size_gb", pi.StorageSize),
-		d.Set("authentication_authority", pi.AuthenticationAuthority),
-		d.Set("high_availability", pi.IsHighlyAvailable()),
-		setOptionalFromPtr(d, "comment", pi.Comment),
-		setOptionalFromPtr(d, "postgres_settings", postgresSettings),
-		d.Set("postgres_version", details.PostgresVersion),
-		setOptionalFromAccountObjectIdentifierPtr(d, "network_policy", details.NetworkPolicy),
-		setOptionalFromAccountObjectIdentifierPtr(d, "storage_integration", details.StorageIntegration),
-	)
-	if errs != nil {
-		return nil, errs
-	}
-
-	if details.MaintenanceWindowStart != 0 {
-		if err := d.Set("maintenance_window_start", details.MaintenanceWindowStart); err != nil {
-			return nil, err
-		}
-	}
-
-	return []*schema.ResourceData{d}, nil
 }
 
 func CreatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
