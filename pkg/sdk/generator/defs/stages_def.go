@@ -388,7 +388,8 @@ var stagesDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")),
+			Text("property_default", g.WithPlainFieldName("Default")).
+			WithConvertGeneration(),
 		g.NewQueryStruct("DescStage").
 			Describe().
 			SQL("STAGE").
@@ -408,13 +409,14 @@ var stagesDef = g.NewInterface(
 			Text("owner").
 			Text("comment").
 			OptionalText("region").
-			PlainField("type", "StageType").
-			Field("cloud", "sql.NullString", "*StageCloud").
+			Enum("type", StageTypeEnumDef).
+			OptionalEnum("cloud", StageCloudEnumDef).
 			// notification_channel is deprecated in Snowflake.
 			Field("storage_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("StorageIntegration")).
 			OptionalText("endpoint").
 			Field("owner_role_type", "sql.NullString", "*string").
-			Field("directory_enabled", "string", "bool"),
+			Field("directory_enabled", "string", "bool").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowStages").
 			Show().
 			SQL("STAGES").
