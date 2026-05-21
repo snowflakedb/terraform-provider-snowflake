@@ -31,33 +31,53 @@ var postgresForkSchema = map[string]*schema.Schema{
 		ForceNew:    true,
 		Description: "Specifies the identifier of the source Postgres instance to fork from.",
 	},
-	"at_timestamp": {
-		Type:          schema.TypeString,
-		Optional:      true,
-		ForceNew:      true,
-		Description:   "Specifies the timestamp for the fork point-in-time (AT TIMESTAMP).",
-		ConflictsWith: []string{"at_offset", "before_timestamp", "before_offset"},
+	"at": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		ForceNew:    true,
+		MaxItems:    1,
+		Description: "Specifies the point-in-time for the fork using AT. Exactly one of `timestamp` or `offset` must be set.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"timestamp": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Specifies an exact date and time to use for Time Travel. The value must be explicitly cast to a TIMESTAMP, TIMESTAMP_LTZ, TIMESTAMP_NTZ, or TIMESTAMP_TZ data type.",
+					ExactlyOneOf: []string{"at.0.timestamp", "at.0.offset"},
+				},
+				"offset": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Specifies the difference in seconds from the current time to use for Time Travel, in the form -N where N can be an integer or arithmetic expression (e.g. -120 is 120 seconds, -30*60 is 1800 seconds or 30 minutes).",
+					ExactlyOneOf: []string{"at.0.timestamp", "at.0.offset"},
+				},
+			},
+		},
+		ConflictsWith: []string{"before"},
 	},
-	"at_offset": {
-		Type:          schema.TypeString,
-		Optional:      true,
-		ForceNew:      true,
-		Description:   "Specifies the offset in seconds for the fork point-in-time (AT OFFSET).",
-		ConflictsWith: []string{"at_timestamp", "before_timestamp", "before_offset"},
-	},
-	"before_timestamp": {
-		Type:          schema.TypeString,
-		Optional:      true,
-		ForceNew:      true,
-		Description:   "Specifies the timestamp for the fork point-in-time (BEFORE TIMESTAMP).",
-		ConflictsWith: []string{"at_timestamp", "at_offset", "before_offset"},
-	},
-	"before_offset": {
-		Type:          schema.TypeString,
-		Optional:      true,
-		ForceNew:      true,
-		Description:   "Specifies the offset in seconds for the fork point-in-time (BEFORE OFFSET).",
-		ConflictsWith: []string{"at_timestamp", "at_offset", "before_timestamp"},
+	"before": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		ForceNew:    true,
+		MaxItems:    1,
+		Description: "Specifies the point-in-time for the fork using BEFORE. Exactly one of `timestamp` or `offset` must be set.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"timestamp": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Specifies an exact date and time to use for Time Travel. The value must be explicitly cast to a TIMESTAMP, TIMESTAMP_LTZ, TIMESTAMP_NTZ, or TIMESTAMP_TZ data type.",
+					ExactlyOneOf: []string{"before.0.timestamp", "before.0.offset"},
+				},
+				"offset": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Specifies the difference in seconds from the current time to use for Time Travel, in the form -N where N can be an integer or arithmetic expression (e.g. -120 is 120 seconds, -30*60 is 1800 seconds or 30 minutes).",
+					ExactlyOneOf: []string{"before.0.timestamp", "before.0.offset"},
+				},
+			},
+		},
+		ConflictsWith: []string{"at"},
 	},
 	"compute_family": {
 		Type:             schema.TypeString,
@@ -187,20 +207,28 @@ func CreatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 	request := sdk.NewForkPostgresInstanceRequest(id, forkFromId)
 
 	// Handle AT time travel
-	if v, ok := d.GetOk("at_timestamp"); ok {
-		at := sdk.NewPostgresInstanceForkAtRequest().WithTimestamp(v.(string))
-		request.WithAt(*at)
-	} else if v, ok := d.GetOk("at_offset"); ok {
-		at := sdk.NewPostgresInstanceForkAtRequest().WithOffset(v.(string))
+	if v := d.Get("at").([]any); len(v) > 0 {
+		atConfig := v[0].(map[string]any)
+		at := sdk.NewPostgresInstanceForkAtRequest()
+		if ts := atConfig["timestamp"].(string); len(ts) > 0 {
+			at.WithTimestamp(ts)
+		}
+		if offset := atConfig["offset"].(string); len(offset) > 0 {
+			at.WithOffset(offset)
+		}
 		request.WithAt(*at)
 	}
 
 	// Handle BEFORE time travel
-	if v, ok := d.GetOk("before_timestamp"); ok {
-		before := sdk.NewPostgresInstanceForkBeforeRequest().WithTimestamp(v.(string))
-		request.WithBefore(*before)
-	} else if v, ok := d.GetOk("before_offset"); ok {
-		before := sdk.NewPostgresInstanceForkBeforeRequest().WithOffset(v.(string))
+	if v := d.Get("before").([]any); len(v) > 0 {
+		beforeConfig := v[0].(map[string]any)
+		before := sdk.NewPostgresInstanceForkBeforeRequest()
+		if ts := beforeConfig["timestamp"].(string); len(ts) > 0 {
+			before.WithTimestamp(ts)
+		}
+		if offset := beforeConfig["offset"].(string); len(offset) > 0 {
+			before.WithOffset(offset)
+		}
 		request.WithBefore(*before)
 	}
 

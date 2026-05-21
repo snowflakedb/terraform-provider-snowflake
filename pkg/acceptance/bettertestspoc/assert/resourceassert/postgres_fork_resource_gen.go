@@ -37,25 +37,9 @@ func (p *PostgresForkResourceAssert) HasName(expected string) *PostgresForkResou
 	return p
 }
 
-func (p *PostgresForkResourceAssert) HasAtOffset(expected string) *PostgresForkResourceAssert {
-	p.StringValueSet("at_offset", expected)
-	return p
-}
+// typed assert for "at" (type: List, subtype: Map) is not currently supported
 
-func (p *PostgresForkResourceAssert) HasAtTimestamp(expected string) *PostgresForkResourceAssert {
-	p.StringValueSet("at_timestamp", expected)
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasBeforeOffset(expected string) *PostgresForkResourceAssert {
-	p.StringValueSet("before_offset", expected)
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasBeforeTimestamp(expected string) *PostgresForkResourceAssert {
-	p.StringValueSet("before_timestamp", expected)
-	return p
-}
+// typed assert for "before" (type: List, subtype: Map) is not currently supported
 
 func (p *PostgresForkResourceAssert) HasComment(expected string) *PostgresForkResourceAssert {
 	p.StringValueSet("comment", expected)
@@ -101,25 +85,9 @@ func (p *PostgresForkResourceAssert) HasNameString(expected string) *PostgresFor
 	return p
 }
 
-func (p *PostgresForkResourceAssert) HasAtOffsetString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("at_offset", expected))
-	return p
-}
+// typed assert for "at" (type: List, subtype: Map) is not currently supported
 
-func (p *PostgresForkResourceAssert) HasAtTimestampString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("at_timestamp", expected))
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasBeforeOffsetString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("before_offset", expected))
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasBeforeTimestampString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("before_timestamp", expected))
-	return p
-}
+// typed assert for "before" (type: List, subtype: Map) is not currently supported
 
 func (p *PostgresForkResourceAssert) HasCommentString(expected string) *PostgresForkResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
@@ -165,25 +133,9 @@ func (p *PostgresForkResourceAssert) HasNoName() *PostgresForkResourceAssert {
 	return p
 }
 
-func (p *PostgresForkResourceAssert) HasNoAtOffset() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("at_offset"))
-	return p
-}
+// typed assert for "at" (type: List, subtype: Map) is not currently supported
 
-func (p *PostgresForkResourceAssert) HasNoAtTimestamp() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("at_timestamp"))
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasNoBeforeOffset() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("before_offset"))
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasNoBeforeTimestamp() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("before_timestamp"))
-	return p
-}
+// typed assert for "before" (type: List, subtype: Map) is not currently supported
 
 func (p *PostgresForkResourceAssert) HasNoComment() *PostgresForkResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
@@ -224,25 +176,9 @@ func (p *PostgresForkResourceAssert) HasNoStorageSizeGb() *PostgresForkResourceA
 // Attribute empty checks //
 ////////////////////////////
 
-func (p *PostgresForkResourceAssert) HasAtOffsetEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("at_offset", ""))
-	return p
-}
+// typed assert for "at" (type: List, subtype: Map) is not currently supported
 
-func (p *PostgresForkResourceAssert) HasAtTimestampEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("at_timestamp", ""))
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasBeforeOffsetEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("before_offset", ""))
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasBeforeTimestampEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("before_timestamp", ""))
-	return p
-}
+// typed assert for "before" (type: List, subtype: Map) is not currently supported
 
 func (p *PostgresForkResourceAssert) HasCommentEmpty() *PostgresForkResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", ""))
@@ -283,25 +219,9 @@ func (p *PostgresForkResourceAssert) HasNameNotEmpty() *PostgresForkResourceAsse
 	return p
 }
 
-func (p *PostgresForkResourceAssert) HasAtOffsetNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("at_offset"))
-	return p
-}
+// typed assert for "at" (type: List, subtype: Map) is not currently supported
 
-func (p *PostgresForkResourceAssert) HasAtTimestampNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("at_timestamp"))
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasBeforeOffsetNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("before_offset"))
-	return p
-}
-
-func (p *PostgresForkResourceAssert) HasBeforeTimestampNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("before_timestamp"))
-	return p
-}
+// typed assert for "before" (type: List, subtype: Map) is not currently supported
 
 func (p *PostgresForkResourceAssert) HasCommentNotEmpty() *PostgresForkResourceAssert {
 	p.AddAssertion(assert.ValuePresent("comment"))
