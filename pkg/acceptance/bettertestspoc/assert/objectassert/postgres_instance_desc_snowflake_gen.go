@@ -246,8 +246,8 @@ func (p *PostgresInstanceDetailsAssert) HasNetworkPolicy(expected string) *Postg
 		if o.NetworkPolicy == nil {
 			return fmt.Errorf("expected network policy to have value; got: nil")
 		}
-		if *o.NetworkPolicy != expected {
-			return fmt.Errorf("expected network policy: %v; got: %v", expected, *o.NetworkPolicy)
+		if o.NetworkPolicy.Name() != expected {
+			return fmt.Errorf("expected network policy: %v; got: %v", expected, o.NetworkPolicy.Name())
 		}
 		return nil
 	})
@@ -274,8 +274,8 @@ func (p *PostgresInstanceDetailsAssert) HasStorageIntegration(expected string) *
 		if o.StorageIntegration == nil {
 			return fmt.Errorf("expected storage integration to have value; got: nil")
 		}
-		if *o.StorageIntegration != expected {
-			return fmt.Errorf("expected storage integration: %v; got: %v", expected, *o.StorageIntegration)
+		if o.StorageIntegration.Name() != expected {
+			return fmt.Errorf("expected storage integration: %v; got: %v", expected, o.StorageIntegration.Name())
 		}
 		return nil
 	})

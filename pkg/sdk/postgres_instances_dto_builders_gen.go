@@ -21,7 +21,7 @@ func (s *CreatePostgresInstanceRequest) WithPostgresVersion(postgresVersion int)
 	return s
 }
 
-func (s *CreatePostgresInstanceRequest) WithNetworkPolicy(networkPolicy string) *CreatePostgresInstanceRequest {
+func (s *CreatePostgresInstanceRequest) WithNetworkPolicy(networkPolicy AccountObjectIdentifier) *CreatePostgresInstanceRequest {
 	s.NetworkPolicy = &networkPolicy
 	return s
 }
@@ -31,7 +31,7 @@ func (s *CreatePostgresInstanceRequest) WithHighAvailability(highAvailability bo
 	return s
 }
 
-func (s *CreatePostgresInstanceRequest) WithStorageIntegration(storageIntegration string) *CreatePostgresInstanceRequest {
+func (s *CreatePostgresInstanceRequest) WithStorageIntegration(storageIntegration AccountObjectIdentifier) *CreatePostgresInstanceRequest {
 	s.StorageIntegration = &storageIntegration
 	return s
 }
@@ -189,7 +189,7 @@ func NewPostgresInstanceSetRequest() *PostgresInstanceSetRequest {
 	return &s
 }
 
-func (s *PostgresInstanceSetRequest) WithNetworkPolicy(networkPolicy string) *PostgresInstanceSetRequest {
+func (s *PostgresInstanceSetRequest) WithNetworkPolicy(networkPolicy AccountObjectIdentifier) *PostgresInstanceSetRequest {
 	s.NetworkPolicy = &networkPolicy
 	return s
 }
@@ -219,7 +219,7 @@ func (s *PostgresInstanceSetRequest) WithStorageSizeGb(storageSizeGb int) *Postg
 	return s
 }
 
-func (s *PostgresInstanceSetRequest) WithStorageIntegration(storageIntegration string) *PostgresInstanceSetRequest {
+func (s *PostgresInstanceSetRequest) WithStorageIntegration(storageIntegration AccountObjectIdentifier) *PostgresInstanceSetRequest {
 	s.StorageIntegration = &storageIntegration
 	return s
 }
@@ -290,10 +290,10 @@ func (s *PostgresInstanceUnsetRequest) WithStorageIntegration(storageIntegration
 }
 
 func NewPostgresInstanceResetAccessRequest(
-	forRole PostgresInstanceResetAccessRole,
+	for_ PostgresInstanceResetAccessRole,
 ) *PostgresInstanceResetAccessRequest {
 	s := PostgresInstanceResetAccessRequest{}
-	s.For = forRole
+	s.For = for_
 	return &s
 }
 

@@ -50,9 +50,9 @@ func TestPostgresInstances_Create(t *testing.T) {
 			StorageSizeGb:           50,
 			AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
 			PostgresVersion:         Pointer(17),
-			NetworkPolicy:           Pointer("my_policy"),
+			NetworkPolicy:           Pointer(NewAccountObjectIdentifier("my_policy")),
 			HighAvailability:        Pointer(true),
-			StorageIntegration:      Pointer("my_integration"),
+			StorageIntegration:      Pointer(NewAccountObjectIdentifier("my_integration")),
 			PostgresSettings:        Pointer("{}"),
 			Comment:                 &comment,
 			Tag: []TagAssociation{
@@ -64,8 +64,8 @@ func TestPostgresInstances_Create(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_S' STORAGE_SIZE_GB = 50`+
-				` AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 17 NETWORK_POLICY = 'my_policy'`+
-				` HIGH_AVAILABILITY = true STORAGE_INTEGRATION = 'my_integration' POSTGRES_SETTINGS = '{}'`+
+				` AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 17 NETWORK_POLICY = "my_policy"`+
+				` HIGH_AVAILABILITY = true STORAGE_INTEGRATION = "my_integration" POSTGRES_SETTINGS = '{}'`+
 				` COMMENT = '%s' TAG (%s = 'value1')`,
 			id.FullyQualifiedName(), comment, tagId.FullyQualifiedName())
 	})
@@ -242,7 +242,7 @@ func TestPostgresInstances_Alter(t *testing.T) {
 		auth := PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake
 		opts := defaultOpts()
 		opts.Set = &PostgresInstanceSet{
-			NetworkPolicy:           Pointer("my_policy"),
+			NetworkPolicy:           Pointer(NewAccountObjectIdentifier("my_policy")),
 			AuthenticationAuthority: &auth,
 			Comment:                 &comment,
 			HighAvailability:        Pointer(true),
@@ -252,7 +252,7 @@ func TestPostgresInstances_Alter(t *testing.T) {
 			PostgresSettings:        Pointer("{}"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
-			`ALTER POSTGRES INSTANCE %s SET NETWORK_POLICY = 'my_policy' AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE`+
+			`ALTER POSTGRES INSTANCE %s SET NETWORK_POLICY = "my_policy" AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE`+
 				` COMMENT = '%s' HIGH_AVAILABILITY = true COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 100`+
 				` POSTGRES_VERSION = 18 POSTGRES_SETTINGS = '{}'`,
 			id.FullyQualifiedName(), comment)

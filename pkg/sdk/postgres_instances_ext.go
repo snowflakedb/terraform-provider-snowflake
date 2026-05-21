@@ -30,9 +30,9 @@ type PostgresInstanceDetails struct {
 	RetentionTime                int
 	MaintenanceWindowStart       int
 	Comment                      *string
-	NetworkPolicy                *string
+	NetworkPolicy                *AccountObjectIdentifier
 	PostgresSettings             *string
-	StorageIntegration           *string
+	StorageIntegration           *AccountObjectIdentifier
 }
 
 // ParsePostgresInstanceDetails parses []PostgresInstanceProperty into PostgresInstanceDetails
@@ -102,11 +102,15 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 		case "comment":
 			details.Comment = String(prop.Value)
 		case "network_policy":
-			details.NetworkPolicy = String(prop.Value)
+			if prop.Value != "" {
+				details.NetworkPolicy = Pointer(NewAccountObjectIdentifier(prop.Value))
+			}
 		case "postgres_settings":
 			details.PostgresSettings = String(prop.Value)
 		case "storage_integration":
-			details.StorageIntegration = String(prop.Value)
+			if prop.Value != "" {
+				details.StorageIntegration = Pointer(NewAccountObjectIdentifier(prop.Value))
+			}
 		}
 	}
 	return details, errors.Join(errs...)
