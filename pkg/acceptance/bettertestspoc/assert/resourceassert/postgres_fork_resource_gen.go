@@ -85,10 +85,6 @@ func (p *PostgresForkResourceAssert) HasNameString(expected string) *PostgresFor
 	return p
 }
 
-// typed assert for "at" (type: List, subtype: Map) is not currently supported
-
-// typed assert for "before" (type: List, subtype: Map) is not currently supported
-
 func (p *PostgresForkResourceAssert) HasCommentString(expected string) *PostgresForkResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
 	return p
@@ -133,10 +129,6 @@ func (p *PostgresForkResourceAssert) HasNoName() *PostgresForkResourceAssert {
 	return p
 }
 
-// typed assert for "at" (type: List, subtype: Map) is not currently supported
-
-// typed assert for "before" (type: List, subtype: Map) is not currently supported
-
 func (p *PostgresForkResourceAssert) HasNoComment() *PostgresForkResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("comment"))
 	return p
@@ -176,9 +168,15 @@ func (p *PostgresForkResourceAssert) HasNoStorageSizeGb() *PostgresForkResourceA
 // Attribute empty checks //
 ////////////////////////////
 
-// typed assert for "at" (type: List, subtype: Map) is not currently supported
+func (p *PostgresForkResourceAssert) HasAtEmpty() *PostgresForkResourceAssert {
+	p.AddAssertion(assert.ValueSet("at.#", "0"))
+	return p
+}
 
-// typed assert for "before" (type: List, subtype: Map) is not currently supported
+func (p *PostgresForkResourceAssert) HasBeforeEmpty() *PostgresForkResourceAssert {
+	p.AddAssertion(assert.ValueSet("before.#", "0"))
+	return p
+}
 
 func (p *PostgresForkResourceAssert) HasCommentEmpty() *PostgresForkResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", ""))
@@ -218,10 +216,6 @@ func (p *PostgresForkResourceAssert) HasNameNotEmpty() *PostgresForkResourceAsse
 	p.AddAssertion(assert.ValuePresent("name"))
 	return p
 }
-
-// typed assert for "at" (type: List, subtype: Map) is not currently supported
-
-// typed assert for "before" (type: List, subtype: Map) is not currently supported
 
 func (p *PostgresForkResourceAssert) HasCommentNotEmpty() *PostgresForkResourceAssert {
 	p.AddAssertion(assert.ValuePresent("comment"))
