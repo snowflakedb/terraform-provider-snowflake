@@ -43,7 +43,8 @@ type CreateIcebergTableRequest struct {
 }
 
 type IcebergTableColumnsAndConstraintsRequest struct {
-	Columns []IcebergTableColumnRequest
+	Columns             []IcebergTableColumnRequest
+	OutOfLineConstraint []TableOutOfLineConstraintRequest
 }
 
 type IcebergTableColumnRequest struct {
@@ -51,10 +52,63 @@ type IcebergTableColumnRequest struct {
 	ColumnType       datatypes.DataType // required
 	DefaultValue     *ColumnDefaultValue
 	NotNull          *bool
+	InlineConstraint *TableColumnInlineConstraintRequest
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
 	ProjectionPolicy *TableColumnProjectionPolicyRequest
 	Tag              []TagAssociation
 	Comment          *string
+}
+
+type TableColumnInlineConstraintRequest struct {
+	UniquePK *TableColumnInlineUniquePKRequest
+	FK       *TableColumnInlineFKRequest
+	CH       *TableColumnInlineCHRequest
+}
+
+type TableColumnInlineUniquePKRequest struct {
+	Name               *string
+	Unique             *bool
+	PrimaryKey         *bool
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type TableColumnInlineFKRequest struct {
+	Name               *string
+	ForeignKey         *bool
+	References         SchemaObjectIdentifier // required
+	RefColumn          *string
+	Match              *MatchType
+	On                 *ForeignKeyOnAction
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type TableColumnInlineCHRequest struct {
+	Name             *string
+	Expression       string // required
+	EnableValidate   *bool
+	EnableNovalidate *bool
 }
 
 type TableColumnMaskingPolicyRequest struct {
@@ -64,6 +118,61 @@ type TableColumnMaskingPolicyRequest struct {
 
 type TableColumnProjectionPolicyRequest struct {
 	ProjectionPolicy SchemaObjectIdentifier // required
+}
+
+type TableOutOfLineConstraintRequest struct {
+	UniquePK *TableOutOfLineUniquePKRequest
+	FK       *TableOutOfLineFKRequest
+	CH       *TableOutOfLineCHRequest
+}
+
+type TableOutOfLineUniquePKRequest struct {
+	Name               *string
+	Unique             *bool
+	PrimaryKey         *bool
+	Columns            []Column
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+	Comment            *string
+}
+
+type TableOutOfLineFKRequest struct {
+	Name               *string
+	Columns            []Column
+	References         SchemaObjectIdentifier // required
+	RefColumns         []Column
+	Match              *MatchType
+	On                 *ForeignKeyOnAction
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+	Comment            *string
+}
+
+type TableOutOfLineCHRequest struct {
+	Name             *string
+	Expression       string // required
+	EnableValidate   *bool
+	EnableNovalidate *bool
 }
 
 type IcebergTablePartitionExpressionRequest struct {
@@ -156,6 +265,7 @@ type IcebergTableAddColumnActionRequest struct {
 	IfNotExists      *bool
 	Name             string             // required
 	ColumnType       datatypes.DataType // required
+	InlineConstraint *TableColumnInlineConstraintRequest
 	DefaultValue     *ColumnDefaultValue
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
 	ProjectionPolicy *TableColumnProjectionPolicyRequest

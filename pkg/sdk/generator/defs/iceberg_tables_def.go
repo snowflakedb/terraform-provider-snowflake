@@ -38,18 +38,15 @@ var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
 	PredefinedQueryStructField("ColumnType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
 	OptionalSQL("NOT NULL").
-	// TODO(next PR): add inline constraint support
-	// OptionalQueryStructField("InlineConstraint", icebergTableColumnInlineConstraint, g.KeywordOptions()).
+	OptionalQueryStructField("InlineConstraint", tableColumnInlineConstraint(), g.KeywordOptions()).
 	OptionalQueryStructField("MaskingPolicy", tableColumnMaskingPolicy, g.KeywordOptions()).
 	OptionalQueryStructField("ProjectionPolicy", tableColumnProjectionPolicy, g.KeywordOptions()).
 	OptionalTags().
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
 var icebergTableColumnsAndConstraints = g.NewQueryStruct("IcebergTableColumnsAndConstraints").
-	ListQueryStructField("Columns", icebergTableColumn, g.KeywordOptions())
-
-	// TODO(next PR): add constraint support
-	// ListQueryStructField("OutOfLineConstraint", icebergTableOutOfLineConstraint, g.KeywordOptions())
+	ListQueryStructField("Columns", icebergTableColumn, g.KeywordOptions()).
+	ListQueryStructField("OutOfLineConstraint", tableOutOfLineConstraint(), g.KeywordOptions())
 
 var icebergTablePartitionBucketArgs = g.NewQueryStruct("IcebergTablePartitionBucketArgs").
 	Number("NumBuckets", g.KeywordOptions().Required()).
@@ -129,8 +126,7 @@ var icebergTableAddColumnAction = g.NewQueryStruct("IcebergTableAddColumnAction"
 	OptionalSQL("IF NOT EXISTS").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 	PredefinedQueryStructField("ColumnType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-	// TODO(next PR): add inline constraint support
-	// OptionalQueryStructField("InlineConstraint", icebergTableColumnInlineConstraint, g.KeywordOptions()).
+	OptionalQueryStructField("InlineConstraint", tableColumnInlineConstraint(), g.KeywordOptions()).
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
 	OptionalQueryStructField("MaskingPolicy", tableColumnMaskingPolicy, g.KeywordOptions()).
 	OptionalQueryStructField("ProjectionPolicy", tableColumnProjectionPolicy, g.KeywordOptions()).

@@ -113,6 +113,9 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				Comment:      v.Comment,
 			}
 			// Adjusted manually: convert *Request sub-structs to *Options
+			if v.InlineConstraint != nil {
+				s[i].InlineConstraint = TableColumnInlineConstraintFromRequest(v.InlineConstraint)
+			}
 			if v.MaskingPolicy != nil {
 				s[i].MaskingPolicy = &TableColumnMaskingPolicy{
 					MaskingPolicy: v.MaskingPolicy.MaskingPolicy,
@@ -126,6 +129,16 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 			}
 		}
 		opts.ColumnsAndConstraints.Columns = s
+	}
+	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
+		s := make([]TableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
+			// Adjusted manually: convert *Request sub-structs to *Options
+			if c := TableOutOfLineConstraintFromRequest(&v); c != nil {
+				s[i] = *c
+			}
+		}
+		opts.ColumnsAndConstraints.OutOfLineConstraint = s
 	}
 	if r.PartitionBy != nil {
 		s := make([]IcebergTablePartitionExpression, len(r.PartitionBy))
@@ -187,6 +200,10 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			ColumnType:   r.AddColumnAction.ColumnType,
 			DefaultValue: r.AddColumnAction.DefaultValue,
 			Tag:          r.AddColumnAction.Tag,
+		}
+		// Adjusted manually: convert *Request sub-struct to *Options
+		if r.AddColumnAction.InlineConstraint != nil {
+			opts.AddColumnAction.InlineConstraint = TableColumnInlineConstraintFromRequest(r.AddColumnAction.InlineConstraint)
 		}
 		if r.AddColumnAction.MaskingPolicy != nil {
 			opts.AddColumnAction.MaskingPolicy = &TableColumnMaskingPolicy{
