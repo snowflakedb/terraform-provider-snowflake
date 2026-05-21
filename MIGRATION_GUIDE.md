@@ -146,6 +146,14 @@ The field is only populated when the [BCR-2291](https://docs.snowflake.com/en/re
 
 No configuration changes are required.
 
+### *(bug fix)* `snowflake_saml2_integration`: removing `enabled` from config now restores Snowflake's default of `TRUE`
+
+Previously, removing the `enabled` attribute from a `snowflake_saml2_integration` configuration (returning it to its default unmanaged state) caused the provider to issue `ALTER ... SET ENABLED = FALSE`. This contradicted Snowflake's behavior, where the default for `ENABLED` on a SAML2 integration is `TRUE` after [BCR-2166](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2166) in bundle `2026_01`.
+
+The provider now issues `ALTER ... SET ENABLED = TRUE` when `enabled` is removed from config, aligning the unmanaged state with Snowflake's actual default. The `UNSET` operation for this object is still not supported in Snowflake.
+
+If you previously relied on the prior behavior (the integration being silently disabled when `enabled` was unset), set `enabled = "false"` explicitly in your configuration before upgrading. Otherwise, no changes are required.
+
 ## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* snowflake_password_policy resource rework
