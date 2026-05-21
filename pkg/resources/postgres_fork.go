@@ -60,16 +60,16 @@ var postgresForkSchema = map[string]*schema.Schema{
 		ConflictsWith: []string{"at_timestamp", "at_offset", "before_timestamp"},
 	},
 	"compute_family": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Computed:    true,
-		Description: "Specifies the compute family for the forked Postgres instance (e.g. STANDARD_M).",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("compute_family"),
+		Description:      "Specifies the compute family for the forked Postgres instance (e.g. STANDARD_M).",
 	},
 	"storage_size_gb": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		Computed:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("storage_size"),
 		Description:      "Specifies the storage size in GB for the forked Postgres instance.",
 	},
 	"high_availability": {
