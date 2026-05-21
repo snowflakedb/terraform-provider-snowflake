@@ -94,6 +94,8 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_password_policy_resource", want: PasswordPolicyResource},
 		{input: "snowflake_pipe_resource", want: PipeResource},
 		{input: "snowflake_pipes_datasource", want: PipesDatasource},
+		{input: "snowflake_postgres_fork_resource", want: PostgresForkResource},
+		{input: "snowflake_postgres_instance_resource", want: PostgresInstanceResource},
 		{input: "snowflake_procedure_java_resource", want: ProcedureJavaResource},
 		{input: "snowflake_procedure_javascript_resource", want: ProcedureJavascriptResource},
 		{input: "snowflake_procedure_python_resource", want: ProcedurePythonResource},
