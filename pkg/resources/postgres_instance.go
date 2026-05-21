@@ -156,8 +156,8 @@ func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		setOptionalFromPtr(d, "comment", pi.Comment),
 		setOptionalFromPtr(d, "postgres_settings", postgresSettings),
 		d.Set("postgres_version", details.PostgresVersion),
-		setOptionalFromNonEmptyStringPtr(d, "network_policy", details.NetworkPolicy),
-		setOptionalFromNonEmptyStringPtr(d, "storage_integration", details.StorageIntegration),
+		setOptionalFromAccountObjectIdentifierPtr(d, "network_policy", details.NetworkPolicy),
+		setOptionalFromAccountObjectIdentifierPtr(d, "storage_integration", details.StorageIntegration),
 	)
 	if errs != nil {
 		return nil, errs
@@ -192,8 +192,8 @@ func CreatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 	request := sdk.NewCreatePostgresInstanceRequest(id, computeFamily, storageSizeGb, authAuthority)
 	errs := errors.Join(
 		intAttributeCreateBuilder(d, "postgres_version", request.WithPostgresVersion),
-		stringAttributeCreateBuilder(d, "network_policy", request.WithNetworkPolicy),
-		stringAttributeCreateBuilder(d, "storage_integration", request.WithStorageIntegration),
+		attributeMappedValueCreateBuilder(d, "network_policy", request.WithNetworkPolicy, sdk.ParseAccountObjectIdentifier),
+		attributeMappedValueCreateBuilder(d, "storage_integration", request.WithStorageIntegration, sdk.ParseAccountObjectIdentifier),
 		stringAttributeCreateBuilder(d, "postgres_settings", request.WithPostgresSettings),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
@@ -251,10 +251,10 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			}
 			var networkPolicy, storageIntegration string
 			if details.NetworkPolicy != nil {
-				networkPolicy = *details.NetworkPolicy
+				networkPolicy = details.NetworkPolicy.Name()
 			}
 			if details.StorageIntegration != nil {
-				storageIntegration = *details.StorageIntegration
+				storageIntegration = details.StorageIntegration.Name()
 			}
 			if err = handleExternalChangesToObjectInFlatDescribe(d,
 				outputMapping{"network_policy", "network_policy", networkPolicy, networkPolicy, nil},
@@ -282,8 +282,8 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			setOptionalFromPtr(d, "comment", pi.Comment),
 			setOptionalFromPtr(d, "postgres_settings", postgresSettings),
 			d.Set("postgres_version", details.PostgresVersion),
-			setOptionalFromNonEmptyStringPtr(d, "network_policy", details.NetworkPolicy),
-			setOptionalFromNonEmptyStringPtr(d, "storage_integration", details.StorageIntegration),
+			setOptionalFromAccountObjectIdentifierPtr(d, "network_policy", details.NetworkPolicy),
+			setOptionalFromAccountObjectIdentifierPtr(d, "storage_integration", details.StorageIntegration),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresInstanceDetailsToSchema(details)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
@@ -351,8 +351,8 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 	unset := sdk.NewPostgresInstanceUnsetRequest()
 	errs = errors.Join(
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-		stringAttributeUpdate(d, "network_policy", &set.NetworkPolicy, &unset.NetworkPolicy),
-		stringAttributeUpdate(d, "storage_integration", &set.StorageIntegration, &unset.StorageIntegration),
+		accountObjectIdentifierAttributeUpdate(d, "network_policy", &set.NetworkPolicy, &unset.NetworkPolicy),
+		accountObjectIdentifierAttributeUpdate(d, "storage_integration", &set.StorageIntegration, &unset.StorageIntegration),
 		intAttributeUpdateSetOnly(d, "storage_size_gb", &set.StorageSizeGb),
 		intAttributeUpdateSetOnly(d, "postgres_version", &set.PostgresVersion),
 		intAttributeUpdate(d, "maintenance_window_start", &set.MaintenanceWindowStart, &unset.MaintenanceWindowStart),
@@ -418,6 +418,15 @@ func normalizePostgresSettings(s *string) *string {
 func setOptionalFromNonEmptyStringPtr(d *schema.ResourceData, key string, ptr *string) error {
 	if ptr != nil && *ptr != "" {
 		return d.Set(key, *ptr)
+	}
+	return nil
+}
+
+// setOptionalFromAccountObjectIdentifierPtr sets a key in resource data only if the
+// pointer is non-nil.
+func setOptionalFromAccountObjectIdentifierPtr(d *schema.ResourceData, key string, ptr *sdk.AccountObjectIdentifier) error {
+	if ptr != nil {
+		return d.Set(key, ptr.Name())
 	}
 	return nil
 }

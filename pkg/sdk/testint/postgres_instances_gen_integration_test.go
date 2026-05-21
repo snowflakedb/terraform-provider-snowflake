@@ -159,7 +159,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
 			WithPostgresVersion(17).
 			WithHighAvailability(true).
-			WithNetworkPolicy(networkPolicy.Name).
+			WithNetworkPolicy(networkPolicy.ID()).
 			WithPostgresSettings(`{"postgres:work_mem": "128MB"}`).
 			WithComment(comment)
 
@@ -247,7 +247,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithStorageIntegration(storageIntegration.Name)
+			WithStorageIntegration(storageIntegration.ID())
 
 		err := client.PostgresInstances.Create(ctx, request)
 		require.NoError(t, err)
@@ -426,7 +426,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 					WithComment(comment).
 					WithStorageSizeGb(20).
 					WithComputeFamily("STANDARD_L").
-					WithNetworkPolicy(networkPolicy.Name).
+					WithNetworkPolicy(networkPolicy.ID()).
 					WithAuthenticationAuthority(sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake).
 					WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
 			return err == nil
@@ -690,7 +690,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		// Set storage_integration
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().WithStorageIntegration(storageIntegration.Name)))
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithStorageIntegration(storageIntegration.ID())))
 		require.NoError(t, err)
 
 		// Unset storage_integration

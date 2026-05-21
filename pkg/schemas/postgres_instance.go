@@ -120,13 +120,13 @@ func PostgresInstanceDetailsToSchema(details *sdk.PostgresInstanceDetails) map[s
 		s["comment"] = *details.Comment
 	}
 	if details.NetworkPolicy != nil {
-		s["network_policy"] = *details.NetworkPolicy
+		s["network_policy"] = details.NetworkPolicy.Name()
 	}
 	if details.PostgresSettings != nil {
 		s["postgres_settings"] = *details.PostgresSettings
 	}
 	if details.StorageIntegration != nil {
-		s["storage_integration"] = *details.StorageIntegration
+		s["storage_integration"] = details.StorageIntegration.Name()
 	}
 	return s
 }
