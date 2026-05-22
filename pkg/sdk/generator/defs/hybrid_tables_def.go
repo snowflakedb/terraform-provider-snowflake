@@ -218,7 +218,8 @@ var hybridTablesDef = g.NewInterface(
 		OptionalNumber("rows").
 		OptionalNumber("bytes").
 		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()).
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowHybridTables").
 		Show().
 		Terse().
@@ -236,16 +237,17 @@ var hybridTablesDef = g.NewInterface(
 		Text("name").
 		Text("type").
 		Text("kind").
-		Text("null", g.WithPlainFieldName("IsNullable")).
+		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 		OptionalText("default", g.WithRequiredInPlain()).
-		Text("primary key", g.WithPlainFieldName("PrimaryKey")).
-		Text("unique key", g.WithPlainFieldName("UniqueKey")).
+		Field("primary key", "string", "bool").
+		Field("unique key", "string", "bool").
 		OptionalText("check", g.WithRequiredInPlain()).
 		OptionalText("expression", g.WithRequiredInPlain()).
 		OptionalText("comment", g.WithRequiredInPlain()).
 		OptionalText("policy name", g.WithPlainFieldName("PolicyName"), g.WithRequiredInPlain()).
 		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"), g.WithRequiredInPlain()).
-		OptionalText("schema_evolution_record", g.WithRequiredInPlain()),
+		OptionalText("schema_evolution_record", g.WithRequiredInPlain()).
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeHybridTable").
 		Describe().
 		SQL("TABLE").
@@ -290,7 +292,8 @@ var hybridTablesDef = g.NewInterface(
 		Text("database_name").
 		Text("schema_name").
 		OptionalText("owner", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()).
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowHybridTableIndexes").
 		Show().
 		SQL("INDEXES").

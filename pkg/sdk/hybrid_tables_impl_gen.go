@@ -10,6 +10,7 @@ import (
 
 var _ HybridTables = (*hybridTables)(nil)
 
+// adjusted manually
 var (
 	_ convertibleRow[HybridTable]        = new(hybridTableRow)
 	_ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
@@ -51,6 +52,7 @@ func (v *hybridTables) Show(ctx context.Context, request *ShowHybridTableRequest
 func (v *hybridTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error) {
 	request := NewShowHybridTableRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
+		// adjusted manually
 		WithIn(TableIn{In: In{Schema: id.SchemaId()}})
 	hybridTables, err := v.Show(ctx, request)
 	if err != nil {
@@ -132,6 +134,7 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 		s := make([]HybridTableOutOfLineIndex, len(r.ColumnsAndConstraints.OutOfLineIndex))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineIndex {
 			s[i] = HybridTableOutOfLineIndex{
+				// adjusted manually
 				Name:           v.Name,
 				Columns:        v.Columns,
 				IncludeColumns: v.IncludeColumns,
@@ -182,6 +185,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		s := make([]HybridTableAlterColumnAction, len(r.AlterColumnAction))
 		for i, v := range r.AlterColumnAction {
 			s[i] = HybridTableAlterColumnAction{
+				// adjusted manually
 				ColumnName:   v.ColumnName,
 				DropDefault:  v.DropDefault,
 				SetDefault:   v.SetDefault,
@@ -252,11 +256,45 @@ func (r *ShowHybridTableRequest) toOpts() *ShowHybridTableOptions {
 	return opts
 }
 
+func (r hybridTableRow) convert() (*HybridTable, error) {
+	result := &HybridTable{
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+	}
+	mapNullStringToNonNullableField(&result.Owner, r.Owner)
+	mapNullInt(&result.Rows, r.Rows)
+	mapNullInt(&result.Bytes, r.Bytes)
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	return result, nil
+}
+
 func (r *DescribeHybridTableRequest) toOpts() *DescribeHybridTableOptions {
 	opts := &DescribeHybridTableOptions{
 		name: r.name,
 	}
 	return opts
+}
+
+func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
+	result := &HybridTableDetails{
+		Name:       r.Name,
+		Type:       r.Type,
+		Kind:       r.Kind,
+		IsNullable: r.Null == "Y",
+		PrimaryKey: r.PrimaryKey == "Y",
+		UniqueKey:  r.UniqueKey == "Y",
+	}
+	mapNullStringToNonNullableField(&result.Default, r.Default)
+	mapNullStringToNonNullableField(&result.Check, r.Check)
+	mapNullStringToNonNullableField(&result.Expression, r.Expression)
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	mapNullStringToNonNullableField(&result.PolicyName, r.PolicyName)
+	mapNullStringToNonNullableField(&result.PrivacyDomain, r.PrivacyDomain)
+	mapNullStringToNonNullableField(&result.SchemaEvolutionRecord, r.SchemaEvolutionRecord)
+	return result, nil
 }
 
 func (r *CreateIndexHybridTableRequest) toOpts() *CreateIndexHybridTableOptions {
@@ -289,90 +327,22 @@ func (r *ShowIndexesHybridTableRequest) toOpts() *ShowIndexesHybridTableOptions 
 	return opts
 }
 
-// adjusted manually
-func (r hybridTableRow) convert() (*HybridTable, error) {
-	ht := &HybridTable{
-		CreatedOn:    r.CreatedOn,
-		Name:         r.Name,
-		DatabaseName: r.DatabaseName,
-		SchemaName:   r.SchemaName,
-	}
-	if r.Rows.Valid {
-		ht.Rows = Int(int(r.Rows.Int64))
-	}
-	if r.Bytes.Valid {
-		ht.Bytes = Int(int(r.Bytes.Int64))
-	}
-	if r.Owner.Valid {
-		ht.Owner = r.Owner.String
-	}
-	if r.Comment.Valid {
-		ht.Comment = r.Comment.String
-	}
-	if r.OwnerRoleType.Valid {
-		ht.OwnerRoleType = r.OwnerRoleType.String
-	}
-	return ht, nil
-}
-
-// adjusted manually
-func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
-	details := &HybridTableDetails{
-		Name:       r.Name,
-		Type:       r.Type,
-		Kind:       r.Kind,
-		IsNullable: r.Null == "Y",
-		PrimaryKey: r.PrimaryKey == "Y",
-		UniqueKey:  r.UniqueKey == "Y",
-	}
-	if r.Default.Valid {
-		details.Default = r.Default.String
-	}
-	if r.Check.Valid {
-		details.Check = r.Check.String
-	}
-	if r.Expression.Valid {
-		details.Expression = r.Expression.String
-	}
-	if r.Comment.Valid {
-		details.Comment = r.Comment.String
-	}
-	if r.PolicyName.Valid {
-		details.PolicyName = r.PolicyName.String
-	}
-	if r.PrivacyDomain.Valid {
-		details.PrivacyDomain = r.PrivacyDomain.String
-	}
-	if r.SchemaEvolutionRecord.Valid {
-		details.SchemaEvolutionRecord = r.SchemaEvolutionRecord.String
-	}
-	return details, nil
-}
-
-// adjusted manually
 func (r hybridTableIndexRow) convert() (*HybridTableIndex, error) {
-	idx := &HybridTableIndex{
+	result := &HybridTableIndex{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		TableName:    r.Table,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 	}
+	// added manually
 	if r.IsUnique.Valid {
 		v := r.IsUnique.String == "Y"
-		idx.IsUnique = &v
+		result.IsUnique = &v
 	}
-	if r.Columns.Valid {
-		idx.Columns = &r.Columns.String
-	}
-	if r.IncludedColumns.Valid {
-		idx.IncludedColumns = r.IncludedColumns.String
-	}
-	if r.Owner.Valid {
-		idx.Owner = r.Owner.String
-	}
-	if r.OwnerRoleType.Valid {
-		idx.OwnerRoleType = r.OwnerRoleType.String
-	}
-	return idx, nil
+	mapNullString(&result.Columns, r.Columns)
+	mapNullStringToNonNullableField(&result.IncludedColumns, r.IncludedColumns)
+	mapNullStringToNonNullableField(&result.Owner, r.Owner)
+	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	return result, nil
 }
