@@ -17,7 +17,8 @@ var secretPairs = g.StructPair("secretDBRow", "Secret").
 	OptionalText("comment").
 	Text("secret_type").
 	Field("oauth_scopes", "sql.NullString", "[]string").
-	Text("owner_role_type")
+	Text("owner_role_type").
+	WithConvertGeneration()
 
 var secretDetailsPairs = g.StructPair("secretDetailsDBRow", "SecretDetails").
 	Time("created_on").
@@ -31,7 +32,8 @@ var secretDetailsPairs = g.StructPair("secretDetailsDBRow", "SecretDetails").
 	Field("oauth_access_token_expiry_time", "*time.Time", "*time.Time").
 	Field("oauth_refresh_token_expiry_time", "*time.Time", "*time.Time").
 	Field("oauth_scopes", "sql.NullString", "[]string").
-	OptionalText("integration_name")
+	OptionalText("integration_name").
+	WithConvertGeneration()
 
 var secretsApiIntegrationScopeDef = g.NewQueryStruct("ApiIntegrationScope").
 	Text("Scope", g.KeywordOptions().SingleQuotes().Required())
