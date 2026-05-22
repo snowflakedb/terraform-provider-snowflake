@@ -329,16 +329,6 @@ func (s *ApiIntegrationSetRequest) WithGitHttpsApiTokenBasedParams(gitHttpsApiTo
 	return s
 }
 
-func (s *ApiIntegrationSetRequest) WithGitHttpsApiGithubAppParams(gitHttpsApiGithubAppParams SetGitHttpsApiGithubAppParamsRequest) *ApiIntegrationSetRequest {
-	s.GitHttpsApiGithubAppParams = &gitHttpsApiGithubAppParams
-	return s
-}
-
-func (s *ApiIntegrationSetRequest) WithGitHttpsApiOAuth2Params(gitHttpsApiOAuth2Params SetGitHttpsApiOAuth2ParamsRequest) *ApiIntegrationSetRequest {
-	s.GitHttpsApiOAuth2Params = &gitHttpsApiOAuth2Params
-	return s
-}
-
 func (s *ApiIntegrationSetRequest) WithGitHttpsApiPrivateLinkParams(gitHttpsApiPrivateLinkParams SetGitHttpsApiPrivateLinkParamsRequest) *ApiIntegrationSetRequest {
 	s.GitHttpsApiPrivateLinkParams = &gitHttpsApiPrivateLinkParams
 	return s
@@ -346,11 +336,6 @@ func (s *ApiIntegrationSetRequest) WithGitHttpsApiPrivateLinkParams(gitHttpsApiP
 
 func (s *ApiIntegrationSetRequest) WithExternalMcpOAuth2Params(externalMcpOAuth2Params SetExternalMcpOAuth2ParamsRequest) *ApiIntegrationSetRequest {
 	s.ExternalMcpOAuth2Params = &externalMcpOAuth2Params
-	return s
-}
-
-func (s *ApiIntegrationSetRequest) WithExternalMcpDynamicClientParams(externalMcpDynamicClientParams SetExternalMcpDynamicClientParamsRequest) *ApiIntegrationSetRequest {
-	s.ExternalMcpDynamicClientParams = &externalMcpDynamicClientParams
 	return s
 }
 
@@ -427,21 +412,6 @@ func (s *SetGitHttpsApiTokenBasedParamsRequest) WithAllowedAuthenticationSecrets
 	return s
 }
 
-func NewSetGitHttpsApiGithubAppParamsRequest() *SetGitHttpsApiGithubAppParamsRequest {
-	s := SetGitHttpsApiGithubAppParamsRequest{}
-	return &s
-}
-
-func NewSetGitHttpsApiOAuth2ParamsRequest() *SetGitHttpsApiOAuth2ParamsRequest {
-	s := SetGitHttpsApiOAuth2ParamsRequest{}
-	return &s
-}
-
-func (s *SetGitHttpsApiOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2GitUserAuthenticationRequest) *SetGitHttpsApiOAuth2ParamsRequest {
-	s.ApiUserAuthentication = apiUserAuthentication
-	return s
-}
-
 func NewSetGitHttpsApiPrivateLinkParamsRequest() *SetGitHttpsApiPrivateLinkParamsRequest {
 	s := SetGitHttpsApiPrivateLinkParamsRequest{}
 	return &s
@@ -472,16 +442,6 @@ func (s *SetExternalMcpOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAut
 	return s
 }
 
-func NewSetExternalMcpDynamicClientParamsRequest() *SetExternalMcpDynamicClientParamsRequest {
-	s := SetExternalMcpDynamicClientParamsRequest{}
-	return &s
-}
-
-func (s *SetExternalMcpDynamicClientParamsRequest) WithApiUserAuthentication(apiUserAuthentication DynamicClientMcpUserAuthenticationRequest) *SetExternalMcpDynamicClientParamsRequest {
-	s.ApiUserAuthentication = apiUserAuthentication
-	return s
-}
-
 func NewApiIntegrationUnsetRequest() *ApiIntegrationUnsetRequest {
 	s := ApiIntegrationUnsetRequest{}
 	return &s
@@ -504,6 +464,11 @@ func (s *ApiIntegrationUnsetRequest) WithApiBlockedPrefixes(apiBlockedPrefixes b
 
 func (s *ApiIntegrationUnsetRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets bool) *ApiIntegrationUnsetRequest {
 	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
+	return s
+}
+
+func (s *ApiIntegrationUnsetRequest) WithTlsTrustedCertificates(tlsTrustedCertificates bool) *ApiIntegrationUnsetRequest {
+	s.TlsTrustedCertificates = &tlsTrustedCertificates
 	return s
 }
 

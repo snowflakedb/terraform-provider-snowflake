@@ -203,22 +203,6 @@ func (r *AlterApiIntegrationRequest) toOpts() *AlterApiIntegrationOptions {
 				}
 			}
 		}
-		if r.Set.GitHttpsApiGithubAppParams != nil {
-			opts.Set.GitHttpsApiGithubAppParams = &SetGitHttpsApiGithubAppParams{}
-		}
-		if r.Set.GitHttpsApiOAuth2Params != nil {
-			opts.Set.GitHttpsApiOAuth2Params = &SetGitHttpsApiOAuth2Params{}
-			opts.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication = OAuth2GitUserAuthentication{
-				OauthAuthorizationEndpoint: r.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication.OauthAuthorizationEndpoint,
-				OauthTokenEndpoint:         r.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication.OauthTokenEndpoint,
-				OauthClientId:              r.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication.OauthClientId,
-				OauthClientSecret:          r.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication.OauthClientSecret,
-				OauthAccessTokenValidity:   r.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication.OauthAccessTokenValidity,
-				OauthRefreshTokenValidity:  r.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication.OauthRefreshTokenValidity,
-				OauthAllowedScopes:         r.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication.OauthAllowedScopes,
-				OauthUsername:              r.Set.GitHttpsApiOAuth2Params.ApiUserAuthentication.OauthUsername,
-			}
-		}
 		if r.Set.GitHttpsApiPrivateLinkParams != nil {
 			opts.Set.GitHttpsApiPrivateLinkParams = &SetGitHttpsApiPrivateLinkParams{
 				UsePrivatelinkEndpoint: r.Set.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint,
@@ -244,12 +228,6 @@ func (r *AlterApiIntegrationRequest) toOpts() *AlterApiIntegrationOptions {
 				OauthRefreshTokenValidity:  r.Set.ExternalMcpOAuth2Params.ApiUserAuthentication.OauthRefreshTokenValidity,
 			}
 		}
-		if r.Set.ExternalMcpDynamicClientParams != nil {
-			opts.Set.ExternalMcpDynamicClientParams = &SetExternalMcpDynamicClientParams{}
-			opts.Set.ExternalMcpDynamicClientParams.ApiUserAuthentication = DynamicClientMcpUserAuthentication{
-				OauthResourceUrl: r.Set.ExternalMcpDynamicClientParams.ApiUserAuthentication.OauthResourceUrl,
-			}
-		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &ApiIntegrationUnset{
@@ -257,6 +235,7 @@ func (r *AlterApiIntegrationRequest) toOpts() *AlterApiIntegrationOptions {
 			Enabled:                      r.Unset.Enabled,
 			ApiBlockedPrefixes:           r.Unset.ApiBlockedPrefixes,
 			AllowedAuthenticationSecrets: r.Unset.AllowedAuthenticationSecrets,
+			TlsTrustedCertificates:       r.Unset.TlsTrustedCertificates,
 			UsePrivatelinkEndpoint:       r.Unset.UsePrivatelinkEndpoint,
 			Comment:                      r.Unset.Comment,
 		}

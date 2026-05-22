@@ -21,6 +21,9 @@ func (opts *CreateApiIntegrationOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "IfNotExists", "OrReplace"))
 	}
+	if everyValueSet(opts.OrReplace, opts.ExternalMcpOAuth2ProviderParams, opts.ExternalMcpDynamicClientProviderParams) {
+		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"))
+	}
 	if !exactlyOneValueSet(opts.AwsApiProviderParams, opts.AzureApiProviderParams, opts.GoogleApiProviderParams, opts.GitHttpsApiTokenBasedProviderParams, opts.GitHttpsApiGithubAppProviderParams, opts.GitHttpsApiOAuth2ProviderParams, opts.GitHttpsApiPrivateLinkProviderParams, opts.ExternalMcpOAuth2ProviderParams, opts.ExternalMcpDynamicClientProviderParams) {
 		errs = append(errs, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitHttpsApiTokenBasedProviderParams", "GitHttpsApiGithubAppProviderParams", "GitHttpsApiOAuth2ProviderParams", "GitHttpsApiPrivateLinkProviderParams", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"))
 	}
@@ -59,11 +62,11 @@ func (opts *AlterApiIntegrationOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterApiIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		if everyValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams, opts.Set.GitHttpsApiTokenBasedParams, opts.Set.GitHttpsApiGithubAppParams, opts.Set.GitHttpsApiOAuth2Params, opts.Set.GitHttpsApiPrivateLinkParams, opts.Set.ExternalMcpOAuth2Params, opts.Set.ExternalMcpDynamicClientParams) {
-			errs = append(errs, errOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiGithubAppParams", "GitHttpsApiOAuth2Params", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "ExternalMcpDynamicClientParams"))
+		if everyValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams, opts.Set.GitHttpsApiTokenBasedParams, opts.Set.GitHttpsApiPrivateLinkParams, opts.Set.ExternalMcpOAuth2Params) {
+			errs = append(errs, errOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params"))
 		}
-		if !anyValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams, opts.Set.GitHttpsApiTokenBasedParams, opts.Set.GitHttpsApiGithubAppParams, opts.Set.GitHttpsApiOAuth2Params, opts.Set.GitHttpsApiPrivateLinkParams, opts.Set.ExternalMcpOAuth2Params, opts.Set.ExternalMcpDynamicClientParams, opts.Set.Enabled, opts.Set.ApiAllowedPrefixes, opts.Set.ApiBlockedPrefixes, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiGithubAppParams", "GitHttpsApiOAuth2Params", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "ExternalMcpDynamicClientParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"))
+		if !anyValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams, opts.Set.GitHttpsApiTokenBasedParams, opts.Set.GitHttpsApiPrivateLinkParams, opts.Set.ExternalMcpOAuth2Params, opts.Set.Enabled, opts.Set.ApiAllowedPrefixes, opts.Set.ApiBlockedPrefixes, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"))
 		}
 		if valueSet(opts.Set.AwsParams) {
 			if !anyValueSet(opts.Set.AwsParams.ApiAwsRoleArn, opts.Set.AwsParams.ApiKey) {

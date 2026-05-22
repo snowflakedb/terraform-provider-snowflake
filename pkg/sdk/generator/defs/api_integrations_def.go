@@ -227,25 +227,8 @@ var apiIntegrationsDef = g.NewInterface(
 							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets"),
 						g.KeywordOptions(),
 					).
-					// TODO: Validate if it should work, and if yes, with what syntax
-					// OptionalQueryStructField(
-					// 	"GitHttpsApiGithubAppParams",
-					// 	g.NewQueryStruct("SetGitHttpsApiGithubAppParams").
-					// 		SQLWithCustomFieldName("ApiUserAuthentication", "API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"),
-					// 	g.KeywordOptions(),
-					// ).
-					// OptionalQueryStructField(
-					// 	"GitHttpsApiOAuth2Params",
-					// 	g.NewQueryStruct("SetGitHttpsApiOAuth2Params").
-					// 		QueryStructField(
-					// 			"ApiUserAuthentication",
-					// 			apiIntegrationOauth2GitAuthDef,
-					// 			g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
-					// 		),
-					// 	g.KeywordOptions(),
-					// ).
 					OptionalQueryStructField(
-						"GitHttpsApiPrivateLinkParams",
+						"GitHttpsApiPrivateLinkParams", // TODO(next pr): For private link only ? Validate with integration tests
 						g.NewQueryStruct("SetGitHttpsApiPrivateLinkParams").
 							OptionalQueryStructField(
 								"AllowedAuthenticationSecrets",
@@ -267,17 +250,6 @@ var apiIntegrationsDef = g.NewInterface(
 							),
 						g.KeywordOptions(),
 					).
-					// TODO: Cannot be used, validate if another syntax could be used for this alter
-					//OptionalQueryStructField(
-					//	"ExternalMcpDynamicClientParams",
-					//	g.NewQueryStruct("SetExternalMcpDynamicClientParams").
-					//		QueryStructField(
-					//			"ApiUserAuthentication",
-					//			apiIntegrationDynamicClientMcpAuthDef,
-					//			g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
-					//		),
-					//	g.KeywordOptions(),
-					//).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 					ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
@@ -320,6 +292,7 @@ var apiIntegrationsDef = g.NewInterface(
 					OptionalSQL("ENABLED").
 					OptionalSQL("API_BLOCKED_PREFIXES").
 					OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
+					OptionalSQL("TLS_TRUSTED_CERTIFICATES").
 					// TODO: Make unset params for each type?
 					OptionalSQL("USE_PRIVATELINK_ENDPOINT").
 					OptionalSQL("COMMENT").
@@ -375,4 +348,34 @@ var apiIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	WithShowObjectType("Integration")
+	WithShowObjectType("Integration").
+	WithCustomInterfaceMethod(
+		"DescribeAwsDetails",
+		"DescribeAwsDetails returns converted describe output for AWS API integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*ApiIntegrationAwsDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAzureDetails",
+		"DescribeAzureDetails returns converted describe output for Azure API integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*ApiIntegrationAzureDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeGoogleDetails",
+		"DescribeGoogleDetails returns converted describe output for Google API integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*ApiIntegrationGoogleDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeGitHttpsApiDetails",
+		"DescribeGitHttpsApiDetails returns converted describe output for git HTTPS API integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*ApiIntegrationGitHttpsApiDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeExternalMcpDetails",
+		"DescribeExternalMcpDetails returns converted describe output for external MCP API integrations.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*ApiIntegrationExternalMcpDetails", "error",
+	)

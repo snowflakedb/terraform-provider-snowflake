@@ -7,35 +7,30 @@ import (
 	"testing"
 )
 
-// Added manually - also used by notification_integrations_gen_test.go
-const (
-	awsAllowedPrefix    = "https://123456.execute-api.us-west-2.amazonaws.com/prod/"
-	azureAllowedPrefix  = "https://apim-hello-world.azure-api.net/"
-	googleAllowedPrefix = "https://gateway-id-123456.uc.gateway.dev/"
-
-	apiAwsRoleArn        = "arn:aws:iam::000000000001:/role/test"
-	azureTenantId        = "00000000-0000-0000-0000-000000000000"
-	azureAdApplicationId = "11111111-1111-1111-1111-111111111111"
-	googleAudience       = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
-)
-
-// Constants for git_https_api and external_mcp tests
-const (
-	gitAllowedPrefix           = "https://github.com/my-org/"
-	mcpAllowedPrefix           = "https://mcp.example.com/"
-	oauthAuthorizationEndpoint = "https://auth.example.com/authorize"
-	oauthTokenEndpoint         = "https://auth.example.com/token"
-	oauthClientId              = "oauth-client-id-123"
-	oauthClientSecret          = "oauth-client-secret-456"
-	oauthResourceUrl           = "https://resource.example.com"
-)
-
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationAwsApiProviderType]{"ApiIntegrationAwsApiProviderType", AllApiIntegrationAwsApiProviderTypes, ToApiIntegrationAwsApiProviderType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationOauthClientAuthMethod]{"ApiIntegrationOauthClientAuthMethod", AllApiIntegrationOauthClientAuthMethods, ToApiIntegrationOauthClientAuthMethod})
 }
 
 func TestApiIntegrations_Create(t *testing.T) {
+	const (
+		awsAllowedPrefix    = "https://123456.execute-api.us-west-2.amazonaws.com/prod/"
+		azureAllowedPrefix  = "https://apim-hello-world.azure-api.net/"
+		googleAllowedPrefix = "https://gateway-id-123456.uc.gateway.dev/"
+		gitAllowedPrefix    = "https://github.com/my-org/"
+		mcpAllowedPrefix    = "https://mcp.example.com/"
+
+		apiAwsRoleArn              = "arn:aws:iam::000000000001:/role/test"
+		azureTenantId              = "00000000-0000-0000-0000-000000000000"
+		azureAdApplicationId       = "11111111-1111-1111-1111-111111111111"
+		googleAudience             = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
+		oauthAuthorizationEndpoint = "https://auth.example.com/authorize"
+		oauthTokenEndpoint         = "https://auth.example.com/token"
+		oauthClientId              = "oauth-client-id-123"
+		oauthClientSecret          = "oauth-client-secret-456"
+		oauthResourceUrl           = "https://resource.example.com"
+	)
+
 	id := randomAccountObjectIdentifier()
 
 	// Manually added default options for each type
@@ -381,6 +376,17 @@ func TestApiIntegrations_Create(t *testing.T) {
 }
 
 func TestApiIntegrations_Alter(t *testing.T) {
+	const (
+		awsAllowedPrefix    = "https://123456.execute-api.us-west-2.amazonaws.com/prod/"
+		azureAllowedPrefix  = "https://apim-hello-world.azure-api.net/"
+		googleAllowedPrefix = "https://gateway-id-123456.uc.gateway.dev/"
+
+		oauthAuthorizationEndpoint = "https://auth.example.com/authorize"
+		oauthTokenEndpoint         = "https://auth.example.com/token"
+		oauthClientId              = "oauth-client-id-123"
+		oauthClientSecret          = "oauth-client-secret-456"
+	)
+
 	id := randomAccountObjectIdentifier()
 	defaultOpts := func() *AlterApiIntegrationOptions {
 		return &AlterApiIntegrationOptions{
@@ -429,23 +435,20 @@ func TestApiIntegrations_Alter(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.Set.AwsParams opts.Set.AzureParams opts.Set.GoogleParams opts.Set.GitHttpsApiTokenBasedParams opts.Set.GitHttpsApiGithubAppParams opts.Set.GitHttpsApiOAuth2Params opts.Set.GitHttpsApiPrivateLinkParams opts.Set.ExternalMcpOAuth2Params opts.Set.ExternalMcpDynamicClientParams]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ApiIntegrationSet{
-			AwsParams:                      &SetAwsApiParams{ApiAwsRoleArn: String("a")},
-			AzureParams:                    &SetAzureApiParams{AzureTenantId: String("a")},
-			GoogleParams:                   &SetGoogleApiParams{GoogleAudience: "a"},
-			GitHttpsApiTokenBasedParams:    &SetGitHttpsApiTokenBasedParams{AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{AllSecrets: Bool(true)}},
-			GitHttpsApiGithubAppParams:     &SetGitHttpsApiGithubAppParams{},
-			GitHttpsApiOAuth2Params:        &SetGitHttpsApiOAuth2Params{},
-			GitHttpsApiPrivateLinkParams:   &SetGitHttpsApiPrivateLinkParams{UsePrivatelinkEndpoint: Bool(true)},
-			ExternalMcpOAuth2Params:        &SetExternalMcpOAuth2Params{},
-			ExternalMcpDynamicClientParams: &SetExternalMcpDynamicClientParams{},
+			AwsParams:                    &SetAwsApiParams{ApiAwsRoleArn: String("a")},
+			AzureParams:                  &SetAzureApiParams{AzureTenantId: String("a")},
+			GoogleParams:                 &SetGoogleApiParams{GoogleAudience: "a"},
+			GitHttpsApiTokenBasedParams:  &SetGitHttpsApiTokenBasedParams{AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{AllSecrets: Bool(true)}},
+			GitHttpsApiPrivateLinkParams: &SetGitHttpsApiPrivateLinkParams{UsePrivatelinkEndpoint: Bool(true)},
+			ExternalMcpOAuth2Params:      &SetExternalMcpOAuth2Params{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiGithubAppParams", "GitHttpsApiOAuth2Params", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "ExternalMcpDynamicClientParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.AwsParams opts.Set.AzureParams opts.Set.GoogleParams opts.Set.GitHttpsApiTokenBasedParams opts.Set.GitHttpsApiGithubAppParams opts.Set.GitHttpsApiOAuth2Params opts.Set.GitHttpsApiPrivateLinkParams opts.Set.ExternalMcpOAuth2Params opts.Set.ExternalMcpDynamicClientParams opts.Set.Enabled opts.Set.ApiAllowedPrefixes opts.Set.ApiBlockedPrefixes opts.Set.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ApiIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiGithubAppParams", "GitHttpsApiOAuth2Params", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "ExternalMcpDynamicClientParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.AwsParams.ApiAwsRoleArn opts.Set.AwsParams.ApiKey] should be set", func(t *testing.T) {
@@ -565,42 +568,6 @@ func TestApiIntegrations_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s SET ALLOWED_AUTHENTICATION_SECRETS = NONE", id.FullyQualifiedName())
 	})
 
-	t.Run("set - git_https_api with GitHub App", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiIntegrationSet{
-			GitHttpsApiGithubAppParams: &SetGitHttpsApiGithubAppParams{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
-			"ALTER API INTEGRATION %s SET",
-			"API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)",
-		}, " "), id.FullyQualifiedName())
-	})
-
-	t.Run("set - git_https_api with OAuth2", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiIntegrationSet{
-			GitHttpsApiOAuth2Params: &SetGitHttpsApiOAuth2Params{
-				ApiUserAuthentication: OAuth2GitUserAuthentication{
-					OauthAuthorizationEndpoint: oauthAuthorizationEndpoint,
-					OauthTokenEndpoint:         oauthTokenEndpoint,
-					OauthClientId:              oauthClientId,
-					OauthClientSecret:          oauthClientSecret,
-				},
-			},
-		}
-		authSQL := strings.Join([]string{
-			"TYPE = OAUTH2",
-			"OAUTH_AUTHORIZATION_ENDPOINT = '%s'",
-			"OAUTH_TOKEN_ENDPOINT = '%s'",
-			"OAUTH_CLIENT_ID = '%s'",
-			"OAUTH_CLIENT_SECRET = '%s'",
-		}, " ")
-		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
-			"ALTER API INTEGRATION %s SET",
-			"API_USER_AUTHENTICATION = (" + authSQL + ")",
-		}, " "), id.FullyQualifiedName(), oauthAuthorizationEndpoint, oauthTokenEndpoint, oauthClientId, oauthClientSecret)
-	})
-
 	t.Run("set - git_https_api with private link", func(t *testing.T) {
 		cert := NewSchemaObjectIdentifier("db", "schema", "cert")
 		opts := defaultOpts()
@@ -646,21 +613,6 @@ func TestApiIntegrations_Alter(t *testing.T) {
 		}, " "), id.FullyQualifiedName(), oauthClientId, oauthClientSecret, oauthTokenEndpoint, oauthAuthorizationEndpoint)
 	})
 
-	t.Run("set - external_mcp with dynamic client", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiIntegrationSet{
-			ExternalMcpDynamicClientParams: &SetExternalMcpDynamicClientParams{
-				ApiUserAuthentication: DynamicClientMcpUserAuthentication{
-					OauthResourceUrl: oauthResourceUrl,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
-			"ALTER API INTEGRATION %s SET",
-			"API_USER_AUTHENTICATION = (TYPE = OAUTH_DYNAMIC_CLIENT OAUTH_RESOURCE_URL = '%s')",
-		}, " "), id.FullyQualifiedName(), oauthResourceUrl)
-	})
-
 	t.Run("unset single", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &ApiIntegrationUnset{Comment: Bool(true)}
@@ -674,10 +626,11 @@ func TestApiIntegrations_Alter(t *testing.T) {
 			Enabled:                      Bool(true),
 			ApiBlockedPrefixes:           Bool(true),
 			AllowedAuthenticationSecrets: Bool(true),
+			TlsTrustedCertificates:       Bool(true),
 			UsePrivatelinkEndpoint:       Bool(true),
 			Comment:                      Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET API_KEY, ENABLED, API_BLOCKED_PREFIXES, ALLOWED_AUTHENTICATION_SECRETS, USE_PRIVATELINK_ENDPOINT, COMMENT", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET API_KEY, ENABLED, API_BLOCKED_PREFIXES, ALLOWED_AUTHENTICATION_SECRETS, TLS_TRUSTED_CERTIFICATES, USE_PRIVATELINK_ENDPOINT, COMMENT", id.FullyQualifiedName())
 	})
 
 	t.Run("set tags", func(t *testing.T) {

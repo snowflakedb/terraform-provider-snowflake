@@ -110,19 +110,16 @@ type AlterApiIntegrationRequest struct {
 }
 
 type ApiIntegrationSetRequest struct {
-	AwsParams                      *SetAwsApiParamsRequest
-	AzureParams                    *SetAzureApiParamsRequest
-	GoogleParams                   *SetGoogleApiParamsRequest
-	GitHttpsApiTokenBasedParams    *SetGitHttpsApiTokenBasedParamsRequest
-	GitHttpsApiGithubAppParams     *SetGitHttpsApiGithubAppParamsRequest
-	GitHttpsApiOAuth2Params        *SetGitHttpsApiOAuth2ParamsRequest
-	GitHttpsApiPrivateLinkParams   *SetGitHttpsApiPrivateLinkParamsRequest
-	ExternalMcpOAuth2Params        *SetExternalMcpOAuth2ParamsRequest
-	ExternalMcpDynamicClientParams *SetExternalMcpDynamicClientParamsRequest
-	Enabled                        *bool
-	ApiAllowedPrefixes             []ApiIntegrationEndpointPrefix
-	ApiBlockedPrefixes             []ApiIntegrationEndpointPrefix
-	Comment                        *string
+	AwsParams                    *SetAwsApiParamsRequest
+	AzureParams                  *SetAzureApiParamsRequest
+	GoogleParams                 *SetGoogleApiParamsRequest
+	GitHttpsApiTokenBasedParams  *SetGitHttpsApiTokenBasedParamsRequest
+	GitHttpsApiPrivateLinkParams *SetGitHttpsApiPrivateLinkParamsRequest
+	ExternalMcpOAuth2Params      *SetExternalMcpOAuth2ParamsRequest
+	Enabled                      *bool
+	ApiAllowedPrefixes           []ApiIntegrationEndpointPrefix
+	ApiBlockedPrefixes           []ApiIntegrationEndpointPrefix
+	Comment                      *string
 }
 
 type SetAwsApiParamsRequest struct {
@@ -144,12 +141,6 @@ type SetGitHttpsApiTokenBasedParamsRequest struct {
 	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecretsRequest
 }
 
-type SetGitHttpsApiGithubAppParamsRequest struct{}
-
-type SetGitHttpsApiOAuth2ParamsRequest struct {
-	ApiUserAuthentication OAuth2GitUserAuthenticationRequest
-}
-
 type SetGitHttpsApiPrivateLinkParamsRequest struct {
 	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecretsRequest
 	UsePrivatelinkEndpoint       *bool
@@ -160,15 +151,12 @@ type SetExternalMcpOAuth2ParamsRequest struct {
 	ApiUserAuthentication OAuth2McpUserAuthenticationRequest
 }
 
-type SetExternalMcpDynamicClientParamsRequest struct {
-	ApiUserAuthentication DynamicClientMcpUserAuthenticationRequest
-}
-
 type ApiIntegrationUnsetRequest struct {
 	ApiKey                       *bool
 	Enabled                      *bool
 	ApiBlockedPrefixes           *bool
 	AllowedAuthenticationSecrets *bool
+	TlsTrustedCertificates       *bool
 	UsePrivatelinkEndpoint       *bool
 	Comment                      *bool
 }

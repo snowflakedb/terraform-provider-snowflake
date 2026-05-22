@@ -152,19 +152,16 @@ type AlterApiIntegrationOptions struct {
 }
 
 type ApiIntegrationSet struct {
-	AwsParams                      *SetAwsApiParams                   `ddl:"keyword"`
-	AzureParams                    *SetAzureApiParams                 `ddl:"keyword"`
-	GoogleParams                   *SetGoogleApiParams                `ddl:"keyword"`
-	GitHttpsApiTokenBasedParams    *SetGitHttpsApiTokenBasedParams    `ddl:"keyword"`
-	GitHttpsApiGithubAppParams     *SetGitHttpsApiGithubAppParams     `ddl:"keyword"`
-	GitHttpsApiOAuth2Params        *SetGitHttpsApiOAuth2Params        `ddl:"keyword"`
-	GitHttpsApiPrivateLinkParams   *SetGitHttpsApiPrivateLinkParams   `ddl:"keyword"`
-	ExternalMcpOAuth2Params        *SetExternalMcpOAuth2Params        `ddl:"keyword"`
-	ExternalMcpDynamicClientParams *SetExternalMcpDynamicClientParams `ddl:"keyword"`
-	Enabled                        *bool                              `ddl:"parameter" sql:"ENABLED"`
-	ApiAllowedPrefixes             []ApiIntegrationEndpointPrefix     `ddl:"parameter,parentheses" sql:"API_ALLOWED_PREFIXES"`
-	ApiBlockedPrefixes             []ApiIntegrationEndpointPrefix     `ddl:"parameter,parentheses" sql:"API_BLOCKED_PREFIXES"`
-	Comment                        *string                            `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	AwsParams                    *SetAwsApiParams                 `ddl:"keyword"`
+	AzureParams                  *SetAzureApiParams               `ddl:"keyword"`
+	GoogleParams                 *SetGoogleApiParams              `ddl:"keyword"`
+	GitHttpsApiTokenBasedParams  *SetGitHttpsApiTokenBasedParams  `ddl:"keyword"`
+	GitHttpsApiPrivateLinkParams *SetGitHttpsApiPrivateLinkParams `ddl:"keyword"`
+	ExternalMcpOAuth2Params      *SetExternalMcpOAuth2Params      `ddl:"keyword"`
+	Enabled                      *bool                            `ddl:"parameter" sql:"ENABLED"`
+	ApiAllowedPrefixes           []ApiIntegrationEndpointPrefix   `ddl:"parameter,parentheses" sql:"API_ALLOWED_PREFIXES"`
+	ApiBlockedPrefixes           []ApiIntegrationEndpointPrefix   `ddl:"parameter,parentheses" sql:"API_BLOCKED_PREFIXES"`
+	Comment                      *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type SetAwsApiParams struct {
@@ -186,14 +183,6 @@ type SetGitHttpsApiTokenBasedParams struct {
 	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecrets `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS ="`
 }
 
-type SetGitHttpsApiGithubAppParams struct {
-	ApiUserAuthentication bool `ddl:"static" sql:"API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"`
-}
-
-type SetGitHttpsApiOAuth2Params struct {
-	ApiUserAuthentication OAuth2GitUserAuthentication `ddl:"list,parentheses,no_comma" sql:"API_USER_AUTHENTICATION ="`
-}
-
 type SetGitHttpsApiPrivateLinkParams struct {
 	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecrets `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS ="`
 	UsePrivatelinkEndpoint       *bool                                       `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
@@ -204,15 +193,12 @@ type SetExternalMcpOAuth2Params struct {
 	ApiUserAuthentication OAuth2McpUserAuthentication `ddl:"list,parentheses,no_comma" sql:"API_USER_AUTHENTICATION ="`
 }
 
-type SetExternalMcpDynamicClientParams struct {
-	ApiUserAuthentication DynamicClientMcpUserAuthentication `ddl:"list,parentheses,no_comma" sql:"API_USER_AUTHENTICATION ="`
-}
-
 type ApiIntegrationUnset struct {
 	ApiKey                       *bool `ddl:"keyword" sql:"API_KEY"`
 	Enabled                      *bool `ddl:"keyword" sql:"ENABLED"`
 	ApiBlockedPrefixes           *bool `ddl:"keyword" sql:"API_BLOCKED_PREFIXES"`
 	AllowedAuthenticationSecrets *bool `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
+	TlsTrustedCertificates       *bool `ddl:"keyword" sql:"TLS_TRUSTED_CERTIFICATES"`
 	UsePrivatelinkEndpoint       *bool `ddl:"keyword" sql:"USE_PRIVATELINK_ENDPOINT"`
 	Comment                      *bool `ddl:"keyword" sql:"COMMENT"`
 }
