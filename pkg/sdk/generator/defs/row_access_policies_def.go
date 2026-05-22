@@ -70,7 +70,8 @@ var rowAccessPoliciesDef = g.NewInterface(
 			Text("owner").
 			OptionalText("comment", g.WithRequiredInPlain()).
 			Text("options").
-			Text("owner_role_type"),
+			Text("owner_role_type").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowRowAccessPolicies").
 			Show().
 			SQL("ROW ACCESS POLICIES").
