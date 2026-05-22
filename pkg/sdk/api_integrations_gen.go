@@ -17,6 +17,16 @@ type ApiIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ApiIntegrationProperty, error)
+	// DescribeAwsDetails returns converted describe output for AWS API integrations.
+	DescribeAwsDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationAwsDetails, error)
+	// DescribeAzureDetails returns converted describe output for Azure API integrations.
+	DescribeAzureDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationAzureDetails, error)
+	// DescribeGoogleDetails returns converted describe output for Google API integrations.
+	DescribeGoogleDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationGoogleDetails, error)
+	// DescribeGitHttpsApiDetails returns converted describe output for git HTTPS API integrations.
+	DescribeGitHttpsApiDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationGitHttpsApiDetails, error)
+	// DescribeExternalMcpDetails returns converted describe output for external MCP API integrations.
+	DescribeExternalMcpDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationExternalMcpDetails, error)
 }
 
 // CreateApiIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-api-integration.

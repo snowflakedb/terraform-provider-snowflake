@@ -73,3 +73,33 @@ func (c *ApiIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier
 	ctx := context.Background()
 	return c.client().ShowByIDSafely(ctx, id)
 }
+
+func (c *ApiIntegrationClient) DescribeAws(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAwsDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeAwsDetails(ctx, id)
+}
+
+func (c *ApiIntegrationClient) DescribeAzure(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAzureDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeAzureDetails(ctx, id)
+}
+
+func (c *ApiIntegrationClient) DescribeGoogle(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGoogleDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeGoogleDetails(ctx, id)
+}
+
+func (c *ApiIntegrationClient) DescribeGitHttpsApi(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGitHttpsApiDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeGitHttpsApiDetails(ctx, id)
+}
+
+func (c *ApiIntegrationClient) DescribeExternalMcp(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationExternalMcpDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeExternalMcpDetails(ctx, id)
+}
