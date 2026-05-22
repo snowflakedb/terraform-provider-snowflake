@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -42,17 +43,17 @@ func (c *ApiIntegrationClient) CreateApiIntegration(t *testing.T) (*sdk.ApiInteg
 	return apiIntegration, c.DropApiIntegrationFunc(t, id)
 }
 
+// TODO(SNOW-1348334): change raw sqls to proper client
 func (c *ApiIntegrationClient) CreateApiIntegrationForGitRepository(t *testing.T, origin string) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
 	ctx := context.Background()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	apiAllowedPrefixes := []sdk.ApiIntegrationEndpointPrefix{{Path: origin}}
-	gitParams := sdk.NewGitHttpsApiGithubAppParamsRequest()
-	req := sdk.NewCreateApiIntegrationRequest(id, apiAllowedPrefixes, true).
-		WithGitHttpsApiGithubAppProviderParams(*gitParams)
-
-	err := c.client().Create(ctx, req)
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`CREATE OR REPLACE API INTEGRATION %s
+	  API_PROVIDER = GIT_HTTPS_API
+	  API_ALLOWED_PREFIXES = ('%s')
+	  ALLOWED_AUTHENTICATION_SECRETS = ALL
+	  ENABLED = TRUE;`, id.FullyQualifiedName(), origin))
 	require.NoError(t, err)
 
 	return id, c.DropApiIntegrationFunc(t, id)
@@ -72,34 +73,4 @@ func (c *ApiIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier
 	t.Helper()
 	ctx := context.Background()
 	return c.client().ShowByIDSafely(ctx, id)
-}
-
-func (c *ApiIntegrationClient) DescribeAws(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAwsDetails, error) {
-	t.Helper()
-	ctx := context.Background()
-	return c.client().DescribeAwsDetails(ctx, id)
-}
-
-func (c *ApiIntegrationClient) DescribeAzure(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAzureDetails, error) {
-	t.Helper()
-	ctx := context.Background()
-	return c.client().DescribeAzureDetails(ctx, id)
-}
-
-func (c *ApiIntegrationClient) DescribeGoogle(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGoogleDetails, error) {
-	t.Helper()
-	ctx := context.Background()
-	return c.client().DescribeGoogleDetails(ctx, id)
-}
-
-func (c *ApiIntegrationClient) DescribeGitHttpsApi(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGitHttpsApiDetails, error) {
-	t.Helper()
-	ctx := context.Background()
-	return c.client().DescribeGitHttpsApiDetails(ctx, id)
-}
-
-func (c *ApiIntegrationClient) DescribeExternalMcp(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationExternalMcpDetails, error) {
-	t.Helper()
-	ctx := context.Background()
-	return c.client().DescribeExternalMcpDetails(ctx, id)
 }
