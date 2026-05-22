@@ -39,7 +39,7 @@ func ExtractResourceSchemaDetails(name string, resourceSchema map[string]*schema
 		}
 	}
 
-	attributes := make([]SchemaAttribute, 0)
+	attributes := make([]SchemaAttribute, 0, len(orderedAttributeNames))
 	for _, k := range orderedAttributeNames {
 		s := resourceSchema[k]
 		subtype := getComplexAttributeSubType(s)

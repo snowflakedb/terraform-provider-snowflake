@@ -53,6 +53,13 @@ func (t *TagAssert) HasAllowedValuesEmpty() *TagAssert {
 	return t
 }
 
-func (t *TagAssert) HasPropagateEnum(expected sdk.TagPropagation) *TagAssert {
-	return t.HasPropagate(string(expected))
+func (t *TagAssert) HasNoOnConflict() *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if o.OnConflict != nil {
+			return fmt.Errorf("expected on_conflict to be nil; got: %q", *o.OnConflict)
+		}
+		return nil
+	})
+	return t
 }

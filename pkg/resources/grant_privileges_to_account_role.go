@@ -1115,6 +1115,8 @@ func getAccountRoleGrantOn(d *schema.ResourceData) (*sdk.AccountRoleGrantOn, err
 		switch sdk.ObjectType(objectType) {
 		case sdk.ObjectTypeDatabase:
 			grantOnAccountObject.Database = &objectIdentifier
+		case sdk.ObjectTypeConnection:
+			grantOnAccountObject.Connection = &objectIdentifier
 		case sdk.ObjectTypeFailoverGroup:
 			grantOnAccountObject.FailoverGroup = &objectIdentifier
 		case sdk.ObjectTypeIntegration:
@@ -1268,6 +1270,9 @@ func createGrantPrivilegesToAccountRoleIdFromSchema(d *schema.ResourceData) (id 
 		case on.AccountObject.Integration != nil:
 			onAccountObjectGrantData.ObjectType = sdk.ObjectTypeIntegration
 			onAccountObjectGrantData.ObjectName = *on.AccountObject.Integration
+		case on.AccountObject.Connection != nil:
+			onAccountObjectGrantData.ObjectType = sdk.ObjectTypeConnection
+			onAccountObjectGrantData.ObjectName = *on.AccountObject.Connection
 		case on.AccountObject.FailoverGroup != nil:
 			onAccountObjectGrantData.ObjectType = sdk.ObjectTypeFailoverGroup
 			onAccountObjectGrantData.ObjectName = *on.AccountObject.FailoverGroup

@@ -86,6 +86,8 @@ Read-Only:
 - `catalog_source` (String)
 - `comment` (String)
 - `enabled` (Boolean)
+- `glue_aws_external_id` (String)
+- `glue_aws_iam_user_arn` (String)
 - `glue_aws_role_arn` (String)
 - `glue_catalog_id` (String)
 - `glue_region` (String)

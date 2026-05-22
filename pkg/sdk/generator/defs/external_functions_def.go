@@ -63,9 +63,9 @@ var externalFunctionsDef = g.NewInterface(
 			externalFunctionArgument,
 			g.ListOptions().MustParentheses()).
 		PredefinedQueryStructField("ResultDataType", g.KindOfT[sdkcommons.DataType](), g.ParameterOptions().NoEquals().SQL("RETURNS").Required()).
-		PredefinedQueryStructField("ReturnNullValues", g.KindOfTPointer[sdkcommons.ReturnNullValues](), g.KeywordOptions()).
-		PredefinedQueryStructField("NullInputBehavior", g.KindOfTPointer[sdkcommons.NullInputBehavior](), g.KeywordOptions()).
-		PredefinedQueryStructField("ReturnResultsBehavior", g.KindOfTPointer[sdkcommons.ReturnResultsBehavior](), g.KeywordOptions()).
+		WithField(g.OptionalEnumLegacy[sdkcommons.ReturnNullValues]("ReturnNullValues", g.KeywordOptions())).
+		WithField(g.OptionalEnumLegacy[sdkcommons.NullInputBehavior]("NullInputBehavior", g.KeywordOptions())).
+		WithField(g.OptionalEnumLegacy[sdkcommons.ReturnResultsBehavior]("ReturnResultsBehavior", g.KeywordOptions())).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		Identifier("ApiIntegration", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION =").Required()).
 		ListQueryStructField(

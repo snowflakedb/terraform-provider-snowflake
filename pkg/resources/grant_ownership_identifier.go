@@ -55,9 +55,10 @@ type OnObjectGrantOwnershipData struct {
 }
 
 func (g *OnObjectGrantOwnershipData) String() string {
-	var parts []string
-	parts = append(parts, g.ObjectType.String())
-	parts = append(parts, g.ObjectName.FullyQualifiedName())
+	parts := []string{
+		g.ObjectType.String(),
+		g.ObjectName.FullyQualifiedName(),
+	}
 	return helpers.EncodeResourceIdentifier(parts...)
 }
 

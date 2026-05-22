@@ -1,9 +1,10 @@
 module github.com/Snowflake-Labs/terraform-provider-snowflake
 
-go 1.25.7
+go 1.26.3
 
 require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
+	github.com/goccy/go-yaml v1.19.2
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/hcl v1.0.0

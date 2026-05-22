@@ -24,6 +24,136 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.16.0 ➞ v2.17.0
+
+### *(new feature)* snowflake_catalog_integration_aws_glue: new `describe_output` attributes
+
+The `snowflake_catalog_integration_aws_glue` resource now exposes two additional attributes under `describe_output`:
+- `glue_aws_iam_user_arn`
+- `glue_aws_external_id`
+
+No changes are required for existing configurations.
+
+References: [#4745](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4745)
+
+### *(new feature)* snowflake_cortex_agent preview resource
+
+We have added a new preview resource for managing Cortex agents: [snowflake_cortex_agent](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_agent).
+
+This feature will be marked as stable in future releases. To use this feature, add `snowflake_cortex_agent_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
+### *(bugfix)* `snowflake_external_volume` — support for `use_privatelink_endpoint` in Azure deployments
+
+Previously, setting `use_privatelink_endpoint = "true"` on an Azure storage location in `snowflake_external_volume` was silently ignored — the field was not sent to Snowflake and was not read back into state. The field is now correctly sent on create and update, and reflected in state after a read.
+
+No configuration changes are required. After upgrading the provider, a `terraform apply` will update the state of existing Azure storage locations to reflect the value Snowflake returns for `USE_PRIVATELINK_ENDPOINT`.
+
+Additionally, now when `use_privatelink_endpoint` is set to false explicitly, and the privatelink endpoint is not actually enabled in a Snowflake object, the plan will be empty. Previously, the plan was computed incorrectly as:
+```
+        Terraform will perform the following actions:
+
+          # snowflake_external_volume.complete will be updated in-place
+          ~ resource "snowflake_external_volume" "complete" {
+                id                   = "MILRGWAT_3B02DC25_AF70_A697_0D4F_6DFE71E1DF67"
+                name                 = "MILRGWAT_3B02DC25_AF70_A697_0D4F_6DFE71E1DF67"
+                # (5 unchanged attributes hidden)
+
+              ~ storage_location {
+                  + use_privatelink_endpoint     = "false"
+                    # (12 unchanged attributes hidden)
+                }
+
+                # (1 unchanged block hidden)
+            }
+```
+
+Ref: [#4663](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4663)
+
+### *(enhancement)* Improved identifier handling in `snowflake_stream_on_directory_table`
+
+Thanks to the changes introduced in [BCR-2170](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2170) (part of [Bundle 2026_01](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01_bundle)),
+Snowflake now returns a fully qualified name for the stage behind a directory table stream in `SHOW STREAMS` output (previously, only a partially qualified name was returned).
+This allowed us to resolve the long-standing limitation in `snowflake_stream_on_directory_table` tracked as [SNOW-1733130](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2328):
+
+- The `stage` attribute now expects, stores, and reads a fully qualified identifier (e.g. `"MY_DB"."MY_SCHEMA"."MY_STAGE"`), consistent with other identifier attributes in the provider.
+- The previous requirement that the stage must live in the same schema as the stream has been lifted - stages from a different schema than the stream are now fully supported.
+
+The state is automatically rewrites any existing `stage` value into its fully qualified form,
+so no manual changes to the configuration or state are required when upgrading.
+
+### *(bug fix)* `snowflake_schema`: setting `default_ddl_collation = ""` now overrides a value inherited from the parent database
+
+Previously, setting `default_ddl_collation = ""` on a `snowflake_schema` was silently skipped when the parent database had a non-empty `DEFAULT_DDL_COLLATION` (e.g. `"pl"`). The update was a no-op and the schema kept inheriting the parent value.
+
+The fix forces the plan to recognize the override whenever the parameter is inherited from a higher level (account/database), so the resulting `ALTER SCHEMA ... SET DEFAULT_DDL_COLLATION = ''` is executed and the parameter is pinned at the schema level with an empty value.
+
+Example:
+
+```terraform
+resource "snowflake_database" "parent" {
+  name                  = "PARENT_DB"
+  default_ddl_collation = "en_US"
+}
+
+resource "snowflake_schema" "s" {
+  database              = snowflake_database.parent.name
+  name                  = "S"
+  default_ddl_collation = "" # previously ignored; now correctly sets "" at schema level
+}
+```
+
+No changes in configuration are required.
+
+### *(new feature)* snowflake_system_get_privatelink_config: new attributes
+
+The `snowflake_system_get_privatelink_config` data source now exposes additional attributes returned by `SYSTEM$GET_PRIVATELINK_CONFIG()`:
+
+- `privatelink_account_principal` - The AWS principal ARN for outbound private connections.
+- `app_service_privatelink_url` - Wildcard URL for routing Streamlit and Snowpark Container Services through private connectivity.
+- `privatelink_snowflake_managed_storage_volume_fs` - Endpoint for failsafe Snowflake-managed storage volumes on Azure.
+- `privatelink_snowflake_managed_storage_volume_nfs` - Endpoint for non-failsafe Snowflake-managed storage volumes on Azure.
+- `privatelink_dashed_urls_for_duo` - Dashed URLs for Duo integration.
+- `privatelink_gcp_service_attachment` - Endpoint for Google Cloud Private Service Connect.
+- `privatelink_connection_ocsp_urls` - OCSP URLs for client redirect connections.
+- `privatelink_connection_urls` - Connection URLs for client redirect.
+- `regionless_privatelink_ocsp_url` - Regionless OCSP URL for private connectivity.
+
+No changes are required for existing configurations that only reference the previously available attributes.
+
+### *(bug fix)* snowflake_grant_privileges_to_account_role: CONNECTION object type support
+
+Previously, attempting to grant privileges on a `CONNECTION` object type in the `on_account_object` block would fail with the following error, despite `CONNECTION` being listed as an allowed value in the schema:
+
+```
+Error: [grants_validations.go:315] exactly one of GrantOnAccountObject
+fields [User ResourceMonitor Warehouse ComputePool Database Integration
+FailoverGroup ReplicationGroup ExternalVolume] must be set
+```
+
+This has been fixed — the resource now correctly handles `CONNECTION` as an account object type.
+
+No changes are required for existing configurations.
+
+References: [#4727](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4727)
+
+### *(improvement)* New `on_conflict` field in `show_output` for `snowflake_tag` and `snowflake_tags`
+
+A new `on_conflict` field has been added to the `show_output` attribute on both the [`snowflake_tag`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag) resource and the [`snowflake_tags`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tags) data source. It reflects the propagation on-conflict strategy returned by `SHOW TAGS`.
+
+The field is only populated when the [BCR-2291](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03/bcr-2291) change (bundle `2026_03`) is enabled on your account. When the bundle is disabled, `on_conflict` is absent from the `SHOW TAGS` output and the provider leaves the existing state value unchanged to avoid spurious diffs.
+
+No configuration changes are required.
+
+### *(bug fix)* `snowflake_saml2_integration`: removing `enabled` from config now restores Snowflake's default of `TRUE`
+
+Previously, removing the `enabled` attribute from a `snowflake_saml2_integration` configuration (returning it to its default unmanaged state) caused the provider to issue `ALTER ... SET ENABLED = FALSE`. This contradicted Snowflake's behavior, where the default for `ENABLED` on a SAML2 integration is `TRUE` after [BCR-2166](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2166) in bundle `2026_01`.
+
+The provider now issues `ALTER ... SET ENABLED = TRUE` when `enabled` is removed from config, aligning the unmanaged state with Snowflake's actual default. The `UNSET` operation for this object is still not supported in Snowflake.
+
+If you previously relied on the prior behavior (the integration being silently disabled when `enabled` was unset), set `enabled = "false"` explicitly in your configuration before upgrading. Otherwise, no changes are required.
+
 ## v2.15.x ➞ v2.16.0
 
 ### *(improvement)* snowflake_password_policy resource rework
@@ -103,8 +233,6 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
-## v2.15.x ➞ v2.15.1
-
 ### *(bug fix)* `snowflake_stream_on_table` and `snowflake_stream_on_view` import fix
 
 Previously, importing `snowflake_stream_on_table` or `snowflake_stream_on_view` with `terraform import` left the `show_initial_rows` attribute as `null` in state, because it cannot be read from Snowflake. On the next `terraform apply`, Terraform detected a diff and produced an "Update" plan. Because of it, the stream was recreated (see the [note](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stream_on_table)).
@@ -137,6 +265,20 @@ Snowflake implicitly grants PUBLIC to every role and user, so `GRANT ROLE PUBLIC
 To enable, add `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` to the `experimental_features_enabled` field in the provider configuration. No changes are required for existing configurations that do not grant the PUBLIC role.
 
 References: [#3001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3001)
+
+### *(bugfix)* Fixed `snowflake_tag` crash on Standard accounts
+
+In v2.15.0 we added the `propagate` field to the `snowflake_tag` resource. On [Standard accounts](https://docs.snowflake.com/en/user-guide/intro-editions#standard-edition), Snowflake always returns the `propagate` column in `SHOW TAGS` with `null` value. The provider attempted to scan a SQL `NULL` into a non-nullable Go string, resulting in a fatal error whenever any `snowflake_tag` resource was refreshed on such accounts:
+
+```text
+│ Error: sql: Scan error on column index 8, name "propagate": converting NULL to string is unsupported
+```
+
+The `propagate` field is now treated as nullable.
+
+No changes in configuration are required. Users on standard accounts who experienced a crash on plan or apply should be able to use the `snowflake_tag` resource normally after upgrading.
+
+References: [#4651](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4651)
 
 ## v2.14.x ➞ v2.15.0
 

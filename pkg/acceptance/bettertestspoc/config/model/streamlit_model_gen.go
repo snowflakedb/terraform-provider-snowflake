@@ -73,10 +73,12 @@ func (s *StreamlitModel) MarshalJSON() ([]byte, error) {
 	type Alias StreamlitModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -87,6 +89,11 @@ func (s *StreamlitModel) WithDependsOn(values ...string) *StreamlitModel {
 
 func (s *StreamlitModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StreamlitModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *StreamlitModel) WithTimeout(timeout config.Timeouts) *StreamlitModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

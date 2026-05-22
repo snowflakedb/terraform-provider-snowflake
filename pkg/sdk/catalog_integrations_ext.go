@@ -44,14 +44,6 @@ func (v *catalogIntegrations) DescribeIcebergRestDetails(ctx context.Context, id
 	return parseIcebergRestProperties(properties, id)
 }
 
-func (v *catalogIntegrations) DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error) {
-	properties, err := v.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return parseSapBdcProperties(properties, id)
-}
-
 func (v *catalogIntegrations) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
@@ -105,10 +97,12 @@ func parseCommonProperties(properties []CatalogIntegrationProperty) (*commonDeta
 }
 
 type awsGlueSpecificDetails struct {
-	glueAwsRoleArn   string
-	glueCatalogId    string
-	glueRegion       string
-	catalogNamespace string
+	glueAwsRoleArn    string
+	glueCatalogId     string
+	glueRegion        string
+	catalogNamespace  string
+	glueAwsIamUserArn string
+	glueAwsExternalId string
 }
 
 func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
@@ -129,6 +123,8 @@ func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountO
 	details.GlueCatalogId = awsGlueDetails.glueCatalogId
 	details.GlueRegion = awsGlueDetails.glueRegion
 	details.CatalogNamespace = awsGlueDetails.catalogNamespace
+	details.GlueAwsIamUserArn = awsGlueDetails.glueAwsIamUserArn
+	details.GlueAwsExternalId = awsGlueDetails.glueAwsExternalId
 	return details, nil
 }
 
@@ -144,6 +140,10 @@ func parseAwsGlueSpecificProperties(properties []CatalogIntegrationProperty) *aw
 			details.glueRegion = prop.Value
 		case "CATALOG_NAMESPACE":
 			details.catalogNamespace = prop.Value
+		case "GLUE_AWS_IAM_USER_ARN":
+			details.glueAwsIamUserArn = prop.Value
+		case "GLUE_AWS_EXTERNAL_ID":
+			details.glueAwsExternalId = prop.Value
 		}
 	}
 	return details
@@ -239,22 +239,6 @@ func parseIcebergRestProperties(properties []CatalogIntegrationProperty, id Acco
 	return details, errors.Join(errs...)
 }
 
-func parseSapBdcProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error) {
-	commons, err := parseCommonProperties(properties)
-	if err != nil {
-		return nil, err
-	}
-	params := &CatalogIntegrationSapBdcDetails{
-		Id:                     id,
-		CatalogSource:          commons.CatalogSource,
-		TableFormat:            commons.TableFormat,
-		Enabled:                commons.Enabled,
-		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
-		Comment:                commons.Comment,
-	}
-	return params, nil
-}
-
 func parseAllCatalogIntegrationProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
 	commons, err := parseCommonProperties(properties)
 	if err != nil {
@@ -274,6 +258,8 @@ func parseAllCatalogIntegrationProperties(properties []CatalogIntegrationPropert
 	details.GlueCatalogId = awsGlueDetails.glueCatalogId
 	details.GlueRegion = awsGlueDetails.glueRegion
 	details.CatalogNamespace = awsGlueDetails.catalogNamespace
+	details.GlueAwsIamUserArn = awsGlueDetails.glueAwsIamUserArn
+	details.GlueAwsExternalId = awsGlueDetails.glueAwsExternalId
 
 	var errs []error
 	for _, prop := range properties {

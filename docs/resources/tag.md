@@ -68,7 +68,7 @@ resource "snowflake_tag" "tag" {
 - `comment` (String) Specifies a comment for the tag.
 - `masking_policies` (Set of String) Set of masking policies for the tag. A tag can support one masking policy for each data type. If masking policies are assigned to the tag, before dropping the tag, the provider automatically unassigns them. For more information about this resource, see [docs](./masking_policy).
 - `no_allowed_values` (Boolean) When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled. Conflicts with `allowed_values` and `ordered_allowed_values`.
-- `on_conflict` (Block List, Max: 1) Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint". (see [below for nested schema](#nestedblock--on_conflict))
+- `on_conflict` (Block List, Max: 1) Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). (see [below for nested schema](#nestedblock--on_conflict))
 - `ordered_allowed_values` (List of String) Ordered list of allowed values for the tag. The order is preserved in Snowflake and is significant when `on_conflict.allowed_values_sequence` is used — the first matching value in the sequence wins. Use this instead of `allowed_values` when order matters. Conflicts with `allowed_values` and `no_allowed_values`.
 - `propagate` (String) Specifies that the tag will be automatically propagated from source objects to target objects. See more about tag propagation in the [official documentation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). Valid options are: `NONE` | `ON_DEPENDENCY` | `ON_DATA_MOVEMENT` | `ON_DEPENDENCY_AND_DATA_MOVEMENT`
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -84,8 +84,8 @@ resource "snowflake_tag" "tag" {
 
 Optional:
 
-- `allowed_values_sequence` (Boolean) The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
-- `custom_value` (String) Whenever there is a conflict, the value of tag is set to custom_value. If `allowed_values` are set, the value set in this field should be one of the values in the `allowed_values` list. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
+- `allowed_values_sequence` (Boolean) The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict.
+- `custom_value` (String) Whenever there is a conflict, the value of tag is set to custom_value. If `allowed_values` are set, the value set in this field should be one of the values in the `allowed_values` list.
 
 
 <a id="nestedblock--timeouts"></a>
@@ -109,6 +109,7 @@ Read-Only:
 - `created_on` (String)
 - `database_name` (String)
 - `name` (String)
+- `on_conflict` (String)
 - `owner` (String)
 - `owner_role_type` (String)
 - `propagate` (String)

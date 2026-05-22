@@ -406,8 +406,8 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.CSVFieldOptionallyEnclosedBy = sdk.String(v.(string))
 		}
 		if v, ok := d.GetOk("null_if"); ok {
-			nullIf := []sdk.NullString{}
-			for _, s := range v.([]interface{}) {
+			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
+			for _, s := range v.([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -445,8 +445,8 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		opts.JSONTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
-			nullIf := []sdk.NullString{}
-			for _, s := range v.([]interface{}) {
+			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
+			for _, s := range v.([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -473,8 +473,8 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		opts.AvroTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
-			nullIf := []sdk.NullString{}
-			for _, s := range v.([]interface{}) {
+			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
+			for _, s := range v.([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -487,8 +487,8 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	case sdk.FileFormatTypeOrc:
 		opts.ORCTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
-			nullIf := []sdk.NullString{}
-			for _, s := range v.([]interface{}) {
+			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
+			for _, s := range v.([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -506,8 +506,8 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		opts.ParquetBinaryAsText = sdk.Bool(d.Get("binary_as_text").(bool))
 		opts.ParquetTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
-			nullIf := []sdk.NullString{}
-			for _, s := range v.([]interface{}) {
+			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
+			for _, s := range v.([]any) {
 				if s == nil {
 					s = ""
 				} else {

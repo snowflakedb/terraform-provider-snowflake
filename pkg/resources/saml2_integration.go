@@ -663,7 +663,7 @@ func UpdateContextSAML2Integration(ctx context.Context, d *schema.ResourceData, 
 			set.WithEnabled(parsed)
 		} else {
 			// TODO(SNOW-1515781): UNSET is not implemented
-			set.WithEnabled(false)
+			set.WithEnabled(true)
 		}
 	}
 

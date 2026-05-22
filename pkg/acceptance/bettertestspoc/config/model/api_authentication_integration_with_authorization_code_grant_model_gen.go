@@ -70,10 +70,12 @@ func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) MarshalJSO
 	type Alias ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(a),
 		DependsOn: a.DependsOn(),
+		Timeouts:  a.Timeouts(),
 	})
 }
 
@@ -84,6 +86,11 @@ func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithDepend
 
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
 	a.DynamicBlock = dynamicBlock
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel) WithTimeout(timeout config.Timeouts) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantModel {
+	a.SetTimeout(timeout)
 	return a
 }
 

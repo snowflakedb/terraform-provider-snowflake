@@ -54,7 +54,7 @@ func (m *SomeModel) WithName(name string) *SomeModel {
 }
 
 func (m *SomeModel) WithStringList(items ...string) *SomeModel {
-	variables := make([]tfconfig.Variable, 0)
+	variables := make([]tfconfig.Variable, 0, len(items))
 	for _, i := range items {
 		variables = append(variables, tfconfig.StringVariable(i))
 	}
@@ -63,7 +63,7 @@ func (m *SomeModel) WithStringList(items ...string) *SomeModel {
 }
 
 func (m *SomeModel) WithStringSet(items ...string) *SomeModel {
-	variables := make([]tfconfig.Variable, 0)
+	variables := make([]tfconfig.Variable, 0, len(items))
 	for _, i := range items {
 		variables = append(variables, tfconfig.StringVariable(i))
 	}
@@ -72,7 +72,7 @@ func (m *SomeModel) WithStringSet(items ...string) *SomeModel {
 }
 
 func (m *SomeModel) WithObjectList(items ...Item) *SomeModel {
-	variables := make([]tfconfig.Variable, 0)
+	variables := make([]tfconfig.Variable, 0, len(items))
 	for _, i := range items {
 		variables = append(variables, tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{

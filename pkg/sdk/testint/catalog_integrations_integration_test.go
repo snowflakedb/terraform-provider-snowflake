@@ -17,16 +17,14 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 	ctx := testContext(t)
 
 	const (
-		glueAwsRoleArn       = "arn:aws:iam::123456789012:role/sqsAccess"
-		glueCatalogId        = "123456789012"
-		glueRegion           = "us-east-2"
-		polarisCatalogUri    = "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
-		restCatalogUri       = "https://api.tabular.io/ws"
-		sapBdcInvitationLink = "https://example.hanacloud.ondemand.com/?code=123e4567-e89b-12d3-a456-426614174000"
-		sapBdcCatalogUri     = "https://example.hanacloud.ondemand.com"
-		oAuthClientId        = "my_client_id"
-		oAuthClientSecret    = "my_client_secret"
-		oAuthAllowedScope    = "PRINCIPAL_ROLE:ALL"
+		glueAwsRoleArn    = "arn:aws:iam::123456789012:role/sqsAccess"
+		glueCatalogId     = "123456789012"
+		glueRegion        = "us-east-2"
+		polarisCatalogUri = "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
+		restCatalogUri    = "https://api.tabular.io/ws"
+		oAuthClientId     = "my_client_id"
+		oAuthClientSecret = "my_client_secret"
+		oAuthAllowedScope = "PRINCIPAL_ROLE:ALL"
 	)
 
 	assertCatalogIntegration := func(t *testing.T, s *sdk.CatalogIntegration, name sdk.AccountObjectIdentifier, comment string) {
@@ -97,15 +95,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 				WithBearerRestAuthentication(sdk.BearerRestAuthenticationRequest{BearerToken: "test-token"}))
 	}
 
-	createCatalogIntegrationSapBdcRequest := func(t *testing.T) *sdk.CreateCatalogIntegrationRequest {
-		t.Helper()
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-
-		return sdk.NewCreateCatalogIntegrationRequest(id, false).
-			WithSapBdcCatalogSourceParams(*sdk.NewSapBdcParamsRequest().
-				WithRestConfig(sdk.SapBdcRestConfigRequest{SapBdcInvitationLink: sapBdcInvitationLink}))
-	}
-
 	createAwsGlueCatalogIntegration := func(t *testing.T) *sdk.CatalogIntegration {
 		t.Helper()
 		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationAwsGlueRequest(t))
@@ -126,11 +115,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationIcebergRestRequest(t))
 	}
 
-	createSapBdcCatalogIntegration := func(t *testing.T) *sdk.CatalogIntegration {
-		t.Helper()
-		return createCatalogIntegrationWithRequest(t, createCatalogIntegrationSapBdcRequest(t))
-	}
-
 	t.Run("create catalog integration: AWS Glue basic", func(t *testing.T) {
 		request := createCatalogIntegrationAwsGlueRequest(t)
 
@@ -146,7 +130,9 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(""))
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty())
 	})
 
 	t.Run("create catalog integration: object storage basic", func(t *testing.T) {
@@ -217,20 +203,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))
 	})
 
-	t.Run("create catalog integration: SAP Business Data Cloud basic", func(t *testing.T) {
-		request := createCatalogIntegrationSapBdcRequest(t)
-
-		integration := createCatalogIntegrationWithRequest(t, request)
-
-		assertCatalogIntegration(t, integration, request.GetName(), "")
-		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSapBdc).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
-			HasEnabled(false).
-			HasRefreshIntervalSeconds(30).
-			HasComment(""))
-	})
-
 	t.Run("create catalog integration: AWS Glue all options", func(t *testing.T) {
 		const catalogNamespace = "myNamespace"
 		request := createCatalogIntegrationAwsGlueRequest(t).
@@ -253,7 +225,9 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(catalogNamespace))
+			HasCatalogNamespace(catalogNamespace).
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty())
 	})
 
 	t.Run("create catalog integration: object storage all options", func(t *testing.T) {
@@ -373,22 +347,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasSigv4SigningRegion(sigV4SigningRole))
 	})
 
-	t.Run("create catalog integration: SAP Business Data Cloud all options", func(t *testing.T) {
-		request := createCatalogIntegrationSapBdcRequest(t).
-			WithIfNotExists(true).
-			WithRefreshIntervalSeconds(120).
-			WithComment("test comment")
-
-		integration := createCatalogIntegrationWithRequest(t, request)
-
-		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, integration.ID()).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSapBdc).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
-			HasEnabled(false).
-			HasRefreshIntervalSeconds(120).
-			HasComment("test comment"))
-	})
-
 	t.Run("alter catalog integration: shared options", func(t *testing.T) {
 		id := createObjectStorageCatalogIntegration(t).ID()
 
@@ -409,7 +367,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		integrationObjectStorage := createObjectStorageCatalogIntegration(t)
 		integrationOpenCatalog := createOpenCatalogCatalogIntegration(t)
 		integrationIcebergRest := createIcebergRestCatalogIntegration(t)
-		integrationSapBdc := createSapBdcCatalogIntegration(t)
 
 		request := *sdk.NewCatalogIntegrationSetRequest().
 			WithSetBearerRestAuthentication(*sdk.NewSetBearerRestAuthenticationRequest("new token"))
@@ -420,7 +377,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		// Token is not returned by DESCRIBE, nothing to check
 
 		invalid := []*sdk.CatalogIntegration{
-			integrationAwsGlue, integrationObjectStorage, integrationOpenCatalog, integrationSapBdc,
+			integrationAwsGlue, integrationObjectStorage, integrationOpenCatalog,
 		}
 		for _, integration := range invalid {
 			id := integration.ID()
@@ -605,17 +562,6 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasCatalogName("").
 			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))
-	})
-
-	t.Run("describe catalog integration: SAP Business Data Cloud", func(t *testing.T) {
-		id := createSapBdcCatalogIntegration(t).ID()
-
-		assertThatObject(t, objectassert.CatalogIntegrationSapBdcDetails(t, id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeSapBdc).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
-			HasEnabled(false).
-			HasRefreshIntervalSeconds(30).
-			HasComment(""))
 	})
 
 	t.Run("describe catalog integration: non-existing", func(t *testing.T) {

@@ -226,10 +226,11 @@ func (v *ListTransformer) Transform(f *Field) *Field {
 }
 
 type IdentifierTransformer struct {
-	required  bool
-	sqlPrefix string
-	quotes    string
-	equals    string
+	required        bool
+	sqlPrefix       string
+	quotes          string
+	equals          string
+	systemReference string
 }
 
 func IdentifierOptions() *IdentifierTransformer {
@@ -271,12 +272,22 @@ func (v *IdentifierTransformer) Equals() *IdentifierTransformer {
 	return v
 }
 
+func (v *IdentifierTransformer) SystemReference(objectType string) *IdentifierTransformer {
+	v.systemReference = objectType
+	return v
+}
+
 func (v *IdentifierTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "ddl", "identifier")
 	if v.required {
 		f.Required = true
 	}
-	addTagIfMissing(f.Tags, "sql", v.sqlPrefix)
+	if v.systemReference != "" {
+		addTagIfMissing(f.Tags, "ddl", "system_reference")
+		addTagIfMissing(f.Tags, "sql", v.systemReference)
+	} else {
+		addTagIfMissing(f.Tags, "sql", v.sqlPrefix)
+	}
 	addTagIfMissing(f.Tags, "ddl", v.quotes)
 	addTagIfMissing(f.Tags, "ddl", v.equals)
 	return f

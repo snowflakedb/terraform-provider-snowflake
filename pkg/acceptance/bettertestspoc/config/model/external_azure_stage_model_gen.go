@@ -72,10 +72,12 @@ func (e *ExternalAzureStageModel) MarshalJSON() ([]byte, error) {
 	type Alias ExternalAzureStageModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(e),
 		DependsOn: e.DependsOn(),
+		Timeouts:  e.Timeouts(),
 	})
 }
 
@@ -86,6 +88,11 @@ func (e *ExternalAzureStageModel) WithDependsOn(values ...string) *ExternalAzure
 
 func (e *ExternalAzureStageModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalAzureStageModel {
 	e.DynamicBlock = dynamicBlock
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithTimeout(timeout config.Timeouts) *ExternalAzureStageModel {
+	e.SetTimeout(timeout)
 	return e
 }
 

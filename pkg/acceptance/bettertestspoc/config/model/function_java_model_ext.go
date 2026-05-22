@@ -98,7 +98,7 @@ func (f *FunctionJavaModel) WithExternalAccessIntegrations(ids ...sdk.AccountObj
 }
 
 func (f *FunctionJavaModel) WithSecrets(secrets map[string]sdk.SchemaObjectIdentifier) *FunctionJavaModel {
-	objects := make([]tfconfig.Variable, 0)
+	objects := make([]tfconfig.Variable, 0, len(secrets))
 	for k, v := range secrets {
 		objects = append(objects, tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{

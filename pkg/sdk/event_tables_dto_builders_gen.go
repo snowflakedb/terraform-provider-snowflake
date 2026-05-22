@@ -55,7 +55,7 @@ func (s *CreateEventTableRequest) WithComment(comment string) *CreateEventTableR
 	return s
 }
 
-func (s *CreateEventTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateEventTableRequest {
+func (s *CreateEventTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateEventTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }

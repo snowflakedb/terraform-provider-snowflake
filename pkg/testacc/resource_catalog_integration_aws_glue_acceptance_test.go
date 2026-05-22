@@ -96,7 +96,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			// Don't check glue_region, as its default value depends on the current region name
-			HasCatalogNamespace(""),
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	basicAssertionsWithRefreshIntervalZero := append(
@@ -142,7 +144,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			// Don't check glue_region, as its default value depends on the current region name
-			HasCatalogNamespace(""),
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{
@@ -172,7 +176,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(catalogNamespace),
+			HasCatalogNamespace(catalogNamespace).
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	forceNewAssertions := []assert.TestCheckFuncProvider{
@@ -202,7 +208,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(newGlueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			// Don't check glue_region, as its default value depends on the current region name
-			HasCatalogNamespace(""),
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	moreForceNewAssertions := []assert.TestCheckFuncProvider{
@@ -232,7 +240,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(newGlueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(newGlueRegion).
-			HasCatalogNamespace(""),
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	resource.Test(t, resource.TestCase{

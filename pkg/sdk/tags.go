@@ -109,7 +109,8 @@ type Tag struct {
 	Comment       string
 	AllowedValues []string
 	OwnerRoleType string
-	Propagate     TagPropagation
+	Propagate     *TagPropagation
+	OnConflict    *string
 }
 
 func (v *Tag) ID() SchemaObjectIdentifier {
@@ -125,7 +126,8 @@ type tagRow struct {
 	Comment       string         `db:"comment"`
 	AllowedValues sql.NullString `db:"allowed_values"`
 	OwnerRoleType string         `db:"owner_role_type"`
-	Propagate     string         `db:"propagate"`
+	Propagate     sql.NullString `db:"propagate"`
+	OnConflict    sql.NullString `db:"on_conflict"`
 }
 
 func (tr tagRow) convert() (*Tag, error) {
@@ -141,7 +143,8 @@ func (tr tagRow) convert() (*Tag, error) {
 	if tr.AllowedValues.Valid {
 		t.AllowedValues = ParseCommaSeparatedStringArray(tr.AllowedValues.String, true)
 	}
-	mapStringWithMapping(&t.Propagate, tr.Propagate, ToTagPropagation)
+	mapNullStringWithMapping(&t.Propagate, tr.Propagate, ToTagPropagation)
+	mapNullString(&t.OnConflict, tr.OnConflict)
 	return t, nil
 }
 

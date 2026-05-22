@@ -76,6 +76,30 @@
         func (v *{{ $impl }}) DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error {
             return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDrop{{ .ObjectInterface.NameSingular }}Request(id).WithIfExists(true)) }, ctx, id)
         }
+    {{ else if .InstanceMethodMapping }}
+        {{ if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}
+            func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .InstanceMethodMapping.To.Name }}, error) {
+                opts := request.toOpts()
+                dbRows, err := validateAndQuery[{{ .InstanceMethodMapping.From.Name }}](v.client, ctx, opts)
+                if err != nil {
+                    return nil, err
+                }
+                return convertRows[{{ .InstanceMethodMapping.From.Name }}, {{ .InstanceMethodMapping.To.Name }}](dbRows)
+            }
+        {{ else }}
+            func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodMapping.To.Name }}, error) {
+                opts := request.toOpts()
+                result, err := validateAndQueryOne[{{ .InstanceMethodMapping.From.Name }}](v.client, ctx, opts)
+                if err != nil {
+                    return nil, err
+                }
+                return conversionErrorWrapped(result.convert())
+            }
+        {{ end }}
+    {{ else if .InstanceMethodScalarReturnType }}
+        func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .InstanceMethodScalarReturnType }}, error) {
+            return validateAndQueryOne[{{ .InstanceMethodScalarReturnType }}](v.client, ctx, request.toOpts())
+        }
     {{ else }}
         func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error {
             opts := request.toOpts()
