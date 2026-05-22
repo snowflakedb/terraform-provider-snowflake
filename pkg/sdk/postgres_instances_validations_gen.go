@@ -33,6 +33,9 @@ func (opts *ForkPostgresInstanceOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Fork) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if everyValueSet(opts.At, opts.Before) {
+		errs = append(errs, errOneOf("ForkPostgresInstanceOptions", "At", "Before"))
+	}
 	if valueSet(opts.At) {
 		if !exactlyOneValueSet(opts.At.Timestamp, opts.At.Offset) {
 			errs = append(errs, errExactlyOneOf("ForkPostgresInstanceOptions.At", "Timestamp", "Offset"))
@@ -42,9 +45,6 @@ func (opts *ForkPostgresInstanceOptions) validate() error {
 		if !exactlyOneValueSet(opts.Before.Timestamp, opts.Before.Offset) {
 			errs = append(errs, errExactlyOneOf("ForkPostgresInstanceOptions.Before", "Timestamp", "Offset"))
 		}
-	}
-	if everyValueSet(opts.At, opts.Before) {
-		errs = append(errs, errOneOf("ForkPostgresInstanceOptions", "At", "Before"))
 	}
 	return JoinErrors(errs...)
 }
