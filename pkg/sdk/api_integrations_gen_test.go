@@ -431,7 +431,6 @@ func TestApiIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
-	// TODO [SNOW-2324252]: generator produces everyValueSet (errOneOf) instead of moreThanOneValueSet (errMoreThanOneOf); all 9 params must be set simultaneously to trigger
 	t.Run("validation: conflicting fields for [opts.Set.AwsParams opts.Set.AzureParams opts.Set.GoogleParams opts.Set.GitHttpsApiTokenBasedParams opts.Set.GitHttpsApiGithubAppParams opts.Set.GitHttpsApiOAuth2Params opts.Set.GitHttpsApiPrivateLinkParams opts.Set.ExternalMcpOAuth2Params opts.Set.ExternalMcpDynamicClientParams]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ApiIntegrationSet{

@@ -54,7 +54,7 @@ var apiIntegrationDynamicClientMcpAuthDef = g.NewQueryStruct("DynamicClientMcpUs
 	SQLWithCustomFieldName("authType", "TYPE = OAUTH_DYNAMIC_CLIENT").
 	TextAssignment("OAUTH_RESOURCE_URL", g.ParameterOptions().SingleQuotes().Required())
 
-// TODO [SNOW-1016561]: all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
+// TODO(SNOW-1016561): all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
 var apiIntegrationsDef = g.NewInterface(
 	"ApiIntegrations",
 	"ApiIntegration",
@@ -254,18 +254,14 @@ var apiIntegrationsDef = g.NewInterface(
 					ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					OptionalComment().
-					// TODO [SNOW-2324252]: ConflictingFields generates everyValueSet; change to moreThanOneValueSet manually after regeneration
 					WithValidation(
 						g.ConflictingFields,
 						"AwsParams",
 						"AzureParams",
 						"GoogleParams",
 						"GitHttpsApiTokenBasedParams",
-						//"GitHttpsApiGithubAppParams",
-						//"GitHttpsApiOAuth2Params",
 						"GitHttpsApiPrivateLinkParams",
 						"ExternalMcpOAuth2Params",
-						//"ExternalMcpDynamicClientParams",
 					).
 					WithValidation(
 						g.AtLeastOneValueSet,
@@ -273,11 +269,8 @@ var apiIntegrationsDef = g.NewInterface(
 						"AzureParams",
 						"GoogleParams",
 						"GitHttpsApiTokenBasedParams",
-						//"GitHttpsApiGithubAppParams",
-						//"GitHttpsApiOAuth2Params",
 						"GitHttpsApiPrivateLinkParams",
 						"ExternalMcpOAuth2Params",
-						//"ExternalMcpDynamicClientParams",
 						"Enabled",
 						"ApiAllowedPrefixes",
 						"ApiBlockedPrefixes",
@@ -293,7 +286,7 @@ var apiIntegrationsDef = g.NewInterface(
 					OptionalSQL("API_BLOCKED_PREFIXES").
 					OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
 					OptionalSQL("TLS_TRUSTED_CERTIFICATES").
-					// TODO: Make unset params for each type?
+					// TODO(next pr): Make unset params for each type? The unset private link should most likely be defined only for types using it
 					OptionalSQL("USE_PRIVATELINK_ENDPOINT").
 					OptionalSQL("COMMENT").
 					WithValidation(g.AtLeastOneValueSet, "ApiKey", "Enabled", "ApiBlockedPrefixes", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "Comment"),
@@ -306,7 +299,7 @@ var apiIntegrationsDef = g.NewInterface(
 			WithValidation(g.ConflictingFields, "IfExists", "UnsetTags").
 			WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags"),
 	).
-	// TODO: Pull out common drop operation and reuse it
+	// TODO(SNOW-1016561): Pull out common drop operation and reuse it
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-integration",
 		g.NewQueryStruct("DropApiIntegration").
@@ -316,7 +309,7 @@ var apiIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	// TODO: Pull out common show operation and reuse it
+	// TODO(SNOW-1016561): Pull out common show operation and reuse it
 	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-integrations",
 		g.StructPair("showApiIntegrationsDbRow", "ApiIntegration").
@@ -332,7 +325,7 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATIONS").
 			OptionalLike(),
 	).
-	// TODO: Pull out common describe operation and reuse it
+	// TODO(SNOW-1016561): Pull out common describe operation and reuse it
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
