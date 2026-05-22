@@ -2,10 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -121,17 +119,14 @@ func (r *ShowCortexSearchServiceRequest) toOpts() *ShowCortexSearchServiceOption
 }
 
 func (r cortexSearchServiceRow) convert() (*CortexSearchService, error) {
-	// ajusted manually
-	cortexSearchService := &CortexSearchService{
+	result := &CortexSearchService{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 	}
-	if r.Comment.Valid {
-		cortexSearchService.Comment = r.Comment.String
-	}
-	return cortexSearchService, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeCortexSearchServiceRequest) toOpts() *DescribeCortexSearchServiceOptions {
@@ -142,8 +137,7 @@ func (r *DescribeCortexSearchServiceRequest) toOpts() *DescribeCortexSearchServi
 }
 
 func (r cortexSearchServiceDetailsRow) convert() (*CortexSearchServiceDetails, error) {
-	// ajusted manually
-	row := &CortexSearchServiceDetails{
+	result := &CortexSearchServiceDetails{
 		CreatedOn:         r.CreatedOn,
 		Name:              r.Name,
 		DatabaseName:      r.DatabaseName,
@@ -155,29 +149,18 @@ func (r cortexSearchServiceDetailsRow) convert() (*CortexSearchServiceDetails, e
 		SourceDataNumRows: r.SourceDataNumRows,
 		IndexingState:     r.IndexingState,
 	}
-	if r.SearchColumn.Valid {
-		row.SearchColumn = String(r.SearchColumn.String)
-	}
+	mapNullString(&result.SearchColumn, r.SearchColumn)
 	if r.AttributeColumns.Valid {
-		row.AttributeColumns = strings.Split(r.AttributeColumns.String, ",")
+		result.AttributeColumns = ParseCommaSeparatedStringArray(r.AttributeColumns.String, false)
 	}
 	if r.Columns.Valid {
-		row.Columns = strings.Split(r.Columns.String, ",")
+		result.Columns = ParseCommaSeparatedStringArray(r.Columns.String, false)
 	}
-	if r.Definition.Valid {
-		row.Definition = String(r.Definition.String)
-	}
-	if r.Comment.Valid {
-		row.Comment = String(r.Comment.String)
-	}
-	if r.IndexingError.Valid {
-		row.IndexingError = String(r.IndexingError.String)
-	}
-	if r.EmbeddingModel.Valid {
-		row.EmbeddingModel = String(r.EmbeddingModel.String)
-	}
-
-	return row, nil
+	mapNullString(&result.Definition, r.Definition)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.IndexingError, r.IndexingError)
+	mapNullString(&result.EmbeddingModel, r.EmbeddingModel)
+	return result, nil
 }
 
 func (r *DropCortexSearchServiceRequest) toOpts() *DropCortexSearchServiceOptions {
