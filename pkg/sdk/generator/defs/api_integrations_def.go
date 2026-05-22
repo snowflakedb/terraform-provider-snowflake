@@ -21,19 +21,15 @@ var (
 	)
 )
 
-var ApiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
+var apiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
-// ALLOWED_AUTHENTICATION_SECRETS = ALL | NONE | ( secrets... )
-// Pattern follows sessionPolicySecondaryRoles in session_policies_def.go
 var apiIntegrationAllowedAuthSecretsDef = g.NewQueryStruct("ApiIntegrationAllowedAuthenticationSecrets").
 	OptionalSQLWithCustomFieldName("AllSecrets", "ALL").
 	OptionalSQLWithCustomFieldName("NoSecrets", "NONE").
 	List("AllowedList", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ListOptions().Parentheses()).
 	WithValidation(g.ExactlyOneValueSet, "AllSecrets", "NoSecrets", "AllowedList")
 
-// API_USER_AUTHENTICATION = ( TYPE = OAUTH2 ... ) for git_https_api
-// OAUTH_ALLOWED_SCOPES reuses ApiIntegrationScope from secrets_gen.go
-var oauth2GitAuthDef = g.NewQueryStruct("OAuth2GitUserAuthentication").
+var apiIntegrationOauth2GitAuthDef = g.NewQueryStruct("OAuth2GitUserAuthentication").
 	SQLWithCustomFieldName("authType", "TYPE = OAUTH2").
 	TextAssignment("OAUTH_AUTHORIZATION_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
@@ -44,8 +40,7 @@ var oauth2GitAuthDef = g.NewQueryStruct("OAuth2GitUserAuthentication").
 	ListAssignment("OAUTH_ALLOWED_SCOPES", "ApiIntegrationScope", g.ParameterOptions().Parentheses()).
 	OptionalTextAssignment("OAUTH_USERNAME", g.ParameterOptions().SingleQuotes())
 
-// API_USER_AUTHENTICATION = ( TYPE = OAUTH2 ... ) for external_mcp
-var oauth2McpAuthDef = g.NewQueryStruct("OAuth2McpUserAuthentication").
+var apiIntegrationOauth2McpAuthDef = g.NewQueryStruct("OAuth2McpUserAuthentication").
 	SQLWithCustomFieldName("authType", "TYPE = OAUTH2").
 	TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("OAUTH_CLIENT_SECRET", g.ParameterOptions().SingleQuotes().Required()).
@@ -55,8 +50,7 @@ var oauth2McpAuthDef = g.NewQueryStruct("OAuth2McpUserAuthentication").
 	OptionalTextAssignment("OAUTH_DISCOVERY_URL", g.ParameterOptions().SingleQuotes()).
 	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions().NoQuotes())
 
-// API_USER_AUTHENTICATION = ( TYPE = OAUTH_DYNAMIC_CLIENT ... ) for external_mcp
-var dynamicClientMcpAuthDef = g.NewQueryStruct("DynamicClientMcpUserAuthentication").
+var apiIntegrationDynamicClientMcpAuthDef = g.NewQueryStruct("DynamicClientMcpUserAuthentication").
 	SQLWithCustomFieldName("authType", "TYPE = OAUTH_DYNAMIC_CLIENT").
 	TextAssignment("OAUTH_RESOURCE_URL", g.ParameterOptions().SingleQuotes().Required())
 
@@ -120,11 +114,10 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"GitHttpsApiOAuth2ProviderParams",
 				g.NewQueryStruct("GitHttpsApiOAuth2Params").
-					// TODO: Turn into generated enum (? and in other cases?)
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
 					QueryStructField(
 						"ApiUserAuthentication",
-						oauth2GitAuthDef,
+						apiIntegrationOauth2GitAuthDef,
 						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
 					),
 				g.KeywordOptions(),
@@ -148,7 +141,7 @@ var apiIntegrationsDef = g.NewInterface(
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = external_mcp").
 					QueryStructField(
 						"ApiUserAuthentication",
-						oauth2McpAuthDef,
+						apiIntegrationOauth2McpAuthDef,
 						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
 					),
 				g.KeywordOptions(),
@@ -159,24 +152,36 @@ var apiIntegrationsDef = g.NewInterface(
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = external_mcp").
 					QueryStructField(
 						"ApiUserAuthentication",
-						dynamicClientMcpAuthDef,
+						apiIntegrationDynamicClientMcpAuthDef,
 						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
 					),
 				g.KeywordOptions(),
 			).
 			ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses().Required()).
-			// API_BLOCKED_PREFIXES is not supported for Amazon API Gateway; enforced in validation and github and maybe other types (maybe should be a part of particular type params)
+			// TODO(next pr): API_BLOCKED_PREFIXES is not supported for Amazon API Gateway, github and maybe other types; in next PR test the compatibility of common params for each api_provider and sub-type
 			ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
-			WithValidation(g.ExactlyOneValueSet, "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitHttpsApiTokenBasedProviderParams", "GitHttpsApiGithubAppProviderParams", "GitHttpsApiOAuth2ProviderParams", "GitHttpsApiPrivateLinkProviderParams", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"),
-		ApiIntegrationEndpointPrefixDef,
+			WithValidation(g.ConflictingFields, "OrReplace", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams").
+			WithValidation(
+				g.ExactlyOneValueSet,
+				"AwsApiProviderParams",
+				"AzureApiProviderParams",
+				"GoogleApiProviderParams",
+				"GitHttpsApiTokenBasedProviderParams",
+				"GitHttpsApiGithubAppProviderParams",
+				"GitHttpsApiOAuth2ProviderParams",
+				"GitHttpsApiPrivateLinkProviderParams",
+				"ExternalMcpOAuth2ProviderParams",
+				"ExternalMcpDynamicClientProviderParams",
+			),
+		apiIntegrationEndpointPrefixDef,
 		apiIntegrationAllowedAuthSecretsDef,
-		oauth2GitAuthDef,
-		oauth2McpAuthDef,
-		dynamicClientMcpAuthDef,
+		apiIntegrationOauth2GitAuthDef,
+		apiIntegrationOauth2McpAuthDef,
+		apiIntegrationDynamicClientMcpAuthDef,
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-api-integration",
@@ -185,7 +190,6 @@ var apiIntegrationsDef = g.NewInterface(
 			SQL("API INTEGRATION").
 			IfExists().
 			Name().
-			// TODO: Validate with create options, the docs seem to be "simplistic"
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("ApiIntegrationSet").
@@ -223,22 +227,23 @@ var apiIntegrationsDef = g.NewInterface(
 							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets"),
 						g.KeywordOptions(),
 					).
-					OptionalQueryStructField(
-						"GitHttpsApiGithubAppParams",
-						g.NewQueryStruct("SetGitHttpsApiGithubAppParams").
-							SQLWithCustomFieldName("ApiUserAuthentication", "API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"),
-						g.KeywordOptions(),
-					).
-					OptionalQueryStructField(
-						"GitHttpsApiOAuth2Params",
-						g.NewQueryStruct("SetGitHttpsApiOAuth2Params").
-							QueryStructField(
-								"ApiUserAuthentication",
-								oauth2GitAuthDef,
-								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
-							),
-						g.KeywordOptions(),
-					).
+					// TODO: Validate if it should work, and if yes, with what syntax
+					// OptionalQueryStructField(
+					// 	"GitHttpsApiGithubAppParams",
+					// 	g.NewQueryStruct("SetGitHttpsApiGithubAppParams").
+					// 		SQLWithCustomFieldName("ApiUserAuthentication", "API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"),
+					// 	g.KeywordOptions(),
+					// ).
+					// OptionalQueryStructField(
+					// 	"GitHttpsApiOAuth2Params",
+					// 	g.NewQueryStruct("SetGitHttpsApiOAuth2Params").
+					// 		QueryStructField(
+					// 			"ApiUserAuthentication",
+					// 			apiIntegrationOauth2GitAuthDef,
+					// 			g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+					// 		),
+					// 	g.KeywordOptions(),
+					// ).
 					OptionalQueryStructField(
 						"GitHttpsApiPrivateLinkParams",
 						g.NewQueryStruct("SetGitHttpsApiPrivateLinkParams").
@@ -257,28 +262,55 @@ var apiIntegrationsDef = g.NewInterface(
 						g.NewQueryStruct("SetExternalMcpOAuth2Params").
 							QueryStructField(
 								"ApiUserAuthentication",
-								oauth2McpAuthDef,
+								apiIntegrationOauth2McpAuthDef,
 								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
 							),
 						g.KeywordOptions(),
 					).
-					OptionalQueryStructField(
-						"ExternalMcpDynamicClientParams",
-						g.NewQueryStruct("SetExternalMcpDynamicClientParams").
-							QueryStructField(
-								"ApiUserAuthentication",
-								dynamicClientMcpAuthDef,
-								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
-							),
-						g.KeywordOptions(),
-					).
+					// TODO: Cannot be used, validate if another syntax could be used for this alter
+					//OptionalQueryStructField(
+					//	"ExternalMcpDynamicClientParams",
+					//	g.NewQueryStruct("SetExternalMcpDynamicClientParams").
+					//		QueryStructField(
+					//			"ApiUserAuthentication",
+					//			apiIntegrationDynamicClientMcpAuthDef,
+					//			g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+					//		),
+					//	g.KeywordOptions(),
+					//).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 					ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					OptionalComment().
 					// TODO [SNOW-2324252]: ConflictingFields generates everyValueSet; change to moreThanOneValueSet manually after regeneration
-					WithValidation(g.ConflictingFields, "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiGithubAppParams", "GitHttpsApiOAuth2Params", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "ExternalMcpDynamicClientParams").
-					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiGithubAppParams", "GitHttpsApiOAuth2Params", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "ExternalMcpDynamicClientParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"),
+					WithValidation(
+						g.ConflictingFields,
+						"AwsParams",
+						"AzureParams",
+						"GoogleParams",
+						"GitHttpsApiTokenBasedParams",
+						//"GitHttpsApiGithubAppParams",
+						//"GitHttpsApiOAuth2Params",
+						"GitHttpsApiPrivateLinkParams",
+						"ExternalMcpOAuth2Params",
+						//"ExternalMcpDynamicClientParams",
+					).
+					WithValidation(
+						g.AtLeastOneValueSet,
+						"AwsParams",
+						"AzureParams",
+						"GoogleParams",
+						"GitHttpsApiTokenBasedParams",
+						//"GitHttpsApiGithubAppParams",
+						//"GitHttpsApiOAuth2Params",
+						"GitHttpsApiPrivateLinkParams",
+						"ExternalMcpOAuth2Params",
+						//"ExternalMcpDynamicClientParams",
+						"Enabled",
+						"ApiAllowedPrefixes",
+						"ApiBlockedPrefixes",
+						"Comment",
+					),
 				g.KeywordOptions().SQL("SET"),
 			).
 			OptionalQueryStructField(
@@ -288,6 +320,7 @@ var apiIntegrationsDef = g.NewInterface(
 					OptionalSQL("ENABLED").
 					OptionalSQL("API_BLOCKED_PREFIXES").
 					OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
+					// TODO: Make unset params for each type?
 					OptionalSQL("USE_PRIVATELINK_ENDPOINT").
 					OptionalSQL("COMMENT").
 					WithValidation(g.AtLeastOneValueSet, "ApiKey", "Enabled", "ApiBlockedPrefixes", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "Comment"),
@@ -313,7 +346,6 @@ var apiIntegrationsDef = g.NewInterface(
 	// TODO: Pull out common show operation and reuse it
 	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-integrations",
-		// TODO: Generate convert function
 		g.StructPair("showApiIntegrationsDbRow", "ApiIntegration").
 			Text("name").
 			Text("type", g.WithPlainFieldName("ApiType")).
@@ -331,8 +363,6 @@ var apiIntegrationsDef = g.NewInterface(
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
-		// TODO: Generate convert function
-		// TODO: Create common struct for properties as in other property-based describes (e.g. storage_integrations_ext.go)
 		g.StructPair("descApiIntegrationsDbRow", "ApiIntegrationProperty").
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
