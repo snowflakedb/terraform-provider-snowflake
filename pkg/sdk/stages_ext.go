@@ -7,6 +7,16 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+func (f *StageFileFormat) additionalValidations() error {
+	if f == nil {
+		return nil
+	}
+	if valueSet(f.FileFormatOptions) {
+		return f.FileFormatOptions.validate()
+	}
+	return nil
+}
+
 var AcceptableStageTypes = map[StageType][]StageType{
 	StageTypeInternal: {StageTypeInternal, StageTypeInternalNoCse},
 	StageTypeExternal: {StageTypeExternal},
