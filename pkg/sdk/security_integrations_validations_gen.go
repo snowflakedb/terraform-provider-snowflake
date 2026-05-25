@@ -100,7 +100,7 @@ func (opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) validat
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOauthForPartnerApplicationsSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -143,7 +143,7 @@ func (opts *CreateScimSecurityIntegrationOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateScimSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
