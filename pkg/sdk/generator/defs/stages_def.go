@@ -52,7 +52,8 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 			g.NewQueryStruct("StageFileFormat").
 				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
 				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
-				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
+				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions").
+				WithAdditionalValidations(),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
 		OptionalComment().
@@ -74,7 +75,8 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 			g.NewQueryStruct("StageFileFormat").
 				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
 				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
-				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
+				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions").
+				WithAdditionalValidations(),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
 		// TODO(SNOW-3035788): use COMMENT in unset and here use OptionalComment
