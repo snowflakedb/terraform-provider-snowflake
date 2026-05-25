@@ -24,6 +24,7 @@ var accountParameterSupportedParameters = []sdk.AccountParameter{
 	sdk.AccountParameterClientEncryptionKeySize,
 	sdk.AccountParameterCortexEnabledCrossRegion,
 	sdk.AccountParameterCortexModelsAllowlist,
+	sdk.AccountParameterDisableUiDownloadButton,
 	sdk.AccountParameterDisableUserPrivilegeGrants,
 	sdk.AccountParameterEnableIdentifierFirstLogin,
 	sdk.AccountParameterEnableInternalStagesPrivatelink,

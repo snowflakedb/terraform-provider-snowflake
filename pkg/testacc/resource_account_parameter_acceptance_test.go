@@ -28,6 +28,7 @@ func TestAcc_AccountParameter(t *testing.T) {
 		{sdk.AccountParameterRequireStorageIntegrationForStageCreation, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterInitialReplicationSizeLimitInTB, "3.0", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCsvTimestampFormat, "YYYY-MM-DD", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterDisableUiDownloadButton, resources.BooleanTrue, sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterDisableUserPrivilegeGrants, resources.BooleanTrue, sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterAllowBindValuesAccess, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterAllowedSpcsWorkloadTypes, "ALL", sdk.ParameterTypeSnowflakeDefault},

@@ -26,6 +26,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(new feature)* `snowflake_account_parameter` — added support for `DISABLE_UI_DOWNLOAD_BUTTON`
+
+The `snowflake_account_parameter` resource now supports the `DISABLE_UI_DOWNLOAD_BUTTON` account parameter.
+Previously, this parameter could only be set through the `snowflake_current_account` resource or via `snowflake_execute`.
+
+No changes are required for existing configurations.
+
+References: [#4764](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4764)
+
 ### *(new feature)* snowflake_catalog_integration_aws_glue: new `describe_output` attributes
 
 The `snowflake_catalog_integration_aws_glue` resource now exposes two additional attributes under `describe_output`:
