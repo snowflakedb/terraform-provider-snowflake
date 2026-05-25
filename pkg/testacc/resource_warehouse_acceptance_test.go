@@ -372,10 +372,14 @@ func TestAcc_Warehouse_AddResourceMonitorAfterCreate(t *testing.T) {
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 	resourceMonitorId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	configVariables := tfconfig.Variables{
-		"warehouse_name":        tfconfig.StringVariable(warehouseId.Name()),
-		"resource_monitor_name": tfconfig.StringVariable(resourceMonitorId.Name()),
-	}
+	warehouseModelStep1 := model.Warehouse("test", warehouseId.Name())
+
+	monitorModel := model.ResourceMonitor("monitor", resourceMonitorId.Name()).
+		WithCreditQuota(100)
+	warehouseModelStep2 := model.Warehouse("test", warehouseId.Name()).
+		WithResourceMonitorValue(config.UnquotedWrapperVariable(
+			fmt.Sprintf("%s.fully_qualified_name", monitorModel.ResourceReference()),
+		))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -386,21 +390,19 @@ func TestAcc_Warehouse_AddResourceMonitorAfterCreate(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: warehouse without a resource_monitor.
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Warehouse_AddResourceMonitorAfterCreate/1"),
-				ConfigVariables: configVariables,
+				Config: config.FromModels(t, warehouseModelStep1),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_warehouse.test", "name", warehouseId.Name()),
-					resource.TestCheckNoResourceAttr("snowflake_warehouse.test", "resource_monitor"),
+					resource.TestCheckResourceAttr(warehouseModelStep1.ResourceReference(), "name", warehouseId.Name()),
+					resource.TestCheckNoResourceAttr(warehouseModelStep1.ResourceReference(), "resource_monitor"),
 				),
 			},
 			// Step 2: add a Terraform-managed resource_monitor referenced by its fully_qualified_name.
 			// The reference is unknown at plan time — this is where the bug used to surface.
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Warehouse_AddResourceMonitorAfterCreate/2"),
-				ConfigVariables: configVariables,
+				Config: config.FromModels(t, monitorModel, warehouseModelStep2),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_warehouse.test", "name", warehouseId.Name()),
-					resource.TestCheckResourceAttr("snowflake_warehouse.test", "resource_monitor", resourceMonitorId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(warehouseModelStep2.ResourceReference(), "name", warehouseId.Name()),
+					resource.TestCheckResourceAttr(warehouseModelStep2.ResourceReference(), "resource_monitor", resourceMonitorId.FullyQualifiedName()),
 				),
 			},
 		},
