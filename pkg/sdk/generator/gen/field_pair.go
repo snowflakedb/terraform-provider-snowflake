@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"strings"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
@@ -19,19 +21,20 @@ type FieldPair struct {
 type AssignmentKind string
 
 const (
-	AssignmentKindDirect                       AssignmentKind = "Direct"
-	AssignmentKindStringToBool                 AssignmentKind = "StringToBool"
-	AssignmentKindStringToStringArray          AssignmentKind = "StringToStringArray"
-	AssignmentKindStringToEnum                 AssignmentKind = "StringToEnum"
-	AssignmentKindStringToJson                 AssignmentKind = "StringToJson"
-	AssignmentKindStringToIdentifier           AssignmentKind = "StringToIdentifier"
-	AssignmentKindNullableToNullable           AssignmentKind = "NullableToNullable"
-	AssignmentKindNullableToRequired           AssignmentKind = "NullableToRequired"
-	AssignmentKindNullableToIdentifier         AssignmentKind = "NullableToIdentifier"
-	AssignmentKindNullableToEnum               AssignmentKind = "NullableToEnum"
-	AssignmentKindNullableToStringArray        AssignmentKind = "NullableToStringArray"
-	AssignmentKindNullableStringToNullableBool AssignmentKind = "NullableStringToNullableBool"
-	AssignmentKindUnsupported                  AssignmentKind = "Unsupported"
+	AssignmentKindDirect                          AssignmentKind = "Direct"
+	AssignmentKindStringToBool                    AssignmentKind = "StringToBool"
+	AssignmentKindStringToStringArray             AssignmentKind = "StringToStringArray"
+	AssignmentKindStringToEnum                    AssignmentKind = "StringToEnum"
+	AssignmentKindStringToJson                    AssignmentKind = "StringToJson"
+	AssignmentKindStringToIdentifier              AssignmentKind = "StringToIdentifier"
+	AssignmentKindNullableToNullable              AssignmentKind = "NullableToNullable"
+	AssignmentKindNullableToRequired              AssignmentKind = "NullableToRequired"
+	AssignmentKindNullableToIdentifier            AssignmentKind = "NullableToIdentifier"
+	AssignmentKindNullableToEnum                  AssignmentKind = "NullableToEnum"
+	AssignmentKindNullableToStringArray           AssignmentKind = "NullableToStringArray"
+	AssignmentKindNullableStringToNullableBool    AssignmentKind = "NullableStringToNullableBool"
+	AssignmentKindNullableStringToIdentifierArray AssignmentKind = "NullableStringToIdentifierArray"
+	AssignmentKindUnsupported                     AssignmentKind = "Unsupported"
 )
 
 func (fp FieldPair) AssignmentKindDirect() bool {
@@ -82,6 +85,16 @@ func (fp FieldPair) AssignmentKindNullableStringToNullableBool() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableStringToNullableBool
 }
 
+func (fp FieldPair) AssignmentKindNullableStringToIdentifierArray() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableStringToIdentifierArray
+}
+
+// IdentifierArrayElementType returns the element type name for NullableStringToIdentifierArray fields.
+// E.g., for []SchemaObjectIdentifier it returns "SchemaObjectIdentifier".
+func (fp FieldPair) IdentifierArrayElementType() string {
+	return genhelpers.TypeWithoutPointer(strings.TrimPrefix(fp.PlainKind, "[]"))
+}
+
 // AssignmentKind returns the conversion strategy for this field pair.
 // The returned value is used as a discriminator via the boolean predicate methods below.
 func (fp FieldPair) AssignmentKind() AssignmentKind {
@@ -114,6 +127,8 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 			return AssignmentKindNullableToStringArray
 		case fp.PlainKind == "*bool":
 			return AssignmentKindNullableStringToNullableBool
+		case strings.HasPrefix(fp.PlainKind, "[]") && genhelpers.IsIdentifierType(strings.TrimPrefix(fp.PlainKind, "[]")):
+			return AssignmentKindNullableStringToIdentifierArray
 		case fp.IsEnum:
 			return AssignmentKindNullableToEnum
 		case genhelpers.IsIdentifierType(fp.PlainKind):

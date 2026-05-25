@@ -38,6 +38,12 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             }
         {{- else if .AssignmentKindNullableStringToNullableBool }}
             mapNullStringToBool(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
+        {{- else if .AssignmentKindNullableStringToIdentifierArray }}
+            if r.{{ .DbFieldName }}.Valid {
+            	if ids, err := ParseCommaSeparated{{ .IdentifierArrayElementType }}Array(r.{{ .DbFieldName }}.String); err == nil {
+            		result.{{ .PlainFieldName }} = ids
+            	}
+            }
         {{- else }}
             // TODO: Mapping for {{ .PlainFieldName }} ({{ .DbKind }} -> {{ .PlainKind }})
         {{- end }}

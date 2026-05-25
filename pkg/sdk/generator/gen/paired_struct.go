@@ -260,6 +260,16 @@ func (p *PairedStructs) OptionalSchemaObjectIdentifier(dbColumnName string, opts
 	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifier", allOpts)
 }
 
+// NullableSchemaObjectIdentifierArray adds a nullable SchemaObjectIdentifier slice field. The db kind is
+// sql.NullString and the plain kind is []SchemaObjectIdentifier. The plain field name defaults to the
+// camel-cased column name unless overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> []SchemaObjectIdentifier
+func (p *PairedStructs) NullableSchemaObjectIdentifierArray(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", "[]SchemaObjectIdentifier", opts)
+}
+
 // SchemaObjectIdentifierWithArguments adds a SchemaObjectIdentifierWithArguments field. The db kind is string and the plain kind
 // is SchemaObjectIdentifierWithArguments. The plain field name defaults to "Id", but can be overridden with WithPlainFieldName.
 //
