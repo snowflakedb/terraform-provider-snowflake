@@ -27,6 +27,8 @@ type ApiIntegrations interface {
 	DescribeGitHttpsApiDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationGitHttpsApiDetails, error)
 	// DescribeExternalMcpDetails returns converted describe output for external MCP API integrations.
 	DescribeExternalMcpDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationExternalMcpDetails, error)
+	// DescribeDetails returns converted describe output covering all API integration provider types.
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationAllDetails, error)
 }
 
 // CreateApiIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-api-integration.

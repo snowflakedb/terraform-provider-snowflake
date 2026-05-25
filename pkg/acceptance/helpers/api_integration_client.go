@@ -25,6 +25,44 @@ func (c *ApiIntegrationClient) client() sdk.ApiIntegrations {
 	return c.context.client.ApiIntegrations
 }
 
+type ApiIntegrationAllClient struct {
+	context *TestClientContext
+}
+
+func NewApiIntegrationAllClient(context *TestClientContext) *ApiIntegrationAllClient {
+	return &ApiIntegrationAllClient{context: context}
+}
+
+func (c *ApiIntegrationAllClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAllDetails, error) {
+	t.Helper()
+	return c.context.client.ApiIntegrations.DescribeDetails(context.Background(), id)
+}
+
+func (c *ApiIntegrationClient) DescribeAws(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAwsDetails, error) {
+	t.Helper()
+	return c.context.client.ApiIntegrations.DescribeAwsDetails(context.Background(), id)
+}
+
+func (c *ApiIntegrationClient) DescribeAzure(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAzureDetails, error) {
+	t.Helper()
+	return c.context.client.ApiIntegrations.DescribeAzureDetails(context.Background(), id)
+}
+
+func (c *ApiIntegrationClient) DescribeGoogle(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGoogleDetails, error) {
+	t.Helper()
+	return c.context.client.ApiIntegrations.DescribeGoogleDetails(context.Background(), id)
+}
+
+func (c *ApiIntegrationClient) DescribeGitHttpsApi(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGitHttpsApiDetails, error) {
+	t.Helper()
+	return c.context.client.ApiIntegrations.DescribeGitHttpsApiDetails(context.Background(), id)
+}
+
+func (c *ApiIntegrationClient) DescribeExternalMcp(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationExternalMcpDetails, error) {
+	t.Helper()
+	return c.context.client.ApiIntegrations.DescribeExternalMcpDetails(context.Background(), id)
+}
+
 func (c *ApiIntegrationClient) CreateApiIntegration(t *testing.T) (*sdk.ApiIntegration, func()) {
 	t.Helper()
 	ctx := context.Background()

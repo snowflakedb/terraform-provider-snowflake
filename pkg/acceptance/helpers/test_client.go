@@ -19,6 +19,7 @@ type TestClient struct {
 	AggregationPolicy            *AggregationPolicyClient
 	Alert                        *AlertClient
 	ApiIntegration               *ApiIntegrationClient
+	ApiIntegrationAll            *ApiIntegrationAllClient
 	Application                  *ApplicationClient
 	ApplicationPackage           *ApplicationPackageClient
 	AuthenticationPolicy         *AuthenticationPolicyClient
@@ -119,6 +120,7 @@ func NewTestClient(
 		AggregationPolicy:            NewAggregationPolicyClient(context, idsGenerator),
 		Alert:                        NewAlertClient(context, idsGenerator),
 		ApiIntegration:               NewApiIntegrationClient(context, idsGenerator),
+		ApiIntegrationAll:            NewApiIntegrationAllClient(context),
 		Application:                  NewApplicationClient(context, idsGenerator),
 		ApplicationPackage:           NewApplicationPackageClient(context, idsGenerator),
 		AuthenticationPolicy:         NewAuthenticationPolicyClient(context, idsGenerator),
