@@ -27,37 +27,14 @@ package testfunctional_test
 //   In v1.15.0 the Refresh() is removed → the test passes.
 
 import (
-	"encoding/json"
 	"fmt"
-	"math/rand/v2"
-	"net/http"
 	"testing"
 
 	tfresource "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
-
-// randomIntHandler returns a brand-new random int64 on every GET request.
-// This guarantees that the state after Refresh() differs from the state embedded
-// in the destroy plan, making "Saved plan is stale" 100% reproducible.
-type randomIntHandler struct{}
-
-func (h *randomIntHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(testfunctional.StaleReproRead{RandomInt: rand.Int64()}) // #nosec G404
-	case http.MethodPost:
-		w.WriteHeader(http.StatusCreated)
-	}
-}
-
-func init() {
-	allTestHandlers["stale_error_repro"] = &randomIntHandler{}
-}
 
 func TestAcc_TerraformPluginFrameworkFunctional_StaleErrorRepro(t *testing.T) {
 	id := sdk.NewAccountObjectIdentifier("stale-repro")

@@ -2,10 +2,9 @@ package testfunctional
 
 import (
 	"context"
+	"math/rand/v2"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/common"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -13,25 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var _ resource.ResourceWithConfigure = &staleErrorReproResource{}
+var _ resource.Resource = &staleErrorReproResource{}
 
 func NewStaleErrorReproResource() resource.Resource {
-	return &staleErrorReproResource{
-		HttpServerEmbeddable: *common.NewHttpServerEmbeddable[StaleReproRead]("stale_error_repro"),
-	}
+	return &staleErrorReproResource{}
 }
 
-type staleErrorReproResource struct {
-	common.HttpServerEmbeddable[StaleReproRead]
-}
-
-// StaleReproRead is the response type returned by the HTTP server handler.
-// The handler generates a new random value on every GET, so successive Read()
-// calls always return different values — the condition that makes the stale
-// plan error 100% reproducible in terraform-plugin-testing v1.14.0.
-type StaleReproRead struct {
-	RandomInt int64 `json:"random_int"`
-}
+type staleErrorReproResource struct{}
 
 type staleErrorReproResourceModel struct {
 	Name      types.String `tfsdk:"name"`
@@ -55,11 +42,9 @@ func (r *staleErrorReproResource) Schema(_ context.Context, _ resource.SchemaReq
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			// random_int is re-fetched from the HTTP server on every Read call.
-			// The server generates a new value each time, so any two consecutive reads
-			// produce different state — guaranteeing the Refresh() inserted between
-			// CreatePlan and Apply by terraform-plugin-testing v1.14.0 (triggered when
-			// a destroy step has a non-nil Check) always writes a new state serial,
+			// random_int changes on every Read call, so any two consecutive reads produce
+			// different state — guaranteeing the Refresh() inserted between CreatePlan and
+			// Apply by terraform-plugin-testing v1.14.0 always writes a new state serial,
 			// making the plan stale on every single run.
 			"random_int": schema.Int64Attribute{
 				Computed: true,
@@ -76,11 +61,7 @@ func (r *staleErrorReproResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	data.Id = types.StringValue(sdk.NewAccountObjectIdentifier(data.Name.ValueString()).FullyQualifiedName())
-
-	resp.Diagnostics.Append(r.readInto(&data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	data.RandomInt = types.Int64Value(rand.Int64()) // #nosec G404
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -91,22 +72,8 @@ func (r *staleErrorReproResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	resp.Diagnostics.Append(r.readInto(&data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	data.RandomInt = types.Int64Value(rand.Int64()) // #nosec G404
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *staleErrorReproResource) readInto(data *staleErrorReproResourceModel) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-	result, err := r.Get()
-	if err != nil {
-		diags.AddError("Could not read resource state", err.Error())
-		return diags
-	}
-	data.RandomInt = types.Int64Value(result.RandomInt)
-	return diags
 }
 
 func (r *staleErrorReproResource) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {
