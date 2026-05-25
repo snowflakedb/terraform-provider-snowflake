@@ -28,8 +28,8 @@ var secretClientCredentialsSchema = func() map[string]*schema.Schema {
 		"oauth_scopes": {
 			Type:        schema.TypeSet,
 			Elem:        &schema.Schema{Type: schema.TypeString},
-			Required:    true,
-			Description: "Specifies a list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow.",
+			Optional:    true,
+			Description: "Specifies a list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow. If not specified, no scopes are set on the secret; the effective scopes during the OAuth flow are inherited from the security integration.",
 		},
 	}
 	return collections.MergeMaps(secretCommonSchema, secretClientCredentials)
@@ -97,12 +97,14 @@ func CreateContextSecretWithClientCredentials(ctx context.Context, d *schema.Res
 
 	request := sdk.NewCreateWithOAuthClientCredentialsFlowSecretRequest(id, apiIntegration)
 
-	stringScopes := expandStringList(d.Get("oauth_scopes").(*schema.Set).List())
-	oauthScopes := make([]sdk.ApiIntegrationScope, len(stringScopes))
-	for i, scope := range stringScopes {
-		oauthScopes[i] = sdk.ApiIntegrationScope{Scope: scope}
+	if v, ok := d.GetOk("oauth_scopes"); ok {
+		stringScopes := expandStringList(v.(*schema.Set).List())
+		oauthScopes := make([]sdk.ApiIntegrationScope, len(stringScopes))
+		for i, scope := range stringScopes {
+			oauthScopes[i] = sdk.ApiIntegrationScope{Scope: scope}
+		}
+		request.WithOauthScopes(sdk.OauthScopesListRequest{OauthScopesList: oauthScopes})
 	}
-	request.WithOauthScopes(sdk.OauthScopesListRequest{OauthScopesList: oauthScopes})
 
 	if v, ok := d.GetOk("comment"); ok {
 		request.WithComment(v.(string))

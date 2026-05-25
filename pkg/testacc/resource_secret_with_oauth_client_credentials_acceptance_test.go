@@ -38,9 +38,11 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 	oauthScopes := []string{"scope1", "scope2"}
 	currentRole := testClient().Context.CurrentRole(t).Name()
 
-	basic := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), oauthScopes)
+	basic := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name()).
+		WithOauthScopes(oauthScopes)
 
-	complete := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), []string{"scope3", "scope4"}).
+	complete := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name()).
+		WithOauthScopes([]string{"scope3", "scope4"}).
 		WithComment(comment)
 
 	assertBasic := []assert.TestCheckFuncProvider{
@@ -221,6 +223,73 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 	})
 }
 
+// TestAcc_SecretWithClientCredentials_WithoutOAuthScopes verifies that oauth_scopes is optional.
+// When omitted, DESC SECRET shows no scopes (inheritance from the integration is internal to Snowflake's OAuth flow).
+func TestAcc_SecretWithClientCredentials_WithoutOAuthScopes(t *testing.T) {
+	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
+			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}, {Scope: "scope3"}}),
+	)
+	t.Cleanup(apiIntegrationCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	secretModelWithoutScopes := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name())
+	secretModelWithScopes := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name()).
+		WithOauthScopes([]string{"scope1", "scope2"})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.SecretWithClientCredentials),
+		Steps: []resource.TestStep{
+			// Create without oauth_scopes: DESC shows no scopes (not inherited from integration)
+			{
+				Config: config.FromModels(t, secretModelWithoutScopes),
+				Check: assertThat(t,
+					resourceassert.SecretWithClientCredentialsResource(t, secretModelWithoutScopes.ResourceReference()).
+						HasNameString(id.Name()).
+						HasApiAuthenticationString(integrationId.Name()).
+						HasOauthScopes(),
+					assert.Check(resource.TestCheckResourceAttr(secretModelWithoutScopes.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
+				),
+			},
+			// Update: set 2 out of 3 integration scopes
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(secretModelWithScopes.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, secretModelWithScopes),
+				Check: assertThat(t,
+					resourceassert.SecretWithClientCredentialsResource(t, secretModelWithScopes.ResourceReference()).
+						HasOauthScopes("scope1", "scope2"),
+					assert.Check(resource.TestCheckResourceAttr(secretModelWithScopes.ResourceReference(), "describe_output.0.oauth_scopes.#", "2")),
+					assert.Check(resource.TestCheckTypeSetElemAttr(secretModelWithScopes.ResourceReference(), "describe_output.0.oauth_scopes.*", "scope1")),
+					assert.Check(resource.TestCheckTypeSetElemAttr(secretModelWithScopes.ResourceReference(), "describe_output.0.oauth_scopes.*", "scope2")),
+				),
+			},
+			// Update: remove oauth_scopes from config — scopes cleared, DESC shows null again
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(secretModelWithoutScopes.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, secretModelWithoutScopes),
+				Check: assertThat(t,
+					resourceassert.SecretWithClientCredentialsResource(t, secretModelWithoutScopes.ResourceReference()).
+						HasOauthScopes(),
+					assert.Check(resource.TestCheckResourceAttr(secretModelWithoutScopes.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
@@ -232,9 +301,9 @@ func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{})
-	secretModelEmptyScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{})
-	secretModelWithScope := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{}).WithOauthScopes([]string{"foo"})
+	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name())
+	secretModelEmptyScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name()).WithOauthScopes([]string{})
+	secretModelWithScope := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name()).WithOauthScopes([]string{"foo"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -310,7 +379,7 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChange(t *testing.T) 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"})
+	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name()).WithOauthScopes([]string{"foo", "bar"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -368,7 +437,7 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChangeToOAuthAuthCode
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 
-	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"})
+	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name()).WithOauthScopes([]string{"foo", "bar"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

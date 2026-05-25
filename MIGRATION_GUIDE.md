@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(enhancement)* `snowflake_secret_with_client_credentials` — `oauth_scopes` is now optional
+
+`oauth_scopes` was previously marked as required in the `snowflake_secret_with_client_credentials` resource, but Snowflake treats it as optional.
+When omitted, the scopes are inherited internally from the attached security integration during the OAuth client credentials flow.
+
+No changes are needed for existing configurations that already specify `oauth_scopes`.
+If you want to omit `oauth_scopes` and rely on the integration's scopes, simply remove the field from your configuration.
+
+References: [#3272](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3272)
+
 ### *(new feature)* snowflake_catalog_integration_aws_glue: new `describe_output` attributes
 
 The `snowflake_catalog_integration_aws_glue` resource now exposes two additional attributes under `describe_output`:
