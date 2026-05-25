@@ -46,6 +46,17 @@ func WithRequiredInPlain() PairedFieldOption {
 	}
 }
 
+// WithCustomParser sets a custom parse function name to use when converting the db field to the plain field.
+// The function must have signature func(string) (T, error) where T matches the plain kind.
+// Example:
+//
+//	Field("signature", "string", "[]TableColumnSignature", WithCustomParser("ParseTableColumnSignature"))
+func WithCustomParser(funcName string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.customParser = funcName
+	}
+}
+
 // pairedField holds the definition for a single field in both the DB row struct and the plain SDK struct.
 type pairedField struct {
 	// dbColumnName is the snake_case column name used for the db: tag and to auto-derive the field names.
@@ -62,6 +73,8 @@ type pairedField struct {
 	isEnum bool
 	// isJson marks that the db string column should be JSON-unmarshaled into the plain field.
 	isJson bool
+	// customParser is the name of a custom parse function to use for conversion.
+	customParser string
 }
 
 // resolvedPlainFieldName returns the explicit override or the CamelCase conversion of dbColumnName.
@@ -270,6 +283,15 @@ func (p *PairedStructs) NullableSchemaObjectIdentifierArray(dbColumnName string,
 	return p.addField(dbColumnName, "sql.NullString", "[]SchemaObjectIdentifier", opts)
 }
 
+// AccountIdentifierArray adds a required AccountIdentifier slice field. The db kind is string and the
+// plain kind is []AccountIdentifier.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> []AccountIdentifier
+func (p *PairedStructs) AccountIdentifierArray(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "string", "[]AccountIdentifier", opts)
+}
+
 // SchemaObjectIdentifierWithArguments adds a SchemaObjectIdentifierWithArguments field. The db kind is string and the plain kind
 // is SchemaObjectIdentifierWithArguments. The plain field name defaults to "Id", but can be overridden with WithPlainFieldName.
 //
@@ -364,6 +386,7 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 			PlainKind:      f.plainKind,
 			IsEnum:         f.isEnum,
 			IsJson:         f.isJson,
+			CustomParser:   f.customParser,
 		}
 	}
 	return pairs

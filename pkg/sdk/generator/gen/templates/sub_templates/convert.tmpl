@@ -18,6 +18,14 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             result.{{ .PlainFieldName }} = ParseCommaSeparatedStringArray(r.{{ .DbFieldName }}, false)
         {{- else if .AssignmentKindStringToIdentifier }}
             mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, Parse{{ TypeWithoutPointer .PlainKind }})
+        {{- else if .AssignmentKindStringToIdentifierArray }}
+            if ids, err := ParseCommaSeparated{{ .IdentifierArrayElementType }}Array(r.{{ .DbFieldName }}); err == nil {
+            	result.{{ .PlainFieldName }} = ids
+            }
+        {{- else if .AssignmentKindCustom }}
+            if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}); err == nil {
+            	result.{{ .PlainFieldName }} = v
+            }
         {{- else if .AssignmentKindStringToEnum }}
             mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
         {{- else if .AssignmentKindStringToJson }}

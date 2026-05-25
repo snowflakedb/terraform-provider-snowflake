@@ -15,6 +15,7 @@ type FieldPair struct {
 	PlainKind      string
 	IsEnum         bool
 	IsJson         bool
+	CustomParser   string
 }
 
 // AssignmentKind is the conversion strategy discriminator used in convert.tmpl.
@@ -27,6 +28,8 @@ const (
 	AssignmentKindStringToEnum                    AssignmentKind = "StringToEnum"
 	AssignmentKindStringToJson                    AssignmentKind = "StringToJson"
 	AssignmentKindStringToIdentifier              AssignmentKind = "StringToIdentifier"
+	AssignmentKindStringToIdentifierArray         AssignmentKind = "StringToIdentifierArray"
+	AssignmentKindCustom                          AssignmentKind = "Custom"
 	AssignmentKindNullableToNullable              AssignmentKind = "NullableToNullable"
 	AssignmentKindNullableToRequired              AssignmentKind = "NullableToRequired"
 	AssignmentKindNullableToIdentifier            AssignmentKind = "NullableToIdentifier"
@@ -59,6 +62,14 @@ func (fp FieldPair) AssignmentKindStringToJson() bool {
 
 func (fp FieldPair) AssignmentKindStringToIdentifier() bool {
 	return fp.AssignmentKind() == AssignmentKindStringToIdentifier
+}
+
+func (fp FieldPair) AssignmentKindStringToIdentifierArray() bool {
+	return fp.AssignmentKind() == AssignmentKindStringToIdentifierArray
+}
+
+func (fp FieldPair) AssignmentKindCustom() bool {
+	return fp.AssignmentKind() == AssignmentKindCustom
 }
 
 func (fp FieldPair) AssignmentKindNullableToNullable() bool {
@@ -98,6 +109,10 @@ func (fp FieldPair) IdentifierArrayElementType() string {
 // AssignmentKind returns the conversion strategy for this field pair.
 // The returned value is used as a discriminator via the boolean predicate methods below.
 func (fp FieldPair) AssignmentKind() AssignmentKind {
+	if fp.CustomParser != "" {
+		return AssignmentKindCustom
+	}
+
 	if fp.DbKind == fp.PlainKind {
 		return AssignmentKindDirect
 	}
@@ -115,6 +130,8 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 			return AssignmentKindStringToJson
 		case genhelpers.IsIdentifierType(fp.PlainKind):
 			return AssignmentKindStringToIdentifier
+		case strings.HasPrefix(fp.PlainKind, "[]") && genhelpers.IsIdentifierType(strings.TrimPrefix(fp.PlainKind, "[]")):
+			return AssignmentKindStringToIdentifierArray
 		}
 
 	case "sql.NullString":
