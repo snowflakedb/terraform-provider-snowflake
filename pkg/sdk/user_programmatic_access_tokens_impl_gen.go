@@ -2,10 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -88,11 +86,11 @@ func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAcc
 }
 
 func (r addProgrammaticAccessTokenResultDBRow) convert() (*AddProgrammaticAccessTokenResult, error) {
-	// adjusted manually
-	return &AddProgrammaticAccessTokenResult{
+	result := &AddProgrammaticAccessTokenResult{
 		TokenName:   r.TokenName,
 		TokenSecret: r.TokenSecret,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *ModifyUserProgrammaticAccessTokenRequest) toOpts() *ModifyUserProgrammaticAccessTokenOptions {
@@ -130,12 +128,12 @@ func (r *RotateUserProgrammaticAccessTokenRequest) toOpts() *RotateUserProgramma
 }
 
 func (r rotateProgrammaticAccessTokenResultDBRow) convert() (*RotateProgrammaticAccessTokenResult, error) {
-	// adjusted manually
-	return &RotateProgrammaticAccessTokenResult{
+	result := &RotateProgrammaticAccessTokenResult{
 		TokenName:        r.TokenName,
 		TokenSecret:      r.TokenSecret,
 		RotatedTokenName: r.RotatedTokenName,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *RemoveUserProgrammaticAccessTokenRequest) toOpts() *RemoveUserProgrammaticAccessTokenOptions {
@@ -155,40 +153,17 @@ func (r *ShowUserProgrammaticAccessTokenRequest) toOpts() *ShowUserProgrammaticA
 }
 
 func (r programmaticAccessTokenResultDBRow) convert() (*ProgrammaticAccessToken, error) {
-	// adjusted manually
-	token := &ProgrammaticAccessToken{
+	result := &ProgrammaticAccessToken{
 		Name:      r.Name,
 		ExpiresAt: r.ExpiresAt,
 		CreatedOn: r.CreatedOn,
 		CreatedBy: r.CreatedBy,
 	}
-	userName, err := ParseAccountObjectIdentifier(r.UserName)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing user name: %w", err)
-	} else {
-		token.UserName = userName
-	}
-	if r.RoleRestriction.Valid && r.RoleRestriction.String != "" {
-		roleRestriction, err := ParseAccountObjectIdentifier(r.RoleRestriction.String)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing role restriction: %w", err)
-		}
-		token.RoleRestriction = &roleRestriction
-	}
-	status, err := ToProgrammaticAccessTokenStatus(r.Status)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing programmatic access token status: %w", err)
-	} else {
-		token.Status = status
-	}
-	if r.Comment.Valid {
-		token.Comment = &r.Comment.String
-	}
-	if r.MinsToBypassNetworkPolicyRequirement.Valid {
-		token.MinsToBypassNetworkPolicyRequirement = Pointer(int(r.MinsToBypassNetworkPolicyRequirement.Int64))
-	}
-	if r.RotatedTo.Valid {
-		token.RotatedTo = &r.RotatedTo.String
-	}
-	return token, nil
+	mapStringWithMapping(&result.UserName, r.UserName, ParseAccountObjectIdentifier)
+	mapNullStringWithMapping(&result.RoleRestriction, r.RoleRestriction, ParseAccountObjectIdentifier)
+	mapStringWithMapping(&result.Status, r.Status, ToProgrammaticAccessTokenStatus)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullInt(&result.MinsToBypassNetworkPolicyRequirement, r.MinsToBypassNetworkPolicyRequirement)
+	mapNullString(&result.RotatedTo, r.RotatedTo)
+	return result, nil
 }

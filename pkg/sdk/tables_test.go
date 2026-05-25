@@ -887,17 +887,17 @@ func TestTableAlter(t *testing.T) {
 
 	t.Run("validation: search optimization - no option present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationAction", "Add", "Drop"))
+		opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationActionLegacy", "Add", "Drop"))
 	})
 
 	t.Run("validation: search optimization - two options present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+		opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{
 			Add:  &AddSearchOptimization{},
 			Drop: &DropSearchOptimization{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationAction", "Add", "Drop"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationActionLegacy", "Add", "Drop"))
 	})
 
 	t.Run("empty options", func(t *testing.T) {
@@ -1296,7 +1296,7 @@ func TestTableAlter(t *testing.T) {
 	t.Run("add search optimization", func(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
-			SearchOptimizationAction: &TableSearchOptimizationAction{
+			SearchOptimizationAction: &TableSearchOptimizationActionLegacy{
 				Add: &AddSearchOptimization{
 					On: []string{"SUBSTRING(*)", "GEO(*)"},
 				},
@@ -1308,7 +1308,7 @@ func TestTableAlter(t *testing.T) {
 	t.Run("drop search optimization", func(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
-			SearchOptimizationAction: &TableSearchOptimizationAction{
+			SearchOptimizationAction: &TableSearchOptimizationActionLegacy{
 				Drop: &DropSearchOptimization{
 					On: []string{"SUBSTRING(*)", "FOO"},
 				},
@@ -1320,7 +1320,7 @@ func TestTableAlter(t *testing.T) {
 	t.Run("drop search optimization", func(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
-			SearchOptimizationAction: &TableSearchOptimizationAction{
+			SearchOptimizationAction: &TableSearchOptimizationActionLegacy{
 				Drop: &DropSearchOptimization{
 					On: []string{"SUBSTRING(*)", "FOO"},
 				},

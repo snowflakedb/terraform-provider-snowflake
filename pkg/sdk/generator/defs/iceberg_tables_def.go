@@ -40,7 +40,8 @@ var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
 	OptionalSQL("NOT NULL").
 	// TODO(next PR): add inline constraint support
 	// OptionalQueryStructField("InlineConstraint", icebergTableColumnInlineConstraint, g.KeywordOptions()).
-	// TODO(next PR): add inline masking and projection policy support
+	OptionalQueryStructField("MaskingPolicy", tableColumnMaskingPolicy, g.KeywordOptions()).
+	OptionalQueryStructField("ProjectionPolicy", tableColumnProjectionPolicy, g.KeywordOptions()).
 	OptionalTags().
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
@@ -131,6 +132,8 @@ var icebergTableAddColumnAction = g.NewQueryStruct("IcebergTableAddColumnAction"
 	// TODO(next PR): add inline constraint support
 	// OptionalQueryStructField("InlineConstraint", icebergTableColumnInlineConstraint, g.KeywordOptions()).
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
+	OptionalQueryStructField("MaskingPolicy", tableColumnMaskingPolicy, g.KeywordOptions()).
+	OptionalQueryStructField("ProjectionPolicy", tableColumnProjectionPolicy, g.KeywordOptions()).
 	OptionalTags()
 
 var icebergTableAlterColumnAction = g.NewQueryStruct("IcebergTableAlterColumnAction").
@@ -216,6 +219,16 @@ var icebergTablesDef = g.NewInterface(
 			icebergTableAddColumnAction,
 			g.KeywordOptions(),
 		).
+		OptionalQueryStructField(
+			"DropColumnAction",
+			tableDropColumnAction,
+			g.KeywordOptions(),
+		).
+		OptionalQueryStructField(
+			"RenameColumnAction",
+			tableRenameColumnAction,
+			g.KeywordOptions(),
+		).
 		ListQueryStructField(
 			"AlterColumnAction",
 			icebergTableAlterColumnAction,
@@ -272,11 +285,18 @@ var icebergTablesDef = g.NewInterface(
 		PredefinedQueryStructField("DropRowAccessPolicy", "*ViewDropRowAccessPolicy", g.KeywordOptions()).
 		PredefinedQueryStructField("DropAndAddRowAccessPolicy", "*ViewDropAndAddRowAccessPolicy", g.ListOptions().NoParentheses()).
 		OptionalSQL("DROP ALL ROW ACCESS POLICIES").
-		// TODO(next PR): add RENAME COLUMN and DROP COLUMN actions
-		// TODO(next PR): add search optimization actions (ADD/DROP SEARCH OPTIMIZATION)
 		// TODO(next PR): add ALTER ICEBERG TABLE ... REFRESH (separate operation; see https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table-refresh)
+		OptionalQueryStructField("SetAggregationPolicy", tableSetAggregationPolicy, g.KeywordOptions()).
+		OptionalQueryStructField("UnsetAggregationPolicy", tableUnsetAggregationPolicy, g.KeywordOptions()).
+		OptionalQueryStructField("SetJoinPolicy", tableSetJoinPolicy, g.KeywordOptions()).
+		OptionalQueryStructField("UnsetJoinPolicy", tableUnsetJoinPolicy, g.KeywordOptions()).
+		OptionalQueryStructField(
+			"SearchOptimizationAction",
+			tableSearchOptimizationAction,
+			g.KeywordOptions(),
+		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "AddColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies"),
+		WithValidation(g.ExactlyOneValueSet, "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-iceberg-table",
 	g.NewQueryStruct("DropIcebergTable").
@@ -314,11 +334,14 @@ var icebergTablesDef = g.NewInterface(
 		WithConvertGeneration(),
 	g.NewQueryStruct("ShowIcebergTables").
 		Show().
+		Terse().
 		SQL("ICEBERG TABLES").
 		OptionalLike().
 		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
+	// NOTE: TYPE=COLUMNS returns the same data as omitting the TYPE parameter.
+	//       TYPE=STAGE returns underlying stage details, but this is not needed for the resource.
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
@@ -345,14 +368,13 @@ var icebergTablesDef = g.NewInterface(
 		Describe().
 		SQL("ICEBERG TABLE").
 		Name().
-		// NOTE: TYPE=COLUMNS returns the same data as omitting the TYPE parameter.
-		//       TYPE=STAGE returns underlying stage details, but this is not needed for the resource.
 		OptionalAssignmentWithFieldName("TYPE", IcebergTableDescribeTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes(), "DescribeType").
 		WithValidation(g.ValidIdentifier, "name"),
 ).WithEnums(
 	IcebergTableTargetFileSizeEnumDef,
 	IcebergTablePathLayoutEnumDef,
 	IcebergTableDescribeTypeEnumDef,
+	TableSearchMethodEnumDef,
 	IcebergTableLogEventLevelEnumDef,
 	IcebergTableTypeEnumDef,
 	IcebergTableCatalogEnumDef,

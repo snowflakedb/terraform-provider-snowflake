@@ -4,7 +4,6 @@ package sdk
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 )
 
@@ -22,8 +21,12 @@ var AllImageRepositoryEncryptionTypes = []ImageRepositoryEncryptionType{
 
 func ToImageRepositoryEncryptionType(s string) (ImageRepositoryEncryptionType, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(AllImageRepositoryEncryptionTypes, ImageRepositoryEncryptionType(s)) {
-		return "", fmt.Errorf("invalid ImageRepositoryEncryptionType: %s", s)
+	switch s {
+	case string(ImageRepositoryEncryptionTypeSnowflakeFull):
+		return ImageRepositoryEncryptionTypeSnowflakeFull, nil
+	case string(ImageRepositoryEncryptionTypeSnowflakeSse):
+		return ImageRepositoryEncryptionTypeSnowflakeSse, nil
+	default:
+		return "", fmt.Errorf("invalid image repository encryption type: %s", s)
 	}
-	return ImageRepositoryEncryptionType(s), nil
 }

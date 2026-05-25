@@ -179,7 +179,7 @@ type AlterTableRequest struct {
 	ColumnAction              *TableColumnActionRequest
 	ConstraintAction          *TableConstraintActionRequest
 	ExternalTableAction       *TableExternalTableActionRequest
-	SearchOptimizationAction  *TableSearchOptimizationActionRequest
+	SearchOptimizationAction  *TableSearchOptimizationActionLegacyRequest
 	Set                       *TableSetRequest
 	SetTags                   []TagAssociationRequest
 	UnsetTags                 []ObjectIdentifier
@@ -483,7 +483,7 @@ type TableExternalTableActionRequest struct {
 	Drop   *TableExternalTableColumnDropActionRequest
 }
 
-type TableSearchOptimizationActionRequest struct {
+type TableSearchOptimizationActionLegacyRequest struct {
 	// One of
 	AddSearchOptimizationOn  []string
 	DropSearchOptimizationOn []string

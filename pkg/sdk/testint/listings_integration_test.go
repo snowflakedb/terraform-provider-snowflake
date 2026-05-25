@@ -537,7 +537,7 @@ func TestInt_Listings(t *testing.T) {
 }`, *listingDetails.ListingTerms)
 		assert.Equal(t, sdk.ListingStateDraft, listingDetails.State)
 		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
-		assert.Empty(t, listingDetails.ApplicationPackage.Name()) // Application package is returned even if listing is not associated with one, but it is empty in that case
+		assert.Nil(t, listingDetails.ApplicationPackage)
 		assert.Nil(t, listingDetails.BusinessNeeds)
 		assert.Nil(t, listingDetails.UsageExamples)
 		assert.Nil(t, listingDetails.DataAttributes)

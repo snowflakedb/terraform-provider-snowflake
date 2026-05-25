@@ -47,12 +47,23 @@ type IcebergTableColumnsAndConstraintsRequest struct {
 }
 
 type IcebergTableColumnRequest struct {
-	Name         string             // required
-	ColumnType   datatypes.DataType // required
-	DefaultValue *ColumnDefaultValue
-	NotNull      *bool
-	Tag          []TagAssociation
-	Comment      *string
+	Name             string             // required
+	ColumnType       datatypes.DataType // required
+	DefaultValue     *ColumnDefaultValue
+	NotNull          *bool
+	MaskingPolicy    *TableColumnMaskingPolicyRequest
+	ProjectionPolicy *TableColumnProjectionPolicyRequest
+	Tag              []TagAssociation
+	Comment          *string
+}
+
+type TableColumnMaskingPolicyRequest struct {
+	MaskingPolicy SchemaObjectIdentifier // required
+	Using         []Column
+}
+
+type TableColumnProjectionPolicyRequest struct {
+	ProjectionPolicy SchemaObjectIdentifier // required
 }
 
 type IcebergTablePartitionExpressionRequest struct {
@@ -116,6 +127,8 @@ type AlterIcebergTableRequest struct {
 	IfExists                      *bool
 	name                          SchemaObjectIdentifier // required
 	AddColumnAction               *IcebergTableAddColumnActionRequest
+	DropColumnAction              *TableDropColumnActionRequest
+	RenameColumnAction            *TableRenameColumnActionRequest
 	AlterColumnAction             []IcebergTableAlterColumnActionRequest
 	SetMaskingPolicyOnColumn      *TableSetColumnMaskingPolicyRequest
 	UnsetMaskingPolicyOnColumn    *TableUnsetColumnMaskingPolicyRequest
@@ -132,14 +145,31 @@ type AlterIcebergTableRequest struct {
 	DropRowAccessPolicy           *ViewDropRowAccessPolicy
 	DropAndAddRowAccessPolicy     *ViewDropAndAddRowAccessPolicy
 	DropAllRowAccessPolicies      *bool
+	SetAggregationPolicy          *TableSetAggregationPolicyRequest
+	UnsetAggregationPolicy        *TableUnsetAggregationPolicyRequest
+	SetJoinPolicy                 *TableSetJoinPolicyRequest
+	UnsetJoinPolicy               *TableUnsetJoinPolicyRequest
+	SearchOptimizationAction      *TableSearchOptimizationActionRequest
 }
 
 type IcebergTableAddColumnActionRequest struct {
-	IfNotExists  *bool
-	Name         string             // required
-	ColumnType   datatypes.DataType // required
-	DefaultValue *ColumnDefaultValue
-	Tag          []TagAssociation
+	IfNotExists      *bool
+	Name             string             // required
+	ColumnType       datatypes.DataType // required
+	DefaultValue     *ColumnDefaultValue
+	MaskingPolicy    *TableColumnMaskingPolicyRequest
+	ProjectionPolicy *TableColumnProjectionPolicyRequest
+	Tag              []TagAssociation
+}
+
+type TableDropColumnActionRequest struct {
+	IfExists *bool
+	Columns  []Column // required
+}
+
+type TableRenameColumnActionRequest struct {
+	OldName string // required
+	NewName string
 }
 
 type IcebergTableAlterColumnActionRequest struct {
@@ -222,6 +252,50 @@ type IcebergTableUnsetPropertiesRequest struct {
 	Comment                    *bool
 }
 
+type TableSetAggregationPolicyRequest struct {
+	AggregationPolicy SchemaObjectIdentifier // required
+	EntityKey         []Column
+	Force             *bool
+}
+
+type TableUnsetAggregationPolicyRequest struct{}
+
+type TableSetJoinPolicyRequest struct {
+	JoinPolicy SchemaObjectIdentifier // required
+	Force      *bool
+}
+
+type TableUnsetJoinPolicyRequest struct{}
+
+type TableSearchOptimizationActionRequest struct {
+	Add  *TableAddSearchOptimizationRequest
+	Drop *TableDropSearchOptimizationRequest
+}
+
+type TableAddSearchOptimizationRequest struct {
+	On []TableSearchMethodWithTargetRequest
+}
+
+type TableSearchMethodWithTargetRequest struct {
+	Method TableSearchMethod // required
+	Args   TableSearchMethodArgsRequest
+}
+
+type TableSearchMethodArgsRequest struct {
+	Targets  []string
+	Analyzer *string
+}
+
+type TableDropSearchOptimizationRequest struct {
+	On []TableDropSearchOptimizationOnRequest
+}
+
+type TableDropSearchOptimizationOnRequest struct {
+	SearchMethodWithTarget *TableSearchMethodWithTargetRequest
+	ColumnName             *string
+	ExpressionId           *string
+}
+
 type DropIcebergTableRequest struct {
 	IfExists *bool
 	name     SchemaObjectIdentifier // required
@@ -230,6 +304,7 @@ type DropIcebergTableRequest struct {
 }
 
 type ShowIcebergTableRequest struct {
+	Terse      *bool
 	Like       *Like
 	In         *In
 	StartsWith *string

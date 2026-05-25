@@ -14,21 +14,21 @@ var (
 )
 
 var (
-	_ optionsProvider[createTableOptions]              = new(CreateTableRequest)
-	_ optionsProvider[createTableAsSelectOptions]      = new(CreateTableAsSelectRequest)
-	_ optionsProvider[createTableUsingTemplateOptions] = new(CreateTableUsingTemplateRequest)
-	_ optionsProvider[createTableLikeOptions]          = new(CreateTableLikeRequest)
-	_ optionsProvider[createTableCloneOptions]         = new(CreateTableCloneRequest)
-	_ optionsProvider[alterTableOptions]               = new(AlterTableRequest)
-	_ optionsProvider[dropTableOptions]                = new(DropTableRequest)
-	_ optionsProvider[showTableOptions]                = new(ShowTableRequest)
-	_ optionsProvider[describeTableColumnsOptions]     = new(DescribeTableColumnsRequest)
-	_ optionsProvider[describeTableStageOptions]       = new(DescribeTableStageRequest)
-	_ optionsProvider[TableColumnAction]               = new(TableColumnActionRequest)
-	_ optionsProvider[TableConstraintAction]           = new(TableConstraintActionRequest)
-	_ optionsProvider[TableExternalTableAction]        = new(TableExternalTableActionRequest)
-	_ optionsProvider[TableSearchOptimizationAction]   = new(TableSearchOptimizationActionRequest)
-	_ optionsProvider[TableSet]                        = new(TableSetRequest)
+	_ optionsProvider[createTableOptions]                  = new(CreateTableRequest)
+	_ optionsProvider[createTableAsSelectOptions]          = new(CreateTableAsSelectRequest)
+	_ optionsProvider[createTableUsingTemplateOptions]     = new(CreateTableUsingTemplateRequest)
+	_ optionsProvider[createTableLikeOptions]              = new(CreateTableLikeRequest)
+	_ optionsProvider[createTableCloneOptions]             = new(CreateTableCloneRequest)
+	_ optionsProvider[alterTableOptions]                   = new(AlterTableRequest)
+	_ optionsProvider[dropTableOptions]                    = new(DropTableRequest)
+	_ optionsProvider[showTableOptions]                    = new(ShowTableRequest)
+	_ optionsProvider[describeTableColumnsOptions]         = new(DescribeTableColumnsRequest)
+	_ optionsProvider[describeTableStageOptions]           = new(DescribeTableStageRequest)
+	_ optionsProvider[TableColumnAction]                   = new(TableColumnActionRequest)
+	_ optionsProvider[TableConstraintAction]               = new(TableConstraintActionRequest)
+	_ optionsProvider[TableExternalTableAction]            = new(TableExternalTableActionRequest)
+	_ optionsProvider[TableSearchOptimizationActionLegacy] = new(TableSearchOptimizationActionLegacyRequest)
+	_ optionsProvider[TableSet]                            = new(TableSetRequest)
 )
 
 type tables struct {
@@ -147,7 +147,7 @@ func (s *AlterTableRequest) toOpts() *alterTableOptions {
 	if s.ExternalTableAction != nil {
 		externalTableAction = s.ExternalTableAction.toOpts()
 	}
-	var searchOptimizationAction *TableSearchOptimizationAction
+	var searchOptimizationAction *TableSearchOptimizationActionLegacy
 	if s.SearchOptimizationAction != nil {
 		searchOptimizationAction = s.SearchOptimizationAction.toOpts()
 	}
@@ -240,16 +240,16 @@ func (s *TableSetRequest) toOpts() *TableSet {
 	return set
 }
 
-func (s *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimizationAction {
+func (s *TableSearchOptimizationActionLegacyRequest) toOpts() *TableSearchOptimizationActionLegacy {
 	if len(s.AddSearchOptimizationOn) > 0 {
-		return &TableSearchOptimizationAction{
+		return &TableSearchOptimizationActionLegacy{
 			Add: &AddSearchOptimization{
 				On: s.AddSearchOptimizationOn,
 			},
 		}
 	}
 	if len(s.DropSearchOptimizationOn) > 0 {
-		return &TableSearchOptimizationAction{
+		return &TableSearchOptimizationActionLegacy{
 			Drop: &DropSearchOptimization{
 				On: s.DropSearchOptimizationOn,
 			},
