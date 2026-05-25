@@ -37,18 +37,18 @@ func (opts *CreateForJavaProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateForJavaProcedureOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -68,7 +68,7 @@ func (opts *CreateForJavaScriptProcedureOptions) validate() error {
 	if !exactlyOneValueSet(opts.ResultDataTypeOld, opts.ResultDataType) {
 		errs = append(errs, errExactlyOneOf("CreateForJavaScriptProcedureOptions", "ResultDataTypeOld", "ResultDataType"))
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -89,18 +89,18 @@ func (opts *CreateForPythonProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateForPythonProcedureOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -123,18 +123,18 @@ func (opts *CreateForScalaProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateForScalaProcedureOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -151,7 +151,7 @@ func (opts *CreateForSQLProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateForSQLProcedureOptions.Returns", "ResultDataType", "Table"))
@@ -162,14 +162,7 @@ func (opts *CreateForSQLProcedureOptions) validate() error {
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			if valueSet(opts.Returns.Table.Columns) {
-				// modified manually
-				for _, col := range opts.Returns.Table.Columns {
-					if !exactlyOneValueSet(col.ColumnDataTypeOld, col.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-					}
-				}
-			}
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -260,18 +253,18 @@ func (opts *CreateAndCallForJavaProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -294,18 +287,18 @@ func (opts *CreateAndCallForScalaProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -325,7 +318,7 @@ func (opts *CreateAndCallForJavaScriptProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -346,18 +339,18 @@ func (opts *CreateAndCallForPythonProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -374,7 +367,7 @@ func (opts *CreateAndCallForSQLProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns", "ResultDataType", "Table"))
@@ -385,7 +378,7 @@ func (opts *CreateAndCallForSQLProcedureOptions) validate() error {
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
