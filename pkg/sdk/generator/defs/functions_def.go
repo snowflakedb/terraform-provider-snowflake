@@ -6,18 +6,24 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var functionArgument = g.NewQueryStruct("FunctionArgument").
-	Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
-	PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
-	PredefinedQueryStructField("ArgDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-	PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT")).
-	WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+var functionArgument = func() *g.QueryStruct {
+	return g.NewQueryStruct("FunctionArgument").
+		Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
+		PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
+		PredefinedQueryStructField("ArgDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
+		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT"))
+	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+	// .WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+}
 
-var functionColumn = g.NewQueryStruct("FunctionColumn").
-	Text("ColumnName", g.KeywordOptions().DoubleQuotes().Required()).
-	PredefinedQueryStructField("ColumnDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
-	PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-	WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
+var functionColumn = func() *g.QueryStruct {
+	return g.NewQueryStruct("FunctionColumn").
+		Text("ColumnName", g.KeywordOptions().DoubleQuotes().Required()).
+		PredefinedQueryStructField("ColumnDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
+		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required())
+	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+	// .WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
+}
 
 var functionReturns = func() *g.QueryStruct {
 	return g.NewQueryStruct("FunctionReturns").
@@ -34,9 +40,10 @@ var functionReturns = func() *g.QueryStruct {
 			g.NewQueryStruct("FunctionReturnsTable").
 				ListQueryStructField(
 					"Columns",
-					functionColumn,
+					functionColumn(),
 					g.ParameterOptions().Parentheses().NoEquals(),
-				),
+				).
+				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("TABLE"),
 		).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 }
@@ -65,7 +72,7 @@ var functionsDef = g.NewInterface(
 		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
-			functionArgument,
+			functionArgument(),
 			g.ListOptions().MustParentheses()).
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
@@ -100,7 +107,8 @@ var functionsDef = g.NewInterface(
 		PredefinedQueryStructField("FunctionDefinition", "*string", g.ParameterOptions().NoEquals().SQL("AS")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "Handler").
-		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForJavascript",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-function#javascript-handler",
@@ -113,7 +121,7 @@ var functionsDef = g.NewInterface(
 		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
-			functionArgument,
+			functionArgument(),
 			g.ListOptions().MustParentheses()).
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
@@ -132,7 +140,8 @@ var functionsDef = g.NewInterface(
 		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForPython",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-function#python-handler",
@@ -147,7 +156,7 @@ var functionsDef = g.NewInterface(
 		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
-			functionArgument,
+			functionArgument(),
 			g.ListOptions().MustParentheses()).
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
@@ -182,7 +191,8 @@ var functionsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
 		WithValidation(g.ValidateValueSet, "Handler").
-		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForScala",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-function#scala-handler",
@@ -196,7 +206,7 @@ var functionsDef = g.NewInterface(
 		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
-			functionArgument,
+			functionArgument(),
 			g.ListOptions().MustParentheses()).
 		OptionalSQL("COPY GRANTS").
 		SQL("RETURNS").
@@ -230,7 +240,8 @@ var functionsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
+		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType").
+		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateForSQL",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-function#sql-handler",
@@ -243,7 +254,7 @@ var functionsDef = g.NewInterface(
 		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
-			functionArgument,
+			functionArgument(),
 			g.ListOptions().MustParentheses()).
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
@@ -261,7 +272,8 @@ var functionsDef = g.NewInterface(
 		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithAdditionalValidations(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-function",
 	g.NewQueryStruct("AlterFunction").
