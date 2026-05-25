@@ -86,8 +86,10 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	WithField(g.OptionalEnumLegacy[sdkcommons.SequenceName]("SetDefault", g.ParameterOptions().NoEquals().SQL("SET DEFAULT"))).
 	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
-	OptionalSQL("UNSET COMMENT").
-	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment")
+	OptionalSQL("UNSET COMMENT")
+
+// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+// .WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment")
 
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
@@ -195,7 +197,8 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions().SQL("SET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set").
+		WithAdditionalValidations(),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").

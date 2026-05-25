@@ -38,6 +38,7 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"))
 	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ConstraintAction) {
 		if !exactlyOneValueSet(opts.ConstraintAction.Rename, opts.ConstraintAction.Drop) {
 			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction", "Rename", "Drop"))
@@ -51,7 +52,6 @@ func (opts *AlterHybridTableOptions) validate() error {
 			}
 		}
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	if valueSet(opts.ClusteringAction) {
 		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.Recluster, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
 			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
