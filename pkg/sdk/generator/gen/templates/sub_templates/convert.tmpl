@@ -25,6 +25,8 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
         {{- else if .AssignmentKindCustom }}
             if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}); err == nil {
             	result.{{ .PlainFieldName }} = v
+            } else {
+                return nil, fmt.Errorf("parsing {{ CamelToWords (TypeWithoutPointerAndBrackets .PlainKind) }}: %w", err)
             }
         {{- else if .AssignmentKindStringToEnum }}
             mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
