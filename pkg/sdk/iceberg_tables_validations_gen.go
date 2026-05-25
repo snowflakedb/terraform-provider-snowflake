@@ -21,7 +21,7 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
@@ -46,7 +46,7 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if !exactlyOneValueSet(opts.AddColumnAction, opts.DropColumnAction, opts.RenameColumnAction, opts.AlterColumnAction, opts.SetMaskingPolicyOnColumn, opts.UnsetMaskingPolicyOnColumn, opts.SetProjectionPolicyOnColumn, opts.UnsetProjectionPolicyOnColumn, opts.SetTagsOnColumn, opts.UnsetTagsOnColumn, opts.ClusteringAction, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy, opts.SearchOptimizationAction) {
 		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ClusteringAction) {
 		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
 			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.ClusteringAction", "ClusterBy", "ChangeReclusterState", "DropClusteringKey"))
@@ -77,7 +77,7 @@ func (opts *AlterIcebergTableOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction", "Add", "Drop"))
 		}
 		if valueSet(opts.SearchOptimizationAction.Drop) {
-			errs = append(errs, opts.SearchOptimizationAction.Drop.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.SearchOptimizationAction.Drop.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
