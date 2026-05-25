@@ -18,7 +18,7 @@ func (opts *AddUserProgrammaticAccessTokenOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if opts.RoleRestriction != nil && !ValidObjectIdentifier(opts.RoleRestriction) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
@@ -33,7 +33,7 @@ func (opts *ModifyUserProgrammaticAccessTokenOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.RenameTo) {
 		errs = append(errs, errExactlyOneOf("ModifyUserProgrammaticAccessTokenOptions", "Set", "Unset", "RenameTo"))
 	}
@@ -48,7 +48,7 @@ func (opts *RotateUserProgrammaticAccessTokenOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -60,7 +60,7 @@ func (opts *RemoveUserProgrammaticAccessTokenOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
