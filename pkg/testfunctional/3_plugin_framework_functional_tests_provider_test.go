@@ -70,6 +70,7 @@ func (p *pluginFrameworkFunctionalTestsProvider) Resources(_ context.Context) []
 		testfunctional.NewZeroValuesResource,
 		computednestedlist.NewComputedNestedListResource,
 		httpserver.NewHttpServerResource,
+		testfunctional.NewStaleErrorReproResource,
 		testfunctional.NewStringWithMetadataResource,
 		testfunctional.NewOptionalWithBackingFieldResource,
 		testfunctional.NewParameterHandlingResourcePlanModifierResource,
