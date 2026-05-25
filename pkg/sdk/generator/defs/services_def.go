@@ -79,7 +79,8 @@ var servicesDef = g.NewInterface(
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "FromSpecification", "FromSpecificationTemplate").
-		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
+		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
+		WithAdditionalValidations(),
 	serviceExternalAccessIntegrationsDef,
 	listItemDef,
 	serviceFromSpecificationDef,
@@ -116,7 +117,8 @@ var servicesDef = g.NewInterface(
 				OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalComment().
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
-				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment").
+				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
