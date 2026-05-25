@@ -78,7 +78,8 @@ var materializedViewDetailsPairs = g.StructPair("materializedViewDetailsRow", "M
 	Field("unique key", "string", "bool", g.WithPlainFieldName("IsUnique")).
 	Field("check", "sql.NullString", "*bool").
 	OptionalText("expression").
-	OptionalText("comment")
+	OptionalText("comment").
+	WithConvertGeneration()
 
 var materializedViewsDef = g.NewInterface(
 	"MaterializedViews",
