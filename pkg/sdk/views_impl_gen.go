@@ -264,7 +264,10 @@ func (r viewDBRow) convert() (*View, error) {
 	mapNullStringToNonNullableField(&result.Reserved, r.Reserved)
 	mapNullStringToNonNullableField(&result.Owner, r.Owner)
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
-	mapNullStringToNonNullableField(&result.Text, r.Text)
+	// TODO [this PR]: allow metadata trimming
+	if r.Text.Valid {
+		result.Text = tracking.TrimMetadata(r.Text.String)
+	}
 	mapNullBoolToNonNullableField(&result.IsSecure, r.IsSecure)
 	mapNullBoolToNonNullableField(&result.IsMaterialized, r.IsMaterialized)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
@@ -289,10 +292,7 @@ func (r viewDetailsRow) convert() (*ViewDetails, error) {
 		IsUnique:   r.UniqueKey == "Y",
 	}
 	mapNullString(&result.Default, r.Default)
-	// TODO: Mapping for Check (sql.NullString -> *bool)
-	if r.Check.Valid {
-		result.Check = Bool(r.Check.String == "Y")
-	}
+	mapNullStringToBool(&result.Check, r.Check)
 	mapNullString(&result.Expression, r.Expression)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.PolicyName, r.PolicyName)
