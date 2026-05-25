@@ -19,18 +19,19 @@ type FieldPair struct {
 type AssignmentKind string
 
 const (
-	AssignmentKindDirect                AssignmentKind = "Direct"
-	AssignmentKindStringToBool          AssignmentKind = "StringToBool"
-	AssignmentKindStringToStringArray   AssignmentKind = "StringToStringArray"
-	AssignmentKindStringToEnum          AssignmentKind = "StringToEnum"
-	AssignmentKindStringToJson          AssignmentKind = "StringToJson"
-	AssignmentKindStringToIdentifier    AssignmentKind = "StringToIdentifier"
-	AssignmentKindNullableToNullable    AssignmentKind = "NullableToNullable"
-	AssignmentKindNullableToRequired    AssignmentKind = "NullableToRequired"
-	AssignmentKindNullableToIdentifier  AssignmentKind = "NullableToIdentifier"
-	AssignmentKindNullableToEnum        AssignmentKind = "NullableToEnum"
-	AssignmentKindNullableToStringArray AssignmentKind = "NullableToStringArray"
-	AssignmentKindUnsupported           AssignmentKind = "Unsupported"
+	AssignmentKindDirect                       AssignmentKind = "Direct"
+	AssignmentKindStringToBool                 AssignmentKind = "StringToBool"
+	AssignmentKindStringToStringArray          AssignmentKind = "StringToStringArray"
+	AssignmentKindStringToEnum                 AssignmentKind = "StringToEnum"
+	AssignmentKindStringToJson                 AssignmentKind = "StringToJson"
+	AssignmentKindStringToIdentifier           AssignmentKind = "StringToIdentifier"
+	AssignmentKindNullableToNullable           AssignmentKind = "NullableToNullable"
+	AssignmentKindNullableToRequired           AssignmentKind = "NullableToRequired"
+	AssignmentKindNullableToIdentifier         AssignmentKind = "NullableToIdentifier"
+	AssignmentKindNullableToEnum               AssignmentKind = "NullableToEnum"
+	AssignmentKindNullableToStringArray        AssignmentKind = "NullableToStringArray"
+	AssignmentKindNullableStringToNullableBool AssignmentKind = "NullableStringToNullableBool"
+	AssignmentKindUnsupported                  AssignmentKind = "Unsupported"
 )
 
 func (fp FieldPair) AssignmentKindDirect() bool {
@@ -77,6 +78,10 @@ func (fp FieldPair) AssignmentKindNullableToStringArray() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableToStringArray
 }
 
+func (fp FieldPair) AssignmentKindNullableStringToNullableBool() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableStringToNullableBool
+}
+
 // AssignmentKind returns the conversion strategy for this field pair.
 // The returned value is used as a discriminator via the boolean predicate methods below.
 func (fp FieldPair) AssignmentKind() AssignmentKind {
@@ -107,6 +112,8 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 			return AssignmentKindNullableToRequired
 		case fp.PlainKind == "[]string":
 			return AssignmentKindNullableToStringArray
+		case fp.PlainKind == "*bool":
+			return AssignmentKindNullableStringToNullableBool
 		case fp.IsEnum:
 			return AssignmentKindNullableToEnum
 		case genhelpers.IsIdentifierType(fp.PlainKind):

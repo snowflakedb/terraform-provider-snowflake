@@ -36,6 +36,8 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             if r.{{ .DbFieldName }}.Valid {
             	result.{{ .PlainFieldName }} = ParseCommaSeparatedStringArray(r.{{ .DbFieldName }}.String, false)
             }
+        {{- else if .AssignmentKindNullableStringToNullableBool }}
+            mapNullStringToBool(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
         {{- else }}
             // TODO: Mapping for {{ .PlainFieldName }} ({{ .DbKind }} -> {{ .PlainKind }})
         {{- end }}
