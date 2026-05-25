@@ -46,7 +46,8 @@ var semanticViewsDef = g.NewInterface(
 			OptionalComment().
 			OptionalCopyGrants().
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"),
+			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
+			WithAdditionalValidations(),
 		logicalTable,
 		synonym,
 		semanticViewRelationship,
