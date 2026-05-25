@@ -2,7 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"fmt"
@@ -149,17 +148,15 @@ func (r *DescribeRowAccessPolicyRequest) toOpts() *DescribeRowAccessPolicyOption
 }
 
 func (r describeRowAccessPolicyDBRow) convert() (*RowAccessPolicyDescription, error) {
-	// adjusted manually
-	rowAccessPolicyDescription := &RowAccessPolicyDescription{
+	result := &RowAccessPolicyDescription{
 		Name:       r.Name,
 		ReturnType: r.ReturnType,
 		Body:       r.Body,
 	}
-	signature, err := ParseTableColumnSignature(r.Signature)
-	if err != nil {
-		return nil, fmt.Errorf("parsing table column signature: %w", err)
+	if v, err := ParseTableColumnSignature(r.Signature); err == nil {
+		result.Signature = v
 	} else {
-		rowAccessPolicyDescription.Signature = signature
+		return nil, fmt.Errorf("parsing table column signature: %w", err)
 	}
-	return rowAccessPolicyDescription, nil
+	return result, nil
 }
