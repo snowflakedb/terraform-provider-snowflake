@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -149,7 +148,7 @@ func ParseExternalObjectIdentifier(identifier string) (ExternalObjectIdentifier,
 func ParseSchemaObjectIdentifierWithArguments(fullyQualifiedName string) (SchemaObjectIdentifierWithArguments, error) {
 	splitIdIndex := strings.IndexRune(fullyQualifiedName, '(')
 	if splitIdIndex == -1 {
-		return SchemaObjectIdentifierWithArguments{}, errors.New("unable to parse identifier: '(' not present")
+		return SchemaObjectIdentifierWithArguments{}, fmt.Errorf(`unable to parse identifier: %s, argument list (the '(...)' part) is missing. For procedures and functions, the argument data types must be specified in parentheses, e.g. "<database_name>.<schema_name>.<schema_object_name>(<argtype>, ...)"; use "()" if the object takes no arguments`, fullyQualifiedName)
 	}
 	parts, err := ParseIdentifierString(fullyQualifiedName[:splitIdIndex])
 	if err != nil {
