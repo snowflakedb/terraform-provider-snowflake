@@ -36,13 +36,21 @@ No changes are required for existing configurations.
 
 References: [#4745](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4745)
 
-### *(new feature)* snowflake_cortex_agent preview resource
+### *(new feature)* New Cortex agent resource and data source
+
+#### Resource
 
 We have added a new preview resource for managing Cortex agents: [snowflake_cortex_agent](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_agent).
 
-This feature will be marked as stable in future releases. To use this feature, add `snowflake_cortex_agent_resource` to the `preview_features_enabled` field in the provider configuration.
+This feature will be marked as stable in future releases. To use it, add `snowflake_cortex_agent_resource` to the `preview_features_enabled` field in the provider configuration.
 
-No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+#### Data source
+
+We have added a new preview data source for Cortex agents: [snowflake_cortex_agents](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/cortex_agents).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_cortex_agents_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
 ### *(bugfix)* `snowflake_external_volume` — support for `use_privatelink_endpoint` in Azure deployments
 
