@@ -2395,6 +2395,24 @@ This fix was also backported to versions v1.0.6, v1.1.1, and v1.2.2.
 ## v1.2.x ➞ v2.0.0
 <a id="v121--v200"></a>
 
+### Note on resources removed in v1.0.0
+If you are upgrading directly from a pre-v1.0.0 version (for example v0.85.0) to v2, please be aware that several deprecated resources and data sources were removed in v1.0.0 and are still not present in v2. The full list and the migration entries explaining their replacements are documented in the [v0.100.0 ➞ v1.0.0](#removed-deprecated-objects) section and in [`v1-preparations/LIST_OF_REMOVED_RESOURCES_FOR_V1.md`](./v1-preparations/LIST_OF_REMOVED_RESOURCES_FOR_V1.md). The resources removed in v1.0.0 are:
+
+- `snowflake_database_old` — see [migration guide](#new-feature-new-database-resources)
+- `snowflake_role` (resource) — see [migration guide](#new-feature-new-snowflake_account_role-resource)
+- `snowflake_role` (data source) — see [migration guide](#snowflake_role-data-source-deprecation)
+- `snowflake_roles` (data source) — see [migration guide](#new-feature-account-role-data-source)
+- `snowflake_oauth_integration` — see [migration guide](#new-feature-snowflake_oauth_integration_for_custom_clients-and-snowflake_oauth_integration_for_partner_applications-resources)
+- `snowflake_saml_integration` — see [migration guide](#new-feature-snowflake_saml2_integration-resource)
+- `snowflake_session_parameter` — replaced by `snowflake_account_parameter` and the relevant object-level parameter resources / fields
+- `snowflake_stream` — see [migration guide](#new-feature-snowflake_stream_on_directory_table-and-snowflake_stream_on_view-resource)
+- `snowflake_tag_masking_policy_association` — replaced by the `masking_policies` field on the [`snowflake_tag`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag) resource; see [migration guide](#snowflake_tag_masking_policy_association-deprecation)
+- `snowflake_function` — replaced by the language-specific function resources (`snowflake_function_java`, `snowflake_function_javascript`, `snowflake_function_python`, `snowflake_function_scala`, `snowflake_function_sql`)
+- `snowflake_procedure` — replaced by the language-specific procedure resources (`snowflake_procedure_java`, `snowflake_procedure_javascript`, `snowflake_procedure_python`, `snowflake_procedure_scala`, `snowflake_procedure_sql`)
+- `snowflake_unsafe_execute` — see [migration guide](#unsafe_execute-resource-deprecation--new-execute-resource)
+
+If your configuration still references any of these resources, follow the linked migration entries before upgrading to v2.
+
 ### Supported architectures
 
 We have compiled a list to clarify which binaries are officially supported and which are provided additionally but not officially supported.
@@ -3352,7 +3370,29 @@ Added a new datasource enabling querying and filtering tags. Notes:
 - `SHOW TAGS` output is enclosed in `show_output` field inside `tags`.
 
 ### snowflake_tag_masking_policy_association deprecation
-`snowflake_tag_masking_policy_association` is now deprecated in favor of `snowflake_tag` with a new `masking_policy` field. It will be removed with the v1 release. Please adjust your configuration files.
+`snowflake_tag_masking_policy_association` is now deprecated in favor of `snowflake_tag` with a new `masking_policies` field that holds the fully qualified names of the masking policies associated with the tag. It was removed with the v1.0.0 release and is not available in v2. Please adjust your configuration files.
+
+Example replacement:
+```terraform
+resource "snowflake_masking_policy" "example" {
+  name             = "MASK_EMAIL"
+  database         = "GOVERNANCE"
+  schema           = "POLICIES"
+  argument {
+    name = "val"
+    type = "VARCHAR"
+  }
+  body             = "CASE WHEN CURRENT_ROLE() = 'ADMIN' THEN val ELSE '***' END"
+  return_data_type = "VARCHAR"
+}
+
+resource "snowflake_tag" "pii_type" {
+  name             = "PII_TYPE"
+  database         = "GOVERNANCE"
+  schema           = "TAGS"
+  masking_policies = [snowflake_masking_policy.example.fully_qualified_name]
+}
+```
 
 ### snowflake_tag resource changes
 New fields:
