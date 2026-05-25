@@ -335,11 +335,7 @@ func (r hybridTableIndexRow) convert() (*HybridTableIndex, error) {
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 	}
-	// added manually
-	if r.IsUnique.Valid {
-		v := r.IsUnique.String == "Y"
-		result.IsUnique = &v
-	}
+	mapNullStringToBool(&result.IsUnique, r.IsUnique)
 	mapNullString(&result.Columns, r.Columns)
 	mapNullStringToNonNullableField(&result.IncludedColumns, r.IncludedColumns)
 	mapNullStringToNonNullableField(&result.Owner, r.Owner)
