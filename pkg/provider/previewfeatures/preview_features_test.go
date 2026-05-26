@@ -34,6 +34,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_compute_pool_resource", want: ComputePoolResource},
 		{input: "snowflake_compute_pools_datasource", want: ComputePoolsDatasource},
 		{input: "snowflake_cortex_agent_resource", want: CortexAgentResource},
+		{input: "snowflake_cortex_agents_datasource", want: CortexAgentsDatasource},
 		{input: "snowflake_cortex_search_service_resource", want: CortexSearchServiceResource},
 		{input: "snowflake_cortex_search_services_datasource", want: CortexSearchServicesDatasource},
 		{input: "snowflake_current_account_resource", want: CurrentAccountResource},

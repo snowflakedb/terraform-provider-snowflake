@@ -706,6 +706,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_catalog_integrations":               datasources.CatalogIntegrations(),
 		"snowflake_compute_pools":                      datasources.ComputePools(),
 		"snowflake_connections":                        datasources.Connections(),
+		"snowflake_cortex_agents":                      datasources.CortexAgents(),
 		"snowflake_cortex_search_services":             datasources.CortexSearchServices(),
 		"snowflake_current_account":                    datasources.CurrentAccount(),
 		"snowflake_current_role":                       datasources.CurrentRole(),
