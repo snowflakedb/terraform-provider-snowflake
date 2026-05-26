@@ -67,9 +67,9 @@ mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
 	go mod tidy -compat=1.26.3 -diff
 
-pre-push: generate-all-config-model-builders mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
+pre-push: generate-all-config-model-builders mod fmt generate-docs-additional-files docs lint-fix test-architecture generate-sdk-validations-check ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
-pre-push-check: generate-all-config-model-builders-check mod-check fmt-check generate-docs-additional-files-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
+pre-push-check: generate-all-config-model-builders-check mod-check fmt-check generate-docs-additional-files-check docs-check lint test-architecture generate-sdk-validations-check ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -151,6 +151,10 @@ generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
+
+generate-sdk-validations-check: ## check that SDK validations are up-to-date
+	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=validations'
+	$(call GIT_DIFF_CHECK,pkg/sdk/*_validations_gen.go)
 
 clean-generated-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/*_gen.go
@@ -245,4 +249,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf
+.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-validations-check
