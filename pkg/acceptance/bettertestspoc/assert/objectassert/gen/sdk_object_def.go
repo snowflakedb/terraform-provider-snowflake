@@ -181,10 +181,6 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.NetworkRule{},
 	},
 	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.Pipe{},
-	},
-	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
 	},
@@ -254,15 +250,6 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.PasswordPolicyDetails{},
-		IsDataSourceOutput: true,
-	},
-	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.PasswordPolicy{},
-	},
-	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.HybridTable{},
 	},
@@ -282,6 +269,11 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.TagReference{},
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.PostgresInstanceDetails{},
+		IsDataSourceOutput: true,
 	},
 }
 

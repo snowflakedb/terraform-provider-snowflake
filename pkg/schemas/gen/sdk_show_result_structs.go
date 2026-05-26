@@ -40,6 +40,7 @@ var SdkShowResultStructs = []any{
 	sdk.PasswordPolicy{},
 	sdk.Pipe{},
 	sdk.PolicyReference{},
+	sdk.PostgresInstance{},
 	sdk.Procedure{},
 	sdk.ReplicationAccount{},
 	sdk.ReplicationDatabase{},

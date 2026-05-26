@@ -54,6 +54,18 @@ This feature will be marked as stable in future releases. To use this feature, a
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
+### *(new feature)* Postgres preview features
+
+Added new preview resources for managing Postgres instances:
+
+- **`snowflake_postgres_instance`** — for creating new Postgres instances. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance).
+- **`snowflake_postgres_fork`** — for creating a fork (point-in-time copy) of an existing Postgres instance. See reference [docs](https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-point-in-time-recovery).
+
+These features will be marked as stable features in future releases. Breaking changes are expected, even without bumping the major version. To use these features, add the corresponding values to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_postgres_instance_resource` for `snowflake_postgres_instance`
+- `snowflake_postgres_fork_resource` for `snowflake_postgres_fork`
+
 ### *(bugfix)* `snowflake_external_volume` — support for `use_privatelink_endpoint` in Azure deployments
 
 Previously, setting `use_privatelink_endpoint = "true"` on an Azure storage location in `snowflake_external_volume` was silently ignored — the field was not sent to Snowflake and was not read back into state. The field is now correctly sent on create and update, and reflected in state after a read.
@@ -166,50 +178,6 @@ If you previously relied on the prior behavior (the integration being silently d
 
 ## v2.15.x ➞ v2.16.0
 
-### *(improvement)* snowflake_password_policy resource rework
-
-The [snowflake_password_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/password_policy) resource has been reworked to follow the modern resource patterns used in this provider.
-
-#### New computed attributes
-
-The resource now exposes `show_output` and `describe_output` computed attributes that provide the raw results from Snowflake's `SHOW PASSWORD POLICIES` and `DESCRIBE PASSWORD POLICY` commands, respectively. This allows users to access all server-side values without needing additional data sources.
-
-#### Integer fields no longer have hardcoded defaults
-
-Previously, all integer fields (`min_length`, `max_length`, etc.) had hardcoded `Default` values in the schema. These have been removed in favor of Snowflake-managed defaults. When a field is not specified in the Terraform configuration, the resource will not send that parameter to Snowflake, allowing it to use its own default value.
-
-Fields where 0 is a valid value (`min_upper_case_chars`, `min_lower_case_chars`, `min_numeric_chars`, `min_special_chars`, `min_age_days`, `max_age_days`, `history`) now use `-1` as the default sentinel. Setting one of these fields to `-1` explicitly (or omitting it from config) means "use the Snowflake default".
-
-Fields where 0 is not a valid value (`min_length`, `max_length`, `max_retries`, `lockout_time_mins`) are now plain optional fields with no default. Omitting them means "use the Snowflake default".
-
-After importing the state, the plan may be not empty for the fields missing from the configuration due to this change. You can either apply the plan, or set the specific values in the configuration.
-
-#### Removed client-side validation
-
-Client-side `ValidateFunc` constraints (e.g., `IntBetween(8, 256)` for `min_length`) have been removed from all integer fields. Validation is now delegated to Snowflake, which will return an error if a value is out of range. This avoids drift between the provider's hardcoded ranges and Snowflake's actual limits.
-
-#### `or_replace` and `if_not_exists` fields deprecated
-
-The `or_replace` and `if_not_exists` fields are now deprecated as noops. They will be removed in a future version.
-
-#### ID format change
-
-During [identifiers rework](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#identifiers-rework) the internal resource ID format has changed from pipe-separated (`database|schema|name`) to fully qualified name format (`"database"."schema"."name"`). This is handled automatically by a state upgrader — no manual action is required. Read more in the [design decisions](./docs/guides/identifiers_rework_design_decisions.md).
-
-#### Identifier fields now support quoting
-
-The `database`, `schema`, and `name` fields now support quoted identifiers and suppress diffs caused by identifier quoting differences (read more in the [design decisions](./docs/guides/identifiers_rework_design_decisions.md)). Additionally, certain characters are blocklisted from these fields — see the resource documentation for details.
-
-#### Import behavior
-
-The import now uses `ImportName` for `SchemaObjectIdentifier`, which properly sets `database`, `schema`, and `name` fields. The import ID should be the fully qualified name of the password policy (e.g., `"my_database"."my_schema"."my_policy"`).
-
-### *(new feature)* snowflake_password_policies data source
-
-We have added a new preview data source for password policies: [snowflake_password_policies](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/password_policies). It supports filtering with `like`, `in`, and `limit`, and optionally runs `DESCRIBE PASSWORD POLICY` for each result (controlled by the `with_describe` attribute, enabled by default).
-
-This feature will be marked as stable in future releases. To use it, add `snowflake_password_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
-
 ### *(improvement)* Catalog integration resources: computed `catalog_source`
 
 A new **computed** attribute **`catalog_source`** is now available on these resources:
@@ -275,20 +243,6 @@ Snowflake implicitly grants PUBLIC to every role and user, so `GRANT ROLE PUBLIC
 To enable, add `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` to the `experimental_features_enabled` field in the provider configuration. No changes are required for existing configurations that do not grant the PUBLIC role.
 
 References: [#3001](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3001)
-
-### *(bugfix)* Fixed `snowflake_tag` crash on Standard accounts
-
-In v2.15.0 we added the `propagate` field to the `snowflake_tag` resource. On [Standard accounts](https://docs.snowflake.com/en/user-guide/intro-editions#standard-edition), Snowflake always returns the `propagate` column in `SHOW TAGS` with `null` value. The provider attempted to scan a SQL `NULL` into a non-nullable Go string, resulting in a fatal error whenever any `snowflake_tag` resource was refreshed on such accounts:
-
-```text
-│ Error: sql: Scan error on column index 8, name "propagate": converting NULL to string is unsupported
-```
-
-The `propagate` field is now treated as nullable.
-
-No changes in configuration are required. Users on standard accounts who experienced a crash on plan or apply should be able to use the `snowflake_tag` resource normally after upgrading.
-
-References: [#4651](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4651)
 
 ## v2.14.x ➞ v2.15.0
 

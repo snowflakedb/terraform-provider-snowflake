@@ -162,6 +162,10 @@ func asId[T supportedIdentifierTypes](id sdk.ObjectIdentifier) (*T, error) {
 	}
 }
 
+var showPostgresInstance = func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+	return runShowById(ctx, id, client.PostgresInstances.ShowByID)
+}
+
 var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.Account: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Accounts.ShowByID)
@@ -319,6 +323,8 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.Pipe: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Pipes.ShowByID)
 	},
+	resources.PostgresFork:     showPostgresInstance,
+	resources.PostgresInstance: showPostgresInstance,
 	resources.ProcedureJava: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Procedures.ShowByID)
 	},

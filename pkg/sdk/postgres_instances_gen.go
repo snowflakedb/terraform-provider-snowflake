@@ -18,6 +18,7 @@ type PostgresInstances interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstance, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstance, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]PostgresInstanceProperty, error)
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstanceDetails, error)
 }
 
 // CreatePostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance.
@@ -29,9 +30,9 @@ type CreatePostgresInstanceOptions struct {
 	StorageSizeGb           int                                     `ddl:"parameter" sql:"STORAGE_SIZE_GB"`
 	AuthenticationAuthority PostgresInstanceAuthenticationAuthority `ddl:"parameter,no_quotes" sql:"AUTHENTICATION_AUTHORITY"`
 	PostgresVersion         *int                                    `ddl:"parameter" sql:"POSTGRES_VERSION"`
-	NetworkPolicy           *string                                 `ddl:"parameter,single_quotes" sql:"NETWORK_POLICY"`
+	NetworkPolicy           *AccountObjectIdentifier                `ddl:"identifier,equals" sql:"NETWORK_POLICY"`
 	HighAvailability        *bool                                   `ddl:"parameter" sql:"HIGH_AVAILABILITY"`
-	StorageIntegration      *string                                 `ddl:"parameter,single_quotes" sql:"STORAGE_INTEGRATION"`
+	StorageIntegration      *AccountObjectIdentifier                `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
 	PostgresSettings        *string                                 `ddl:"parameter,single_quotes" sql:"POSTGRES_SETTINGS"`
 	Comment                 *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                     []TagAssociation                        `ddl:"keyword,parentheses" sql:"TAG"`
@@ -42,7 +43,7 @@ type ForkPostgresInstanceOptions struct {
 	create           bool                        `ddl:"static" sql:"CREATE"`
 	postgresInstance bool                        `ddl:"static" sql:"POSTGRES INSTANCE"`
 	name             AccountObjectIdentifier     `ddl:"identifier"`
-	Fork             AccountObjectIdentifier     `ddl:"identifier,required" sql:"FORK"`
+	Fork             AccountObjectIdentifier     `ddl:"identifier" sql:"FORK"`
 	At               *PostgresInstanceForkAt     `ddl:"list,parentheses,no_comma" sql:"AT"`
 	Before           *PostgresInstanceForkBefore `ddl:"list,parentheses,no_comma" sql:"BEFORE"`
 	ComputeFamily    *string                     `ddl:"parameter,single_quotes" sql:"COMPUTE_FAMILY"`
@@ -80,13 +81,13 @@ type AlterPostgresInstanceOptions struct {
 }
 
 type PostgresInstanceSet struct {
-	NetworkPolicy           *string                                  `ddl:"parameter,single_quotes" sql:"NETWORK_POLICY"`
+	NetworkPolicy           *AccountObjectIdentifier                 `ddl:"identifier,equals" sql:"NETWORK_POLICY"`
 	AuthenticationAuthority *PostgresInstanceAuthenticationAuthority `ddl:"parameter,no_quotes" sql:"AUTHENTICATION_AUTHORITY"`
 	Comment                 *string                                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	HighAvailability        *bool                                    `ddl:"parameter" sql:"HIGH_AVAILABILITY"`
 	ComputeFamily           *string                                  `ddl:"parameter,single_quotes" sql:"COMPUTE_FAMILY"`
 	StorageSizeGb           *int                                     `ddl:"parameter" sql:"STORAGE_SIZE_GB"`
-	StorageIntegration      *string                                  `ddl:"parameter,single_quotes" sql:"STORAGE_INTEGRATION"`
+	StorageIntegration      *AccountObjectIdentifier                 `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
 	PostgresVersion         *int                                     `ddl:"parameter" sql:"POSTGRES_VERSION"`
 	MaintenanceWindowStart  *int                                     `ddl:"parameter" sql:"MAINTENANCE_WINDOW_START"`
 	PostgresSettings        *string                                  `ddl:"parameter,single_quotes" sql:"POSTGRES_SETTINGS"`
