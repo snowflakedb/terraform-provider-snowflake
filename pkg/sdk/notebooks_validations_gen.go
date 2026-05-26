@@ -58,6 +58,9 @@ func (opts *AlterNotebookOptions) validate() error {
 		if opts.Set.ComputePool != nil && !ValidObjectIdentifier(opts.Set.ComputePool) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
+		if !anyValueSet(opts.Set.Comment, opts.Set.QueryWarehouse, opts.Set.IdleAutoShutdownTimeSeconds, opts.Set.Secrets, opts.Set.MainFile, opts.Set.Warehouse, opts.Set.RuntimeName, opts.Set.ComputePool, opts.Set.ExternalAccessIntegrations, opts.Set.RuntimeEnvironmentVersion) {
+			errs = append(errs, errAtLeastOneOf("AlterNotebookOptions.Set", "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
+		}
 		errs = append(errs, opts.Set.additionalValidations())
 	}
 	if valueSet(opts.Unset) {

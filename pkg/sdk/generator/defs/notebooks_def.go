@@ -106,6 +106,7 @@ var notebooksDef = g.NewInterface(
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 				WithValidation(g.ValidIdentifierIfSet, "Warehouse").
 				WithValidation(g.ValidIdentifierIfSet, "ComputePool").
+				WithValidation(g.AtLeastOneValueSet, "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion").
 				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET"),
 		).
