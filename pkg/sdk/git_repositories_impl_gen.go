@@ -2,10 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -149,8 +147,7 @@ func (r *DescribeGitRepositoryRequest) toOpts() *DescribeGitRepositoryOptions {
 }
 
 func (r gitRepositoriesRow) convert() (*GitRepository, error) {
-	// adjusted manually
-	gitRepository := &GitRepository{
+	result := &GitRepository{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		DatabaseName:  r.DatabaseName,
@@ -159,31 +156,11 @@ func (r gitRepositoriesRow) convert() (*GitRepository, error) {
 		Owner:         r.Owner,
 		OwnerRoleType: r.OwnerRoleType,
 	}
-	id, err := ParseAccountObjectIdentifier(r.ApiIntegration)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse api integration in git repository: %w", err)
-	} else {
-		gitRepository.ApiIntegration = id
-	}
-
-	if r.GitCredentials.Valid {
-		id, err := ParseSchemaObjectIdentifier(r.GitCredentials.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse git credentials in git repository: %w", err)
-		} else {
-			gitRepository.GitCredentials = &id
-		}
-	}
-
-	if r.Comment.Valid {
-		gitRepository.Comment = &r.Comment.String
-	}
-
-	if r.LastFetchedAt.Valid {
-		gitRepository.LastFetchedAt = &r.LastFetchedAt.Time
-	}
-
-	return gitRepository, nil
+	mapStringWithMapping(&result.ApiIntegration, r.ApiIntegration, ParseAccountObjectIdentifier)
+	mapNullStringWithMapping(&result.GitCredentials, r.GitCredentials, ParseSchemaObjectIdentifier)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullTime(&result.LastFetchedAt, r.LastFetchedAt)
+	return result, nil
 }
 
 func (r *ShowGitRepositoryRequest) toOpts() *ShowGitRepositoryOptions {
@@ -207,13 +184,13 @@ func (r *ShowGitBranchesGitRepositoryRequest) toOpts() *ShowGitBranchesGitReposi
 }
 
 func (r gitBranchesRow) convert() (*GitBranch, error) {
-	// adjusted manually
-	return &GitBranch{
+	result := &GitBranch{
 		Name:       r.Name,
 		Path:       r.Path,
 		Checkouts:  r.Checkouts,
 		CommitHash: r.CommitHash,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *ShowGitTagsGitRepositoryRequest) toOpts() *ShowGitTagsGitRepositoryOptions {
@@ -226,12 +203,12 @@ func (r *ShowGitTagsGitRepositoryRequest) toOpts() *ShowGitTagsGitRepositoryOpti
 }
 
 func (r gitTagsRow) convert() (*GitTag, error) {
-	// adjusted manually
-	return &GitTag{
+	result := &GitTag{
 		Name:       r.Name,
 		Path:       r.Path,
 		CommitHash: r.CommitHash,
 		Author:     r.Author,
 		Message:    r.Message,
-	}, nil
+	}
+	return result, nil
 }

@@ -2,6 +2,7 @@
 
 package sdk
 
+// imports adjusted manually
 import (
 	"context"
 	"errors"
@@ -162,14 +163,13 @@ func (r *ShowPasswordPolicyRequest) toOpts() *ShowPasswordPolicyOptions {
 }
 
 func (r passwordPolicyDBRow) convert() (*PasswordPolicy, error) {
-	// adjusted manually
-	policy := &PasswordPolicy{
+	result := &PasswordPolicy{
 		Name:    r.Name,
 		Kind:    r.Kind,
-		Options: r.Options,
 		Comment: r.Comment,
+		Options: r.Options,
 	}
-
+	// validations added manually
 	var errs []error
 	if !r.DatabaseName.Valid {
 		errs = append(errs, fmt.Errorf("Missing database name for password policy with name: %s", r.Name))
@@ -181,13 +181,12 @@ func (r passwordPolicyDBRow) convert() (*PasswordPolicy, error) {
 		return nil, errors.Join(errs...)
 	}
 
-	mapNullStringToNonNullableField(&policy.DatabaseName, r.DatabaseName)
-	mapNullStringToNonNullableField(&policy.SchemaName, r.SchemaName)
-	mapNullTimeToNonNullableField(&policy.CreatedOn, r.CreatedOn)
-	mapNullStringToNonNullableField(&policy.Owner, r.Owner)
-	mapNullStringToNonNullableField(&policy.OwnerRoleType, r.OwnerRoleType)
-
-	return policy, nil
+	mapNullTimeToNonNullableField(&result.CreatedOn, r.CreatedOn)
+	mapNullStringToNonNullableField(&result.DatabaseName, r.DatabaseName)
+	mapNullStringToNonNullableField(&result.SchemaName, r.SchemaName)
+	mapNullStringToNonNullableField(&result.Owner, r.Owner)
+	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	return result, nil
 }
 
 func (r *DescribePasswordPolicyRequest) toOpts() *DescribePasswordPolicyOptions {
@@ -198,11 +197,11 @@ func (r *DescribePasswordPolicyRequest) toOpts() *DescribePasswordPolicyOptions 
 }
 
 func (r describePasswordPolicyDBRow) convert() (*PasswordPolicyProperty, error) {
-	// adjusted manually
-	return &PasswordPolicyProperty{
+	result := &PasswordPolicyProperty{
 		Property:    r.Property,
 		Value:       r.Value,
 		Default:     r.Default,
 		Description: r.Description,
-	}, nil
+	}
+	return result, nil
 }

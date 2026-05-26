@@ -98,7 +98,7 @@ func TestInt_CortexSearchServices(t *testing.T) {
 		assert.Equal(t, targetLag, cortexSearchServiceDetails.TargetLag)
 		assert.NotEmpty(t, cortexSearchServiceDetails.Warehouse)
 		assert.Equal(t, strings.ToUpper(on), *cortexSearchServiceDetails.SearchColumn)
-		assert.NotEmpty(t, cortexSearchServiceDetails.AttributeColumns)
+		assert.Empty(t, cortexSearchServiceDetails.AttributeColumns)
 		assert.NotEmpty(t, cortexSearchServiceDetails.Columns)
 		assert.NotEmpty(t, cortexSearchServiceDetails.Definition)
 		assert.Nil(t, cortexSearchServiceDetails.Comment)

@@ -257,22 +257,14 @@ func (r *DescribeSemanticViewRequest) toOpts() *DescribeSemanticViewOptions {
 }
 
 func (r semanticViewDetailsRow) convert() (*SemanticViewDetails, error) {
-	// adjusted manually
-	semanticViewDescribe := &SemanticViewDetails{
+	result := &SemanticViewDetails{
 		Property:      r.Property,
 		PropertyValue: r.PropertyValue,
 	}
-	if r.ObjectKind.Valid {
-		semanticViewDescribe.ObjectKind = String(r.ObjectKind.String)
-	}
-	if r.ObjectName.Valid {
-		semanticViewDescribe.ObjectName = String(r.ObjectName.String)
-	}
-	if r.ParentEntity.Valid {
-		semanticViewDescribe.ParentEntity = String(r.ParentEntity.String)
-	}
-
-	return semanticViewDescribe, nil
+	mapNullString(&result.ObjectKind, r.ObjectKind)
+	mapNullString(&result.ObjectName, r.ObjectName)
+	mapNullString(&result.ParentEntity, r.ParentEntity)
+	return result, nil
 }
 
 func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
@@ -287,8 +279,7 @@ func (r *ShowSemanticViewRequest) toOpts() *ShowSemanticViewOptions {
 }
 
 func (r semanticViewDBRow) convert() (*SemanticView, error) {
-	// adjusted manually
-	semanticViewShow := &SemanticView{
+	result := &SemanticView{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		DatabaseName:  r.DatabaseName,
@@ -296,14 +287,7 @@ func (r semanticViewDBRow) convert() (*SemanticView, error) {
 		Owner:         r.Owner,
 		OwnerRoleType: r.OwnerRoleType,
 	}
-
-	if r.Comment.Valid {
-		semanticViewShow.Comment = String(r.Comment.String)
-	}
-
-	if r.Extension.Valid {
-		semanticViewShow.Extension = String(r.Extension.String)
-	}
-
-	return semanticViewShow, nil
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.Extension, r.Extension)
+	return result, nil
 }
