@@ -146,27 +146,20 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		return a
 	}
 
-	// ---- cleanup and create helpers ----
-
-	cleanupApiIntegration := func(id sdk.AccountObjectIdentifier) func() {
-		return func() {
-			err := client.ApiIntegrations.Drop(ctx, sdk.NewDropApiIntegrationRequest(id))
-			require.NoError(t, err)
-		}
-	}
-
 	createWithRequest := func(t *testing.T, request *sdk.CreateApiIntegrationRequest) *sdk.ApiIntegration {
 		t.Helper()
+
 		id := request.GetName()
+
 		err := client.ApiIntegrations.Create(ctx, request)
 		require.NoError(t, err)
-		t.Cleanup(cleanupApiIntegration(id))
+		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
+
 		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
+
 		return integration
 	}
-
-	// ---- request factories ----
 
 	newAwsBasicRequest := func(t *testing.T) *sdk.CreateApiIntegrationRequest {
 		t.Helper()
@@ -268,7 +261,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 					WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(providerType, apiAwsRoleArn))
 				err := client.ApiIntegrations.Create(ctx, req)
 				require.NoError(t, err)
-				t.Cleanup(cleanupApiIntegration(id))
+				t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 				assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
 					HasApiProvider(strings.ToUpper(string(providerType))),
@@ -332,7 +325,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithNoSecrets(true)))
 		err := client.ApiIntegrations.Create(ctx, req)
 		require.NoError(t, err)
-		t.Cleanup(cleanupApiIntegration(id))
+		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
 			HasEnabled(true).
@@ -375,7 +368,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			WithComment("git oauth2 comment")
 		err := client.ApiIntegrations.Create(ctx, req)
 		require.NoError(t, err)
-		t.Cleanup(cleanupApiIntegration(id))
+		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
 			HasEnabled(true).
@@ -420,7 +413,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			WithComment("mcp oauth2 comment")
 		err := client.ApiIntegrations.Create(ctx, req)
 		require.NoError(t, err)
-		t.Cleanup(cleanupApiIntegration(id))
+		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
 			HasEnabled(true).
@@ -667,7 +660,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			return
 		}
 		t.Logf("[UNDOCUMENTED] git api_blocked_prefixes on create: SUPPORTED")
-		t.Cleanup(cleanupApiIntegration(id))
+		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 		details, descErr := client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
 		require.NoError(t, descErr)
 		t.Logf("[UNDOCUMENTED] git blocked_prefixes in describe: %v", details.BlockedPrefixes)
@@ -685,7 +678,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			return
 		}
 		t.Logf("[UNDOCUMENTED] external_mcp api_blocked_prefixes on create: SUPPORTED")
-		t.Cleanup(cleanupApiIntegration(id))
+		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 	})
 
 	// -----------------------------------------------------------------------
