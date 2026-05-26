@@ -67,9 +67,9 @@ mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
 	go mod tidy -compat=1.26.3 -diff
 
-pre-push: generate-all-config-model-builders mod fmt generate-docs-additional-files docs lint-fix test-architecture generate-sdk-validations-check ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
+pre-push: generate-all-config-model-builders generate-sdk-validations mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
-pre-push-check: generate-all-config-model-builders-check mod-check fmt-check generate-docs-additional-files-check docs-check lint test-architecture generate-sdk-validations-check ## Run checks before pushing a change (docs, fmt, mod, etc.)
+pre-push-check: generate-all-config-model-builders-check generate-sdk-validations-check mod-check fmt-check generate-docs-additional-files-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -152,8 +152,10 @@ generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
 
-generate-sdk-validations-check: ## check that SDK validations are up-to-date
+generate-sdk-validations: ## check that SDK validations are up-to-date
 	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=validations'
+
+generate-sdk-validations-check: generate-sdk-validations ## check that SDK validations are up-to-date
 	$(call GIT_DIFF_CHECK,pkg/sdk/*_validations_gen.go)
 
 clean-generated-sdk: ## Clean all generated SDK objects
