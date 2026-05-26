@@ -20,8 +20,7 @@ func TestInt_GitRepositories(t *testing.T) {
 
 	gitRepositoryOrigin := testvars.ExampleGitRepositoryOrigin
 
-	apiIntegrationId, apiIntegrationCleanup := testClientHelper().ApiIntegration.
-		CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
+	apiIntegrationId, apiIntegrationCleanup := testClientHelper().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, gitRepositoryOrigin)
 	t.Cleanup(apiIntegrationCleanup)
 
 	secretId, secretCleanup := testClientHelper().Secret.CreateRandomPasswordSecret(t)
@@ -86,8 +85,7 @@ func TestInt_GitRepositories(t *testing.T) {
 			Create(t, gitRepositoryId, gitRepositoryOrigin, apiIntegrationId)
 		t.Cleanup(gitRepositoryCleanup)
 
-		newApiIntegrationId, newApiIntegrationCleanup := testClientHelper().ApiIntegration.
-			CreateApiIntegrationForGitRepository(t, gitRepositoryOrigin)
+		newApiIntegrationId, newApiIntegrationCleanup := testClientHelper().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, gitRepositoryOrigin)
 		t.Cleanup(newApiIntegrationCleanup)
 
 		setRequest := sdk.NewGitRepositorySetRequest().
