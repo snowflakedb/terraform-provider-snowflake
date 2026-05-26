@@ -61,9 +61,6 @@ func (v *Validation) fieldsWithPath(field *Field) []string {
 }
 
 func (v *Validation) Condition(field *Field) string {
-	if v.Type == AdditionalValidations {
-		log.Panicf("Condition() must not be called for AdditionalValidations type")
-	}
 	switch v.Type {
 	case ValidIdentifier:
 		return fmt.Sprintf("!ValidObjectIdentifier(%s)", strings.Join(v.fieldsWithPath(field), ","))
@@ -82,14 +79,13 @@ func (v *Validation) Condition(field *Field) string {
 			log.Panicf("expected ValidateValue to be called exactly one field, got: %v", v.FieldNames)
 		}
 		return fmt.Sprintf("err := %s.validate(); err != nil", v.fieldsWithPath(field)[0])
+	case AdditionalValidations:
+		log.Panicf("Condition() must not be called for AdditionalValidations type")
 	}
 	panic("condition for validation unknown")
 }
 
 func (v *Validation) ReturnedError(field *Field) string {
-	if v.Type == AdditionalValidations {
-		log.Panicf("ReturnedError() must not be called for AdditionalValidations type")
-	}
 	switch v.Type {
 	case ValidIdentifier:
 		return "ErrInvalidObjectIdentifier"
@@ -105,6 +101,8 @@ func (v *Validation) ReturnedError(field *Field) string {
 		return fmt.Sprintf(`errNotSet("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
 	case ValidateValue:
 		return "err"
+	case AdditionalValidations:
+		log.Panicf("ReturnedError() must not be called for AdditionalValidations type")
 	}
 	panic("condition for validation unknown")
 }
