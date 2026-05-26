@@ -26,10 +26,7 @@ func mapNullString(stringField **string, sqlValue sql.NullString) {
 }
 
 func mapNullStringToBool(boolField **bool, sqlValue sql.NullString) {
-	if sqlValue.Valid {
-		v := sqlValue.String == "Y"
-		*boolField = &v
-	}
+	mapNullStringToBoolValue(boolField, sqlValue, "Y")
 }
 
 // mapNullStringToBoolValue maps a sql.NullString to a *bool by comparing the string to trueValue.
@@ -53,9 +50,7 @@ func mapNullStringToBoolParsed(boolField **bool, sqlValue sql.NullString) {
 
 // mapNullStringToRequiredBool maps a sql.NullString to a bool by comparing the string to "Y".
 func mapNullStringToRequiredBool(boolField *bool, sqlValue sql.NullString) {
-	if sqlValue.Valid {
-		*boolField = sqlValue.String == "Y"
-	}
+	mapNullStringToRequiredBoolValue(boolField, sqlValue, "Y")
 }
 
 // mapNullStringToRequiredBoolValue maps a sql.NullString to a bool by comparing the string to trueValue.
@@ -68,11 +63,7 @@ func mapNullStringToRequiredBoolValue(boolField *bool, sqlValue sql.NullString, 
 // mapNullStringToRequiredBoolParsed maps a sql.NullString to a bool using strconv.ParseBool.
 func mapNullStringToRequiredBoolParsed(boolField *bool, sqlValue sql.NullString) {
 	if sqlValue.Valid {
-		if v, err := strconv.ParseBool(sqlValue.String); err == nil {
-			*boolField = v
-		} else {
-			log.Printf("[WARN] Failed to parse bool value, err = %s", err)
-		}
+		mapStringToBoolParsed(boolField, sqlValue.String)
 	}
 }
 
