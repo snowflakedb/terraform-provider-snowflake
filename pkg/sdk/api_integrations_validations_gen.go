@@ -21,8 +21,25 @@ func (opts *CreateApiIntegrationOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "IfNotExists", "OrReplace"))
 	}
-	if !exactlyOneValueSet(opts.AwsApiProviderParams, opts.AzureApiProviderParams, opts.GoogleApiProviderParams) {
-		errs = append(errs, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams"))
+	if everyValueSet(opts.OrReplace, opts.ExternalMcpOAuth2ProviderParams, opts.ExternalMcpDynamicClientProviderParams) {
+		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"))
+	}
+	if !exactlyOneValueSet(opts.AwsApiProviderParams, opts.AzureApiProviderParams, opts.GoogleApiProviderParams, opts.GitHttpsApiTokenBasedProviderParams, opts.GitHttpsApiGithubAppProviderParams, opts.GitHttpsApiOAuth2ProviderParams, opts.GitHttpsApiPrivateLinkProviderParams, opts.ExternalMcpOAuth2ProviderParams, opts.ExternalMcpDynamicClientProviderParams) {
+		errs = append(errs, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitHttpsApiTokenBasedProviderParams", "GitHttpsApiGithubAppProviderParams", "GitHttpsApiOAuth2ProviderParams", "GitHttpsApiPrivateLinkProviderParams", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"))
+	}
+	if valueSet(opts.GitHttpsApiTokenBasedProviderParams) {
+		if valueSet(opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets) {
+			if !exactlyOneValueSet(opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllSecrets, opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.NoSecrets, opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList) {
+				errs = append(errs, errExactlyOneOf("CreateApiIntegrationOptions.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+			}
+		}
+	}
+	if valueSet(opts.GitHttpsApiPrivateLinkProviderParams) {
+		if valueSet(opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets) {
+			if !exactlyOneValueSet(opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllSecrets, opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.NoSecrets, opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList) {
+				errs = append(errs, errExactlyOneOf("CreateApiIntegrationOptions.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -45,12 +62,11 @@ func (opts *AlterApiIntegrationOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterApiIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		// Edited manually
-		if moreThanOneValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams) {
-			errs = append(errs, errMoreThanOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams"))
+		if everyValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams, opts.Set.GitHttpsApiTokenBasedParams, opts.Set.GitHttpsApiPrivateLinkParams, opts.Set.ExternalMcpOAuth2Params) {
+			errs = append(errs, errOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params"))
 		}
-		if !anyValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams, opts.Set.Enabled, opts.Set.ApiAllowedPrefixes, opts.Set.ApiBlockedPrefixes, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"))
+		if !anyValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams, opts.Set.GitHttpsApiTokenBasedParams, opts.Set.GitHttpsApiPrivateLinkParams, opts.Set.ExternalMcpOAuth2Params, opts.Set.Enabled, opts.Set.ApiAllowedPrefixes, opts.Set.ApiBlockedPrefixes, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"))
 		}
 		if valueSet(opts.Set.AwsParams) {
 			if !anyValueSet(opts.Set.AwsParams.ApiAwsRoleArn, opts.Set.AwsParams.ApiKey) {
@@ -62,10 +78,30 @@ func (opts *AlterApiIntegrationOptions) validate() error {
 				errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Set.AzureParams", "AzureTenantId", "AzureAdApplicationId", "ApiKey"))
 			}
 		}
+		if valueSet(opts.Set.GitHttpsApiTokenBasedParams) {
+			if !anyValueSet(opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets) {
+				errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiTokenBasedParams", "AllowedAuthenticationSecrets"))
+			}
+			if valueSet(opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets) {
+				if !exactlyOneValueSet(opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllSecrets, opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.NoSecrets, opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList) {
+					errs = append(errs, errExactlyOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+				}
+			}
+		}
+		if valueSet(opts.Set.GitHttpsApiPrivateLinkParams) {
+			if !anyValueSet(opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets, opts.Set.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint, opts.Set.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates) {
+				errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "TlsTrustedCertificates"))
+			}
+			if valueSet(opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets) {
+				if !exactlyOneValueSet(opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllSecrets, opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.NoSecrets, opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList) {
+					errs = append(errs, errExactlyOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.ApiKey, opts.Unset.Enabled, opts.Unset.ApiBlockedPrefixes, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Unset", "ApiKey", "Enabled", "ApiBlockedPrefixes", "Comment"))
+		if !anyValueSet(opts.Unset.ApiKey, opts.Unset.Enabled, opts.Unset.ApiBlockedPrefixes, opts.Unset.AllowedAuthenticationSecrets, opts.Unset.UsePrivatelinkEndpoint, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Unset", "ApiKey", "Enabled", "ApiBlockedPrefixes", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

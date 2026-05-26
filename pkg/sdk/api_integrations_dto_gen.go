@@ -11,16 +11,22 @@ var (
 )
 
 type CreateApiIntegrationRequest struct {
-	OrReplace               *bool
-	IfNotExists             *bool
-	name                    AccountObjectIdentifier // required
-	AwsApiProviderParams    *AwsApiParamsRequest
-	AzureApiProviderParams  *AzureApiParamsRequest
-	GoogleApiProviderParams *GoogleApiParamsRequest
-	ApiAllowedPrefixes      []ApiIntegrationEndpointPrefix // required
-	ApiBlockedPrefixes      []ApiIntegrationEndpointPrefix
-	Enabled                 bool // required
-	Comment                 *string
+	OrReplace                              *bool
+	IfNotExists                            *bool
+	name                                   AccountObjectIdentifier // required
+	AwsApiProviderParams                   *AwsApiParamsRequest
+	AzureApiProviderParams                 *AzureApiParamsRequest
+	GoogleApiProviderParams                *GoogleApiParamsRequest
+	GitHttpsApiTokenBasedProviderParams    *GitHttpsApiTokenBasedParamsRequest
+	GitHttpsApiGithubAppProviderParams     *GitHttpsApiGithubAppParamsRequest
+	GitHttpsApiOAuth2ProviderParams        *GitHttpsApiOAuth2ParamsRequest
+	GitHttpsApiPrivateLinkProviderParams   *GitHttpsApiPrivateLinkParamsRequest
+	ExternalMcpOAuth2ProviderParams        *ExternalMcpOAuth2ParamsRequest
+	ExternalMcpDynamicClientProviderParams *ExternalMcpDynamicClientParamsRequest
+	ApiAllowedPrefixes                     []ApiIntegrationEndpointPrefix // required
+	ApiBlockedPrefixes                     []ApiIntegrationEndpointPrefix
+	Enabled                                bool // required
+	Comment                                *string
 }
 
 type AwsApiParamsRequest struct {
@@ -39,6 +45,61 @@ type GoogleApiParamsRequest struct {
 	GoogleAudience string // required
 }
 
+type GitHttpsApiTokenBasedParamsRequest struct {
+	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecretsRequest
+}
+
+type ApiIntegrationAllowedAuthenticationSecretsRequest struct {
+	AllSecrets  *bool
+	NoSecrets   *bool
+	AllowedList []SchemaObjectIdentifier
+}
+
+type GitHttpsApiGithubAppParamsRequest struct{}
+
+type GitHttpsApiOAuth2ParamsRequest struct {
+	ApiUserAuthentication OAuth2GitUserAuthenticationRequest
+}
+
+type OAuth2GitUserAuthenticationRequest struct {
+	OauthAuthorizationEndpoint string // required
+	OauthTokenEndpoint         string // required
+	OauthClientId              string // required
+	OauthClientSecret          string // required
+	OauthAccessTokenValidity   *int
+	OauthRefreshTokenValidity  *int
+	OauthAllowedScopes         []ApiIntegrationScope
+	OauthUsername              *string
+}
+
+type GitHttpsApiPrivateLinkParamsRequest struct {
+	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecretsRequest
+	UsePrivatelinkEndpoint       bool // required
+	TlsTrustedCertificates       []SchemaObjectIdentifier
+}
+
+type ExternalMcpOAuth2ParamsRequest struct {
+	ApiUserAuthentication OAuth2McpUserAuthenticationRequest
+}
+
+type OAuth2McpUserAuthenticationRequest struct {
+	OauthClientId              string // required
+	OauthClientSecret          string // required
+	OauthTokenEndpoint         string // required
+	OauthAuthorizationEndpoint string // required
+	OauthClientAuthMethod      *ApiIntegrationOauthClientAuthMethod
+	OauthDiscoveryUrl          *string
+	OauthRefreshTokenValidity  *int
+}
+
+type ExternalMcpDynamicClientParamsRequest struct {
+	ApiUserAuthentication DynamicClientMcpUserAuthenticationRequest
+}
+
+type DynamicClientMcpUserAuthenticationRequest struct {
+	OauthResourceUrl string // required
+}
+
 type AlterApiIntegrationRequest struct {
 	IfExists  *bool
 	name      AccountObjectIdentifier // required
@@ -49,13 +110,16 @@ type AlterApiIntegrationRequest struct {
 }
 
 type ApiIntegrationSetRequest struct {
-	AwsParams          *SetAwsApiParamsRequest
-	AzureParams        *SetAzureApiParamsRequest
-	GoogleParams       *SetGoogleApiParamsRequest
-	Enabled            *bool
-	ApiAllowedPrefixes []ApiIntegrationEndpointPrefix
-	ApiBlockedPrefixes []ApiIntegrationEndpointPrefix
-	Comment            *string
+	AwsParams                    *SetAwsApiParamsRequest
+	AzureParams                  *SetAzureApiParamsRequest
+	GoogleParams                 *SetGoogleApiParamsRequest
+	GitHttpsApiTokenBasedParams  *SetGitHttpsApiTokenBasedParamsRequest
+	GitHttpsApiPrivateLinkParams *SetGitHttpsApiPrivateLinkParamsRequest
+	ExternalMcpOAuth2Params      *SetExternalMcpOAuth2ParamsRequest
+	Enabled                      *bool
+	ApiAllowedPrefixes           []ApiIntegrationEndpointPrefix
+	ApiBlockedPrefixes           []ApiIntegrationEndpointPrefix
+	Comment                      *string
 }
 
 type SetAwsApiParamsRequest struct {
@@ -73,11 +137,28 @@ type SetGoogleApiParamsRequest struct {
 	GoogleAudience string // required
 }
 
+type SetGitHttpsApiTokenBasedParamsRequest struct {
+	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecretsRequest
+}
+
+type SetGitHttpsApiPrivateLinkParamsRequest struct {
+	AllowedAuthenticationSecrets *ApiIntegrationAllowedAuthenticationSecretsRequest
+	UsePrivatelinkEndpoint       *bool
+	TlsTrustedCertificates       []SchemaObjectIdentifier
+}
+
+type SetExternalMcpOAuth2ParamsRequest struct {
+	ApiUserAuthentication OAuth2McpUserAuthenticationRequest
+}
+
 type ApiIntegrationUnsetRequest struct {
-	ApiKey             *bool
-	Enabled            *bool
-	ApiBlockedPrefixes *bool
-	Comment            *bool
+	ApiKey                       *bool
+	Enabled                      *bool
+	ApiBlockedPrefixes           *bool
+	AllowedAuthenticationSecrets *bool
+	TlsTrustedCertificates       *bool
+	UsePrivatelinkEndpoint       *bool
+	Comment                      *bool
 }
 
 type DropApiIntegrationRequest struct {

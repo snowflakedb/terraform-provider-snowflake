@@ -39,6 +39,36 @@ func (s *CreateApiIntegrationRequest) WithGoogleApiProviderParams(googleApiProvi
 	return s
 }
 
+func (s *CreateApiIntegrationRequest) WithGitHttpsApiTokenBasedProviderParams(gitHttpsApiTokenBasedProviderParams GitHttpsApiTokenBasedParamsRequest) *CreateApiIntegrationRequest {
+	s.GitHttpsApiTokenBasedProviderParams = &gitHttpsApiTokenBasedProviderParams
+	return s
+}
+
+func (s *CreateApiIntegrationRequest) WithGitHttpsApiGithubAppProviderParams(gitHttpsApiGithubAppProviderParams GitHttpsApiGithubAppParamsRequest) *CreateApiIntegrationRequest {
+	s.GitHttpsApiGithubAppProviderParams = &gitHttpsApiGithubAppProviderParams
+	return s
+}
+
+func (s *CreateApiIntegrationRequest) WithGitHttpsApiOAuth2ProviderParams(gitHttpsApiOAuth2ProviderParams GitHttpsApiOAuth2ParamsRequest) *CreateApiIntegrationRequest {
+	s.GitHttpsApiOAuth2ProviderParams = &gitHttpsApiOAuth2ProviderParams
+	return s
+}
+
+func (s *CreateApiIntegrationRequest) WithGitHttpsApiPrivateLinkProviderParams(gitHttpsApiPrivateLinkProviderParams GitHttpsApiPrivateLinkParamsRequest) *CreateApiIntegrationRequest {
+	s.GitHttpsApiPrivateLinkProviderParams = &gitHttpsApiPrivateLinkProviderParams
+	return s
+}
+
+func (s *CreateApiIntegrationRequest) WithExternalMcpOAuth2ProviderParams(externalMcpOAuth2ProviderParams ExternalMcpOAuth2ParamsRequest) *CreateApiIntegrationRequest {
+	s.ExternalMcpOAuth2ProviderParams = &externalMcpOAuth2ProviderParams
+	return s
+}
+
+func (s *CreateApiIntegrationRequest) WithExternalMcpDynamicClientProviderParams(externalMcpDynamicClientProviderParams ExternalMcpDynamicClientParamsRequest) *CreateApiIntegrationRequest {
+	s.ExternalMcpDynamicClientProviderParams = &externalMcpDynamicClientProviderParams
+	return s
+}
+
 func (s *CreateApiIntegrationRequest) WithApiBlockedPrefixes(apiBlockedPrefixes []ApiIntegrationEndpointPrefix) *CreateApiIntegrationRequest {
 	s.ApiBlockedPrefixes = apiBlockedPrefixes
 	return s
@@ -84,6 +114,160 @@ func NewGoogleApiParamsRequest(
 ) *GoogleApiParamsRequest {
 	s := GoogleApiParamsRequest{}
 	s.GoogleAudience = googleAudience
+	return &s
+}
+
+func NewGitHttpsApiTokenBasedParamsRequest() *GitHttpsApiTokenBasedParamsRequest {
+	s := GitHttpsApiTokenBasedParamsRequest{}
+	return &s
+}
+
+func (s *GitHttpsApiTokenBasedParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *GitHttpsApiTokenBasedParamsRequest {
+	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
+	return s
+}
+
+func NewApiIntegrationAllowedAuthenticationSecretsRequest() *ApiIntegrationAllowedAuthenticationSecretsRequest {
+	s := ApiIntegrationAllowedAuthenticationSecretsRequest{}
+	return &s
+}
+
+func (s *ApiIntegrationAllowedAuthenticationSecretsRequest) WithAllSecrets(allSecrets bool) *ApiIntegrationAllowedAuthenticationSecretsRequest {
+	s.AllSecrets = &allSecrets
+	return s
+}
+
+func (s *ApiIntegrationAllowedAuthenticationSecretsRequest) WithNoSecrets(noSecrets bool) *ApiIntegrationAllowedAuthenticationSecretsRequest {
+	s.NoSecrets = &noSecrets
+	return s
+}
+
+func (s *ApiIntegrationAllowedAuthenticationSecretsRequest) WithAllowedList(allowedList []SchemaObjectIdentifier) *ApiIntegrationAllowedAuthenticationSecretsRequest {
+	s.AllowedList = allowedList
+	return s
+}
+
+func NewGitHttpsApiGithubAppParamsRequest() *GitHttpsApiGithubAppParamsRequest {
+	s := GitHttpsApiGithubAppParamsRequest{}
+	return &s
+}
+
+func NewGitHttpsApiOAuth2ParamsRequest() *GitHttpsApiOAuth2ParamsRequest {
+	s := GitHttpsApiOAuth2ParamsRequest{}
+	return &s
+}
+
+func (s *GitHttpsApiOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2GitUserAuthenticationRequest) *GitHttpsApiOAuth2ParamsRequest {
+	s.ApiUserAuthentication = apiUserAuthentication
+	return s
+}
+
+func NewOAuth2GitUserAuthenticationRequest(
+	oauthAuthorizationEndpoint string,
+	oauthTokenEndpoint string,
+	oauthClientId string,
+	oauthClientSecret string,
+) *OAuth2GitUserAuthenticationRequest {
+	s := OAuth2GitUserAuthenticationRequest{}
+	s.OauthAuthorizationEndpoint = oauthAuthorizationEndpoint
+	s.OauthTokenEndpoint = oauthTokenEndpoint
+	s.OauthClientId = oauthClientId
+	s.OauthClientSecret = oauthClientSecret
+	return &s
+}
+
+func (s *OAuth2GitUserAuthenticationRequest) WithOauthAccessTokenValidity(oauthAccessTokenValidity int) *OAuth2GitUserAuthenticationRequest {
+	s.OauthAccessTokenValidity = &oauthAccessTokenValidity
+	return s
+}
+
+func (s *OAuth2GitUserAuthenticationRequest) WithOauthRefreshTokenValidity(oauthRefreshTokenValidity int) *OAuth2GitUserAuthenticationRequest {
+	s.OauthRefreshTokenValidity = &oauthRefreshTokenValidity
+	return s
+}
+
+func (s *OAuth2GitUserAuthenticationRequest) WithOauthAllowedScopes(oauthAllowedScopes []ApiIntegrationScope) *OAuth2GitUserAuthenticationRequest {
+	s.OauthAllowedScopes = oauthAllowedScopes
+	return s
+}
+
+func (s *OAuth2GitUserAuthenticationRequest) WithOauthUsername(oauthUsername string) *OAuth2GitUserAuthenticationRequest {
+	s.OauthUsername = &oauthUsername
+	return s
+}
+
+func NewGitHttpsApiPrivateLinkParamsRequest(
+	usePrivatelinkEndpoint bool,
+) *GitHttpsApiPrivateLinkParamsRequest {
+	s := GitHttpsApiPrivateLinkParamsRequest{}
+	s.UsePrivatelinkEndpoint = usePrivatelinkEndpoint
+	return &s
+}
+
+func (s *GitHttpsApiPrivateLinkParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *GitHttpsApiPrivateLinkParamsRequest {
+	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
+	return s
+}
+
+func (s *GitHttpsApiPrivateLinkParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates []SchemaObjectIdentifier) *GitHttpsApiPrivateLinkParamsRequest {
+	s.TlsTrustedCertificates = tlsTrustedCertificates
+	return s
+}
+
+func NewExternalMcpOAuth2ParamsRequest() *ExternalMcpOAuth2ParamsRequest {
+	s := ExternalMcpOAuth2ParamsRequest{}
+	return &s
+}
+
+func (s *ExternalMcpOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2McpUserAuthenticationRequest) *ExternalMcpOAuth2ParamsRequest {
+	s.ApiUserAuthentication = apiUserAuthentication
+	return s
+}
+
+func NewOAuth2McpUserAuthenticationRequest(
+	oauthClientId string,
+	oauthClientSecret string,
+	oauthTokenEndpoint string,
+	oauthAuthorizationEndpoint string,
+) *OAuth2McpUserAuthenticationRequest {
+	s := OAuth2McpUserAuthenticationRequest{}
+	s.OauthClientId = oauthClientId
+	s.OauthClientSecret = oauthClientSecret
+	s.OauthTokenEndpoint = oauthTokenEndpoint
+	s.OauthAuthorizationEndpoint = oauthAuthorizationEndpoint
+	return &s
+}
+
+func (s *OAuth2McpUserAuthenticationRequest) WithOauthClientAuthMethod(oauthClientAuthMethod ApiIntegrationOauthClientAuthMethod) *OAuth2McpUserAuthenticationRequest {
+	s.OauthClientAuthMethod = &oauthClientAuthMethod
+	return s
+}
+
+func (s *OAuth2McpUserAuthenticationRequest) WithOauthDiscoveryUrl(oauthDiscoveryUrl string) *OAuth2McpUserAuthenticationRequest {
+	s.OauthDiscoveryUrl = &oauthDiscoveryUrl
+	return s
+}
+
+func (s *OAuth2McpUserAuthenticationRequest) WithOauthRefreshTokenValidity(oauthRefreshTokenValidity int) *OAuth2McpUserAuthenticationRequest {
+	s.OauthRefreshTokenValidity = &oauthRefreshTokenValidity
+	return s
+}
+
+func NewExternalMcpDynamicClientParamsRequest() *ExternalMcpDynamicClientParamsRequest {
+	s := ExternalMcpDynamicClientParamsRequest{}
+	return &s
+}
+
+func (s *ExternalMcpDynamicClientParamsRequest) WithApiUserAuthentication(apiUserAuthentication DynamicClientMcpUserAuthenticationRequest) *ExternalMcpDynamicClientParamsRequest {
+	s.ApiUserAuthentication = apiUserAuthentication
+	return s
+}
+
+func NewDynamicClientMcpUserAuthenticationRequest(
+	oauthResourceUrl string,
+) *DynamicClientMcpUserAuthenticationRequest {
+	s := DynamicClientMcpUserAuthenticationRequest{}
+	s.OauthResourceUrl = oauthResourceUrl
 	return &s
 }
 
@@ -137,6 +321,21 @@ func (s *ApiIntegrationSetRequest) WithAzureParams(azureParams SetAzureApiParams
 
 func (s *ApiIntegrationSetRequest) WithGoogleParams(googleParams SetGoogleApiParamsRequest) *ApiIntegrationSetRequest {
 	s.GoogleParams = &googleParams
+	return s
+}
+
+func (s *ApiIntegrationSetRequest) WithGitHttpsApiTokenBasedParams(gitHttpsApiTokenBasedParams SetGitHttpsApiTokenBasedParamsRequest) *ApiIntegrationSetRequest {
+	s.GitHttpsApiTokenBasedParams = &gitHttpsApiTokenBasedParams
+	return s
+}
+
+func (s *ApiIntegrationSetRequest) WithGitHttpsApiPrivateLinkParams(gitHttpsApiPrivateLinkParams SetGitHttpsApiPrivateLinkParamsRequest) *ApiIntegrationSetRequest {
+	s.GitHttpsApiPrivateLinkParams = &gitHttpsApiPrivateLinkParams
+	return s
+}
+
+func (s *ApiIntegrationSetRequest) WithExternalMcpOAuth2Params(externalMcpOAuth2Params SetExternalMcpOAuth2ParamsRequest) *ApiIntegrationSetRequest {
+	s.ExternalMcpOAuth2Params = &externalMcpOAuth2Params
 	return s
 }
 
@@ -203,6 +402,46 @@ func NewSetGoogleApiParamsRequest(
 	return &s
 }
 
+func NewSetGitHttpsApiTokenBasedParamsRequest() *SetGitHttpsApiTokenBasedParamsRequest {
+	s := SetGitHttpsApiTokenBasedParamsRequest{}
+	return &s
+}
+
+func (s *SetGitHttpsApiTokenBasedParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *SetGitHttpsApiTokenBasedParamsRequest {
+	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
+	return s
+}
+
+func NewSetGitHttpsApiPrivateLinkParamsRequest() *SetGitHttpsApiPrivateLinkParamsRequest {
+	s := SetGitHttpsApiPrivateLinkParamsRequest{}
+	return &s
+}
+
+func (s *SetGitHttpsApiPrivateLinkParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets ApiIntegrationAllowedAuthenticationSecretsRequest) *SetGitHttpsApiPrivateLinkParamsRequest {
+	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
+	return s
+}
+
+func (s *SetGitHttpsApiPrivateLinkParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *SetGitHttpsApiPrivateLinkParamsRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
+	return s
+}
+
+func (s *SetGitHttpsApiPrivateLinkParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates []SchemaObjectIdentifier) *SetGitHttpsApiPrivateLinkParamsRequest {
+	s.TlsTrustedCertificates = tlsTrustedCertificates
+	return s
+}
+
+func NewSetExternalMcpOAuth2ParamsRequest() *SetExternalMcpOAuth2ParamsRequest {
+	s := SetExternalMcpOAuth2ParamsRequest{}
+	return &s
+}
+
+func (s *SetExternalMcpOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2McpUserAuthenticationRequest) *SetExternalMcpOAuth2ParamsRequest {
+	s.ApiUserAuthentication = apiUserAuthentication
+	return s
+}
+
 func NewApiIntegrationUnsetRequest() *ApiIntegrationUnsetRequest {
 	s := ApiIntegrationUnsetRequest{}
 	return &s
@@ -220,6 +459,21 @@ func (s *ApiIntegrationUnsetRequest) WithEnabled(enabled bool) *ApiIntegrationUn
 
 func (s *ApiIntegrationUnsetRequest) WithApiBlockedPrefixes(apiBlockedPrefixes bool) *ApiIntegrationUnsetRequest {
 	s.ApiBlockedPrefixes = &apiBlockedPrefixes
+	return s
+}
+
+func (s *ApiIntegrationUnsetRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets bool) *ApiIntegrationUnsetRequest {
+	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
+	return s
+}
+
+func (s *ApiIntegrationUnsetRequest) WithTlsTrustedCertificates(tlsTrustedCertificates bool) *ApiIntegrationUnsetRequest {
+	s.TlsTrustedCertificates = &tlsTrustedCertificates
+	return s
+}
+
+func (s *ApiIntegrationUnsetRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ApiIntegrationUnsetRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
 }
 
