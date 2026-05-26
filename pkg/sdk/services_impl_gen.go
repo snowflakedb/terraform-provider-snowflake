@@ -2,10 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -202,8 +200,7 @@ func (r *ShowServiceRequest) toOpts() *ShowServiceOptions {
 }
 
 func (r servicesRow) convert() (*Service, error) {
-	// adjusted manually
-	service := &Service{
+	result := &Service{
 		Name:              r.Name,
 		DatabaseName:      r.DatabaseName,
 		SchemaName:        r.SchemaName,
@@ -224,50 +221,20 @@ func (r servicesRow) convert() (*Service, error) {
 		SpecDigest:        r.SpecDigest,
 		IsUpgrading:       r.IsUpgrading,
 	}
-	serviceStatus, err := ToServiceStatus(r.Status)
-	if err != nil {
-		return nil, fmt.Errorf("error converting service status: %w", err)
-	} else {
-		service.Status = serviceStatus
-	}
-	if r.Comment.Valid {
-		service.Comment = &r.Comment.String
-	}
-	if r.ManagingObjectDomain.Valid {
-		service.ManagingObjectDomain = &r.ManagingObjectDomain.String
-	}
-	if r.ManagingObjectName.Valid {
-		service.ManagingObjectName = &r.ManagingObjectName.String
-	}
-	computePoolId, err := ParseAccountObjectIdentifier(r.ComputePool)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse compute pool in service: %w", err)
-	} else {
-		service.ComputePool = computePoolId
-	}
-	if r.QueryWarehouse.Valid {
-		id, err := ParseAccountObjectIdentifier(r.QueryWarehouse.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse query warehouse in service: %w", err)
-		} else {
-			service.QueryWarehouse = &id
-		}
-	}
-	if r.SuspendedOn.Valid {
-		service.SuspendedOn = &r.SuspendedOn.Time
-	}
-	if r.ResumedOn.Valid {
-		service.ResumedOn = &r.ResumedOn.Time
-	}
+	mapStringWithMapping(&result.Status, r.Status, ToServiceStatus)
+	mapStringWithMapping(&result.ComputePool, r.ComputePool, ParseAccountObjectIdentifier)
 	if r.ExternalAccessIntegrations.Valid {
-		eaiIds, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse external access integrations in service: %w", err)
-		} else {
-			service.ExternalAccessIntegrations = eaiIds
+		if ids, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String); err == nil {
+			result.ExternalAccessIntegrations = ids
 		}
 	}
-	return service, nil
+	mapNullTime(&result.ResumedOn, r.ResumedOn)
+	mapNullTime(&result.SuspendedOn, r.SuspendedOn)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullStringWithMapping(&result.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
+	mapNullString(&result.ManagingObjectDomain, r.ManagingObjectDomain)
+	mapNullString(&result.ManagingObjectName, r.ManagingObjectName)
+	return result, nil
 }
 
 func (r *DescribeServiceRequest) toOpts() *DescribeServiceOptions {
@@ -278,8 +245,7 @@ func (r *DescribeServiceRequest) toOpts() *DescribeServiceOptions {
 }
 
 func (r serviceDescRow) convert() (*ServiceDetails, error) {
-	// adjusted manually
-	service := &ServiceDetails{
+	result := &ServiceDetails{
 		Name:              r.Name,
 		DatabaseName:      r.DatabaseName,
 		SchemaName:        r.SchemaName,
@@ -301,50 +267,20 @@ func (r serviceDescRow) convert() (*ServiceDetails, error) {
 		SpecDigest:        r.SpecDigest,
 		IsUpgrading:       r.IsUpgrading,
 	}
-	serviceStatus, err := ToServiceStatus(r.Status)
-	if err != nil {
-		return nil, fmt.Errorf("error converting service status: %w", err)
-	} else {
-		service.Status = serviceStatus
-	}
-	if r.Comment.Valid {
-		service.Comment = &r.Comment.String
-	}
-	if r.ManagingObjectDomain.Valid {
-		service.ManagingObjectDomain = &r.ManagingObjectDomain.String
-	}
-	if r.ManagingObjectName.Valid {
-		service.ManagingObjectName = &r.ManagingObjectName.String
-	}
-	computePoolId, err := ParseAccountObjectIdentifier(r.ComputePool)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse compute pool in service: %w", err)
-	} else {
-		service.ComputePool = computePoolId
-	}
-	if r.QueryWarehouse.Valid {
-		id, err := ParseAccountObjectIdentifier(r.QueryWarehouse.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse query warehouse in service: %w", err)
-		} else {
-			service.QueryWarehouse = &id
-		}
-	}
-	if r.SuspendedOn.Valid {
-		service.SuspendedOn = &r.SuspendedOn.Time
-	}
-	if r.ResumedOn.Valid {
-		service.ResumedOn = &r.ResumedOn.Time
-	}
+	mapStringWithMapping(&result.Status, r.Status, ToServiceStatus)
+	mapStringWithMapping(&result.ComputePool, r.ComputePool, ParseAccountObjectIdentifier)
 	if r.ExternalAccessIntegrations.Valid {
-		eaiIds, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse external access integrations in service: %w", err)
-		} else {
-			service.ExternalAccessIntegrations = eaiIds
+		if ids, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String); err == nil {
+			result.ExternalAccessIntegrations = ids
 		}
 	}
-	return service, nil
+	mapNullTime(&result.ResumedOn, r.ResumedOn)
+	mapNullTime(&result.SuspendedOn, r.SuspendedOn)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullStringWithMapping(&result.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
+	mapNullString(&result.ManagingObjectDomain, r.ManagingObjectDomain)
+	mapNullString(&result.ManagingObjectName, r.ManagingObjectName)
+	return result, nil
 }
 
 func (r *ExecuteJobServiceRequest) toOpts() *ExecuteJobServiceOptions {

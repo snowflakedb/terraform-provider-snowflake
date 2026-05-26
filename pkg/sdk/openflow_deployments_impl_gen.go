@@ -128,8 +128,20 @@ func (r *ShowOpenflowDeploymentRequest) toOpts() *ShowOpenflowDeploymentOptions 
 }
 
 func (r openflowDeploymentRow) convert() (*OpenflowDeployment, error) {
-	// TODO: Mapping
-	return &OpenflowDeployment{}, nil
+	result := &OpenflowDeployment{
+		Name:                       r.Name,
+		UsePrivateLink:             r.UsePrivateLink,
+		UseUserAuthOverPrivateLink: r.UseUserAuthOverPrivateLink,
+		Owner:                      r.Owner,
+	}
+	mapStringWithMapping(&result.Type, r.DeploymentType, ToOpenflowDeploymentType)
+	mapStringWithMapping(&result.Status, r.Status, ToOpenflowDeploymentStatus)
+	mapNullStringWithMapping(&result.VpcType, r.VpcType, ToOpenflowVpcType)
+	mapNullString(&result.DisplayName, r.DisplayName)
+	mapNullString(&result.CustomIngressHostname, r.CustomIngressHostname)
+	mapNullString(&result.OpenflowKey, r.OpenflowKey)
+	mapNullString(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeOpenflowDeploymentRequest) toOpts() *DescribeOpenflowDeploymentOptions {
@@ -140,6 +152,22 @@ func (r *DescribeOpenflowDeploymentRequest) toOpts() *DescribeOpenflowDeployment
 }
 
 func (r openflowDeploymentDetailsRow) convert() (*OpenflowDeploymentDetails, error) {
-	// TODO: Mapping
-	return &OpenflowDeploymentDetails{}, nil
+	result := &OpenflowDeploymentDetails{
+		Name:                       r.Name,
+		UsePrivateLink:             r.UsePrivateLink,
+		UseUserAuthOverPrivateLink: r.UseUserAuthOverPrivateLink,
+		Owner:                      r.Owner,
+		CreatedOn:                  r.CreatedOn,
+		UpdatedOn:                  r.UpdatedOn,
+	}
+	mapStringWithMapping(&result.Type, r.DeploymentType, ToOpenflowDeploymentType)
+	mapStringWithMapping(&result.Status, r.Status, ToOpenflowDeploymentStatus)
+	mapNullStringWithMapping(&result.VpcType, r.VpcType, ToOpenflowVpcType)
+	mapNullString(&result.DisplayName, r.DisplayName)
+	mapNullString(&result.CustomIngressHostname, r.CustomIngressHostname)
+	mapNullString(&result.OpenflowKey, r.OpenflowKey)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.ErrorCode, r.ErrorCode)
+	mapNullString(&result.StatusMessage, r.StatusMessage)
+	return result, nil
 }

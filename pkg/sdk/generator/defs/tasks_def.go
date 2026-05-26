@@ -17,17 +17,17 @@ var taskPairs = g.StructPair("taskDBRow", "Task").
 	Field("warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Warehouse")).
 	OptionalText("schedule", g.WithRequiredInPlain()).
 	Field("predecessors", "string", "[]SchemaObjectIdentifier").
-	PlainField("state", "TaskState").
+	PlainField("state", "TaskState", g.WithCustomParser("ToTaskState")).
 	Text("definition").
 	OptionalText("condition", g.WithRequiredInPlain()).
-	Field("allow_overlapping_execution", "string", "bool").
+	Field("allow_overlapping_execution", "string", "bool", g.WithBoolTrueValue("true")).
 	Field("error_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("ErrorIntegration")).
 	OptionalText("last_committed_on", g.WithRequiredInPlain()).
 	OptionalText("last_suspended_on", g.WithRequiredInPlain()).
 	Text("owner_role_type").
 	OptionalText("config", g.WithRequiredInPlain()).
 	OptionalText("budget", g.WithRequiredInPlain()).
-	PlainField("task_relations", "TaskRelations").
+	PlainField("task_relations", "TaskRelations", g.WithCustomParser("ToTaskRelations")).
 	OptionalText("last_suspended_reason", g.WithRequiredInPlain()).
 	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"))
 
