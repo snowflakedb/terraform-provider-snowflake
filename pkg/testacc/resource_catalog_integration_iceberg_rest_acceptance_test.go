@@ -746,6 +746,7 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportOAuth(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationIcebergRest),
 		Steps: []resource.TestStep{
+			// Import the externally created resource
 			{
 				PreConfig: func() {
 					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
@@ -763,11 +764,24 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportOAuth(t *testing.T) {
 				ImportStateId:      id.FullyQualifiedName(),
 				ImportStatePersist: true,
 			},
+			// After import, only oauth_client_secret is unset in state (write-only field Snowflake never returns).
+			// All ForceNew fields (rest_config, oauth_client_id, oauth_allowed_scopes, etc.) must already match
+			// the config — only an in-place update for oauth_client_secret should be planned.
 			{
 				Config: config.FromModels(t, allAttributes),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(ref, "rest_config", "oauth_rest_authentication"),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_client_secret", tfjson.ActionUpdate, sdk.String(""), sdk.String(oAuthClientSecret)),
+					},
+				},
+			},
+			// After reconciling the secret, the plan must be empty
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
