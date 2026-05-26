@@ -100,10 +100,7 @@ func (opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) validat
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOauthForPartnerApplicationsSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
 	}
-	// Adjusted manually.
-	if opts.OauthClient == OauthSecurityIntegrationClientOptionLooker && opts.OauthRedirectUri == nil {
-		errs = append(errs, NewError("OauthRedirectUri is required when OauthClient is LOOKER"))
-	}
+	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	return JoinErrors(errs...)
 }
 
@@ -146,10 +143,7 @@ func (opts *CreateScimSecurityIntegrationOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateScimSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
 	}
-	// Adjusted manually.
-	if opts.ScimClient == ScimSecurityIntegrationScimClientOptionAzure && opts.SyncPassword != nil {
-		errs = append(errs, NewError("SyncPassword is not supported for Azure scim client"))
-	}
+	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	return JoinErrors(errs...)
 }
 

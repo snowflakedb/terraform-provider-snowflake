@@ -5,6 +5,20 @@ import (
 	"strings"
 )
 
+func (opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) additionalValidations() error {
+	if opts.OauthClient == OauthSecurityIntegrationClientOptionLooker && opts.OauthRedirectUri == nil {
+		return NewError("OauthRedirectUri is required when OauthClient is LOOKER")
+	}
+	return nil
+}
+
+func (opts *CreateScimSecurityIntegrationOptions) additionalValidations() error {
+	if opts.ScimClient == ScimSecurityIntegrationScimClientOptionAzure && opts.SyncPassword != nil {
+		return NewError("SyncPassword is not supported for Azure scim client")
+	}
+	return nil
+}
+
 func (r *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }

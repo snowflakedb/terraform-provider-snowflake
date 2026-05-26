@@ -26,10 +26,7 @@ func (opts *CreateApplicationOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateApplicationOptions.Version", "VersionDirectory", "VersionAndPatch"))
 		}
 	}
-	// Added manually
-	if valueSet(opts.DebugMode) && !valueSet(opts.Version) {
-		errs = append(errs, NewError("CreateApplicationOptions.DebugMode can be set only when CreateApplicationOptions.Version is set"))
-	}
+	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	return JoinErrors(errs...)
 }
 
@@ -60,12 +57,7 @@ func (opts *AlterApplicationOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("AlterApplicationOptions.UpgradeVersion", "VersionDirectory", "VersionAndPatch"))
 		}
 	}
-	// Added manually
-	if valueSet(opts.IfExists) {
-		if !valueSet(opts.Set) && !valueSet(opts.Unset) {
-			errs = append(errs, NewError("AlterApplicationOptions.IfExists can be set only when AlterApplicationOptions.Set or AlterApplicationOptions.Unset is set"))
-		}
-	}
+	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	return JoinErrors(errs...)
 }
 
