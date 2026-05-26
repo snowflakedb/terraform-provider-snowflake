@@ -10,6 +10,5 @@ func (opts *DummyOperationFileFormatOptions) validate() error {
 	}
 	var errs []error
 	errs = append(errs, opts.additionalValidations())
-	// all file formats validations removed manually
 	return JoinErrors(errs...)
 }
