@@ -18,14 +18,7 @@ func (opts *CreateComputePoolOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	// Validation added manually.
-	if !validateIntGreaterThan(opts.MinNodes, 0) {
-		errs = append(errs, errIntValue("CreateComputePoolOptions", "MinNodes", IntErrGreater, 0))
-	}
-	// Validation added manually.
-	if !validateIntGreaterThanOrEqual(opts.MaxNodes, opts.MinNodes) {
-		errs = append(errs, errIntValue("CreateComputePoolOptions", "MaxNodes", IntErrGreaterOrEqual, opts.MinNodes))
-	}
+	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	return JoinErrors(errs...)
 }
 
@@ -41,19 +34,7 @@ func (opts *AlterComputePoolOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		// Validation added manually.
-		if valueSet(opts.Set.MinNodes) && !validateIntGreaterThan(*opts.Set.MinNodes, 0) {
-			errs = append(errs, errIntValue("AlterComputePoolOptions", "Set.MinNodes", IntErrGreater, 0))
-		}
-		// Validation added manually.
-		if valueSet(opts.Set.MaxNodes) && !validateIntGreaterThan(*opts.Set.MaxNodes, 0) {
-			errs = append(errs, errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreater, 0))
-		}
-		// Validation added manually.
-		if valueSet(opts.Set.MinNodes) && valueSet(opts.Set.MaxNodes) && !validateIntGreaterThanOrEqual(*opts.Set.MaxNodes, *opts.Set.MinNodes) {
-			errs = append(errs, errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreaterOrEqual, *opts.Set.MinNodes))
-		}
-
+		errs = append(errs, opts.Set.additionalValidations()) // invocation added manually
 		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.AutoResume, opts.Set.AutoSuspendSecs, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"))
 		}

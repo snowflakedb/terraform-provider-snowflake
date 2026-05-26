@@ -1,5 +1,12 @@
 package sdk
 
+func (opts *DummyOperationFileFormatOptions) additionalValidations() error {
+	if valueSet(opts.FileFormat) {
+		return opts.FileFormat.validate()
+	}
+	return nil
+}
+
 func (opts FileFormatOptions) validate() error {
 	var errs []error
 	if !exactlyOneValueSet(opts.CsvOptions, opts.JsonOptions, opts.AvroOptions, opts.OrcOptions, opts.ParquetOptions, opts.XmlOptions) {

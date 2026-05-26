@@ -103,7 +103,8 @@ var passwordPoliciesDef = g.NewInterface(
 			OptionalText("owner", g.WithRequiredInPlain()).
 			Text("comment").
 			OptionalText("owner_role_type", g.WithRequiredInPlain()).
-			Text("options"),
+			Text("options").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowPasswordPolicies").
 			Show().
 			SQL("PASSWORD POLICIES").
@@ -122,7 +123,8 @@ var passwordPoliciesDef = g.NewInterface(
 			Text("property").
 			Text("value").
 			Text("default").
-			Text("description"),
+			Text("description").
+			WithConvertGeneration(),
 		g.NewQueryStruct("DescribePasswordPolicy").
 			Describe().
 			SQL("PASSWORD POLICY").

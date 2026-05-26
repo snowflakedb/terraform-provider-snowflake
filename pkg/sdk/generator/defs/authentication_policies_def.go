@@ -182,7 +182,8 @@ var authenticationPoliciesDef = g.NewInterface(
 			Text("kind").
 			OptionalText("owner", g.WithRequiredInPlain()).
 			OptionalText("owner_role_type", g.WithRequiredInPlain()).
-			Text("options"),
+			Text("options").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowAuthenticationPolicies").
 			Show().
 			SQL("AUTHENTICATION POLICIES").
@@ -201,7 +202,8 @@ var authenticationPoliciesDef = g.NewInterface(
 			Text("property").
 			Text("value").
 			Text("default").
-			Text("description"),
+			Text("description").
+			WithConvertGeneration(),
 		g.NewQueryStruct("DescribeAuthenticationPolicy").
 			Describe().
 			SQL("AUTHENTICATION POLICY").

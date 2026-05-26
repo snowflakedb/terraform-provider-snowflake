@@ -141,8 +141,7 @@ func (r *ShowStreamlitRequest) toOpts() *ShowStreamlitOptions {
 }
 
 func (r streamlitsRow) convert() (*Streamlit, error) {
-	// adjusted manually
-	e := &Streamlit{
+	result := &Streamlit{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		DatabaseName:  r.DatabaseName,
@@ -151,16 +150,10 @@ func (r streamlitsRow) convert() (*Streamlit, error) {
 		UrlId:         r.UrlId,
 		OwnerRoleType: r.OwnerRoleType,
 	}
-	if r.Title.Valid {
-		e.Title = r.Title.String
-	}
-	if r.Comment.Valid {
-		e.Comment = r.Comment.String
-	}
-	if r.QueryWarehouse.Valid {
-		e.QueryWarehouse = r.QueryWarehouse.String
-	}
-	return e, nil
+	mapNullStringToNonNullableField(&result.Title, r.Title)
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	mapNullStringToNonNullableField(&result.QueryWarehouse, r.QueryWarehouse)
+	return result, nil
 }
 
 func (r *DescribeStreamlitRequest) toOpts() *DescribeStreamlitOptions {
@@ -171,29 +164,24 @@ func (r *DescribeStreamlitRequest) toOpts() *DescribeStreamlitOptions {
 }
 
 func (r streamlitsDetailRow) convert() (*StreamlitDetail, error) {
-	// adjusted manually
-	e := &StreamlitDetail{
-		Name:                       r.Name,
-		RootLocation:               r.RootLocation,
-		MainFile:                   r.MainFile,
-		UrlId:                      r.UrlId,
-		DefaultPackages:            r.DefaultPackages,
-		UserPackages:               ParseCommaSeparatedStringArray(r.UserPackages, false),
-		ImportUrls:                 ParseCommaSeparatedStringArray(r.ImportUrls, false),
-		ExternalAccessIntegrations: ParseCommaSeparatedStringArray(r.ExternalAccessIntegrations, false),
-		ExternalAccessSecrets:      r.ExternalAccessSecrets,
+	result := &StreamlitDetail{
+		Name:                  r.Name,
+		RootLocation:          r.RootLocation,
+		MainFile:              r.MainFile,
+		UrlId:                 r.UrlId,
+		DefaultPackages:       r.DefaultPackages,
+		ExternalAccessSecrets: r.ExternalAccessSecrets,
 	}
-	if r.Title.Valid {
-		e.Title = r.Title.String
-	}
-	if r.QueryWarehouse.Valid {
-		e.QueryWarehouse = r.QueryWarehouse.String
-	}
-	integrationsRaw := ParseCommaSeparatedStringArray(r.ExternalAccessIntegrations, false)
-	externalAccessIntegrations := make([]string, len(integrationsRaw))
-	for i, v := range integrationsRaw {
+	mapNullStringToNonNullableField(&result.Title, r.Title)
+	mapNullStringToNonNullableField(&result.QueryWarehouse, r.QueryWarehouse)
+	result.UserPackages = ParseCommaSeparatedStringArray(r.UserPackages, false)
+	result.ImportUrls = ParseCommaSeparatedStringArray(r.ImportUrls, false)
+	result.ExternalAccessIntegrations = ParseCommaSeparatedStringArray(r.ExternalAccessIntegrations, false)
+	// added manually
+	externalAccessIntegrations := make([]string, len(result.ExternalAccessIntegrations))
+	for i, v := range result.ExternalAccessIntegrations {
 		externalAccessIntegrations[i] = NewObjectIdentifierFromFullyQualifiedName(v).Name()
 	}
-	e.ExternalAccessIntegrations = externalAccessIntegrations
-	return e, nil
+	result.ExternalAccessIntegrations = externalAccessIntegrations
+	return result, nil
 }

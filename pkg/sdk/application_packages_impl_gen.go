@@ -163,8 +163,7 @@ func (r *ShowApplicationPackageRequest) toOpts() *ShowApplicationPackageOptions 
 }
 
 func (r applicationPackageRow) convert() (*ApplicationPackage, error) {
-	// Manually added
-	e := &ApplicationPackage{
+	result := &ApplicationPackage{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		IsDefault:     r.IsDefault == "Y",
@@ -175,11 +174,7 @@ func (r applicationPackageRow) convert() (*ApplicationPackage, error) {
 		RetentionTime: r.RetentionTime,
 		Options:       r.Options,
 	}
-	if r.DroppedOn.Valid {
-		e.DroppedOn = r.DroppedOn.String
-	}
-	if r.ApplicationClass.Valid {
-		e.ApplicationClass = r.ApplicationClass.String
-	}
-	return e, nil
+	mapNullStringToNonNullableField(&result.DroppedOn, r.DroppedOn)
+	mapNullStringToNonNullableField(&result.ApplicationClass, r.ApplicationClass)
+	return result, nil
 }

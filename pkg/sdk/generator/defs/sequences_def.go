@@ -63,7 +63,8 @@ var sequencesDef = g.NewInterface(
 		Text("owner").
 		Text("owner_role_type").
 		Text("comment").
-		Field("ordered", "string", "bool"),
+		Field("ordered", "string", "bool").
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowSequences").
 		Show().
 		SQL("SEQUENCES").
@@ -84,7 +85,8 @@ var sequencesDef = g.NewInterface(
 		Text("owner").
 		Text("owner_role_type").
 		Text("comment").
-		Field("ordered", "string", "bool"),
+		Field("ordered", "string", "bool").
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeSequence").
 		Describe().
 		SQL("SEQUENCE").

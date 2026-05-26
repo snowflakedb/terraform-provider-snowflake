@@ -51,13 +51,7 @@ func (opts *AlterHybridTableOptions) validate() error {
 			}
 		}
 	}
-	if valueSet(opts.AlterColumnAction) {
-		for _, action := range opts.AlterColumnAction {
-			if !exactlyOneValueSet(action.DropDefault, action.SetDefault, action.Type, action.Comment, action.UnsetComment) {
-				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment"))
-			}
-		}
-	}
+	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	if valueSet(opts.ClusteringAction) {
 		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.Recluster, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
 			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
