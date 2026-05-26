@@ -90,10 +90,10 @@ resource "snowflake_hybrid_table" "complete" {
 
 - `comment` (String) Specifies a comment for the hybrid table.
 - `data_retention_time_in_days` (Number) Specifies the retention period for the hybrid table so that Time Travel actions can be performed on historical data. For more information, check [DATA_RETENTION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#data-retention-time-in-days).
-- `foreign_key` (Block List) Defines FOREIGN KEY constraints. Can only be set at creation time. Any change forces recreation. (see [below for nested schema](#nestedblock--foreign_key))
+- `foreign_key` (Block Set) Defines FOREIGN KEY constraints. Can only be set at creation time. Any change forces recreation. (see [below for nested schema](#nestedblock--foreign_key))
 - `max_data_extension_time_in_days` (Number) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for the hybrid table to prevent streams on it from becoming stale. For more information, check [MAX_DATA_EXTENSION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#max-data-extension-time-in-days).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `unique_constraint` (Block List) Defines UNIQUE constraints. Can only be set at creation time. Any change forces recreation. (see [below for nested schema](#nestedblock--unique_constraint))
+- `unique_constraint` (Block Set) Defines UNIQUE constraints. Can only be set at creation time. Any change forces recreation. (see [below for nested schema](#nestedblock--unique_constraint))
 
 ### Read-Only
 

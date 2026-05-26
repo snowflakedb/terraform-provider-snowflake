@@ -142,7 +142,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 		},
 	},
 	"unique_constraint": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Optional:    true,
 		ForceNew:    true,
 		Description: "Defines UNIQUE constraints. Can only be set at creation time. Any change forces recreation.",
@@ -166,7 +166,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 		},
 	},
 	"foreign_key": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Optional:    true,
 		ForceNew:    true,
 		Description: "Defines FOREIGN KEY constraints. Can only be set at creation time. Any change forces recreation.",
@@ -450,7 +450,7 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 
 	// Unique constraints (optional)
 	if v, ok := d.GetOk("unique_constraint"); ok {
-		for _, ucRaw := range v.([]any) {
+		for _, ucRaw := range v.(*schema.Set).List() {
 			ucMap := ucRaw.(map[string]any)
 			ucConstraint := sdk.NewHybridTableOutOfLineConstraintRequest(sdk.ColumnConstraintTypeUnique).
 				WithColumns(expandStringList(ucMap["columns"].([]any)))
@@ -463,7 +463,7 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 
 	// Foreign keys (optional)
 	if v, ok := d.GetOk("foreign_key"); ok {
-		for _, fkRaw := range v.([]any) {
+		for _, fkRaw := range v.(*schema.Set).List() {
 			fkMap := fkRaw.(map[string]any)
 			fkConstraint := sdk.NewHybridTableOutOfLineConstraintRequest(sdk.ColumnConstraintTypeForeignKey).
 				WithColumns(expandStringList(fkMap["columns"].([]any)))

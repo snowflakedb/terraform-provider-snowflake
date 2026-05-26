@@ -122,7 +122,7 @@ func (h *HybridTableModel) WithUniqueConstraint(columns []string) *HybridTableMo
 	for i, c := range columns {
 		colVars[i] = tfconfig.StringVariable(c)
 	}
-	h.UniqueConstraint = tfconfig.ListVariable(
+	h.UniqueConstraint = tfconfig.SetVariable(
 		tfconfig.MapVariable(map[string]tfconfig.Variable{
 			"columns": tfconfig.ListVariable(colVars...),
 		}),
@@ -146,7 +146,7 @@ func (h *HybridTableModel) WithForeignKey(localColumns []string, refTableId stri
 	for i, c := range refColumns {
 		rcVars[i] = tfconfig.StringVariable(c)
 	}
-	h.ForeignKey = tfconfig.ListVariable(
+	h.ForeignKey = tfconfig.SetVariable(
 		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"columns": tfconfig.ListVariable(lcVars...),
 			"references": tfconfig.ListVariable(

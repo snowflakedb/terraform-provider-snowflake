@@ -67,6 +67,11 @@ func (w *WarehouseAdaptiveResourceAssert) HasStatementTimeoutInSeconds(expected 
 	return w
 }
 
+func (w *WarehouseAdaptiveResourceAssert) HasWarehouseType(expected string) *WarehouseAdaptiveResourceAssert {
+	w.StringValueSet("warehouse_type", expected)
+	return w
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
