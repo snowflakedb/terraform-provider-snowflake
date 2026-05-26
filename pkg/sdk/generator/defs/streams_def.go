@@ -44,7 +44,7 @@ var (
 			OptionalEnum("source_type", StreamSourceTypeEnumDef).
 			NullableSchemaObjectIdentifierArray("base_tables").
 			OptionalText("type").
-			Field("stale", "string", "bool").
+			Field("stale", "string", "bool", g.WithBoolTrueValue("true")).
 			OptionalEnum("mode", StreamModeEnumDef).
 			OptionalTime("stale_after").
 			OptionalText("invalid_reason").

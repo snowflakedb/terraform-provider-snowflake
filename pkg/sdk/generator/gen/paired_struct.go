@@ -57,6 +57,30 @@ func WithCustomParser(funcName string) PairedFieldOption {
 	}
 }
 
+// WithBoolTrueValue overrides the truthy string compared against the db field for string → bool conversions.
+// The default is "Y". Use this when Snowflake returns a different truthy value, e.g. "true" or "ON".
+// Example:
+//
+//	Field("automatic_clustering", "string", "bool", WithBoolTrueValue("ON"))
+//	// plain: AutomaticClustering = r.AutomaticClustering == "ON"
+func WithBoolTrueValue(v string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.boolTrueValue = v
+	}
+}
+
+// WithBoolParsed routes string → bool or sql.NullString → bool conversions through strconv.ParseBool
+// instead of a fixed string comparison. Use when the db column returns "true"/"false" and robust
+// parsing is preferred over a hard-coded truthy value.
+// Example:
+//
+//	Field("is_primary", "string", "bool", WithBoolParsed())
+func WithBoolParsed() PairedFieldOption {
+	return func(f *pairedField) {
+		f.boolParsed = true
+	}
+}
+
 // pairedField holds the definition for a single field in both the DB row struct and the plain SDK struct.
 type pairedField struct {
 	// dbColumnName is the snake_case column name used for the db: tag and to auto-derive the field names.
@@ -75,6 +99,10 @@ type pairedField struct {
 	isJson bool
 	// customParser is the name of a custom parse function to use for conversion.
 	customParser string
+	// boolTrueValue overrides the default "Y" comparison for string/NullString → bool conversions.
+	boolTrueValue string
+	// boolParsed routes string/NullString → bool conversions through strconv.ParseBool.
+	boolParsed bool
 }
 
 // resolvedPlainFieldName returns the explicit override or the CamelCase conversion of dbColumnName.
@@ -387,6 +415,8 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 			IsEnum:         f.isEnum,
 			IsJson:         f.isJson,
 			CustomParser:   f.customParser,
+			BoolTrueValue:  f.boolTrueValue,
+			BoolParsed:     f.boolParsed,
 		}
 	}
 	return pairs

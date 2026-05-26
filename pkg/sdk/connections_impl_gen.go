@@ -2,11 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
-	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -123,24 +120,17 @@ func (r *ShowConnectionRequest) toOpts() *ShowConnectionOptions {
 
 func (r connectionRow) convert() (*Connection, error) {
 	result := &Connection{
-		SnowflakeRegion: r.SnowflakeRegion,
-		CreatedOn:       r.CreatedOn,
-		AccountName:     r.AccountName,
-		Name:            r.Name,
-		// IsPrimary:        r.IsPrimary == "Y", // removed manually
+		SnowflakeRegion:  r.SnowflakeRegion,
+		CreatedOn:        r.CreatedOn,
+		AccountName:      r.AccountName,
+		Name:             r.Name,
 		ConnectionUrl:    r.ConnectionUrl,
 		OrganizationName: r.OrganizationName,
 		AccountLocator:   r.AccountLocator,
 	}
-	// added manually
-	parsedIsPrimary, err := strconv.ParseBool(r.IsPrimary)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse bool is_primary for connection: %w", err)
-	} else {
-		result.IsPrimary = parsedIsPrimary
-	}
 	mapNullString(&result.RegionGroup, r.RegionGroup)
 	mapNullString(&result.Comment, r.Comment)
+	mapStringToBoolParsed(&result.IsPrimary, r.IsPrimary)
 	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
 	if ids, err := ParseCommaSeparatedAccountIdentifierArray(r.FailoverAllowedToAccounts); err == nil {
 		result.FailoverAllowedToAccounts = ids

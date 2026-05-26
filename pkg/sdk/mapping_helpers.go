@@ -3,6 +3,7 @@ package sdk
 import (
 	"database/sql"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -28,6 +29,59 @@ func mapNullStringToBool(boolField **bool, sqlValue sql.NullString) {
 	if sqlValue.Valid {
 		v := sqlValue.String == "Y"
 		*boolField = &v
+	}
+}
+
+// mapNullStringToBoolValue maps a sql.NullString to a *bool by comparing the string to trueValue.
+func mapNullStringToBoolValue(boolField **bool, sqlValue sql.NullString, trueValue string) {
+	if sqlValue.Valid {
+		v := sqlValue.String == trueValue
+		*boolField = &v
+	}
+}
+
+// mapNullStringToBoolParsed maps a sql.NullString to a *bool using strconv.ParseBool.
+func mapNullStringToBoolParsed(boolField **bool, sqlValue sql.NullString) {
+	if sqlValue.Valid {
+		if v, err := strconv.ParseBool(sqlValue.String); err == nil {
+			*boolField = &v
+		} else {
+			log.Printf("[WARN] Failed to parse bool value, err = %s", err)
+		}
+	}
+}
+
+// mapNullStringToRequiredBool maps a sql.NullString to a bool by comparing the string to "Y".
+func mapNullStringToRequiredBool(boolField *bool, sqlValue sql.NullString) {
+	if sqlValue.Valid {
+		*boolField = sqlValue.String == "Y"
+	}
+}
+
+// mapNullStringToRequiredBoolValue maps a sql.NullString to a bool by comparing the string to trueValue.
+func mapNullStringToRequiredBoolValue(boolField *bool, sqlValue sql.NullString, trueValue string) {
+	if sqlValue.Valid {
+		*boolField = sqlValue.String == trueValue
+	}
+}
+
+// mapNullStringToRequiredBoolParsed maps a sql.NullString to a bool using strconv.ParseBool.
+func mapNullStringToRequiredBoolParsed(boolField *bool, sqlValue sql.NullString) {
+	if sqlValue.Valid {
+		if v, err := strconv.ParseBool(sqlValue.String); err == nil {
+			*boolField = v
+		} else {
+			log.Printf("[WARN] Failed to parse bool value, err = %s", err)
+		}
+	}
+}
+
+// mapStringToBoolParsed maps a string to a bool using strconv.ParseBool.
+func mapStringToBoolParsed(boolField *bool, v string) {
+	if parsed, err := strconv.ParseBool(v); err == nil {
+		*boolField = parsed
+	} else {
+		log.Printf("[WARN] Failed to parse bool value, err = %s", err)
 	}
 }
 

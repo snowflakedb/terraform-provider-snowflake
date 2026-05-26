@@ -200,7 +200,7 @@ func (r materializedViewDBRow) convert() (*MaterializedView, error) {
 		BehindBy:            r.BehindBy,
 		Text:                tracking.TrimMetadata(r.Text), // adjusted manually: tracking added
 		IsSecure:            r.IsSecure,
-		AutomaticClustering: r.AutomaticClustering == "ON", // adjusted manually: Y -> ON
+		AutomaticClustering: r.AutomaticClustering == "ON",
 	}
 	mapNullString(&result.Reserved, r.Reserved)
 	mapNullStringToNonNullableField(&result.ClusterBy, r.ClusterBy)

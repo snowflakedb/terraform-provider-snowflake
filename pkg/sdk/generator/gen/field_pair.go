@@ -16,28 +16,37 @@ type FieldPair struct {
 	IsEnum         bool
 	IsJson         bool
 	CustomParser   string
+	BoolTrueValue  string
+	BoolParsed     bool
 }
 
 // AssignmentKind is the conversion strategy discriminator used in convert.tmpl.
 type AssignmentKind string
 
 const (
-	AssignmentKindDirect                          AssignmentKind = "Direct"
-	AssignmentKindStringToBool                    AssignmentKind = "StringToBool"
-	AssignmentKindStringToStringArray             AssignmentKind = "StringToStringArray"
-	AssignmentKindStringToEnum                    AssignmentKind = "StringToEnum"
-	AssignmentKindStringToJson                    AssignmentKind = "StringToJson"
-	AssignmentKindStringToIdentifier              AssignmentKind = "StringToIdentifier"
-	AssignmentKindStringToIdentifierArray         AssignmentKind = "StringToIdentifierArray"
-	AssignmentKindCustom                          AssignmentKind = "Custom"
-	AssignmentKindNullableToNullable              AssignmentKind = "NullableToNullable"
-	AssignmentKindNullableToRequired              AssignmentKind = "NullableToRequired"
-	AssignmentKindNullableToIdentifier            AssignmentKind = "NullableToIdentifier"
-	AssignmentKindNullableToEnum                  AssignmentKind = "NullableToEnum"
-	AssignmentKindNullableToStringArray           AssignmentKind = "NullableToStringArray"
-	AssignmentKindNullableStringToNullableBool    AssignmentKind = "NullableStringToNullableBool"
-	AssignmentKindNullableStringToIdentifierArray AssignmentKind = "NullableStringToIdentifierArray"
-	AssignmentKindUnsupported                     AssignmentKind = "Unsupported"
+	AssignmentKindDirect                             AssignmentKind = "Direct"
+	AssignmentKindStringToBool                       AssignmentKind = "StringToBool"
+	AssignmentKindStringToBoolValue                  AssignmentKind = "StringToBoolValue"
+	AssignmentKindStringToBoolParsed                 AssignmentKind = "StringToBoolParsed"
+	AssignmentKindStringToStringArray                AssignmentKind = "StringToStringArray"
+	AssignmentKindStringToEnum                       AssignmentKind = "StringToEnum"
+	AssignmentKindStringToJson                       AssignmentKind = "StringToJson"
+	AssignmentKindStringToIdentifier                 AssignmentKind = "StringToIdentifier"
+	AssignmentKindStringToIdentifierArray            AssignmentKind = "StringToIdentifierArray"
+	AssignmentKindCustom                             AssignmentKind = "Custom"
+	AssignmentKindNullableToNullable                 AssignmentKind = "NullableToNullable"
+	AssignmentKindNullableToRequired                 AssignmentKind = "NullableToRequired"
+	AssignmentKindNullableToIdentifier               AssignmentKind = "NullableToIdentifier"
+	AssignmentKindNullableToEnum                     AssignmentKind = "NullableToEnum"
+	AssignmentKindNullableToStringArray              AssignmentKind = "NullableToStringArray"
+	AssignmentKindNullableStringToNullableBool       AssignmentKind = "NullableStringToNullableBool"
+	AssignmentKindNullableStringToNullableBoolValue  AssignmentKind = "NullableStringToNullableBoolValue"
+	AssignmentKindNullableStringToNullableBoolParsed AssignmentKind = "NullableStringToNullableBoolParsed"
+	AssignmentKindNullableStringToRequiredBool       AssignmentKind = "NullableStringToRequiredBool"
+	AssignmentKindNullableStringToRequiredBoolValue  AssignmentKind = "NullableStringToRequiredBoolValue"
+	AssignmentKindNullableStringToRequiredBoolParsed AssignmentKind = "NullableStringToRequiredBoolParsed"
+	AssignmentKindNullableStringToIdentifierArray    AssignmentKind = "NullableStringToIdentifierArray"
+	AssignmentKindUnsupported                        AssignmentKind = "Unsupported"
 )
 
 func (fp FieldPair) AssignmentKindDirect() bool {
@@ -46,6 +55,14 @@ func (fp FieldPair) AssignmentKindDirect() bool {
 
 func (fp FieldPair) AssignmentKindStringToBool() bool {
 	return fp.AssignmentKind() == AssignmentKindStringToBool
+}
+
+func (fp FieldPair) AssignmentKindStringToBoolValue() bool {
+	return fp.AssignmentKind() == AssignmentKindStringToBoolValue
+}
+
+func (fp FieldPair) AssignmentKindStringToBoolParsed() bool {
+	return fp.AssignmentKind() == AssignmentKindStringToBoolParsed
 }
 
 func (fp FieldPair) AssignmentKindStringToStringArray() bool {
@@ -96,6 +113,26 @@ func (fp FieldPair) AssignmentKindNullableStringToNullableBool() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableStringToNullableBool
 }
 
+func (fp FieldPair) AssignmentKindNullableStringToNullableBoolValue() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableStringToNullableBoolValue
+}
+
+func (fp FieldPair) AssignmentKindNullableStringToNullableBoolParsed() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableStringToNullableBoolParsed
+}
+
+func (fp FieldPair) AssignmentKindNullableStringToRequiredBool() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableStringToRequiredBool
+}
+
+func (fp FieldPair) AssignmentKindNullableStringToRequiredBoolValue() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableStringToRequiredBoolValue
+}
+
+func (fp FieldPair) AssignmentKindNullableStringToRequiredBoolParsed() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableStringToRequiredBoolParsed
+}
+
 func (fp FieldPair) AssignmentKindNullableStringToIdentifierArray() bool {
 	return fp.AssignmentKind() == AssignmentKindNullableStringToIdentifierArray
 }
@@ -120,6 +157,10 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 	switch fp.DbKind {
 	case "string":
 		switch {
+		case fp.PlainKind == "bool" && fp.BoolParsed:
+			return AssignmentKindStringToBoolParsed
+		case fp.PlainKind == "bool" && fp.BoolTrueValue != "":
+			return AssignmentKindStringToBoolValue
 		case fp.PlainKind == "bool":
 			return AssignmentKindStringToBool
 		case fp.PlainKind == "[]string":
@@ -142,8 +183,18 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 			return AssignmentKindNullableToRequired
 		case fp.PlainKind == "[]string":
 			return AssignmentKindNullableToStringArray
+		case fp.PlainKind == "*bool" && fp.BoolParsed:
+			return AssignmentKindNullableStringToNullableBoolParsed
+		case fp.PlainKind == "*bool" && fp.BoolTrueValue != "":
+			return AssignmentKindNullableStringToNullableBoolValue
 		case fp.PlainKind == "*bool":
 			return AssignmentKindNullableStringToNullableBool
+		case fp.PlainKind == "bool" && fp.BoolParsed:
+			return AssignmentKindNullableStringToRequiredBoolParsed
+		case fp.PlainKind == "bool" && fp.BoolTrueValue != "":
+			return AssignmentKindNullableStringToRequiredBoolValue
+		case fp.PlainKind == "bool":
+			return AssignmentKindNullableStringToRequiredBool
 		case strings.HasPrefix(fp.PlainKind, "[]") && genhelpers.IsIdentifierType(strings.TrimPrefix(fp.PlainKind, "[]")):
 			return AssignmentKindNullableStringToIdentifierArray
 		case fp.IsEnum:

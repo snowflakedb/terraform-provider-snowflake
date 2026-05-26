@@ -235,7 +235,7 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
-		Stale:        r.Stale == "true", // "Y" -> "true" adjusted manually
+		Stale:        r.Stale == "true",
 	}
 	mapNullString(&result.Owner, r.Owner)
 	mapNullString(&result.Comment, r.Comment)
