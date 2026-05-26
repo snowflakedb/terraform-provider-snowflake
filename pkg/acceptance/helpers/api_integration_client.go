@@ -112,3 +112,134 @@ func (c *ApiIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier
 	ctx := context.Background()
 	return c.client().ShowByIDSafely(ctx, id)
 }
+
+func (c *ApiIntegrationClient) CreateAws(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://123456.execute-api.us-west-2.amazonaws.com/dev/"}}, true).
+		WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, "arn:aws:iam::000000000001:/role/test")))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
+
+func (c *ApiIntegrationClient) CreateAzure(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://apim-hello-world.azure-api.net/dev"}}, true).
+		WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest("00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111")))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
+
+func (c *ApiIntegrationClient) CreateGoogle(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://gateway-id-123456.uc.gateway.dev/prod"}}, true).
+		WithGoogleApiProviderParams(*sdk.NewGoogleApiParamsRequest("api-gateway-id-123456.apigateway.gcp-project.cloud.goog")))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
+
+func (c *ApiIntegrationClient) CreateGitToken(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://github.com/my-org/"}}, true).
+		WithGitHttpsApiTokenBasedProviderParams(*sdk.NewGitHttpsApiTokenBasedParamsRequest().
+			WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
+
+func (c *ApiIntegrationClient) CreateGitGithubApp(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://github.com/my-org/"}}, true).
+		WithGitHttpsApiGithubAppProviderParams(*sdk.NewGitHttpsApiGithubAppParamsRequest()))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
+
+func (c *ApiIntegrationClient) CreateGitOAuth2(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	auth := sdk.NewOAuth2GitUserAuthenticationRequest("https://auth.example.com/authorize", "https://auth.example.com/token", "oauth-client-id-123", "oauth-client-secret-456")
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://github.com/my-org/"}}, true).
+		WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().WithApiUserAuthentication(*auth)))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
+
+func (c *ApiIntegrationClient) CreateGitPrivateLink(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://github.com/my-org/"}}, true).
+		WithGitHttpsApiPrivateLinkProviderParams(*sdk.NewGitHttpsApiPrivateLinkParamsRequest(true).
+			WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
+
+func (c *ApiIntegrationClient) CreateMcpOAuth2(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	auth := sdk.NewOAuth2McpUserAuthenticationRequest("oauth-client-id-123", "oauth-client-secret-456", "https://auth.example.com/token", "https://auth.example.com/authorize")
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp.example.com/api/"}}, true).
+		WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
+
+func (c *ApiIntegrationClient) CreateMcpDynamicClient(t *testing.T) *sdk.ApiIntegration {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomAccountObjectIdentifier()
+	auth := sdk.NewDynamicClientMcpUserAuthenticationRequest("https://resource.example.com")
+	err := c.client().Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp.example.com/api/"}}, true).
+		WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)))
+	require.NoError(t, err)
+	t.Cleanup(c.DropApiIntegrationFunc(t, id))
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return integration
+}
