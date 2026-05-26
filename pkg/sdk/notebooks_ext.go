@@ -17,9 +17,6 @@ func (opts *CreateNotebookOptions) additionalValidations() error {
 
 func (s *NotebookSet) additionalValidations() error {
 	var errs []error
-	if !anyValueSet(s.Comment, s.QueryWarehouse, s.IdleAutoShutdownTimeSeconds, s.Secrets, s.MainFile, s.Warehouse, s.RuntimeName, s.ComputePool, s.ExternalAccessIntegrations, s.RuntimeEnvironmentVersion) {
-		errs = append(errs, errAtLeastOneOf("AlterNotebookOptions.Set", "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
-	}
 	if s.IdleAutoShutdownTimeSeconds != nil && !validateIntGreaterThan(*s.IdleAutoShutdownTimeSeconds, 0) {
 		errs = append(errs, errIntValue("AlterNotebookOptions", "IdleAutoShutdownTimeSeconds", IntErrGreater, 0))
 	}

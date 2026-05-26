@@ -30,7 +30,7 @@ func (opts *CreateNotebookOptions) validate() error {
 	if opts.ComputePool != nil && !ValidObjectIdentifier(opts.ComputePool) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -58,7 +58,10 @@ func (opts *AlterNotebookOptions) validate() error {
 		if opts.Set.ComputePool != nil && !ValidObjectIdentifier(opts.Set.ComputePool) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
-		errs = append(errs, opts.Set.additionalValidations()) // invocation added manually
+		if !anyValueSet(opts.Set.Comment, opts.Set.QueryWarehouse, opts.Set.IdleAutoShutdownTimeSeconds, opts.Set.Secrets, opts.Set.MainFile, opts.Set.Warehouse, opts.Set.RuntimeName, opts.Set.ComputePool, opts.Set.ExternalAccessIntegrations, opts.Set.RuntimeEnvironmentVersion) {
+			errs = append(errs, errAtLeastOneOf("AlterNotebookOptions.Set", "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
+		}
+		errs = append(errs, opts.Set.additionalValidations())
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.Comment, opts.Unset.QueryWarehouse, opts.Unset.Secrets, opts.Unset.Warehouse, opts.Unset.RuntimeName, opts.Unset.ComputePool, opts.Unset.ExternalAccessIntegrations, opts.Unset.RuntimeEnvironmentVersion) {

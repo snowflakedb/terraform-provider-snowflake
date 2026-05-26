@@ -18,7 +18,7 @@ func (opts *CreateComputePoolOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -34,7 +34,7 @@ func (opts *AlterComputePoolOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		errs = append(errs, opts.Set.additionalValidations()) // invocation added manually
+		errs = append(errs, opts.Set.additionalValidations())
 		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.AutoResume, opts.Set.AutoSuspendSecs, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"))
 		}

@@ -21,9 +21,7 @@ func (opts *CreateExternalVolumeOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
-
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 

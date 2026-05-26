@@ -173,7 +173,8 @@ var fileFormatsDef = g.NewInterface(
 		"DummyOperation",
 		"not available",
 		g.NewQueryStruct("FileFormatsDummyOperation").
-			OptionalQueryStructField("FileFormat", fileFormatDef(), g.ListOptions().Parentheses().SQL("FILE_FORMAT =")),
+			OptionalQueryStructField("FileFormat", fileFormatDef(), g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+			WithAdditionalValidations(),
 	).
 	WithEnums(
 		FileFormatTypeEnumDef,

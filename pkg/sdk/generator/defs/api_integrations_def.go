@@ -92,8 +92,7 @@ var apiIntegrationsDef = g.NewInterface(
 					ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					OptionalComment().
-					// resulting validation changed to moreThanOneValueSet (not yet supported in the generator)
-					WithValidation(g.ConflictingFields, "AwsParams", "AzureParams", "GoogleParams").
+					WithAdditionalValidations().
 					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GoogleParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).

@@ -25,6 +25,7 @@ func (opts *CreateServiceOptions) validate() error {
 	if opts.QueryWarehouse != nil && !ValidObjectIdentifier(opts.QueryWarehouse) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.FromSpecification) {
 		if !exactlyOneValueSet(opts.FromSpecification.SpecificationFile, opts.FromSpecification.Specification) {
 			errs = append(errs, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
@@ -41,8 +42,6 @@ func (opts *CreateServiceOptions) validate() error {
 			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"))
 		}
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
-
 	return JoinErrors(errs...)
 }
 
@@ -85,7 +84,7 @@ func (opts *AlterServiceOptions) validate() error {
 		if !anyValueSet(opts.Set.MinInstances, opts.Set.MaxInstances, opts.Set.AutoSuspendSecs, opts.Set.MinReadyInstances, opts.Set.QueryWarehouse, opts.Set.AutoResume, opts.Set.ExternalAccessIntegrations, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
 		}
-		errs = append(errs, opts.Set.additionalValidations()) // invocation added manually
+		errs = append(errs, opts.Set.additionalValidations())
 	}
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.MinInstances, opts.Unset.AutoSuspendSecs, opts.Unset.MaxInstances, opts.Unset.MinReadyInstances, opts.Unset.QueryWarehouse, opts.Unset.AutoResume, opts.Unset.ExternalAccessIntegrations, opts.Unset.Comment) {

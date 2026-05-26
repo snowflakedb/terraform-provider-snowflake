@@ -32,6 +32,10 @@ func (v *QueryStruct) WithValidation(validationType ValidationType, fieldNames .
 	return v
 }
 
+func (v *QueryStruct) WithAdditionalValidations() *QueryStruct {
+	return v.WithValidation(AdditionalValidations)
+}
+
 func (v *QueryStruct) PredefinedQueryStructField(name string, kind string, transformer FieldTransformer) *QueryStruct {
 	v.fields = append(v.fields, NewField(name, kind, Tags(), transformer))
 	return v

@@ -95,7 +95,8 @@ var streamlitsDef = g.NewInterface(
 		SQL("STREAMLITS").
 		OptionalLike().
 		OptionalIn().
-		OptionalLimit(),
+		OptionalLimit().
+		WithAdditionalValidations(),
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).DescribeOperationWithPairedStructs(

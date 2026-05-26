@@ -37,7 +37,8 @@ var computePoolsDef = g.NewInterface(
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
 		OptionalTags().
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithAdditionalValidations(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-compute-pool",
 	g.NewQueryStruct("AlterComputePool").
@@ -56,6 +57,7 @@ var computePoolsDef = g.NewInterface(
 				OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
 				OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+				WithAdditionalValidations().
 				WithValidation(g.AtLeastOneValueSet, "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"),
 			g.KeywordOptions().SQL("SET"),
 		).

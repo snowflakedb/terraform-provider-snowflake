@@ -431,7 +431,7 @@ var securityIntegrationsDef = g.NewInterface(
 					g.ParameterOptions(),
 				).
 				OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses())
-		}),
+		}).WithAdditionalValidations(),
 		preAuthorizedRolesListDef,
 		blockedRolesListDef,
 	).
@@ -507,7 +507,7 @@ var securityIntegrationsDef = g.NewInterface(
 				TextAssignment("RUN_AS_ROLE", g.ParameterOptions().Required().NoQuotes()).
 				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("SYNC_PASSWORD", g.ParameterOptions())
-		}),
+		}).WithAdditionalValidations(),
 	).
 	CustomOperation(
 		"AlterApiAuthenticationWithClientCredentialsFlow",

@@ -103,7 +103,7 @@ func TestProcedures_CreateForJava(t *testing.T) {
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - more present", func(t *testing.T) {
@@ -114,7 +114,7 @@ func TestProcedures_CreateForJava(t *testing.T) {
 				ResultDataType:    dataTypeFloat,
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
@@ -499,7 +499,7 @@ func TestProcedures_CreateForPython(t *testing.T) {
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - two present", func(t *testing.T) {
@@ -510,7 +510,7 @@ func TestProcedures_CreateForPython(t *testing.T) {
 				ResultDataType:    dataTypeFloat,
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
@@ -759,7 +759,7 @@ func TestProcedures_CreateForScala(t *testing.T) {
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - two present", func(t *testing.T) {
@@ -770,7 +770,7 @@ func TestProcedures_CreateForScala(t *testing.T) {
 				ResultDataType:    dataTypeFloat,
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
@@ -1005,7 +1005,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - two present", func(t *testing.T) {
@@ -1017,7 +1017,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - one valid, one invalid", func(t *testing.T) {
@@ -1030,7 +1030,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	// variants added manually
@@ -1463,7 +1463,7 @@ func TestProcedures_CreateAndCallForJava(t *testing.T) {
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - more present", func(t *testing.T) {
@@ -1474,7 +1474,7 @@ func TestProcedures_CreateAndCallForJava(t *testing.T) {
 				ResultDataType:    dataTypeFloat,
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
@@ -1698,7 +1698,7 @@ func TestProcedures_CreateAndCallForScala(t *testing.T) {
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - more present", func(t *testing.T) {
@@ -1709,7 +1709,7 @@ func TestProcedures_CreateAndCallForScala(t *testing.T) {
 				ResultDataType:    dataTypeFloat,
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
@@ -2064,7 +2064,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 		opts.Returns = ProcedureReturns{
 			ResultDataType: &ProcedureReturnsResultDataType{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - more present", func(t *testing.T) {
@@ -2075,7 +2075,7 @@ func TestProcedures_CreateAndCallForPython(t *testing.T) {
 				ResultDataType:    dataTypeFloat,
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {

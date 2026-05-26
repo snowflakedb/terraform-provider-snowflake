@@ -28,18 +28,18 @@ func (opts *CreateForJavaFunctionOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateForJavaFunctionOptions", "OrReplace", "IfNotExists"))
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateForJavaFunctionOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -56,18 +56,18 @@ func (opts *CreateForJavascriptFunctionOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -90,18 +90,18 @@ func (opts *CreateForPythonFunctionOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateForPythonFunctionOptions", "OrReplace", "IfNotExists"))
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateForPythonFunctionOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
 			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+				errs = append(errs, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
@@ -124,7 +124,7 @@ func (opts *CreateForScalaFunctionOptions) validate() error {
 	if !exactlyOneValueSet(opts.ResultDataTypeOld, opts.ResultDataType) {
 		errs = append(errs, errExactlyOneOf("CreateForScalaFunctionOptions", "ResultDataTypeOld", "ResultDataType"))
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -139,7 +139,7 @@ func (opts *CreateForSQLFunctionOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Returns) {
 		if !exactlyOneValueSet(opts.Returns.ResultDataType, opts.Returns.Table) {
 			errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Returns", "ResultDataType", "Table"))
@@ -150,7 +150,7 @@ func (opts *CreateForSQLFunctionOptions) validate() error {
 			}
 		}
 		if valueSet(opts.Returns.Table) {
-			errs = append(errs, opts.Returns.Table.additionalValidations()) // invocation added manually
+			errs = append(errs, opts.Returns.Table.additionalValidations())
 		}
 	}
 	return JoinErrors(errs...)
