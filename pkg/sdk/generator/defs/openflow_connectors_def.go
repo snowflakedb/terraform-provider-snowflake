@@ -75,7 +75,7 @@ var openflowConnectorsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowConnectorRow", "OpenflowConnector").
 		Text("name").
-		PlainField("status", OpenflowConnectorStatusEnumDef.Kind()).
+		Enum("status", OpenflowConnectorStatusEnumDef).
 		Text("runtime").
 		OptionalText("connector_definition").
 		OptionalText("display_name").
@@ -90,7 +90,8 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalText("live_version_location_uri").
 		OptionalText("comment").
 		Time("created_on").
-		Time("updated_on"),
+		Time("updated_on").
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowOpenflowConnectors").
 		Show().
 		SQL("OPENFLOW CONNECTORS").
@@ -103,7 +104,7 @@ var openflowConnectorsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowConnectorDetailsRow", "OpenflowConnectorDetails").
 		Text("name").
-		PlainField("status", OpenflowConnectorStatusEnumDef.Kind()).
+		Enum("status", OpenflowConnectorStatusEnumDef).
 		Text("runtime").
 		OptionalText("connector_definition").
 		OptionalText("definition_version_name").
@@ -128,7 +129,8 @@ var openflowConnectorsDef = g.NewInterface(
 		Time("created_on").
 		Time("updated_on").
 		OptionalText("error_code").
-		OptionalText("status_message"),
+		OptionalText("status_message").
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeOpenflowConnector").
 		Describe().
 		SQL("OPENFLOW CONNECTOR").

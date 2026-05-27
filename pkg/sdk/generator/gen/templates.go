@@ -109,13 +109,16 @@ var (
 
 func init() {
 	subTemplates := template.New("subTemplates").Funcs(template.FuncMap{
-		"describe_mapping_deref":     deref[DescriptionMappingKind],
-		"show_mapping_deref":         deref[ShowMappingKind],
-		"instance_method_kind_deref": deref[InstanceMethodKind],
-		"TypeWithoutPointer":         genhelpers.TypeWithoutPointer,
+		"describe_mapping_deref":        deref[DescriptionMappingKind],
+		"show_mapping_deref":            deref[ShowMappingKind],
+		"instance_method_kind_deref":    deref[InstanceMethodKind],
+		"TypeWithoutPointer":            genhelpers.TypeWithoutPointer,
+		"TypeWithoutPointerAndBrackets": genhelpers.TypeWithoutPointerAndBrackets,
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
-	subTemplates, _ = subTemplates.New("convert").Parse(convertTemplateContent)
+	subTemplates, _ = subTemplates.New("convert").Funcs(genhelpers.BuildTemplateFuncMap(
+		genhelpers.CamelToWords,
+	)).Parse(convertTemplateContent)
 	subTemplates, _ = subTemplates.New("convertGuard").Parse(convertGuardTemplateContent)
 	subTemplates, _ = subTemplates.New("convertGuards").Parse(convertGuardsTemplateContent)
 	subTemplates, _ = subTemplates.New("implementationMappings").Parse(implementationMappingsTemplateContent)

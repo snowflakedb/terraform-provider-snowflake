@@ -324,7 +324,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalText("owner").
 		OptionalAccountObjectIdentifier("external_volume_name", g.WithPlainFieldName("ExternalVolumeName")).
 		OptionalAccountObjectIdentifier("catalog_name", g.WithPlainFieldName("CatalogName")).
-		PlainField("iceberg_table_type", IcebergTableTypeEnumDef.Kind()).
+		Enum("iceberg_table_type", IcebergTableTypeEnumDef).
 		OptionalText("catalog_table_name").
 		OptionalText("catalog_namespace").
 		Text("base_location").

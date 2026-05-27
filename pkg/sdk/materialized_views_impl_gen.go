@@ -200,7 +200,7 @@ func (r materializedViewDBRow) convert() (*MaterializedView, error) {
 		BehindBy:            r.BehindBy,
 		Text:                tracking.TrimMetadata(r.Text), // adjusted manually: tracking added
 		IsSecure:            r.IsSecure,
-		AutomaticClustering: r.AutomaticClustering == "ON", // adjusted manually: Y -> ON
+		AutomaticClustering: r.AutomaticClustering == "ON",
 	}
 	mapNullString(&result.Reserved, r.Reserved)
 	mapNullStringToNonNullableField(&result.ClusterBy, r.ClusterBy)
@@ -219,8 +219,7 @@ func (r *DescribeMaterializedViewRequest) toOpts() *DescribeMaterializedViewOpti
 }
 
 func (r materializedViewDetailsRow) convert() (*MaterializedViewDetails, error) {
-	// adjusted manually
-	details := &MaterializedViewDetails{
+	result := &MaterializedViewDetails{
 		Name:       r.Name,
 		Type:       r.Type,
 		Kind:       r.Kind,
@@ -228,17 +227,9 @@ func (r materializedViewDetailsRow) convert() (*MaterializedViewDetails, error) 
 		IsPrimary:  r.PrimaryKey == "Y",
 		IsUnique:   r.UniqueKey == "Y",
 	}
-	if r.Default.Valid {
-		details.Default = String(r.Default.String)
-	}
-	if r.Check.Valid {
-		details.Check = Bool(r.Check.String == "Y")
-	}
-	if r.Expression.Valid {
-		details.Expression = String(r.Expression.String)
-	}
-	if r.Comment.Valid {
-		details.Comment = String(r.Comment.String)
-	}
-	return details, nil
+	mapNullString(&result.Default, r.Default)
+	mapNullStringToBool(&result.Check, r.Check)
+	mapNullString(&result.Expression, r.Expression)
+	mapNullString(&result.Comment, r.Comment)
+	return result, nil
 }

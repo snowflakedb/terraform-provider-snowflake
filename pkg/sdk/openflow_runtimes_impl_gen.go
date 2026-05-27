@@ -149,8 +149,27 @@ func (r *ShowOpenflowRuntimeRequest) toOpts() *ShowOpenflowRuntimeOptions {
 }
 
 func (r openflowRuntimeRow) convert() (*OpenflowRuntime, error) {
-	// TODO: Mapping
-	return &OpenflowRuntime{}, nil
+	result := &OpenflowRuntime{
+		Name:               r.Name,
+		Deployment:         r.Deployment,
+		MinNodes:           r.MinNodes,
+		MaxNodes:           r.MaxNodes,
+		InitiallySuspended: r.InitiallySuspended,
+		ExecuteAsRole:      r.ExecuteAsRole,
+		Owner:              r.Owner,
+		CreatedOn:          r.CreatedOn,
+		UpdatedOn:          r.UpdatedOn,
+	}
+	mapStringWithMapping(&result.Status, r.Status, ToOpenflowRuntimeStatus)
+	mapStringWithMapping(&result.NodeType, r.NodeType, ToOpenflowRuntimeNodeType)
+	mapNullString(&result.DisplayName, r.DisplayName)
+	if r.ExternalAccessIntegrations.Valid {
+		if ids, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String); err == nil {
+			result.ExternalAccessIntegrations = ids
+		}
+	}
+	mapNullString(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeOpenflowRuntimeRequest) toOpts() *DescribeOpenflowRuntimeOptions {
@@ -161,6 +180,28 @@ func (r *DescribeOpenflowRuntimeRequest) toOpts() *DescribeOpenflowRuntimeOption
 }
 
 func (r openflowRuntimeDetailsRow) convert() (*OpenflowRuntimeDetails, error) {
-	// TODO: Mapping
-	return &OpenflowRuntimeDetails{}, nil
+	result := &OpenflowRuntimeDetails{
+		Name:               r.Name,
+		Deployment:         r.Deployment,
+		MinNodes:           r.MinNodes,
+		MaxNodes:           r.MaxNodes,
+		InitiallySuspended: r.InitiallySuspended,
+		ExecuteAsRole:      r.ExecuteAsRole,
+		Owner:              r.Owner,
+		CreatedOn:          r.CreatedOn,
+		UpdatedOn:          r.UpdatedOn,
+	}
+	mapStringWithMapping(&result.Status, r.Status, ToOpenflowRuntimeStatus)
+	mapStringWithMapping(&result.NodeType, r.NodeType, ToOpenflowRuntimeNodeType)
+	mapNullString(&result.DisplayName, r.DisplayName)
+	if r.ExternalAccessIntegrations.Valid {
+		if ids, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String); err == nil {
+			result.ExternalAccessIntegrations = ids
+		}
+	}
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.ServerUrl, r.ServerUrl)
+	mapNullString(&result.ErrorCode, r.ErrorCode)
+	mapNullString(&result.StatusMessage, r.StatusMessage)
+	return result, nil
 }

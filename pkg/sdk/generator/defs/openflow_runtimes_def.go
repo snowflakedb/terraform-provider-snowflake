@@ -99,11 +99,11 @@ var openflowRuntimesDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowRuntimeRow", "OpenflowRuntime").
 		Text("name").
-		PlainField("status", OpenflowRuntimeStatusEnumDef.Kind()).
+		Enum("status", OpenflowRuntimeStatusEnumDef).
 		Text("deployment").
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("node_type", OpenflowRuntimeNodeTypeEnumDef.Kind()).
+		Enum("node_type", OpenflowRuntimeNodeTypeEnumDef).
 		OptionalText("display_name").
 		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Bool("initially_suspended").
@@ -111,7 +111,8 @@ var openflowRuntimesDef = g.NewInterface(
 		Text("owner").
 		OptionalText("comment").
 		Time("created_on").
-		Time("updated_on"),
+		Time("updated_on").
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowOpenflowRuntimes").
 		Show().
 		SQL("OPENFLOW RUNTIMES").
@@ -124,11 +125,11 @@ var openflowRuntimesDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowRuntimeDetailsRow", "OpenflowRuntimeDetails").
 		Text("name").
-		PlainField("status", OpenflowRuntimeStatusEnumDef.Kind()).
+		Enum("status", OpenflowRuntimeStatusEnumDef).
 		Text("deployment").
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("node_type", OpenflowRuntimeNodeTypeEnumDef.Kind()).
+		Enum("node_type", OpenflowRuntimeNodeTypeEnumDef).
 		OptionalText("display_name").
 		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Bool("initially_suspended").
@@ -139,7 +140,8 @@ var openflowRuntimesDef = g.NewInterface(
 		Time("created_on").
 		Time("updated_on").
 		OptionalText("error_code").
-		OptionalText("status_message"),
+		OptionalText("status_message").
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeOpenflowRuntime").
 		Describe().
 		SQL("OPENFLOW RUNTIME").
