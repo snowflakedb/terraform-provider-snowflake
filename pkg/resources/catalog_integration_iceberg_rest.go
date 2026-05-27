@@ -213,6 +213,13 @@ func ImportCatalogIntegrationIcebergRest(ctx context.Context, d *schema.Resource
 		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeIcebergRest, details.CatalogSource)
 	}
 
+	if err := setIcebergRestConfigInState(d, details); err != nil {
+		return nil, err
+	}
+	if err := setIcebergRestAuthInState(d, details); err != nil {
+		return nil, err
+	}
+
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -289,6 +296,9 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) sche
 			); err != nil {
 				return diag.FromErr(err)
 			}
+			if err = handleExternalChangesToIcebergRestNestedAttrs(d, details); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		errs := errors.Join(
@@ -297,8 +307,6 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) sche
 			d.Set("comment", details.Comment),
 			d.Set("catalog_source", string(details.CatalogSource)),
 			d.Set("catalog_namespace", details.CatalogNamespace),
-			setIcebergRestConfigInState(d, details),
-			setIcebergRestAuthInState(d, details),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(s)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestDetailsToSchema(details)}),
@@ -396,6 +404,78 @@ func applyIcebergRestAuthenticationToParams(d *schema.ResourceData, params *sdk.
 		return nil
 	}
 	return fmt.Errorf("one of oauth_rest_authentication, bearer_rest_authentication, or sigv4_rest_authentication must be set")
+}
+
+func handleExternalChangesToIcebergRestNestedAttrs(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
+	if err := handleExternalChangesToIcebergRestConfig(d, details); err != nil {
+		return err
+	}
+	if details.OAuthRestAuthentication != nil {
+		if err := handleExternalChangesToOAuthRestAuthenticationIcebergRest(d, details); err != nil {
+			return err
+		}
+	}
+	if details.SigV4RestAuthentication != nil {
+		if err := handleExternalChangesToSigV4RestAuthentication(d, details); err != nil {
+			return err
+		}
+	}
+	if details.BearerRestAuthentication != nil {
+		if err := handleExternalChangesToBearerRestAuthentication(d); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func handleExternalChangesToIcebergRestConfig(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
+	restConfig := []any{
+		map[string]any{
+			"catalog_uri":            details.RestConfig.CatalogUri,
+			"prefix":                 details.RestConfig.Prefix,
+			"catalog_name":           details.RestConfig.CatalogName,
+			"catalog_api_type":       string(details.RestConfig.CatalogApiType),
+			"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
+		},
+	}
+	return handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+		outputMapping{"rest_config", "rest_config", restConfig, restConfig, nil},
+	)
+}
+
+func handleExternalChangesToOAuthRestAuthenticationIcebergRest(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
+	return errors.Join(
+		handleExternalChangesToOAuthRestAuthentication(
+			d,
+			"oauth_rest_authentication",
+			details.OAuthRestAuthentication.OauthTokenUri,
+			details.OAuthRestAuthentication.OauthClientId,
+			details.OAuthRestAuthentication.OauthAllowedScopes,
+		),
+		d.Set("bearer_rest_authentication", nil),
+		d.Set("sigv4_rest_authentication", nil),
+	)
+}
+
+func handleExternalChangesToSigV4RestAuthentication(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
+	sigV4RestAuthorization := []any{
+		map[string]any{
+			"sigv4_iam_role":       details.SigV4RestAuthentication.Sigv4IamRole,
+			"sigv4_signing_region": details.SigV4RestAuthentication.Sigv4SigningRegion,
+		},
+	}
+	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+		outputMapping{"sigv4_rest_authentication", "sigv4_rest_authentication", sigV4RestAuthorization, sigV4RestAuthorization, nil},
+	)
+	return errors.Join(
+		err,
+		d.Set("oauth_rest_authentication", nil),
+		d.Set("bearer_rest_authentication", nil),
+	)
+}
+
+func handleExternalChangesToBearerRestAuthentication(d *schema.ResourceData) error {
+	return errors.Join(d.Set("oauth_rest_authentication", nil), d.Set("sigv4_rest_authentication", nil))
 }
 
 func setIcebergRestConfigInState(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
