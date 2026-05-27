@@ -39,24 +39,16 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	const oauthClientSecret = "oauth-client-secret-456"
 	const oauthResourceUrl = "https://resource.example.com"
 
-	prefixes := func(prefix string) []sdk.ApiIntegrationEndpointPrefix {
-		return []sdk.ApiIntegrationEndpointPrefix{{Path: prefix}}
-	}
-
-	// -----------------------------------------------------------------------
-	// CREATE
-	// -----------------------------------------------------------------------
-
 	t.Run("create: aws basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(awsPrefix), true).
-			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, apiAwsRoleArn)))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: awsPrefix}}, true).
+			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, apiAwsRoleArn)),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -74,16 +66,19 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: aws all options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(awsPrefix), true).
-			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, apiAwsRoleArn).WithApiKey("key")).
-			WithApiBlockedPrefixes(prefixes(awsOtherPrefix)).
-			WithComment("comment"))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: awsPrefix}}, true).
+			WithAwsApiProviderParams(
+				*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, apiAwsRoleArn).
+					WithApiKey("key"),
+			).
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: awsOtherPrefix}}).
+			WithComment("comment"),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment("comment"),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -101,12 +96,12 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: aws all provider type variants", func(t *testing.T) {
 		for _, providerType := range sdk.AllApiIntegrationAwsApiProviderTypes {
-			providerType := providerType
 			t.Run(string(providerType), func(t *testing.T) {
 				id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-				req := sdk.NewCreateApiIntegrationRequest(id, prefixes(awsPrefix), true).
-					WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(providerType, apiAwsRoleArn))
-				err := client.ApiIntegrations.Create(ctx, req)
+
+				err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: awsPrefix}}, true).
+					WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(providerType, apiAwsRoleArn)),
+				)
 				require.NoError(t, err)
 				t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
@@ -119,14 +114,14 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: azure basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(azurePrefix), true).
-			WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId)))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: azurePrefix}}, true).
+			WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId)),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -145,16 +140,19 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: azure all options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(azurePrefix), true).
-			WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId).WithApiKey("key")).
-			WithApiBlockedPrefixes(prefixes(azureOtherPrefix)).
-			WithComment("comment"))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: azurePrefix}}, true).
+			WithAzureApiProviderParams(
+				*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId).
+					WithApiKey("key"),
+			).
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: azureOtherPrefix}}).
+			WithComment("comment"),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment("comment"),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -173,14 +171,14 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: google basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(googlePrefix), true).
-			WithGoogleApiProviderParams(*sdk.NewGoogleApiParamsRequest(googleAudience)))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: googlePrefix}}, true).
+			WithGoogleApiProviderParams(*sdk.NewGoogleApiParamsRequest(googleAudience)),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -195,16 +193,16 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: google all options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(googlePrefix), true).
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: googlePrefix}}, true).
 			WithGoogleApiProviderParams(*sdk.NewGoogleApiParamsRequest(googleAudience)).
-			WithApiBlockedPrefixes(prefixes(googleOtherPrefix)).
-			WithComment("comment"))
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: googleOtherPrefix}}).
+			WithComment("comment"),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment("comment"),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -219,15 +217,20 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: git https api with token auth (all secrets)", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(gitPrefix), true).
-			WithGitHttpsApiTokenBasedProviderParams(*sdk.NewGitHttpsApiTokenBasedParamsRequest().
-				WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
+			WithGitHttpsApiTokenBasedProviderParams(
+				*sdk.NewGitHttpsApiTokenBasedParamsRequest().
+					WithAllowedAuthenticationSecrets(
+						*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().
+							WithAllSecrets(true),
+					),
+			),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -239,29 +242,42 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: git https api with token auth (no secrets)", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(gitPrefix), true).
-			WithGitHttpsApiTokenBasedProviderParams(*sdk.NewGitHttpsApiTokenBasedParamsRequest().
-				WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithNoSecrets(true))))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
+			WithGitHttpsApiTokenBasedProviderParams(
+				*sdk.NewGitHttpsApiTokenBasedParamsRequest().
+					WithAllowedAuthenticationSecrets(
+						*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().
+							WithNoSecrets(true),
+					),
+			),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
 			HasEnabled(true).
+			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(gitPrefix),
 		)
 	})
 
+	// TODO: Dedicated secrets
+
 	t.Run("create: git https api with GitHub App auth", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(gitPrefix), true).
-			WithGitHttpsApiGithubAppProviderParams(*sdk.NewGitHttpsApiGithubAppParamsRequest()))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
+			WithGitHttpsApiGithubAppProviderParams(*sdk.NewGitHttpsApiGithubAppParamsRequest()),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
-			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
+			HasEnabled(true).
+			HasApiTypeExternalApi().
+			HasCategoryApi().
+			HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
 			HasEnabled(true).
@@ -273,17 +289,21 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	t.Run("create: git https api with OAuth2 auth basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		auth := sdk.NewOAuth2GitUserAuthenticationRequest(oauthAuthorizationEndpoint, oauthTokenEndpoint, oauthClientId, oauthClientSecret)
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(gitPrefix), true).
-			WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().WithApiUserAuthentication(*auth)))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
+			WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().WithApiUserAuthentication(*auth)),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
-			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
+			HasEnabled(true).
+			HasApiTypeExternalApi().
+			HasCategoryApi().
+			HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+			// TODO: Assert API_USER_AUTH values
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(gitPrefix),
@@ -297,14 +317,17 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			WithOauthRefreshTokenValidity(86400).
 			WithOauthAllowedScopes([]sdk.ApiIntegrationScope{{Scope: "read"}, {Scope: "write"}}).
 			WithOauthUsername("user@example.com")
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(gitPrefix), true).
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
 			WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().WithApiUserAuthentication(*auth)).
-			WithApiBlockedPrefixes(prefixes(gitOtherPrefix)).
-			WithComment("git oauth2 comment"))
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitOtherPrefix}}).
+			WithComment("git oauth2 comment"),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+			// TODO: Assert API_USER_AUTH values
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(gitPrefix).
@@ -314,15 +337,20 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("create: git https api with private link", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(gitPrefix), true).
-			WithGitHttpsApiPrivateLinkProviderParams(*sdk.NewGitHttpsApiPrivateLinkParamsRequest(true).
-				WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
+			WithGitHttpsApiPrivateLinkProviderParams(
+				*sdk.NewGitHttpsApiPrivateLinkParamsRequest(true).
+					WithAllowedAuthenticationSecrets(
+						*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().
+							WithAllSecrets(true),
+					),
+			),
+		) // TODO: where complete version with tls_trusted_certificates?
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -336,17 +364,18 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	t.Run("create: external mcp with OAuth2 auth basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		auth := sdk.NewOAuth2McpUserAuthenticationRequest(oauthClientId, oauthClientSecret, oauthTokenEndpoint, oauthAuthorizationEndpoint)
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(mcpPrefix), true).
-			WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
+			WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+			// TODO: Assert API_USER_AUTH values
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(mcpPrefix),
@@ -360,13 +389,16 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			WithOauthClientAuthMethod(authMethod).
 			WithOauthDiscoveryUrl("https://auth.example.com/.well-known/openid-configuration").
 			WithOauthRefreshTokenValidity(86400)
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(mcpPrefix), true).
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
 			WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)).
-			WithComment("mcp oauth2 comment"))
+			WithComment("mcp oauth2 comment"),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+			// TODO: Assert API_USER_AUTH values
 			HasEnabled(true).
 			HasAllowedPrefixes(mcpPrefix).
 			HasComment("mcp oauth2 comment"),
@@ -376,14 +408,14 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	t.Run("create: external mcp with dynamic client auth", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		auth := sdk.NewDynamicClientMcpUserAuthenticationRequest(oauthResourceUrl)
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(mcpPrefix), true).
-			WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)))
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
+			WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)),
+		) // TODO: complete version with oauth_resource_url
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
-		integration, err := client.ApiIntegrations.ShowByID(ctx, id)
-		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationFromObject(t, integration).
+		assertThatObject(t, objectassert.ApiIntegration(t, id).
 			HasEnabled(true).HasApiTypeExternalApi().HasCategoryApi().HasComment(""),
 		)
 		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
@@ -393,24 +425,26 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 	})
 
-	// -----------------------------------------------------------------------
-	// ALTER SET
-	// -----------------------------------------------------------------------
-
 	t.Run("alter set: aws", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateAws(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateAws(t)
+		t.Cleanup(integrationCleanup)
 
 		otherRoleArn := "arn:aws:iam::000000000001:/role/other"
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
-				WithAwsParams(*sdk.NewSetAwsApiParamsRequest().WithApiAwsRoleArn(otherRoleArn).WithApiKey("key")).
+				WithAwsParams(
+					*sdk.NewSetAwsApiParamsRequest().
+						WithApiAwsRoleArn(otherRoleArn).
+						WithApiKey("key"),
+				).
 				WithEnabled(true).
-				WithApiAllowedPrefixes(prefixes(awsOtherPrefix)).
-				WithApiBlockedPrefixes(prefixes(awsPrefix)).
-				WithComment("changed comment")))
+				WithApiAllowedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: awsOtherPrefix}}).
+				WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: awsPrefix}}).
+				WithComment("changed comment")),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiKey("☺☺☺").
 			HasApiProvider(strings.ToUpper(string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway))).
@@ -424,19 +458,25 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter set: azure", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateAzure(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateAzure(t)
+		t.Cleanup(integrationCleanup)
 
 		otherAdApplicationId := "22222222-2222-2222-2222-222222222222"
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
-				WithAzureParams(*sdk.NewSetAzureApiParamsRequest().WithAzureAdApplicationId(otherAdApplicationId).WithApiKey("key")).
+				WithAzureParams(
+					*sdk.NewSetAzureApiParamsRequest().
+						WithAzureAdApplicationId(otherAdApplicationId).
+						WithApiKey("key"),
+				).
 				WithEnabled(true).
-				WithApiAllowedPrefixes(prefixes(azureOtherPrefix)).
-				WithApiBlockedPrefixes(prefixes(azurePrefix)).
-				WithComment("changed comment")))
+				WithApiAllowedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: azureOtherPrefix}}).
+				WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: azurePrefix}}).
+				WithComment("changed comment")),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiKey("☺☺☺").
 			HasApiProvider("AZURE_API_MANAGEMENT").
@@ -451,31 +491,38 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter set: azure - tenant id only", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateAzure(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateAzure(t)
+		t.Cleanup(integrationCleanup)
 
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
-				WithAzureParams(*sdk.NewSetAzureApiParamsRequest().WithAzureTenantId(azureOtherTenantId))))
+				WithAzureParams(
+					*sdk.NewSetAzureApiParamsRequest().WithAzureTenantId(azureOtherTenantId), // TODO: Why is it separated and not a part of above test?
+				),
+			),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasAzureTenantId(azureOtherTenantId),
 		)
 	})
 
 	t.Run("alter set: google", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateGoogle(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGoogle(t)
+		t.Cleanup(integrationCleanup)
 
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
 				WithGoogleParams(*sdk.NewSetGoogleApiParamsRequest(googleOtherAudience)).
 				WithEnabled(true).
-				WithApiAllowedPrefixes(prefixes(googleOtherPrefix)).
-				WithApiBlockedPrefixes(prefixes(googlePrefix)).
-				WithComment("changed comment")))
+				WithApiAllowedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: googleOtherPrefix}}).
+				WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: googlePrefix}}).
+				WithComment("changed comment")),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiProvider("GOOGLE_API_GATEWAY").
 			HasGoogleAudience(googleOtherAudience).
@@ -486,16 +533,19 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter set: git token - change to no secrets", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateGitToken(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGitToken(t)
+		t.Cleanup(integrationCleanup)
 
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
+				// TODO: The tests should use all alter options (at least in one test for each type)
 				WithGitHttpsApiTokenBasedParams(*sdk.NewSetGitHttpsApiTokenBasedParamsRequest().
 					WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithNoSecrets(true))).
-				WithComment("updated")))
+				WithComment("updated")),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasAllowedPrefixes(gitPrefix).
 			HasComment("updated"),
@@ -503,17 +553,19 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter set: git private link - disable privatelink", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateGitPrivateLink(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGitPrivateLink(t)
+		t.Cleanup(integrationCleanup)
 
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
 				WithGitHttpsApiPrivateLinkParams(*sdk.NewSetGitHttpsApiPrivateLinkParamsRequest().
 					WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithNoSecrets(true)).
 					WithUsePrivatelinkEndpoint(false)).
-				WithComment("updated")))
+				WithComment("updated")),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(gitPrefix).
@@ -522,33 +574,32 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter set: external mcp oauth2 - update credentials", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateMcpOAuth2(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateMcpOAuth2(t)
+		t.Cleanup(integrationCleanup)
 
 		newAuth := sdk.NewOAuth2McpUserAuthenticationRequest("new-id", "new-secret", oauthTokenEndpoint, oauthAuthorizationEndpoint).
 			WithOauthRefreshTokenValidity(3600)
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
 				WithExternalMcpOAuth2Params(*sdk.NewSetExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*newAuth)).
-				WithComment("updated")))
+				WithComment("updated")),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasAllowedPrefixes(mcpPrefix).
 			HasComment("updated"),
 		)
 	})
 
-	// -----------------------------------------------------------------------
-	// ALTER UNSET
-	// -----------------------------------------------------------------------
-
 	t.Run("alter unset: aws - api_key, enabled, blocked_prefixes, comment", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(awsPrefix), true).
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: awsPrefix}}, true).
 			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, apiAwsRoleArn).WithApiKey("key")).
-			WithApiBlockedPrefixes(prefixes(awsOtherPrefix)).
-			WithComment("comment"))
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: awsOtherPrefix}}).
+			WithComment("comment"),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
@@ -569,10 +620,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("alter unset: azure - api_key, enabled, blocked_prefixes, comment", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(azurePrefix), true).
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: azurePrefix}}, true).
 			WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId).WithApiKey("key")).
-			WithApiBlockedPrefixes(prefixes(azureOtherPrefix)).
-			WithComment("comment"))
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: azureOtherPrefix}}).
+			WithComment("comment"),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
@@ -593,10 +645,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("alter unset: google - enabled, blocked_prefixes, comment", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(googlePrefix), true).
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: googlePrefix}}, true).
 			WithGoogleApiProviderParams(*sdk.NewGoogleApiParamsRequest(googleAudience)).
-			WithApiBlockedPrefixes(prefixes(googleOtherPrefix)).
-			WithComment("comment"))
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: googleOtherPrefix}}).
+			WithComment("comment"),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
@@ -614,42 +667,45 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter unset: git token - allowed_authentication_secrets", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateGitToken(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGitToken(t)
+		t.Cleanup(integrationCleanup)
 
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
-			WithUnset(*sdk.NewApiIntegrationUnsetRequest().WithAllowedAuthenticationSecrets(true)))
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
+			WithUnset(*sdk.NewApiIntegrationUnsetRequest().
+				WithAllowedAuthenticationSecrets(true)),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasAllowedPrefixes(gitPrefix),
 		)
 	})
 
 	t.Run("alter unset: git private link - use_privatelink_endpoint", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateGitPrivateLink(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGitPrivateLink(t)
+		t.Cleanup(integrationCleanup)
 
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
-			WithUnset(*sdk.NewApiIntegrationUnsetRequest().WithUsePrivatelinkEndpoint(true)))
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
+			WithUnset(*sdk.NewApiIntegrationUnsetRequest().
+				WithUsePrivatelinkEndpoint(true)),
+		)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasAllowedPrefixes(gitPrefix),
 		)
 	})
 
-	// -----------------------------------------------------------------------
-	// UNDOCUMENTED: api_blocked_prefixes support
-	// -----------------------------------------------------------------------
-
 	t.Run("undocumented: git can use api_blocked_prefixes on create", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		req := sdk.NewCreateApiIntegrationRequest(id, prefixes(gitPrefix), true).
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
 			WithGitHttpsApiTokenBasedProviderParams(*sdk.NewGitHttpsApiTokenBasedParamsRequest().
 				WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))).
-			WithApiBlockedPrefixes(prefixes(gitOtherPrefix))
-		err := client.ApiIntegrations.Create(ctx, req)
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitOtherPrefix}}),
+		)
 		if err != nil {
 			t.Logf("[UNDOCUMENTED] git api_blocked_prefixes on create: NOT supported - %v", err)
 			return
@@ -664,9 +720,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	t.Run("undocumented: external_mcp can use api_blocked_prefixes on create", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		auth := sdk.NewDynamicClientMcpUserAuthenticationRequest(oauthResourceUrl)
-		req := sdk.NewCreateApiIntegrationRequest(id, prefixes(mcpPrefix), true).
+		req := sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
 			WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)).
-			WithApiBlockedPrefixes(prefixes("https://mcp-blocked.example.com/"))
+			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp-blocked.example.com/"}})
 		err := client.ApiIntegrations.Create(ctx, req)
 		if err != nil {
 			t.Logf("[UNDOCUMENTED] external_mcp api_blocked_prefixes on create: NOT supported - %v", err)
@@ -676,13 +732,10 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 	})
 
-	// -----------------------------------------------------------------------
-	// DROP
-	// -----------------------------------------------------------------------
-
 	t.Run("drop: existing", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(awsPrefix), true).
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: awsPrefix}}, true).
 			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, apiAwsRoleArn)))
 		require.NoError(t, err)
 
@@ -695,19 +748,22 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("drop: non-existing", func(t *testing.T) {
 		id := NonExistingAccountObjectIdentifier
+
 		err := client.ApiIntegrations.Drop(ctx, sdk.NewDropApiIntegrationRequest(id))
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 
 	t.Run("drop: if exists", func(t *testing.T) {
 		id := NonExistingAccountObjectIdentifier
+
 		err := client.ApiIntegrations.Drop(ctx, sdk.NewDropApiIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	})
 
 	t.Run("drop safely: existing", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, prefixes(awsPrefix), true).
+
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: awsPrefix}}, true).
 			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, apiAwsRoleArn)))
 		require.NoError(t, err)
 
@@ -720,18 +776,20 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("drop safely: non-existing", func(t *testing.T) {
 		id := NonExistingAccountObjectIdentifier
+
 		err := client.ApiIntegrations.DropSafely(ctx, id)
 		require.NoError(t, err)
 	})
 
-	// -----------------------------------------------------------------------
-	// SHOW
-	// -----------------------------------------------------------------------
-
 	t.Run("show: default", func(t *testing.T) {
-		integrationAws := testClientHelper().ApiIntegration.CreateAws(t)
-		integrationAzure := testClientHelper().ApiIntegration.CreateAzure(t)
-		integrationGoogle := testClientHelper().ApiIntegration.CreateGoogle(t)
+		integrationAws, integrationAwsCleanup := testClientHelper().ApiIntegration.CreateAws(t)
+		t.Cleanup(integrationAwsCleanup)
+
+		integrationAzure, integrationAzureCleanup := testClientHelper().ApiIntegration.CreateAzure(t)
+		t.Cleanup(integrationAzureCleanup)
+
+		integrationGoogle, integrationGoogleCleanup := testClientHelper().ApiIntegration.CreateGoogle(t)
+		t.Cleanup(integrationGoogleCleanup)
 
 		returnedIntegrations, err := client.ApiIntegrations.Show(ctx, sdk.NewShowApiIntegrationRequest())
 		require.NoError(t, err)
@@ -742,8 +800,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("show: with like filter", func(t *testing.T) {
-		integrationAws := testClientHelper().ApiIntegration.CreateAws(t)
-		integrationAzure := testClientHelper().ApiIntegration.CreateAzure(t)
+		integrationAws, integrationAwsCleanup := testClientHelper().ApiIntegration.CreateAws(t)
+		t.Cleanup(integrationAwsCleanup)
+
+		integrationAzure, integrationAzureCleanup := testClientHelper().ApiIntegration.CreateAzure(t)
+		t.Cleanup(integrationAzureCleanup)
 
 		returnedIntegrations, err := client.ApiIntegrations.Show(ctx, sdk.NewShowApiIntegrationRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(integrationAws.Name)}))
@@ -754,7 +815,8 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("show by id safely: existing", func(t *testing.T) {
-		integration := testClientHelper().ApiIntegration.CreateAws(t)
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateAws(t)
+		t.Cleanup(integrationCleanup)
 
 		result, err := client.ApiIntegrations.ShowByIDSafely(ctx, integration.ID())
 		require.NoError(t, err)
@@ -773,14 +835,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
-	// -----------------------------------------------------------------------
-	// DESCRIBE
-	// -----------------------------------------------------------------------
-
 	t.Run("describe: aws - all fields", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateAws(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateAws(t)
+		t.Cleanup(integrationCleanup)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiKey("").
 			HasApiProvider(strings.ToUpper(string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway))).
@@ -794,9 +853,10 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("describe: azure - all fields", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateAzure(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateAzure(t)
+		t.Cleanup(integrationCleanup)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiKey("").
 			HasApiProvider("AZURE_API_MANAGEMENT").
@@ -811,9 +871,10 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("describe: google - all fields", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateGoogle(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGoogle(t)
+		t.Cleanup(integrationCleanup)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiProvider("GOOGLE_API_GATEWAY").
 			HasGoogleAudience(googleAudience).
@@ -824,9 +885,10 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("describe: git https api - all fields", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateGitToken(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGitToken(t)
+		t.Cleanup(integrationCleanup)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(gitPrefix).
@@ -835,9 +897,10 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("describe: external mcp - all fields", func(t *testing.T) {
-		id := testClientHelper().ApiIntegration.CreateMcpOAuth2(t).ID()
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateMcpOAuth2(t)
+		t.Cleanup(integrationCleanup)
 
-		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, id).
+		assertThatObject(t, objectassert.ApiIntegrationAllDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(mcpPrefix).
@@ -847,6 +910,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 	t.Run("describe: non-existing", func(t *testing.T) {
 		id := NonExistingAccountObjectIdentifier
+
 		_, err := client.ApiIntegrations.Describe(ctx, id)
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
