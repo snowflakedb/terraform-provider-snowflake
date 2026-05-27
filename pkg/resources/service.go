@@ -93,7 +93,7 @@ func Service() *schema.Resource {
 }
 
 func ReadServiceFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return ReadServiceCommonFunc(withExternalChangesMarking, serviceOutputMappingsFunc, []string{"max_instances", "min_instances", "min_ready_instances", "auto_resume", "auto_suspend_secs"})
+	return ReadServiceCommonFunc(withExternalChangesMarking, serviceOutputMappingsFunc)
 }
 
 func CreateService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

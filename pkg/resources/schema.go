@@ -280,13 +280,6 @@ func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, schemaSchema, []string{
-			"is_transient",
-			"with_managed_access",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		describeResult, err := client.Schemas.Describe(ctx, schema.ID())
 		if err != nil {
 			log.Printf("[DEBUG] describing schema: %s, err: %s", id.FullyQualifiedName(), err)

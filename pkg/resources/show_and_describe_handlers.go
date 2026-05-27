@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"log"
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -105,44 +104,4 @@ type describeMapping struct {
 	valueToCompare any
 	valueToSet     any
 	normalizeFunc  func(any) any
-}
-
-// setStateToValuesFromConfig currently handles only int, float, and string types.
-// It's needed for the case where:
-// - previous config was empty (therefore Snowflake defaults had been used)
-// - new config have the same values that are already in SF
-func setStateToValuesFromConfig(d *schema.ResourceData, resourceSchema map[string]*schema.Schema, fields []string) error {
-	if !d.GetRawConfig().IsNull() {
-		vMap := d.GetRawConfig().AsValueMap()
-		for _, field := range fields {
-			if v, ok := vMap[field]; ok && !v.IsNull() {
-				if schemaField, ok := resourceSchema[field]; ok {
-					switch schemaField.Type {
-					case schema.TypeInt:
-						intVal, _ := v.AsBigFloat().Int64()
-						if err := d.Set(field, intVal); err != nil {
-							return err
-						}
-					case schema.TypeFloat:
-						if err := d.Set(field, v.AsBigFloat()); err != nil {
-							return err
-						}
-					case schema.TypeString:
-						if err := d.Set(field, v.AsString()); err != nil {
-							return err
-						}
-					case schema.TypeSet:
-						if err := d.Set(field, ctyValToSliceString(v.AsValueSlice())); err != nil {
-							return err
-						}
-					default:
-						log.Printf("[DEBUG] field %s has unsupported schema type %v not found", field, schemaField.Type)
-					}
-				} else {
-					log.Printf("[DEBUG] schema field %s not found", field)
-				}
-			}
-		}
-	}
-	return nil
 }
