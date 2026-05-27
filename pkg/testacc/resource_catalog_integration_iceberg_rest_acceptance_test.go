@@ -615,21 +615,22 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 							WithOAuthRestAuthentication(completeRestAuth))
 					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
-				// ConfigPlanChecks: resource.ConfigPlanChecks{
-				// 	PreApply: []plancheck.PlanCheck{
-				// 		plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
-				// 		planchecks.ExpectDrift(ref, "rest_config.0.catalog_uri", sdk.String(newCatalogUri), sdk.String(catalogUri)),
-				// 		planchecks.ExpectChange(ref, "rest_config.0.catalog_uri", tfjson.ActionDelete, sdk.String(catalogUri), sdk.String(newCatalogUri)),
-				// 		planchecks.ExpectDrift(ref, "rest_config.0.prefix", sdk.String(newPrefix), sdk.String(prefix)),
-				// 		planchecks.ExpectChange(ref, "rest_config.0.prefix", tfjson.ActionDelete, sdk.String(prefix), sdk.String(newPrefix)),
-				// 		planchecks.ExpectDrift(ref, "rest_config.0.catalog_name", sdk.String(newCatalogName), sdk.String(catalogName)),
-				// 		planchecks.ExpectChange(ref, "rest_config.0.catalog_name", tfjson.ActionDelete, sdk.String(catalogName), sdk.String(newCatalogName)),
-				// 		planchecks.ExpectDrift(ref, "rest_config.0.catalog_api_type", sdk.String(string(sdk.CatalogIntegrationCatalogApiTypePrivate)), sdk.String(string(sdk.CatalogIntegrationCatalogApiTypePublic))),
-				// 		planchecks.ExpectChange(ref, "rest_config.0.catalog_api_type", tfjson.ActionDelete, sdk.String(string(sdk.CatalogIntegrationCatalogApiTypePublic)), sdk.String(string(sdk.CatalogIntegrationCatalogApiTypePrivate))),
-				// 		planchecks.ExpectDrift(ref, "rest_config.0.access_delegation_mode", sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials)), sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))),
-				// 		planchecks.ExpectChange(ref, "rest_config.0.access_delegation_mode", tfjson.ActionDelete, sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)), sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials))),
-				// 	},
-				// },
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.PrintPlanDetails(ref, "rest_config"),
+						planchecks.ExpectDrift(ref, "rest_config.0.catalog_uri", sdk.String(newCatalogUri), sdk.String(catalogUri)),
+						planchecks.ExpectChange(ref, "rest_config.0.catalog_uri", tfjson.ActionDelete, sdk.String(catalogUri), sdk.String(newCatalogUri)),
+						planchecks.ExpectDrift(ref, "rest_config.0.prefix", sdk.String(newPrefix), sdk.String(prefix)),
+						planchecks.ExpectChange(ref, "rest_config.0.prefix", tfjson.ActionDelete, sdk.String(prefix), sdk.String(newPrefix)),
+						planchecks.ExpectDrift(ref, "rest_config.0.catalog_name", sdk.String(newCatalogName), sdk.String(catalogName)),
+						planchecks.ExpectChange(ref, "rest_config.0.catalog_name", tfjson.ActionDelete, sdk.String(catalogName), sdk.String(newCatalogName)),
+						planchecks.ExpectDrift(ref, "rest_config.0.catalog_api_type", sdk.String(string(sdk.CatalogIntegrationCatalogApiTypePrivate)), sdk.String(string(sdk.CatalogIntegrationCatalogApiTypePublic))),
+						planchecks.ExpectChange(ref, "rest_config.0.catalog_api_type", tfjson.ActionDelete, sdk.String(string(sdk.CatalogIntegrationCatalogApiTypePublic)), sdk.String(string(sdk.CatalogIntegrationCatalogApiTypePrivate))),
+						planchecks.ExpectDrift(ref, "rest_config.0.access_delegation_mode", sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials)), sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))),
+						planchecks.ExpectChange(ref, "rest_config.0.access_delegation_mode", tfjson.ActionDelete, sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)), sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials))),
+					},
+				},
 				Config: config.FromModels(t, withChangedRestConfig),
 				Check:  assertThat(t, moreForceNewAssertions...),
 			},
@@ -663,17 +664,17 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 							WithOAuthRestAuthentication(completeRestAuth))
 					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
-				// ConfigPlanChecks: resource.ConfigPlanChecks{
-				// 	PreApply: []plancheck.PlanCheck{
-				// 		plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
-				// 		planchecks.ExpectDrift(ref, "oauth_rest_authentication.0.oauth_token_uri", sdk.String(newOAuthTokenUri), sdk.String(oAuthTokenUri)),
-				// 		planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_token_uri", tfjson.ActionDelete, sdk.String(oAuthTokenUri), sdk.String(newOAuthTokenUri)),
-				// 		planchecks.ExpectDrift(ref, "oauth_rest_authentication.0.oauth_client_id", sdk.String(newOAuthClientId), sdk.String(oAuthClientId)),
-				// 		planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_client_id", tfjson.ActionDelete, sdk.String(oAuthClientId), sdk.String(newOAuthClientId)),
-				// 		planchecks.ExpectDrift(ref, "oauth_rest_authentication.0.oauth_allowed_scopes", sdk.String(fmt.Sprintf("[%s %s]", oAuthAllowedScope, additionalOAuthAllowedScope)), sdk.String(fmt.Sprintf("[%s]", oAuthAllowedScope))),
-				// 		planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_allowed_scopes", tfjson.ActionDelete, sdk.String(fmt.Sprintf("[%s]", oAuthAllowedScope)), sdk.String(fmt.Sprintf("[%s %s]", oAuthAllowedScope, additionalOAuthAllowedScope))),
-				// 	},
-				// },
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(ref, "oauth_rest_authentication.0.oauth_token_uri", sdk.String(newOAuthTokenUri), sdk.String(oAuthTokenUri)),
+						planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_token_uri", tfjson.ActionDelete, sdk.String(oAuthTokenUri), sdk.String(newOAuthTokenUri)),
+						planchecks.ExpectDrift(ref, "oauth_rest_authentication.0.oauth_client_id", sdk.String(newOAuthClientId), sdk.String(oAuthClientId)),
+						planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_client_id", tfjson.ActionDelete, sdk.String(oAuthClientId), sdk.String(newOAuthClientId)),
+						planchecks.ExpectDrift(ref, "oauth_rest_authentication.0.oauth_allowed_scopes", sdk.String(fmt.Sprintf("[%s %s]", oAuthAllowedScope, additionalOAuthAllowedScope)), sdk.String(fmt.Sprintf("[%s]", oAuthAllowedScope))),
+						planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_allowed_scopes", tfjson.ActionDelete, sdk.String(fmt.Sprintf("[%s]", oAuthAllowedScope)), sdk.String(fmt.Sprintf("[%s %s]", oAuthAllowedScope, additionalOAuthAllowedScope))),
+					},
+				},
 				Config: config.FromModels(t, withChangedRestAuth),
 				Check:  assertThat(t, evenMoreForceNewAssertions...),
 			},

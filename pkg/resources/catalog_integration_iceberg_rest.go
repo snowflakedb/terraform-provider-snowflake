@@ -411,21 +411,12 @@ func handleExternalChangesToIcebergRestNestedAttrs(d *schema.ResourceData, detai
 		return err
 	}
 	if details.OAuthRestAuthentication != nil {
-		if err := handleExternalChangesToOAuthRestAuthenticationIcebergRest(d, details); err != nil {
-			return err
-		}
+		return handleExternalChangesToOAuthRestAuthenticationIcebergRest(d, details)
 	}
 	if details.SigV4RestAuthentication != nil {
-		if err := handleExternalChangesToSigV4RestAuthentication(d, details); err != nil {
-			return err
-		}
+		return handleExternalChangesToSigV4RestAuthentication(d, details)
 	}
-	if details.BearerRestAuthentication != nil {
-		if err := handleExternalChangesToBearerRestAuthentication(d); err != nil {
-			return err
-		}
-	}
-	return nil
+	return handleExternalChangesToBearerRestAuthentication(d)
 }
 
 func handleExternalChangesToIcebergRestConfig(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
