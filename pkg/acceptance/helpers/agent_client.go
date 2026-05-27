@@ -40,6 +40,14 @@ func (c *AgentClient) CreateWithRequest(t *testing.T, req *sdk.CreateCortexAgent
 	return c.DropFunc(t, req.GetName())
 }
 
+func (c *AgentClient) Alter(t *testing.T, req *sdk.AlterCortexAgentRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *AgentClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
@@ -73,4 +81,12 @@ func (c *AgentClient) SampleSpecWithResponse(t *testing.T, response string) stri
 instructions:
   response: "%s"
 `, response)
+}
+
+func (c *AgentClient) SampleSpecAsJson(t *testing.T, response string) string {
+	t.Helper()
+	return fmt.Sprintf(
+		`{"orchestration":{"budget":{"seconds":30,"tokens":16000}},"instructions":{"response":"%s"}}`,
+		response,
+	)
 }

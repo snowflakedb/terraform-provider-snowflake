@@ -279,6 +279,10 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct:       sdk.CortexAgentDetails{},
 		IsDataSourceOutput: true,
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.TagReference{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

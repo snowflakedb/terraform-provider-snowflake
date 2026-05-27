@@ -123,17 +123,16 @@ func (r *ShowCortexAgentRequest) toOpts() *ShowCortexAgentOptions {
 }
 
 func (r showCortexAgentDBRow) convert() (*CortexAgent, error) {
-	// adjusted manually
-	cortexAgent := &CortexAgent{
+	result := &CortexAgent{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
 	}
-	mapNullString(&cortexAgent.Comment, r.Comment)
-	mapNullString(&cortexAgent.Profile, r.Profile)
-	return cortexAgent, nil
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.Profile, r.Profile)
+	return result, nil
 }
 
 func (r *DescribeCortexAgentRequest) toOpts() *DescribeCortexAgentOptions {
@@ -144,8 +143,7 @@ func (r *DescribeCortexAgentRequest) toOpts() *DescribeCortexAgentOptions {
 }
 
 func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
-	// adjusted manually
-	details := &CortexAgentDetails{
+	result := &CortexAgentDetails{
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
@@ -153,10 +151,10 @@ func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
 		AgentSpec:    r.AgentSpec,
 		CreatedOn:    r.CreatedOn,
 	}
-	mapNullString(&details.Comment, r.Comment)
-	mapNullString(&details.Profile, r.Profile)
-	mapNullString(&details.DefaultVersionName, r.DefaultVersionName)
-	mapNullString(&details.Versions, r.Versions)
-	mapNullString(&details.Aliases, r.Aliases)
-	return details, nil
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.Profile, r.Profile)
+	mapNullString(&result.DefaultVersionName, r.DefaultVersionName)
+	mapNullString(&result.Versions, r.Versions)
+	mapNullString(&result.Aliases, r.Aliases)
+	return result, nil
 }

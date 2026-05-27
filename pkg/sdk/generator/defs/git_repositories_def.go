@@ -17,20 +17,23 @@ var gitRepositoryPairs = g.StructPair("gitRepositoriesRow", "GitRepository").
 	Text("owner").
 	Text("owner_role_type").
 	OptionalText("comment").
-	OptionalTime("last_fetched_at")
+	OptionalTime("last_fetched_at").
+	WithConvertGeneration()
 
 var gitBranchesPairs = g.StructPair("gitBranchesRow", "GitBranch").
 	Text("name").
 	Text("path").
 	Text("checkouts").
-	Text("commit_hash")
+	Text("commit_hash").
+	WithConvertGeneration()
 
 var gitTagsPairs = g.StructPair("gitTagsRow", "GitTag").
 	Text("name").
 	Text("path").
 	Text("commit_hash").
 	Text("author").
-	Text("message")
+	Text("message").
+	WithConvertGeneration()
 
 var gitRepositoriesDef = g.NewInterface(
 	"GitRepositories",

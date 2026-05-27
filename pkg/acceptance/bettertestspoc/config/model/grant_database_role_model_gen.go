@@ -50,10 +50,12 @@ func (g *GrantDatabaseRoleModel) MarshalJSON() ([]byte, error) {
 	type Alias GrantDatabaseRoleModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(g),
 		DependsOn: g.DependsOn(),
+		Timeouts:  g.Timeouts(),
 	})
 }
 
@@ -64,6 +66,11 @@ func (g *GrantDatabaseRoleModel) WithDependsOn(values ...string) *GrantDatabaseR
 
 func (g *GrantDatabaseRoleModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *GrantDatabaseRoleModel {
 	g.DynamicBlock = dynamicBlock
+	return g
+}
+
+func (g *GrantDatabaseRoleModel) WithTimeout(timeout config.Timeouts) *GrantDatabaseRoleModel {
+	g.SetTimeout(timeout)
 	return g
 }
 

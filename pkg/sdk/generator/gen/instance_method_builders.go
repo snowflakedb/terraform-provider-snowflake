@@ -33,7 +33,7 @@ func (i *Interface) InstanceMethodOperation(doc string, methodName string, argsQ
 	operationName := sqlToFieldName(methodName, true)
 	qs := i.newInstanceMethodCallStruct(operationName+"Options", methodName, argsQueryStruct).
 		WithValidation(ValidIdentifier, "name")
-	i.newOperationWithDBMapping(operationName, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), qs, instanceMethodMappingForKind(kind), helperStructs...)
+	i.newOperationWithDBMapping(operationName, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), qs, pairedStructs.instanceMethodMappingFunc(kind), helperStructs...)
 	return i
 }
 

@@ -73,10 +73,12 @@ func (e *ExternalS3StageModel) MarshalJSON() ([]byte, error) {
 	type Alias ExternalS3StageModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(e),
 		DependsOn: e.DependsOn(),
+		Timeouts:  e.Timeouts(),
 	})
 }
 
@@ -87,6 +89,11 @@ func (e *ExternalS3StageModel) WithDependsOn(values ...string) *ExternalS3StageM
 
 func (e *ExternalS3StageModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalS3StageModel {
 	e.DynamicBlock = dynamicBlock
+	return e
+}
+
+func (e *ExternalS3StageModel) WithTimeout(timeout config.Timeouts) *ExternalS3StageModel {
+	e.SetTimeout(timeout)
 	return e
 }
 

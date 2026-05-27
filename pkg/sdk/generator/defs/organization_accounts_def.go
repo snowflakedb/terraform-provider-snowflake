@@ -29,7 +29,7 @@ var organizationAccountsDef = g.NewInterface(
 			OptionalTextAssignment("LAST_NAME", g.ParameterOptions().SingleQuotes()).
 			TextAssignment("EMAIL", g.ParameterOptions().Required().SingleQuotes()).
 			OptionalBooleanAssignment("MUST_CHANGE_PASSWORD", g.ParameterOptions()).
-			Assignment("EDITION", OrganizationAccountEditionEnumDef.Kind(), g.ParameterOptions().Required().NoQuotes()).
+			EnumAssignment("EDITION", OrganizationAccountEditionEnumDef, g.ParameterOptions().Required().NoQuotes()).
 			OptionalTextAssignment("REGION_GROUP", g.ParameterOptions().DoubleQuotes()).
 			OptionalTextAssignment("REGION", g.ParameterOptions().DoubleQuotes()).
 			OptionalComment().
@@ -88,7 +88,7 @@ var organizationAccountsDef = g.NewInterface(
 			Text("organization_name").
 			Text("account_name").
 			Text("snowflake_region").
-			PlainField("edition", OrganizationAccountEditionEnumDef.Kind()).
+			Enum("edition", OrganizationAccountEditionEnumDef).
 			Text("account_url").
 			Text("created_on").
 			OptionalText("comment").
@@ -106,7 +106,8 @@ var organizationAccountsDef = g.NewInterface(
 			OptionalText("organization_old_url_saved_on").
 			OptionalText("organization_old_url_last_used").
 			Bool("is_events_account").
-			Bool("is_organization_account"),
+			Bool("is_organization_account").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowOrganizationAccounts").
 			Show().
 			SQL("ORGANIZATION ACCOUNTS").

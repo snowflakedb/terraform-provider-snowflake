@@ -56,10 +56,12 @@ func (r *ResourceMonitorModel) MarshalJSON() ([]byte, error) {
 	type Alias ResourceMonitorModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(r),
 		DependsOn: r.DependsOn(),
+		Timeouts:  r.Timeouts(),
 	})
 }
 
@@ -70,6 +72,11 @@ func (r *ResourceMonitorModel) WithDependsOn(values ...string) *ResourceMonitorM
 
 func (r *ResourceMonitorModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ResourceMonitorModel {
 	r.DynamicBlock = dynamicBlock
+	return r
+}
+
+func (r *ResourceMonitorModel) WithTimeout(timeout config.Timeouts) *ResourceMonitorModel {
+	r.SetTimeout(timeout)
 	return r
 }
 

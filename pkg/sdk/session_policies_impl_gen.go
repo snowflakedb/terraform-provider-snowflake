@@ -160,8 +160,7 @@ func (r *ShowSessionPolicyRequest) toOpts() *ShowSessionPolicyOptions {
 }
 
 func (r showSessionPolicyDBRow) convert() (*SessionPolicy, error) {
-	// adjusted manually
-	return &SessionPolicy{
+	result := &SessionPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		DatabaseName:  r.DatabaseName,
@@ -171,7 +170,8 @@ func (r showSessionPolicyDBRow) convert() (*SessionPolicy, error) {
 		Comment:       r.Comment,
 		OwnerRoleType: r.OwnerRoleType,
 		Options:       r.Options,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *DescribeSessionPolicyRequest) toOpts() *DescribeSessionPolicyOptions {
@@ -182,11 +182,11 @@ func (r *DescribeSessionPolicyRequest) toOpts() *DescribeSessionPolicyOptions {
 }
 
 func (r describeSessionPolicyDBRow) convert() (*SessionPolicyProperty, error) {
-	// adjusted manually
-	return &SessionPolicyProperty{
+	result := &SessionPolicyProperty{
 		Property:    r.Property,
 		Value:       r.Value,
 		Default:     r.Default,
 		Description: r.Description,
-	}, nil
+	}
+	return result, nil
 }

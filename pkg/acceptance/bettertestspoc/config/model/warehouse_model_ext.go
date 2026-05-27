@@ -26,8 +26,8 @@ func WarehouseSnowflakeDefaultWithoutParameters(
 		WithAutoSuspend(600).
 		WithAutoResume(r.BooleanTrue).
 		WithInitiallySuspended(false).
-		WithEnableQueryAcceleration(r.BooleanFalse).
-		WithQueryAccelerationMaxScaleFactor(8)
+		WithEnableQueryAcceleration(r.BooleanTrue).
+		WithQueryAccelerationMaxScaleFactor(2)
 }
 
 // TODO [SNOW-1501905]: currently config builder are generated from the resource schema, so there is no direct connection to the source enum (like sdk.WarehouseSize)

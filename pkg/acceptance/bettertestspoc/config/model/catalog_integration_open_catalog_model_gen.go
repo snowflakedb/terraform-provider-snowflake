@@ -68,10 +68,12 @@ func (c *CatalogIntegrationOpenCatalogModel) MarshalJSON() ([]byte, error) {
 	type Alias CatalogIntegrationOpenCatalogModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
+		Timeouts:  c.Timeouts(),
 	})
 }
 
@@ -82,6 +84,11 @@ func (c *CatalogIntegrationOpenCatalogModel) WithDependsOn(values ...string) *Ca
 
 func (c *CatalogIntegrationOpenCatalogModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *CatalogIntegrationOpenCatalogModel {
 	c.DynamicBlock = dynamicBlock
+	return c
+}
+
+func (c *CatalogIntegrationOpenCatalogModel) WithTimeout(timeout config.Timeouts) *CatalogIntegrationOpenCatalogModel {
+	c.SetTimeout(timeout)
 	return c
 }
 

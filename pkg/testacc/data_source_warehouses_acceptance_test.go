@@ -70,9 +70,6 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	enableQueryAcceleration := testClient().SnowflakeDefaults.WarehouseEnableQueryAcceleration(t)
-	queryAccelerationMaxScaleFactor := testClient().SnowflakeDefaults.WarehouseQueryAccelerationMaxScaleFactor(t)
-
 	warehouseModel := model.Warehouse("test", id.Name()).
 		WithComment(comment)
 
@@ -111,8 +108,8 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 			HasUpdatedOnNotEmpty().
 			HasOwnerNotEmpty().
 			HasComment(comment).
-			HasEnableQueryAcceleration(enableQueryAcceleration).
-			HasQueryAccelerationMaxScaleFactor(queryAccelerationMaxScaleFactor).
+			HasEnableQueryAcceleration(true).
+			HasQueryAccelerationMaxScaleFactor(2).
 			HasResourceMonitorEmpty().
 			HasScalingPolicy(sdk.ScalingPolicyStandard).
 			HasOwnerRoleTypeNotEmpty().

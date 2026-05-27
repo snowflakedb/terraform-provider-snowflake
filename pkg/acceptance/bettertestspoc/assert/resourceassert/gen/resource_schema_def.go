@@ -74,6 +74,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ComputePool().Schema,
 	},
 	{
+		name:   "CortexAgent",
+		schema: resources.CortexAgent().Schema,
+	},
+	{
 		name:   "CurrentAccount",
 		schema: resources.CurrentAccount().Schema,
 	},
@@ -288,6 +292,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "SharedDatabase",
 		schema: resources.SharedDatabase().Schema,
+	},
+	{
+		name:   "Share",
+		schema: resources.Share().Schema,
 	},
 	{
 		name:   "Streamlit",

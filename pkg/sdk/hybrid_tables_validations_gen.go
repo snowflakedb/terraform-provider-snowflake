@@ -38,6 +38,7 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set) {
 		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"))
 	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ConstraintAction) {
 		if !exactlyOneValueSet(opts.ConstraintAction.Rename, opts.ConstraintAction.Drop) {
 			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction", "Rename", "Drop"))
@@ -48,13 +49,6 @@ func (opts *AlterHybridTableOptions) validate() error {
 			}
 			if everyValueSet(opts.ConstraintAction.Drop.Cascade, opts.ConstraintAction.Drop.Restrict) {
 				errs = append(errs, errOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "Cascade", "Restrict"))
-			}
-		}
-	}
-	if valueSet(opts.AlterColumnAction) {
-		for _, action := range opts.AlterColumnAction {
-			if !exactlyOneValueSet(action.DropDefault, action.SetDefault, action.Type, action.Comment, action.UnsetComment) {
-				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment"))
 			}
 		}
 	}

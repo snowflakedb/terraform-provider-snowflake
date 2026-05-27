@@ -65,7 +65,8 @@ var materializedViewPairs = g.StructPair("materializedViewDBRow", "MaterializedV
 	Bool("is_secure").
 	Field("automatic_clustering", "string", "bool").
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).
-	OptionalText("budget", g.WithRequiredInPlain())
+	OptionalText("budget", g.WithRequiredInPlain()).
+	WithConvertGeneration()
 
 var materializedViewDetailsPairs = g.StructPair("materializedViewDetailsRow", "MaterializedViewDetails").
 	Text("name").

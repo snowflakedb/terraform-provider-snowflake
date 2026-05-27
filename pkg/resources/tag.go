@@ -85,7 +85,7 @@ var tagSchema = map[string]*schema.Schema{
 	"on_conflict": {
 		Type:         schema.TypeList,
 		Optional:     true,
-		Description:  externalChangesNotDetectedFieldDescription("Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation)."),
+		Description:  "Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation).",
 		MaxItems:     1,
 		RequiredWith: []string{"propagate"},
 		Elem: &schema.Resource{
@@ -93,7 +93,7 @@ var tagSchema = map[string]*schema.Schema{
 				"allowed_values_sequence": {
 					Type:         schema.TypeBool,
 					Optional:     true,
-					Description:  externalChangesNotDetectedFieldDescription("The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict."),
+					Description:  "The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict.",
 					RequiredWith: []string{"ordered_allowed_values"},
 					ExactlyOneOf: []string{
 						"on_conflict.0.allowed_values_sequence",
@@ -103,7 +103,7 @@ var tagSchema = map[string]*schema.Schema{
 				"custom_value": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: externalChangesNotDetectedFieldDescription("Whenever there is a conflict, the value of tag is set to custom_value. If `allowed_values` are set, the value set in this field should be one of the values in the `allowed_values` list."),
+					Description: "Whenever there is a conflict, the value of tag is set to custom_value. If `allowed_values` are set, the value set in this field should be one of the values in the `allowed_values` list.",
 					ExactlyOneOf: []string{
 						"on_conflict.0.allowed_values_sequence",
 						"on_conflict.0.custom_value",
@@ -177,7 +177,7 @@ func Tag() *schema.Resource {
 		Description:   "Resource used to manage tags. For more information, check [tag documentation](https://docs.snowflake.com/en/sql-reference/sql/create-tag). For assigning tags to Snowflake objects, see [tag_association resource](./tag_association).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Tag, customdiff.All(
-			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values", "ordered_allowed_values", "no_allowed_values"),
+			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values", "ordered_allowed_values", "no_allowed_values", "on_conflict"),
 			ComputedIfAnyAttributeChanged(tagSchema, FullyQualifiedNameAttributeName, "name"),
 		)),
 
@@ -324,6 +324,20 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
 		d.Set("propagate", propagate),
+		func() error {
+			// on_conflict is only available when BCR-2291 is enabled. When the column is absent,
+			// tag.OnConflict is nil and we leave the state unchanged to avoid spurious diffs.
+			if tag.OnConflict != nil {
+				onConflict := make(map[string]any)
+				if *tag.OnConflict == sdk.TagOnConflictAllowedValuesSequence {
+					onConflict["allowed_values_sequence"] = true
+				} else {
+					onConflict["custom_value"] = *tag.OnConflict
+				}
+				return d.Set("on_conflict", []map[string]any{onConflict})
+			}
+			return nil
+		}(),
 		func() error {
 			// Use ordered_allowed_values by default (including import where rawConfig is null).
 			// Determine the usage by checking config values, but if not provided by Terraform,

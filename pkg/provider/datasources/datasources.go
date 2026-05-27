@@ -10,6 +10,7 @@ const (
 	CatalogIntegrations            datasource = "snowflake_catalog_integrations"
 	ComputePools                   datasource = "snowflake_compute_pools"
 	Connections                    datasource = "snowflake_connections"
+	CortexAgents                   datasource = "snowflake_cortex_agents"
 	CortexSearchServices           datasource = "snowflake_cortex_search_services"
 	CurrentAccount                 datasource = "snowflake_current_account"
 	CurrentRole                    datasource = "snowflake_current_role"

@@ -5,6 +5,7 @@ package testint
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -335,6 +336,52 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, "30")
 	assertParameterEquals(t, sdk.AccountParameterQuotedIdentifiersIgnoreCase, "true")
 	assertParameterEquals(t, sdk.AccountParameterEnableConsoleOutput, "true")
+}
+
+func TestInt_DatabasesCreateFromListing(t *testing.T) {
+	t.Skip("TODO(SNOW-3556777): Use precreated listing")
+
+	client := testClient(t)
+	ctx := testContext(t)
+
+	secondaryClient := testSecondaryClient(t)
+	secondaryCtx := testSecondaryContext(t)
+
+	share, shareCleanup := secondaryTestClientHelper().Share.CreateShare(t)
+	t.Cleanup(shareCleanup)
+	t.Cleanup(secondaryTestClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, secondaryTestClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
+
+	primaryAccountId := testClientHelper().Context.CurrentAccountId(t)
+	manifest, _ := secondaryTestClientHelper().Listing.BasicManifestWithTargetAccounts(t, primaryAccountId)
+
+	listingId := secondaryTestClientHelper().Ids.RandomAccountObjectIdentifier()
+	err := secondaryClient.Listings.Create(secondaryCtx, sdk.NewCreateListingRequest(listingId).
+		WithAs(manifest).
+		WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+		WithReview(true).
+		WithPublish(true))
+	require.NoError(t, err)
+	t.Cleanup(secondaryTestClientHelper().Listing.DropFunc(t, listingId))
+
+	listing, err := secondaryClient.Listings.ShowByID(secondaryCtx, listingId)
+	require.NoError(t, err)
+	require.NotEmpty(t, listing.GlobalName)
+	require.Equal(t, sdk.ListingStatePublished, listing.State)
+
+	testClientHelper().Listing.AcceptLegalTermsWithRetry(t, listing.GlobalName, time.Minute, 5*time.Second)
+	testClientHelper().Listing.RequestListingAndWaitForSuccess(t, listing.GlobalName, 10)
+
+	t.Run("basic", func(t *testing.T) {
+		databaseID := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Databases.CreateFromListing(ctx, databaseID, listing.GlobalName, &sdk.CreateDatabaseFromListingOptions{})
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, databaseID))
+
+		database, err := client.Databases.ShowByID(ctx, databaseID)
+		require.NoError(t, err)
+		assert.Equal(t, databaseID.Name(), database.Name)
+		assert.Equal(t, "IMPORTED DATABASE", database.Kind)
+	})
 }
 
 func TestInt_DatabasesAlter(t *testing.T) {

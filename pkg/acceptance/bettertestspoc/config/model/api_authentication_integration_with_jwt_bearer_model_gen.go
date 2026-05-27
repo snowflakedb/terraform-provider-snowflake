@@ -74,10 +74,12 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerModel) MarshalJSON() ([]byte, 
 	type Alias ApiAuthenticationIntegrationWithJwtBearerModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(a),
 		DependsOn: a.DependsOn(),
+		Timeouts:  a.Timeouts(),
 	})
 }
 
@@ -88,6 +90,11 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithDependsOn(values ..
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ApiAuthenticationIntegrationWithJwtBearerModel {
 	a.DynamicBlock = dynamicBlock
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithJwtBearerModel) WithTimeout(timeout config.Timeouts) *ApiAuthenticationIntegrationWithJwtBearerModel {
+	a.SetTimeout(timeout)
 	return a
 }
 

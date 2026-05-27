@@ -3,7 +3,9 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -80,6 +82,43 @@ func (c *ListingClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (
 func (c *ListingClient) ShowVersions(t *testing.T, id sdk.AccountObjectIdentifier) ([]sdk.ListingVersion, error) {
 	t.Helper()
 	return c.client().ShowVersions(context.Background(), sdk.NewShowVersionsListingRequest(id))
+}
+
+// RequestListingAndWaitForSuccess calls SYSTEM$REQUEST_LISTING_AND_WAIT for the given listing
+// global name with the given in-call wait and fails the test unless the procedure reports
+// success.
+//
+// See: https://docs.snowflake.com/en/sql-reference/stored-procedures/system_request_listing_and_wait
+func (c *ListingClient) RequestListingAndWaitForSuccess(t *testing.T, globalName string, waitInMinutes int) {
+	t.Helper()
+
+	rows, err := c.context.client.QueryUnsafe(context.Background(), fmt.Sprintf("CALL SYSTEM$REQUEST_LISTING_AND_WAIT('%s', %d)", globalName, waitInMinutes))
+	require.NoError(t, err)
+	require.Len(t, rows, 1)
+
+	statusPtr := rows[0]["SYSTEM$REQUEST_LISTING_AND_WAIT"]
+	require.NotNil(t, statusPtr)
+	require.NotNil(t, *statusPtr)
+
+	status, ok := (*statusPtr).(string)
+	require.True(t, ok)
+	require.Truef(t, strings.HasPrefix(status, "Success:"), "SYSTEM$REQUEST_LISTING_AND_WAIT did not succeed: %s", status)
+}
+
+// AcceptLegalTermsWithRetry calls SYSTEM$ACCEPT_LEGAL_TERMS for the given listing global name
+// and retries until it succeeds or the timeout elapses. This doubles as a visibility probe: a
+// freshly-published cross-account listing's global name is not immediately resolvable on the
+// consumer account, and SYSTEM$ACCEPT_LEGAL_TERMS is the first consumer-side call that returns
+// a clear SQL error ("does not exist or not authorized") in that window.
+//
+// See: https://docs.snowflake.com/en/sql-reference/stored-procedures/system_accept_legal_terms
+func (c *ListingClient) AcceptLegalTermsWithRetry(t *testing.T, globalName string, timeout time.Duration, tick time.Duration) {
+	t.Helper()
+
+	require.EventuallyWithT(t, func(collect *assert.CollectT) {
+		_, err := c.context.client.QueryUnsafe(context.Background(), fmt.Sprintf("CALL SYSTEM$ACCEPT_LEGAL_TERMS('DATA_EXCHANGE_LISTING', '%s')", globalName))
+		assert.NoError(collect, err)
+	}, timeout, tick)
 }
 
 func (c *ListingClient) BasicManifest(t *testing.T) (string, string) {

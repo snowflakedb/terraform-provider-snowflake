@@ -13,6 +13,50 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+func (opts *CreateTaskOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.SessionParameters) {
+		if err := opts.SessionParameters.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if valueSet(opts.Warehouse) {
+		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
+			errs = append(errs, errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateOrAlterTaskOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.SessionParameters) {
+		if err := opts.SessionParameters.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if valueSet(opts.Warehouse) {
+		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
+			errs = append(errs, errExactlyOneOf("CreateOrAlterTaskOptions.CreateTaskWarehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (s *TaskSet) additionalValidations() error {
+	if valueSet(s.SessionParameters) {
+		return s.SessionParameters.validate()
+	}
+	return nil
+}
+
+func (s *TaskUnset) additionalValidations() error {
+	if valueSet(s.SessionParametersUnset) {
+		return s.SessionParametersUnset.validate()
+	}
+	return nil
+}
+
 type TaskRelationsRepresentation struct {
 	Predecessors      []string `json:"Predecessors"`
 	FinalizerTask     string   `json:"FinalizerTask"`

@@ -63,7 +63,8 @@ var cortexSearchServicesDef = g.NewInterface(
 		Text("name").
 		Text("database_name").
 		Text("schema_name").
-		OptionalText("comment", g.WithRequiredInPlain()),
+		OptionalText("comment", g.WithRequiredInPlain()).
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowCortexSearchService").
 		Show().
 		SQL("CORTEX SEARCH SERVICES").
@@ -93,7 +94,8 @@ var cortexSearchServicesDef = g.NewInterface(
 		Number("source_data_num_rows").
 		Text("indexing_state").
 		OptionalText("indexing_error").
-		OptionalText("embedding_model"),
+		OptionalText("embedding_model").
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeCortexSearchService").
 		Describe().
 		SQL("CORTEX SEARCH SERVICE").

@@ -89,6 +89,16 @@ func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasCatalogNamespace(expe
 	return c
 }
 
+func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsIamUserArn(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
+	c.AddAssertion(assert.ResourceDescribeOutputValueSet("glue_aws_iam_user_arn", expected))
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsExternalId(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
+	c.AddAssertion(assert.ResourceDescribeOutputValueSet("glue_aws_external_id", expected))
+	return c
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -140,5 +150,25 @@ func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoGlueRegion() *Catal
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoCatalogNamespace() *CatalogIntegrationAwsGlueDescribeOutputAssert {
 	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("catalog_namespace"))
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsIamUserArnNotEmpty() *CatalogIntegrationAwsGlueDescribeOutputAssert {
+	c.AddAssertion(assert.ResourceDescribeOutputValuePresent("glue_aws_iam_user_arn"))
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsExternalIdNotEmpty() *CatalogIntegrationAwsGlueDescribeOutputAssert {
+	c.AddAssertion(assert.ResourceDescribeOutputValuePresent("glue_aws_external_id"))
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoGlueAwsIamUserArn() *CatalogIntegrationAwsGlueDescribeOutputAssert {
+	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("glue_aws_iam_user_arn"))
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoGlueAwsExternalId() *CatalogIntegrationAwsGlueDescribeOutputAssert {
+	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("glue_aws_external_id"))
 	return c
 }

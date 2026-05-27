@@ -48,7 +48,7 @@ Both integration and acceptance tests require the connection to Snowflake (some 
 
 The preferred way of running particular tests locally is to create a config file `~/.snowflake/config`, with the following content.
 
-```sh
+```toml
 [default]
 account_name = "<your account name>"
 organization_name = "<organization in which your account is located>"
@@ -60,7 +60,7 @@ host="<host of your account, e.g. organisation-account_name.snowflakecomputing.c
 
 To be able to run all the tests you additionally need the second profile `[secondary_test_account]`:
 
-```sh
+```toml
 [secondary_test_account]
 account_name = "<your account name>"
 organization_name = "<organization in which your account is located>"
@@ -68,6 +68,18 @@ user = "<your user on the secondary account>"
 password = "<your password on the secondary account>"
 role = "<your role on the secondary account>"
 host="<host of your account, e.g. organisation-account_name2.snowflakecomputing.com>"
+```
+
+Some tests also require an Azure account profile `[azure_test_account]`. This is only used in non-prod environments for tests that require multiple Snowflake instances on different cloud providers (e.g. cross-cloud connection failover tests):
+
+```toml
+[azure_test_account]
+account_name = "<your Azure account name>"
+organization_name = "<organization in which your Azure account is located>"
+user = "<your user on the Azure account>"
+password = "<your password on the Azure account>"
+role = "<your role on the Azure account>"
+host="<host of your Azure account, e.g. organisation-azure_account_name.snowflakecomputing.com>"
 ```
 
 **TIP**: check [how-can-i-get-my-organization-name](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#how-can-i-get-my-organization-name) and [how-can-i-get-my-account-name](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#how-can-i-get-my-account-name) sections in our guides if you have troubles setting the proper `organization_name` and `account_name`.
@@ -133,7 +145,7 @@ To add the experiment:
 - Add it to [`allExperiments`](pkg/provider/experimentalfeatures/experimental_features.go).
 - Guard the logic with conditional statement like (example in the [user resource](pkg/resources/user.go)):
 ```go
-if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) { 
+if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) {
   // new logic here
 } else {
   // old logic here

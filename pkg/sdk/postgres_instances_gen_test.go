@@ -134,7 +134,7 @@ func TestPostgresInstances_Fork(t *testing.T) {
 			Timestamp: Pointer("2025-01-15 12:00:00"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
-			`CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => 2025-01-15 12:00:00)`,
+			`CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => '2025-01-15 12:00:00')`,
 			id.FullyQualifiedName(), forkId.FullyQualifiedName())
 	})
 
@@ -154,7 +154,7 @@ func TestPostgresInstances_Fork(t *testing.T) {
 			Timestamp: Pointer("2025-01-15 12:00:00"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
-			`CREATE POSTGRES INSTANCE %s FORK %s BEFORE (TIMESTAMP => 2025-01-15 12:00:00)`,
+			`CREATE POSTGRES INSTANCE %s FORK %s BEFORE (TIMESTAMP => '2025-01-15 12:00:00')`,
 			id.FullyQualifiedName(), forkId.FullyQualifiedName())
 	})
 
@@ -180,7 +180,7 @@ func TestPostgresInstances_Fork(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts,
-			`CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => 2025-01-15 12:00:00)`+
+			`CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => '2025-01-15 12:00:00')`+
 				` COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 100 HIGH_AVAILABILITY = true`+
 				` POSTGRES_SETTINGS = '{}' COMMENT = '%s' TAG (%s = 'value1')`,
 			id.FullyQualifiedName(), forkId.FullyQualifiedName(), comment, tagId.FullyQualifiedName())

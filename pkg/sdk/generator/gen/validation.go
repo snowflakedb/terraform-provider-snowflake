@@ -14,6 +14,7 @@ import (
 // - at least one value set - present here, put on level containing given fields
 // - validate nested field - present here, used for common structs which have their own validate() methods specified
 // - nested validation conditionally - not present here, handled by putting validations on lower level fields
+// - additional validations invocation - present here, emits a call to additionalValidations() method on the struct
 type ValidationType int64
 
 const (
@@ -24,6 +25,7 @@ const (
 	AtLeastOneValueSet
 	ValidateValue
 	ValidateValueSet
+	AdditionalValidations
 )
 
 type Validation struct {
@@ -36,6 +38,10 @@ func NewValidation(validationType ValidationType, fieldNames ...string) *Validat
 		Type:       validationType,
 		FieldNames: fieldNames,
 	}
+}
+
+func (v *Validation) IsAdditionalValidations() bool {
+	return v.Type == AdditionalValidations
 }
 
 func (v *Validation) paramsQuoted() []string {
@@ -73,6 +79,8 @@ func (v *Validation) Condition(field *Field) string {
 			log.Panicf("expected ValidateValue to be called exactly one field, got: %v", v.FieldNames)
 		}
 		return fmt.Sprintf("err := %s.validate(); err != nil", v.fieldsWithPath(field)[0])
+	case AdditionalValidations:
+		log.Panicf("Condition() must not be called for AdditionalValidations type")
 	}
 	panic("condition for validation unknown")
 }
@@ -93,12 +101,16 @@ func (v *Validation) ReturnedError(field *Field) string {
 		return fmt.Sprintf(`errNotSet("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
 	case ValidateValue:
 		return "err"
+	case AdditionalValidations:
+		log.Panicf("ReturnedError() must not be called for AdditionalValidations type")
 	}
 	panic("condition for validation unknown")
 }
 
 func (v *Validation) TodoComment(field *Field) string {
 	switch v.Type {
+	case AdditionalValidations:
+		return fmt.Sprintf("validation: additional validations for opts%s", field.Path())
 	case ValidIdentifier:
 		return fmt.Sprintf("validation: valid identifier for %v", v.fieldsWithPath(field))
 	case ValidIdentifierIfSet:

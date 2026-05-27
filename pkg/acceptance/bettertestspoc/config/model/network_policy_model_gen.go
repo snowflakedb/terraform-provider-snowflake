@@ -53,10 +53,12 @@ func (n *NetworkPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias NetworkPolicyModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(n),
 		DependsOn: n.DependsOn(),
+		Timeouts:  n.Timeouts(),
 	})
 }
 
@@ -67,6 +69,11 @@ func (n *NetworkPolicyModel) WithDependsOn(values ...string) *NetworkPolicyModel
 
 func (n *NetworkPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *NetworkPolicyModel {
 	n.DynamicBlock = dynamicBlock
+	return n
+}
+
+func (n *NetworkPolicyModel) WithTimeout(timeout config.Timeouts) *NetworkPolicyModel {
+	n.SetTimeout(timeout)
 	return n
 }
 

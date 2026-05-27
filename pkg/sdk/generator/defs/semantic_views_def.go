@@ -14,14 +14,16 @@ var semanticViewPairs = g.StructPair("semanticViewDBRow", "SemanticView").
 	OptionalText("comment").
 	Text("owner").
 	Text("owner_role_type").
-	OptionalText("extension")
+	OptionalText("extension").
+	WithConvertGeneration()
 
 var semanticViewDetailsPairs = g.StructPair("semanticViewDetailsRow", "SemanticViewDetails").
 	OptionalText("object_kind").
 	OptionalText("object_name").
 	OptionalText("parent_entity").
 	Text("property").
-	Text("property_value")
+	Text("property_value").
+	WithConvertGeneration()
 
 var semanticViewsDef = g.NewInterface(
 	"SemanticViews",
@@ -44,7 +46,8 @@ var semanticViewsDef = g.NewInterface(
 			OptionalComment().
 			OptionalCopyGrants().
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace"),
+			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
+			WithAdditionalValidations(),
 		logicalTable,
 		synonym,
 		semanticViewRelationship,

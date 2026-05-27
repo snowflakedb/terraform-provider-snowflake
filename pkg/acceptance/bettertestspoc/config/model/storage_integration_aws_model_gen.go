@@ -74,10 +74,12 @@ func (s *StorageIntegrationAwsModel) MarshalJSON() ([]byte, error) {
 	type Alias StorageIntegrationAwsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -88,6 +90,11 @@ func (s *StorageIntegrationAwsModel) WithDependsOn(values ...string) *StorageInt
 
 func (s *StorageIntegrationAwsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StorageIntegrationAwsModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *StorageIntegrationAwsModel) WithTimeout(timeout config.Timeouts) *StorageIntegrationAwsModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

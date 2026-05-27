@@ -144,7 +144,7 @@ func TestTableCreate(t *testing.T) {
 
 	t.Run("validation: rowAccessPolicy's incorrect identifier", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.RowAccessPolicy = &TableRowAccessPolicy{
+		opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{
 			Name: emptySchemaObjectIdentifier,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("TableRowAccessPolicy", "Name"))
@@ -446,7 +446,7 @@ func TestTableCreate(t *testing.T) {
 		legacyTableCopyOptions := LegacyTableCopyOptions{
 			OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
 		}
-		rowAccessPolicy := TableRowAccessPolicy{
+		rowAccessPolicy := TableRowAccessPolicyLegacy{
 			Name: randomSchemaObjectIdentifier(),
 			On:   []string{"COLUMN_1", "COLUMN_2"},
 		}
@@ -561,7 +561,7 @@ func TestTableCreateAsSelect(t *testing.T) {
 		maskingPolicy := TableAsSelectColumnMaskingPolicy{
 			Name: randomSchemaObjectIdentifier(),
 		}
-		rowAccessPolicy := TableRowAccessPolicy{
+		rowAccessPolicy := TableRowAccessPolicyLegacy{
 			Name: randomSchemaObjectIdentifier(),
 			On:   []string{"COLUMN_1", "COLUMN_2"},
 		}
@@ -887,17 +887,17 @@ func TestTableAlter(t *testing.T) {
 
 	t.Run("validation: search optimization - no option present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationAction", "Add", "Drop"))
+		opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationActionLegacy", "Add", "Drop"))
 	})
 
 	t.Run("validation: search optimization - two options present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+		opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{
 			Add:  &AddSearchOptimization{},
 			Drop: &DropSearchOptimization{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationAction", "Add", "Drop"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationActionLegacy", "Add", "Drop"))
 	})
 
 	t.Run("empty options", func(t *testing.T) {
@@ -1296,7 +1296,7 @@ func TestTableAlter(t *testing.T) {
 	t.Run("add search optimization", func(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
-			SearchOptimizationAction: &TableSearchOptimizationAction{
+			SearchOptimizationAction: &TableSearchOptimizationActionLegacy{
 				Add: &AddSearchOptimization{
 					On: []string{"SUBSTRING(*)", "GEO(*)"},
 				},
@@ -1308,7 +1308,7 @@ func TestTableAlter(t *testing.T) {
 	t.Run("drop search optimization", func(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
-			SearchOptimizationAction: &TableSearchOptimizationAction{
+			SearchOptimizationAction: &TableSearchOptimizationActionLegacy{
 				Drop: &DropSearchOptimization{
 					On: []string{"SUBSTRING(*)", "FOO"},
 				},
@@ -1320,7 +1320,7 @@ func TestTableAlter(t *testing.T) {
 	t.Run("drop search optimization", func(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
-			SearchOptimizationAction: &TableSearchOptimizationAction{
+			SearchOptimizationAction: &TableSearchOptimizationActionLegacy{
 				Drop: &DropSearchOptimization{
 					On: []string{"SUBSTRING(*)", "FOO"},
 				},
