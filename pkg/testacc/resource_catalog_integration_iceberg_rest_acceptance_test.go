@@ -618,7 +618,6 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
-						planchecks.PrintPlanDetails(ref, "rest_config"),
 						planchecks.ExpectDrift(ref, "rest_config.0.catalog_uri", sdk.String(newCatalogUri), sdk.String(catalogUri)),
 						planchecks.ExpectChange(ref, "rest_config.0.catalog_uri", tfjson.ActionDelete, sdk.String(catalogUri), sdk.String(newCatalogUri)),
 						planchecks.ExpectDrift(ref, "rest_config.0.prefix", sdk.String(newPrefix), sdk.String(prefix)),
@@ -772,7 +771,7 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportOAuth(t *testing.T) {
 				Config: config.FromModels(t, allAttributes),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						planchecks.PrintPlanDetails(ref, "rest_config", "oauth_rest_authentication"),
+						planchecks.PrintPlanDetails(ref, "rest_config", "oauth_rest_authentication", "refresh_interval_seconds"),
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_client_secret", tfjson.ActionUpdate, sdk.String(""), sdk.String(oAuthClientSecret)),
 					},
