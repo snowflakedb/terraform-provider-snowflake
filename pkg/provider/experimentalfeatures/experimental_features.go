@@ -54,7 +54,7 @@ var allExperiments = []Experiment{
 		joinWithDoubleNewline(
 			"It's meant to improve the performance for accounts with many warehouses.",
 			"When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).",
-			"**Important**: to benefit from this improvement, you need to have it enabled also on your Snowflake account. To do this, please reach out to us through your Snowflake Account Manager.",
+			"This feature is enabled by default on the Snowflake side.",
 		),
 	},
 	{
