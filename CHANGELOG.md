@@ -1,5 +1,74 @@
 # Changelog
 
+## [2.17.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.16.0...v2.17.0) (2026-05-28)
+
+
+### 🎉 **What's new:**
+
+* add missing desc fields for catalog integration ([#4750](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4750)) ([f2d8685](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f2d86853a11d6c00b2d8e7310ea16be83f0152aa)), closes [#4745](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4745)
+* Add missing fields to system_get_privatelink_config ([#4379](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4379)) ([eee7672](https://github.com/snowflakedb/terraform-provider-snowflake/commit/eee76729940e5f3fb5200d9e70d764952897659e))
+* Add Openflow SOM objects to SDK ([#4697](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4697)) ([0fcfd20](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0fcfd207e41d30d47614d80bdd6ae074aa83a78d))
+* add SDK integration tests for Cortex agents ([#4707](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4707)) ([1bff9b3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1bff9b3031b79c3541605a8cda9e3f4c32d27781))
+* add snowflake_cortex_agent resource ([#4739](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4739)) ([ba1bd5e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ba1bd5ef27191e9a11823c66e2876dc46d3ac8ed))
+* add snowflake_cortex_agents data source ([#4774](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4774)) ([0db1c37](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0db1c372100d456ff3cd2b5ecebcbdb8e04abee8))
+* Adjust oauth_scopes to be optional in secret with client credentials flow ([#4760](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4760)) ([b3aa1f6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b3aa1f6c6172348592469a4562bfde28c64b6324))
+* integration tests for webhook notification integration ([#4723](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4723)) ([e8dbf95](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e8dbf95a6f71ae6ed5dc2e77f6555648c17a4595))
+* normalize cortex agent show/describe output representations ([#4786](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4786)) ([9f0400e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9f0400e2a2aa5be8fca43bde50910d4c1472a04a))
+* **sdk:** add CreateFromListing method for databases ([#4744](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4744)) ([ec71c20](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ec71c20be1bfeb6a410b1bdf270b837decf7586d))
+* Support use_privatelink_endpoint for Azure storage locations in snowflake_external_volume ([#4720](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4720)) ([ca702c7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ca702c7973f5aada808a22c16d9981e5bf0ef804)), closes [#4663](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4663)
+
+
+### 🔧 **Misc**
+
+* Add @snowflakedb/client-side-interfaces to CODEOWNERS ([#4751](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4751)) ([9557d79](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9557d7976a971f33fa0095f426d2adc45af04aff))
+* Add basic iceberg tables SDK definition ([#4747](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4747)) ([98f09c8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/98f09c808787f4f5745252590b7dc319238d4ea4))
+* Add instance method invocation to SDK builder, generator, and add a budget PoC ([#4688](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4688)) ([f366941](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f366941ed19045d805b90a5bbfb7bd6addf23648))
+* Add missing integration tests for budget example instance methods ([#4729](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4729)) ([f35b7de](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f35b7deac0316657466696fe18a5c7352c61032d))
+* Add policies to iceberg tables SDK ([#4748](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4748)) ([c609f27](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c609f276cdcf0bb946968b6f4c5165f97872babb))
+* add stale error repo test ([#4758](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4758)) ([65ce662](https://github.com/snowflakedb/terraform-provider-snowflake/commit/65ce6620a4bd00aacfd318701a61f4e7f8f30109))
+* Add tag reference functionality and assertions ([#4621](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4621)) ([f167314](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f167314ab13804a4133d9072b70049fa89dc76db))
+* Add test results gathering ([#3853](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3853)) ([ec17198](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ec1719815fc4c560543c71f12db60404f5ec3e0c))
+* add timeout support in model builders ([#4714](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4714)) ([1e04bce](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1e04bcebba1521fecc6b9f787a613f201090b0aa))
+* Address 2026_03 bcr changes ([#4673](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4673)) ([4526a19](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4526a197353de363bdc8eb9cac3460bb8867a862))
+* Adjust or skip failing tests ([#4785](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4785)) ([a03c779](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a03c7799fd0e4be534e7a2a7f299bc8712aefb1a))
+* Adjust tag tests ([#4755](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4755)) ([3f8d23f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3f8d23f1126b66a1eefcbd9b5040e2a949fcc4bf))
+* Adjust the show warehouse experiment documentation ([#4781](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4781)) ([62ee048](https://github.com/snowflakedb/terraform-provider-snowflake/commit/62ee048494d62c4fb709ab6ce4a0338718013a59))
+* Analyze share issue ([#4756](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4756)) ([0970cfb](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0970cfb0359584b27d6128f9e3f3bb8f640579c8))
+* Bump Go to 1.26.3 ([#4725](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4725)) ([ed86721](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ed867214f519842f89efba97e64c4d7a120c2749))
+* Check for manual changes in generated SDK validations ([#4779](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4779)) ([6ae3653](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6ae3653a9e42349994d22e04dfb51de6c69de49f))
+* Extract manual validation blocks from SDK validations gen files ([#4772](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4772)) ([cabcba6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/cabcba676b301f933337ea406b9c05ead2e5e824))
+* Fix dev ([#4753](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4753)) ([2a88916](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2a889160c90b1f986b98f7c86d273ac72aa76d62))
+* fix pre push ([#4736](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4736)) ([d59b4d2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d59b4d2e0bbfa19ae46fcadd023aad13665375f4))
+* Fix warehouse integration tests for new Snowflake defaults ([#4752](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4752)) ([9f30f28](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9f30f280af92dec2f82558f928b8f4cca71a3f64))
+* Generate additional validations invocation ([#4778](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4778)) ([30bab29](https://github.com/snowflakedb/terraform-provider-snowflake/commit/30bab29c0b0fab5193fd88eb9f1b1d6cfdf94c56))
+* Generate convert for more SDK objects - part 2 ([#4762](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4762)) ([278fa29](https://github.com/snowflakedb/terraform-provider-snowflake/commit/278fa2918b68d31ab30526f842ea2937230478f9))
+* Generate convert for more SDK objects - part 3 ([#4771](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4771)) ([8a1ac73](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8a1ac7391dc5623d1ba352e736552dbc3f2f2f0a))
+* Generate convert for more SDK objects - part 4 ([#4780](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4780)) ([f5a7d22](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f5a7d226374f3ff7670ce7c5f92b0322d9acb80d))
+* Generate convert implementation for the SDK objects ([#4740](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4740)) ([e915229](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e9152298416e4a5ee0205497f70cfcb67ac31f7e))
+* Migrate a few tests to model builder approach ([#4592](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4592)) ([03181da](https://github.com/snowflakedb/terraform-provider-snowflake/commit/03181dacdddd1329f9a9dee2225a21c344194e08))
+* Migrate to generated assertions ([#4596](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4596)) ([9fce4cc](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9fce4cc99b045a5b4b9cc3be28f0d82bb0f884c3))
+* Reduce SDK manual changes - enums and predefined structs ([#4742](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4742)) ([568da9b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/568da9bea580a1b7c3a6cacad04ebdef190ffbba))
+* remove SAP_BDC catalog integration from SDK ([#4724](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4724)) ([b3636bf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b3636bf64b4218b0e2390cbb03224692a6c407b1))
+* stream changes for bcr 2026 01 ([#4511](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4511)) ([fc6233e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/fc6233ea10ba0c02aa28afc064eca66442a0b6e7))
+* unskip connection tests for preprod environment ([#4499](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4499)) ([5250f95](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5250f95c199cbc89fcce995ce3914400ed8e05f3))
+* Unskip SHOW WAREHOUSES starts-with + limit test ([#4732](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4732)) ([28b2539](https://github.com/snowflakedb/terraform-provider-snowflake/commit/28b2539184a622a1ec422bac8945b43f63bae6e0))
+
+
+### 🐛 **Bug fixes:**
+
+* Functional tests for object renaming experiments ([#4601](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4601)) ([f1c2e10](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f1c2e10cc14e93b4e5a938f4142cb17d4174f6b3))
+* grants on connections to account role ([#4737](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4737)) ([c45fef5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c45fef50b96ed92e0ea0b44ef28f38e67056bf67))
+* handle unknown trigger values in ComputedIfAnyAttributeChanged ([#4733](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4733)) ([fc4b71d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/fc4b71d45e3636266d8fa68cb372b0e066a87ba4))
+* integration test improvements found through localized testing ([#4704](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4704)) ([062f518](https://github.com/snowflakedb/terraform-provider-snowflake/commit/062f518d85ed0d043e663b39cd3d200ad2cce418))
+* job fork status for tests ([#4734](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4734)) ([2bad2e4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2bad2e4bd52d01dd133d73e3bf658df70f3fd034))
+* non empty plan after importing catalog integration iceberg rest resource ([#4784](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4784)) ([2455cb4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2455cb4faa5ee89854b71ef6eca8c1dca5b679c2))
+* other catalog integration imports ([#4787](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4787)) ([9f08944](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9f0894495267b1d584f1582ddba65e5a60c0e840))
+* retry account ShowByID on ErrObjectNotExistOrAuthorized after creation ([#4726](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4726)) ([91ea91f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/91ea91feac494b37c97a9323bc93730f77284b1a))
+* snowflake_saml2_integration enabled defaults to TRUE on unset ([#4757](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4757)) ([4cb6beb](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4cb6bebb923642bac22b10ddbe3ec52f5054ce30))
+* snowflake_schema empty default_ddl_collation override ([#4731](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4731)) ([e78d7e8](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e78d7e853ae525647a39a0ca872aa94bde6fbf56))
+* tag propagation field ([#4668](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4668)) ([6ba7592](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6ba7592603cbfd1cde5844083210c6a2569dc30f))
+* test acc package ([#4776](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4776)) ([e46ec22](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e46ec2225ed2cd0c33ce680573290bfd90f4ee07))
+
 ## [2.16.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.15.0...v2.16.0) (2026-05-08)
 
 
