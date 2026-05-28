@@ -135,3 +135,159 @@ func TableOutOfLineConstraintFromRequest(r *TableOutOfLineConstraintRequest) *Ta
 	}
 	return out
 }
+
+func (opts *CreateIcebergTableOptions) additionalValidations() error {
+	var errs []error
+	// Adjusted manually: Columns is a slice, validate inline constraint per element
+	for i, col := range opts.ColumnsAndConstraints.Columns {
+		if valueSet(col.InlineConstraint) {
+			path := fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint", i)
+			if !exactlyOneValueSet(col.InlineConstraint.UniquePK, col.InlineConstraint.FK, col.InlineConstraint.CH) {
+				errs = append(errs, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+			}
+			if valueSet(col.InlineConstraint.UniquePK) {
+				upPath := path + ".UniquePK"
+				if everyValueSet(col.InlineConstraint.UniquePK.Enforced, col.InlineConstraint.UniquePK.NotEnforced) {
+					errs = append(errs, errOneOf(upPath, "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(col.InlineConstraint.UniquePK.Deferrable, col.InlineConstraint.UniquePK.NotDeferrable) {
+					errs = append(errs, errOneOf(upPath, "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(col.InlineConstraint.UniquePK.InitiallyDeferred, col.InlineConstraint.UniquePK.InitiallyImmediate) {
+					errs = append(errs, errOneOf(upPath, "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(col.InlineConstraint.UniquePK.Enable, col.InlineConstraint.UniquePK.Disable) {
+					errs = append(errs, errOneOf(upPath, "Enable", "Disable"))
+				}
+				if everyValueSet(col.InlineConstraint.UniquePK.Validate, col.InlineConstraint.UniquePK.Novalidate) {
+					errs = append(errs, errOneOf(upPath, "Validate", "Novalidate"))
+				}
+				if everyValueSet(col.InlineConstraint.UniquePK.Rely, col.InlineConstraint.UniquePK.Norely) {
+					errs = append(errs, errOneOf(upPath, "Rely", "Norely"))
+				}
+				if !exactlyOneValueSet(col.InlineConstraint.UniquePK.Unique, col.InlineConstraint.UniquePK.PrimaryKey) {
+					errs = append(errs, errExactlyOneOf(upPath, "Unique", "PrimaryKey"))
+				}
+			}
+			if valueSet(col.InlineConstraint.FK) {
+				fkPath := path + ".FK"
+				if everyValueSet(col.InlineConstraint.FK.Enforced, col.InlineConstraint.FK.NotEnforced) {
+					errs = append(errs, errOneOf(fkPath, "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(col.InlineConstraint.FK.Deferrable, col.InlineConstraint.FK.NotDeferrable) {
+					errs = append(errs, errOneOf(fkPath, "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(col.InlineConstraint.FK.InitiallyDeferred, col.InlineConstraint.FK.InitiallyImmediate) {
+					errs = append(errs, errOneOf(fkPath, "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(col.InlineConstraint.FK.Enable, col.InlineConstraint.FK.Disable) {
+					errs = append(errs, errOneOf(fkPath, "Enable", "Disable"))
+				}
+				if everyValueSet(col.InlineConstraint.FK.Validate, col.InlineConstraint.FK.Novalidate) {
+					errs = append(errs, errOneOf(fkPath, "Validate", "Novalidate"))
+				}
+				if everyValueSet(col.InlineConstraint.FK.Rely, col.InlineConstraint.FK.Norely) {
+					errs = append(errs, errOneOf(fkPath, "Rely", "Norely"))
+				}
+				if !ValidObjectIdentifier(col.InlineConstraint.FK.References) {
+					errs = append(errs, ErrInvalidObjectIdentifier)
+				}
+			}
+			if valueSet(col.InlineConstraint.CH) {
+				chPath := path + ".CH"
+				if everyValueSet(col.InlineConstraint.CH.EnableValidate, col.InlineConstraint.CH.EnableNovalidate) {
+					errs = append(errs, errOneOf(chPath, "EnableValidate", "EnableNovalidate"))
+				}
+			}
+		}
+	}
+	// Adjusted manually: OutOfLineConstraint is a slice, validate each element
+	for i, oc := range opts.ColumnsAndConstraints.OutOfLineConstraint {
+		path := fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", i)
+		if !exactlyOneValueSet(oc.UniquePK, oc.FK, oc.CH) {
+			errs = append(errs, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		}
+		if valueSet(oc.UniquePK) {
+			upPath := path + ".UniquePK"
+			if everyValueSet(oc.UniquePK.Enforced, oc.UniquePK.NotEnforced) {
+				errs = append(errs, errOneOf(upPath, "Enforced", "NotEnforced"))
+			}
+			if everyValueSet(oc.UniquePK.Deferrable, oc.UniquePK.NotDeferrable) {
+				errs = append(errs, errOneOf(upPath, "Deferrable", "NotDeferrable"))
+			}
+			if everyValueSet(oc.UniquePK.InitiallyDeferred, oc.UniquePK.InitiallyImmediate) {
+				errs = append(errs, errOneOf(upPath, "InitiallyDeferred", "InitiallyImmediate"))
+			}
+			if everyValueSet(oc.UniquePK.Enable, oc.UniquePK.Disable) {
+				errs = append(errs, errOneOf(upPath, "Enable", "Disable"))
+			}
+			if everyValueSet(oc.UniquePK.Validate, oc.UniquePK.Novalidate) {
+				errs = append(errs, errOneOf(upPath, "Validate", "Novalidate"))
+			}
+			if everyValueSet(oc.UniquePK.Rely, oc.UniquePK.Norely) {
+				errs = append(errs, errOneOf(upPath, "Rely", "Norely"))
+			}
+			if !exactlyOneValueSet(oc.UniquePK.Unique, oc.UniquePK.PrimaryKey) {
+				errs = append(errs, errExactlyOneOf(upPath, "Unique", "PrimaryKey"))
+			}
+		}
+		if valueSet(oc.FK) {
+			fkPath := path + ".FK"
+			if everyValueSet(oc.FK.Enforced, oc.FK.NotEnforced) {
+				errs = append(errs, errOneOf(fkPath, "Enforced", "NotEnforced"))
+			}
+			if everyValueSet(oc.FK.Deferrable, oc.FK.NotDeferrable) {
+				errs = append(errs, errOneOf(fkPath, "Deferrable", "NotDeferrable"))
+			}
+			if everyValueSet(oc.FK.InitiallyDeferred, oc.FK.InitiallyImmediate) {
+				errs = append(errs, errOneOf(fkPath, "InitiallyDeferred", "InitiallyImmediate"))
+			}
+			if everyValueSet(oc.FK.Enable, oc.FK.Disable) {
+				errs = append(errs, errOneOf(fkPath, "Enable", "Disable"))
+			}
+			if everyValueSet(oc.FK.Validate, oc.FK.Novalidate) {
+				errs = append(errs, errOneOf(fkPath, "Validate", "Novalidate"))
+			}
+			if everyValueSet(oc.FK.Rely, oc.FK.Norely) {
+				errs = append(errs, errOneOf(fkPath, "Rely", "Norely"))
+			}
+			if !ValidObjectIdentifier(oc.FK.References) {
+				errs = append(errs, ErrInvalidObjectIdentifier)
+			}
+		}
+		if valueSet(oc.CH) {
+			chPath := path + ".CH"
+			if everyValueSet(oc.CH.EnableValidate, oc.CH.EnableNovalidate) {
+				errs = append(errs, errOneOf(chPath, "EnableValidate", "EnableNovalidate"))
+			}
+		}
+	}
+	// Adjusted manually: PartitionBy is a slice, validate each element
+	for i, p := range opts.PartitionBy {
+		if !exactlyOneValueSet(p.Identity, p.Bucket, p.Truncate, p.Year, p.Month, p.Day, p.Hour) {
+			errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.PartitionBy[%d]", i), "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterIcebergTableOptions) additionalValidations() error {
+	var errs []error
+	// Adjusted manually: AlterColumnAction is a slice, validate each element
+	for i, col := range opts.AlterColumnAction {
+		if !exactlyOneValueSet(col.SetNotNull, col.DropNotNull, col.DataType, col.Comment, col.UnsetComment, col.SetWriteDefault, col.DropWriteDefault) {
+			errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterIcebergTableOptions.AlterColumnAction[%d]", i), "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
+		}
+	}
+	if valueSet(opts.SearchOptimizationAction) {
+		// Adjusted manually: each Drop.On entry must have exactly one of SearchMethodWithTarget, ColumnName, or ExpressionId set.
+		if valueSet(opts.SearchOptimizationAction.Drop) {
+			for _, on := range opts.SearchOptimizationAction.Drop.On {
+				if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
+					errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
+				}
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}

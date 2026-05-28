@@ -437,7 +437,6 @@ func TestIcebergTables_Create(t *testing.T) {
 			aggregationPolicyId.FullyQualifiedName(),
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
 		)
-		// TODO: can it be all types at once?
 	})
 
 	t.Run("with inline UNIQUE constraint - all fields", func(t *testing.T) {

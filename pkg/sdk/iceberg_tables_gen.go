@@ -34,26 +34,25 @@ type CreateIcebergTableOptions struct {
 	PathLayout            *IcebergTablePathLayout           `ddl:"parameter,no_quotes" sql:"PATH_LAYOUT"`
 	ClusterBy             []string                          `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	// Adjusted manually
-	ExternalVolume             *string                      `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
-	Catalog                    *IcebergTableCatalog         `ddl:"parameter,single_quotes" sql:"CATALOG"`
-	BaseLocation               *string                      `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
-	TargetFileSize             *IcebergTableTargetFileSize  `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
-	CatalogSync                *string                      `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
-	StorageSerializationPolicy *StorageSerializationPolicy  `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
-	DataRetentionTimeInDays    *int                         `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int                         `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool                        `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	CopyGrants                 *bool                        `ddl:"keyword" sql:"COPY GRANTS"`
-	ErrorLogging               *bool                        `ddl:"parameter" sql:"ERROR_LOGGING"`
-	Comment                    *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	IcebergVersion             *int                         `ddl:"parameter" sql:"ICEBERG_VERSION"`
-	EnableIcebergMergeOnRead   *bool                        `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
-	RowAccessPolicy            *IcebergTableRowAccessPolicy `ddl:"keyword"`
-	// Adjusted manually
-	AggregationPolicy    *IcebergTableAggregationPolicy `ddl:"keyword"`
-	Tag                  []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
-	EnableDataCompaction *bool                          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
-	Contact              []TableContact                 `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
+	ExternalVolume             *string                        `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
+	Catalog                    *IcebergTableCatalog           `ddl:"parameter,single_quotes" sql:"CATALOG"`
+	BaseLocation               *string                        `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
+	TargetFileSize             *IcebergTableTargetFileSize    `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
+	CatalogSync                *string                        `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
+	StorageSerializationPolicy *StorageSerializationPolicy    `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
+	DataRetentionTimeInDays    *int                           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool                          `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	CopyGrants                 *bool                          `ddl:"keyword" sql:"COPY GRANTS"`
+	ErrorLogging               *bool                          `ddl:"parameter" sql:"ERROR_LOGGING"`
+	Comment                    *string                        `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	IcebergVersion             *int                           `ddl:"parameter" sql:"ICEBERG_VERSION"`
+	EnableIcebergMergeOnRead   *bool                          `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	RowAccessPolicy            *IcebergTableRowAccessPolicy   `ddl:"keyword"`
+	AggregationPolicy          *IcebergTableAggregationPolicy `ddl:"keyword"`
+	Tag                        []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
+	EnableDataCompaction       *bool                          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
+	Contact                    []TableContact                 `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
 }
 
 type IcebergTableColumnsAndConstraints struct {
