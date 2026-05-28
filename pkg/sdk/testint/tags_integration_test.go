@@ -510,7 +510,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 			name:       "ApiIntegration",
 			objectType: sdk.ObjectTypeIntegration,
 			setupObject: func() (IDProvider[sdk.AccountObjectIdentifier], func()) {
-				return testClientHelper().ApiIntegration.CreateApiIntegration(t)
+				return testClientHelper().ApiIntegration.Create(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
 				return client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).WithSetTags(tags))
@@ -843,7 +843,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 
 				gitRepositoryId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-				apiIntegrationId, apiIntegrationCleanup := testClientHelper().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+				apiIntegrationId, apiIntegrationCleanup := testClientHelper().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, origin)
 
 				repo, repoCleanup := testClientHelper().GitRepository.Create(t, gitRepositoryId, origin, apiIntegrationId)
 
@@ -1177,7 +1177,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 			name:       "ExternalFunction",
 			objectType: sdk.ObjectTypeExternalFunction,
 			setupObject: func() sdk.SchemaObjectIdentifierWithArguments {
-				integration, integrationCleanup := testClientHelper().ApiIntegration.CreateApiIntegration(t)
+				integration, integrationCleanup := testClientHelper().ApiIntegration.Create(t)
 				t.Cleanup(integrationCleanup)
 				// cleanup is set up in the Create function
 				function := testClientHelper().ExternalFunction.Create(t, integration.ID(), sdk.DataTypeInt)
