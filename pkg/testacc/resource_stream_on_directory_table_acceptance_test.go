@@ -187,7 +187,8 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.StreamDoesNotExist(t, id),
 				),
 			},
@@ -225,8 +226,9 @@ func TestAcc_StreamOnDirectoryTable_CopyGrants(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, streamOnDirectoryModelWithCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnTableResource(t, streamOnDirectoryModelWithCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnTableResource(t, streamOnDirectoryModelWithCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamOnDirectoryModelWithCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						createdOn = value
 						return nil
@@ -235,8 +237,9 @@ func TestAcc_StreamOnDirectoryTable_CopyGrants(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, streamOnDirectoryModelWithoutCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnTableResource(t, streamOnDirectoryModelWithoutCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnTableResource(t, streamOnDirectoryModelWithoutCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamOnDirectoryModelWithoutCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value != createdOn {
 							return fmt.Errorf("stream was recreated")
@@ -247,8 +250,9 @@ func TestAcc_StreamOnDirectoryTable_CopyGrants(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, streamOnDirectoryModelWithCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnTableResource(t, streamOnDirectoryModelWithCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnTableResource(t, streamOnDirectoryModelWithCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamOnDirectoryModelWithCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value != createdOn {
 							return fmt.Errorf("stream was recreated")
@@ -341,7 +345,8 @@ func TestAcc_StreamOnDirectoryTable_RecreateWhenStale(t *testing.T) {
 	stage, cleanupStage := testClient().Stage.CreateStageWithDirectory(t)
 	t.Cleanup(cleanupStage)
 
-	schema, cleanupSchema := testClient().Schema.CreateSchemaWithOpts(t,
+	schema, cleanupSchema := testClient().Schema.CreateSchemaWithOpts(
+		t,
 		testClient().Ids.RandomDatabaseObjectIdentifier(),
 		&sdk.CreateSchemaOptions{
 			DataRetentionTimeInDays:    sdk.Pointer(0),
@@ -363,9 +368,10 @@ func TestAcc_StreamOnDirectoryTable_RecreateWhenStale(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, streamModel),
-				Check: assertThat(t, resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanFalse),
+				Check: assertThat(
+					t, resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanFalse),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "false")),
 				),
 			},
@@ -412,7 +418,8 @@ func TestAcc_StreamOnDirectoryTable_ExternalStreamTypeChange(t *testing.T) {
 			{
 				Config: config.FromModels(t, streamModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
 							HasStreamTypeString(string(sdk.StreamSourceTypeStage)),
 						resourceshowoutputassert.StreamShowOutput(t, streamModel.ResourceReference()).
@@ -437,7 +444,8 @@ func TestAcc_StreamOnDirectoryTable_ExternalStreamTypeChange(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
 							HasStreamTypeString(string(sdk.StreamSourceTypeStage)),
 						resourceshowoutputassert.StreamShowOutput(t, streamModel.ResourceReference()).
@@ -466,7 +474,8 @@ func TestAcc_StreamOnDirectoryTable_migrateFromV2_16_0(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.16.0"),
 				Config:            config.FromModels(t, streamModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -482,7 +491,8 @@ func TestAcc_StreamOnDirectoryTable_migrateFromV2_16_0(t *testing.T) {
 						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).

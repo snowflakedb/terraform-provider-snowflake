@@ -43,17 +43,18 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		// Assert the token is shown in the SHOW command.
 		tokenShowObject := testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
 
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedToEmpty(),
+		assertThatObject(
+			t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
+				HasName(id.Name()).
+				HasUserName(user.ID()).
+				HasNoRoleRestriction().
+				HasExpiresAtNotEmpty().
+				HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+				HasNoComment().
+				HasCreatedOnNotEmpty().
+				HasCreatedBy(currentUser.Name()).
+				HasNoMinsToBypassNetworkPolicyRequirement().
+				HasRotatedToEmpty(),
 		)
 	})
 
@@ -78,18 +79,19 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		// Assert the token is shown in the SHOW command.
 		tokenShowObject := testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
 
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasUserName(user.ID()).
-			HasRoleRestriction(snowflakeroles.Public).
-			// Assert that WithDaysToExpiry(1) takes effect - the expires_at date is before 2 days from now.
-			HasExpiresAtBefore(time.Now().Add(time.Hour*24*2)).
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasComment(comment).
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasMinsToBypassNetworkPolicyRequirementWithTolerance(10).
-			HasRotatedToEmpty(),
+		assertThatObject(
+			t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
+				HasName(id.Name()).
+				HasUserName(user.ID()).
+				HasRoleRestriction(snowflakeroles.Public).
+				// Assert that WithDaysToExpiry(1) takes effect - the expires_at date is before 2 days from now.
+				HasExpiresAtBefore(time.Now().Add(time.Hour*24*2)).
+				HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+				HasComment(comment).
+				HasCreatedOnNotEmpty().
+				HasCreatedBy(currentUser.Name()).
+				HasMinsToBypassNetworkPolicyRequirementWithTolerance(10).
+				HasRotatedToEmpty(),
 		)
 	})
 
@@ -102,49 +104,54 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		t.Cleanup(testClientHelper().User.RemoveProgrammaticAccessTokenFunc(t, user.ID(), id))
 
 		tokenShowObject := testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasNoComment().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasNoMinsToBypassNetworkPolicyRequirement(),
+		assertThatObject(
+			t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
+				HasName(id.Name()).
+				HasNoComment().
+				HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+				HasNoMinsToBypassNetworkPolicyRequirement(),
 		)
 
 		comment := random.Comment()
 		mins := 15
 		setRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().
-				WithComment(comment).
-				WithDisabled(true).
-				WithMinsToBypassNetworkPolicyRequirement(mins),
+			WithSet(
+				*sdk.NewModifyProgrammaticAccessTokenSetRequest().
+					WithComment(comment).
+					WithDisabled(true).
+					WithMinsToBypassNetworkPolicyRequirement(mins),
 			)
 
 		err = client.Users.ModifyProgrammaticAccessToken(ctx, setRequest)
 		require.NoError(t, err)
 
 		tokenShowObject = testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasComment(comment).
-			HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled).
-			HasMinsToBypassNetworkPolicyRequirementWithTolerance(mins),
+		assertThatObject(
+			t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
+				HasName(id.Name()).
+				HasComment(comment).
+				HasStatus(sdk.ProgrammaticAccessTokenStatusDisabled).
+				HasMinsToBypassNetworkPolicyRequirementWithTolerance(mins),
 		)
 
 		unsetRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-			WithUnset(*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().
-				WithComment(true).
-				WithDisabled(true).
-				WithMinsToBypassNetworkPolicyRequirement(true),
+			WithUnset(
+				*sdk.NewModifyProgrammaticAccessTokenUnsetRequest().
+					WithComment(true).
+					WithDisabled(true).
+					WithMinsToBypassNetworkPolicyRequirement(true),
 			)
 
 		err = client.Users.ModifyProgrammaticAccessToken(ctx, unsetRequest)
 		require.NoError(t, err)
 
 		tokenShowObject = testClientHelper().User.ShowProgrammaticAccessToken(t, user.ID(), id)
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(id.Name()).
-			HasNoComment().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasNoMinsToBypassNetworkPolicyRequirement(),
+		assertThatObject(
+			t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
+				HasName(id.Name()).
+				HasNoComment().
+				HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+				HasNoMinsToBypassNetworkPolicyRequirement(),
 		)
 	})
 
@@ -169,8 +176,9 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		tokenShowObject, err := client.Users.ShowProgrammaticAccessTokenByName(ctx, user.ID(), newId)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
-			HasName(newId.Name()),
+		assertThatObject(
+			t, objectassert.ProgrammaticAccessTokenFromObject(t, tokenShowObject).
+				HasName(newId.Name()),
 		)
 	})
 
@@ -208,29 +216,31 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, oldToken).
-			HasName(rotateResult.RotatedTokenName).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusExpired).
-			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedTo(token.ID().Name()),
+		assertThatObject(
+			t, objectassert.ProgrammaticAccessTokenFromObject(t, oldToken).
+				HasName(rotateResult.RotatedTokenName).
+				HasUserName(user.ID()).
+				HasNoRoleRestriction().
+				HasExpiresAtNotEmpty().
+				HasStatus(sdk.ProgrammaticAccessTokenStatusExpired).
+				HasNoComment().
+				HasCreatedOnNotEmpty().
+				HasCreatedBy(currentUser.Name()).
+				HasNoMinsToBypassNetworkPolicyRequirement().
+				HasRotatedTo(token.ID().Name()),
 		)
-		assertThatObject(t, objectassert.ProgrammaticAccessTokenFromObject(t, newToken).
-			HasName(token.ID().Name()).
-			HasUserName(user.ID()).
-			HasNoRoleRestriction().
-			HasExpiresAtNotEmpty().
-			HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
-			HasNoComment().
-			HasCreatedOnNotEmpty().
-			HasCreatedBy(currentUser.Name()).
-			HasNoMinsToBypassNetworkPolicyRequirement().
-			HasRotatedToEmpty(),
+		assertThatObject(
+			t, objectassert.ProgrammaticAccessTokenFromObject(t, newToken).
+				HasName(token.ID().Name()).
+				HasUserName(user.ID()).
+				HasNoRoleRestriction().
+				HasExpiresAtNotEmpty().
+				HasStatus(sdk.ProgrammaticAccessTokenStatusActive).
+				HasNoComment().
+				HasCreatedOnNotEmpty().
+				HasCreatedBy(currentUser.Name()).
+				HasNoMinsToBypassNetworkPolicyRequirement().
+				HasRotatedToEmpty(),
 		)
 	})
 

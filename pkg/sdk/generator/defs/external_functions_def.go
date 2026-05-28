@@ -61,7 +61,8 @@ var externalFunctionsDef = g.NewInterface(
 		ListQueryStructField(
 			"Arguments",
 			externalFunctionArgument,
-			g.ListOptions().MustParentheses()).
+			g.ListOptions().MustParentheses(),
+		).
 		PredefinedQueryStructField("ResultDataType", g.KindOfT[sdkcommons.DataType](), g.ParameterOptions().NoEquals().SQL("RETURNS").Required()).
 		WithField(g.OptionalEnumLegacy[sdkcommons.ReturnNullValues]("ReturnNullValues", g.KeywordOptions())).
 		WithField(g.OptionalEnumLegacy[sdkcommons.NullInputBehavior]("NullInputBehavior", g.KeywordOptions())).

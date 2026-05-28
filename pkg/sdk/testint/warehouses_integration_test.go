@@ -118,11 +118,12 @@ func TestInt_Warehouses(t *testing.T) {
 
 		result, err := client.Warehouses.ShowByID(ctx, id)
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseFromObject(t, result).
-			HasResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
-			HasNoGeneration().
-			HasType(sdk.WarehouseTypeSnowparkOptimized).
-			HasSize(sdk.WarehouseSizeMedium),
+		assertThatObject(
+			t, objectassert.WarehouseFromObject(t, result).
+				HasResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
+				HasNoGeneration().
+				HasType(sdk.WarehouseTypeSnowparkOptimized).
+				HasSize(sdk.WarehouseSizeMedium),
 		)
 	})
 
@@ -273,26 +274,28 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		assertThatObject(t, objectassert.Warehouse(t, id).
-			HasName(id.Name()).
-			HasType(sdk.WarehouseTypeAdaptive).
-			HasComment("").
-			HasNoSize().
-			HasNoGeneration().
-			HasNoResourceConstraint().
-			HasNoMaxClusterCount().
-			HasNoMinClusterCount().
-			HasNoScalingPolicy().
-			HasNoAutoSuspend().
-			HasAutoResume(true).
-			HasNoEnableQueryAcceleration().
-			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-			HasQueryThroughputMultiplier(2),
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
+				HasName(id.Name()).
+				HasType(sdk.WarehouseTypeAdaptive).
+				HasComment("").
+				HasNoSize().
+				HasNoGeneration().
+				HasNoResourceConstraint().
+				HasNoMaxClusterCount().
+				HasNoMinClusterCount().
+				HasNoScalingPolicy().
+				HasNoAutoSuspend().
+				HasAutoResume(true).
+				HasNoEnableQueryAcceleration().
+				HasNoQueryAccelerationMaxScaleFactor().
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
+				HasQueryThroughputMultiplier(2),
 		)
-		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
-			HasStatementQueuedTimeoutInSeconds(0).
-			HasStatementTimeoutInSeconds(172800),
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, id).
+				HasStatementQueuedTimeoutInSeconds(0).
+				HasStatementTimeoutInSeconds(172800),
 		)
 	})
 
@@ -308,26 +311,28 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		assertThatObject(t, objectassert.Warehouse(t, id).
-			HasName(id.Name()).
-			HasType(sdk.WarehouseTypeAdaptive).
-			HasComment("test adaptive warehouse").
-			HasNoSize().
-			HasNoGeneration().
-			HasNoResourceConstraint().
-			HasNoMaxClusterCount().
-			HasNoMinClusterCount().
-			HasNoScalingPolicy().
-			HasNoAutoSuspend().
-			HasAutoResume(true).
-			HasNoEnableQueryAcceleration().
-			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
-			HasQueryThroughputMultiplier(22),
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
+				HasName(id.Name()).
+				HasType(sdk.WarehouseTypeAdaptive).
+				HasComment("test adaptive warehouse").
+				HasNoSize().
+				HasNoGeneration().
+				HasNoResourceConstraint().
+				HasNoMaxClusterCount().
+				HasNoMinClusterCount().
+				HasNoScalingPolicy().
+				HasNoAutoSuspend().
+				HasAutoResume(true).
+				HasNoEnableQueryAcceleration().
+				HasNoQueryAccelerationMaxScaleFactor().
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+				HasQueryThroughputMultiplier(22),
 		)
-		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
-			HasStatementQueuedTimeoutInSeconds(30).
-			HasStatementTimeoutInSeconds(60),
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, id).
+				HasStatementQueuedTimeoutInSeconds(30).
+				HasStatementTimeoutInSeconds(60),
 		)
 	})
 
@@ -446,20 +451,21 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
-			HasType(sdk.WarehouseTypeAdaptive).
-			HasNoSize().
-			HasNoGeneration().
-			HasNoResourceConstraint().
-			HasNoMaxClusterCount().
-			HasNoMinClusterCount().
-			HasNoScalingPolicy().
-			HasNoAutoSuspend().
-			HasAutoResume(true).
-			HasNoEnableQueryAcceleration().
-			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
-			HasQueryThroughputMultiplier(2),
+		assertThatObject(
+			t, objectassert.Warehouse(t, warehouse.ID()).
+				HasType(sdk.WarehouseTypeAdaptive).
+				HasNoSize().
+				HasNoGeneration().
+				HasNoResourceConstraint().
+				HasNoMaxClusterCount().
+				HasNoMinClusterCount().
+				HasNoScalingPolicy().
+				HasNoAutoSuspend().
+				HasAutoResume(true).
+				HasNoEnableQueryAcceleration().
+				HasNoQueryAccelerationMaxScaleFactor().
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+				HasQueryThroughputMultiplier(2),
 		)
 
 		// Change warehouse type back from adaptive to standard
@@ -471,20 +477,21 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
-			HasType(sdk.WarehouseTypeStandard).
-			HasSize(sdk.WarehouseSizeMedium).
-			HasGeneration(sdk.WarehouseGenerationStandardGen2).
-			HasNoResourceConstraint().
-			HasMaxClusterCount(1).
-			HasMinClusterCount(1).
-			HasScalingPolicy(sdk.ScalingPolicyStandard).
-			HasAutoSuspend(600).
-			HasAutoResume(true).
-			HasEnableQueryAcceleration(true).
-			HasQueryAccelerationMaxScaleFactor(2).
-			HasNoMaxQueryPerformanceLevel().
-			HasNoQueryThroughputMultiplier(),
+		assertThatObject(
+			t, objectassert.Warehouse(t, warehouse.ID()).
+				HasType(sdk.WarehouseTypeStandard).
+				HasSize(sdk.WarehouseSizeMedium).
+				HasGeneration(sdk.WarehouseGenerationStandardGen2).
+				HasNoResourceConstraint().
+				HasMaxClusterCount(1).
+				HasMinClusterCount(1).
+				HasScalingPolicy(sdk.ScalingPolicyStandard).
+				HasAutoSuspend(600).
+				HasAutoResume(true).
+				HasEnableQueryAcceleration(true).
+				HasQueryAccelerationMaxScaleFactor(2).
+				HasNoMaxQueryPerformanceLevel().
+				HasNoQueryThroughputMultiplier(),
 		)
 	})
 
@@ -492,13 +499,15 @@ func TestInt_Warehouses(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateAdaptive(t)
 		t.Cleanup(warehouseCleanup)
 
-		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-			HasQueryThroughputMultiplier(2),
+		assertThatObject(
+			t, objectassert.Warehouse(t, warehouse.ID()).
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
+				HasQueryThroughputMultiplier(2),
 		)
-		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
-			HasStatementQueuedTimeoutInSeconds(0).
-			HasStatementTimeoutInSeconds(172800),
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+				HasStatementQueuedTimeoutInSeconds(0).
+				HasStatementTimeoutInSeconds(172800),
 		)
 
 		err := client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
@@ -511,13 +520,15 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
-			HasQueryThroughputMultiplier(5),
+		assertThatObject(
+			t, objectassert.Warehouse(t, warehouse.ID()).
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
+				HasQueryThroughputMultiplier(5),
 		)
-		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
-			HasStatementQueuedTimeoutInSeconds(100).
-			HasStatementTimeoutInSeconds(200),
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+				HasStatementQueuedTimeoutInSeconds(100).
+				HasStatementTimeoutInSeconds(200),
 		)
 
 		err = client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
@@ -530,13 +541,15 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
-			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-			HasQueryThroughputMultiplier(2),
+		assertThatObject(
+			t, objectassert.Warehouse(t, warehouse.ID()).
+				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
+				HasQueryThroughputMultiplier(2),
 		)
-		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
-			HasStatementQueuedTimeoutInSeconds(0).
-			HasStatementTimeoutInSeconds(172800),
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+				HasStatementQueuedTimeoutInSeconds(0).
+				HasStatementTimeoutInSeconds(172800),
 		)
 	})
 
@@ -680,11 +693,12 @@ func TestInt_Warehouses(t *testing.T) {
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
-			HasResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
-			HasNoGeneration().
-			HasType(sdk.WarehouseTypeSnowparkOptimized).
-			HasSize(sdk.WarehouseSizeMedium),
+		assertThatObject(
+			t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+				HasResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
+				HasNoGeneration().
+				HasType(sdk.WarehouseTypeSnowparkOptimized).
+				HasSize(sdk.WarehouseSizeMedium),
 		)
 
 		alterOptions = &sdk.AlterWarehouseOptions{
@@ -720,10 +734,11 @@ func TestInt_Warehouses(t *testing.T) {
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
-			HasGeneration(sdk.WarehouseGenerationStandardGen1).
-			HasNoResourceConstraint().
-			HasType(sdk.WarehouseTypeStandard),
+		assertThatObject(
+			t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+				HasGeneration(sdk.WarehouseGenerationStandardGen1).
+				HasNoResourceConstraint().
+				HasType(sdk.WarehouseTypeStandard),
 		)
 
 		alterOptions = &sdk.AlterWarehouseOptions{

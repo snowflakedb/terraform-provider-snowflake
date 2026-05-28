@@ -38,10 +38,11 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 	t.Cleanup(connectionCleanup)
 
 	accountId := testClient().Account.GetAccountIdentifier(t)
-	azureTestClient().Connection.Alter(t, sdk.NewAlterConnectionRequest(connection.ID()).
-		WithEnableConnectionFailover(
-			*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{accountId}),
-		),
+	azureTestClient().Connection.Alter(
+		t, sdk.NewAlterConnectionRequest(connection.ID()).
+			WithEnableConnectionFailover(
+				*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{accountId}),
+			),
 	)
 
 	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(azureTestClient().Account.GetAccountIdentifier(t), connection.ID())
@@ -61,7 +62,8 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 			{
 				Config: config.FromModels(t, secondaryConnectionModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModel.ResourceReference()).
 							HasNameString(connection.ID().Name()).
 							HasFullyQualifiedNameString(connection.ID().FullyQualifiedName()).
@@ -86,7 +88,8 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 			{
 				Config: config.FromModels(t, secondaryConnectionModelWithComment),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModelWithComment.ResourceReference()).
 							HasNameString(connection.ID().Name()).
 							HasFullyQualifiedNameString(connection.ID().FullyQualifiedName()).
@@ -110,7 +113,8 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 			{
 				Config: config.FromModels(t, secondaryConnectionModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModel.ResourceReference()).
 							HasCommentString(""),
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModel.ResourceReference()).
@@ -129,7 +133,8 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecondaryConnectionResource(t, secondaryConnectionModel.ResourceReference()).
 							HasCommentString(""),
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModel.ResourceReference()).

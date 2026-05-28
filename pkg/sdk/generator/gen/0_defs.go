@@ -42,7 +42,7 @@ func preprocessDefinition(definition *Interface) {
 			}
 			for idx, f := range o.OptsField.Fields {
 				if f.IsStruct() && !slices.Contains(generatedStructs, f.KindNoPtr()) {
-					structsToGenerate, generatedStructs = addStructToGenerate(&(o.OptsField.Fields[idx]), structsToGenerate, generatedStructs)
+					structsToGenerate, generatedStructs = addStructToGenerate(&o.OptsField.Fields[idx], structsToGenerate, generatedStructs)
 				}
 			}
 			log.Printf("[DEBUG] Structs to generate (length: %d): %v", len(structsToGenerate), structsToGenerate)
@@ -82,8 +82,8 @@ func setParent(field *Field) {
 		if f.Parent != nil {
 			log.Panicf("Field %s already has a parent\nold parent: %s (path: %s)\nnew parent: %s (path: %s);\n\nit is caused by the current incorrect implementation of nested fields;\nreuse the common definition by wrapping it in function invocation", f.Name, f.Parent.KindNoPtr(), f.Parent.PathWithRoot(), field.Name, field.PathWithRoot())
 		}
-		(&(field.Fields[idx])).Parent = field
-		setParent(&(field.Fields[idx]))
+		(&field.Fields[idx]).Parent = field
+		setParent(&field.Fields[idx])
 	}
 }
 
@@ -98,7 +98,7 @@ func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStru
 
 	for idx, f := range field.Fields {
 		if f.IsStruct() && !slices.Contains(generatedStructs, f.Name) {
-			structsToGenerate, generatedStructs = addStructToGenerate(&(field.Fields[idx]), structsToGenerate, generatedStructs)
+			structsToGenerate, generatedStructs = addStructToGenerate(&field.Fields[idx], structsToGenerate, generatedStructs)
 		}
 	}
 	return structsToGenerate, generatedStructs
@@ -112,7 +112,7 @@ func addDtoToGenerate(field *Field, dtosToGenerate []*Field, generatedDtos []str
 
 		for idx, f := range field.Fields {
 			if f.HasAnyFields() {
-				dtosToGenerate, generatedDtos = addDtoToGenerate(&(field.Fields[idx]), dtosToGenerate, generatedDtos)
+				dtosToGenerate, generatedDtos = addDtoToGenerate(&field.Fields[idx], dtosToGenerate, generatedDtos)
 			}
 		}
 	} else {

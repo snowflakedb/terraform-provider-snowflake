@@ -24,7 +24,8 @@ func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 	response := "You are a helpful assistant"
 	hclSpec := model.SampleSpecAsYamlencodeHCL(response)
 	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
-		testClient().CortexAgent.SampleSpecWithResponse(t, response))
+		testClient().CortexAgent.SampleSpecWithResponse(t, response),
+	)
 	require.NoError(t, err)
 	comment := random.Comment()
 	completeProfile := sdk.CortexAgentProfile{
@@ -56,7 +57,8 @@ func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel, cortexAgentsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(cortexAgentsModel.DatasourceReference(), "cortex_agents.#", "1")),
 					resourceshowoutputassert.CortexAgentsDatasourceShowOutput(t, "snowflake_cortex_agents.test").
 						HasName(id.Name()).
@@ -82,7 +84,8 @@ func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, completeModel, cortexAgentsModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(cortexAgentsModelWithoutDescribe.DatasourceReference(), "cortex_agents.#", "1")),
 					resourceshowoutputassert.CortexAgentsDatasourceShowOutput(t, "snowflake_cortex_agents.test").
 						HasName(id.Name()).

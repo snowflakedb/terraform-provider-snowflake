@@ -74,7 +74,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 			// Create with basic credentials
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -112,7 +113,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 			// Set complete options
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -169,7 +171,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -212,7 +215,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -240,7 +244,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelNoDirectory.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelNoDirectory.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -273,7 +278,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelRenamed.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelRenamed.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
@@ -312,7 +318,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						planchecks.ExpectDrift(modelRenamed.ResourceReference(), "endpoint", sdk.Pointer(s3CompatEndpoint), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelRenamed.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
@@ -361,7 +368,8 @@ func TestAcc_ExternalS3CompatStage_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -446,7 +454,8 @@ func TestAcc_ExternalS3CompatStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 			// Start with inline CSV
 			{
 				Config: accconfig.FromModels(t, modelWithCsvFormat),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelWithCsvFormat.ResourceReference()).
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -462,7 +471,8 @@ func TestAcc_ExternalS3CompatStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelWithNamedFormat.ResourceReference()).
 						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -489,7 +499,8 @@ func TestAcc_ExternalS3CompatStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelWithNamedFormat.ResourceReference()).
 						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -505,7 +516,8 @@ func TestAcc_ExternalS3CompatStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithCsvFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelWithCsvFormat.ResourceReference()).
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -521,7 +533,8 @@ func TestAcc_ExternalS3CompatStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3CompatibleStageResource(t, modelBasic.ResourceReference()).
 						HasFileFormatEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.#", "1")),

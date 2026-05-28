@@ -63,7 +63,8 @@ func TestAcc_Services(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, serviceModel, dataSourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.ServicesDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasStatus(sdk.ServiceStatusPending).
@@ -127,7 +128,8 @@ func TestAcc_Services(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, serviceModel, dataSourceModelWithoutOptionals),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModelWithoutOptionals.DatasourceReference(), "services.#", "1")),
 
 					resourceshowoutputassert.ServicesDatasourceShowOutput(t, dataSourceModelWithoutOptionals.DatasourceReference()).

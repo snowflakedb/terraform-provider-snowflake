@@ -53,7 +53,8 @@ func TestAcc_Tag_CompleteUseCase_OnConflict_Bcr2291(t *testing.T) {
 					secondaryTestClient().BcrBundles.DisableBcrBundle(t, "2026_03")
 				},
 				Config: config.FromModels(t, providerModel, withPropagateAndOnConflict),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, resourceRef).
 						HasPropagateEnum(sdk.TagPropagationOnDependency).
 						HasOnConflictCustomValue("conflict_value"),
@@ -64,11 +65,12 @@ func TestAcc_Tag_CompleteUseCase_OnConflict_Bcr2291(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				PreConfig: func() {
-					secondaryTestClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).
-						WithSet(*sdk.NewTagSetRequest().WithPropagate(
-							*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
-								WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("other_value_no_bcr")}),
-						)),
+					secondaryTestClient().Tag.Alter(
+						t, sdk.NewAlterTagRequest(id).
+							WithSet(*sdk.NewTagSetRequest().WithPropagate(
+								*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+									WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("other_value_no_bcr")}),
+							)),
 					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -77,7 +79,8 @@ func TestAcc_Tag_CompleteUseCase_OnConflict_Bcr2291(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withPropagateAndOnConflict),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, resourceRef).
 						HasOnConflictCustomValue("conflict_value"),
 				),
@@ -95,7 +98,8 @@ func TestAcc_Tag_CompleteUseCase_OnConflict_Bcr2291(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withPropagateAndOnConflict),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, resourceRef).
 						HasOnConflictCustomValue("conflict_value"),
 				),
@@ -105,11 +109,12 @@ func TestAcc_Tag_CompleteUseCase_OnConflict_Bcr2291(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				PreConfig: func() {
-					secondaryTestClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).
-						WithSet(*sdk.NewTagSetRequest().WithPropagate(
-							*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
-								WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("external_value")}),
-						)),
+					secondaryTestClient().Tag.Alter(
+						t, sdk.NewAlterTagRequest(id).
+							WithSet(*sdk.NewTagSetRequest().WithPropagate(
+								*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
+									WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("external_value")}),
+							)),
 					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -118,7 +123,8 @@ func TestAcc_Tag_CompleteUseCase_OnConflict_Bcr2291(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withPropagateOnly),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withPropagateOnly.ResourceReference()).
 						HasOnConflictEmpty(),
 				),
@@ -163,7 +169,8 @@ func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *test
 					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2026_03")
 				},
 				Config: config.FromModels(t, providerModel, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, resourceRef).
 						HasPropagateEnum(sdk.TagPropagationOnDependency).
 						HasOnConflictAllowedValuesSequence(),
@@ -178,7 +185,8 @@ func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *test
 					},
 				},
 				Config: config.FromModels(t, providerModel, withPropagateOnly),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withPropagateOnly.ResourceReference()).
 						HasOnConflictEmpty(),
 				),

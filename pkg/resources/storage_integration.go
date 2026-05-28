@@ -225,7 +225,8 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 				log.Println("[DEBUG] could not find USE_PRIVATELINK_ENDPOINT in integration properties, skipping...")
 			}
 
-			if err = handleExternalChangesToObjectInDescribe(d,
+			if err = handleExternalChangesToObjectInDescribe(
+				d,
 				outputMappings...,
 			); err != nil {
 				return diag.FromErr(err)
@@ -276,7 +277,8 @@ func GetReadStorageIntegrationFunc(withExternalChangesMarking bool) schema.ReadC
 			}
 		}
 
-		errs = errors.Join(errs,
+		errs = errors.Join(
+			errs,
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.DescribeStorageIntegrationToSchema(integrationProperties)}),
 		)
 
@@ -410,7 +412,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 	storageProvider := strings.ToUpper(d.Get("storage_provider").(string))
 
 	if (d.HasChange("storage_aws_role_arn") || d.HasChange("storage_aws_object_acl") || d.HasChange("storage_aws_external_id") || d.HasChange("use_privatelink_endpoint")) &&
-		(slices.Contains(sdk.AllS3Protocols, sdk.S3Protocol(storageProvider))) {
+		slices.Contains(sdk.AllS3Protocols, sdk.S3Protocol(storageProvider)) {
 		awsRoleArn, ok := d.GetOk("storage_aws_role_arn")
 		if !ok {
 			// If not set, this isn't an S3 storage integration

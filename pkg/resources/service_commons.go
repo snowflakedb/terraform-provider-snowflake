@@ -249,7 +249,8 @@ func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsF
 				warehouseFullyQualifiedName = service.QueryWarehouse.FullyQualifiedName()
 			}
 			outputMappings := append(extraOutputMappingsFunc(service), outputMapping{"query_warehouse", "query_warehouse", warehouseFullyQualifiedName, warehouseFullyQualifiedName, nil})
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMappings...,
 			); err != nil {
 				return diag.FromErr(err)

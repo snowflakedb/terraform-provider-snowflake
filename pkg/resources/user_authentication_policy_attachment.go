@@ -128,7 +128,8 @@ func ReadUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Resou
 			*authenticationPolicyReferences[0].PolicyDb,
 			*authenticationPolicyReferences[0].PolicySchema,
 			authenticationPolicyReferences[0].PolicyName,
-		).FullyQualifiedName()); err != nil {
+		).FullyQualifiedName(),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 

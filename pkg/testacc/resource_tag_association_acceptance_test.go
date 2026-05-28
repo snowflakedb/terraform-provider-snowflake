@@ -180,22 +180,24 @@ func TestAcc_TagAssociation_objectIdentifiers(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, model12),
-				Check: assertThat(t, resourceassert.TagAssociationResource(t, model12.ResourceReference()).
-					HasObjectTypeString(string(sdk.ObjectTypeDatabaseRole)).
-					HasTagIdString(tag.ID().FullyQualifiedName()).
-					HasObjectIdentifiersLength(2).
-					HasTagValueString("foo"),
+				Check: assertThat(
+					t, resourceassert.TagAssociationResource(t, model12.ResourceReference()).
+						HasObjectTypeString(string(sdk.ObjectTypeDatabaseRole)).
+						HasTagIdString(tag.ID().FullyQualifiedName()).
+						HasObjectIdentifiersLength(2).
+						HasTagValueString("foo"),
 					assert.Check(resource.TestCheckTypeSetElemAttr(model12.ResourceReference(), "object_identifiers.*", dbRole1.ID().FullyQualifiedName())),
 					assert.Check(resource.TestCheckTypeSetElemAttr(model12.ResourceReference(), "object_identifiers.*", dbRole2.ID().FullyQualifiedName())),
 				),
 			},
 			{
 				Config: accconfig.FromModels(t, model123),
-				Check: assertThat(t, resourceassert.TagAssociationResource(t, model12.ResourceReference()).
-					HasObjectTypeString(string(sdk.ObjectTypeDatabaseRole)).
-					HasTagIdString(tag.ID().FullyQualifiedName()).
-					HasObjectIdentifiersLength(3).
-					HasTagValueString("foo"),
+				Check: assertThat(
+					t, resourceassert.TagAssociationResource(t, model12.ResourceReference()).
+						HasObjectTypeString(string(sdk.ObjectTypeDatabaseRole)).
+						HasTagIdString(tag.ID().FullyQualifiedName()).
+						HasObjectIdentifiersLength(3).
+						HasTagValueString("foo"),
 					assert.Check(resource.TestCheckTypeSetElemAttr(model12.ResourceReference(), "object_identifiers.*", dbRole1.ID().FullyQualifiedName())),
 					assert.Check(resource.TestCheckTypeSetElemAttr(model12.ResourceReference(), "object_identifiers.*", dbRole2.ID().FullyQualifiedName())),
 					assert.Check(resource.TestCheckTypeSetElemAttr(model12.ResourceReference(), "object_identifiers.*", dbRole3.ID().FullyQualifiedName())),
@@ -203,11 +205,12 @@ func TestAcc_TagAssociation_objectIdentifiers(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, model13),
-				Check: assertThat(t, resourceassert.TagAssociationResource(t, model13.ResourceReference()).
-					HasObjectTypeString(string(sdk.ObjectTypeDatabaseRole)).
-					HasTagIdString(tag.ID().FullyQualifiedName()).
-					HasObjectIdentifiersLength(2).
-					HasTagValueString("foo"),
+				Check: assertThat(
+					t, resourceassert.TagAssociationResource(t, model13.ResourceReference()).
+						HasObjectTypeString(string(sdk.ObjectTypeDatabaseRole)).
+						HasTagIdString(tag.ID().FullyQualifiedName()).
+						HasObjectIdentifiersLength(2).
+						HasTagValueString("foo"),
 					assert.Check(resource.TestCheckTypeSetElemAttr(model13.ResourceReference(), "object_identifiers.*", dbRole1.ID().FullyQualifiedName())),
 					assert.Check(resource.TestCheckTypeSetElemAttr(model13.ResourceReference(), "object_identifiers.*", dbRole3.ID().FullyQualifiedName())),
 					assert.Check(CheckTagUnset(t, tag.ID(), dbRole2.ID(), sdk.ObjectTypeDatabaseRole)),
@@ -239,11 +242,12 @@ func TestAcc_TagAssociation_objectType(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, baseModel),
-				Check: assertThat(t, resourceassert.TagAssociationResource(t, baseModel.ResourceReference()).
-					HasObjectTypeString(string(sdk.ObjectTypeRole)).
-					HasTagIdString(tag.ID().FullyQualifiedName()).
-					HasObjectIdentifiersLength(1).
-					HasTagValueString("foo"),
+				Check: assertThat(
+					t, resourceassert.TagAssociationResource(t, baseModel.ResourceReference()).
+						HasObjectTypeString(string(sdk.ObjectTypeRole)).
+						HasTagIdString(tag.ID().FullyQualifiedName()).
+						HasObjectIdentifiersLength(1).
+						HasTagValueString("foo"),
 				),
 			},
 			{
@@ -253,11 +257,12 @@ func TestAcc_TagAssociation_objectType(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithDifferentObjectType.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t, resourceassert.TagAssociationResource(t, baseModel.ResourceReference()).
-					HasObjectTypeString(string(sdk.ObjectTypeDatabaseRole)).
-					HasTagIdString(tag.ID().FullyQualifiedName()).
-					HasObjectIdentifiersLength(1).
-					HasTagValueString("foo"),
+				Check: assertThat(
+					t, resourceassert.TagAssociationResource(t, baseModel.ResourceReference()).
+						HasObjectTypeString(string(sdk.ObjectTypeDatabaseRole)).
+						HasTagIdString(tag.ID().FullyQualifiedName()).
+						HasObjectIdentifiersLength(1).
+						HasTagValueString("foo"),
 					assert.Check(CheckTagUnset(t, tag.ID(), role.ID(), sdk.ObjectTypeRole)),
 				),
 			},
@@ -316,12 +321,13 @@ func TestAcc_TagAssociation_lowercaseObjectType(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, tagAssociationModel),
-				Check: assertThat(t, resourceassert.TagAssociationResource(t, tagAssociationModel.ResourceReference()).
-					HasIdString(helpers.EncodeSnowflakeID(tag.ID().FullyQualifiedName(), tagValue, string(sdk.ObjectTypeSchema))).
-					HasObjectTypeString(string(sdk.ObjectTypeSchema)).
-					HasTagIdString(tag.ID().FullyQualifiedName()).
-					HasObjectIdentifiersLength(1).
-					HasTagValueString(tagValue),
+				Check: assertThat(
+					t, resourceassert.TagAssociationResource(t, tagAssociationModel.ResourceReference()).
+						HasIdString(helpers.EncodeSnowflakeID(tag.ID().FullyQualifiedName(), tagValue, string(sdk.ObjectTypeSchema))).
+						HasObjectTypeString(string(sdk.ObjectTypeSchema)).
+						HasTagIdString(tag.ID().FullyQualifiedName()).
+						HasObjectIdentifiersLength(1).
+						HasTagValueString(tagValue),
 				),
 			},
 		},
@@ -729,7 +735,8 @@ func TestAcc_TagAssociation_issue_4403(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
 				Config:            accconfig.FromModels(t, providerModel, functionModel, tagModel, tagAssociationModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagAssociationResource(t, tagAssociationModel.ResourceReference()).
 						HasTagValueString(tagValue1),
 				),
@@ -742,7 +749,8 @@ func TestAcc_TagAssociation_issue_4403(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: tagsProviderFactory,
 				Config:                   accconfig.FromModels(t, functionModel, tagModel, tagAssociationModelUpdatedValue),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagAssociationResource(t, tagAssociationModel.ResourceReference()).
 						HasTagValueString(tagValue2),
 				),

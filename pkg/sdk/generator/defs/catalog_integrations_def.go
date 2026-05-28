@@ -82,13 +82,15 @@ var catalogIntegrationsDef = g.NewInterface(
 					TextAssignment("GLUE_CATALOG_ID", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("GLUE_REGION", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("CATALOG_NAMESPACE", g.ParameterOptions().SingleQuotes()),
-				g.KeywordOptions()).
+				g.KeywordOptions(),
+			).
 			OptionalQueryStructField(
 				"ObjectStorageCatalogSourceParams",
 				g.NewQueryStruct("ObjectStorageParams").
 					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = OBJECT_STORE").
 					EnumAssignment("TABLE_FORMAT", CatalogIntegrationTableFormatEnumDef, g.ParameterOptions().NoQuotes().Required()),
-				g.KeywordOptions()).
+				g.KeywordOptions(),
+			).
 			OptionalQueryStructField(
 				"OpenCatalogCatalogSourceParams",
 				g.NewQueryStruct("OpenCatalogParams").
@@ -98,12 +100,15 @@ var catalogIntegrationsDef = g.NewInterface(
 					QueryStructField(
 						"RestConfig",
 						openCatalogRestConfigDef,
-						g.ListOptions().SQL("REST_CONFIG =").Parentheses().NoComma()).
+						g.ListOptions().SQL("REST_CONFIG =").Parentheses().NoComma(),
+					).
 					QueryStructField(
 						"RestAuthentication",
 						oAuthRestAuthenticationDef,
-						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()),
-				g.KeywordOptions()).
+						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma(),
+					),
+				g.KeywordOptions(),
+			).
 			OptionalQueryStructField(
 				"IcebergRestCatalogSourceParams",
 				g.NewQueryStruct("IcebergRestParams").
@@ -113,21 +118,26 @@ var catalogIntegrationsDef = g.NewInterface(
 					QueryStructField(
 						"RestConfig",
 						icebergRestRestConfigDef,
-						g.ListOptions().SQL("REST_CONFIG =").Parentheses().NoComma()).
+						g.ListOptions().SQL("REST_CONFIG =").Parentheses().NoComma(),
+					).
 					OptionalQueryStructField(
 						"OAuthRestAuthentication",
 						oAuthRestAuthenticationDef,
-						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()).
+						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma(),
+					).
 					OptionalQueryStructField(
 						"BearerRestAuthentication",
 						bearerRestAuthenticationDef,
-						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()).
+						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma(),
+					).
 					OptionalQueryStructField(
 						"SigV4RestAuthentication",
 						sigV4RestAuthenticationDef,
-						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()).
+						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma(),
+					).
 					WithValidation(g.ExactlyOneValueSet, "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"),
-				g.KeywordOptions()).
+				g.KeywordOptions(),
+			).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			OptionalNumberAssignment("REFRESH_INTERVAL_SECONDS", g.ParameterOptions().NoQuotes()).
 			OptionalComment().
@@ -149,12 +159,14 @@ var catalogIntegrationsDef = g.NewInterface(
 						"SetOAuthRestAuthentication",
 						g.NewQueryStruct("SetOAuthRestAuthentication").
 							TextAssignment("OAUTH_CLIENT_SECRET", g.ParameterOptions().SingleQuotes().Required()),
-						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()).
+						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma(),
+					).
 					OptionalQueryStructField(
 						"SetBearerRestAuthentication",
 						g.NewQueryStruct("SetBearerRestAuthentication").
 							TextAssignment("BEARER_TOKEN", g.ParameterOptions().SingleQuotes().Required()),
-						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()).
+						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma(),
+					).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 					// TODO(SNOW-3243983): use REFRESH_INTERVAL_SECONDS in unset
 					OptionalNumberAssignment("REFRESH_INTERVAL_SECONDS", g.ParameterOptions().NoQuotes()).

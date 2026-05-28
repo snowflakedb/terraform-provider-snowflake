@@ -50,7 +50,8 @@ func TestInt_Tags_OnConflict_Bcr2291_BundleDisabled(t *testing.T) {
 	t.Run("bundle disabled: on_conflict is nil in ShowByID even when set", func(t *testing.T) {
 		testClientHelper().BcrBundles.DisableBcrBundle(t, "2026_03")
 
-		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(
+			t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
 					WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("will_not_appear")})),

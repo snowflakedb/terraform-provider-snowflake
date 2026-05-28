@@ -731,11 +731,12 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(cleanupTableProvider(id))
 
 		alterRequest := sdk.NewAlterTableRequest(id).
-			WithExternalTableAction(sdk.NewTableExternalTableActionRequest().WithAdd(sdk.NewTableExternalTableColumnAddActionRequest().
-				WithName("COLUMN_3").
-				WithType(sdk.DataTypeNumber).
-				WithExpression("1 + 1").
-				WithComment(sdk.String("some comment")),
+			WithExternalTableAction(sdk.NewTableExternalTableActionRequest().WithAdd(
+				sdk.NewTableExternalTableColumnAddActionRequest().
+					WithName("COLUMN_3").
+					WithType(sdk.DataTypeNumber).
+					WithExpression("1 + 1").
+					WithComment(sdk.String("some comment")),
 			))
 
 		err = client.Tables.Alter(ctx, alterRequest)

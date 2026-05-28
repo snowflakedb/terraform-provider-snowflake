@@ -352,8 +352,10 @@ func TestForceNewIfChangeToEmptySet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			diff := calculateDiffFromAttributes(t,
-				createProviderWithValuePropertyAndCustomDiff(t,
+			diff := calculateDiffFromAttributes(
+				t,
+				createProviderWithValuePropertyAndCustomDiff(
+					t,
 					&schema.Schema{
 						Type: schema.TypeSet,
 						Elem: &schema.Schema{

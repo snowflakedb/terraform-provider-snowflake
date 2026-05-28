@@ -48,7 +48,8 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 			// Parameter value taken from schema because it's set
 			{
 				Config: config.FromModels(t, providerModel, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasLogLevelString(string(sdk.LogLevelWarn)),
@@ -67,7 +68,8 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 					},
 				},
 				Config: config.FromModels(t, providerModel, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasLogLevelString(string(sdk.LogLevelInfo)),
@@ -86,7 +88,8 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 					},
 				},
 				Config: config.FromModels(t, providerModel, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasLogLevelString(string(sdk.LogLevelError)),

@@ -117,7 +117,8 @@ func TestAcc_Listings_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, providerModel, listingModel, listingsModelWithoutAdditional),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.ListingsDatasourceShowOutput(t, listingsModelWithoutAdditional.DatasourceReference()).
 						HasName(id.Name()).
 						HasTitle(title).
@@ -129,7 +130,8 @@ func TestAcc_Listings_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, providerModel, listingModel, listingsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.ListingsDatasourceShowOutput(t, listingsModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasTitle(title).

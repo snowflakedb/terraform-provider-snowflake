@@ -44,7 +44,8 @@ func TestAcc_Experimental_Users_ParametersReducedOutput(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				Config:                   config.FromModels(t, userModel, usersModel, providerModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceparametersassert.UsersDatasourceParameters(t, usersModel.DatasourceReference()).
 						// we just check a single parameter to verify logic
 						HasEnableUnredactedQuerySyntaxErrorValueDefault().
@@ -58,7 +59,8 @@ func TestAcc_Experimental_Users_ParametersReducedOutput(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_Experimental_Users_ParametersReducedOutput"),
 				Config:                   config.FromModels(t, userModel, usersModel, providerModelWithExperimentEnabled),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceparametersassert.UsersDatasourceParameters(t, usersModel.DatasourceReference()).
 						HasEnableUnredactedQuerySyntaxErrorValueDefault().
 						HasEnableUnredactedQuerySyntaxErrorLevel(sdk.ParameterTypeSnowflakeDefault).
@@ -71,7 +73,8 @@ func TestAcc_Experimental_Users_ParametersReducedOutput(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_Experimental_Users_ParametersReducedOutput"),
 				Config:                   config.FromModels(t, userModel, usersModelWithoutParameters, providerModelWithExperimentEnabled),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(usersModelWithoutParameters.DatasourceReference(), "users.0.parameters.#", "0")),
 				),
 			},
@@ -79,7 +82,8 @@ func TestAcc_Experimental_Users_ParametersReducedOutput(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_Experimental_Users_ParametersReducedOutput"),
 				Config:                   config.FromModels(t, userModel, usersModel, providerModelWithExperimentEnabled),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceparametersassert.UsersDatasourceParameters(t, usersModel.DatasourceReference()).
 						HasEnableUnredactedQuerySyntaxErrorValueDefault().
 						HasEnableUnredactedQuerySyntaxErrorLevel(sdk.ParameterTypeSnowflakeDefault).
@@ -92,7 +96,8 @@ func TestAcc_Experimental_Users_ParametersReducedOutput(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				Config:                   config.FromModels(t, userModel, usersModel, providerModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceparametersassert.UsersDatasourceParameters(t, usersModel.DatasourceReference()).
 						HasEnableUnredactedQuerySyntaxErrorValueDefault().
 						HasEnableUnredactedQuerySyntaxErrorLevel(sdk.ParameterTypeSnowflakeDefault).

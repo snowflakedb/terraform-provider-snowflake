@@ -99,7 +99,8 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 
 		t.Cleanup(testClientHelper().ResourceMonitor.DropResourceMonitorFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ResourceMonitor(t, id).
 				HasName(name).
 				HasFrequency(frequency).
@@ -160,7 +161,8 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ResourceMonitor.DropResourceMonitorFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ResourceMonitor(t, id).
 				HasName(name).
 				HasFrequency(sdk.FrequencyMonthly).
@@ -330,7 +332,8 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ResourceMonitor(t, resourceMonitor.ID()).
 				HasCreditQuota(float64(creditQuota)).
 				HasNotifyUsers("JAN_CIESLAK").

@@ -233,7 +233,8 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) sche
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -322,7 +323,8 @@ func handleExternalChangesToNestedAttrs(d *schema.ResourceData, details *sdk.Cat
 			"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
 		},
 	}
-	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(
+		d,
 		outputMapping{"rest_config", "rest_config", restConfig, restConfig, nil},
 	)
 	if err != nil {

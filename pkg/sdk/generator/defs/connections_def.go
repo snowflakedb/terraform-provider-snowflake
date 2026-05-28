@@ -20,7 +20,8 @@ var connectionsDef = g.NewInterface(
 		OptionalIdentifier(
 			"AsReplicaOf",
 			g.KindOfT[sdkcommons.ExternalObjectIdentifier](),
-			g.IdentifierOptions().SQL("AS REPLICA OF")).
+			g.IdentifierOptions().SQL("AS REPLICA OF"),
+		).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "AsReplicaOf"),

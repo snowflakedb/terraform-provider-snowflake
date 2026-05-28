@@ -77,31 +77,33 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasBodyString(body).
-					HasExemptOtherPoliciesString(r.BooleanDefault).
-					HasArguments(argument),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasBodyString(body).
+						HasExemptOtherPoliciesString(r.BooleanDefault).
+						HasArguments(argument),
 				),
 			},
 			// set all fields
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(body).WithComment("Terraform acceptance test").WithExemptOtherPolicies(r.BooleanTrue)),
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasExemptOtherPoliciesString(r.BooleanTrue).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasCommentString("Terraform acceptance test").
-					HasBodyString(body).
-					HasArguments(argument),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasExemptOtherPoliciesString(r.BooleanTrue).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCommentString("Terraform acceptance test").
+						HasBodyString(body).
+						HasArguments(argument),
 					resourceshowoutputassert.MaskingPolicyShowOutput(t, resourceName).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -125,32 +127,34 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(bodyWithBooleanReturnType).WithReturnDataType(string(sdk.DataTypeBoolean)).WithArgument(argumentWithChangedFirstArgumentType).WithComment("Terraform acceptance test - changed comment").WithExemptOtherPolicies(r.BooleanFalse)),
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasReturnDataTypeString(string(sdk.DataTypeBoolean)).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasExemptOtherPoliciesString(r.BooleanFalse).
-					HasCommentString("Terraform acceptance test - changed comment").
-					HasBodyString(bodyWithBooleanReturnType).
-					HasArguments(argumentWithChangedFirstArgumentType),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasReturnDataTypeString(string(sdk.DataTypeBoolean)).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasExemptOtherPoliciesString(r.BooleanFalse).
+						HasCommentString("Terraform acceptance test - changed comment").
+						HasBodyString(bodyWithBooleanReturnType).
+						HasArguments(argumentWithChangedFirstArgumentType),
 				),
 			},
 			// restore previous types - first argument type, return_type, and returned value in `body` must be the same type
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(body).WithReturnDataType(string(sdk.DataTypeVARCHAR)).WithArgument(changedArgument).WithExemptOtherPolicies(r.BooleanTrue)),
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasExemptOtherPoliciesString(r.BooleanTrue).
-					HasCommentString("Terraform acceptance test - changed comment").
-					HasBodyString(body).
-					HasArguments(changedArgument),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasExemptOtherPoliciesString(r.BooleanTrue).
+						HasCommentString("Terraform acceptance test - changed comment").
+						HasBodyString(body).
+						HasArguments(changedArgument),
 				),
 			},
 			// external change on signature
@@ -169,14 +173,15 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasCommentString("Terraform acceptance test - changed comment").
-					HasBodyString(body).
-					HasArguments(changedArgument),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCommentString("Terraform acceptance test - changed comment").
+						HasBodyString(body).
+						HasArguments(changedArgument),
 				),
 			},
 			// external change on body and exempt other policies
@@ -190,14 +195,15 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 						},
 					})
 				},
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasCommentString("Terraform acceptance test - changed comment").
-					HasBodyString(body).
-					HasArguments(changedArgument),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCommentString("Terraform acceptance test - changed comment").
+						HasBodyString(body).
+						HasArguments(changedArgument),
 				),
 			},
 			{
@@ -217,14 +223,15 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 						},
 					})
 				},
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasCommentString("").
-					HasBodyString(body).
-					HasArguments(changedArgument),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCommentString("").
+						HasBodyString(body).
+						HasArguments(changedArgument),
 				),
 			},
 			// IMPORT
@@ -265,16 +272,17 @@ func TestAcc_MaskingPolicy_complete(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasExemptOtherPoliciesString(r.BooleanTrue).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasCommentString("foo").
-					HasBodyString(body).
-					HasArguments(argument),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasExemptOtherPoliciesString(r.BooleanTrue).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCommentString("foo").
+						HasBodyString(body).
+						HasArguments(argument),
 					resourceshowoutputassert.MaskingPolicyShowOutput(t, resourceName).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -441,9 +449,10 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 				),
 			},
 			// rename
@@ -455,9 +464,10 @@ func TestAcc_MaskingPolicy_Rename(t *testing.T) {
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(newId.Name()).
-					HasFullyQualifiedNameString(newId.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(newId.Name()).
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()),
 				),
 			},
 		},
@@ -517,15 +527,16 @@ func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/basic"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "a",
-							Type: testdatatypes.DataTypeText,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "a",
+								Type: testdatatypes.DataTypeText,
+							},
+						}),
 				),
 			},
 		},
@@ -559,12 +570,13 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
 				Config:            providerConfig + maskingPolicyV0950(id, body, comment),
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasCommentString(comment).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(comment).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeID(id))),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "masking_expression", body)),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.#", "1")),
@@ -584,13 +596,14 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasCommentString(comment).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasBodyString(body),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(comment).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasBodyString(body),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.0.name", "A")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.0.type", string(sdk.DataTypeVARCHAR))),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.1.name", "b")),
@@ -652,8 +665,9 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("1.2.1"),
 				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
@@ -670,14 +684,15 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}).HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}).HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 		},
@@ -710,8 +725,9 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("1.2.1"),
 				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
@@ -730,14 +746,15 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar_100,
-						},
-					}).HasReturnDataTypeString("VARCHAR(100)"),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar_100,
+							},
+						}).HasReturnDataTypeString("VARCHAR(100)"),
 				),
 			},
 		},
@@ -779,14 +796,15 @@ func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 			{
@@ -797,14 +815,15 @@ func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: updatedDataType,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar_100,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar_100,
+							},
+						}),
 				),
 			},
 		},
@@ -838,9 +857,10 @@ func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 			{
@@ -851,9 +871,10 @@ func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
 				},
 				Config:          accconfig.FromModels(t, variableModel, updatedPolicyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasReturnDataTypeString("VARCHAR(100)"),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasReturnDataTypeString("VARCHAR(100)"),
 				),
 			},
 		},
@@ -894,15 +915,16 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 			{
@@ -920,15 +942,16 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 		},
@@ -968,15 +991,16 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 			{
@@ -990,15 +1014,16 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 		},
@@ -1038,15 +1063,16 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 			{
@@ -1060,15 +1086,16 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}).
-					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}).
+						HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
 			},
 		},
@@ -1102,20 +1129,21 @@ func TestAcc_MaskingPolicy_Decfloat(t *testing.T) {
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasReturnDataTypeString("DECFLOAT(38)").
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasBodyString(body).
-					HasExemptOtherPoliciesString(r.BooleanDefault).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeDecfloat,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.MaskingPolicyResource(t, resourceName).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasReturnDataTypeString("DECFLOAT(38)").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasBodyString(body).
+						HasExemptOtherPoliciesString(r.BooleanDefault).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeDecfloat,
+							},
+						}),
 				),
 			},
 			{

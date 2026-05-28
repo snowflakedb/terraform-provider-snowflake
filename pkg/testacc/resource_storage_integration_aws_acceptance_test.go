@@ -92,7 +92,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -128,7 +129,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint", "storage_aws_external_id"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
 						HasUsePrivatelinkEndpointString(r.BooleanFalse).
 						HasStorageAwsExternalIdNotEmpty(),
@@ -160,7 +162,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAwsAllAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsAllAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -198,7 +201,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAwsAllAttributesChanged),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsAllAttributesChanged.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanTrue).
@@ -234,7 +238,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
 						HasUsePrivatelinkEndpointString(r.BooleanTrue).
 						HasStorageAwsExternalIdString(externalId2),
@@ -284,7 +289,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -431,7 +437,8 @@ func TestAcc_StorageIntegrationAws_AllowedLocationsUnordered(t *testing.T) {
 			// create
 			{
 				Config: config.FromModels(t, storageIntegrationAwsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel.ResourceReference()).
@@ -452,7 +459,8 @@ func TestAcc_StorageIntegrationAws_AllowedLocationsUnordered(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAwsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel.ResourceReference()).
@@ -467,7 +475,8 @@ func TestAcc_StorageIntegrationAws_AllowedLocationsUnordered(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAwsModel2),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel2.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel2.ResourceReference()).

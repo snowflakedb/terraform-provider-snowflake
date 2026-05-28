@@ -55,11 +55,12 @@ func TestInt_Functions(t *testing.T) {
 
 	assertParametersSet := func(t *testing.T, functionParametersAssert *objectparametersassert.FunctionParametersAssert) {
 		t.Helper()
-		assertThatObject(t, functionParametersAssert.
-			HasEnableConsoleOutput(true).
-			HasLogLevel(sdk.LogLevelWarn).
-			HasMetricLevel(sdk.MetricLevelAll).
-			HasTraceLevel(sdk.TraceLevelAlways),
+		assertThatObject(
+			t, functionParametersAssert.
+				HasEnableConsoleOutput(true).
+				HasLogLevel(sdk.LogLevelWarn).
+				HasMetricLevel(sdk.MetricLevelAll).
+				HasTraceLevel(sdk.TraceLevelAlways),
 		)
 	}
 
@@ -87,58 +88,61 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("JAVA").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("JAVA").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(dataType.ToSql()).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("JAVA").
-			HasBody(definition).
-			HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImports(`[]`).
-			HasExactlyImportsNormalizedInAnyOrder().
-			HasHandler(handler).
-			HasRuntimeVersionNil().
-			HasPackages(`[]`).
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(dataType.ToSql()).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("JAVA").
+				HasBody(definition).
+				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImports(`[]`).
+				HasExactlyImportsNormalizedInAnyOrder().
+				HasHandler(handler).
+				HasRuntimeVersionNil().
+				HasPackages(`[]`).
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -188,60 +192,63 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription("comment").
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasIsExternalFunction(false).
-			HasLanguage("JAVA").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription("comment").
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasIsExternalFunction(false).
+				HasLanguage("JAVA").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
-			HasLanguage("JAVA").
-			HasBody(definition).
-			HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasImports(fmt.Sprintf(`[%s]`, tmpJavaFunction.JarLocation())).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
-			}).
-			HasHandler(handler).
-			HasRuntimeVersion("11").
-			HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
-			HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
-			HasTargetPath(targetPath).
-			HasNormalizedTargetPath("~", jarName).
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(true).
+				HasLanguage("JAVA").
+				HasBody(definition).
+				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasImports(fmt.Sprintf(`[%s]`, tmpJavaFunction.JarLocation())).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
+				}).
+				HasHandler(handler).
+				HasRuntimeVersion("11").
+				HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
+				HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
+				HasTargetPath(targetPath).
+				HasNormalizedTargetPath("~", jarName).
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -267,60 +274,63 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("JAVA").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("JAVA").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(dataType.ToSql()).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("JAVA").
-			HasBodyNil().
-			HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImports(fmt.Sprintf(`[%s]`, importPath)).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
-			}).
-			HasHandler(handler).
-			HasRuntimeVersionNil().
-			HasPackages(`[]`).
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(dataType.ToSql()).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("JAVA").
+				HasBodyNil().
+				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImports(fmt.Sprintf(`[%s]`, importPath)).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
+				}).
+				HasHandler(handler).
+				HasRuntimeVersionNil().
+				HasPackages(`[]`).
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -358,61 +368,64 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription("comment").
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasIsExternalFunction(false).
-			HasLanguage("JAVA").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription("comment").
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasIsExternalFunction(false).
+				HasLanguage("JAVA").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
-			HasLanguage("JAVA").
-			HasBodyNil().
-			HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasImports(fmt.Sprintf(`[%s]`, tmpJavaFunction.JarLocation())).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
-			}).
-			HasHandler(handler).
-			HasRuntimeVersion("11").
-			HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
-			HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(true).
+				HasLanguage("JAVA").
+				HasBodyNil().
+				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasImports(fmt.Sprintf(`[%s]`, tmpJavaFunction.JarLocation())).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
+				}).
+				HasHandler(handler).
+				HasRuntimeVersion("11").
+				HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
+				HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -443,14 +456,15 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasImports(fmt.Sprintf(`[@"%s"."%s".%s/%s]`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name(), tmpJavaFunctionDifferentStage.JarName)).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpJavaFunctionDifferentStage.JarName,
-			}).
-			HasHandler(handler).
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasImports(fmt.Sprintf(`[@"%s"."%s".%s/%s]`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name(), tmpJavaFunctionDifferentStage.JarName)).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpJavaFunctionDifferentStage.JarName,
+				}).
+				HasHandler(handler).
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil(),
 		)
 	})
 
@@ -479,12 +493,14 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())),
 		)
 	})
 
@@ -508,58 +524,61 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("JAVASCRIPT").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("JAVASCRIPT").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(dataType.ToSql()).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("JAVASCRIPT").
-			HasBody(definition).
-			HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImportsNil().
-			HasExactlyImportsNormalizedInAnyOrder().
-			HasHandlerNil().
-			HasRuntimeVersionNil().
-			HasPackagesNil().
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(dataType.ToSql()).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("JAVASCRIPT").
+				HasBody(definition).
+				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImportsNil().
+				HasExactlyImportsNormalizedInAnyOrder().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -588,58 +607,61 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription("comment").
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("JAVASCRIPT").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription("comment").
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("JAVASCRIPT").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
-			HasLanguage("JAVASCRIPT").
-			HasBody(definition).
-			HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImportsNil().
-			HasExactlyImportsNormalizedInAnyOrder().
-			HasHandlerNil().
-			HasRuntimeVersionNil().
-			HasPackagesNil().
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(true).
+				HasLanguage("JAVASCRIPT").
+				HasBody(definition).
+				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImportsNil().
+				HasExactlyImportsNormalizedInAnyOrder().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -664,58 +686,61 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("PYTHON").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("PYTHON").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(strings.ReplaceAll(dataType.ToSql(), " ", "")).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("PYTHON").
-			HasBody(definition).
-			HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImports(`[]`).
-			HasExactlyImportsNormalizedInAnyOrder().
-			HasHandler(funcName).
-			HasRuntimeVersion(testvars.PythonRuntime).
-			HasPackages(`[]`).
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNotEmpty().
-			HasIsAggregate(false),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(strings.ReplaceAll(dataType.ToSql(), " ", "")).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("PYTHON").
+				HasBody(definition).
+				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImports(`[]`).
+				HasExactlyImportsNormalizedInAnyOrder().
+				HasHandler(funcName).
+				HasRuntimeVersion(testvars.PythonRuntime).
+				HasPackages(`[]`).
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNotEmpty().
+				HasIsAggregate(false),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -753,61 +778,64 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription("comment").
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasIsExternalFunction(false).
-			HasLanguage("PYTHON").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription("comment").
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasIsExternalFunction(false).
+				HasLanguage("PYTHON").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(strings.ReplaceAll(dataType.ToSql(), " ", "")+" NOT NULL").
-			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
-			HasLanguage("PYTHON").
-			HasBody(definition).
-			HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasImports(fmt.Sprintf(`[%s]`, tmpPythonFunction.PythonModuleLocation())).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
-			}).
-			HasHandler(funcName).
-			HasRuntimeVersion(testvars.PythonRuntime).
-			HasPackages(`['absl-py==0.12.0','about-time==4.2.1']`).
-			HasExactlyPackagesInAnyOrder("absl-py==0.12.0", "about-time==4.2.1").
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNotEmpty().
-			HasIsAggregate(false),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(strings.ReplaceAll(dataType.ToSql(), " ", "")+" NOT NULL").
+				HasReturnDataType(dataType).
+				HasReturnNotNull(true).
+				HasLanguage("PYTHON").
+				HasBody(definition).
+				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasImports(fmt.Sprintf(`[%s]`, tmpPythonFunction.PythonModuleLocation())).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
+				}).
+				HasHandler(funcName).
+				HasRuntimeVersion(testvars.PythonRuntime).
+				HasPackages(`['absl-py==0.12.0','about-time==4.2.1']`).
+				HasExactlyPackagesInAnyOrder("absl-py==0.12.0", "about-time==4.2.1").
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNotEmpty().
+				HasIsAggregate(false),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -830,60 +858,63 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("PYTHON").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("PYTHON").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(strings.ReplaceAll(dataType.ToSql(), " ", "")).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("PYTHON").
-			HasBodyNil().
-			HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImports(fmt.Sprintf(`[%s]`, tmpPythonFunction.PythonModuleLocation())).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
-			}).
-			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion(testvars.PythonRuntime).
-			HasPackages(`[]`).
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNotEmpty().
-			HasIsAggregate(false),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(strings.ReplaceAll(dataType.ToSql(), " ", "")).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("PYTHON").
+				HasBodyNil().
+				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImports(fmt.Sprintf(`[%s]`, tmpPythonFunction.PythonModuleLocation())).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
+				}).
+				HasHandler(tmpPythonFunction.PythonHandler()).
+				HasRuntimeVersion(testvars.PythonRuntime).
+				HasPackages(`[]`).
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNotEmpty().
+				HasIsAggregate(false),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -918,61 +949,64 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription("comment").
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasIsExternalFunction(false).
-			HasLanguage("PYTHON").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription("comment").
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasIsExternalFunction(false).
+				HasLanguage("PYTHON").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(strings.ReplaceAll(dataType.ToSql(), " ", "")+" NOT NULL").
-			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
-			HasLanguage("PYTHON").
-			HasBodyNil().
-			HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasImports(fmt.Sprintf(`[%s]`, tmpPythonFunction.PythonModuleLocation())).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
-			}).
-			HasHandler(tmpPythonFunction.PythonHandler()).
-			HasRuntimeVersion(testvars.PythonRuntime).
-			HasPackages(`['absl-py==0.12.0','about-time==4.2.1']`).
-			HasExactlyPackagesInAnyOrder("about-time==4.2.1", "absl-py==0.12.0").
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNotEmpty().
-			HasIsAggregate(false),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(strings.ReplaceAll(dataType.ToSql(), " ", "")+" NOT NULL").
+				HasReturnDataType(dataType).
+				HasReturnNotNull(true).
+				HasLanguage("PYTHON").
+				HasBodyNil().
+				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasImports(fmt.Sprintf(`[%s]`, tmpPythonFunction.PythonModuleLocation())).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
+				}).
+				HasHandler(tmpPythonFunction.PythonHandler()).
+				HasRuntimeVersion(testvars.PythonRuntime).
+				HasPackages(`['absl-py==0.12.0','about-time==4.2.1']`).
+				HasExactlyPackagesInAnyOrder("about-time==4.2.1", "absl-py==0.12.0").
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNotEmpty().
+				HasIsAggregate(false),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -998,58 +1032,61 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("SCALA").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("SCALA").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(dataType.ToSql()).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("SCALA").
-			HasBody(definition).
-			HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImports(`[]`).
-			HasExactlyImportsNormalizedInAnyOrder().
-			HasHandler(handler).
-			HasRuntimeVersion("2.12").
-			HasPackages(`[]`).
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(dataType.ToSql()).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("SCALA").
+				HasBody(definition).
+				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImports(`[]`).
+				HasExactlyImportsNormalizedInAnyOrder().
+				HasHandler(handler).
+				HasRuntimeVersion("2.12").
+				HasPackages(`[]`).
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1096,61 +1133,64 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription("comment").
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasIsExternalFunction(false).
-			HasLanguage("SCALA").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription("comment").
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasIsExternalFunction(false).
+				HasLanguage("SCALA").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
-			HasLanguage("SCALA").
-			HasBody(definition).
-			HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasImports(fmt.Sprintf(`[%s]`, tmpJavaFunction.JarLocation())).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
-			}).
-			HasHandler(handler).
-			HasRuntimeVersion("2.12").
-			HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
-			HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
-			HasTargetPath(targetPath).
-			HasNormalizedTargetPath("~", jarName).
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(true).
+				HasLanguage("SCALA").
+				HasBody(definition).
+				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasImports(fmt.Sprintf(`[%s]`, tmpJavaFunction.JarLocation())).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
+				}).
+				HasHandler(handler).
+				HasRuntimeVersion("2.12").
+				HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
+				HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
+				HasTargetPath(targetPath).
+				HasNormalizedTargetPath("~", jarName).
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1174,60 +1214,63 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("SCALA").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("SCALA").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(dataType.ToSql()).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("SCALA").
-			HasBodyNil().
-			HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImports(fmt.Sprintf(`[%s]`, importPath)).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
-			}).
-			HasHandler(handler).
-			HasRuntimeVersion("2.12").
-			HasPackages(`[]`).
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(dataType.ToSql()).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("SCALA").
+				HasBodyNil().
+				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImports(fmt.Sprintf(`[%s]`, importPath)).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
+				}).
+				HasHandler(handler).
+				HasRuntimeVersion("2.12").
+				HasPackages(`[]`).
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1262,61 +1305,64 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription("comment").
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasIsExternalFunction(false).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasLanguage("SCALA").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription("comment").
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasIsExternalFunction(false).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasLanguage("SCALA").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
-			HasLanguage("SCALA").
-			HasBodyNil().
-			HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
-			HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			HasImports(fmt.Sprintf(`[%s]`, tmpJavaFunction.JarLocation())).
-			HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
-				StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
-			}).
-			HasHandler(handler).
-			HasRuntimeVersion("2.12").
-			HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
-			HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(true).
+				HasLanguage("SCALA").
+				HasBodyNil().
+				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
+				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				HasImports(fmt.Sprintf(`[%s]`, tmpJavaFunction.JarLocation())).
+				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
+					StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
+				}).
+				HasHandler(handler).
+				HasRuntimeVersion("2.12").
+				HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
+				HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1339,58 +1385,61 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("SQL").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("SQL").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(dataType.ToSql()).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("SQL").
-			HasBody(definition).
-			HasNullHandlingNil().
-			HasVolatilityNil().
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImportsNil().
-			HasExactlyImportsNormalizedInAnyOrder().
-			HasHandlerNil().
-			HasRuntimeVersionNil().
-			HasPackagesNil().
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(dataType.ToSql()).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("SQL").
+				HasBody(definition).
+				HasNullHandlingNil().
+				HasVolatilityNil().
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImportsNil().
+				HasExactlyImportsNormalizedInAnyOrder().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1414,12 +1463,14 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(DEFAULT %[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())),
 		)
 	})
 
@@ -1448,60 +1499,63 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(1).
-			HasMaxNumArguments(1).
-			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription("comment").
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("SQL").
-			HasIsMemoizable(true).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(1).
+				HasMaxNumArguments(1).
+				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription("comment").
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("SQL").
+				HasIsMemoizable(true).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
-			HasLanguage("SQL").
-			HasBody(definition).
-			HasNullHandlingNil().
-			// TODO [SNOW-1348103]: volatility is not returned and is present in create syntax
-			// HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-			HasVolatilityNil().
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImportsNil().
-			HasExactlyImportsNormalizedInAnyOrder().
-			HasHandlerNil().
-			HasRuntimeVersionNil().
-			HasPackagesNil().
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
+				HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(true).
+				HasLanguage("SQL").
+				HasBody(definition).
+				HasNullHandlingNil().
+				// TODO [SNOW-1348103]: volatility is not returned and is present in create syntax
+				// HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
+				HasVolatilityNil().
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImportsNil().
+				HasExactlyImportsNormalizedInAnyOrder().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1521,58 +1575,61 @@ func TestInt_Functions(t *testing.T) {
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasIsBuiltin(false).
-			HasIsAggregate(false).
-			HasIsAnsi(false).
-			HasMinNumArguments(0).
-			HasMaxNumArguments(0).
-			HasArgumentsOld().
-			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s() RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasCatalogName(id.DatabaseName()).
-			HasIsTableFunction(false).
-			HasValidForClustering(false).
-			HasIsSecure(false).
-			HasExternalAccessIntegrations("").
-			HasSecrets("").
-			HasIsExternalFunction(false).
-			HasLanguage("SQL").
-			HasIsMemoizable(false).
-			HasIsDataMetric(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasIsBuiltin(false).
+				HasIsAggregate(false).
+				HasIsAnsi(false).
+				HasMinNumArguments(0).
+				HasMaxNumArguments(0).
+				HasArgumentsOld().
+				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArgumentsRaw(fmt.Sprintf(`%[1]s() RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasCatalogName(id.DatabaseName()).
+				HasIsTableFunction(false).
+				HasValidForClustering(false).
+				HasIsSecure(false).
+				HasExternalAccessIntegrations("").
+				HasSecrets("").
+				HasIsExternalFunction(false).
+				HasLanguage("SQL").
+				HasIsMemoizable(false).
+				HasIsDataMetric(false),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, function.ID()).
-			HasSignature("()").
-			HasReturns(dataType.ToSql()).
-			HasReturnDataType(dataType).
-			HasReturnNotNull(false).
-			HasLanguage("SQL").
-			HasBody(definition).
-			HasNullHandlingNil().
-			HasVolatilityNil().
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil().
-			HasImportsNil().
-			HasExactlyImportsNormalizedInAnyOrder().
-			HasHandlerNil().
-			HasRuntimeVersionNil().
-			HasPackagesNil().
-			HasExactlyPackagesInAnyOrder().
-			HasTargetPathNil().
-			HasNormalizedTargetPathNil().
-			HasInstalledPackagesNil().
-			HasIsAggregateNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, function.ID()).
+				HasSignature("()").
+				HasReturns(dataType.ToSql()).
+				HasReturnDataType(dataType).
+				HasReturnNotNull(false).
+				HasLanguage("SQL").
+				HasBody(definition).
+				HasNullHandlingNil().
+				HasVolatilityNil().
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil().
+				HasImportsNil().
+				HasExactlyImportsNormalizedInAnyOrder().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
+				HasExactlyPackagesInAnyOrder().
+				HasTargetPathNil().
+				HasNormalizedTargetPathNil().
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1592,18 +1649,20 @@ func TestInt_Functions(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectparametersassert.FunctionParametersPrefetched(t, id, parameters).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParametersPrefetched(t, id, parameters).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 
 		// check that ShowParameters on function level works too
 		parameters, err = client.Functions.ShowParameters(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectparametersassert.FunctionParametersPrefetched(t, id, parameters).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParametersPrefetched(t, id, parameters).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1630,90 +1689,102 @@ func TestInt_Functions(t *testing.T) {
 		t.Cleanup(fCleanup)
 		id := f.ID()
 
-		assertThatObject(t, objectassert.Function(t, id).
-			HasName(id.Name()).
-			HasDescription(sdk.DefaultFunctionComment),
+		assertThatObject(
+			t, objectassert.Function(t, id).
+				HasName(id.Name()).
+				HasDescription(sdk.DefaultFunctionComment),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, id).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			HasSecretsNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, id).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				HasSecretsNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 
-		request := sdk.NewAlterFunctionRequest(id).WithSet(*sdk.NewFunctionSetRequest().
-			WithEnableConsoleOutput(true).
-			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
-			WithSecretsList(*sdk.NewSecretsListRequest([]sdk.SecretReference{{VariableName: "abc", Name: secretId}})).
-			WithLogLevel(sdk.LogLevelWarn).
-			WithMetricLevel(sdk.MetricLevelAll).
-			WithTraceLevel(sdk.TraceLevelAlways).
-			WithComment("new comment"),
+		request := sdk.NewAlterFunctionRequest(id).WithSet(
+			*sdk.NewFunctionSetRequest().
+				WithEnableConsoleOutput(true).
+				WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
+				WithSecretsList(*sdk.NewSecretsListRequest([]sdk.SecretReference{{VariableName: "abc", Name: secretId}})).
+				WithLogLevel(sdk.LogLevelWarn).
+				WithMetricLevel(sdk.MetricLevelAll).
+				WithTraceLevel(sdk.TraceLevelAlways).
+				WithComment("new comment"),
 		)
 
 		err := client.Functions.Alter(ctx, request)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Function(t, id).
-			HasName(id.Name()).
-			HasDescription("new comment"),
+		assertThatObject(
+			t, objectassert.Function(t, id).
+				HasName(id.Name()).
+				HasDescription("new comment"),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, id).
-			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
-			ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, id).
+				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder(externalAccessIntegration).
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}).
+				ContainsExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertParametersSet(t, objectparametersassert.FunctionParameters(t, id))
 
-		unsetRequest := sdk.NewAlterFunctionRequest(id).WithUnset(*sdk.NewFunctionUnsetRequest().
-			WithEnableConsoleOutput(true).
-			WithExternalAccessIntegrations(true).
-			WithEnableConsoleOutput(true).
-			WithLogLevel(true).
-			WithMetricLevel(true).
-			WithTraceLevel(true).
-			WithComment(true),
+		unsetRequest := sdk.NewAlterFunctionRequest(id).WithUnset(
+			*sdk.NewFunctionUnsetRequest().
+				WithEnableConsoleOutput(true).
+				WithExternalAccessIntegrations(true).
+				WithEnableConsoleOutput(true).
+				WithLogLevel(true).
+				WithMetricLevel(true).
+				WithTraceLevel(true).
+				WithComment(true),
 		)
 
 		err = client.Functions.Alter(ctx, unsetRequest)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Function(t, id).
-			HasName(id.Name()).
-			HasDescription(sdk.DefaultFunctionComment).
-			HasExactlyExternalAccessIntegrations().
-			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
+		assertThatObject(
+			t, objectassert.Function(t, id).
+				HasName(id.Name()).
+				HasDescription(sdk.DefaultFunctionComment).
+				HasExactlyExternalAccessIntegrations().
+				HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, id).
-			HasExternalAccessIntegrationsNil().
-			HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-			// TODO [SNOW-1850370]: apparently UNSET external access integrations cleans out secrets in the describe but leaves it in SHOW
-			HasSecretsNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, id).
+				HasExternalAccessIntegrationsNil().
+				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
+				// TODO [SNOW-1850370]: apparently UNSET external access integrations cleans out secrets in the describe but leaves it in SHOW
+				HasSecretsNil(),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 
-		unsetSecretsRequest := sdk.NewAlterFunctionRequest(id).WithSet(*sdk.NewFunctionSetRequest().
-			WithSecretsList(*sdk.NewSecretsListRequest([]sdk.SecretReference{})),
+		unsetSecretsRequest := sdk.NewAlterFunctionRequest(id).WithSet(
+			*sdk.NewFunctionSetRequest().
+				WithSecretsList(*sdk.NewSecretsListRequest([]sdk.SecretReference{})),
 		)
 
 		err = client.Functions.Alter(ctx, unsetSecretsRequest)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, id).
-			HasSecretsNil(),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, id).
+				HasSecretsNil(),
 		)
 	})
 
@@ -1722,49 +1793,55 @@ func TestInt_Functions(t *testing.T) {
 		t.Cleanup(fCleanup)
 		id := f.ID()
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 
-		request := sdk.NewAlterFunctionRequest(id).WithSet(*sdk.NewFunctionSetRequest().
-			WithEnableConsoleOutput(true).
-			WithLogLevel(sdk.LogLevelWarn).
-			WithMetricLevel(sdk.MetricLevelAll).
-			WithTraceLevel(sdk.TraceLevelAlways).
-			WithComment("new comment"),
+		request := sdk.NewAlterFunctionRequest(id).WithSet(
+			*sdk.NewFunctionSetRequest().
+				WithEnableConsoleOutput(true).
+				WithLogLevel(sdk.LogLevelWarn).
+				WithMetricLevel(sdk.MetricLevelAll).
+				WithTraceLevel(sdk.TraceLevelAlways).
+				WithComment("new comment"),
 		)
 
 		err := client.Functions.Alter(ctx, request)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Function(t, id).
-			HasName(id.Name()).
-			HasDescription("new comment"),
+		assertThatObject(
+			t, objectassert.Function(t, id).
+				HasName(id.Name()).
+				HasDescription("new comment"),
 		)
 
 		assertParametersSet(t, objectparametersassert.FunctionParameters(t, id))
 
-		unsetRequest := sdk.NewAlterFunctionRequest(id).WithUnset(*sdk.NewFunctionUnsetRequest().
-			WithEnableConsoleOutput(true).
-			WithLogLevel(true).
-			WithMetricLevel(true).
-			WithTraceLevel(true).
-			WithComment(true),
+		unsetRequest := sdk.NewAlterFunctionRequest(id).WithUnset(
+			*sdk.NewFunctionUnsetRequest().
+				WithEnableConsoleOutput(true).
+				WithLogLevel(true).
+				WithMetricLevel(true).
+				WithTraceLevel(true).
+				WithComment(true),
 		)
 
 		err = client.Functions.Alter(ctx, unsetRequest)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Function(t, id).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDescription(sdk.DefaultFunctionComment),
+		assertThatObject(
+			t, objectassert.Function(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDescription(sdk.DefaultFunctionComment),
 		)
 
-		assertThatObject(t, objectparametersassert.FunctionParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.FunctionParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1773,22 +1850,25 @@ func TestInt_Functions(t *testing.T) {
 		t.Cleanup(fCleanup)
 		id := f.ID()
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, f).
-			HasIsSecure(false),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, f).
+				HasIsSecure(false),
 		)
 
 		err := client.Functions.Alter(ctx, sdk.NewAlterFunctionRequest(id).WithSetSecure(true))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Function(t, id).
-			HasIsSecure(true),
+		assertThatObject(
+			t, objectassert.Function(t, id).
+				HasIsSecure(true),
 		)
 
 		err = client.Functions.Alter(ctx, sdk.NewAlterFunctionRequest(id).WithUnsetSecure(true))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Function(t, id).
-			HasIsSecure(false),
+		assertThatObject(
+			t, objectassert.Function(t, id).
+				HasIsSecure(false),
 		)
 	})
 
@@ -1969,14 +2049,15 @@ func TestInt_Functions(t *testing.T) {
 			*sdk.NewFunctionArgumentRequest("Y", nil).WithArgDataTypeOld(sdk.DataTypeGeometry),
 			*sdk.NewFunctionArgumentRequest("Z", nil).WithArgDataTypeOld("VECTOR(INT, 16)"),
 		}
-		err := client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
-			id,
-			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVariant)),
-			testvars.PythonRuntime,
-			"add",
-		).
-			WithArguments(args).
-			WithFunctionDefinitionWrapped("def add(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, R, S, T, U, V, W, X, Y, Z): A + A"),
+		err := client.Functions.CreateForPython(
+			ctx, sdk.NewCreateForPythonFunctionRequest(
+				id,
+				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVariant)),
+				testvars.PythonRuntime,
+				"add",
+			).
+				WithArguments(args).
+				WithFunctionDefinitionWrapped("def add(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, R, S, T, U, V, W, X, Y, Z): A + A"),
 		)
 		require.NoError(t, err)
 
@@ -1999,12 +2080,13 @@ func TestInt_Functions(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		arg := *sdk.NewFunctionArgumentRequest("P", nil).WithArgDataTypeOld(datatypes.DecfloatLegacyDataType)
 		definition := "3.141592654::DECFLOAT"
-		err := client.Functions.CreateForSQL(ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
-			id,
-			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(datatypes.DecfloatLegacyDataType)),
-			definition,
-		).
-			WithArguments([]sdk.FunctionArgumentRequest{arg}),
+		err := client.Functions.CreateForSQL(
+			ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
+				id,
+				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(datatypes.DecfloatLegacyDataType)),
+				definition,
+			).
+				WithArguments([]sdk.FunctionArgumentRequest{arg}),
 		)
 		require.NoError(t, err)
 
@@ -2075,12 +2157,13 @@ func TestInt_Functions(t *testing.T) {
 				*sdk.NewFunctionArgumentRequest(argName, dataType),
 			}
 
-			err = client.Functions.CreateForSQL(ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
-				testClientHelper().Function.SampleSqlDefinitionWithArgument(t, argName),
-			).
-				WithArguments(args),
+			err = client.Functions.CreateForSQL(
+				ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
+					id,
+					*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
+					testClientHelper().Function.SampleSqlDefinitionWithArgument(t, argName),
+				).
+					WithArguments(args),
 			)
 			require.NoError(t, err)
 
@@ -2141,14 +2224,15 @@ func TestInt_Functions(t *testing.T) {
 				*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
 			}
 
-			err = client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
-				testvars.PythonRuntime,
-				funcName,
-			).
-				WithArguments(args).
-				WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
+			err = client.Functions.CreateForPython(
+				ctx, sdk.NewCreateForPythonFunctionRequest(
+					id,
+					*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
+					testvars.PythonRuntime,
+					funcName,
+				).
+					WithArguments(args).
+					WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
 			)
 			require.NoError(t, err)
 
@@ -2191,12 +2275,13 @@ func TestInt_Functions(t *testing.T) {
 			*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
 		}
 
-		err = client.Functions.CreateForSQL(ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
-			id,
-			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
-			testClientHelper().Function.SampleSqlDefinitionWithArgument(t, argName),
-		).
-			WithArguments(args),
+		err = client.Functions.CreateForSQL(
+			ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
+				id,
+				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
+				testClientHelper().Function.SampleSqlDefinitionWithArgument(t, argName),
+			).
+				WithArguments(args),
 		)
 		require.NoError(t, err)
 
@@ -2237,14 +2322,15 @@ func TestInt_Functions(t *testing.T) {
 				*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
 			}
 
-			err := client.Functions.CreateForPython(ctx, sdk.NewCreateForPythonFunctionRequest(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
-				testvars.PythonRuntime,
-				funcName,
-			).
-				WithArguments(args).
-				WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
+			err := client.Functions.CreateForPython(
+				ctx, sdk.NewCreateForPythonFunctionRequest(
+					id,
+					*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
+					testvars.PythonRuntime,
+					funcName,
+				).
+					WithArguments(args).
+					WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
 			)
 			require.NoError(t, err)
 
@@ -2278,15 +2364,17 @@ SELECT 2.2::float, 'abc');` // the ending parenthesis has to be there (otherwise
 		function, err := client.Functions.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.FunctionFromObject(t, function).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasSchemaName(id.SchemaName()).
-			HasArgumentsRawContains(strings.ReplaceAll(returnDataType.ToLegacyDataTypeSql(), "TABLE(", "TABLE (")),
+		assertThatObject(
+			t, objectassert.FunctionFromObject(t, function).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasSchemaName(id.SchemaName()).
+				HasArgumentsRawContains(strings.ReplaceAll(returnDataType.ToLegacyDataTypeSql(), "TABLE(", "TABLE (")),
 		)
 
-		assertThatObject(t, objectassert.FunctionDetails(t, id).
-			HasReturnDataType(returnDataType),
+		assertThatObject(
+			t, objectassert.FunctionDetails(t, id).
+				HasReturnDataType(returnDataType),
 		)
 	})
 }

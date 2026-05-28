@@ -40,13 +40,15 @@ func ApiAuthenticationIntegrationWithJwtBearer() *schema.Resource {
 		Description:   "Resource used to manage api authentication security integration objects with jwt bearer. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-api-auth).",
 
 		Schema: apiAuthJwtBearerSchema,
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.ApiAuthenticationIntegrationWithJwtBearer, customdiff.All(
-			ForceNewIfChangeToEmptyString("oauth_token_endpoint"),
-			ForceNewIfChangeToEmptyString("oauth_authorization_endpoint"),
-			ForceNewIfChangeToEmptyString("oauth_client_auth_method"),
-			ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, ShowOutputAttributeName, "enabled", "comment"),
-			ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, DescribeOutputAttributeName, "enabled", "comment", "oauth_access_token_validity", "oauth_refresh_token_validity",
-				"oauth_client_auth_method", "oauth_authorization_endpoint", "oauth_token_endpoint", "oauth_assertion_issuer")),
+		CustomizeDiff: TrackingCustomDiffWrapper(
+			resources.ApiAuthenticationIntegrationWithJwtBearer, customdiff.All(
+				ForceNewIfChangeToEmptyString("oauth_token_endpoint"),
+				ForceNewIfChangeToEmptyString("oauth_authorization_endpoint"),
+				ForceNewIfChangeToEmptyString("oauth_client_auth_method"),
+				ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, ShowOutputAttributeName, "enabled", "comment"),
+				ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, DescribeOutputAttributeName, "enabled", "comment", "oauth_access_token_validity", "oauth_refresh_token_validity",
+					"oauth_client_auth_method", "oauth_authorization_endpoint", "oauth_token_endpoint", "oauth_assertion_issuer"),
+			),
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.ApiAuthenticationIntegrationWithJwtBearer, ImportApiAuthenticationWithJwtBearer),

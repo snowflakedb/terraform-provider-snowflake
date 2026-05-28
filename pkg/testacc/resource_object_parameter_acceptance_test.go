@@ -142,7 +142,8 @@ func TestAcc_ObjectParameter_ReplicableWithFailoverGroups(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
 				Config:            accconfig.FromModels(t, providerModel) + schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_object_parameter.p", "key", string(resources.ReplicableWithFailoverGroups))),
 					assert.Check(resource.TestCheckResourceAttr("snowflake_object_parameter.p", "value", "NO")),
 					objectparametersassert.SchemaParameters(t, schema.ID()).HasStringParameterValue(resources.ReplicableWithFailoverGroups, "NO"),

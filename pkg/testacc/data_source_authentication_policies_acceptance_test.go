@@ -27,31 +27,34 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 		WithMfaEnrollmentEnum(sdk.MfaEnrollmentOptionRequired).
 		WithClientTypes(sdk.ClientTypesOptionSnowflakeUi).
 		WithSecurityIntegrations("ALL").
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-				{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
-			}),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				}),
 		).
-		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
-			WithDefaultExpiryInDays(1).
-			WithMaxExpiryInDays(30).
-			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
+		WithPatPolicy(
+			*sdk.NewAuthenticationPolicyPatPolicyRequest().
+				WithDefaultExpiryInDays(1).
+				WithMaxExpiryInDays(30).
+				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 		).
-		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderOptionAll},
-			}).
-			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
-				{Value: "111122223333"},
-			}).
-			WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
-			}).
-			WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://example.com"},
-			}),
+		WithWorkloadIdentityPolicy(
+			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAll},
+				}).
+				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+					{Value: "111122223333"},
+				}).
+				WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
+				}).
+				WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://example.com"},
+				}),
 		).
 		WithComment(comment)
 
@@ -73,7 +76,8 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel, authenticationPoliciesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.#", "1")),
 
 					resourceshowoutputassert.AuthenticationPoliciesDatasourceShowOutput(t, "snowflake_authentication_policies.test").
@@ -102,7 +106,8 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, completeModel, authenticationPoliciesModelWithoutOptionals),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModelWithoutOptionals.DatasourceReference(), "authentication_policies.#", "1")),
 					resourceshowoutputassert.AuthenticationPoliciesDatasourceShowOutput(t, "snowflake_authentication_policies.test").
 						HasName(id.Name()).

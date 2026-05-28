@@ -253,7 +253,8 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.DatabaseDoesNotExist(t, id),
 				),
 			},
@@ -801,7 +802,8 @@ func TestAcc_Database_IntParameter(t *testing.T) {
 						planchecks.ExpectComputed("snowflake_database.test", "data_retention_time_in_days", false),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "25")),
 					objectparametersassert.DatabaseParameters(t, id).HasDataRetentionTimeInDays(25).HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeDatabase),
 				),
@@ -821,7 +823,8 @@ func TestAcc_Database_IntParameter(t *testing.T) {
 						planchecks.ExpectComputed("snowflake_database.test", "data_retention_time_in_days", true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "1")),
 					objectparametersassert.DatabaseParameters(t, id).HasDataRetentionTimeInDays(1).HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault),
 				),
@@ -846,7 +849,8 @@ func TestAcc_Database_IntParameter(t *testing.T) {
 						planchecks.ExpectComputed("snowflake_database.test", "data_retention_time_in_days", true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "1")),
 					objectparametersassert.DatabaseParameters(t, id).HasDataRetentionTimeInDays(1).HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeDatabase),
 				),
@@ -866,7 +870,8 @@ func TestAcc_Database_IntParameter(t *testing.T) {
 						planchecks.ExpectComputed("snowflake_database.test", "data_retention_time_in_days", true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "1")), // Database default
 					objectparametersassert.DatabaseParameters(t, id).HasDataRetentionTimeInDays(1).HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault),
 				),
@@ -889,7 +894,8 @@ func TestAcc_Database_IntParameter(t *testing.T) {
 						planchecks.ExpectComputed("snowflake_database.test", "data_retention_time_in_days", false),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "50")),
 					objectparametersassert.DatabaseParameters(t, id).HasDataRetentionTimeInDays(50).HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeAccount),
 				),
@@ -902,7 +908,8 @@ func TestAcc_Database_IntParameter(t *testing.T) {
 				ImportStateCheck: importchecks.ComposeImportStateCheck(
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "data_retention_time_in_days", "50"),
 				),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.DatabaseParameters(t, id).HasDataRetentionTimeInDays(50).HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeAccount),
 				),
 			},
@@ -920,7 +927,8 @@ func TestAcc_Database_IntParameter(t *testing.T) {
 						planchecks.ExpectComputed("snowflake_database.test", "data_retention_time_in_days", true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "50")),
 					objectparametersassert.DatabaseParameters(t, id).HasDataRetentionTimeInDays(50).HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeAccount),
 				),
@@ -940,7 +948,8 @@ func TestAcc_Database_IntParameter(t *testing.T) {
 						planchecks.ExpectComputed("snowflake_database.test", "data_retention_time_in_days", false),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "1")),
 					objectparametersassert.DatabaseParameters(t, id).HasDataRetentionTimeInDays(1).HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeSnowflakeDefault),
 				),
@@ -1152,7 +1161,8 @@ func TestAcc_Database_WithoutPublicSchema(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: databaseWithDropPublicSchemaConfig(id, true),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
 					objectassert.DatabaseDescribe(t, id).DoesNotContainPublicSchema(),
 				),
@@ -1165,7 +1175,8 @@ func TestAcc_Database_WithoutPublicSchema(t *testing.T) {
 					},
 				},
 				Config: databaseWithDropPublicSchemaConfig(id, false),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
 					objectassert.DatabaseDescribe(t, id).DoesNotContainPublicSchema(),
 				),
@@ -1189,7 +1200,8 @@ func TestAcc_Database_WithPublicSchema(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: databaseWithDropPublicSchemaConfig(id, false),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
 					objectassert.DatabaseDescribe(t, id).ContainsPublicSchema(),
 				),
@@ -1202,7 +1214,8 @@ func TestAcc_Database_WithPublicSchema(t *testing.T) {
 					},
 				},
 				Config: databaseWithDropPublicSchemaConfig(id, true),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
 					objectassert.DatabaseDescribe(t, id).ContainsPublicSchema(),
 				),

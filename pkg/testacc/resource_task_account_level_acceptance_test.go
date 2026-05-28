@@ -56,7 +56,8 @@ func TestAcc_Task_ProveSessionParameterBehavior(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, providerModel, taskModel, executeCheckOnSession, executeCheckOnTask),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExecuteResource(t, executeCheckOnSession.ResourceReference()).
 						HasQueryResultsLength(1).
 						HasKeyValueOnIdx("value", "12345", 0).
@@ -90,7 +91,8 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, providerModel, taskModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TaskResource(t, taskModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStatementTimeoutInSecondsString("172800"),
@@ -107,7 +109,8 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 						plancheck.ExpectResourceAction(taskModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TaskResource(t, taskModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStatementTimeoutInSecondsString("43200"),
@@ -128,7 +131,8 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 						plancheck.ExpectResourceAction(taskModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TaskResource(t, taskModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStatementTimeoutInSecondsString("43200"),
@@ -159,7 +163,8 @@ func TestAcc_Task_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TaskResource(t, configModel.ResourceReference()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasDatabaseString(id.DatabaseName()).
@@ -205,7 +210,8 @@ func TestAcc_Task_Basic(t *testing.T) {
 			{
 				ResourceName: configModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasDatabaseString(id.DatabaseName()).
@@ -258,7 +264,8 @@ func TestAcc_Task_Complete(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TaskResource(t, configModel.ResourceReference()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasDatabaseString(id.DatabaseName()).
@@ -306,7 +313,8 @@ func TestAcc_Task_Complete(t *testing.T) {
 				ImportState:     true,
 				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedTaskResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasDatabaseString(id.DatabaseName()).
@@ -405,7 +413,8 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.TaskParameters(t, id).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -419,7 +428,8 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 				ImportState:     true,
 				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceparametersassert.ImportedTaskResourceParameters(t, helpers.EncodeResourceIdentifier(id)).
 						HasAllDefaults(),
 				),
@@ -428,7 +438,8 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithAllParametersSet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.TaskParameters(t, id).
 						HasSuspendTaskAfterNumFailures(15).
 						HasTaskAutoRetryAttempts(15).
@@ -553,7 +564,8 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 				ImportState:     true,
 				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithAllParametersSet),
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceparametersassert.ImportedTaskResourceParameters(t, helpers.EncodeResourceIdentifier(id)).
 						HasSuspendTaskAfterNumFailures(15).
 						HasTaskAutoRetryAttempts(15).
@@ -618,7 +630,8 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
 				ConfigVariables: config.ConfigVariablesFromModel(t, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.TaskParameters(t, id).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),

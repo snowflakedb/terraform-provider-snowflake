@@ -1515,7 +1515,8 @@ func TestAcc_GrantPrivileges_ToDatabaseRole_WithEmptyPrivileges(t *testing.T) {
 }
 
 func grantPrivilegesToDatabaseRole3690Config(databaseRoleId sdk.DatabaseObjectIdentifier, privileges ...sdk.AccountObjectPrivilege) string {
-	return fmt.Sprintf(`
+	return fmt.Sprintf(
+		`
 resource "snowflake_grant_privileges_to_database_role" "test" {
 	database_role_name = %s
 	privileges         = [ %s ]

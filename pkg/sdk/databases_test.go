@@ -29,7 +29,8 @@ func TestDatabasesCreate(t *testing.T) {
 			},
 			Before: new(TimeTravel),
 		}
-		assertOptsInvalidJoinedErrors(t, opts,
+		assertOptsInvalidJoinedErrors(
+			t, opts,
 			errors.New("only one of AT or BEFORE can be set"),
 			errors.New("exactly one of TIMESTAMP, OFFSET or STATEMENT can be set"),
 		)
@@ -46,7 +47,8 @@ func TestDatabasesCreate(t *testing.T) {
 		opts := defaultOpts()
 		opts.ExternalVolume = Pointer(emptyAccountObjectIdentifier)
 		opts.Catalog = Pointer(emptyAccountObjectIdentifier)
-		assertOptsInvalidJoinedErrors(t, opts,
+		assertOptsInvalidJoinedErrors(
+			t, opts,
 			errInvalidIdentifier("CreateDatabaseOptions", "ExternalVolume"),
 			errInvalidIdentifier("CreateDatabaseOptions", "Catalog"),
 		)
@@ -133,7 +135,8 @@ func TestDatabasesCreateShared(t *testing.T) {
 		opts.name = NewAccountObjectIdentifier("db")
 		opts.ExternalVolume = Pointer(emptyAccountObjectIdentifier)
 		opts.Catalog = Pointer(emptyAccountObjectIdentifier)
-		assertOptsInvalidJoinedErrors(t, opts,
+		assertOptsInvalidJoinedErrors(
+			t, opts,
 			errInvalidIdentifier("CreateSharedDatabaseOptions", "ExternalVolume"),
 			errInvalidIdentifier("CreateSharedDatabaseOptions", "Catalog"),
 		)
@@ -210,7 +213,8 @@ func TestDatabasesCreateSecondary(t *testing.T) {
 		opts := defaultOpts()
 		opts.ExternalVolume = Pointer(emptyAccountObjectIdentifier)
 		opts.Catalog = Pointer(emptyAccountObjectIdentifier)
-		assertOptsInvalidJoinedErrors(t, opts,
+		assertOptsInvalidJoinedErrors(
+			t, opts,
 			errInvalidIdentifier("CreateSecondaryDatabaseOptions", "ExternalVolume"),
 			errInvalidIdentifier("CreateSecondaryDatabaseOptions", "Catalog"),
 		)

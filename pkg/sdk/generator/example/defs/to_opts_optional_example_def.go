@@ -10,12 +10,14 @@ var ToOptsOptionalExample = g.NewInterface(
 	"ToOptsOptionalExamples",
 	"ToOptsOptionalExample",
 	g.KindOfT[sdkcommons.DatabaseObjectIdentifier](),
-).CreateOperation("https://example.com",
+).CreateOperation(
+	"https://example.com",
 	g.NewQueryStruct("Alter").
 		Alter().
 		IfExists().
 		Name(),
-).AlterOperation("https://example.com",
+).AlterOperation(
+	"https://example.com",
 	g.NewQueryStruct("Alter").
 		Alter().
 		IfExists().

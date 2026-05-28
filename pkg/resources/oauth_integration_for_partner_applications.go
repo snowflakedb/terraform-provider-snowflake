@@ -350,7 +350,8 @@ func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarkin
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"enabled", "enabled", integration.Enabled, booleanStringFromBool(integration.Enabled), nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -396,7 +397,8 @@ func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarkin
 				oauthRedirectUri = oauthRedirectUriProp.Value
 			}
 
-			if err = handleExternalChangesToObjectInDescribe(d,
+			if err = handleExternalChangesToObjectInDescribe(
+				d,
 				describeMapping{"oauth_issue_refresh_tokens", "oauth_issue_refresh_tokens", oauthIssueRefreshTokens.Value, oauthIssueRefreshTokens.Value, nil},
 				describeMapping{"oauth_refresh_token_validity", "oauth_refresh_token_validity", oauthRefreshTokenValidity.Value, oauthRefreshTokenValidityValue, nil},
 				describeMapping{"oauth_use_secondary_roles", "oauth_use_secondary_roles", oauthUseSecondaryRoles.Value, oauthUseSecondaryRoles.Value, nil},

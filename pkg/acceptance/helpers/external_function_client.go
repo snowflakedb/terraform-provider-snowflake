@@ -36,7 +36,8 @@ func (c *ExternalFunctionClient) CreateWithIdentifier(t *testing.T, apiIntegrati
 	for i, argumentDataType := range id.ArgumentDataTypes() {
 		argumentRequests[i] = *sdk.NewExternalFunctionArgumentRequest(c.ids.Alpha(), argumentDataType)
 	}
-	err := c.client().Create(ctx,
+	err := c.client().Create(
+		ctx,
 		sdk.NewCreateExternalFunctionRequest(
 			id.SchemaObjectId(),
 			sdk.DataTypeVariant,

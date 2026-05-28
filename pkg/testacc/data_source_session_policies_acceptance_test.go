@@ -56,7 +56,8 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel, sessionPoliciesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(sessionPoliciesModel.DatasourceReference(), "session_policies.#", "1")),
 					resourceshowoutputassert.SessionPoliciesDatasourceShowOutput(t, "snowflake_session_policies.test").
 						HasName(id.Name()).
@@ -80,7 +81,8 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, completeModel, sessionPoliciesModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(sessionPoliciesModelWithoutDescribe.DatasourceReference(), "session_policies.#", "1")),
 					resourceshowoutputassert.SessionPoliciesDatasourceShowOutput(t, "snowflake_session_policies.test").
 						HasName(id.Name()).

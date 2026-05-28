@@ -49,7 +49,8 @@ func TestAcc_ProcedureSql_InlineBasic(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanDefault).
@@ -75,7 +76,8 @@ func TestAcc_ProcedureSql_InlineBasic(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()),
 				),
@@ -86,7 +88,8 @@ func TestAcc_ProcedureSql_InlineBasic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"is_secure", "arguments.0.arg_data_type", "null_input_behavior", "execute_as"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedProcedureSqlResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -97,7 +100,8 @@ func TestAcc_ProcedureSql_InlineBasic(t *testing.T) {
 			// RENAME
 			{
 				Config: config.FromModels(t, procedureModelRenamed),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedureSqlResource(t, procedureModelRenamed.ResourceReference()).
 						HasNameString(idWithChangedNameButTheSameDataType.Name()).
 						HasFullyQualifiedNameString(idWithChangedNameButTheSameDataType.FullyQualifiedName()),
@@ -139,7 +143,8 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -158,7 +163,8 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"arguments.0.arg_data_type", "null_input_behavior"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedProcedureSqlResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -174,7 +180,8 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, procedureModelUpdateWithoutRecreation),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedureSqlResource(t, procedureModelUpdateWithoutRecreation.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -248,7 +255,8 @@ func TestAcc_ProcedureSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *t
 			{
 				ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 				Config:                   config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasReturnTypeString(returnType),
@@ -280,7 +288,8 @@ func TestAcc_ProcedureSql_defaultParamsNoDriftAfterMigration(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.15.0"),
 				Config:            config.FromModels(t, providerModel, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasReturnTypeString(returnType),
@@ -295,7 +304,8 @@ func TestAcc_ProcedureSql_defaultParamsNoDriftAfterMigration(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasReturnTypeString(returnType),

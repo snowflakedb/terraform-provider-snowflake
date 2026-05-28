@@ -123,9 +123,10 @@ func TestInt_CortexSearchServices(t *testing.T) {
 		newComment := "new comment"
 		newTargetLag := "10 minutes"
 
-		err := client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithSet(*sdk.NewCortexSearchServiceSetRequest().
-			WithTargetLag(newTargetLag).
-			WithComment(newComment),
+		err := client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithSet(
+			*sdk.NewCortexSearchServiceSetRequest().
+				WithTargetLag(newTargetLag).
+				WithComment(newComment),
 		))
 		require.NoError(t, err)
 

@@ -357,7 +357,8 @@ func TestAcc_Stage_Issue3959(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
 				Config:            accconfig.FromModels(t, providerModel, stageModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StageResource(t, stageModel.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).

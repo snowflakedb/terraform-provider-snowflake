@@ -79,7 +79,8 @@ func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
 				schema, schemaCleanup := testClient().Schema.CreateSchema(t)
 				t.Cleanup(schemaCleanup)
 
-				table, _ := testClient().Table.CreateWithRequest(t,
+				table, _ := testClient().Table.CreateWithRequest(
+					t,
 					sdk.NewCreateTableRequest(
 						testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()),
 						[]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeInt), *sdk.NewTableColumnRequest("ID2", sdk.DataTypeInt)},

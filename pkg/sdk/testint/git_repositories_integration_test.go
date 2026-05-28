@@ -39,17 +39,18 @@ func TestInt_GitRepositories(t *testing.T) {
 		gitRepository, err := client.GitRepositories.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.GitRepositoryFromObject(t, gitRepository).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOrigin(gitRepositoryOrigin).
-			HasApiIntegration(apiIntegrationId).
-			HasGitCredentialsEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasComment(""),
+		assertThatObject(
+			t, objectassert.GitRepositoryFromObject(t, gitRepository).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOrigin(gitRepositoryOrigin).
+				HasApiIntegration(apiIntegrationId).
+				HasGitCredentialsEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasComment(""),
 		)
 	})
 
@@ -65,17 +66,18 @@ func TestInt_GitRepositories(t *testing.T) {
 		gitRepository, err := client.GitRepositories.ShowByID(ctx, gitRepositoryId)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.GitRepositoryFromObject(t, gitRepository).
-			HasCreatedOnNotEmpty().
-			HasName(gitRepositoryId.Name()).
-			HasDatabaseName(gitRepositoryId.DatabaseName()).
-			HasSchemaName(gitRepositoryId.SchemaName()).
-			HasOrigin(gitRepositoryOrigin).
-			HasApiIntegration(apiIntegrationId).
-			HasGitCredentials(secretId).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasComment("comment"),
+		assertThatObject(
+			t, objectassert.GitRepositoryFromObject(t, gitRepository).
+				HasCreatedOnNotEmpty().
+				HasName(gitRepositoryId.Name()).
+				HasDatabaseName(gitRepositoryId.DatabaseName()).
+				HasSchemaName(gitRepositoryId.SchemaName()).
+				HasOrigin(gitRepositoryOrigin).
+				HasApiIntegration(apiIntegrationId).
+				HasGitCredentials(secretId).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasComment("comment"),
 		)
 	})
 
@@ -103,16 +105,17 @@ func TestInt_GitRepositories(t *testing.T) {
 		updatedGitRepository, err := client.GitRepositories.ShowByID(ctx, gitRepositoryId)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.GitRepositoryFromObject(t, updatedGitRepository).
-			HasName(gitRepositoryId.Name()).
-			HasDatabaseName(gitRepositoryId.DatabaseName()).
-			HasSchemaName(gitRepositoryId.SchemaName()).
-			HasOrigin(gitRepositoryOrigin).
-			HasApiIntegration(newApiIntegrationId).
-			HasGitCredentials(secretId).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasComment("comment"),
+		assertThatObject(
+			t, objectassert.GitRepositoryFromObject(t, updatedGitRepository).
+				HasName(gitRepositoryId.Name()).
+				HasDatabaseName(gitRepositoryId.DatabaseName()).
+				HasSchemaName(gitRepositoryId.SchemaName()).
+				HasOrigin(gitRepositoryOrigin).
+				HasApiIntegration(newApiIntegrationId).
+				HasGitCredentials(secretId).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasComment("comment"),
 		)
 	})
 
@@ -135,16 +138,17 @@ func TestInt_GitRepositories(t *testing.T) {
 		updated, err := testClientHelper().GitRepository.Show(t, gitRepositoryId)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.GitRepositoryFromObject(t, updated).
-			HasName(gitRepositoryId.Name()).
-			HasDatabaseName(gitRepositoryId.DatabaseName()).
-			HasSchemaName(gitRepositoryId.SchemaName()).
-			HasOrigin(gitRepositoryOrigin).
-			HasApiIntegration(apiIntegrationId).
-			HasGitCredentialsEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasComment(""),
+		assertThatObject(
+			t, objectassert.GitRepositoryFromObject(t, updated).
+				HasName(gitRepositoryId.Name()).
+				HasDatabaseName(gitRepositoryId.DatabaseName()).
+				HasSchemaName(gitRepositoryId.SchemaName()).
+				HasOrigin(gitRepositoryOrigin).
+				HasApiIntegration(apiIntegrationId).
+				HasGitCredentialsEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasComment(""),
 		)
 	})
 
@@ -222,16 +226,17 @@ func TestInt_GitRepositories(t *testing.T) {
 		gitRepository, err := client.GitRepositories.Describe(ctx, gitRepositoryId)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.GitRepositoryFromObject(t, gitRepository).
-			HasName(gitRepositoryId.Name()).
-			HasDatabaseName(gitRepositoryId.DatabaseName()).
-			HasSchemaName(gitRepositoryId.SchemaName()).
-			HasOrigin(gitRepositoryOrigin).
-			HasApiIntegration(apiIntegrationId).
-			HasGitCredentials(secretId).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasComment("comment"),
+		assertThatObject(
+			t, objectassert.GitRepositoryFromObject(t, gitRepository).
+				HasName(gitRepositoryId.Name()).
+				HasDatabaseName(gitRepositoryId.DatabaseName()).
+				HasSchemaName(gitRepositoryId.SchemaName()).
+				HasOrigin(gitRepositoryOrigin).
+				HasApiIntegration(apiIntegrationId).
+				HasGitCredentials(secretId).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasComment("comment"),
 		)
 	})
 

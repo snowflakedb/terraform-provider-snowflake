@@ -15,5 +15,6 @@ func ApiIntegrationDoesNotExist(t *testing.T, id sdk.AccountObjectIdentifier) as
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.ApiIntegration, sdk.AccountObjectIdentifier] {
 			return testClient.ApiIntegration.Show
-		})
+		},
+	)
 }

@@ -36,17 +36,18 @@ func TestInt_ImageRepositories(t *testing.T) {
 		imageRepository, err := client.ImageRepositories.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ImageRepositoryFromObject(t, imageRepository).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasRepositoryUrlNotEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasComment("").
-			HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
-			HasPrivatelinkRepositoryUrl(""),
+		assertThatObject(
+			t, objectassert.ImageRepositoryFromObject(t, imageRepository).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasRepositoryUrlNotEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasComment("").
+				HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
+				HasPrivatelinkRepositoryUrl(""),
 		)
 	})
 
@@ -62,17 +63,18 @@ func TestInt_ImageRepositories(t *testing.T) {
 		imageRepository, err := client.ImageRepositories.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ImageRepositoryFromObject(t, imageRepository).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasRepositoryUrlNotEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasComment(comment).
-			HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeSse).
-			HasPrivatelinkRepositoryUrl(""),
+		assertThatObject(
+			t, objectassert.ImageRepositoryFromObject(t, imageRepository).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasRepositoryUrlNotEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasComment(comment).
+				HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeSse).
+				HasPrivatelinkRepositoryUrl(""),
 		)
 	})
 
@@ -101,8 +103,9 @@ func TestInt_ImageRepositories(t *testing.T) {
 		imageRepository, err = client.ImageRepositories.ShowByID(ctx, imageRepository.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ImageRepositoryFromObject(t, imageRepository).
-			HasComment(comment),
+		assertThatObject(
+			t, objectassert.ImageRepositoryFromObject(t, imageRepository).
+				HasComment(comment),
 		)
 
 		// Set comment to an empty string.
@@ -117,8 +120,9 @@ func TestInt_ImageRepositories(t *testing.T) {
 		imageRepository, err = client.ImageRepositories.ShowByID(ctx, imageRepository.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ImageRepositoryFromObject(t, imageRepository).
-			HasComment(""),
+		assertThatObject(
+			t, objectassert.ImageRepositoryFromObject(t, imageRepository).
+				HasComment(""),
 		)
 	})
 

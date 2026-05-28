@@ -358,7 +358,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		func() error {
 			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
 			if err != nil {
-				return (fmt.Errorf("getting policy references for view: %w", err))
+				return fmt.Errorf("getting policy references for view: %w", err)
 			}
 			policyIds := make([]string, 0, len(policyRefs))
 			for _, p := range policyRefs {

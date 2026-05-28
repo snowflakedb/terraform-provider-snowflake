@@ -58,7 +58,8 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithRsaPublicKeysAndBlockedRolesList"),
 				ConfigVariables: m(),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalOauthSecurityIntegrationResource(t, "snowflake_external_oauth_integration.test").
 						HasComment("foo").
 						HasEnabled(true).
@@ -101,7 +102,8 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 				ConfigVariables: m(),
 				ResourceName:    "snowflake_external_oauth_integration.test",
 				ImportState:     true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedExternalOauthSecurityIntegrationResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
 						HasCommentString("foo").
 						HasEnabledString("true").
@@ -159,7 +161,8 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithRsaPublicKeysAndBlockedRolesList"),
 				ConfigVariables: m(),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalOauthSecurityIntegrationResource(t, "snowflake_external_oauth_integration.test").
 						HasComment("foo").
 						HasEnabled(true).

@@ -27,7 +27,8 @@ import (
 
 func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
 			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}, {Scope: "scope3"}, {Scope: "scope4"}}),
 	)
@@ -186,10 +187,12 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
 						*sdk.NewSecretSetRequest().
 							WithComment(comment).
-							WithSetForFlow(*sdk.NewSetForFlowRequest().
-								WithSetForOAuthClientCredentials(*sdk.NewSetForOAuthClientCredentialsRequest().
-									WithOauthScopes(*sdk.NewOauthScopesListRequest(collections.Map(oauthScopes, func(s string) sdk.ApiIntegrationScope { return sdk.ApiIntegrationScope{Scope: s} }))),
-								),
+							WithSetForFlow(
+								*sdk.NewSetForFlowRequest().
+									WithSetForOAuthClientCredentials(
+										*sdk.NewSetForOAuthClientCredentialsRequest().
+											WithOauthScopes(*sdk.NewOauthScopesListRequest(collections.Map(oauthScopes, func(s string) sdk.ApiIntegrationScope { return sdk.ApiIntegrationScope{Scope: s} }))),
+									),
 							),
 					))
 				},
@@ -205,7 +208,8 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.SecretDoesNotExist(t, id),
 				),
 			},
@@ -227,7 +231,8 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 // When omitted, DESC SECRET shows no scopes (inheritance from the integration is internal to Snowflake's OAuth flow).
 func TestAcc_SecretWithClientCredentials_WithoutOAuthScopes(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
 			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}, {Scope: "scope3"}}),
 	)
@@ -248,7 +253,8 @@ func TestAcc_SecretWithClientCredentials_WithoutOAuthScopes(t *testing.T) {
 			// Create without oauth_scopes: DESC shows no scopes (not inherited from integration)
 			{
 				Config: config.FromModels(t, secretModelWithoutScopes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SecretWithClientCredentialsResource(t, secretModelWithoutScopes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasApiAuthenticationString(integrationId.Name()).
@@ -264,7 +270,8 @@ func TestAcc_SecretWithClientCredentials_WithoutOAuthScopes(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, secretModelWithScopes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SecretWithClientCredentialsResource(t, secretModelWithScopes.ResourceReference()).
 						HasOauthScopes("scope1", "scope2"),
 					assert.Check(resource.TestCheckResourceAttr(secretModelWithScopes.ResourceReference(), "describe_output.0.oauth_scopes.#", "2")),
@@ -280,7 +287,8 @@ func TestAcc_SecretWithClientCredentials_WithoutOAuthScopes(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, secretModelWithoutScopes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SecretWithClientCredentialsResource(t, secretModelWithoutScopes.ResourceReference()).
 						HasOauthScopes(),
 					assert.Check(resource.TestCheckResourceAttr(secretModelWithoutScopes.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
@@ -292,7 +300,8 @@ func TestAcc_SecretWithClientCredentials_WithoutOAuthScopes(t *testing.T) {
 
 func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
 			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "foo"}, {Scope: "bar"}, {Scope: "test"}}),
 	)
@@ -316,7 +325,8 @@ func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 			{
 				Config: config.FromModels(t, secretModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithClientCredentialsResource(t, secretModel.ResourceReference()).
 							HasNameString(name).
 							HasDatabaseString(id.DatabaseName()).
@@ -336,7 +346,8 @@ func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 						planchecks.ExpectChange(secretModelWithScope.ResourceReference(), "oauth_scopes", tfjson.ActionUpdate, sdk.String("[]"), sdk.String("[foo]")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SecretWithClientCredentialsResource(t, secretModel.ResourceReference()).
 						HasNameString(name).
 						HasDatabaseString(id.DatabaseName()).
@@ -355,7 +366,8 @@ func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 						planchecks.ExpectChange(secretModel.ResourceReference(), "oauth_scopes", tfjson.ActionUpdate, sdk.String("[foo]"), sdk.String("[]")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SecretWithClientCredentialsResource(t, secretModel.ResourceReference()).
 						HasNameString(name).
 						HasDatabaseString(id.DatabaseName()).
@@ -370,7 +382,8 @@ func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 
 func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChange(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
 			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "foo"}, {Scope: "bar"}, {Scope: "test"}}),
 	)
@@ -392,7 +405,8 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChange(t *testing.T) 
 			{
 				Config: config.FromModels(t, secretModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithClientCredentialsResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeOAuth2)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
@@ -414,7 +428,8 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChange(t *testing.T) 
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithClientCredentialsResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeOAuth2)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
@@ -428,7 +443,8 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChange(t *testing.T) 
 
 func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChangeToOAuthAuthCodeGrant(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
 			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "foo"}, {Scope: "bar"}, {Scope: "test"}}),
 	)
@@ -450,7 +466,8 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChangeToOAuthAuthCode
 			{
 				Config: config.FromModels(t, secretModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithClientCredentialsResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeOAuth2)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
@@ -476,7 +493,8 @@ func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChangeToOAuthAuthCode
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithClientCredentialsResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeOAuth2)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
