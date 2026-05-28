@@ -58,24 +58,17 @@ var cortexAgentsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperation(
+	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-agents",
-		g.DbStruct("showCortexAgentDBRow").
+		g.StructPair("showCortexAgentDBRow", "CortexAgent").
 			Time("created_on").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
-			OptionalText("comment").
-			OptionalText("profile"),
-		g.PlainStruct("CortexAgent").
-			Time("CreatedOn").
-			Text("Name").
-			Text("DatabaseName").
-			Text("SchemaName").
-			Text("Owner").
-			Text("Comment").
-			Field("Profile", "CortexAgentProfile"),
+			OptionalText("comment", g.WithRequiredInPlain()).
+			OptionalPlainField("profile", "CortexAgentProfile").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowCortexAgents").
 			Show().
 			SQL("AGENTS").
@@ -86,33 +79,22 @@ var cortexAgentsDef = g.NewInterface(
 		g.ShowByIDLikeFiltering,
 		g.ShowByIDExtendedInFiltering,
 	).
-	DescribeOperation(
+	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-agent",
-		g.DbStruct("cortexAgentDetailsRow").
+		g.StructPair("cortexAgentDetailsRow", "CortexAgentDetails").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
-			OptionalText("comment").
-			OptionalText("profile").
-			Text("agent_spec").
+			OptionalText("comment", g.WithRequiredInPlain()).
+			OptionalPlainField("profile", "CortexAgentProfile").
+			Text("agent_spec", g.WithCustomParser("NormalizeCortexAgentSpecification")).
 			Time("created_on").
 			OptionalText("default_version_name").
 			OptionalText("versions").
-			OptionalText("aliases"),
-		g.PlainStruct("CortexAgentDetails").
-			Text("Name").
-			Text("DatabaseName").
-			Text("SchemaName").
-			Text("Owner").
-			Text("Comment").
-			Field("Profile", "CortexAgentProfile").
-			Text("AgentSpec").
-			Time("CreatedOn").
-			OptionalText("DefaultVersionName").
-			OptionalText("Versions").
-			OptionalText("Aliases"),
+			OptionalText("aliases").
+			WithConvertGeneration(),
 		g.NewQueryStruct("DescribeCortexAgent").
 			Describe().
 			SQL("AGENT").
