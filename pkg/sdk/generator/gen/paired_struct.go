@@ -238,6 +238,16 @@ func (p *PairedStructs) PlainField(dbColumnName, plainKind string, opts ...Paire
 	return p.addField(dbColumnName, "string", plainKind, opts)
 }
 
+// OptionalPlainField adds a nullable field where the db kind is sql.NullString and the plain kind is a custom type.
+// Use this for fields that are stored as nullable raw strings in the db but represented as a custom
+// SDK type in the plain struct (e.g. enums, identifiers, or slices parsed from the db string).
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> <plainKind>
+func (p *PairedStructs) OptionalPlainField(dbColumnName, plainKind string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", plainKind, opts)
+}
+
 // StringList adds a field where the db kind is string and the plain kind is []string.
 // Use this for fields that are stored as a single string in the db (e.g. comma-separated)
 // but represented as a string slice in the plain struct.

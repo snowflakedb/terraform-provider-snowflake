@@ -16,20 +16,22 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	response := "You are a helpful assistant"
 	hclSpec := model.SampleSpecAsYamlencodeHCL(response)
-	descSpec := testClient().CortexAgent.SampleSpecAsJson(t, response)
+	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
+		testClient().CortexAgent.SampleSpecWithResponse(t, response))
+	require.NoError(t, err)
 	comment := random.Comment()
 	completeProfile := sdk.CortexAgentProfile{
 		DisplayName: sdk.String("My Helpful Assistant"),
 		Avatar:      sdk.String("business-icon.png"),
 		Color:       sdk.String("red"),
 	}
-	completeProfileAsJson := `{"display_name":"My Helpful Assistant","avatar":"business-icon.png","color":"red"}`
 
 	completeModel := model.CortexAgentWithSpecification("test", id.DatabaseName(), id.SchemaName(), id.Name(), hclSpec).
 		WithComment(comment).
@@ -63,15 +65,15 @@ func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
-						HasProfile(completeProfileAsJson),
+						HasProfile(completeProfile),
 					resourceshowoutputassert.CortexAgentsDatasourceDescribeOutput(t, "snowflake_cortex_agents.test").
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
-						HasProfile(completeProfileAsJson).
-						HasAgentSpec(descSpec).
+						HasProfile(completeProfile).
+						HasAgentSpec(normalizedSpec).
 						HasCreatedOnNotEmpty().
 						HasDefaultVersionName("LAST").
 						HasVersions(`["VERSION$1"]`).
@@ -89,7 +91,7 @@ func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
-						HasProfile(completeProfileAsJson),
+						HasProfile(completeProfile),
 					assert.Check(resource.TestCheckResourceAttr(cortexAgentsModelWithoutDescribe.DatasourceReference(), "cortex_agents.0.describe_output.#", "0")),
 				),
 			},

@@ -82,11 +82,3 @@ instructions:
   response: "%s"
 `, response)
 }
-
-func (c *AgentClient) SampleSpecAsJson(t *testing.T, response string) string {
-	t.Helper()
-	return fmt.Sprintf(
-		`{"orchestration":{"budget":{"seconds":30,"tokens":16000}},"instructions":{"response":"%s"}}`,
-		response,
-	)
-}
