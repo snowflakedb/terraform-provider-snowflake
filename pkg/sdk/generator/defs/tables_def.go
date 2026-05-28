@@ -132,7 +132,9 @@ func tableOutOfLineUniquePK() *g.QueryStruct {
 			OptionalSQL("UNIQUE").
 			OptionalSQL("PRIMARY KEY").
 			PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Parentheses()),
-	).WithValidation(g.ExactlyOneValueSet, "Unique", "PrimaryKey")
+		// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+		// WithValidation(g.ExactlyOneValueSet, "Unique", "PrimaryKey")
+	)
 }
 
 func tableOutOfLineFK() *g.QueryStruct {
@@ -145,7 +147,9 @@ func tableOutOfLineFK() *g.QueryStruct {
 			PredefinedQueryStructField("RefColumns", "[]Column", g.KeywordOptions().Parentheses()).
 			PredefinedQueryStructField("Match", g.KindOfTPointer[sdkcommons.MatchType](), g.ParameterOptions().NoEquals().SQL("MATCH")).
 			PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions()),
-	).WithValidation(g.ValidIdentifier, "References")
+		// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+		// WithValidation(g.ValidIdentifier, "References")
+	)
 }
 
 func tableOutOfLineCH() *g.QueryStruct {
@@ -156,16 +160,18 @@ func tableOutOfLineCH() *g.QueryStruct {
 		Text("Expression", g.KeywordOptions().NoQuotes().Required()).
 		SQLWithCustomFieldName("closeParen", ")").
 		OptionalSQL("ENABLE VALIDATE").
-		OptionalSQL("ENABLE NOVALIDATE").
-		WithValidation(g.ConflictingFields, "EnableValidate", "EnableNovalidate")
+		OptionalSQL("ENABLE NOVALIDATE")
+	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+	// WithValidation(g.ConflictingFields, "EnableValidate", "EnableNovalidate")
 }
 
 func tableOutOfLineConstraint() *g.QueryStruct {
 	return g.NewQueryStruct("TableOutOfLineConstraint").
 		OptionalQueryStructField("UniquePK", tableOutOfLineUniquePK(), g.KeywordOptions()).
 		OptionalQueryStructField("FK", tableOutOfLineFK(), g.KeywordOptions()).
-		OptionalQueryStructField("CH", tableOutOfLineCH(), g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "UniquePK", "FK", "CH")
+		OptionalQueryStructField("CH", tableOutOfLineCH(), g.KeywordOptions())
+	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+	// WithValidation(g.ExactlyOneValueSet, "UniquePK", "FK", "CH")
 }
 
 // withOutOfLineConstraintTail appends the tail clauses shared by out-of-line UNIQUE/PK and FK
@@ -187,21 +193,23 @@ func withOutOfLineConstraintTail(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalSQL("NOVALIDATE").
 		OptionalSQL("RELY").
 		OptionalSQL("NORELY").
-		OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
-		WithValidation(g.ConflictingFields, "Enforced", "NotEnforced").
-		WithValidation(g.ConflictingFields, "Deferrable", "NotDeferrable").
-		WithValidation(g.ConflictingFields, "InitiallyDeferred", "InitiallyImmediate").
-		WithValidation(g.ConflictingFields, "Enable", "Disable").
-		WithValidation(g.ConflictingFields, "Validate", "Novalidate").
-		WithValidation(g.ConflictingFields, "Rely", "Norely")
+		OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
+	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+	// WithValidation(g.ConflictingFields, "Enforced", "NotEnforced").
+	// WithValidation(g.ConflictingFields, "Deferrable", "NotDeferrable").
+	// WithValidation(g.ConflictingFields, "InitiallyDeferred", "InitiallyImmediate").
+	// WithValidation(g.ConflictingFields, "Enable", "Disable").
+	// WithValidation(g.ConflictingFields, "Validate", "Novalidate").
+	// WithValidation(g.ConflictingFields, "Rely", "Norely")
 }
 
 func tableColumnInlineConstraint() *g.QueryStruct {
 	return g.NewQueryStruct("TableColumnInlineConstraint").
 		OptionalQueryStructField("UniquePK", tableColumnInlineUniquePK(), g.KeywordOptions()).
 		OptionalQueryStructField("FK", tableColumnInlineFK(), g.KeywordOptions()).
-		OptionalQueryStructField("CH", tableColumnInlineCH(), g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "UniquePK", "FK", "CH")
+		OptionalQueryStructField("CH", tableColumnInlineCH(), g.KeywordOptions())
+	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+	// WithValidation(g.ExactlyOneValueSet, "UniquePK", "FK", "CH")
 }
 
 func tableColumnInlineUniquePK() *g.QueryStruct {
@@ -210,7 +218,9 @@ func tableColumnInlineUniquePK() *g.QueryStruct {
 			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 			OptionalSQL("UNIQUE").
 			OptionalSQL("PRIMARY KEY"),
-	).WithValidation(g.ExactlyOneValueSet, "Unique", "PrimaryKey")
+		// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+		// WithValidation(g.ExactlyOneValueSet, "Unique", "PrimaryKey")
+	)
 }
 
 func tableColumnInlineFK() *g.QueryStruct {
@@ -222,7 +232,9 @@ func tableColumnInlineFK() *g.QueryStruct {
 			PredefinedQueryStructField("RefColumn", "*string", g.KeywordOptions().Parentheses().DoubleQuotes()).
 			PredefinedQueryStructField("Match", g.KindOfTPointer[sdkcommons.MatchType](), g.ParameterOptions().NoEquals().SQL("MATCH")).
 			PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions()),
-	).WithValidation(g.ValidIdentifier, "References")
+		// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+		// WithValidation(g.ValidIdentifier, "References")
+	)
 }
 
 func tableColumnInlineCH() *g.QueryStruct {
@@ -233,8 +245,9 @@ func tableColumnInlineCH() *g.QueryStruct {
 		Text("Expression", g.KeywordOptions().NoQuotes().Required()).
 		SQLWithCustomFieldName("closeParen", ")").
 		OptionalSQL("ENABLE VALIDATE").
-		OptionalSQL("ENABLE NOVALIDATE").
-		WithValidation(g.ConflictingFields, "EnableValidate", "EnableNovalidate")
+		OptionalSQL("ENABLE NOVALIDATE")
+	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+	// WithValidation(g.ConflictingFields, "EnableValidate", "EnableNovalidate")
 }
 
 // withInlineConstraintTail appends the tail clauses shared by inline UNIQUE/PK and FK
@@ -254,11 +267,12 @@ func withInlineConstraintTail(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalSQL("VALIDATE").
 		OptionalSQL("NOVALIDATE").
 		OptionalSQL("RELY").
-		OptionalSQL("NORELY").
-		WithValidation(g.ConflictingFields, "Enforced", "NotEnforced").
-		WithValidation(g.ConflictingFields, "Deferrable", "NotDeferrable").
-		WithValidation(g.ConflictingFields, "InitiallyDeferred", "InitiallyImmediate").
-		WithValidation(g.ConflictingFields, "Enable", "Disable").
-		WithValidation(g.ConflictingFields, "Validate", "Novalidate").
-		WithValidation(g.ConflictingFields, "Rely", "Norely")
+		OptionalSQL("NORELY")
+	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+	// WithValidation(g.ConflictingFields, "Enforced", "NotEnforced").
+	// WithValidation(g.ConflictingFields, "Deferrable", "NotDeferrable").
+	// WithValidation(g.ConflictingFields, "InitiallyDeferred", "InitiallyImmediate").
+	// WithValidation(g.ConflictingFields, "Enable", "Disable").
+	// WithValidation(g.ConflictingFields, "Validate", "Novalidate").
+	// WithValidation(g.ConflictingFields, "Rely", "Norely")
 }

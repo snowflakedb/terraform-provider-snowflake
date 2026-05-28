@@ -10,168 +10,6 @@ func (opts *CreateIcebergTableOptions) additionalValidations() error {
 			errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.PartitionBy[%d]", i), "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
 		}
 	}
-	return JoinErrors(errs...)
-}
-
-func (opts *AlterIcebergTableOptions) additionalValidations() error {
-	var errs []error
-	// AlterColumnAction is a slice, validate each element
-	for i, col := range opts.AlterColumnAction {
-		if !exactlyOneValueSet(col.SetNotNull, col.DropNotNull, col.DataType, col.Comment, col.UnsetComment, col.SetWriteDefault, col.DropWriteDefault) {
-			errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterIcebergTableOptions.AlterColumnAction[%d]", i), "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (d *TableDropSearchOptimization) additionalValidations() error {
-	var errs []error
-	// each Drop.On entry must have exactly one of SearchMethodWithTarget, ColumnName, or ExpressionId set.
-	for _, on := range d.On {
-		if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
-			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-// icebergTableExternalVolumeQuoted formats an AccountObjectIdentifier for the
-// EXTERNAL_VOLUME clause of CREATE ICEBERG TABLE, which expects a single-quoted
-// string literal whose content is the double-quoted volume name (e.g. '"vol1"').
-//
-// TODO(SNOW-2236323): Use a proper generation option instead.
-// We need to use a custom parsing here, see SNOW-1833593 for more details.
-func icebergTableExternalVolumeQuoted(id *AccountObjectIdentifier) *string {
-	if id == nil {
-		return nil
-	}
-	return Pointer(fmt.Sprintf("'%s'", id.FullyQualifiedName()))
-}
-
-// TableColumnInlineConstraintFromRequest converts an inline constraint
-// Request into its Options counterpart for emission as DDL.
-func TableColumnInlineConstraintFromRequest(r *TableColumnInlineConstraintRequest) *TableColumnInlineConstraint {
-	if r == nil {
-		return nil
-	}
-	out := &TableColumnInlineConstraint{}
-	if r.UniquePK != nil {
-		out.UniquePK = &TableColumnInlineUniquePK{
-			Name:               r.UniquePK.Name,
-			Unique:             r.UniquePK.Unique,
-			PrimaryKey:         r.UniquePK.PrimaryKey,
-			Enforced:           r.UniquePK.Enforced,
-			NotEnforced:        r.UniquePK.NotEnforced,
-			Deferrable:         r.UniquePK.Deferrable,
-			NotDeferrable:      r.UniquePK.NotDeferrable,
-			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
-			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
-			Enable:             r.UniquePK.Enable,
-			Disable:            r.UniquePK.Disable,
-			Validate:           r.UniquePK.Validate,
-			Novalidate:         r.UniquePK.Novalidate,
-			Rely:               r.UniquePK.Rely,
-			Norely:             r.UniquePK.Norely,
-		}
-	}
-	if r.FK != nil {
-		out.FK = &TableColumnInlineFK{
-			Name:               r.FK.Name,
-			ForeignKey:         r.FK.ForeignKey,
-			References:         r.FK.References,
-			RefColumn:          r.FK.RefColumn,
-			Match:              r.FK.Match,
-			On:                 r.FK.On,
-			Enforced:           r.FK.Enforced,
-			NotEnforced:        r.FK.NotEnforced,
-			Deferrable:         r.FK.Deferrable,
-			NotDeferrable:      r.FK.NotDeferrable,
-			InitiallyDeferred:  r.FK.InitiallyDeferred,
-			InitiallyImmediate: r.FK.InitiallyImmediate,
-			Enable:             r.FK.Enable,
-			Disable:            r.FK.Disable,
-			Validate:           r.FK.Validate,
-			Novalidate:         r.FK.Novalidate,
-			Rely:               r.FK.Rely,
-			Norely:             r.FK.Norely,
-		}
-	}
-	if r.CH != nil {
-		out.CH = &TableColumnInlineCH{
-			Name:             r.CH.Name,
-			Expression:       r.CH.Expression,
-			EnableValidate:   r.CH.EnableValidate,
-			EnableNovalidate: r.CH.EnableNovalidate,
-		}
-	}
-	return out
-}
-
-// TableOutOfLineConstraintFromRequest converts an out-of-line constraint
-// Request into its Options counterpart for emission as DDL.
-func TableOutOfLineConstraintFromRequest(r *TableOutOfLineConstraintRequest) *TableOutOfLineConstraint {
-	if r == nil {
-		return nil
-	}
-	out := &TableOutOfLineConstraint{}
-	if r.UniquePK != nil {
-		out.UniquePK = &TableOutOfLineUniquePK{
-			Name:               r.UniquePK.Name,
-			Unique:             r.UniquePK.Unique,
-			PrimaryKey:         r.UniquePK.PrimaryKey,
-			Columns:            r.UniquePK.Columns,
-			Enforced:           r.UniquePK.Enforced,
-			NotEnforced:        r.UniquePK.NotEnforced,
-			Deferrable:         r.UniquePK.Deferrable,
-			NotDeferrable:      r.UniquePK.NotDeferrable,
-			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
-			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
-			Enable:             r.UniquePK.Enable,
-			Disable:            r.UniquePK.Disable,
-			Validate:           r.UniquePK.Validate,
-			Novalidate:         r.UniquePK.Novalidate,
-			Rely:               r.UniquePK.Rely,
-			Norely:             r.UniquePK.Norely,
-			Comment:            r.UniquePK.Comment,
-		}
-	}
-	if r.FK != nil {
-		out.FK = &TableOutOfLineFK{
-			Name:               r.FK.Name,
-			Columns:            r.FK.Columns,
-			References:         r.FK.References,
-			RefColumns:         r.FK.RefColumns,
-			Match:              r.FK.Match,
-			On:                 r.FK.On,
-			Enforced:           r.FK.Enforced,
-			NotEnforced:        r.FK.NotEnforced,
-			Deferrable:         r.FK.Deferrable,
-			NotDeferrable:      r.FK.NotDeferrable,
-			InitiallyDeferred:  r.FK.InitiallyDeferred,
-			InitiallyImmediate: r.FK.InitiallyImmediate,
-			Enable:             r.FK.Enable,
-			Disable:            r.FK.Disable,
-			Validate:           r.FK.Validate,
-			Novalidate:         r.FK.Novalidate,
-			Rely:               r.FK.Rely,
-			Norely:             r.FK.Norely,
-			Comment:            r.FK.Comment,
-		}
-	}
-	if r.CH != nil {
-		out.CH = &TableOutOfLineCH{
-			Name:             r.CH.Name,
-			Expression:       r.CH.Expression,
-			EnableValidate:   r.CH.EnableValidate,
-			EnableNovalidate: r.CH.EnableNovalidate,
-		}
-	}
-	return out
-}
-
-func (opts *CreateIcebergTableOptions) additionalValidations() error {
-	var errs []error
-	// Adjusted manually: Columns is a slice, validate inline constraint per element
 	for i, col := range opts.ColumnsAndConstraints.Columns {
 		if valueSet(col.InlineConstraint) {
 			path := fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint", i)
@@ -295,12 +133,6 @@ func (opts *CreateIcebergTableOptions) additionalValidations() error {
 			}
 		}
 	}
-	// Adjusted manually: PartitionBy is a slice, validate each element
-	for i, p := range opts.PartitionBy {
-		if !exactlyOneValueSet(p.Identity, p.Bucket, p.Truncate, p.Year, p.Month, p.Day, p.Hour) {
-			errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.PartitionBy[%d]", i), "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
-		}
-	}
 	return JoinErrors(errs...)
 }
 
@@ -322,5 +154,208 @@ func (opts *AlterIcebergTableOptions) additionalValidations() error {
 			}
 		}
 	}
+	if valueSet(opts.AddColumnAction) {
+		if valueSet(opts.AddColumnAction.InlineConstraint) {
+			if !exactlyOneValueSet(opts.AddColumnAction.InlineConstraint.UniquePK, opts.AddColumnAction.InlineConstraint.FK, opts.AddColumnAction.InlineConstraint.CH) {
+				errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint", "UniquePK", "FK", "CH"))
+			}
+			if valueSet(opts.AddColumnAction.InlineConstraint.UniquePK) {
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Enforced, opts.AddColumnAction.InlineConstraint.UniquePK.NotEnforced) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Deferrable, opts.AddColumnAction.InlineConstraint.UniquePK.NotDeferrable) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.InitiallyDeferred, opts.AddColumnAction.InlineConstraint.UniquePK.InitiallyImmediate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Enable, opts.AddColumnAction.InlineConstraint.UniquePK.Disable) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enable", "Disable"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Validate, opts.AddColumnAction.InlineConstraint.UniquePK.Novalidate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Validate", "Novalidate"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Rely, opts.AddColumnAction.InlineConstraint.UniquePK.Norely) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Rely", "Norely"))
+				}
+				if !exactlyOneValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Unique, opts.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey) {
+					errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
+				}
+			}
+			if valueSet(opts.AddColumnAction.InlineConstraint.FK) {
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Enforced, opts.AddColumnAction.InlineConstraint.FK.NotEnforced) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Deferrable, opts.AddColumnAction.InlineConstraint.FK.NotDeferrable) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.InitiallyDeferred, opts.AddColumnAction.InlineConstraint.FK.InitiallyImmediate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Enable, opts.AddColumnAction.InlineConstraint.FK.Disable) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enable", "Disable"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Validate, opts.AddColumnAction.InlineConstraint.FK.Novalidate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Validate", "Novalidate"))
+				}
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Rely, opts.AddColumnAction.InlineConstraint.FK.Norely) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Rely", "Norely"))
+				}
+				if !ValidObjectIdentifier(opts.AddColumnAction.InlineConstraint.FK.References) {
+					errs = append(errs, ErrInvalidObjectIdentifier)
+				}
+			}
+			if valueSet(opts.AddColumnAction.InlineConstraint.CH) {
+				if everyValueSet(opts.AddColumnAction.InlineConstraint.CH.EnableValidate, opts.AddColumnAction.InlineConstraint.CH.EnableNovalidate) {
+					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
+}
+
+func (d *TableDropSearchOptimization) additionalValidations() error {
+	var errs []error
+	// each Drop.On entry must have exactly one of SearchMethodWithTarget, ColumnName, or ExpressionId set.
+	for _, on := range d.On {
+		if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
+			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+// icebergTableExternalVolumeQuoted formats an AccountObjectIdentifier for the
+// EXTERNAL_VOLUME clause of CREATE ICEBERG TABLE, which expects a single-quoted
+// string literal whose content is the double-quoted volume name (e.g. '"vol1"').
+//
+// TODO(SNOW-2236323): Use a proper generation option instead.
+// We need to use a custom parsing here, see SNOW-1833593 for more details.
+func icebergTableExternalVolumeQuoted(id *AccountObjectIdentifier) *string {
+	if id == nil {
+		return nil
+	}
+	return new(fmt.Sprintf("'%s'", id.FullyQualifiedName()))
+}
+
+// TableColumnInlineConstraintFromRequest converts an inline constraint
+// Request into its Options counterpart for emission as DDL.
+func TableColumnInlineConstraintFromRequest(r *TableColumnInlineConstraintRequest) *TableColumnInlineConstraint {
+	if r == nil {
+		return nil
+	}
+	out := &TableColumnInlineConstraint{}
+	if r.UniquePK != nil {
+		out.UniquePK = &TableColumnInlineUniquePK{
+			Name:               r.UniquePK.Name,
+			Unique:             r.UniquePK.Unique,
+			PrimaryKey:         r.UniquePK.PrimaryKey,
+			Enforced:           r.UniquePK.Enforced,
+			NotEnforced:        r.UniquePK.NotEnforced,
+			Deferrable:         r.UniquePK.Deferrable,
+			NotDeferrable:      r.UniquePK.NotDeferrable,
+			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
+			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
+			Enable:             r.UniquePK.Enable,
+			Disable:            r.UniquePK.Disable,
+			Validate:           r.UniquePK.Validate,
+			Novalidate:         r.UniquePK.Novalidate,
+			Rely:               r.UniquePK.Rely,
+			Norely:             r.UniquePK.Norely,
+		}
+	}
+	if r.FK != nil {
+		out.FK = &TableColumnInlineFK{
+			Name:               r.FK.Name,
+			ForeignKey:         r.FK.ForeignKey,
+			References:         r.FK.References,
+			RefColumn:          r.FK.RefColumn,
+			Match:              r.FK.Match,
+			On:                 r.FK.On,
+			Enforced:           r.FK.Enforced,
+			NotEnforced:        r.FK.NotEnforced,
+			Deferrable:         r.FK.Deferrable,
+			NotDeferrable:      r.FK.NotDeferrable,
+			InitiallyDeferred:  r.FK.InitiallyDeferred,
+			InitiallyImmediate: r.FK.InitiallyImmediate,
+			Enable:             r.FK.Enable,
+			Disable:            r.FK.Disable,
+			Validate:           r.FK.Validate,
+			Novalidate:         r.FK.Novalidate,
+			Rely:               r.FK.Rely,
+			Norely:             r.FK.Norely,
+		}
+	}
+	if r.CH != nil {
+		out.CH = &TableColumnInlineCH{
+			Name:             r.CH.Name,
+			Expression:       r.CH.Expression,
+			EnableValidate:   r.CH.EnableValidate,
+			EnableNovalidate: r.CH.EnableNovalidate,
+		}
+	}
+	return out
+}
+
+// TableOutOfLineConstraintFromRequest converts an out-of-line constraint
+// Request into its Options counterpart for emission as DDL.
+func TableOutOfLineConstraintFromRequest(r *TableOutOfLineConstraintRequest) *TableOutOfLineConstraint {
+	if r == nil {
+		return nil
+	}
+	out := &TableOutOfLineConstraint{}
+	if r.UniquePK != nil {
+		out.UniquePK = &TableOutOfLineUniquePK{
+			Name:               r.UniquePK.Name,
+			Unique:             r.UniquePK.Unique,
+			PrimaryKey:         r.UniquePK.PrimaryKey,
+			Columns:            r.UniquePK.Columns,
+			Enforced:           r.UniquePK.Enforced,
+			NotEnforced:        r.UniquePK.NotEnforced,
+			Deferrable:         r.UniquePK.Deferrable,
+			NotDeferrable:      r.UniquePK.NotDeferrable,
+			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
+			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
+			Enable:             r.UniquePK.Enable,
+			Disable:            r.UniquePK.Disable,
+			Validate:           r.UniquePK.Validate,
+			Novalidate:         r.UniquePK.Novalidate,
+			Rely:               r.UniquePK.Rely,
+			Norely:             r.UniquePK.Norely,
+			Comment:            r.UniquePK.Comment,
+		}
+	}
+	if r.FK != nil {
+		out.FK = &TableOutOfLineFK{
+			Name:               r.FK.Name,
+			Columns:            r.FK.Columns,
+			References:         r.FK.References,
+			RefColumns:         r.FK.RefColumns,
+			Match:              r.FK.Match,
+			On:                 r.FK.On,
+			Enforced:           r.FK.Enforced,
+			NotEnforced:        r.FK.NotEnforced,
+			Deferrable:         r.FK.Deferrable,
+			NotDeferrable:      r.FK.NotDeferrable,
+			InitiallyDeferred:  r.FK.InitiallyDeferred,
+			InitiallyImmediate: r.FK.InitiallyImmediate,
+			Enable:             r.FK.Enable,
+			Disable:            r.FK.Disable,
+			Validate:           r.FK.Validate,
+			Novalidate:         r.FK.Novalidate,
+			Rely:               r.FK.Rely,
+			Norely:             r.FK.Norely,
+			Comment:            r.FK.Comment,
+		}
+	}
+	if r.CH != nil {
+		out.CH = &TableOutOfLineCH{
+			Name:             r.CH.Name,
+			Expression:       r.CH.Expression,
+			EnableValidate:   r.CH.EnableValidate,
+			EnableNovalidate: r.CH.EnableNovalidate,
+		}
+	}
+	return out
 }

@@ -21,6 +21,7 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
@@ -31,7 +32,6 @@ func (opts *CreateIcebergTableOptions) validate() error {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	return JoinErrors(errs...)
 }
 
@@ -46,64 +46,7 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if !exactlyOneValueSet(opts.AddColumnAction, opts.DropColumnAction, opts.RenameColumnAction, opts.AlterColumnAction, opts.SetMaskingPolicyOnColumn, opts.UnsetMaskingPolicyOnColumn, opts.SetProjectionPolicyOnColumn, opts.UnsetProjectionPolicyOnColumn, opts.SetTagsOnColumn, opts.UnsetTagsOnColumn, opts.ClusteringAction, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy, opts.SearchOptimizationAction) {
 		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
 	}
-	if valueSet(opts.AddColumnAction) {
-		if valueSet(opts.AddColumnAction.InlineConstraint) {
-			if !exactlyOneValueSet(opts.AddColumnAction.InlineConstraint.UniquePK, opts.AddColumnAction.InlineConstraint.FK, opts.AddColumnAction.InlineConstraint.CH) {
-				errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint", "UniquePK", "FK", "CH"))
-			}
-			if valueSet(opts.AddColumnAction.InlineConstraint.UniquePK) {
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Enforced, opts.AddColumnAction.InlineConstraint.UniquePK.NotEnforced) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enforced", "NotEnforced"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Deferrable, opts.AddColumnAction.InlineConstraint.UniquePK.NotDeferrable) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.InitiallyDeferred, opts.AddColumnAction.InlineConstraint.UniquePK.InitiallyImmediate) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Enable, opts.AddColumnAction.InlineConstraint.UniquePK.Disable) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enable", "Disable"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Validate, opts.AddColumnAction.InlineConstraint.UniquePK.Novalidate) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Validate", "Novalidate"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Rely, opts.AddColumnAction.InlineConstraint.UniquePK.Norely) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Rely", "Norely"))
-				}
-				if !exactlyOneValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Unique, opts.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey) {
-					errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
-				}
-			}
-			if valueSet(opts.AddColumnAction.InlineConstraint.FK) {
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Enforced, opts.AddColumnAction.InlineConstraint.FK.NotEnforced) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enforced", "NotEnforced"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Deferrable, opts.AddColumnAction.InlineConstraint.FK.NotDeferrable) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Deferrable", "NotDeferrable"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.InitiallyDeferred, opts.AddColumnAction.InlineConstraint.FK.InitiallyImmediate) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Enable, opts.AddColumnAction.InlineConstraint.FK.Disable) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Enable", "Disable"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Validate, opts.AddColumnAction.InlineConstraint.FK.Novalidate) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Validate", "Novalidate"))
-				}
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.FK.Rely, opts.AddColumnAction.InlineConstraint.FK.Norely) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK", "Rely", "Norely"))
-				}
-				if !ValidObjectIdentifier(opts.AddColumnAction.InlineConstraint.FK.References) {
-					errs = append(errs, ErrInvalidObjectIdentifier)
-				}
-			}
-			if valueSet(opts.AddColumnAction.InlineConstraint.CH) {
-				if everyValueSet(opts.AddColumnAction.InlineConstraint.CH.EnableValidate, opts.AddColumnAction.InlineConstraint.CH.EnableNovalidate) {
-					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"))
-				}
-			}
-		}
-	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ClusteringAction) {
 		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
 			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.ClusteringAction", "ClusterBy", "ChangeReclusterState", "DropClusteringKey"))
@@ -133,8 +76,10 @@ func (opts *AlterIcebergTableOptions) validate() error {
 		if !exactlyOneValueSet(opts.SearchOptimizationAction.Add, opts.SearchOptimizationAction.Drop) {
 			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction", "Add", "Drop"))
 		}
+		if valueSet(opts.SearchOptimizationAction.Drop) {
+			errs = append(errs, opts.SearchOptimizationAction.Drop.additionalValidations())
+		}
 	}
-	errs = append(errs, opts.additionalValidations()) // invocation added manually
 	return JoinErrors(errs...)
 }
 
