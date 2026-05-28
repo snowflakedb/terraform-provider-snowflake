@@ -177,6 +177,11 @@ func (t *TaskResourceParametersAssert) HasLockTimeout(expected int) *TaskResourc
 	return t
 }
 
+func (t *TaskResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterLogEventLevel, expected))
+	return t
+}
+
 func (t *TaskResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
 	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterLogLevel, expected))
 	return t
@@ -478,6 +483,11 @@ func (t *TaskResourceParametersAssert) HasJsonIndentLevel(expected sdk.Parameter
 
 func (t *TaskResourceParametersAssert) HasLockTimeoutLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterLockTimeout, expected))
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterLogEventLevel, expected))
 	return t
 }
 

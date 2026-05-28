@@ -197,6 +197,11 @@ func (t *TaskResourceAssert) HasLockTimeout(expected int) *TaskResourceAssert {
 	return t
 }
 
+func (t *TaskResourceAssert) HasLogEventLevel(expected string) *TaskResourceAssert {
+	t.StringValueSet("log_event_level", expected)
+	return t
+}
+
 func (t *TaskResourceAssert) HasLogLevel(expected string) *TaskResourceAssert {
 	t.StringValueSet("log_level", expected)
 	return t
@@ -570,6 +575,11 @@ func (t *TaskResourceAssert) HasLockTimeoutString(expected string) *TaskResource
 	return t
 }
 
+func (t *TaskResourceAssert) HasLogEventLevelString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("log_event_level", expected))
+	return t
+}
+
 func (t *TaskResourceAssert) HasLogLevelString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("log_level", expected))
 	return t
@@ -939,6 +949,11 @@ func (t *TaskResourceAssert) HasNoLockTimeout() *TaskResourceAssert {
 	return t
 }
 
+func (t *TaskResourceAssert) HasNoLogEventLevel() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return t
+}
+
 func (t *TaskResourceAssert) HasNoLogLevel() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("log_level"))
 	return t
@@ -1295,6 +1310,11 @@ func (t *TaskResourceAssert) HasJsonIndentEmpty() *TaskResourceAssert {
 
 func (t *TaskResourceAssert) HasLockTimeoutEmpty() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("lock_timeout", ""))
+	return t
+}
+
+func (t *TaskResourceAssert) HasLogEventLevelEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return t
 }
 
@@ -1664,6 +1684,11 @@ func (t *TaskResourceAssert) HasJsonIndentNotEmpty() *TaskResourceAssert {
 
 func (t *TaskResourceAssert) HasLockTimeoutNotEmpty() *TaskResourceAssert {
 	t.AddAssertion(assert.ValuePresent("lock_timeout"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasLogEventLevelNotEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValuePresent("log_event_level"))
 	return t
 }
 
