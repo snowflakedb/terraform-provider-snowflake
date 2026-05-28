@@ -58,17 +58,24 @@ var cortexAgentsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	ShowOperationWithPairedStructs(
+	ShowOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-agents",
-		g.StructPair("showCortexAgentDBRow", "CortexAgent").
+		g.DbStruct("showCortexAgentDBRow").
 			Time("created_on").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
 			Text("owner").
 			OptionalText("comment").
-			OptionalText("profile").
-			WithConvertGeneration(),
+			OptionalText("profile"),
+		g.PlainStruct("CortexAgent").
+			Time("CreatedOn").
+			Text("Name").
+			Text("DatabaseName").
+			Text("SchemaName").
+			Text("Owner").
+			Text("Comment").
+			Field("Profile", "CortexAgentProfile"),
 		g.NewQueryStruct("ShowCortexAgents").
 			Show().
 			SQL("AGENTS").
@@ -79,10 +86,10 @@ var cortexAgentsDef = g.NewInterface(
 		g.ShowByIDLikeFiltering,
 		g.ShowByIDExtendedInFiltering,
 	).
-	DescribeOperationWithPairedStructs(
+	DescribeOperation(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-agent",
-		g.StructPair("cortexAgentDetailsRow", "CortexAgentDetails").
+		g.DbStruct("cortexAgentDetailsRow").
 			Text("name").
 			Text("database_name").
 			Text("schema_name").
@@ -93,8 +100,19 @@ var cortexAgentsDef = g.NewInterface(
 			Time("created_on").
 			OptionalText("default_version_name").
 			OptionalText("versions").
-			OptionalText("aliases").
-			WithConvertGeneration(),
+			OptionalText("aliases"),
+		g.PlainStruct("CortexAgentDetails").
+			Text("Name").
+			Text("DatabaseName").
+			Text("SchemaName").
+			Text("Owner").
+			Text("Comment").
+			Field("Profile", "CortexAgentProfile").
+			Text("AgentSpec").
+			Time("CreatedOn").
+			OptionalText("DefaultVersionName").
+			OptionalText("Versions").
+			OptionalText("Aliases"),
 		g.NewQueryStruct("DescribeCortexAgent").
 			Describe().
 			SQL("AGENT").

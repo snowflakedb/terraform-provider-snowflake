@@ -28,14 +28,12 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	response := "You are a helpful assistant"
 	hclSpec := model.SampleSpecAsYamlencodeHCL(response)
-	descSpec := testClient().CortexAgent.SampleSpecAsJson(t, response)
 	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
 		testClient().CortexAgent.SampleSpecWithResponse(t, response))
 	require.NoError(t, err)
 
 	newResponse := "You will respond in a friendly but concise manner"
 	newHclSpec := model.SampleSpecAsYamlencodeHCL(newResponse)
-	newDescSpec := testClient().CortexAgent.SampleSpecAsJson(t, newResponse)
 	newNormalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
 		testClient().CortexAgent.SampleSpecWithResponse(t, newResponse))
 	require.NoError(t, err)
@@ -43,6 +41,7 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	externalComment := random.Comment()
 
+	emptyProfile := sdk.CortexAgentProfile{}
 	completeProfile := sdk.CortexAgentProfile{
 		DisplayName: sdk.String("My Helpful Assistant"),
 		Avatar:      sdk.String("business-icon.png"),
@@ -83,15 +82,15 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
-			HasProfile(""),
+			HasProfile(emptyProfile),
 		resourceshowoutputassert.CortexAgentDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
-			HasProfile("").
-			HasAgentSpec(descSpec).
+			HasProfile(emptyProfile).
+			HasAgentSpec(normalizedSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).
@@ -113,15 +112,15 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
-			HasProfile(`{"display_name":"My Helpful Assistant","avatar":"business-icon.png","color":"red"}`),
+			HasProfile(completeProfile),
 		resourceshowoutputassert.CortexAgentDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
-			HasProfile(`{"display_name":"My Helpful Assistant","avatar":"business-icon.png","color":"red"}`).
-			HasAgentSpec(newDescSpec).
+			HasProfile(completeProfile).
+			HasAgentSpec(newNormalizedSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).
@@ -143,15 +142,15 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
-			HasProfile(`{"color":"green"}`),
+			HasProfile(partialProfile),
 		resourceshowoutputassert.CortexAgentDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
-			HasProfile(`{"color":"green"}`).
-			HasAgentSpec(newDescSpec).
+			HasProfile(partialProfile).
+			HasAgentSpec(newNormalizedSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).
@@ -173,15 +172,15 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
-			HasProfile("{}"),
+			HasProfile(emptyProfile),
 		resourceshowoutputassert.CortexAgentDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
-			HasProfile("{}").
-			HasAgentSpec(descSpec).
+			HasProfile(emptyProfile).
+			HasAgentSpec(normalizedSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).
@@ -313,10 +312,10 @@ func TestAcc_CortexAgent_CompleteUseCase_EmptyAndNullCommentsHandling(t *testing
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	response := "You are a helpful assistant"
 	hclSpec := model.SampleSpecAsYamlencodeHCL(response)
-	descSpec := testClient().CortexAgent.SampleSpecAsJson(t, response)
 	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
 		testClient().CortexAgent.SampleSpecWithResponse(t, response))
 	require.NoError(t, err)
+	emptyProfile := sdk.CortexAgentProfile{}
 
 	basic := model.CortexAgentWithSpecification("t", id.DatabaseName(), id.SchemaName(), id.Name(), hclSpec)
 
@@ -340,15 +339,15 @@ func TestAcc_CortexAgent_CompleteUseCase_EmptyAndNullCommentsHandling(t *testing
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
-			HasProfile(""),
+			HasProfile(emptyProfile),
 		resourceshowoutputassert.CortexAgentDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
-			HasProfile("").
-			HasAgentSpec(descSpec).
+			HasProfile(emptyProfile).
+			HasAgentSpec(normalizedSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).

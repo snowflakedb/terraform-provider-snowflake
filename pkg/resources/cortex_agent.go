@@ -179,40 +179,24 @@ func ReadCortexAgent(ctx context.Context, d *schema.ResourceData, meta any) diag
 		return diag.FromErr(err)
 	}
 
-	var comment string
-	if details.Comment != nil {
-		comment = *details.Comment
-	}
-
 	profileList := make([]any, 0)
-	if details.Profile != nil {
-		profile, err := sdk.UnmarshalCortexAgentProfile(*details.Profile)
-		if err != nil {
-			return diag.FromErr(err)
+	if !reflect.DeepEqual(details.Profile, sdk.CortexAgentProfile{}) {
+		block := map[string]any{}
+		if details.Profile.DisplayName != nil {
+			block["display_name"] = *details.Profile.DisplayName
 		}
-		if !reflect.DeepEqual(*profile, sdk.CortexAgentProfile{}) {
-			block := map[string]any{}
-			if profile.DisplayName != nil {
-				block["display_name"] = *profile.DisplayName
-			}
-			if profile.Avatar != nil {
-				block["avatar"] = *profile.Avatar
-			}
-			if profile.Color != nil {
-				block["color"] = *profile.Color
-			}
-			profileList = append(profileList, block)
+		if details.Profile.Avatar != nil {
+			block["avatar"] = *details.Profile.Avatar
 		}
-	}
-
-	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(details.AgentSpec)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error normalizing cortex agent specification from Snowflake: %w", err))
+		if details.Profile.Color != nil {
+			block["color"] = *details.Profile.Color
+		}
+		profileList = append(profileList, block)
 	}
 
 	errs := errors.Join(
-		d.Set("specification", normalizedSpec),
-		d.Set("comment", comment),
+		d.Set("specification", details.AgentSpec),
+		d.Set("comment", details.Comment),
 		d.Set("profile", profileList),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.CortexAgentToSchema(agent)}),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CortexAgentDetailsToSchema(details)}),

@@ -64,10 +64,7 @@ func (c *CortexAgentDescribeOutputAssert) HasComment(expected string) *CortexAge
 	return c
 }
 
-func (c *CortexAgentDescribeOutputAssert) HasProfile(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("profile", expected))
-	return c
-}
+// HasProfile removed manually
 
 func (c *CortexAgentDescribeOutputAssert) HasAgentSpec(expected string) *CortexAgentDescribeOutputAssert {
 	c.AddAssertion(assert.ResourceDescribeOutputValueSet("agent_spec", expected))
@@ -124,7 +121,7 @@ func (c *CortexAgentDescribeOutputAssert) HasNoComment() *CortexAgentDescribeOut
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoProfile() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("profile"))
+	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("profile"))
 	return c
 }
 

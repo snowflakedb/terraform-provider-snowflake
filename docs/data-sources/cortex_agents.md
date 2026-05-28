@@ -185,9 +185,19 @@ Read-Only:
 - `default_version_name` (String)
 - `name` (String)
 - `owner` (String)
-- `profile` (String)
+- `profile` (List of Object) (see [below for nested schema](#nestedobjatt--cortex_agents--describe_output--profile))
 - `schema_name` (String)
 - `versions` (String)
+
+<a id="nestedobjatt--cortex_agents--describe_output--profile"></a>
+### Nested Schema for `cortex_agents.describe_output.profile`
+
+Read-Only:
+
+- `avatar` (String)
+- `color` (String)
+- `display_name` (String)
+
 
 
 <a id="nestedobjatt--cortex_agents--show_output"></a>
@@ -200,5 +210,14 @@ Read-Only:
 - `database_name` (String)
 - `name` (String)
 - `owner` (String)
-- `profile` (String)
+- `profile` (List of Object) (see [below for nested schema](#nestedobjatt--cortex_agents--show_output--profile))
 - `schema_name` (String)
+
+<a id="nestedobjatt--cortex_agents--show_output--profile"></a>
+### Nested Schema for `cortex_agents.show_output.profile`
+
+Read-Only:
+
+- `avatar` (String)
+- `color` (String)
+- `display_name` (String)

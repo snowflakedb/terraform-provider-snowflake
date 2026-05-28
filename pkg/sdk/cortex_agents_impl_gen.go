@@ -130,8 +130,16 @@ func (r showCortexAgentDBRow) convert() (*CortexAgent, error) {
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
 	}
-	mapNullString(&result.Comment, r.Comment)
-	mapNullString(&result.Profile, r.Profile)
+	if r.Comment.Valid {
+		result.Comment = r.Comment.String
+	}
+	if r.Profile.Valid {
+		profile, err := UnmarshalCortexAgentProfile(r.Profile.String)
+		if err != nil {
+			return nil, err
+		}
+		result.Profile = *profile
+	}
 	return result, nil
 }
 
@@ -148,11 +156,23 @@ func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		AgentSpec:    r.AgentSpec,
 		CreatedOn:    r.CreatedOn,
 	}
-	mapNullString(&result.Comment, r.Comment)
-	mapNullString(&result.Profile, r.Profile)
+	spec, err := NormalizeCortexAgentSpecification(r.AgentSpec)
+	if err != nil {
+		return nil, err
+	}
+	result.AgentSpec = spec
+	if r.Comment.Valid {
+		result.Comment = r.Comment.String
+	}
+	if r.Profile.Valid {
+		profile, err := UnmarshalCortexAgentProfile(r.Profile.String)
+		if err != nil {
+			return nil, err
+		}
+		result.Profile = *profile
+	}
 	mapNullString(&result.DefaultVersionName, r.DefaultVersionName)
 	mapNullString(&result.Versions, r.Versions)
 	mapNullString(&result.Aliases, r.Aliases)
