@@ -481,16 +481,13 @@ func setIcebergRestConfigInState(d *schema.ResourceData, details *sdk.CatalogInt
 
 func setIcebergRestAuthInState(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails) error {
 	if details.OAuthRestAuthentication != nil {
-		existingSecret := d.Get("oauth_rest_authentication.0.oauth_client_secret").(string)
 		return errors.Join(
 			d.Set("oauth_rest_authentication", []any{map[string]any{
 				"oauth_token_uri":      details.OAuthRestAuthentication.OauthTokenUri,
 				"oauth_client_id":      details.OAuthRestAuthentication.OauthClientId,
-				"oauth_client_secret":  existingSecret,
+				"oauth_client_secret":  d.Get("oauth_rest_authentication.0.oauth_client_secret").(string),
 				"oauth_allowed_scopes": details.OAuthRestAuthentication.OauthAllowedScopes,
 			}}),
-			d.Set("bearer_rest_authentication", nil),
-			d.Set("sigv4_rest_authentication", nil),
 		)
 	}
 	if details.SigV4RestAuthentication != nil {
@@ -501,16 +498,12 @@ func setIcebergRestAuthInState(d *schema.ResourceData, details *sdk.CatalogInteg
 				"sigv4_signing_region": details.SigV4RestAuthentication.Sigv4SigningRegion,
 				"sigv4_external_id":    existingSigV4ExternalId,
 			}}),
-			d.Set("oauth_rest_authentication", nil),
-			d.Set("bearer_rest_authentication", nil),
 		)
 	}
-	existingToken := d.Get("bearer_rest_authentication.0.bearer_token").(string)
+
 	return errors.Join(
 		d.Set("bearer_rest_authentication", []any{map[string]any{
-			"bearer_token": existingToken,
+			"bearer_token": d.Get("bearer_rest_authentication.0.bearer_token").(string),
 		}}),
-		d.Set("oauth_rest_authentication", nil),
-		d.Set("sigv4_rest_authentication", nil),
 	)
 }
