@@ -2,7 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"fmt"
@@ -86,8 +85,10 @@ func (r *CreateRowAccessPolicyRequest) toOpts() *CreateRowAccessPolicyOptions {
 	if r.args != nil {
 		s := make([]CreateRowAccessPolicyArgs, len(r.args))
 		for i, v := range r.args {
-			// adjusted manually
-			s[i] = CreateRowAccessPolicyArgs(v)
+			s[i] = CreateRowAccessPolicyArgs{
+				Name:     v.Name,
+				DataType: v.DataType,
+			}
 		}
 		opts.args = s
 	}
@@ -125,8 +126,7 @@ func (r *ShowRowAccessPolicyRequest) toOpts() *ShowRowAccessPolicyOptions {
 }
 
 func (r rowAccessPolicyDBRow) convert() (*RowAccessPolicy, error) {
-	// adjusted manually
-	rowAccessPolicy := &RowAccessPolicy{
+	result := &RowAccessPolicy{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		DatabaseName:  r.DatabaseName,
@@ -136,10 +136,8 @@ func (r rowAccessPolicyDBRow) convert() (*RowAccessPolicy, error) {
 		Options:       r.Options,
 		OwnerRoleType: r.OwnerRoleType,
 	}
-	if r.Comment.Valid {
-		rowAccessPolicy.Comment = r.Comment.String
-	}
-	return rowAccessPolicy, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeRowAccessPolicyRequest) toOpts() *DescribeRowAccessPolicyOptions {
@@ -150,17 +148,15 @@ func (r *DescribeRowAccessPolicyRequest) toOpts() *DescribeRowAccessPolicyOption
 }
 
 func (r describeRowAccessPolicyDBRow) convert() (*RowAccessPolicyDescription, error) {
-	// adjusted manually
-	rowAccessPolicyDescription := &RowAccessPolicyDescription{
+	result := &RowAccessPolicyDescription{
 		Name:       r.Name,
 		ReturnType: r.ReturnType,
 		Body:       r.Body,
 	}
-	signature, err := ParseTableColumnSignature(r.Signature)
-	if err != nil {
-		return nil, fmt.Errorf("parsing table column signature: %w", err)
+	if v, err := ParseTableColumnSignature(r.Signature); err == nil {
+		result.Signature = v
 	} else {
-		rowAccessPolicyDescription.Signature = signature
+		return nil, fmt.Errorf("parsing table column signature: %w", err)
 	}
-	return rowAccessPolicyDescription, nil
+	return result, nil
 }

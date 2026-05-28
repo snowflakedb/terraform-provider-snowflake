@@ -2,7 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"fmt"
@@ -145,8 +144,7 @@ func (r *ShowComputePoolRequest) toOpts() *ShowComputePoolOptions {
 }
 
 func (r computePoolsRow) convert() (*ComputePool, error) {
-	// Added manually
-	cp := &ComputePool{
+	result := &ComputePool{
 		Name:            r.Name,
 		MinNodes:        r.MinNodes,
 		MaxNodes:        r.MaxNodes,
@@ -163,30 +161,15 @@ func (r computePoolsRow) convert() (*ComputePool, error) {
 		Owner:           r.Owner,
 		IsExclusive:     r.IsExclusive,
 	}
-	if r.Comment.Valid {
-		cp.Comment = &r.Comment.String
-	}
-	if r.Application.Valid {
-		id, err := ParseAccountObjectIdentifier(r.Application.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse application in compute pool: %w", err)
-		} else {
-			cp.Application = &id
-		}
-	}
-	instanceFamily, err := ToComputePoolInstanceFamily(r.InstanceFamily)
-	if err != nil {
-		return nil, fmt.Errorf("error converting compute pool instance family: %w", err)
+	mapStringWithMapping(&result.State, r.State, ToComputePoolState)
+	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err == nil {
+		result.InstanceFamily = v
 	} else {
-		cp.InstanceFamily = instanceFamily
+		return nil, fmt.Errorf("parsing compute pool instance family: %w", err)
 	}
-	state, err := ToComputePoolState(r.State)
-	if err != nil {
-		return nil, fmt.Errorf("error converting compute pool state: %w", err)
-	} else {
-		cp.State = state
-	}
-	return cp, err
+	mapNullString(&result.Comment, r.Comment)
+	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)
+	return result, nil
 }
 
 func (r *DescribeComputePoolRequest) toOpts() *DescribeComputePoolOptions {
@@ -197,8 +180,7 @@ func (r *DescribeComputePoolRequest) toOpts() *DescribeComputePoolOptions {
 }
 
 func (r computePoolDescRow) convert() (*ComputePoolDetails, error) {
-	// Added manually
-	cp := &ComputePoolDetails{
+	result := &ComputePoolDetails{
 		Name:            r.Name,
 		MinNodes:        r.MinNodes,
 		MaxNodes:        r.MaxNodes,
@@ -217,28 +199,13 @@ func (r computePoolDescRow) convert() (*ComputePoolDetails, error) {
 		ErrorCode:       r.ErrorCode,
 		StatusMessage:   r.StatusMessage,
 	}
-	if r.Comment.Valid {
-		cp.Comment = &r.Comment.String
-	}
-	if r.Application.Valid {
-		id, err := ParseAccountObjectIdentifier(r.Application.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse application in compute pool: %w", err)
-		} else {
-			cp.Application = &id
-		}
-	}
-	instanceFamily, err := ToComputePoolInstanceFamily(r.InstanceFamily)
-	if err != nil {
-		return nil, fmt.Errorf(" error converting compute pool instance family: %w", err)
+	mapStringWithMapping(&result.State, r.State, ToComputePoolState)
+	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err == nil {
+		result.InstanceFamily = v
 	} else {
-		cp.InstanceFamily = instanceFamily
+		return nil, fmt.Errorf("parsing compute pool instance family: %w", err)
 	}
-	state, err := ToComputePoolState(r.State)
-	if err != nil {
-		return nil, fmt.Errorf("error converting compute pool state: %w", err)
-	} else {
-		cp.State = state
-	}
-	return cp, err
+	mapNullString(&result.Comment, r.Comment)
+	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)
+	return result, nil
 }

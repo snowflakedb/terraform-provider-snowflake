@@ -58,7 +58,8 @@ var applicationsDef = g.NewInterface(
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ValidIdentifier, "PackageName"),
+		WithValidation(g.ValidIdentifier, "PackageName").
+		WithAdditionalValidations(),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-application",
 	g.NewQueryStruct("DropApplication").
@@ -99,7 +100,8 @@ var applicationsDef = g.NewInterface(
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "Upgrade", "UpgradeVersion", "UnsetReferences", "SetTags", "UnsetTags"),
+		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "Upgrade", "UpgradeVersion", "UnsetReferences", "SetTags", "UnsetTags").
+		WithAdditionalValidations(),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-applications",
 	g.StructPair("applicationRow", "Application").
@@ -115,7 +117,8 @@ var applicationsDef = g.NewInterface(
 		Text("label").
 		Number("patch").
 		Text("options").
-		Number("retention_time"),
+		Number("retention_time").
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowApplications").
 		Show().
 		SQL("APPLICATIONS").
@@ -127,7 +130,8 @@ var applicationsDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-application",
 	g.StructPair("applicationPropertyRow", "ApplicationProperty").
 		Text("property").
-		OptionalText("value", g.WithRequiredInPlain()),
+		OptionalText("value", g.WithRequiredInPlain()).
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeApplication").
 		Describe().
 		SQL("APPLICATION").

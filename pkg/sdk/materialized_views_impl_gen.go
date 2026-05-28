@@ -89,16 +89,22 @@ func (r *CreateMaterializedViewRequest) toOpts() *CreateMaterializedViewOptions 
 	if r.Columns != nil {
 		s := make([]MaterializedViewColumn, len(r.Columns))
 		for i, v := range r.Columns {
-			// adjusted manually
-			s[i] = MaterializedViewColumn(v)
+			s[i] = MaterializedViewColumn{
+				Name:    v.Name,
+				Comment: v.Comment,
+			}
 		}
 		opts.Columns = s
 	}
 	if r.ColumnsMaskingPolicies != nil {
 		s := make([]MaterializedViewColumnMaskingPolicy, len(r.ColumnsMaskingPolicies))
 		for i, v := range r.ColumnsMaskingPolicies {
-			// adjusted manually
-			s[i] = MaterializedViewColumnMaskingPolicy(v)
+			s[i] = MaterializedViewColumnMaskingPolicy{
+				Name:          v.Name,
+				MaskingPolicy: v.MaskingPolicy,
+				Using:         v.Using,
+				Tag:           v.Tag,
+			}
 		}
 		opts.ColumnsMaskingPolicies = s
 	}
@@ -113,8 +119,9 @@ func (r *CreateMaterializedViewRequest) toOpts() *CreateMaterializedViewOptions 
 		if r.ClusterBy.Expressions != nil {
 			s := make([]MaterializedViewClusterByExpression, len(r.ClusterBy.Expressions))
 			for i, v := range r.ClusterBy.Expressions {
-				// adjusted manually
-				s[i] = MaterializedViewClusterByExpression(v)
+				s[i] = MaterializedViewClusterByExpression{
+					Name: v.Name,
+				}
 			}
 			opts.ClusterBy.Expressions = s
 		}
@@ -137,8 +144,9 @@ func (r *AlterMaterializedViewRequest) toOpts() *AlterMaterializedViewOptions {
 		if r.ClusterBy.Expressions != nil {
 			s := make([]MaterializedViewClusterByExpression, len(r.ClusterBy.Expressions))
 			for i, v := range r.ClusterBy.Expressions {
-				// adjusted manually
-				s[i] = MaterializedViewClusterByExpression(v)
+				s[i] = MaterializedViewClusterByExpression{
+					Name: v.Name,
+				}
 			}
 			opts.ClusterBy.Expressions = s
 		}
@@ -175,45 +183,32 @@ func (r *ShowMaterializedViewRequest) toOpts() *ShowMaterializedViewOptions {
 }
 
 func (r materializedViewDBRow) convert() (*MaterializedView, error) {
-	// adjusted manually
-	materializedView := MaterializedView{
-		CreatedOn:          r.CreatedOn,
-		Name:               r.Name,
-		DatabaseName:       r.DatabaseName,
-		SchemaName:         r.SchemaName,
-		Rows:               r.Rows,
-		Bytes:              r.Bytes,
-		SourceDatabaseName: r.SourceDatabaseName,
-		SourceSchemaName:   r.SourceSchemaName,
-		SourceTableName:    r.SourceTableName,
-		RefreshedOn:        r.RefreshedOn,
-		CompactedOn:        r.CompactedOn,
-		Owner:              r.Owner,
-		Invalid:            r.Invalid,
-		BehindBy:           r.BehindBy,
-		Text:               tracking.TrimMetadata(r.Text),
-		IsSecure:           r.IsSecure,
+	result := &MaterializedView{
+		CreatedOn:           r.CreatedOn,
+		Name:                r.Name,
+		DatabaseName:        r.DatabaseName,
+		SchemaName:          r.SchemaName,
+		Rows:                r.Rows,
+		Bytes:               r.Bytes,
+		SourceDatabaseName:  r.SourceDatabaseName,
+		SourceSchemaName:    r.SourceSchemaName,
+		SourceTableName:     r.SourceTableName,
+		RefreshedOn:         r.RefreshedOn,
+		CompactedOn:         r.CompactedOn,
+		Owner:               r.Owner,
+		Invalid:             r.Invalid,
+		BehindBy:            r.BehindBy,
+		Text:                tracking.TrimMetadata(r.Text), // adjusted manually: tracking added
+		IsSecure:            r.IsSecure,
+		AutomaticClustering: r.AutomaticClustering == "ON",
 	}
-	if r.Reserved.Valid {
-		materializedView.Reserved = &r.Reserved.String
-	}
-	if r.ClusterBy.Valid {
-		materializedView.ClusterBy = r.ClusterBy.String
-	}
-	if r.InvalidReason.Valid {
-		materializedView.InvalidReason = r.InvalidReason.String
-	}
-	if r.Comment.Valid {
-		materializedView.Comment = r.Comment.String
-	}
-	materializedView.AutomaticClustering = r.AutomaticClustering == "ON"
-	if r.OwnerRoleType.Valid {
-		materializedView.OwnerRoleType = r.OwnerRoleType.String
-	}
-	if r.Budget.Valid {
-		materializedView.Budget = r.Budget.String
-	}
-	return &materializedView, nil
+	mapNullString(&result.Reserved, r.Reserved)
+	mapNullStringToNonNullableField(&result.ClusterBy, r.ClusterBy)
+	mapNullStringToNonNullableField(&result.InvalidReason, r.InvalidReason)
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	mapNullStringToNonNullableField(&result.Budget, r.Budget)
+	return result, nil
 }
 
 func (r *DescribeMaterializedViewRequest) toOpts() *DescribeMaterializedViewOptions {
@@ -224,8 +219,7 @@ func (r *DescribeMaterializedViewRequest) toOpts() *DescribeMaterializedViewOpti
 }
 
 func (r materializedViewDetailsRow) convert() (*MaterializedViewDetails, error) {
-	// adjusted manually
-	details := &MaterializedViewDetails{
+	result := &MaterializedViewDetails{
 		Name:       r.Name,
 		Type:       r.Type,
 		Kind:       r.Kind,
@@ -233,17 +227,9 @@ func (r materializedViewDetailsRow) convert() (*MaterializedViewDetails, error) 
 		IsPrimary:  r.PrimaryKey == "Y",
 		IsUnique:   r.UniqueKey == "Y",
 	}
-	if r.Default.Valid {
-		details.Default = String(r.Default.String)
-	}
-	if r.Check.Valid {
-		details.Check = Bool(r.Check.String == "Y")
-	}
-	if r.Expression.Valid {
-		details.Expression = String(r.Expression.String)
-	}
-	if r.Comment.Valid {
-		details.Comment = String(r.Comment.String)
-	}
-	return details, nil
+	mapNullString(&result.Default, r.Default)
+	mapNullStringToBool(&result.Check, r.Check)
+	mapNullString(&result.Expression, r.Expression)
+	mapNullString(&result.Comment, r.Comment)
+	return result, nil
 }

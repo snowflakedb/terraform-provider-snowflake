@@ -82,12 +82,12 @@ func (r *ShowApplicationRoleRequest) toOpts() *ShowApplicationRoleOptions {
 }
 
 func (r applicationRoleDbRow) convert() (*ApplicationRole, error) {
-	// Added manually
-	return &ApplicationRole{
+	result := &ApplicationRole{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		Owner:         r.Owner,
 		Comment:       r.Comment,
 		OwnerRoleType: r.OwnerRoleType,
-	}, nil
+	}
+	return result, nil
 }

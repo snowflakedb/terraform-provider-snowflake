@@ -26,6 +26,36 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` and `snowflake_catalog_integration_open_catalog`: import fix for ForceNew fields
+
+Previously, importing these resources with `terraform import` did not populate `ForceNew` fields in state. On the next `terraform plan`, Terraform detected a diff against the configuration and produced a destroy-before-create plan, even when the Snowflake object already matched the configuration.
+
+Affected resources and fields:
+- [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest): `rest_config`, `oauth_rest_authentication`, `bearer_rest_authentication`, `sigv4_rest_authentication`
+- [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog): `rest_config`, `rest_authentication`
+
+Import now reads the integration details from Snowflake and sets these fields in state during import. This prevents unwanted recreation plans for correctly configured integrations, except for the SigV4 limitation described below.
+
+**Expected plan after import:** Snowflake does not return write-only secret values in `DESCRIBE CATALOG INTEGRATION` output. After import, the first `terraform plan` may therefore show an in-place **update** (not recreation) for sensitive fields that must be supplied in your configuration:
+
+- `oauth_rest_authentication.0.oauth_client_secret` — `iceberg_rest` with OAuth authentication
+- `bearer_rest_authentication.0.bearer_token` — `iceberg_rest` with bearer token authentication
+- `rest_authentication.0.oauth_client_secret` — `open_catalog`
+
+This is expected. Run `terraform apply` once to sync the secret values into state. Subsequent plans should be empty, assuming the configuration matches Snowflake.
+
+**Known limitation for SigV4 authentication (`iceberg_rest` only):** `sigv4_rest_authentication.0.sigv4_external_id` is not returned by Snowflake, cannot be altered after creation,
+and is marked as `ForceNew` in the provider. If your configuration specifies this field after import,
+Terraform may still produce a destroy-before-create plan because the value cannot be populated in state during import and cannot be synced via an in-place update.
+To avoid recreation after import for `sigv4_rest_authentication` you can:
+- Omit `sigv4_external_id` if you don't need to track its changes within the configuration.
+- Adjust the state value for `sigv4_external_id` manually or by following https://developer.hashicorp.com/terraform/cli/state/recover.
+- Accept the one-time recreation plan to align state with your configuration.
+
+We plan to address this limitation in future, but for now, this behavior is expected.
+
+References: [#4784](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4784)
+
 ### *(enhancement)* `snowflake_secret_with_client_credentials` — `oauth_scopes` is now optional
 
 `oauth_scopes` was previously marked as required in the `snowflake_secret_with_client_credentials` resource, but Snowflake treats it as optional.
@@ -46,13 +76,35 @@ No changes are required for existing configurations.
 
 References: [#4745](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4745)
 
-### *(new feature)* snowflake_cortex_agent preview resource
+### *(new feature)* New Cortex agent resource and data source
+
+#### Resource
 
 We have added a new preview resource for managing Cortex agents: [snowflake_cortex_agent](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_agent).
 
-This feature will be marked as stable in future releases. To use this feature, add `snowflake_cortex_agent_resource` to the `preview_features_enabled` field in the provider configuration.
+This feature will be marked as stable in future releases. To use it, add `snowflake_cortex_agent_resource` to the `preview_features_enabled` field in the provider configuration.
 
-No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+#### Data source
+
+We have added a new preview data source for Cortex agents: [snowflake_cortex_agents](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/cortex_agents).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_cortex_agents_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
+
+### *(bug fix)* "Provider produced inconsistent final plan" when adding a reference to a not-yet-created resource
+
+Previously, updating an existing resource to reference an attribute of another Terraform-managed resource that was being created in the same apply (for example, setting `resource_monitor = snowflake_resource_monitor.foo.fully_qualified_name` on an existing `snowflake_warehouse`) could fail with:
+
+> Provider produced inconsistent final plan [...] produced an invalid new value for .show_output: was known, but now unknown.
+
+The internal `ComputedIfAnyAttributeChanged` helper invoked each trigger field's `DiffSuppressFunc` against an empty string that was silently substituted for values still unknown at plan time, which caused computed outputs (like `show_output`) to be left marked as known. Once the referenced resource was created and the real value arrived at apply time, those outputs flipped to unknown — violating Terraform's plan/apply contract.
+
+The helper now short-circuits whenever the new value of a trigger field is unknown and marks the dependent computed field as computed, without consulting the suppressor. The fix applies to every resource that uses this helper (including `snowflake_warehouse`, `snowflake_account`, `snowflake_account_role`, and many others), so references across resources now plan and apply correctly.
+
+No configuration changes are required.
+
+References: [#4188](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4188)
 
 ### *(bugfix)* `snowflake_external_volume` — support for `use_privatelink_endpoint` in Azure deployments
 
@@ -1590,9 +1642,7 @@ In this version we introduce a new attribute on the provider level: [`experiment
 
 We treat the available values as experiments, that may become stable feature/behavior in the future provider releases if successful.
 
-Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses.
-
-**Important**: to benefit from this improvement, you need to have it enabled also on your Snowflake account. To do this, please reach out to us through your Snowflake Account Manager.
+In this version, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses.
 
 Details:
 - The query after enabling the experiment should look like this: `SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`.

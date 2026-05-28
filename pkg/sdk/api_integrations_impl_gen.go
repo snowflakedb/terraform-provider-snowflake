@@ -164,18 +164,15 @@ func (r *ShowApiIntegrationRequest) toOpts() *ShowApiIntegrationOptions {
 }
 
 func (r showApiIntegrationsDbRow) convert() (*ApiIntegration, error) {
-	// Added manually
-	s := &ApiIntegration{
+	result := &ApiIntegration{
 		Name:      r.Name,
 		ApiType:   r.Type,
 		Category:  r.Category,
 		Enabled:   r.Enabled,
 		CreatedOn: r.CreatedOn,
 	}
-	if r.Comment.Valid {
-		s.Comment = r.Comment.String
-	}
-	return s, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions {
@@ -186,11 +183,11 @@ func (r *DescribeApiIntegrationRequest) toOpts() *DescribeApiIntegrationOptions 
 }
 
 func (r descApiIntegrationsDbRow) convert() (*ApiIntegrationProperty, error) {
-	// Added manually
-	return &ApiIntegrationProperty{
+	result := &ApiIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}, nil
+	}
+	return result, nil
 }

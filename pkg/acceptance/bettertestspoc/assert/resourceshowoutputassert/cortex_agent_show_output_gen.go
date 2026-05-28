@@ -67,10 +67,7 @@ func (c *CortexAgentShowOutputAssert) HasComment(expected string) *CortexAgentSh
 	return c
 }
 
-func (c *CortexAgentShowOutputAssert) HasProfile(expected string) *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("profile", expected))
-	return c
-}
+// HasProfile removed manually
 
 ///////////////////////////////
 // Attribute no value checks //
@@ -107,6 +104,6 @@ func (c *CortexAgentShowOutputAssert) HasNoComment() *CortexAgentShowOutputAsser
 }
 
 func (c *CortexAgentShowOutputAssert) HasNoProfile() *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("profile"))
+	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("profile"))
 	return c
 }

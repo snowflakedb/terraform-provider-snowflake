@@ -135,7 +135,8 @@ var externalVolumesDef = g.NewInterface(
 			OptionalBooleanAssignment("ALLOW_WRITES", nil).
 			OptionalComment().
 			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-			WithValidation(g.ValidIdentifier, "name"),
+			WithValidation(g.ValidIdentifier, "name").
+			WithAdditionalValidations(),
 		storageLocationItemDef,
 	).
 	AlterOperation(
@@ -183,7 +184,8 @@ var externalVolumesDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")),
+			Text("property_default", g.WithPlainFieldName("Default")).
+			WithConvertGeneration(),
 		g.NewQueryStruct("DescExternalVolume").
 			Describe().
 			SQL("EXTERNAL VOLUME").
@@ -195,7 +197,8 @@ var externalVolumesDef = g.NewInterface(
 		g.StructPair("externalVolumeShowRow", "ExternalVolume").
 			Text("name").
 			Bool("allow_writes").
-			OptionalText("comment", g.WithRequiredInPlain()),
+			OptionalText("comment", g.WithRequiredInPlain()).
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowExternalVolumes").
 			Show().
 			SQL("EXTERNAL VOLUMES").

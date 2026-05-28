@@ -17,17 +17,17 @@ var taskPairs = g.StructPair("taskDBRow", "Task").
 	Field("warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Warehouse")).
 	OptionalText("schedule", g.WithRequiredInPlain()).
 	Field("predecessors", "string", "[]SchemaObjectIdentifier").
-	PlainField("state", "TaskState").
+	PlainField("state", "TaskState", g.WithCustomParser("ToTaskState")).
 	Text("definition").
 	OptionalText("condition", g.WithRequiredInPlain()).
-	Field("allow_overlapping_execution", "string", "bool").
+	Field("allow_overlapping_execution", "string", "bool", g.WithBoolTrueValue("true")).
 	Field("error_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("ErrorIntegration")).
 	OptionalText("last_committed_on", g.WithRequiredInPlain()).
 	OptionalText("last_suspended_on", g.WithRequiredInPlain()).
 	Text("owner_role_type").
 	OptionalText("config", g.WithRequiredInPlain()).
 	OptionalText("budget", g.WithRequiredInPlain()).
-	PlainField("task_relations", "TaskRelations").
+	PlainField("task_relations", "TaskRelations", g.WithCustomParser("ToTaskRelations")).
 	OptionalText("last_suspended_reason", g.WithRequiredInPlain()).
 	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"))
 
@@ -53,7 +53,7 @@ var tasksDef = g.NewInterface(
 			OptionalTextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
 			OptionalTextAssignment("CONFIG", g.ParameterOptions().NoQuotes()).
 			OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
-			OptionalSessionParameters().
+			PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
 			OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
 			OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
 			OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
@@ -69,6 +69,7 @@ var tasksDef = g.NewInterface(
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
+			WithAdditionalValidations().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
 			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
@@ -86,7 +87,7 @@ var tasksDef = g.NewInterface(
 			OptionalTextAssignment("CONFIG", g.ParameterOptions().NoQuotes()).
 			OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
 			OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
-			OptionalSessionParameters().
+			PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
 			OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
 			OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
@@ -96,6 +97,7 @@ var tasksDef = g.NewInterface(
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
+			WithAdditionalValidations().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration"),
 	).
@@ -136,12 +138,13 @@ var tasksDef = g.NewInterface(
 					OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
 					OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
 					OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-					OptionalSessionParameters().
+					PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
 					OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", nil).
 					OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", nil).
 					OptionalTextAssignment("TARGET_COMPLETION_INTERVAL", g.ParameterOptions().SingleQuotes()).
 					OptionalAssignment("SERVERLESS_TASK_MIN_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 					OptionalAssignment("SERVERLESS_TASK_MAX_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
+					WithAdditionalValidations().
 					WithValidation(g.AtLeastOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize").
 					WithValidation(g.ConflictingFields, "Warehouse", "UserTaskManagedInitialWarehouseSize").
 					WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration"),
@@ -164,7 +167,8 @@ var tasksDef = g.NewInterface(
 					OptionalSQL("TARGET_COMPLETION_INTERVAL").
 					OptionalSQL("SERVERLESS_TASK_MIN_STATEMENT_SIZE").
 					OptionalSQL("SERVERLESS_TASK_MAX_STATEMENT_SIZE").
-					OptionalSessionParametersUnset().
+					PredefinedQueryStructField("SessionParametersUnset", "*SessionParametersUnset", g.ListOptions().NoParentheses()).
+					WithAdditionalValidations().
 					WithValidation(g.AtLeastOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"),
 				g.ListOptions().SQL("UNSET").NoParentheses(),
 			).

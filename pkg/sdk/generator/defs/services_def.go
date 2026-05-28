@@ -79,7 +79,8 @@ var servicesDef = g.NewInterface(
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "FromSpecification", "FromSpecificationTemplate").
-		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
+		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
+		WithAdditionalValidations(),
 	serviceExternalAccessIntegrationsDef,
 	listItemDef,
 	serviceFromSpecificationDef,
@@ -116,7 +117,8 @@ var servicesDef = g.NewInterface(
 				OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalComment().
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
-				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment").
+				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -176,7 +178,8 @@ var servicesDef = g.NewInterface(
 		Text("spec_digest").
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
-		OptionalText("managing_object_name"),
+		OptionalText("managing_object_name").
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowServices").
 		Show().
 		OptionalSQL("JOB").
@@ -221,7 +224,8 @@ var servicesDef = g.NewInterface(
 		Text("spec_digest").
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
-		OptionalText("managing_object_name"),
+		OptionalText("managing_object_name").
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescService").
 		Describe().
 		SQL("SERVICE").

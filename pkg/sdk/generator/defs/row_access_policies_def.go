@@ -70,7 +70,8 @@ var rowAccessPoliciesDef = g.NewInterface(
 			Text("owner").
 			OptionalText("comment", g.WithRequiredInPlain()).
 			Text("options").
-			Text("owner_role_type"),
+			Text("owner_role_type").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowRowAccessPolicies").
 			Show().
 			SQL("ROW ACCESS POLICIES").
@@ -85,9 +86,10 @@ var rowAccessPoliciesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-row-access-policy",
 		g.StructPair("describeRowAccessPolicyDBRow", "RowAccessPolicyDescription").
 			Text("name").
-			Field("signature", "string", "[]TableColumnSignature").
+			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
 			Text("return_type").
-			Text("body"),
+			Text("body").
+			WithConvertGeneration(),
 		g.NewQueryStruct("DescribeRowAccessPolicy").
 			Describe().
 			SQL("ROW ACCESS POLICY").

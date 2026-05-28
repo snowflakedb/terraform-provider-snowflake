@@ -125,6 +125,7 @@ func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationInteg
 			WebhookSecret:       r.WebhookParams.WebhookSecret,
 			WebhookBodyTemplate: r.WebhookParams.WebhookBodyTemplate,
 		}
+		// adjusted manually
 		for _, h := range r.WebhookParams.WebhookHeaders {
 			opts.WebhookParams.WebhookHeaders = append(opts.WebhookParams.WebhookHeaders, WebhookHeader{
 				Header: h.Header,
@@ -178,6 +179,7 @@ func (r *AlterNotificationIntegrationRequest) toOpts() *AlterNotificationIntegra
 				WebhookSecret:       r.Set.SetWebhookParams.WebhookSecret,
 				WebhookBodyTemplate: r.Set.SetWebhookParams.WebhookBodyTemplate,
 			}
+			// adjusted manually
 			for _, h := range r.Set.SetWebhookParams.WebhookHeaders {
 				opts.Set.SetWebhookParams.WebhookHeaders = append(opts.Set.SetWebhookParams.WebhookHeaders, WebhookHeader{
 					Header: h.Header,
@@ -219,18 +221,15 @@ func (r *ShowNotificationIntegrationRequest) toOpts() *ShowNotificationIntegrati
 }
 
 func (r showNotificationIntegrationsDbRow) convert() (*NotificationIntegration, error) {
-	// adjusted manually
-	s := &NotificationIntegration{
+	result := &NotificationIntegration{
 		Name:             r.Name,
 		NotificationType: r.Type,
 		Category:         r.Category,
 		Enabled:          r.Enabled,
 		CreatedOn:        r.CreatedOn,
 	}
-	if r.Comment.Valid {
-		s.Comment = r.Comment.String
-	}
-	return s, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeNotificationIntegrationRequest) toOpts() *DescribeNotificationIntegrationOptions {
@@ -241,11 +240,11 @@ func (r *DescribeNotificationIntegrationRequest) toOpts() *DescribeNotificationI
 }
 
 func (r descNotificationIntegrationsDbRow) convert() (*NotificationIntegrationProperty, error) {
-	// adjusted manually
-	return &NotificationIntegrationProperty{
+	result := &NotificationIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}, nil
+	}
+	return result, nil
 }

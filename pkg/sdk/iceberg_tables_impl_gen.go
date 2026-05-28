@@ -428,7 +428,7 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 	mapNullString(&result.Owner, r.Owner)
 	mapNullStringWithMapping(&result.ExternalVolumeName, r.ExternalVolumeName, ParseAccountObjectIdentifier)
 	mapNullStringWithMapping(&result.CatalogName, r.CatalogName, ParseAccountObjectIdentifier)
-	// TODO: Mapping for IcebergTableType (string -> IcebergTableType)
+	mapStringWithMapping(&result.IcebergTableType, r.IcebergTableType, ToIcebergTableType)
 	mapNullString(&result.CatalogTableName, r.CatalogTableName)
 	mapNullString(&result.CatalogNamespace, r.CatalogNamespace)
 	mapNullString(&result.Comment, r.Comment)

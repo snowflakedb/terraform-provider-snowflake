@@ -86,8 +86,10 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	WithField(g.OptionalEnumLegacy[sdkcommons.SequenceName]("SetDefault", g.ParameterOptions().NoEquals().SQL("SET DEFAULT"))).
 	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
-	OptionalSQL("UNSET COMMENT").
-	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment")
+	OptionalSQL("UNSET COMMENT")
+
+// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
+// .WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment")
 
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
@@ -195,7 +197,8 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions().SQL("SET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set").
+		WithAdditionalValidations(),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
@@ -218,7 +221,8 @@ var hybridTablesDef = g.NewInterface(
 		OptionalNumber("rows").
 		OptionalNumber("bytes").
 		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()).
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowHybridTables").
 		Show().
 		Terse().
@@ -236,16 +240,17 @@ var hybridTablesDef = g.NewInterface(
 		Text("name").
 		Text("type").
 		Text("kind").
-		Text("null", g.WithPlainFieldName("IsNullable")).
+		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 		OptionalText("default", g.WithRequiredInPlain()).
-		Text("primary key", g.WithPlainFieldName("PrimaryKey")).
-		Text("unique key", g.WithPlainFieldName("UniqueKey")).
+		Field("primary key", "string", "bool").
+		Field("unique key", "string", "bool").
 		OptionalText("check", g.WithRequiredInPlain()).
 		OptionalText("expression", g.WithRequiredInPlain()).
 		OptionalText("comment", g.WithRequiredInPlain()).
 		OptionalText("policy name", g.WithPlainFieldName("PolicyName"), g.WithRequiredInPlain()).
 		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"), g.WithRequiredInPlain()).
-		OptionalText("schema_evolution_record", g.WithRequiredInPlain()),
+		OptionalText("schema_evolution_record", g.WithRequiredInPlain()).
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeHybridTable").
 		Describe().
 		SQL("TABLE").
@@ -290,7 +295,8 @@ var hybridTablesDef = g.NewInterface(
 		Text("database_name").
 		Text("schema_name").
 		OptionalText("owner", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()).
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowHybridTableIndexes").
 		Show().
 		SQL("INDEXES").

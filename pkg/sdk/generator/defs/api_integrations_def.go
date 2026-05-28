@@ -92,8 +92,7 @@ var apiIntegrationsDef = g.NewInterface(
 					ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					OptionalComment().
-					// resulting validation changed to moreThanOneValueSet (not yet supported in the generator)
-					WithValidation(g.ConflictingFields, "AwsParams", "AzureParams", "GoogleParams").
+					WithAdditionalValidations().
 					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GoogleParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).
@@ -131,7 +130,8 @@ var apiIntegrationsDef = g.NewInterface(
 			Text("category").
 			Bool("enabled").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			Time("created_on"),
+			Time("created_on").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowApiIntegrations").
 			Show().
 			SQL("API INTEGRATIONS").
@@ -144,7 +144,8 @@ var apiIntegrationsDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")),
+			Text("property_default", g.WithPlainFieldName("Default")).
+			WithConvertGeneration(),
 		g.NewQueryStruct("DescribeApiIntegration").
 			Describe().
 			SQL("API INTEGRATION").

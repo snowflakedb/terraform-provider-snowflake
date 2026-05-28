@@ -127,8 +127,26 @@ func (r *ShowOpenflowConnectorRequest) toOpts() *ShowOpenflowConnectorOptions {
 }
 
 func (r openflowConnectorRow) convert() (*OpenflowConnector, error) {
-	// TODO: Mapping
-	return &OpenflowConnector{}, nil
+	result := &OpenflowConnector{
+		Name:         r.Name,
+		Runtime:      r.Runtime,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+		Owner:        r.Owner,
+		CreatedOn:    r.CreatedOn,
+		UpdatedOn:    r.UpdatedOn,
+	}
+	mapStringWithMapping(&result.Status, r.Status, ToOpenflowConnectorStatus)
+	mapNullString(&result.ConnectorDefinition, r.ConnectorDefinition)
+	mapNullString(&result.DisplayName, r.DisplayName)
+	mapNullString(&result.DefaultVersion, r.DefaultVersion)
+	mapNullString(&result.DefaultVersionName, r.DefaultVersionName)
+	mapNullString(&result.DefaultVersionAlias, r.DefaultVersionAlias)
+	mapNullString(&result.DefaultVersionLocationUri, r.DefaultVersionLocationUri)
+	mapNullString(&result.DefaultVersionSourceLocationUri, r.DefaultVersionSourceLocationUri)
+	mapNullString(&result.LiveVersionLocationUri, r.LiveVersionLocationUri)
+	mapNullString(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeOpenflowConnectorRequest) toOpts() *DescribeOpenflowConnectorOptions {
@@ -139,6 +157,34 @@ func (r *DescribeOpenflowConnectorRequest) toOpts() *DescribeOpenflowConnectorOp
 }
 
 func (r openflowConnectorDetailsRow) convert() (*OpenflowConnectorDetails, error) {
-	// TODO: Mapping
-	return &OpenflowConnectorDetails{}, nil
+	result := &OpenflowConnectorDetails{
+		Name:         r.Name,
+		Runtime:      r.Runtime,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+		Owner:        r.Owner,
+		CreatedOn:    r.CreatedOn,
+		UpdatedOn:    r.UpdatedOn,
+	}
+	mapStringWithMapping(&result.Status, r.Status, ToOpenflowConnectorStatus)
+	mapNullString(&result.ConnectorDefinition, r.ConnectorDefinition)
+	mapNullString(&result.DefinitionVersionName, r.DefinitionVersionName)
+	mapNullString(&result.Provider, r.Provider)
+	mapNullString(&result.DisplayName, r.DisplayName)
+	mapNullString(&result.DefaultVersion, r.DefaultVersion)
+	mapNullString(&result.DefaultVersionName, r.DefaultVersionName)
+	mapNullString(&result.DefaultVersionAlias, r.DefaultVersionAlias)
+	mapNullString(&result.DefaultVersionLocationUri, r.DefaultVersionLocationUri)
+	mapNullString(&result.DefaultVersionSourceLocationUri, r.DefaultVersionSourceLocationUri)
+	mapNullString(&result.DefaultVersionGitCommitHash, r.DefaultVersionGitCommitHash)
+	mapNullString(&result.LastVersionName, r.LastVersionName)
+	mapNullString(&result.LastVersionAlias, r.LastVersionAlias)
+	mapNullString(&result.LastVersionLocationUri, r.LastVersionLocationUri)
+	mapNullString(&result.LastVersionSourceLocationUri, r.LastVersionSourceLocationUri)
+	mapNullString(&result.LastVersionGitCommitHash, r.LastVersionGitCommitHash)
+	mapNullString(&result.LiveVersionLocationUri, r.LiveVersionLocationUri)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.ErrorCode, r.ErrorCode)
+	mapNullString(&result.StatusMessage, r.StatusMessage)
+	return result, nil
 }

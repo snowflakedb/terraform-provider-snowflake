@@ -37,7 +37,8 @@ var computePoolsDef = g.NewInterface(
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
 		OptionalTags().
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithAdditionalValidations(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-compute-pool",
 	g.NewQueryStruct("AlterComputePool").
@@ -56,6 +57,7 @@ var computePoolsDef = g.NewInterface(
 				OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
 				OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+				WithAdditionalValidations().
 				WithValidation(g.AtLeastOneValueSet, "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"),
 			g.KeywordOptions().SQL("SET"),
 		).
@@ -87,7 +89,7 @@ var computePoolsDef = g.NewInterface(
 		Enum("state", ComputePoolStateEnumDef).
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("instance_family", "ComputePoolInstanceFamily").
+		PlainField("instance_family", "ComputePoolInstanceFamily", g.WithCustomParser("ToComputePoolInstanceFamily")).
 		Number("num_services").
 		Number("num_jobs").
 		Number("auto_suspend_secs").
@@ -101,7 +103,8 @@ var computePoolsDef = g.NewInterface(
 		Text("owner").
 		OptionalText("comment").
 		Bool("is_exclusive").
-		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")),
+		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
+		WithConvertGeneration(),
 	g.NewQueryStruct("ShowComputePools").
 		Show().
 		SQL("COMPUTE POOLS").
@@ -116,7 +119,7 @@ var computePoolsDef = g.NewInterface(
 		Enum("state", ComputePoolStateEnumDef).
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("instance_family", "ComputePoolInstanceFamily").
+		PlainField("instance_family", "ComputePoolInstanceFamily", g.WithCustomParser("ToComputePoolInstanceFamily")).
 		Number("num_services").
 		Number("num_jobs").
 		Number("auto_suspend_secs").
@@ -132,7 +135,8 @@ var computePoolsDef = g.NewInterface(
 		Bool("is_exclusive").
 		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
 		Text("error_code").
-		Text("status_message"),
+		Text("status_message").
+		WithConvertGeneration(),
 	g.NewQueryStruct("DescComputePool").
 		Describe().
 		SQL("COMPUTE POOL").

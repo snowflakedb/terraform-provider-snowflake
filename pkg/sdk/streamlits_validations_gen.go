@@ -73,10 +73,7 @@ func (opts *ShowStreamlitOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	// validation added manually
-	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
-		errs = append(errs, ErrPatternRequiredForLikeKeyword)
-	}
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 

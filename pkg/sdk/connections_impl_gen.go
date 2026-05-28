@@ -2,11 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
-	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -122,8 +119,7 @@ func (r *ShowConnectionRequest) toOpts() *ShowConnectionOptions {
 }
 
 func (r connectionRow) convert() (*Connection, error) {
-	// added manually
-	c := &Connection{
+	result := &Connection{
 		SnowflakeRegion:  r.SnowflakeRegion,
 		CreatedOn:        r.CreatedOn,
 		AccountName:      r.AccountName,
@@ -132,30 +128,12 @@ func (r connectionRow) convert() (*Connection, error) {
 		OrganizationName: r.OrganizationName,
 		AccountLocator:   r.AccountLocator,
 	}
-
-	parsedIsPrimary, err := strconv.ParseBool(r.IsPrimary)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse bool is_primary for connection: %w", err)
-	} else {
-		c.IsPrimary = parsedIsPrimary
+	mapNullString(&result.RegionGroup, r.RegionGroup)
+	mapNullString(&result.Comment, r.Comment)
+	mapStringToBoolParsed(&result.IsPrimary, r.IsPrimary)
+	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
+	if ids, err := ParseCommaSeparatedAccountIdentifierArray(r.FailoverAllowedToAccounts); err == nil {
+		result.FailoverAllowedToAccounts = ids
 	}
-
-	primaryExternalId, err := ParseExternalObjectIdentifier(r.Primary)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse primary connection external identifier: %w", err)
-	} else {
-		c.Primary = primaryExternalId
-	}
-
-	if allowedToAccounts, err := ParseCommaSeparatedAccountIdentifierArray(r.FailoverAllowedToAccounts); err != nil {
-		return nil, fmt.Errorf("unable to parse account identifier list for enable failover to accounts: %w", err)
-	} else {
-		c.FailoverAllowedToAccounts = allowedToAccounts
-	}
-
-	if r.Comment.Valid {
-		c.Comment = String(r.Comment.String)
-	}
-
-	return c, nil
+	return result, nil
 }

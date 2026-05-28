@@ -46,6 +46,41 @@ func WithRequiredInPlain() PairedFieldOption {
 	}
 }
 
+// WithCustomParser sets a custom parse function name to use when converting the db field to the plain field.
+// The function must have signature func(string) (T, error) where T matches the plain kind.
+// Example:
+//
+//	Field("signature", "string", "[]TableColumnSignature", WithCustomParser("ParseTableColumnSignature"))
+func WithCustomParser(funcName string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.customParser = funcName
+	}
+}
+
+// WithBoolTrueValue overrides the truthy string compared against the db field for string → bool conversions.
+// The default is "Y". Use this when Snowflake returns a different truthy value, e.g. "true" or "ON".
+// Example:
+//
+//	Field("automatic_clustering", "string", "bool", WithBoolTrueValue("ON"))
+//	// plain: AutomaticClustering = r.AutomaticClustering == "ON"
+func WithBoolTrueValue(v string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.boolTrueValue = v
+	}
+}
+
+// WithBoolParsed routes string → bool or sql.NullString → bool conversions through strconv.ParseBool
+// instead of a fixed string comparison. Use when the db column returns "true"/"false" and robust
+// parsing is preferred over a hard-coded truthy value.
+// Example:
+//
+//	Field("is_primary", "string", "bool", WithBoolParsed())
+func WithBoolParsed() PairedFieldOption {
+	return func(f *pairedField) {
+		f.boolParsed = true
+	}
+}
+
 // pairedField holds the definition for a single field in both the DB row struct and the plain SDK struct.
 type pairedField struct {
 	// dbColumnName is the snake_case column name used for the db: tag and to auto-derive the field names.
@@ -62,6 +97,12 @@ type pairedField struct {
 	isEnum bool
 	// isJson marks that the db string column should be JSON-unmarshaled into the plain field.
 	isJson bool
+	// customParser is the name of a custom parse function to use for conversion.
+	customParser string
+	// boolTrueValue overrides the default "Y" comparison for string/NullString → bool conversions.
+	boolTrueValue string
+	// boolParsed routes string/NullString → bool conversions through strconv.ParseBool.
+	boolParsed bool
 }
 
 // resolvedPlainFieldName returns the explicit override or the CamelCase conversion of dbColumnName.
@@ -197,6 +238,16 @@ func (p *PairedStructs) PlainField(dbColumnName, plainKind string, opts ...Paire
 	return p.addField(dbColumnName, "string", plainKind, opts)
 }
 
+// OptionalPlainField adds a nullable field where the db kind is sql.NullString and the plain kind is a custom type.
+// Use this for fields that are stored as nullable raw strings in the db but represented as a custom
+// SDK type in the plain struct (e.g. enums, identifiers, or slices parsed from the db string).
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> <plainKind>
+func (p *PairedStructs) OptionalPlainField(dbColumnName, plainKind string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", plainKind, opts)
+}
+
 // StringList adds a field where the db kind is string and the plain kind is []string.
 // Use this for fields that are stored as a single string in the db (e.g. comma-separated)
 // but represented as a string slice in the plain struct.
@@ -258,6 +309,25 @@ func (p *PairedStructs) SchemaObjectIdentifier(dbColumnName string, opts ...Pair
 func (p *PairedStructs) OptionalSchemaObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
 	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
 	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifier", allOpts)
+}
+
+// NullableSchemaObjectIdentifierArray adds a nullable SchemaObjectIdentifier slice field. The db kind is
+// sql.NullString and the plain kind is []SchemaObjectIdentifier. The plain field name defaults to the
+// camel-cased column name unless overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> []SchemaObjectIdentifier
+func (p *PairedStructs) NullableSchemaObjectIdentifierArray(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", "[]SchemaObjectIdentifier", opts)
+}
+
+// AccountIdentifierArray adds a required AccountIdentifier slice field. The db kind is string and the
+// plain kind is []AccountIdentifier.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> []AccountIdentifier
+func (p *PairedStructs) AccountIdentifierArray(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "string", "[]AccountIdentifier", opts)
 }
 
 // SchemaObjectIdentifierWithArguments adds a SchemaObjectIdentifierWithArguments field. The db kind is string and the plain kind
@@ -354,6 +424,9 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 			PlainKind:      f.plainKind,
 			IsEnum:         f.isEnum,
 			IsJson:         f.isJson,
+			CustomParser:   f.customParser,
+			BoolTrueValue:  f.boolTrueValue,
+			BoolParsed:     f.boolParsed,
 		}
 	}
 	return pairs
