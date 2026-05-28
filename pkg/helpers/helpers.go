@@ -33,7 +33,7 @@ func EncodeSnowflakeID(attributes ...interface{}) string {
 	// is attribute already an object identifier?
 	if len(attributes) == 1 {
 		if id, ok := attributes[0].(sdk.ObjectIdentifier); ok {
-			if val := reflect.ValueOf(id); val.Kind() == reflect.Ptr && val.IsNil() {
+			if val := reflect.ValueOf(id); val.Kind() == reflect.Pointer && val.IsNil() {
 				log.Panicf("Nil object identifier received")
 			}
 			parts := make([]string, 0)

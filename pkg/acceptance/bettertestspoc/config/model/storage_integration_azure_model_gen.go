@@ -67,10 +67,12 @@ func (s *StorageIntegrationAzureModel) MarshalJSON() ([]byte, error) {
 	type Alias StorageIntegrationAzureModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -81,6 +83,11 @@ func (s *StorageIntegrationAzureModel) WithDependsOn(values ...string) *StorageI
 
 func (s *StorageIntegrationAzureModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *StorageIntegrationAzureModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *StorageIntegrationAzureModel) WithTimeout(timeout config.Timeouts) *StorageIntegrationAzureModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

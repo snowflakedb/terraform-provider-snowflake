@@ -78,7 +78,7 @@ func readGitHubIssuesBucket() []Issue {
 	if err != nil {
 		panic(err)
 	}
-	issues := make([]Issue, 0)
+	issues := make([]Issue, 0, len(records)-1)
 	for _, record := range records[1:] { // Skip header
 		id, err := strconv.Atoi(record[0][1:])
 		if err != nil {

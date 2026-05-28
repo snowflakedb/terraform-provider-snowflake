@@ -66,10 +66,12 @@ func (c *CatalogIntegrationIcebergRestModel) MarshalJSON() ([]byte, error) {
 	type Alias CatalogIntegrationIcebergRestModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
+		Timeouts:  c.Timeouts(),
 	})
 }
 
@@ -80,6 +82,11 @@ func (c *CatalogIntegrationIcebergRestModel) WithDependsOn(values ...string) *Ca
 
 func (c *CatalogIntegrationIcebergRestModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *CatalogIntegrationIcebergRestModel {
 	c.DynamicBlock = dynamicBlock
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestModel) WithTimeout(timeout config.Timeouts) *CatalogIntegrationIcebergRestModel {
+	c.SetTimeout(timeout)
 	return c
 }
 

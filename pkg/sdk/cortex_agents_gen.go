@@ -37,13 +37,13 @@ type AlterCortexAgentOptions struct {
 	agent                bool                             `ddl:"static" sql:"AGENT"`
 	IfExists             *bool                            `ddl:"keyword" sql:"IF EXISTS"`
 	name                 SchemaObjectIdentifier           `ddl:"identifier"`
-	Set                  *CortexAgentSet                  `ddl:"keyword" sql:"SET"`
+	Set                  *CortexAgentSet                  `ddl:"list,no_parentheses" sql:"SET"`
 	ModifyLiveVersionSet *CortexAgentModifyLiveVersionSet `ddl:"keyword" sql:"MODIFY LIVE VERSION SET"`
 }
 
 type CortexAgentSet struct {
-	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Profile *string `ddl:"parameter,single_quotes" sql:"PROFILE"`
+	Comment *StringAllowEmpty `ddl:"parameter" sql:"COMMENT"`
+	Profile *string           `ddl:"parameter,single_quotes" sql:"PROFILE"`
 }
 
 type CortexAgentModifyLiveVersionSet struct {
@@ -84,8 +84,8 @@ type CortexAgent struct {
 	DatabaseName string
 	SchemaName   string
 	Owner        string
-	Comment      *string
-	Profile      *string
+	Comment      string
+	Profile      CortexAgentProfile
 }
 
 func (v *CortexAgent) ID() SchemaObjectIdentifier {
@@ -122,8 +122,8 @@ type CortexAgentDetails struct {
 	DatabaseName       string
 	SchemaName         string
 	Owner              string
-	Comment            *string
-	Profile            *string
+	Comment            string
+	Profile            CortexAgentProfile
 	AgentSpec          string
 	CreatedOn          time.Time
 	DefaultVersionName *string

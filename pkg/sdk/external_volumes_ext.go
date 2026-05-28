@@ -7,6 +7,23 @@ import (
 	"strings"
 )
 
+func (opts *CreateExternalVolumeOptions) additionalValidations() error {
+	var errs []error
+	// Apply errExactlyOneOf to each element in storage locations list
+	for i, storageLocationItem := range opts.StorageLocations {
+		storageLocation := storageLocationItem.ExternalVolumeStorageLocation
+		if !exactlyOneValueSet(storageLocation.S3StorageLocationParams, storageLocation.GCSStorageLocationParams, storageLocation.AzureStorageLocationParams, storageLocation.S3CompatStorageLocationParams) {
+			errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateExternalVolumeOptions.StorageLocation[%d]", i), "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
+		}
+	}
+
+	// Check the storage location list is not empty, as at least 1 storage location is required for an external volume
+	if len(opts.StorageLocations) == 0 {
+		errs = append(errs, errNotSet("CreateExternalVolumeOptions", "StorageLocations"))
+	}
+	return JoinErrors(errs...)
+}
+
 // CopySentinelStorageLocationItem creates a copy of the given storage location with a
 // sentinel name used for Terraform provider operations. This is useful for managing
 // storage location state without affecting user-visible names.
@@ -80,6 +97,7 @@ type StorageLocationAzureDetails struct {
 	AzureTenantId           string
 	AzureMultiTenantAppName string
 	AzureConsentUrl         string
+	UsePrivatelinkEndpoint  *bool
 }
 
 type StorageLocationS3CompatDetails struct {
@@ -151,6 +169,7 @@ func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (Extern
 			AzureTenantId:           e.AzureTenantId,
 			AzureMultiTenantAppName: e.AzureMultiTenantAppName,
 			AzureConsentUrl:         e.AzureConsentUrl,
+			UsePrivatelinkEndpoint:  e.UsePrivatelinkEndpoint,
 		}
 	case StorageProviderS3compat:
 		details.S3CompatStorageLocation = &StorageLocationS3CompatDetails{

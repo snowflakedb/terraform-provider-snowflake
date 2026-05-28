@@ -15,7 +15,8 @@ var managedAccountPairs = g.StructPair("managedAccountDBRow", "ManagedAccount").
 	OptionalText("account_url", g.WithPlainFieldName("URL"), g.WithRequiredInPlain()).
 	Text("account_locator_url", g.WithPlainFieldName("AccountLocatorURL")).
 	Bool("is_reader").
-	OptionalText("comment")
+	OptionalText("comment").
+	WithConvertGeneration()
 
 var managedAccountsDef = g.NewInterface(
 	"ManagedAccounts",
@@ -33,7 +34,7 @@ var managedAccountsDef = g.NewInterface(
 				g.NewQueryStruct("CreateManagedAccountParams").
 					TextAssignment("ADMIN_NAME", g.ParameterOptions().SingleQuotes().Required()).
 					TextAssignment("ADMIN_PASSWORD", g.ParameterOptions().SingleQuotes().Required()).
-					PredefinedQueryStructField("typeProvider", "string", g.StaticOptions().SQL("TYPE = READER")).
+					SQLWithCustomFieldName("typeProvider", "TYPE = READER").
 					OptionalComment().
 					WithValidation(g.ValidateValueSet, "AdminName").
 					WithValidation(g.ValidateValueSet, "AdminPassword"),

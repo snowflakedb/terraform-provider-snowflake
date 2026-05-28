@@ -24,7 +24,8 @@ var viewPairs = g.StructPair("viewDBRow", "View").
 	OptionalBool("is_secure", g.WithRequiredInPlain()).
 	OptionalBool("is_materialized", g.WithRequiredInPlain()).
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).
-	OptionalText("change_tracking", g.WithRequiredInPlain())
+	OptionalText("change_tracking", g.WithRequiredInPlain()).
+	WithConvertGeneration()
 
 // TODO [SNOW-965322]: extract common type for describe
 var viewDetailsPairs = g.StructPair("viewDetailsRow", "ViewDetails").
@@ -39,7 +40,8 @@ var viewDetailsPairs = g.StructPair("viewDetailsRow", "ViewDetails").
 	OptionalText("expression").
 	OptionalText("comment").
 	OptionalText("policy name", g.WithPlainFieldName("PolicyName")).
-	OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"))
+	OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain")).
+	WithConvertGeneration()
 
 var columnDef = g.NewQueryStruct("Column").
 	Text("Value", g.KeywordOptions().Required().DoubleQuotes())
@@ -60,11 +62,7 @@ var dataMetricFunctionDef = g.NewQueryStruct("ViewDataMetricFunction").
 var modifyDataMetricFunctionDef = g.NewQueryStruct("ViewModifyDataMetricFunction").
 	Identifier("DataMetricFunction", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
-	Assignment(
-		"",
-		ViewDataMetricScheduleStatusOperationOptionEnumDef.Kind(),
-		g.ParameterOptions().NoEquals().NoQuotes(),
-	).
+	EnumAssignment("", ViewDataMetricScheduleStatusOperationOptionEnumDef, g.ParameterOptions().NoEquals().NoQuotes()).
 	WithValidation(g.ValidIdentifier, "DataMetricFunction")
 
 var viewColumn = g.NewQueryStruct("ViewColumn").
@@ -84,7 +82,8 @@ var viewColumnProjectionPolicy = g.NewQueryStruct("ViewColumnProjectionPolicy").
 var viewRowAccessPolicy = g.NewQueryStruct("ViewRowAccessPolicy").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
-	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
+	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
+	WithAdditionalValidations()
 
 var viewAggregationPolicy = g.NewQueryStruct("ViewAggregationPolicy").
 	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
@@ -114,7 +113,8 @@ var viewAddRowAccessPolicy = g.NewQueryStruct("ViewAddRowAccessPolicy").
 	SQL("ADD").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
-	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
+	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
+	WithAdditionalValidations()
 
 var viewDropRowAccessPolicy = g.NewQueryStruct("ViewDropRowAccessPolicy").
 	SQL("DROP").
@@ -213,7 +213,8 @@ var viewsDef = g.NewInterface(
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+			WithAdditionalValidations(),
 	).
 	CustomOperation(
 		"Alter",

@@ -3,7 +3,7 @@ data "snowflake_account_roles" "simple" {
 }
 
 output "simple_output" {
-  value = data.snowflake_account_roles.simple.roles
+  value = data.snowflake_account_roles.simple.account_roles
 }
 
 # Filtering (like)
@@ -12,7 +12,7 @@ data "snowflake_account_roles" "like" {
 }
 
 output "like_output" {
-  value = data.snowflake_account_roles.like.roles
+  value = data.snowflake_account_roles.like.account_roles
 }
 
 # Filtering (in class)
@@ -21,7 +21,7 @@ data "snowflake_account_roles" "in_class" {
 }
 
 output "in_class_output" {
-  value = data.snowflake_account_roles.in_class.roles
+  value = data.snowflake_account_roles.in_class.account_roles
 }
 
 # Ensure the number of roles is equal to at least one element (with the use of postcondition)
@@ -29,7 +29,7 @@ data "snowflake_account_roles" "assert_with_postcondition" {
   like = "role-name-%"
   lifecycle {
     postcondition {
-      condition     = length(self.roles) > 0
+      condition     = length(self.account_roles) > 0
       error_message = "there should be at least one role"
     }
   }
@@ -42,7 +42,7 @@ check "role_check" {
   }
 
   assert {
-    condition     = length(data.snowflake_account_roles.assert_with_check_block.roles) == 1
-    error_message = "Roles filtered by '${data.snowflake_account_roles.assert_with_check_block.like}' returned ${length(data.snowflake_account_roles.assert_with_check_block.roles)} roles where one was expected"
+    condition     = length(data.snowflake_account_roles.assert_with_check_block.account_roles) == 1
+    error_message = "Roles filtered by '${data.snowflake_account_roles.assert_with_check_block.like}' returned ${length(data.snowflake_account_roles.assert_with_check_block.account_roles)} roles where one was expected"
   }
 }

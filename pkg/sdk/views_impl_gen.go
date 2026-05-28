@@ -254,41 +254,25 @@ func (r *ShowViewRequest) toOpts() *ShowViewOptions {
 }
 
 func (r viewDBRow) convert() (*View, error) {
-	// adjusted manually
-	view := View{
+	result := &View{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 	}
-	if r.Reserved.Valid {
-		view.Reserved = r.Reserved.String
-	}
-	if r.Owner.Valid {
-		view.Owner = r.Owner.String
-	}
-	if r.Comment.Valid {
-		view.Comment = r.Comment.String
-	}
+	mapNullStringToNonNullableField(&result.Kind, r.Kind)
+	mapNullStringToNonNullableField(&result.Reserved, r.Reserved)
+	mapNullStringToNonNullableField(&result.Owner, r.Owner)
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	// TODO [this PR]: allow metadata trimming
 	if r.Text.Valid {
-		view.Text = tracking.TrimMetadata(r.Text.String)
+		result.Text = tracking.TrimMetadata(r.Text.String)
 	}
-	if r.Kind.Valid {
-		view.Kind = r.Kind.String
-	}
-	if r.IsSecure.Valid {
-		view.IsSecure = r.IsSecure.Bool
-	}
-	if r.IsMaterialized.Valid {
-		view.IsMaterialized = r.IsMaterialized.Bool
-	}
-	if r.OwnerRoleType.Valid {
-		view.OwnerRoleType = r.OwnerRoleType.String
-	}
-	if r.ChangeTracking.Valid {
-		view.ChangeTracking = r.ChangeTracking.String
-	}
-	return &view, nil
+	mapNullBoolToNonNullableField(&result.IsSecure, r.IsSecure)
+	mapNullBoolToNonNullableField(&result.IsMaterialized, r.IsMaterialized)
+	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	mapNullStringToNonNullableField(&result.ChangeTracking, r.ChangeTracking)
+	return result, nil
 }
 
 func (r *DescribeViewRequest) toOpts() *DescribeViewOptions {
@@ -299,8 +283,7 @@ func (r *DescribeViewRequest) toOpts() *DescribeViewOptions {
 }
 
 func (r viewDetailsRow) convert() (*ViewDetails, error) {
-	// adjusted manually
-	details := &ViewDetails{
+	result := &ViewDetails{
 		Name:       r.Name,
 		Type:       r.Type,
 		Kind:       r.Kind,
@@ -308,20 +291,11 @@ func (r viewDetailsRow) convert() (*ViewDetails, error) {
 		IsPrimary:  r.PrimaryKey == "Y",
 		IsUnique:   r.UniqueKey == "Y",
 	}
-	if r.Default.Valid {
-		details.Default = String(r.Default.String)
-	}
-	if r.Check.Valid {
-		details.Check = Bool(r.Check.String == "Y")
-	}
-	if r.Expression.Valid {
-		details.Expression = String(r.Expression.String)
-	}
-	if r.Comment.Valid {
-		details.Comment = String(r.Comment.String)
-	}
-	if r.PolicyName.Valid {
-		details.PolicyName = String(r.PolicyName.String)
-	}
-	return details, nil
+	mapNullString(&result.Default, r.Default)
+	mapNullStringToBool(&result.Check, r.Check)
+	mapNullString(&result.Expression, r.Expression)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.PolicyName, r.PolicyName)
+	mapNullString(&result.PrivacyDomain, r.PrivacyDomain)
+	return result, nil
 }

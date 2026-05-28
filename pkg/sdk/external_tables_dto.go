@@ -218,8 +218,8 @@ func (v NullStringRequest) toOpts() NullString {
 	}
 }
 
-func (v *RowAccessPolicyRequest) toOpts() *TableRowAccessPolicy {
-	return &TableRowAccessPolicy{
+func (v *RowAccessPolicyRequest) toOpts() *TableRowAccessPolicyLegacy {
+	return &TableRowAccessPolicyLegacy{
 		Name: v.Name,
 		On:   v.On,
 	}
@@ -254,7 +254,7 @@ func (s *CreateExternalTableRequest) toOpts() *CreateExternalTableOptions {
 		cloudProviderParams = s.cloudProviderParams.toOpts()
 	}
 
-	var rowAccessPolicy *TableRowAccessPolicy
+	var rowAccessPolicy *TableRowAccessPolicyLegacy
 	if s.rowAccessPolicy != nil {
 		rowAccessPolicy = s.rowAccessPolicy.toOpts()
 	}
@@ -328,7 +328,7 @@ func (v *CreateWithManualPartitioningExternalTableRequest) toOpts() *CreateWithM
 		}
 	}
 
-	var rowAccessPolicy *TableRowAccessPolicy
+	var rowAccessPolicy *TableRowAccessPolicyLegacy
 	if v.rowAccessPolicy != nil {
 		rowAccessPolicy = v.rowAccessPolicy.toOpts()
 	}
@@ -400,7 +400,7 @@ func (v *CreateDeltaLakeExternalTableRequest) toOpts() *CreateDeltaLakeExternalT
 		}
 	}
 
-	var rowAccessPolicy *TableRowAccessPolicy
+	var rowAccessPolicy *TableRowAccessPolicyLegacy
 	if v.rowAccessPolicy != nil {
 		rowAccessPolicy = v.rowAccessPolicy.toOpts()
 	}
@@ -468,7 +468,7 @@ func (v *CreateExternalTableUsingTemplateRequest) toOpts() *CreateExternalTableU
 		}
 	}
 
-	var rowAccessPolicy *TableRowAccessPolicy
+	var rowAccessPolicy *TableRowAccessPolicyLegacy
 	if v.rowAccessPolicy != nil {
 		rowAccessPolicy = v.rowAccessPolicy.toOpts()
 	}

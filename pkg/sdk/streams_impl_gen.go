@@ -5,7 +5,9 @@ package sdk
 // imports adjusted manually
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -228,55 +230,40 @@ func (r *ShowStreamRequest) toOpts() *ShowStreamOptions {
 }
 
 func (r showStreamsDbRow) convert() (*Stream, error) {
-	// adjusted manually
-	s := &Stream{
+	result := &Stream{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Stale:        r.Stale == "true",
 	}
-	if r.StaleAfter.Valid {
-		s.StaleAfter = &r.StaleAfter.Time
-	}
-	if r.Owner.Valid {
-		s.Owner = &r.Owner.String
-	}
-	if r.Comment.Valid {
-		s.Comment = &r.Comment.String
-	}
+	mapNullString(&result.Owner, r.Owner)
+	mapNullString(&result.Comment, r.Comment)
+	// manually adjusted
 	if r.TableName.Valid {
-		s.TableName = &r.TableName.String
-	}
-	if r.SourceType.Valid {
-		sourceType, err := ToStreamSourceType(r.SourceType.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting show stream: %w", err)
-		} else {
-			s.SourceType = &sourceType
+		if strings.Contains(r.TableName.String, "No privilege or table dropped") {
+			return nil, errors.New("the source object is dropped or you don't have permission to access it")
 		}
+
+		// TODO [SNOW-3108659] Use mapNullStringWithMapping
+		tableName, err := ParseSchemaObjectIdentifier(r.TableName.String)
+		if err != nil {
+			return nil, fmt.Errorf("error converting table name in show stream: %w", err)
+		}
+		result.TableName = &tableName
 	}
+	mapNullStringWithMapping(&result.SourceType, r.SourceType, ToStreamSourceType)
 	if r.BaseTables.Valid {
-		s.BaseTables = ParseCommaSeparatedStringArray(r.BaseTables.String, false)
-	}
-	if r.Type.Valid {
-		s.Type = &r.Type.String
-	}
-	if r.Mode.Valid {
-		mode, err := ToStreamMode(r.Mode.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting show stream: %w", err)
-		} else {
-			s.Mode = &mode
+		if ids, err := ParseCommaSeparatedSchemaObjectIdentifierArray(r.BaseTables.String); err == nil {
+			result.BaseTables = ids
 		}
 	}
-	if r.InvalidReason.Valid {
-		s.InvalidReason = &r.InvalidReason.String
-	}
-	if r.OwnerRoleType.Valid {
-		s.OwnerRoleType = &r.OwnerRoleType.String
-	}
-	return s, nil
+	mapNullString(&result.Type, r.Type)
+	mapNullStringWithMapping(&result.Mode, r.Mode, ToStreamMode)
+	mapNullTime(&result.StaleAfter, r.StaleAfter)
+	mapNullString(&result.InvalidReason, r.InvalidReason)
+	mapNullString(&result.OwnerRoleType, r.OwnerRoleType)
+	return result, nil
 }
 
 func (r *DescribeStreamRequest) toOpts() *DescribeStreamOptions {

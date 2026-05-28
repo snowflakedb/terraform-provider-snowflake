@@ -32,6 +32,58 @@ To use the provider with the bundles containing this change:
 
 Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
 
+## [Bundle 2026_03](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03_bundle)
+
+### Standard warehouses: Gen2 is the default generation
+
+When this bundle is enabled on your account, newly created standard warehouses default to `GENERATION = '2'` in regions where Gen2 is available (previously Gen1 in most regions).
+No provider-side changes are required. Existing warehouses keep their current generation, and the [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse) resource already suppresses drift on the `generation` attribute when it is not set in config.
+
+If you want to pin a new or existing warehouse to Gen1, set `generation = "1"` explicitly. Otherwise, warehouses managed by Terraform without an explicit `generation` will come up as Gen2 after this bundle is active.
+
+The provider issues `CREATE` and `ALTER` statements separately (not `CREATE OR ALTER`), so the BCR-2250 caveat about `CREATE OR ALTER` flipping an existing Gen1 warehouse to Gen2 does not apply to warehouses managed through this resource.
+
+Reference: [BCR-2250](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03/bcr-2250)
+
+### Warehouses: QAS enabled by default for newly created Gen2 and multi-cluster warehouses
+
+When this bundle is enabled on your account, newly created Gen2 and multi-cluster warehouses have the Query Acceleration Service (QAS) enabled by default with `QUERY_ACCELERATION_MAX_SCALE_FACTOR = 2`. Gen1 single-cluster warehouses still default to QAS disabled with scale factor `8`.
+No provider-side changes are required. Existing warehouses are not affected – altering a warehouse (including flipping it between Gen1/Gen2 or single/multi-cluster) does not toggle QAS, which matches how the [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse) resource issues `ALTER` statements.
+
+The resource already suppresses drift on `enable_query_acceleration` and `query_acceleration_max_scale_factor` when they are not set in config, so new warehouses picking up the new defaults will not cause plan churn. If you want to opt out, set the fields explicitly:
+
+- `enable_query_acceleration = "false"` to keep QAS disabled on new Gen2/multi-cluster warehouses.
+- `query_acceleration_max_scale_factor = <n>` to pick a specific scale factor.
+
+Reference: [BCR-2269](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03/bcr-2269)
+
+### 63-character limit for account identifiers
+
+When this bundle is enabled on your account, Snowflake enforces on `CREATE ACCOUNT` and `ALTER ACCOUNT ... RENAME TO` that:
+
+- The combined `<orgname>-<account_name>` identifier (Format 1) is at most 63 characters.
+- The account name does not end with an underscore (`_`).
+
+No provider-side changes are required; the restriction is enforced server-side and the provider propagates the resulting `ORG_ACCOUNT_NAME_EXCEEDS_DNS_LIMIT` / `ACCOUNT_NAME_INVALID_FOR_DNS` errors through `terraform apply`.
+
+For accounts managed with the [`snowflake_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account) resource, make sure that `length("<orgname>-<name>") <= 63` and that `name` does not end with `_` before applying. Otherwise the create or rename operation will fail with one of the errors above.
+
+Existing accounts that do not comply with these limits continue to function, but Snowflake recommends renaming them to a compliant value. You can find non-compliant accounts with:
+
+```sql
+SHOW ACCOUNTS;
+
+SELECT
+  CURRENT_ORGANIZATION_NAME() || '-' || "account_name" AS identifier,
+  LENGTH(identifier) AS len
+FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+WHERE len > 63 OR ENDSWITH("account_name", '_');
+```
+
+and analogously with `SHOW MANAGED ACCOUNTS`. Note that once you rename an account to a compliant name, you cannot rename it back to a non-compliant name – this is effectively a one-way migration.
+
+Reference: [BCR-2215](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03/bcr-2215)
+
 ## [Bundle 2026_02](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02_bundle)
 
 ### External OAuth security integrations: `EXTERNAL_OAUTH_JWS_KEYS_URL` requires HTTPS
@@ -41,6 +93,18 @@ The `EXTERNAL_OAUTH_JWS_KEYS_URL` parameter specifies the endpoint from which Sn
 If you manage External OAuth security integrations with the [`snowflake_external_oauth_integration`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_oauth_integration) resource, ensure `external_oauth_jws_keys_url` and `jws_keys_urls` use `https://` URLs before the bundle is active on your account.
 
 Reference: [BCR-2218](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02/bcr-2218)
+
+## [Bundle 2026_01](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01_bundle)
+
+### CREATE INTEGRATION: `ENABLED` defaults to `TRUE`
+
+When this bundle is enabled on your account, `CREATE ... INTEGRATION` statements that do not specify `ENABLED` default to `ENABLED = TRUE` (previously `FALSE`). This affects all integration types, including SAML2.
+
+The [`snowflake_saml2_integration`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/saml2_integration) resource has been adjusted to align with this default. The UNSET operation for this integration is not supported in Snowflake, so when `enabled` is removed in config, the provider now sets this as `TRUE`. See the corresponding entry in the [migration guide](./MIGRATION_GUIDE.md#bug-fix-snowflake_saml2_integration-removing-enabled-from-config-now-restores-snowflakes-default-of-true) for details and recommended action.
+
+If you want the integration to remain disabled, set `enabled = "false"` explicitly. Otherwise, no configuration changes are required.
+
+Reference: [BCR-2166](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2166)
 
 ## [Bundle 2025_07](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07_bundle)
 

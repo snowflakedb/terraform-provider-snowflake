@@ -25,7 +25,7 @@ var storageIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"S3StorageProviderParams",
 				g.NewQueryStruct("S3StorageParams").
-					PredefinedQueryStructField("Protocol", g.KindOfT[sdkcommons.S3Protocol](), g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required()).
+					WithField(g.EnumLegacy[sdkcommons.S3Protocol]("Protocol", g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required())).
 					TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
@@ -142,7 +142,8 @@ var storageIntegrationsDef = g.NewInterface(
 			Text("category").
 			Bool("enabled").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			Time("created_on"),
+			Time("created_on").
+			WithConvertGeneration(),
 		g.NewQueryStruct("ShowStorageIntegrations").
 			Show().
 			SQL("STORAGE INTEGRATIONS").
@@ -155,7 +156,8 @@ var storageIntegrationsDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")),
+			Text("property_default", g.WithPlainFieldName("Default")).
+			WithConvertGeneration(),
 		g.NewQueryStruct("DescribeStorageIntegration").
 			Describe().
 			SQL("STORAGE INTEGRATION").

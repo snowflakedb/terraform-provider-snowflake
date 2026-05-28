@@ -265,3 +265,156 @@ func NewCreateForJavaScriptProcedureRequestDefinitionWrapped(
 	s.ProcedureDefinition = fmt.Sprintf(`$$%s$$`, procedureDefinition)
 	return &s
 }
+
+func (opts *CreateForJavaProcedureOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateForJavaProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	if opts.ProcedureDefinition == nil && opts.TargetPath != nil {
+		errs = append(errs, NewError("TARGET_PATH must be nil when AS is nil"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateForJavaScriptProcedureOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateForJavaScriptProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateForPythonProcedureOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateForPythonProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateForScalaProcedureOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateForScalaProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	if opts.ProcedureDefinition == nil && opts.TargetPath != nil {
+		errs = append(errs, NewError("TARGET_PATH must be nil when AS is nil"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateForSQLProcedureOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateForSQLProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateAndCallForJavaProcedureOptions) additionalValidations() error {
+	var errs []error
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, errInvalidIdentifier("CreateAndCallForJavaProcedureOptions", "ProcedureName"))
+	}
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateAndCallForScalaProcedureOptions) additionalValidations() error {
+	var errs []error
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, errInvalidIdentifier("CreateAndCallForScalaProcedureOptions", "ProcedureName"))
+	}
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateAndCallForJavaScriptProcedureOptions) additionalValidations() error {
+	var errs []error
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, errInvalidIdentifier("CreateAndCallForJavaScriptProcedureOptions", "ProcedureName"))
+	}
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateAndCallForPythonProcedureOptions) additionalValidations() error {
+	var errs []error
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, errInvalidIdentifier("CreateAndCallForPythonProcedureOptions", "ProcedureName"))
+	}
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateAndCallForSQLProcedureOptions) additionalValidations() error {
+	var errs []error
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, errInvalidIdentifier("CreateAndCallForSQLProcedureOptions", "ProcedureName"))
+	}
+	if valueSet(opts.Arguments) {
+		for _, arg := range opts.Arguments {
+			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
+				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (t *ProcedureReturnsTable) additionalValidations() error {
+	var errs []error
+	if valueSet(t.Columns) {
+		for _, col := range t.Columns {
+			if !exactlyOneValueSet(col.ColumnDataTypeOld, col.ColumnDataType) {
+				errs = append(errs, errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}

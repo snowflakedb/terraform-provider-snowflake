@@ -7,7 +7,9 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -194,6 +196,65 @@ func TestAcc_Share_issue4398_updateAccountsWithoutDatabaseGranted(t *testing.T) 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_share.test", "accounts.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_share.test", "accounts.0", account2.Name()),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_Share_withGrantedDatabase proves that adding and updating accounts on a share
+// that already has a database granted (via snowflake_grant_privileges_to_share) works correctly.
+// This is the regression scenario reported after PR #4174 — previously, the provider would
+// erroneously try to create a temp database even when a real DB was already in the share,
+// causing a conflict on the USAGE grant.
+// See: https://github.com/snowflakedb/terraform-provider-snowflake/pull/4174
+func TestAcc_Share_withGrantedDatabase(t *testing.T) {
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	account2 := secondaryTestClient().Account.GetAccountIdentifier(t)
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	shareModel := model.ShareWithDefaultMeta(id.Name())
+	shareModelWithAccount := model.ShareWithDefaultMeta(id.Name()).WithAccounts(account2.Name())
+	grantModel := model.GrantPrivilegesToShareWithDefaultMeta([]string{"USAGE"}, id.Name()).
+		WithOnDatabase(database.ID().Name()).
+		WithDependsOn(shareModel.ResourceReference())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Share),
+		Steps: []resource.TestStep{
+			// Step 1: Share with no accounts + grant DB to share (no accounts yet).
+			{
+				Config: accconfig.FromModels(t, shareModel, grantModel),
+				Check: assertThat(t,
+					resourceassert.ShareResource(t, shareModel.ResourceReference()).
+						HasName(id.Name()).
+						HasAccountsEmpty(),
+				),
+			},
+			// Step 2: Add an account while DB is already on the share.
+			// This exercises the UpdateShare path that directly adds accounts
+			// (skipping the temp DB workaround) when share.DatabaseName is set.
+			{
+				Config: accconfig.FromModels(t, shareModelWithAccount, grantModel),
+				Check: assertThat(t,
+					resourceassert.ShareResource(t, shareModelWithAccount.ResourceReference()).
+						HasName(id.Name()).
+						HasAccounts(account2.Name()),
+				),
+			},
+			// Step 3: Remove account (DB still granted).
+			{
+				Config: accconfig.FromModels(t, shareModel, grantModel),
+				Check: assertThat(t,
+					resourceassert.ShareResource(t, shareModel.ResourceReference()).
+						HasName(id.Name()).
+						HasAccountsEmpty(),
 				),
 			},
 		},

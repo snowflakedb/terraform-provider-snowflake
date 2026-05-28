@@ -59,6 +59,7 @@ func (e *ExternalVolumeResourceAssert) HasAzureStorageLocationAtIndex(
 	expectedStorageBaseUrl string,
 	expectedEncryptionType string,
 	expectedAzureTenantId string,
+	expectedUsePrivatelinkEndpoint string,
 ) *ExternalVolumeResourceAssert {
 	prefix := fmt.Sprintf("storage_location.%s", strconv.Itoa(index))
 	e.AddAssertion(assert.ValueSet(prefix+".storage_location_name", expectedName))
@@ -66,6 +67,7 @@ func (e *ExternalVolumeResourceAssert) HasAzureStorageLocationAtIndex(
 	e.AddAssertion(assert.ValueSet(prefix+".storage_base_url", expectedStorageBaseUrl))
 	e.AddAssertion(assert.ValueSet(prefix+".encryption_type", expectedEncryptionType))
 	e.AddAssertion(assert.ValueSet(prefix+".azure_tenant_id", expectedAzureTenantId))
+	e.AddAssertion(assert.ValueSet(prefix+".use_privatelink_endpoint", expectedUsePrivatelinkEndpoint))
 	return e
 }
 

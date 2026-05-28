@@ -473,7 +473,7 @@ func TestParsingPrivateKeyDoesNotReturnSensitiveValues(t *testing.T) {
 }
 
 func Test_MergeConfig(t *testing.T) {
-	config1 := &gosnowflake.Config{
+	config1 := &gosnowflake.Config{ //nolint:gosec // test credentials
 		Account:                   "account1",
 		User:                      "user1",
 		Password:                  "password1",
@@ -534,7 +534,7 @@ func Test_MergeConfig(t *testing.T) {
 		DisableSamlURLCheck:               gosnowflake.ConfigBoolTrue,
 	}
 
-	config2 := &gosnowflake.Config{
+	config2 := &gosnowflake.Config{ //nolint:gosec // test credentials
 		Account:                   "account2",
 		User:                      "user2",
 		Password:                  "password2",

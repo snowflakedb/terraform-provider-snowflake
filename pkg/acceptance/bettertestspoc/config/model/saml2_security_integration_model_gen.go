@@ -80,10 +80,12 @@ func (s *Saml2SecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias Saml2SecurityIntegrationModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -94,6 +96,11 @@ func (s *Saml2SecurityIntegrationModel) WithDependsOn(values ...string) *Saml2Se
 
 func (s *Saml2SecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *Saml2SecurityIntegrationModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *Saml2SecurityIntegrationModel) WithTimeout(timeout config.Timeouts) *Saml2SecurityIntegrationModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

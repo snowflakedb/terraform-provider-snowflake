@@ -69,10 +69,12 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) MarshalJSON() (
 	type Alias ApiAuthenticationIntegrationWithClientCredentialsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(a),
 		DependsOn: a.DependsOn(),
+		Timeouts:  a.Timeouts(),
 	})
 }
 
@@ -83,6 +85,11 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithDependsOn(v
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ApiAuthenticationIntegrationWithClientCredentialsModel {
 	a.DynamicBlock = dynamicBlock
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsModel) WithTimeout(timeout config.Timeouts) *ApiAuthenticationIntegrationWithClientCredentialsModel {
+	a.SetTimeout(timeout)
 	return a
 }
 

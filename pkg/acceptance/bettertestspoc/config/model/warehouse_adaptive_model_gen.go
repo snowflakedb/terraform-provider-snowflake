@@ -54,10 +54,12 @@ func (w *WarehouseAdaptiveModel) MarshalJSON() ([]byte, error) {
 	type Alias WarehouseAdaptiveModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(w),
 		DependsOn: w.DependsOn(),
+		Timeouts:  w.Timeouts(),
 	})
 }
 
@@ -68,6 +70,11 @@ func (w *WarehouseAdaptiveModel) WithDependsOn(values ...string) *WarehouseAdapt
 
 func (w *WarehouseAdaptiveModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *WarehouseAdaptiveModel {
 	w.DynamicBlock = dynamicBlock
+	return w
+}
+
+func (w *WarehouseAdaptiveModel) WithTimeout(timeout config.Timeouts) *WarehouseAdaptiveModel {
+	w.SetTimeout(timeout)
 	return w
 }
 

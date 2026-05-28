@@ -16,29 +16,44 @@ type RawPrivateLinkConfig struct {
 
 type privateLinkConfigInternal struct {
 	AccountName               string `json:"privatelink-account-name"`
+	AccountPrincipal          string `json:"privatelink-account-principal,omitempty"`
+	AccountURL                string `json:"privatelink-account-url"`
+	AppServiceURL             string `json:"app-service-privatelink-url,omitempty"`
 	AwsVpceID                 string `json:"privatelink-vpce-id,omitempty"`
 	AzurePrivateLinkServiceID string `json:"privatelink-pls-id,omitempty"`
-	AccountURL                string `json:"privatelink-account-url"`
-	OCSPURL                   string `json:"privatelink-ocsp-url,omitempty"`
-	TypodOCSPURL              string `json:"privatelink_ocsp-url,omitempty"` // because snowflake returns this for AWS, but don't have an Azure account to verify against
-	InternalStage             string `json:"privatelink-internal-stage,omitempty"`
-	SnowsightURL              string `json:"snowsight-privatelink-url,omitempty"`
-	RegionlessSnowsightURL    string `json:"regionless-snowsight-privatelink-url,omitempty"`
-	RegionlessAccountURL      string `json:"regionless-privatelink-account-url,omitempty"`
+	AzureStorageVolumeFS      string `json:"privatelink-snowflake-managed-storage-volume-fs,omitempty"`
+	AzureStorageVolumeNFS     string `json:"privatelink-snowflake-managed-storage-volume-nfs,omitempty"`
+	ConnectionOCSPURLs        string `json:"privatelink-connection-ocsp-urls,omitempty"`
 	ConnectionURLs            string `json:"privatelink-connection-urls,omitempty"`
+	DashedDuoURLs             string `json:"privatelink-dashed-urls-for-duo"`
+	GCPServiceAttachment      string `json:"privatelink-gcp-service-attachment,omitempty"`
+	InternalStage             string `json:"privatelink-internal-stage,omitempty"`
+	OCSPURL                   string `json:"privatelink_ocsp-url,omitempty"`
+	RegionlessOCSPURL         string `json:"regionless-privatelink-ocsp-url"`
+	RegionlessAccountURL      string `json:"regionless-privatelink-account-url,omitempty"`
+	RegionlessSnowsightURL    string `json:"regionless-snowsight-privatelink-url,omitempty"`
+	SnowsightURL              string `json:"snowsight-privatelink-url,omitempty"`
 }
 
 type PrivateLinkConfig struct {
 	AccountName               string
+	AccountPrincipal          string
+	AccountURL                string
+	AppServiceURL             string
 	AwsVpceID                 string
 	AzurePrivateLinkServiceID string
-	AccountURL                string
-	OCSPURL                   string
-	InternalStage             string
-	SnowsightURL              string
-	RegionlessSnowsightURL    string
-	RegionlessAccountURL      string
+	AzureStorageVolumeFS      string
+	AzureStorageVolumeNFS     string
+	ConnectionOCSPURLs        string
 	ConnectionURLs            string
+	DashedDuoURLs             string
+	GCPServiceAttachment      string
+	InternalStage             string
+	OCSPURL                   string
+	RegionlessAccountURL      string
+	RegionlessOCSPURL         string
+	RegionlessSnowsightURL    string
+	SnowsightURL              string
 }
 
 func ScanPrivateLinkConfig(row *sqlx.Row) (*RawPrivateLinkConfig, error) {
@@ -60,19 +75,23 @@ func (r *RawPrivateLinkConfig) GetStructuredConfig() (*PrivateLinkConfig, error)
 func (i *privateLinkConfigInternal) getPrivateLinkConfig() (*PrivateLinkConfig, error) {
 	config := &PrivateLinkConfig{
 		i.AccountName,
+		i.AccountPrincipal,
+		i.AccountURL,
+		i.AppServiceURL,
 		i.AwsVpceID,
 		i.AzurePrivateLinkServiceID,
-		i.AccountURL,
-		i.OCSPURL,
-		i.InternalStage,
-		i.SnowsightURL,
-		i.RegionlessSnowsightURL,
-		i.RegionlessAccountURL,
+		i.AzureStorageVolumeFS,
+		i.AzureStorageVolumeNFS,
+		i.ConnectionOCSPURLs,
 		i.ConnectionURLs,
-	}
-
-	if i.TypodOCSPURL != "" {
-		config.OCSPURL = i.TypodOCSPURL
+		i.DashedDuoURLs,
+		i.GCPServiceAttachment,
+		i.InternalStage,
+		i.OCSPURL,
+		i.RegionlessAccountURL,
+		i.RegionlessOCSPURL,
+		i.RegionlessSnowsightURL,
+		i.SnowsightURL,
 	}
 
 	return config, nil

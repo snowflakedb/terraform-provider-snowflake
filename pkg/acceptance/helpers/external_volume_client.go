@@ -92,6 +92,23 @@ func (c *ExternalVolumeClient) Alter(t *testing.T, req *sdk.AlterExternalVolumeR
 	require.NoError(t, err)
 }
 
+// ReplaceLocation replaces a storage location with a new one.
+// It creates a temporary storage location, performs the update, and ensures
+// the temporary storage location is always cleaned up.
+// This is needed because Snowflake does not allow external volumes to have no storage locations.
+func (c *ExternalVolumeClient) ReplaceLocation(t *testing.T, id sdk.AccountObjectIdentifier, req sdk.ExternalVolumeStorageLocationRequest) {
+	t.Helper()
+	tempLocation := "temp_location"
+	c.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(
+		*sdk.NewExternalVolumeStorageLocationItemRequest(
+			*sdk.NewExternalVolumeStorageLocationRequest(tempLocation).WithS3StorageLocationParams(*sdk.NewS3StorageLocationParamsRequest(sdk.S3StorageProviderS3, "arn:aws:iam::123456789012:role/myrole", "s3://my-example-bucket/")),
+		),
+	))
+	c.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(req.Name))
+	c.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(*sdk.NewExternalVolumeStorageLocationItemRequest(req)))
+	c.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(tempLocation))
+}
+
 func (c *ExternalVolumeClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

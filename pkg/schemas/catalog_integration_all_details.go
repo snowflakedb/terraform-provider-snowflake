@@ -46,6 +46,14 @@ var DescribeCatalogIntegrationAllDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"glue_aws_iam_user_arn": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"glue_aws_external_id": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"rest_config": {
 		Type:     schema.TypeList,
 		Computed: true,
@@ -135,6 +143,8 @@ func CatalogIntegrationAllDetailsToSchema(details *sdk.CatalogIntegrationAllDeta
 		"glue_catalog_id":          details.GlueCatalogId,
 		"glue_region":              details.GlueRegion,
 		"catalog_namespace":        details.CatalogNamespace,
+		"glue_aws_iam_user_arn":    details.GlueAwsIamUserArn,
+		"glue_aws_external_id":     details.GlueAwsExternalId,
 	}
 	if details.RestConfig != nil {
 		out["rest_config"] = []map[string]any{{

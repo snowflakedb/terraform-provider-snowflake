@@ -68,10 +68,12 @@ func (a *AuthenticationPolicyModel) MarshalJSON() ([]byte, error) {
 	type Alias AuthenticationPolicyModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(a),
 		DependsOn: a.DependsOn(),
+		Timeouts:  a.Timeouts(),
 	})
 }
 
@@ -82,6 +84,11 @@ func (a *AuthenticationPolicyModel) WithDependsOn(values ...string) *Authenticat
 
 func (a *AuthenticationPolicyModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *AuthenticationPolicyModel {
 	a.DynamicBlock = dynamicBlock
+	return a
+}
+
+func (a *AuthenticationPolicyModel) WithTimeout(timeout config.Timeouts) *AuthenticationPolicyModel {
+	a.SetTimeout(timeout)
 	return a
 }
 

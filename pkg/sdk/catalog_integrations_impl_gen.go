@@ -143,12 +143,6 @@ func (r *CreateCatalogIntegrationRequest) toOpts() *CreateCatalogIntegrationOpti
 			}
 		}
 	}
-	if r.SapBdcCatalogSourceParams != nil {
-		opts.SapBdcCatalogSourceParams = &SapBdcParams{}
-		opts.SapBdcCatalogSourceParams.RestConfig = SapBdcRestConfig{
-			SapBdcInvitationLink: r.SapBdcCatalogSourceParams.RestConfig.SapBdcInvitationLink,
-		}
-	}
 	return opts
 }
 
@@ -195,18 +189,15 @@ func (r *ShowCatalogIntegrationRequest) toOpts() *ShowCatalogIntegrationOptions 
 }
 
 func (r showCatalogIntegrationsDbRow) convert() (*CatalogIntegration, error) {
-	// Added manually
-	s := &CatalogIntegration{
+	result := &CatalogIntegration{
 		Name:      r.Name,
 		Enabled:   r.Enabled,
 		Type:      r.Type,
 		Category:  r.Category,
 		CreatedOn: r.CreatedOn,
 	}
-	if r.Comment.Valid {
-		s.Comment = r.Comment.String
-	}
-	return s, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeCatalogIntegrationRequest) toOpts() *DescribeCatalogIntegrationOptions {
@@ -217,11 +208,11 @@ func (r *DescribeCatalogIntegrationRequest) toOpts() *DescribeCatalogIntegration
 }
 
 func (r descCatalogIntegrationsDbRow) convert() (*CatalogIntegrationProperty, error) {
-	// Added manually
-	return &CatalogIntegrationProperty{
+	result := &CatalogIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}, nil
+	}
+	return result, nil
 }

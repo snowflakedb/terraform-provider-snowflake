@@ -33,7 +33,7 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 	Text("created_on").
 	Text("updated_on").
 	OptionalText("published_on").
-	PlainField("state", ListingStateEnumDef.Kind()).
+	Enum("state", ListingStateEnumDef).
 	OptionalText("review_state").
 	OptionalText("comment").
 	Text("owner").
@@ -50,7 +50,8 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 	OptionalText("rejected_on").
 	OptionalText("organization_profile_name").
 	OptionalText("uniform_listing_locator").
-	OptionalText("detailed_target_accounts")
+	OptionalText("detailed_target_accounts").
+	WithConvertGeneration()
 
 // There are more fields listed than in https://docs.snowflake.com/en/sql-reference/sql/desc-listing
 // They are mapped straight from the DESC LISTING output.
@@ -66,7 +67,7 @@ var listingDetailsPairs = g.StructPair("listingDetailsDBRow", "ListingDetails").
 	OptionalText("subtitle").
 	OptionalText("description").
 	OptionalText("listing_terms").
-	PlainField("state", "ListingState").
+	Enum("state", ListingStateEnumDef).
 	OptionalAccountObjectIdentifier("share", g.WithPlainFieldName("Share")).
 	OptionalAccountObjectIdentifier("application_package", g.WithPlainFieldName("ApplicationPackage")).
 	OptionalText("business_needs").
@@ -113,7 +114,8 @@ var listingDetailsPairs = g.StructPair("listingDetailsDBRow", "ListingDetails").
 	OptionalBool("is_share").
 	OptionalText("request_approval_type").
 	OptionalText("monetization_display_order").
-	OptionalText("legacy_uniform_listing_locators")
+	OptionalText("legacy_uniform_listing_locators").
+	WithConvertGeneration()
 
 var listingVersionPairs = g.StructPair("listingVersionDBRow", "ListingVersion").
 	Text("created_on").
@@ -126,7 +128,8 @@ var listingVersionPairs = g.StructPair("listingVersionDBRow", "ListingVersion").
 	Bool("is_last").
 	OptionalText("comment").
 	Text("source_location_url").
-	OptionalText("git_commit_hash")
+	OptionalText("git_commit_hash").
+	WithConvertGeneration()
 
 var listingsDef = g.NewInterface(
 	"Listings",
@@ -222,7 +225,7 @@ var listingsDef = g.NewInterface(
 			Describe().
 			SQL("LISTING").
 			Name().
-			OptionalAssignment("REVISION", ListingRevisionEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
+			OptionalEnumAssignment("REVISION", ListingRevisionEnumDef, g.ParameterOptions().NoQuotes()).
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	CustomShowOperationWithPairedStructs(

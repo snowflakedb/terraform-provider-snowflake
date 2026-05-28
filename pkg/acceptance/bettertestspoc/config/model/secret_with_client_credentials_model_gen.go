@@ -35,14 +35,12 @@ func SecretWithClientCredentials(
 	schema string,
 	name string,
 	apiAuthentication string,
-	oauthScopes []string,
 ) *SecretWithClientCredentialsModel {
 	s := &SecretWithClientCredentialsModel{ResourceModelMeta: config.Meta(resourceName, resources.SecretWithClientCredentials)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
 	s.WithApiAuthentication(apiAuthentication)
-	s.WithOauthScopes(oauthScopes)
 	return s
 }
 
@@ -51,14 +49,12 @@ func SecretWithClientCredentialsWithDefaultMeta(
 	schema string,
 	name string,
 	apiAuthentication string,
-	oauthScopes []string,
 ) *SecretWithClientCredentialsModel {
 	s := &SecretWithClientCredentialsModel{ResourceModelMeta: config.DefaultMeta(resources.SecretWithClientCredentials)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
 	s.WithApiAuthentication(apiAuthentication)
-	s.WithOauthScopes(oauthScopes)
 	return s
 }
 
@@ -70,10 +66,12 @@ func (s *SecretWithClientCredentialsModel) MarshalJSON() ([]byte, error) {
 	type Alias SecretWithClientCredentialsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -84,6 +82,11 @@ func (s *SecretWithClientCredentialsModel) WithDependsOn(values ...string) *Secr
 
 func (s *SecretWithClientCredentialsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecretWithClientCredentialsModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *SecretWithClientCredentialsModel) WithTimeout(timeout config.Timeouts) *SecretWithClientCredentialsModel {
+	s.SetTimeout(timeout)
 	return s
 }
 

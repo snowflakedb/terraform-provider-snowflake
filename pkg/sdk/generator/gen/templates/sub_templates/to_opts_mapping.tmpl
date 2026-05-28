@@ -9,7 +9,7 @@
 }
 {{- range .Fields }}
     {{- if .ShouldBeInDto }}
-        {{- if .IsStruct }}
+        {{- if .HasAnyFields }}
             {{- if or .IsPointer .IsSlice }}
                 if r{{ .Path }} != nil {
             {{- end }}

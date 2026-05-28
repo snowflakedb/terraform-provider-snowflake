@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -123,21 +124,23 @@ func (r *ShowCortexAgentRequest) toOpts() *ShowCortexAgentOptions {
 }
 
 func (r showCortexAgentDBRow) convert() (*CortexAgent, error) {
-	// adjusted manually
-	cortexAgent := &CortexAgent{
+	result := &CortexAgent{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
 	}
-	if r.Comment.Valid {
-		cortexAgent.Comment = &r.Comment.String
-	}
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	// Adjusted manually
 	if r.Profile.Valid {
-		cortexAgent.Profile = &r.Profile.String
+		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err == nil {
+			result.Profile = *v
+		} else {
+			return nil, err
+		}
 	}
-	return cortexAgent, nil
+	return result, nil
 }
 
 func (r *DescribeCortexAgentRequest) toOpts() *DescribeCortexAgentOptions {
@@ -148,29 +151,29 @@ func (r *DescribeCortexAgentRequest) toOpts() *DescribeCortexAgentOptions {
 }
 
 func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
-	// adjusted manually
-	details := &CortexAgentDetails{
+	result := &CortexAgentDetails{
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		AgentSpec:    r.AgentSpec,
 		CreatedOn:    r.CreatedOn,
 	}
-	if r.Comment.Valid {
-		details.Comment = &r.Comment.String
-	}
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	// Adjusted manually
 	if r.Profile.Valid {
-		details.Profile = &r.Profile.String
+		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err == nil {
+			result.Profile = *v
+		} else {
+			return nil, err
+		}
 	}
-	if r.DefaultVersionName.Valid {
-		details.DefaultVersionName = &r.DefaultVersionName.String
+	if v, err := NormalizeCortexAgentSpecification(r.AgentSpec); err == nil {
+		result.AgentSpec = v
+	} else {
+		return nil, fmt.Errorf("parsing string: %w", err)
 	}
-	if r.Versions.Valid {
-		details.Versions = &r.Versions.String
-	}
-	if r.Aliases.Valid {
-		details.Aliases = &r.Aliases.String
-	}
-	return details, nil
+	mapNullString(&result.DefaultVersionName, r.DefaultVersionName)
+	mapNullString(&result.Versions, r.Versions)
+	mapNullString(&result.Aliases, r.Aliases)
+	return result, nil
 }

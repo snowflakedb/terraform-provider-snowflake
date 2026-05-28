@@ -69,10 +69,12 @@ func (j *JobServiceModel) MarshalJSON() ([]byte, error) {
 	type Alias JobServiceModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(j),
 		DependsOn: j.DependsOn(),
+		Timeouts:  j.Timeouts(),
 	})
 }
 
@@ -83,6 +85,11 @@ func (j *JobServiceModel) WithDependsOn(values ...string) *JobServiceModel {
 
 func (j *JobServiceModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *JobServiceModel {
 	j.DynamicBlock = dynamicBlock
+	return j
+}
+
+func (j *JobServiceModel) WithTimeout(timeout config.Timeouts) *JobServiceModel {
+	j.SetTimeout(timeout)
 	return j
 }
 

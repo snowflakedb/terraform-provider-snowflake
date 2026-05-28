@@ -2,9 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
-import "fmt"
-
 var (
 	_ validatable = new(CreateViewOptions)
 	_ validatable = new(AlterViewOptions)
@@ -24,33 +21,16 @@ func (opts *CreateViewOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateViewOptions", "OrReplace", "IfNotExists"))
 	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.RowAccessPolicy) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
-		// added manually
-		if !valueSet(opts.RowAccessPolicy.On) {
-			errs = append(errs, errNotSet("CreateViewOptions.RowAccessPolicy", "On"))
-		}
+		errs = append(errs, opts.RowAccessPolicy.additionalValidations())
 	}
 	if valueSet(opts.AggregationPolicy) {
 		if !ValidObjectIdentifier(opts.AggregationPolicy.AggregationPolicy) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
-		}
-	}
-	// added manually
-	if valueSet(opts.Columns) {
-		for i, columnOption := range opts.Columns {
-			if valueSet(columnOption.MaskingPolicy) {
-				if !ValidObjectIdentifier(columnOption.MaskingPolicy.MaskingPolicy) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateViewOptions.Columns[%d]", i), "MaskingPolicy"))
-				}
-			}
-			if valueSet(columnOption.ProjectionPolicy) {
-				if !ValidObjectIdentifier(columnOption.ProjectionPolicy.ProjectionPolicy) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateViewOptions.Columns[%d]", i), "ProjectionPolicy"))
-				}
-			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -77,10 +57,7 @@ func (opts *AlterViewOptions) validate() error {
 		if !ValidObjectIdentifier(opts.AddRowAccessPolicy.RowAccessPolicy) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
-		// added manually
-		if !valueSet(opts.AddRowAccessPolicy.On) {
-			errs = append(errs, errNotSet("AlterViewOptions.AddRowAccessPolicy", "On"))
-		}
+		errs = append(errs, opts.AddRowAccessPolicy.additionalValidations())
 	}
 	if valueSet(opts.DropRowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.DropRowAccessPolicy.RowAccessPolicy) {
@@ -97,10 +74,7 @@ func (opts *AlterViewOptions) validate() error {
 			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy) {
 				errs = append(errs, ErrInvalidObjectIdentifier)
 			}
-			// added manually
-			if !valueSet(opts.DropAndAddRowAccessPolicy.Add.On) {
-				errs = append(errs, errNotSet("AlterViewOptions.DropAndAddRowAccessPolicy.Add", "On"))
-			}
+			errs = append(errs, opts.DropAndAddRowAccessPolicy.Add.additionalValidations())
 		}
 	}
 	if valueSet(opts.SetAggregationPolicy) {

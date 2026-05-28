@@ -40,15 +40,16 @@ var (
 			Text("schema_name").
 			OptionalText("owner").
 			OptionalText("comment").
-			OptionalText("table_name").
-			Field("source_type", "sql.NullString", StreamSourceTypeEnumDef.KindPtr()).
-			Field("base_tables", "sql.NullString", "[]string").
+			OptionalSchemaObjectIdentifier("table_name", g.WithPlainFieldName("TableName")).
+			OptionalEnum("source_type", StreamSourceTypeEnumDef).
+			NullableSchemaObjectIdentifierArray("base_tables").
 			OptionalText("type").
-			Field("stale", "string", "bool").
-			Field("mode", "sql.NullString", StreamModeEnumDef.KindPtr()).
+			Field("stale", "string", "bool", g.WithBoolTrueValue("true")).
+			OptionalEnum("mode", StreamModeEnumDef).
 			OptionalTime("stale_after").
 			OptionalText("invalid_reason").
-			OptionalText("owner_role_type")
+			OptionalText("owner_role_type").
+			WithConvertGeneration()
 
 	streamsDef = g.NewInterface(
 		"Streams",

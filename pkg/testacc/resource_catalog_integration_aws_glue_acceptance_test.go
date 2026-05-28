@@ -96,7 +96,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			// Don't check glue_region, as its default value depends on the current region name
-			HasCatalogNamespace(""),
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	basicAssertionsWithRefreshIntervalZero := append(
@@ -142,7 +144,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			// Don't check glue_region, as its default value depends on the current region name
-			HasCatalogNamespace(""),
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{
@@ -172,7 +176,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(catalogNamespace),
+			HasCatalogNamespace(catalogNamespace).
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	forceNewAssertions := []assert.TestCheckFuncProvider{
@@ -202,7 +208,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(newGlueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			// Don't check glue_region, as its default value depends on the current region name
-			HasCatalogNamespace(""),
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	moreForceNewAssertions := []assert.TestCheckFuncProvider{
@@ -232,7 +240,9 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueAwsRoleArn(newGlueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(newGlueRegion).
-			HasCatalogNamespace(""),
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -484,6 +494,60 @@ func TestAcc_CatalogIntegrationAwsGlue_ImportValidation(t *testing.T) {
 				ImportState:   true,
 				ImportStateId: catalogIntegrationObjectStorage.Name(),
 				ExpectError:   regexp.MustCompile(fmt.Sprintf(`invalid catalog source type, expected %s, got %s`, sdk.CatalogIntegrationCatalogSourceTypeGlue, sdk.CatalogIntegrationCatalogSourceTypeObjectStore)),
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationAwsGlue_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	glueAwsRoleArn := "arn:aws:iam::123456789012:role/sqsAccess"
+	glueCatalogId := random.NumericN(15)
+	glueRegion := "us-east-1"
+	catalogNamespace := random.AlphanumericN(15)
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	allAttributes := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId).
+		WithGlueRegion(glueRegion).
+		WithCatalogNamespace(catalogNamespace).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationAwsGlue),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithRefreshIntervalSeconds(refreshIntervalSeconds).
+						WithComment(comment).
+						WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId).
+							WithGlueRegion(glueRegion).
+							WithCatalogNamespace(catalogNamespace))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				Config:             config.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
 			},
 		},
 	})

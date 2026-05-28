@@ -164,6 +164,11 @@ func (s *SecretWithClientCredentialsResourceAssert) HasFullyQualifiedNameEmpty()
 	return s
 }
 
+func (s *SecretWithClientCredentialsResourceAssert) HasOauthScopesEmpty() *SecretWithClientCredentialsResourceAssert {
+	s.AddAssertion(assert.ValueSet("oauth_scopes.#", "0"))
+	return s
+}
+
 func (s *SecretWithClientCredentialsResourceAssert) HasSecretTypeEmpty() *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueSet("secret_type", ""))
 	return s

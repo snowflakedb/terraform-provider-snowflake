@@ -170,18 +170,15 @@ func (r *ShowStorageIntegrationRequest) toOpts() *ShowStorageIntegrationOptions 
 }
 
 func (r showStorageIntegrationsDbRow) convert() (*StorageIntegration, error) {
-	// adjusted manually
-	s := &StorageIntegration{
+	result := &StorageIntegration{
 		Name:        r.Name,
 		StorageType: r.Type,
 		Category:    r.Category,
 		Enabled:     r.Enabled,
 		CreatedOn:   r.CreatedOn,
 	}
-	if r.Comment.Valid {
-		s.Comment = r.Comment.String
-	}
-	return s, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
 }
 
 func (r *DescribeStorageIntegrationRequest) toOpts() *DescribeStorageIntegrationOptions {
@@ -192,11 +189,11 @@ func (r *DescribeStorageIntegrationRequest) toOpts() *DescribeStorageIntegration
 }
 
 func (r descStorageIntegrationsDbRow) convert() (*StorageIntegrationProperty, error) {
-	// adjusted manually
-	return &StorageIntegrationProperty{
+	result := &StorageIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}, nil
+	}
+	return result, nil
 }

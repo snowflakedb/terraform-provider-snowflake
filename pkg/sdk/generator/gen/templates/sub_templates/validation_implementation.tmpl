@@ -2,9 +2,13 @@
 
 {{- $field := . -}}
 {{- range .Validations }}
-    if {{ .Condition $field }} {
-        errs = append(errs, {{ .ReturnedError $field }})
-    }
+    {{- if .IsAdditionalValidations }}
+        errs = append(errs, opts{{ $field.Path }}.additionalValidations())
+    {{- else }}
+        if {{ .Condition $field }} {
+            errs = append(errs, {{ .ReturnedError $field }})
+        }
+    {{- end }}
 {{- end -}}
 {{- range .Fields }}
     {{- if .HasAnyValidationInSubtree }}

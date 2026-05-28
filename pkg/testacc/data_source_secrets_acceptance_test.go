@@ -135,7 +135,7 @@ func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
 
 	genericModel := model.SecretWithGenericString("gen", genericId.DatabaseName(), genericId.SchemaName(), genericId.Name(), "generic_value").WithComment(comment)
 	basicModel := model.SecretWithBasicAuthentication("bas", basicId.DatabaseName(), basicId.SchemaName(), basicId.Name(), "pwd", "user1")
-	clientCredsModel := model.SecretWithClientCredentials("cli", clientCredsId.DatabaseName(), clientCredsId.SchemaName(), clientCredsId.Name(), apiIntegrationId.Name(), []string{"scope1", "scope2"})
+	clientCredsModel := model.SecretWithClientCredentials("cli", clientCredsId.DatabaseName(), clientCredsId.SchemaName(), clientCredsId.Name(), apiIntegrationId.Name()).WithOauthScopes([]string{"scope1", "scope2"})
 	authCodeModel := model.SecretWithAuthorizationCodeGrant("aut", authCodeId.DatabaseName(), authCodeId.SchemaName(), authCodeId.Name(), apiIntegrationId.Name(), "refresh_token_value", time.Now().Add(24*time.Hour).Format(time.DateTime)).WithComment(comment)
 
 	genericSecretNoDescribe := datasourcemodel.Secrets("test").

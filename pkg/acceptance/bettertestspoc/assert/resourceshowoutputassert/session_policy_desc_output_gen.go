@@ -9,7 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all DescribeOutput changed to DescribeOutput
+// file edited manually; all ShowOutput changed to DescribeOutput
 
 type SessionPolicyDescribeOutputAssert struct {
 	*assert.ResourceAssert

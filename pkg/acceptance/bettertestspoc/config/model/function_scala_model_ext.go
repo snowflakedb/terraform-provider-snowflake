@@ -75,7 +75,7 @@ func (f *FunctionScalaModel) WithExternalAccessIntegrations(ids ...sdk.AccountOb
 }
 
 func (f *FunctionScalaModel) WithSecrets(secrets map[string]sdk.SchemaObjectIdentifier) *FunctionScalaModel {
-	objects := make([]tfconfig.Variable, 0)
+	objects := make([]tfconfig.Variable, 0, len(secrets))
 	for k, v := range secrets {
 		objects = append(objects, tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
