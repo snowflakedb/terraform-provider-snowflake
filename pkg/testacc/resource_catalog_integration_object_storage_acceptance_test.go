@@ -371,3 +371,53 @@ func TestAcc_CatalogIntegrationObjectStorage_ImportValidation(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_CatalogIntegrationObjectStorage_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	tableFormat := string(sdk.CatalogIntegrationTableFormatDelta)
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	allAttributes := model.CatalogIntegrationObjectStorage("t", id.Name(), false, tableFormat).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationObjectStorage),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					tableFormatEnum, _ := sdk.ToCatalogIntegrationTableFormat(tableFormat)
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithRefreshIntervalSeconds(refreshIntervalSeconds).
+						WithComment(comment).
+						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(tableFormatEnum))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				Config:             config.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
