@@ -245,3 +245,14 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasApiProviderNotEmpty() *ApiIn
 	})
 	return a
 }
+
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if len(o.BlockedPrefixes) != 0 {
+			return fmt.Errorf("expected no blocked prefixes; got: %v", o.BlockedPrefixes)
+		}
+		return nil
+	})
+	return a
+}

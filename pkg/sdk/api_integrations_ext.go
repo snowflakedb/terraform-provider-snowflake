@@ -251,7 +251,7 @@ func parseApiIntegrationGoogleDetails(properties []ApiIntegrationProperty, id Ac
 			details.ApiProvider = prop.Value
 		case "GOOGLE_AUDIENCE":
 			details.GoogleAudience = prop.Value
-		case "GOOGLE_API_SERVICE_ACCOUNT":
+		case "API_GCP_SERVICE_ACCOUNT":
 			details.GoogleApiServiceAccount = prop.Value
 		case "API_ALLOWED_PREFIXES":
 			details.AllowedPrefixes = ParseCommaSeparatedStringArray(prop.Value, false)

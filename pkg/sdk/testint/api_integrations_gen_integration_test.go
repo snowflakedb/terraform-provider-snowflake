@@ -207,6 +207,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider("GOOGLE_API_GATEWAY").
 			HasGoogleAudience(googleAudience).
+			HasGoogleApiServiceAccountNotEmpty().
 			HasAllowedPrefixes(googlePrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -234,6 +235,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider("GOOGLE_API_GATEWAY").
 			HasGoogleAudience(googleAudience).
+			HasGoogleApiServiceAccountNotEmpty().
 			HasAllowedPrefixes(googlePrefix).
 			HasBlockedPrefixes(googleOtherPrefix).
 			HasComment("comment"),
@@ -264,7 +266,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
-			HasAllowedPrefixes(gitPrefix),
+			HasAllowedPrefixes(gitPrefix).
+			HasNoBlockedPrefixes().
+			HasComment(""),
 		)
 	})
 
@@ -286,7 +290,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
-			HasAllowedPrefixes(gitPrefix),
+			HasAllowedPrefixes(gitPrefix).
+			HasNoBlockedPrefixes().
+			HasComment(""),
 		)
 	})
 
@@ -318,7 +324,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
-			HasAllowedPrefixes(gitPrefix),
+			HasAllowedPrefixes(gitPrefix).
+			HasNoBlockedPrefixes().
+			HasComment(""),
 		)
 	})
 
@@ -340,7 +348,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
-			HasAllowedPrefixes(gitPrefix),
+			HasAllowedPrefixes(gitPrefix).
+			HasNoBlockedPrefixes().
+			HasComment(""),
 		)
 	})
 
@@ -367,6 +377,8 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(gitPrefix).
+			HasNoBlockedPrefixes().
+			HasComment("").
 			HasUserAuthType("OAUTH2").
 			HasOauthGrant("AUTHORIZATION_CODE").
 			HasOauthClientId(oauthClientId).
@@ -398,6 +410,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(gitPrefix).
+			HasBlockedPrefixes(gitOtherPrefix).
 			HasComment("git oauth2 comment").
 			HasUserAuthType("OAUTH2").
 			HasOauthGrant("AUTHORIZATION_CODE").
@@ -436,7 +449,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasUsePrivatelinkEndpoint(true).
-			HasAllowedPrefixes(gitPrefix),
+			HasAllowedPrefixes(gitPrefix).
+			HasNoBlockedPrefixes().
+			HasComment(""),
 		)
 	})
 
@@ -506,6 +521,8 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(mcpPrefix).
+			HasNoBlockedPrefixes().
+			HasComment("").
 			HasUserAuthType("OAUTH2").
 			HasOauthGrant("AUTHORIZATION_CODE").
 			HasOauthClientId(oauthClientId).
@@ -664,6 +681,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider("GOOGLE_API_GATEWAY").
 			HasGoogleAudience(googleOtherAudience).
+			HasGoogleApiServiceAccountNotEmpty().
 			HasAllowedPrefixes(googleOtherPrefix).
 			HasBlockedPrefixes(googlePrefix).
 			HasComment("changed comment"),
@@ -739,6 +757,32 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasAllowedPrefixes(gitOtherPrefix).
 			HasBlockedPrefixes(gitPrefix).
 			HasComment("changed comment"),
+		)
+	})
+
+	t.Run("alter set: git oauth2", func(t *testing.T) {
+		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGitOAuth2(t)
+		t.Cleanup(integrationCleanup)
+
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
+			WithSet(*sdk.NewApiIntegrationSetRequest().
+				WithEnabled(true).
+				WithApiAllowedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitOtherPrefix}}).
+				WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}).
+				WithComment("changed comment")),
+		)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, integration.ID()).
+			HasEnabled(true).
+			HasAllowedPrefixes(gitOtherPrefix).
+			HasBlockedPrefixes(gitPrefix).
+			HasComment("changed comment").
+			HasUserAuthType("OAUTH2").
+			HasOauthGrant("AUTHORIZATION_CODE").
+			HasOauthClientId(oauthClientId).
+			HasOauthTokenEndpoint(oauthTokenEndpoint).
+			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint),
 		)
 	})
 
@@ -896,6 +940,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, integration.ID()).
 			HasEnabled(true).
+			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(gitPrefix),
 		)
 	})
@@ -1092,6 +1137,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider("GOOGLE_API_GATEWAY").
 			HasGoogleAudience(googleAudience).
+			HasGoogleApiServiceAccountNotEmpty().
 			HasAllowedPrefixes(googlePrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -1105,7 +1151,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
+			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(gitPrefix).
+			HasNoBlockedPrefixes().
 			HasComment(""),
 		)
 	})
