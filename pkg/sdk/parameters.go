@@ -733,6 +733,7 @@ const (
 	SessionParameterJsonIndent                               SessionParameter = "JSON_INDENT"
 	SessionParameterJsTreatIntegerAsBigInt                   SessionParameter = "JS_TREAT_INTEGER_AS_BIGINT"
 	SessionParameterLockTimeout                              SessionParameter = "LOCK_TIMEOUT"
+	SessionParameterLogEventLevel                            SessionParameter = "LOG_EVENT_LEVEL"
 	SessionParameterLogLevel                                 SessionParameter = "LOG_LEVEL"
 	SessionParameterMultiStatementCount                      SessionParameter = "MULTI_STATEMENT_COUNT"
 	SessionParameterNoorderSequenceAsDefault                 SessionParameter = "NOORDER_SEQUENCE_AS_DEFAULT"
@@ -970,6 +971,7 @@ const (
 	TaskParameterJdbcUseSessionTimezone                   TaskParameter = "JDBC_USE_SESSION_TIMEZONE"
 	TaskParameterJsonIndent                               TaskParameter = "JSON_INDENT"
 	TaskParameterLockTimeout                              TaskParameter = "LOCK_TIMEOUT"
+	TaskParameterLogEventLevel                            TaskParameter = "LOG_EVENT_LEVEL"
 	TaskParameterLogLevel                                 TaskParameter = "LOG_LEVEL"
 	TaskParameterMultiStatementCount                      TaskParameter = "MULTI_STATEMENT_COUNT"
 	TaskParameterNoorderSequenceAsDefault                 TaskParameter = "NOORDER_SEQUENCE_AS_DEFAULT"
@@ -1036,6 +1038,7 @@ var AllTaskParameters = []TaskParameter{
 	TaskParameterJdbcUseSessionTimezone,
 	TaskParameterJsonIndent,
 	TaskParameterLockTimeout,
+	TaskParameterLogEventLevel,
 	TaskParameterLogLevel,
 	TaskParameterMultiStatementCount,
 	TaskParameterNoorderSequenceAsDefault,
@@ -1822,6 +1825,7 @@ type SessionParameters struct {
 	JsonIndent                               *int                              `ddl:"parameter" sql:"JSON_INDENT"`
 	JsTreatIntegerAsBigInt                   *bool                             `ddl:"parameter" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
 	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *LogLevel                         `ddl:"parameter" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                                 *LogLevel                         `ddl:"parameter" sql:"LOG_LEVEL"`
 	MultiStatementCount                      *int                              `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
 	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
@@ -1962,6 +1966,7 @@ type SessionParametersUnset struct {
 	JsonIndent                               *bool `ddl:"keyword" sql:"JSON_INDENT"`
 	JsTreatIntegerAsBigInt                   *bool `ddl:"keyword" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
 	LockTimeout                              *bool `ddl:"keyword" sql:"LOCK_TIMEOUT"`
+	LogEventLevel                            *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                                 *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	MultiStatementCount                      *bool `ddl:"keyword" sql:"MULTI_STATEMENT_COUNT"`
 	NoorderSequenceAsDefault                 *bool `ddl:"keyword" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
@@ -1998,8 +2003,8 @@ type SessionParametersUnset struct {
 }
 
 func (v *SessionParametersUnset) validate() error {
-	if !anyValueSet(v.AbortDetachedQuery, v.ActivePythonProfiler, v.Autocommit, v.BinaryInputFormat, v.BinaryOutputFormat, v.ClientEnableLogInfoStatementParameters, v.ClientMemoryLimit, v.ClientMetadataRequestUseConnectionCtx, v.ClientPrefetchThreads, v.ClientResultChunkSize, v.ClientResultColumnCaseInsensitive, v.ClientMetadataUseSessionDatabase, v.ClientSessionKeepAlive, v.ClientSessionKeepAliveHeartbeatFrequency, v.ClientTimestampTypeMapping, v.CsvTimestampFormat, v.DateInputFormat, v.DateOutputFormat, v.EnableCortexAnalyst, v.EnableGetDdlUseDataTypeAlias, v.EnableUnloadPhysicalTypeOptimization, v.ErrorOnNondeterministicMerge, v.ErrorOnNondeterministicUpdate, v.GeographyOutputFormat, v.GeometryOutputFormat, v.HybridTableLockTimeout, v.JdbcTreatDecimalAsInt, v.JdbcTreatTimestampNtzAsUtc, v.JdbcUseSessionTimezone, v.JsonIndent, v.JsTreatIntegerAsBigInt, v.LockTimeout, v.LogLevel, v.MultiStatementCount, v.NoorderSequenceAsDefault, v.OdbcTreatDecimalAsInt, v.PythonProfilerModules, v.PythonProfilerTargetStage, v.QueryTag, v.QuotedIdentifiersIgnoreCase, v.RowsPerResultset, v.S3StageVpceDnsName, v.SearchPath, v.SimulatedDataSharingConsumer, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.StrictJsonOutput, v.TimestampDayIsAlways24h, v.TimestampInputFormat, v.TimestampLTZOutputFormat, v.TimestampNTZOutputFormat, v.TimestampOutputFormat, v.TimestampTypeMapping, v.TimestampTZOutputFormat, v.Timezone, v.TimeInputFormat, v.TimeOutputFormat, v.TraceLevel, v.TransactionAbortOnError, v.TransactionDefaultIsolationLevel, v.TwoDigitCenturyStart, v.UnsupportedDDLAction, v.UseCachedResult, v.WeekOfYearPolicy, v.WeekStart) {
-		return errors.Join(errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableCortexAnalyst", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
+	if !anyValueSet(v.AbortDetachedQuery, v.ActivePythonProfiler, v.Autocommit, v.BinaryInputFormat, v.BinaryOutputFormat, v.ClientEnableLogInfoStatementParameters, v.ClientMemoryLimit, v.ClientMetadataRequestUseConnectionCtx, v.ClientPrefetchThreads, v.ClientResultChunkSize, v.ClientResultColumnCaseInsensitive, v.ClientMetadataUseSessionDatabase, v.ClientSessionKeepAlive, v.ClientSessionKeepAliveHeartbeatFrequency, v.ClientTimestampTypeMapping, v.CsvTimestampFormat, v.DateInputFormat, v.DateOutputFormat, v.EnableCortexAnalyst, v.EnableGetDdlUseDataTypeAlias, v.EnableUnloadPhysicalTypeOptimization, v.ErrorOnNondeterministicMerge, v.ErrorOnNondeterministicUpdate, v.GeographyOutputFormat, v.GeometryOutputFormat, v.HybridTableLockTimeout, v.JdbcTreatDecimalAsInt, v.JdbcTreatTimestampNtzAsUtc, v.JdbcUseSessionTimezone, v.JsonIndent, v.JsTreatIntegerAsBigInt, v.LockTimeout, v.LogEventLevel, v.LogLevel, v.MultiStatementCount, v.NoorderSequenceAsDefault, v.OdbcTreatDecimalAsInt, v.PythonProfilerModules, v.PythonProfilerTargetStage, v.QueryTag, v.QuotedIdentifiersIgnoreCase, v.RowsPerResultset, v.S3StageVpceDnsName, v.SearchPath, v.SimulatedDataSharingConsumer, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.StrictJsonOutput, v.TimestampDayIsAlways24h, v.TimestampInputFormat, v.TimestampLTZOutputFormat, v.TimestampNTZOutputFormat, v.TimestampOutputFormat, v.TimestampTypeMapping, v.TimestampTZOutputFormat, v.Timezone, v.TimeInputFormat, v.TimeOutputFormat, v.TraceLevel, v.TransactionAbortOnError, v.TransactionDefaultIsolationLevel, v.TwoDigitCenturyStart, v.UnsupportedDDLAction, v.UseCachedResult, v.WeekOfYearPolicy, v.WeekStart) {
+		return errors.Join(errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableCortexAnalyst", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogEventLevel", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
 	}
 	return nil
 }
