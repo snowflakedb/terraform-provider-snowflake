@@ -26,6 +26,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(new feature)* `snowflake_task` — new `log_event_level` parameter
+
+The `snowflake_task` resource now supports the `LOG_EVENT_LEVEL` session parameter that Snowflake introduced in [BCR 2229](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02/bcr-2229).
+`LOG_EVENT_LEVEL` controls the severity level of telemetry events written to the active event table, independently from `LOG_LEVEL` (which now only controls logging API-generated logs).
+
+Configure it like any other task parameter:
+
+```terraform
+resource "snowflake_task" "example" {
+  # ...
+  log_event_level = "INFO"
+}
+```
+
+The accepted values are the same as for `log_level` (`TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`).
+
+References: [#4783](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4783)
+
 ### *(enhancement)* `snowflake_secret_with_client_credentials` — `oauth_scopes` is now optional
 
 `oauth_scopes` was previously marked as required in the `snowflake_secret_with_client_credentials` resource, but Snowflake treats it as optional.
