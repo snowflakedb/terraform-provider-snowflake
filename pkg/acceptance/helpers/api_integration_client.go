@@ -24,13 +24,6 @@ func (c *ApiIntegrationClient) client() sdk.ApiIntegrations {
 	return c.context.client.ApiIntegrations
 }
 
-type ApiIntegrationAllClient struct {
-	context *TestClientContext
-}
-
-func NewApiIntegrationAllClient(context *TestClientContext) *ApiIntegrationAllClient {
-	return &ApiIntegrationAllClient{context: context}
-}
 
 func (c *ApiIntegrationClient) Create(t *testing.T) (*sdk.ApiIntegration, func()) {
 	t.Helper()
@@ -186,10 +179,6 @@ func (c *ApiIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier
 	return c.client().ShowByIDSafely(ctx, id)
 }
 
-func (c *ApiIntegrationAllClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAllDetails, error) {
-	t.Helper()
-	return c.context.client.ApiIntegrations.DescribeDetails(context.Background(), id)
-}
 
 func (c *ApiIntegrationClient) DescribeAws(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAwsDetails, error) {
 	t.Helper()
