@@ -26,6 +26,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.16.0 ➞ v2.17.0
 
+### *(bug fix)* `snowflake_catalog_integration_open_catalog`: import fix for ForceNew fields
+
+Previously, importing [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog) with `terraform import` did not populate `ForceNew` fields in state — such as `rest_config` and `rest_authentication`. On the next `terraform plan`, Terraform detected a diff against the configuration and produced a destroy-before-create plan, even when the Snowflake object already matched the configuration.
+
+Import now reads the integration details from Snowflake and sets these fields in state during import. This prevents unwanted recreation plans for correctly configured integrations.
+
+**Expected plan after import:** Snowflake does not return write-only secret values in `DESCRIBE CATALOG INTEGRATION` output. After import, the first `terraform plan` may therefore show an in-place **update** (not recreation) for the sensitive field that must be supplied in your configuration:
+
+- `rest_authentication.0.oauth_client_secret`
+
+This is expected. Run `terraform apply` once to sync the secret value into state. Subsequent plans should be empty, assuming the configuration matches Snowflake.
+
 ### *(bug fix)* `snowflake_catalog_integration_iceberg_rest`: import fix for ForceNew fields
 
 Previously, importing [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest) with `terraform import` did not populate `ForceNew` fields in state — such as `rest_config`, `oauth_rest_authentication`, `bearer_rest_authentication`, and `sigv4_rest_authentication`. On the next `terraform plan`, Terraform detected a diff against the configuration and produced a destroy-before-create plan, even when the Snowflake object already matched the configuration.

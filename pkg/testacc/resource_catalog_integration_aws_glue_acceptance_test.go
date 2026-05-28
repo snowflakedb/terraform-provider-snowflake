@@ -499,6 +499,60 @@ func TestAcc_CatalogIntegrationAwsGlue_ImportValidation(t *testing.T) {
 	})
 }
 
+func TestAcc_CatalogIntegrationAwsGlue_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	glueAwsRoleArn := "arn:aws:iam::123456789012:role/sqsAccess"
+	glueCatalogId := random.NumericN(15)
+	glueRegion := "us-east-1"
+	catalogNamespace := random.AlphanumericN(15)
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	allAttributes := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId).
+		WithGlueRegion(glueRegion).
+		WithCatalogNamespace(catalogNamespace).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationAwsGlue),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithRefreshIntervalSeconds(refreshIntervalSeconds).
+						WithComment(comment).
+						WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId).
+							WithGlueRegion(glueRegion).
+							WithCatalogNamespace(catalogNamespace))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				Config:             config.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAcc_CatalogIntegrationAwsGlue_NewCatalogSourceComputedField(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
