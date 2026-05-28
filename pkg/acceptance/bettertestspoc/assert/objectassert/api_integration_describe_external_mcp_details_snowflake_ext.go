@@ -211,6 +211,19 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasAllowedPrefixes(expected ...
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasBlockedPrefixes(expected ...string) *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		mapped := collections.Map(o.BlockedPrefixes, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
+			return fmt.Errorf("expected blocked prefixes: %v; got: %v", expected, o.BlockedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasComment(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()

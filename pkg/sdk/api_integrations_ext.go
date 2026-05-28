@@ -115,6 +115,7 @@ type ApiIntegrationExternalMcpDetails struct {
 	OauthAssertionIssuer       string
 	OauthResourceUrl           string
 	AllowedPrefixes            []string
+	BlockedPrefixes            []string
 	Comment                    string
 }
 
@@ -320,6 +321,8 @@ func parseApiIntegrationExternalMcpDetails(properties []ApiIntegrationProperty, 
 			}
 		case "API_ALLOWED_PREFIXES":
 			details.AllowedPrefixes = ParseCommaSeparatedStringArray(prop.Value, false)
+		case "API_BLOCKED_PREFIXES":
+			details.BlockedPrefixes = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "COMMENT":
 			details.Comment = prop.Value
 		}

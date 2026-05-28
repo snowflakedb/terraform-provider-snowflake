@@ -535,10 +535,17 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
-			// TODO: Assert API_USER_AUTH values
 			HasEnabled(true).
+			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(mcpPrefix).
-			HasComment("mcp oauth2 comment"),
+			HasComment("mcp oauth2 comment").
+			HasUserAuthType("OAUTH2").
+			HasOauthGrant("AUTHORIZATION_CODE").
+			HasOauthClientId(oauthClientId).
+			HasOauthClientAuthMethod(string(authMethod)).
+			HasOauthTokenEndpoint(oauthTokenEndpoint).
+			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
+			HasOauthRefreshTokenValidity(86400),
 		)
 	})
 
@@ -762,9 +769,17 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, integration.ID()).
 			HasEnabled(true).
+			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(mcpOtherPrefix).
 			HasBlockedPrefixes(mcpPrefix).
-			HasComment("changed comment"),
+			HasComment("changed comment").
+			HasUserAuthType("OAUTH2").
+			HasOauthGrant("AUTHORIZATION_CODE").
+			HasOauthClientId("new-id").
+			HasOauthClientAuthMethod(string(authMethod)).
+			HasOauthTokenEndpoint(oauthTokenEndpoint).
+			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
+			HasOauthRefreshTokenValidity(3600),
 		)
 	})
 
@@ -1103,7 +1118,12 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasEnabled(true).
 			HasApiProviderNotEmpty().
 			HasAllowedPrefixes(mcpPrefix).
-			HasComment(""),
+			HasComment("").
+			HasUserAuthType("OAUTH2").
+			HasOauthGrant("AUTHORIZATION_CODE").
+			HasOauthClientId(oauthClientId).
+			HasOauthTokenEndpoint(oauthTokenEndpoint).
+			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint),
 		)
 	})
 
