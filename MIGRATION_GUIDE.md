@@ -30,7 +30,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 Previously, importing [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest) with `terraform import` did not populate `ForceNew` fields in state — such as `rest_config`, `oauth_rest_authentication`, `bearer_rest_authentication`, and `sigv4_rest_authentication`. On the next `terraform plan`, Terraform detected a diff against the configuration and produced a destroy-before-create plan, even when the Snowflake object already matched the configuration.
 
-Import now reads the integration details from Snowflake and sets these fields in state during import. This prevents unwanted recreation plans for correctly configured integrations.
+Import now reads the integration details from Snowflake and sets these fields in state during import. This prevents unwanted recreation plans for correctly configured integrations, except for the SigV4 limitation described below.
 
 **Expected plan after import:** Snowflake does not return write-only secret values in `DESCRIBE CATALOG INTEGRATION` output. After import, the first `terraform plan` may therefore show an in-place **update** (not recreation) for sensitive fields that must be supplied in your configuration:
 
@@ -39,7 +39,15 @@ Import now reads the integration details from Snowflake and sets these fields in
 
 This is expected. Run `terraform apply` once to sync the secret values into state. Subsequent plans should be empty, assuming the configuration matches Snowflake.
 
-No changes in configuration are required.
+**Known limitation for SigV4 authentication:** `sigv4_rest_authentication.0.sigv4_external_id` is not returned by Snowflake, cannot be altered after creation,
+and is marked as `ForceNew` in the provider. If your configuration specifies this field after import,
+Terraform may still produce a destroy-before-create plan because the value cannot be populated in state during import and cannot be synced via an in-place update.
+To avoid recreation after import for `sigv4_rest_authentication` you can:
+- Omit `sigv4_external_id` if you don't need to track its changes within the configuration.
+- Adjust the state value for `sigv4_external_id` manually or by following https://developer.hashicorp.com/terraform/cli/state/recover.
+- Accept the one-time recreation plan to align state with your configuration.
+
+We plan to address this limitation in future, but for now, this behavior is expected.
 
 References: [#4784](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4784)
 

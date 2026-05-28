@@ -483,27 +483,24 @@ func setIcebergRestAuthInState(d *schema.ResourceData, details *sdk.CatalogInteg
 	if details.OAuthRestAuthentication != nil {
 		return errors.Join(
 			d.Set("oauth_rest_authentication", []any{map[string]any{
-				"oauth_token_uri":      details.OAuthRestAuthentication.OauthTokenUri,
-				"oauth_client_id":      details.OAuthRestAuthentication.OauthClientId,
-				"oauth_client_secret":  d.Get("oauth_rest_authentication.0.oauth_client_secret").(string),
+				"oauth_token_uri": details.OAuthRestAuthentication.OauthTokenUri,
+				"oauth_client_id": details.OAuthRestAuthentication.OauthClientId,
+				// oauth_client_secret not returned from Snowflake
 				"oauth_allowed_scopes": details.OAuthRestAuthentication.OauthAllowedScopes,
 			}}),
 		)
 	}
 	if details.SigV4RestAuthentication != nil {
-		existingSigV4ExternalId := d.Get("sigv4_rest_authentication.0.sigv4_external_id").(string)
 		return errors.Join(
 			d.Set("sigv4_rest_authentication", []any{map[string]any{
 				"sigv4_iam_role":       details.SigV4RestAuthentication.Sigv4IamRole,
 				"sigv4_signing_region": details.SigV4RestAuthentication.Sigv4SigningRegion,
-				"sigv4_external_id":    existingSigV4ExternalId,
+				// sigv4_external_id not returned from Snowflake
 			}}),
 		)
 	}
 
-	return errors.Join(
-		d.Set("bearer_rest_authentication", []any{map[string]any{
-			"bearer_token": d.Get("bearer_rest_authentication.0.bearer_token").(string),
-		}}),
-	)
+	// bearer_rest_authentication.bearer_token not returned from Snowflake
+
+	return nil
 }
