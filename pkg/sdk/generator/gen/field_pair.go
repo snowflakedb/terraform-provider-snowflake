@@ -18,12 +18,15 @@ type FieldPair struct {
 	CustomParser   string
 	BoolTrueValue  string
 	BoolParsed     bool
+
+	manualConvert bool
 }
 
 // AssignmentKind is the conversion strategy discriminator used in convert.tmpl.
 type AssignmentKind string
 
 const (
+	AssignmentKindManual                             AssignmentKind = "Manual"
 	AssignmentKindDirect                             AssignmentKind = "Direct"
 	AssignmentKindStringToBool                       AssignmentKind = "StringToBool"
 	AssignmentKindStringToBoolValue                  AssignmentKind = "StringToBoolValue"
@@ -48,6 +51,10 @@ const (
 	AssignmentKindNullableStringToIdentifierArray    AssignmentKind = "NullableStringToIdentifierArray"
 	AssignmentKindUnsupported                        AssignmentKind = "Unsupported"
 )
+
+func (fp FieldPair) AssignmentKindManual() bool {
+	return fp.AssignmentKind() == AssignmentKindManual
+}
 
 func (fp FieldPair) AssignmentKindDirect() bool {
 	return fp.AssignmentKind() == AssignmentKindDirect
@@ -146,6 +153,10 @@ func (fp FieldPair) IdentifierArrayElementType() string {
 // AssignmentKind returns the conversion strategy for this field pair.
 // The returned value is used as a discriminator via the boolean predicate methods below.
 func (fp FieldPair) AssignmentKind() AssignmentKind {
+	if fp.manualConvert {
+		return AssignmentKindManual
+	}
+
 	if fp.CustomParser != "" {
 		return AssignmentKindCustom
 	}
