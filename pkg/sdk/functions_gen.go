@@ -288,8 +288,8 @@ type Function struct {
 	IsAnsi                     bool
 	MinNumArguments            int
 	MaxNumArguments            int
-	ArgumentsOld               []DataType
-	ReturnTypeOld              DataType
+	ArgumentsOld               []DataType // added manually
+	ReturnTypeOld              DataType   // added manually
 	ArgumentsRaw               string
 	Description                string
 	CatalogName                string
