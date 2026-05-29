@@ -2,8 +2,10 @@
 page_title: "snowflake_notebook Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage notebooks. For more information, check notebooks documentation https://docs.snowflake.com/en/sql-reference/sql/create-notebook.
+  Resource used to manage notebooks. This resource creates Legacy Snowflake Notebooks (notebooks created via the CREATE NOTEBOOK https://docs.snowflake.com/en/sql-reference/sql/create-notebook SQL command). It does not manage Notebooks in Workspaces https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-overview, which use Notebook Project Objects (NPOs) and are not currently supported by the provider. For more information, check notebooks documentation https://docs.snowflake.com/en/sql-reference/sql/create-notebook.
 ---
+
+-> **Note** This resource manages [Legacy Snowflake Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks) (created via the [CREATE NOTEBOOK](https://docs.snowflake.com/en/sql-reference/sql/create-notebook) SQL command). [Notebooks in Workspaces](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-overview), which use Notebook Project Objects (NPOs), are not currently supported by the provider.
 
 -> **Note** Due to Snowflake limitations, external changes to `from` are not currently detected.
 
@@ -15,7 +17,7 @@ description: |-
 
 # snowflake_notebook (Resource)
 
-Resource used to manage notebooks. For more information, check [notebooks documentation](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).
+Resource used to manage notebooks. This resource creates Legacy Snowflake Notebooks (notebooks created via the [CREATE NOTEBOOK](https://docs.snowflake.com/en/sql-reference/sql/create-notebook) SQL command). It does not manage [Notebooks in Workspaces](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-overview), which use Notebook Project Objects (NPOs) and are not currently supported by the provider. For more information, check [notebooks documentation](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).
 
 ## Example Usage
 

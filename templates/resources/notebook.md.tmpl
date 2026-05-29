@@ -9,6 +9,8 @@ description: |-
 {{- end }}
 ---
 
+-> **Note** This resource manages [Legacy Snowflake Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks) (created via the [CREATE NOTEBOOK](https://docs.snowflake.com/en/sql-reference/sql/create-notebook) SQL command). [Notebooks in Workspaces](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-overview), which use Notebook Project Objects (NPOs), are not currently supported by the provider.
+
 -> **Note** Due to Snowflake limitations, external changes to `from` are not currently detected.
 
 -> **Note** `secrets` is currently not supported. It will be supported in the following versions of the provider which may still affect this resource.
