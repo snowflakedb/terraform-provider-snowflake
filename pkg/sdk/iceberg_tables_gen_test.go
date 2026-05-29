@@ -56,11 +56,11 @@ func TestIcebergTables_Create(t *testing.T) {
 			{},
 			{},
 		}
-		// Adjusted manually: PartitionBy is a slice, validator emits one error per element with index
+		// Adjusted manually: PartitionBy is a slice, validator emits one error per element
 		assertOptsInvalidJoinedErrors(
 			t, opts,
-			errExactlyOneOf("CreateIcebergTableOptions.PartitionBy[0]", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
-			errExactlyOneOf("CreateIcebergTableOptions.PartitionBy[1]", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+			errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+			errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
 		)
 	})
 
@@ -957,11 +957,11 @@ func TestIcebergTables_Alter(t *testing.T) {
 			{ColumnName: "col1"},
 			{ColumnName: "col2"},
 		}
-		// Adjusted manually: AlterColumnAction is a slice, validator emits one error per element with index
+		// Adjusted manually: AlterColumnAction is a slice, validator emits one error per element
 		assertOptsInvalidJoinedErrors(
 			t, opts,
-			errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction[0]", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
-			errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction[1]", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+			errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+			errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
 		)
 	})
 
