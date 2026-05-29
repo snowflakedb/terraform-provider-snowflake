@@ -74,6 +74,11 @@ func (p *ProcedureSqlResourceAssert) HasIsSecure(expected string) *ProcedureSqlR
 	return p
 }
 
+func (p *ProcedureSqlResourceAssert) HasLogEventLevel(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("log_event_level", expected)
+	return p
+}
+
 func (p *ProcedureSqlResourceAssert) HasLogLevel(expected string) *ProcedureSqlResourceAssert {
 	p.StringValueSet("log_level", expected)
 	return p
@@ -150,6 +155,11 @@ func (p *ProcedureSqlResourceAssert) HasFullyQualifiedNameString(expected string
 
 func (p *ProcedureSqlResourceAssert) HasIsSecureString(expected string) *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueSet("is_secure", expected))
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasLogEventLevelString(expected string) *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return p
 }
 
@@ -232,6 +242,11 @@ func (p *ProcedureSqlResourceAssert) HasNoIsSecure() *ProcedureSqlResourceAssert
 	return p
 }
 
+func (p *ProcedureSqlResourceAssert) HasNoLogEventLevel() *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return p
+}
+
 func (p *ProcedureSqlResourceAssert) HasNoLogLevel() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("log_level"))
 	return p
@@ -301,6 +316,11 @@ func (p *ProcedureSqlResourceAssert) HasIsSecureEmpty() *ProcedureSqlResourceAss
 	return p
 }
 
+func (p *ProcedureSqlResourceAssert) HasLogEventLevelEmpty() *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_event_level", ""))
+	return p
+}
+
 func (p *ProcedureSqlResourceAssert) HasLogLevelEmpty() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueSet("log_level", ""))
 	return p
@@ -367,6 +387,11 @@ func (p *ProcedureSqlResourceAssert) HasFullyQualifiedNameNotEmpty() *ProcedureS
 
 func (p *ProcedureSqlResourceAssert) HasIsSecureNotEmpty() *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValuePresent("is_secure"))
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasLogEventLevelNotEmpty() *ProcedureSqlResourceAssert {
+	p.AddAssertion(assert.ValuePresent("log_event_level"))
 	return p
 }
 

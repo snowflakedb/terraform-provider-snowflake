@@ -34,6 +34,8 @@ type DatabaseCsvRow struct {
 	ExternalVolumeValue                          string `csv:"external_volume_value"`
 	LogLevelLevel                                string `csv:"log_level_level"`
 	LogLevelValue                                string `csv:"log_level_value"`
+	LogEventLevelLevel                           string `csv:"log_event_level_level"`
+	LogEventLevelValue                           string `csv:"log_event_level_value"`
 	MaxDataExtensionTimeInDaysLevel              string `csv:"max_data_extension_time_in_days_level"`
 	MaxDataExtensionTimeInDaysValue              string `csv:"max_data_extension_time_in_days_value"`
 	QuotedIdentifiersIgnoreCaseLevel             string `csv:"quoted_identifiers_ignore_case_level"`
@@ -66,6 +68,7 @@ type DatabaseRepresentation struct {
 	EnableConsoleOutput                     *bool
 	ExternalVolume                          *string
 	LogLevel                                *string
+	LogEventLevel                           *string
 	MaxDataExtensionTimeInDays              *int
 	QuotedIdentifiersIgnoreCase             *bool
 	ReplaceInvalidCharacters                *bool
@@ -104,6 +107,7 @@ func (row DatabaseCsvRow) convert() (*DatabaseRepresentation, error) {
 		handler.handleBooleanParameter(row.EnableConsoleOutputLevel, row.EnableConsoleOutputValue, &databaseRepresentation.EnableConsoleOutput),
 		handler.handleStringParameter(row.ExternalVolumeLevel, row.ExternalVolumeValue, &databaseRepresentation.ExternalVolume),
 		handler.handleStringParameter(row.LogLevelLevel, row.LogLevelValue, &databaseRepresentation.LogLevel),
+		handler.handleStringParameter(row.LogEventLevelLevel, row.LogEventLevelValue, &databaseRepresentation.LogEventLevel),
 		handler.handleIntegerParameter(row.MaxDataExtensionTimeInDaysLevel, row.MaxDataExtensionTimeInDaysValue, &databaseRepresentation.MaxDataExtensionTimeInDays),
 		handler.handleBooleanParameter(row.QuotedIdentifiersIgnoreCaseLevel, row.QuotedIdentifiersIgnoreCaseValue, &databaseRepresentation.QuotedIdentifiersIgnoreCase),
 		handler.handleBooleanParameter(row.ReplaceInvalidCharactersLevel, row.ReplaceInvalidCharactersValue, &databaseRepresentation.ReplaceInvalidCharacters),

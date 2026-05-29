@@ -215,6 +215,7 @@ Read-Only:
 - `jdbc_use_session_timezone` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--jdbc_use_session_timezone))
 - `json_indent` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--json_indent))
 - `lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--lock_timeout))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--log_level))
 - `multi_statement_count` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--multi_statement_count))
 - `noorder_sequence_as_default` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--noorder_sequence_as_default))
@@ -519,6 +520,18 @@ Read-Only:
 
 <a id="nestedobjatt--tasks--parameters--lock_timeout"></a>
 ### Nested Schema for `tasks.parameters.lock_timeout`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tasks--parameters--log_event_level"></a>
+### Nested Schema for `tasks.parameters.log_event_level`
 
 Read-Only:
 

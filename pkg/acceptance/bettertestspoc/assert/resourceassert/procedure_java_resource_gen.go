@@ -86,6 +86,11 @@ func (p *ProcedureJavaResourceAssert) HasIsSecure(expected string) *ProcedureJav
 	return p
 }
 
+func (p *ProcedureJavaResourceAssert) HasLogEventLevel(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("log_event_level", expected)
+	return p
+}
+
 func (p *ProcedureJavaResourceAssert) HasLogLevel(expected string) *ProcedureJavaResourceAssert {
 	p.StringValueSet("log_level", expected)
 	return p
@@ -189,6 +194,11 @@ func (p *ProcedureJavaResourceAssert) HasIsSecureString(expected string) *Proced
 	return p
 }
 
+func (p *ProcedureJavaResourceAssert) HasLogEventLevelString(expected string) *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_event_level", expected))
+	return p
+}
+
 func (p *ProcedureJavaResourceAssert) HasLogLevelString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("log_level", expected))
 	return p
@@ -283,6 +293,11 @@ func (p *ProcedureJavaResourceAssert) HasNoIsSecure() *ProcedureJavaResourceAsse
 	return p
 }
 
+func (p *ProcedureJavaResourceAssert) HasNoLogEventLevel() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return p
+}
+
 func (p *ProcedureJavaResourceAssert) HasNoLogLevel() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("log_level"))
 	return p
@@ -369,6 +384,11 @@ func (p *ProcedureJavaResourceAssert) HasImportsEmpty() *ProcedureJavaResourceAs
 
 func (p *ProcedureJavaResourceAssert) HasIsSecureEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("is_secure", ""))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasLogEventLevelEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return p
 }
 
@@ -463,6 +483,11 @@ func (p *ProcedureJavaResourceAssert) HasHandlerNotEmpty() *ProcedureJavaResourc
 
 func (p *ProcedureJavaResourceAssert) HasIsSecureNotEmpty() *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValuePresent("is_secure"))
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasLogEventLevelNotEmpty() *ProcedureJavaResourceAssert {
+	p.AddAssertion(assert.ValuePresent("log_event_level"))
 	return p
 }
 

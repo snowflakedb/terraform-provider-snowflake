@@ -21,6 +21,7 @@ type FunctionSqlModel struct {
 	FunctionDefinition    tfconfig.Variable `json:"function_definition,omitempty"`
 	FunctionLanguage      tfconfig.Variable `json:"function_language,omitempty"`
 	IsSecure              tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel         tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel              tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel           tfconfig.Variable `json:"metric_level,omitempty"`
 	ReturnResultsBehavior tfconfig.Variable `json:"return_results_behavior,omitempty"`
@@ -152,6 +153,11 @@ func (f *FunctionSqlModel) WithIsSecure(isSecure string) *FunctionSqlModel {
 	return f
 }
 
+func (f *FunctionSqlModel) WithLogEventLevel(logEventLevel string) *FunctionSqlModel {
+	f.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return f
+}
+
 func (f *FunctionSqlModel) WithLogLevel(logLevel string) *FunctionSqlModel {
 	f.LogLevel = tfconfig.StringVariable(logLevel)
 	return f
@@ -228,6 +234,11 @@ func (f *FunctionSqlModel) WithFunctionLanguageValue(value tfconfig.Variable) *F
 
 func (f *FunctionSqlModel) WithIsSecureValue(value tfconfig.Variable) *FunctionSqlModel {
 	f.IsSecure = value
+	return f
+}
+
+func (f *FunctionSqlModel) WithLogEventLevelValue(value tfconfig.Variable) *FunctionSqlModel {
+	f.LogEventLevel = value
 	return f
 }
 
