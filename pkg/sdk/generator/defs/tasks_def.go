@@ -14,14 +14,14 @@ var taskPairs = g.StructPair("taskDBRow", "Task").
 	Text("schema_name").
 	Text("owner").
 	OptionalText("comment", g.WithRequiredInPlain()).
-	Field("warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Warehouse")).
+	Field("warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Warehouse"), g.WithManualConvert()).
 	OptionalText("schedule", g.WithRequiredInPlain()).
-	Field("predecessors", "string", "[]SchemaObjectIdentifier").
-	PlainField("state", "TaskState", g.WithCustomParser("ToTaskState")).
+	Field("predecessors", "string", "[]SchemaObjectIdentifier", g.WithManualConvert()).
+	PlainField("state", "TaskState", g.WithManualConvert()).
 	Text("definition").
 	OptionalText("condition", g.WithRequiredInPlain()).
 	Field("allow_overlapping_execution", "string", "bool", g.WithBoolTrueValue("true")).
-	Field("error_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("ErrorIntegration")).
+	Field("error_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("ErrorIntegration"), g.WithManualConvert()).
 	OptionalText("last_committed_on", g.WithRequiredInPlain()).
 	OptionalText("last_suspended_on", g.WithRequiredInPlain()).
 	Text("owner_role_type").
@@ -29,7 +29,8 @@ var taskPairs = g.StructPair("taskDBRow", "Task").
 	OptionalText("budget", g.WithRequiredInPlain()).
 	PlainField("task_relations", "TaskRelations", g.WithCustomParser("ToTaskRelations")).
 	OptionalText("last_suspended_reason", g.WithRequiredInPlain()).
-	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"))
+	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"), g.WithManualConvert()).
+	WithConvertGeneration()
 
 var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
 	OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).

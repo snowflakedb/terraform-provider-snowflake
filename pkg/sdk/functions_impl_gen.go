@@ -2,11 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -470,11 +467,9 @@ func (r *ShowFunctionRequest) toOpts() *ShowFunctionOptions {
 }
 
 func (r functionRow) convert() (*Function, error) {
-	// adjusted manually
-	e := &Function{
+	result := &Function{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
-		SchemaName:         strings.Trim(r.SchemaName, `"`),
 		IsBuiltin:          r.IsBuiltin == "Y",
 		IsAggregate:        r.IsAggregate == "Y",
 		IsAnsi:             r.IsAnsi == "Y",
@@ -482,40 +477,20 @@ func (r functionRow) convert() (*Function, error) {
 		MaxNumArguments:    r.MaxNumArguments,
 		ArgumentsRaw:       r.Arguments,
 		Description:        r.Description,
-		CatalogName:        strings.Trim(r.CatalogName, `"`),
 		IsTableFunction:    r.IsTableFunction == "Y",
 		ValidForClustering: r.ValidForClustering == "Y",
 		IsExternalFunction: r.IsExternalFunction == "Y",
 		Language:           r.Language,
 	}
-	arguments := strings.TrimLeft(r.Arguments, r.Name)
-	returnIndex := strings.Index(arguments, ") RETURN ")
-	e.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
-	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse function arguments: %w", err)
-	} else {
-		e.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
-			return DataType(a.ArgType)
-		})
+	mapNullStringToRequiredBool(&result.IsSecure, r.IsSecure)
+	mapNullString(&result.Secrets, r.Secrets)
+	mapNullString(&result.ExternalAccessIntegrations, r.ExternalAccessIntegrations)
+	mapNullStringToRequiredBool(&result.IsMemoizable, r.IsMemoizable)
+	mapNullStringToRequiredBool(&result.IsDataMetric, r.IsDataMetric)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-
-	if r.IsSecure.Valid {
-		e.IsSecure = r.IsSecure.String == "Y"
-	}
-	if r.Secrets.Valid {
-		e.Secrets = String(r.Secrets.String)
-	}
-	if r.ExternalAccessIntegrations.Valid {
-		e.ExternalAccessIntegrations = String(r.ExternalAccessIntegrations.String)
-	}
-	if r.IsMemoizable.Valid {
-		e.IsMemoizable = r.IsMemoizable.String == "Y"
-	}
-	if r.IsDataMetric.Valid {
-		e.IsDataMetric = r.IsDataMetric.String == "Y"
-	}
-	return e, nil
+	return result, nil
 }
 
 func (r *DescribeFunctionRequest) toOpts() *DescribeFunctionOptions {
@@ -526,12 +501,11 @@ func (r *DescribeFunctionRequest) toOpts() *DescribeFunctionOptions {
 }
 
 func (r functionDetailRow) convert() (*FunctionDetail, error) {
-	// adjusted manually
-	e := &FunctionDetail{
+	result := &FunctionDetail{
 		Property: r.Property,
 	}
-	if r.Value.Valid && r.Value.String != "null" {
-		e.Value = String(r.Value.String)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	return e, nil
+	return result, nil
 }

@@ -55,6 +55,35 @@ var (
 					List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses())
 )
 
+// TODO [next PRs]: support adding a field only in plain struct (in this case: `ArgumentsOld` and `ReturnTypeOld`)
+var functionPairs = g.StructPair("functionRow", "Function").
+	Text("created_on").
+	Text("name").
+	Text("schema_name", g.WithManualConvert()).
+	BoolFromText("is_builtin").
+	BoolFromText("is_aggregate").
+	BoolFromText("is_ansi").
+	Number("min_num_arguments").
+	Number("max_num_arguments").
+	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	Text("description").
+	Text("catalog_name", g.WithManualConvert()).
+	BoolFromText("is_table_function").
+	BoolFromText("valid_for_clustering").
+	OptionalBoolFromText("is_secure", g.WithRequiredInPlain()).
+	OptionalText("secrets").
+	OptionalText("external_access_integrations").
+	BoolFromText("is_external_function").
+	Text("language").
+	OptionalBoolFromText("is_memoizable", g.WithRequiredInPlain()).
+	OptionalBoolFromText("is_data_metric", g.WithRequiredInPlain()).
+	WithConvertGeneration()
+
+var functionDetailPairs = g.StructPair("functionDetailRow", "FunctionDetail").
+	Text("property").
+	OptionalText("value", g.WithManualConvert()).
+	WithConvertGeneration()
+
 var functionsDef = g.NewInterface(
 	"Functions",
 	"Function",
@@ -322,52 +351,9 @@ var functionsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-user-functions",
-	g.DbStruct("functionRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("schema_name", "string").
-		Field("is_builtin", "string").
-		Field("is_aggregate", "string").
-		Field("is_ansi", "string").
-		Field("min_num_arguments", "int").
-		Field("max_num_arguments", "int").
-		Field("arguments", "string").
-		Field("description", "string").
-		Field("catalog_name", "string").
-		Field("is_table_function", "string").
-		Field("valid_for_clustering", "string").
-		Field("is_secure", "sql.NullString").
-		OptionalText("secrets").
-		OptionalText("external_access_integrations").
-		Field("is_external_function", "string").
-		Field("language", "string").
-		Field("is_memoizable", "sql.NullString").
-		Field("is_data_metric", "sql.NullString"),
-	g.PlainStruct("Function").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("SchemaName", "string").
-		Field("IsBuiltin", "bool").
-		Field("IsAggregate", "bool").
-		Field("IsAnsi", "bool").
-		Field("MinNumArguments", "int").
-		Field("MaxNumArguments", "int").
-		Field("ArgumentsOld", "[]DataType").
-		Field("ReturnTypeOld", "DataType").
-		Field("ArgumentsRaw", "string").
-		Field("Description", "string").
-		Field("CatalogName", "string").
-		Field("IsTableFunction", "bool").
-		Field("ValidForClustering", "bool").
-		Field("IsSecure", "bool").
-		OptionalText("Secrets").
-		OptionalText("ExternalAccessIntegrations").
-		Field("IsExternalFunction", "bool").
-		Field("Language", "string").
-		Field("IsMemoizable", "bool").
-		Field("IsDataMetric", "bool"),
+	functionPairs,
 	g.NewQueryStruct("ShowFunctions").
 		Show().
 		SQL("USER FUNCTIONS").
@@ -375,15 +361,10 @@ var functionsDef = g.NewInterface(
 		OptionalExtendedIn(),
 	g.ShowByIDExtendedInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-function",
-	g.DbStruct("functionDetailRow").
-		Field("property", "string").
-		Field("value", "sql.NullString"),
-	g.PlainStruct("FunctionDetail").
-		Text("Property").
-		OptionalText("Value"),
+	functionDetailPairs,
 	g.NewQueryStruct("DescribeFunction").
 		Describe().
 		SQL("FUNCTION").
