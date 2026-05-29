@@ -208,6 +208,22 @@ func (p *PairedStructs) OptionalBool(dbColumnName string, opts ...PairedFieldOpt
 	return p.addField(dbColumnName, "sql.NullBool", "*bool", opts)
 }
 
+// BoolFromText adds a non-nullable boolean field to the plain struct converted from non-nullable string value ("Y" by default).
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> bool
+func (p *PairedStructs) BoolFromText(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "string", "bool", opts)
+}
+
+// OptionalBoolFromText adds a nullable boolean field to the plain struct converted from nullable string value ("Y" by default).
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> *bool
+func (p *PairedStructs) OptionalBoolFromText(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", "*bool", opts)
+}
+
 // Number adds a non-nullable integer field to both the db row struct and the plain struct.
 //
 //	db:    <FieldName> int `db:"<dbColumnName>"`
