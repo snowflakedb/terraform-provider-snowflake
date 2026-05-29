@@ -34,30 +34,30 @@ type CreateIcebergTableOptions struct {
 	PathLayout            *IcebergTablePathLayout           `ddl:"parameter,no_quotes" sql:"PATH_LAYOUT"`
 	ClusterBy             []string                          `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	// Adjusted manually
-	ExternalVolume             *string                      `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
-	Catalog                    *IcebergTableCatalog         `ddl:"parameter,single_quotes" sql:"CATALOG"`
-	BaseLocation               *string                      `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
-	TargetFileSize             *IcebergTableTargetFileSize  `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
-	CatalogSync                *string                      `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
-	StorageSerializationPolicy *StorageSerializationPolicy  `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
-	DataRetentionTimeInDays    *int                         `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int                         `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool                        `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	CopyGrants                 *bool                        `ddl:"keyword" sql:"COPY GRANTS"`
-	ErrorLogging               *bool                        `ddl:"parameter" sql:"ERROR_LOGGING"`
-	Comment                    *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	IcebergVersion             *int                         `ddl:"parameter" sql:"ICEBERG_VERSION"`
-	EnableIcebergMergeOnRead   *bool                        `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
-	RowAccessPolicy            *IcebergTableRowAccessPolicy `ddl:"keyword"`
-	// Adjusted manually
-	AggregationPolicy    *IcebergTableAggregationPolicy `ddl:"keyword"`
-	Tag                  []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
-	EnableDataCompaction *bool                          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
-	Contact              []TableContact                 `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
+	ExternalVolume             *string                        `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
+	Catalog                    *IcebergTableCatalog           `ddl:"parameter,single_quotes" sql:"CATALOG"`
+	BaseLocation               *string                        `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
+	TargetFileSize             *IcebergTableTargetFileSize    `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
+	CatalogSync                *string                        `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
+	StorageSerializationPolicy *StorageSerializationPolicy    `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
+	DataRetentionTimeInDays    *int                           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool                          `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	CopyGrants                 *bool                          `ddl:"keyword" sql:"COPY GRANTS"`
+	ErrorLogging               *bool                          `ddl:"parameter" sql:"ERROR_LOGGING"`
+	Comment                    *string                        `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	IcebergVersion             *int                           `ddl:"parameter" sql:"ICEBERG_VERSION"`
+	EnableIcebergMergeOnRead   *bool                          `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	RowAccessPolicy            *IcebergTableRowAccessPolicy   `ddl:"keyword"`
+	AggregationPolicy          *IcebergTableAggregationPolicy `ddl:"keyword"`
+	Tag                        []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
+	EnableDataCompaction       *bool                          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
+	Contact                    []TableContact                 `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
 }
 
 type IcebergTableColumnsAndConstraints struct {
-	Columns []IcebergTableColumn `ddl:"keyword"`
+	Columns             []IcebergTableColumn       `ddl:"keyword"`
+	OutOfLineConstraint []TableOutOfLineConstraint `ddl:"keyword"`
 }
 
 type IcebergTableColumn struct {
@@ -65,10 +65,66 @@ type IcebergTableColumn struct {
 	ColumnType       datatypes.DataType           `ddl:"parameter,no_quotes,no_equals"`
 	DefaultValue     *ColumnDefaultValue          `ddl:"keyword"`
 	NotNull          *bool                        `ddl:"keyword" sql:"NOT NULL"`
+	InlineConstraint *TableColumnInlineConstraint `ddl:"keyword"`
 	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"keyword"`
 	ProjectionPolicy *TableColumnProjectionPolicy `ddl:"keyword"`
 	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
 	Comment          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+}
+
+type TableColumnInlineConstraint struct {
+	UniquePK *TableColumnInlineUniquePK `ddl:"keyword"`
+	FK       *TableColumnInlineFK       `ddl:"keyword"`
+	CH       *TableColumnInlineCH       `ddl:"keyword"`
+}
+
+type TableColumnInlineUniquePK struct {
+	Name               *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	Unique             *bool   `ddl:"keyword" sql:"UNIQUE"`
+	PrimaryKey         *bool   `ddl:"keyword" sql:"PRIMARY KEY"`
+	Enforced           *bool   `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool   `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool   `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool   `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool   `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool   `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool   `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool   `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool   `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool   `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool   `ddl:"keyword" sql:"RELY"`
+	Norely             *bool   `ddl:"keyword" sql:"NORELY"`
+}
+
+type TableColumnInlineFK struct {
+	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
+	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
+	RefColumn          *string                `ddl:"keyword,double_quotes,parentheses"`
+	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
+	On                 *ForeignKeyOnAction    `ddl:"keyword"`
+	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
+	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
+}
+
+type TableColumnInlineCH struct {
+	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	check            bool    `ddl:"static" sql:"CHECK"`
+	openParen        bool    `ddl:"static" sql:"("`
+	Expression       string  `ddl:"keyword,no_quotes"`
+	closeParen       bool    `ddl:"static" sql:")"`
+	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
+	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
 }
 
 type TableColumnMaskingPolicy struct {
@@ -78,6 +134,65 @@ type TableColumnMaskingPolicy struct {
 
 type TableColumnProjectionPolicy struct {
 	ProjectionPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"PROJECTION POLICY"`
+}
+
+type TableOutOfLineConstraint struct {
+	UniquePK *TableOutOfLineUniquePK `ddl:"keyword"`
+	FK       *TableOutOfLineFK       `ddl:"keyword"`
+	CH       *TableOutOfLineCH       `ddl:"keyword"`
+}
+
+type TableOutOfLineUniquePK struct {
+	Name               *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	Unique             *bool    `ddl:"keyword" sql:"UNIQUE"`
+	PrimaryKey         *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
+	Columns            []Column `ddl:"keyword,parentheses"`
+	Enforced           *bool    `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool    `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool    `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool    `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool    `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool    `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool    `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool    `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool    `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool    `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool    `ddl:"keyword" sql:"RELY"`
+	Norely             *bool    `ddl:"keyword" sql:"NORELY"`
+	Comment            *string  `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+}
+
+type TableOutOfLineFK struct {
+	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	foreignKey         bool                   `ddl:"static" sql:"FOREIGN KEY"`
+	Columns            []Column               `ddl:"keyword,parentheses"`
+	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
+	RefColumns         []Column               `ddl:"keyword,parentheses"`
+	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
+	On                 *ForeignKeyOnAction    `ddl:"keyword"`
+	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
+	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
+	Comment            *string                `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+}
+
+type TableOutOfLineCH struct {
+	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	check            bool    `ddl:"static" sql:"CHECK"`
+	openParen        bool    `ddl:"static" sql:"("`
+	Expression       string  `ddl:"keyword,no_quotes"`
+	closeParen       bool    `ddl:"static" sql:")"`
+	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
+	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
 }
 
 type IcebergTablePartitionExpression struct {
@@ -180,6 +295,7 @@ type IcebergTableAddColumnAction struct {
 	IfNotExists      *bool                        `ddl:"keyword" sql:"IF NOT EXISTS"`
 	Name             string                       `ddl:"keyword,double_quotes"`
 	ColumnType       datatypes.DataType           `ddl:"parameter,no_quotes,no_equals"`
+	InlineConstraint *TableColumnInlineConstraint `ddl:"keyword"`
 	DefaultValue     *ColumnDefaultValue          `ddl:"keyword"`
 	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"keyword"`
 	ProjectionPolicy *TableColumnProjectionPolicy `ddl:"keyword"`
@@ -199,7 +315,7 @@ type TableRenameColumnAction struct {
 }
 
 type IcebergTableAlterColumnAction struct {
-	alterColumn      bool                `ddl:"static" sql:"COLUMN"`
+	column           bool                `ddl:"static" sql:"COLUMN"`
 	ColumnName       string              `ddl:"keyword,double_quotes"`
 	SetNotNull       *bool               `ddl:"keyword" sql:"SET NOT NULL"`
 	DropNotNull      *bool               `ddl:"keyword" sql:"DROP NOT NULL"`
