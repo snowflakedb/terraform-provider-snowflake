@@ -300,9 +300,10 @@ var proceduresDef = g.NewInterface(
 				OptionalAssignment("AUTO_EVENT_LOGGING", g.KindOfTPointer[sdkcommons.AutoEventLogging](), g.ParameterOptions().SingleQuotes()).
 				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
 				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
+				OptionalAssignment("LOG_EVENT_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -313,9 +314,10 @@ var proceduresDef = g.NewInterface(
 				OptionalSQL("AUTO_EVENT_LOGGING").
 				OptionalSQL("ENABLE_CONSOLE_OUTPUT").
 				OptionalSQL("LOG_LEVEL").
+				OptionalSQL("LOG_EVENT_LEVEL").
 				OptionalSQL("METRIC_LEVEL").
 				OptionalSQL("TRACE_LEVEL").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("UNSET"),
 		).
 		OptionalSetTags().

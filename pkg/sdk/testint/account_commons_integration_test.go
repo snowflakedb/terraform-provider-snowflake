@@ -117,6 +117,7 @@ func setAndUnsetAccountParametersTest(
 			ListingAutoFulfillmentReplicationRefreshSchedule:         sdk.String("2 minutes"),
 			LockTimeout:                                              sdk.Int(43201),
 			LogLevel:                                                 sdk.Pointer(sdk.LogLevelInfo),
+			LogEventLevel:                                            sdk.Pointer(sdk.LogLevelInfo),
 			MaxConcurrencyLevel:                                      sdk.Int(7),
 			MaxDataExtensionTimeInDays:                               sdk.Int(13),
 			MetricLevel:                                              sdk.Pointer(sdk.MetricLevelAll),
@@ -238,6 +239,7 @@ func setAndUnsetAccountParametersTest(
 			HasListingAutoFulfillmentReplicationRefreshSchedule("2 minutes").
 			HasLockTimeout(43201).
 			HasLogLevel(sdk.LogLevelInfo).
+			HasLogEventLevel(sdk.LogLevelInfo).
 			HasMaxConcurrencyLevel(7).
 			HasMaxDataExtensionTimeInDays(13).
 			HasMetricLevel(sdk.MetricLevelAll).

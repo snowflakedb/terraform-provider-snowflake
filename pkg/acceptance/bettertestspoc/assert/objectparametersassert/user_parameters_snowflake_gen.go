@@ -97,6 +97,7 @@ func (u *UserParametersAssert) HasAllDefaults() *UserParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.UserParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterMultiStatementCount, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
@@ -159,6 +160,7 @@ func (u *UserParametersAssert) HasAllDefaultsExplicit() *UserParametersAssert {
 		HasDefaultJsonIndentValueExplicit().
 		HasDefaultLockTimeoutValueExplicit().
 		HasDefaultLogLevelValueExplicit().
+		HasDefaultLogEventLevelValueExplicit().
 		HasDefaultMultiStatementCountValueExplicit().
 		HasDefaultNoorderSequenceAsDefaultValueExplicit().
 		HasDefaultOdbcTreatDecimalAsIntValueExplicit().
@@ -332,6 +334,11 @@ func (u *UserParametersAssert) HasLockTimeout(expected int) *UserParametersAsser
 
 func (u *UserParametersAssert) HasLogLevel(expected sdk.LogLevel) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.UserParameterLogLevel, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.UserParameterLogEventLevel, expected))
 	return u
 }
 
@@ -629,6 +636,11 @@ func (u *UserParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *Use
 	return u
 }
 
+func (u *UserParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterLogEventLevel, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasMultiStatementCountLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterMultiStatementCount, expected))
 	return u
@@ -895,6 +907,10 @@ func (u *UserParametersAssert) HasDefaultLogLevelValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterLogLevel)
 }
 
+func (u *UserParametersAssert) HasDefaultLogEventLevelValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterLogEventLevel)
+}
+
 func (u *UserParametersAssert) HasDefaultMultiStatementCountValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterMultiStatementCount)
 }
@@ -1129,6 +1145,10 @@ func (u *UserParametersAssert) HasDefaultLockTimeoutValueExplicit() *UserParamet
 
 func (u *UserParametersAssert) HasDefaultLogLevelValueExplicit() *UserParametersAssert {
 	return u.HasLogLevel(sdk.LogLevelOff)
+}
+
+func (u *UserParametersAssert) HasDefaultLogEventLevelValueExplicit() *UserParametersAssert {
+	return u.HasLogEventLevel(sdk.LogLevelOff)
 }
 
 func (u *UserParametersAssert) HasDefaultMultiStatementCountValueExplicit() *UserParametersAssert {

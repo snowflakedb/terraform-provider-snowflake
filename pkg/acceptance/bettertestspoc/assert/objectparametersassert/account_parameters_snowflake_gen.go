@@ -177,6 +177,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterInitialReplicationSizeLimitInTB, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterMetricLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterNetworkPolicy, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPythonProfilerModules, sdk.ParameterTypeSnowflakeDefault).
@@ -314,6 +315,7 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultInitialReplicationSizeLimitInTbValueExplicit().
 		HasDefaultListingAutoFulfillmentReplicationRefreshScheduleValueExplicit().
 		HasDefaultLogLevelValueExplicit().
+		HasDefaultLogEventLevelValueExplicit().
 		HasDefaultMetricLevelValueExplicit().
 		HasDefaultNetworkPolicyValueExplicit().
 		HasDefaultPythonProfilerModulesValueExplicit().
@@ -874,6 +876,11 @@ func (a *AccountParametersAssert) HasListingAutoFulfillmentReplicationRefreshSch
 
 func (a *AccountParametersAssert) HasLogLevel(expected sdk.LogLevel) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterLogLevel, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterLogEventLevel, expected))
 	return a
 }
 
@@ -1546,6 +1553,11 @@ func (a *AccountParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *
 	return a
 }
 
+func (a *AccountParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterLogEventLevel, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasMetricLevelLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterMetricLevel, expected))
 	return a
@@ -2109,6 +2121,10 @@ func (a *AccountParametersAssert) HasDefaultLogLevelValue() *AccountParametersAs
 	return a.HasDefaultParameterValue(sdk.AccountParameterLogLevel)
 }
 
+func (a *AccountParametersAssert) HasDefaultLogEventLevelValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterLogEventLevel)
+}
+
 func (a *AccountParametersAssert) HasDefaultMetricLevelValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterMetricLevel)
 }
@@ -2643,6 +2659,10 @@ func (a *AccountParametersAssert) HasDefaultListingAutoFulfillmentReplicationRef
 
 func (a *AccountParametersAssert) HasDefaultLogLevelValueExplicit() *AccountParametersAssert {
 	return a.HasLogLevel(sdk.LogLevelOff)
+}
+
+func (a *AccountParametersAssert) HasDefaultLogEventLevelValueExplicit() *AccountParametersAssert {
+	return a.HasLogEventLevel(sdk.LogLevelOff)
 }
 
 func (a *AccountParametersAssert) HasDefaultMetricLevelValueExplicit() *AccountParametersAssert {

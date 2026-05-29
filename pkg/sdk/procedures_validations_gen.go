@@ -183,13 +183,13 @@ func (opts *AlterProcedureOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterProcedureOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "ExecuteAs"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.Comment, opts.Set.ExternalAccessIntegrations, opts.Set.SecretsList, opts.Set.AutoEventLogging, opts.Set.EnableConsoleOutput, opts.Set.LogLevel, opts.Set.MetricLevel, opts.Set.TraceLevel) {
-			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"))
+		if !anyValueSet(opts.Set.Comment, opts.Set.ExternalAccessIntegrations, opts.Set.SecretsList, opts.Set.AutoEventLogging, opts.Set.EnableConsoleOutput, opts.Set.LogLevel, opts.Set.LogEventLevel, opts.Set.MetricLevel, opts.Set.TraceLevel) {
+			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.Comment, opts.Unset.ExternalAccessIntegrations, opts.Unset.AutoEventLogging, opts.Unset.EnableConsoleOutput, opts.Unset.LogLevel, opts.Unset.MetricLevel, opts.Unset.TraceLevel) {
-			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Unset", "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"))
+		if !anyValueSet(opts.Unset.Comment, opts.Unset.ExternalAccessIntegrations, opts.Unset.AutoEventLogging, opts.Unset.EnableConsoleOutput, opts.Unset.LogLevel, opts.Unset.LogEventLevel, opts.Unset.MetricLevel, opts.Unset.TraceLevel) {
+			errs = append(errs, errAtLeastOneOf("AlterProcedureOptions.Unset", "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 		}
 	}
 	return JoinErrors(errs...)

@@ -91,6 +91,8 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 		err = setIntegerValue(parameter, value, &sessionParameters.LockTimeout)
 	case SessionParameterLogLevel:
 		sessionParameters.LogLevel = Pointer(LogLevel(value))
+	case SessionParameterLogEventLevel:
+		sessionParameters.LogEventLevel = Pointer(LogLevel(value))
 	case SessionParameterMultiStatementCount:
 		err = setIntegerValue(parameter, value, &sessionParameters.MultiStatementCount)
 	case SessionParameterNoorderSequenceAsDefault:
@@ -241,6 +243,8 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 		unsetField = &sessionParametersUnset.LockTimeout
 	case SessionParameterLogLevel:
 		unsetField = &sessionParametersUnset.LogLevel
+	case SessionParameterLogEventLevel:
+		unsetField = &sessionParametersUnset.LogEventLevel
 	case SessionParameterMultiStatementCount:
 		unsetField = &sessionParametersUnset.MultiStatementCount
 	case SessionParameterNoorderSequenceAsDefault:

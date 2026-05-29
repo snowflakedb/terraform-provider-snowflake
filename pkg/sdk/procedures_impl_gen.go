@@ -445,6 +445,7 @@ func (r *AlterProcedureRequest) toOpts() *AlterProcedureOptions {
 			AutoEventLogging:           r.Set.AutoEventLogging,
 			EnableConsoleOutput:        r.Set.EnableConsoleOutput,
 			LogLevel:                   r.Set.LogLevel,
+			LogEventLevel:              r.Set.LogEventLevel,
 			MetricLevel:                r.Set.MetricLevel,
 			TraceLevel:                 r.Set.TraceLevel,
 		}
@@ -461,6 +462,7 @@ func (r *AlterProcedureRequest) toOpts() *AlterProcedureOptions {
 			AutoEventLogging:           r.Unset.AutoEventLogging,
 			EnableConsoleOutput:        r.Unset.EnableConsoleOutput,
 			LogLevel:                   r.Unset.LogLevel,
+			LogEventLevel:              r.Unset.LogEventLevel,
 			MetricLevel:                r.Unset.MetricLevel,
 			TraceLevel:                 r.Unset.TraceLevel,
 		}

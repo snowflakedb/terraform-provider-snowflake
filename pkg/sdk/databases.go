@@ -198,6 +198,7 @@ type CreateDatabaseOptions struct {
 	DefaultDDLCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -269,6 +270,7 @@ type CreateSharedDatabaseOptions struct {
 	DefaultDDLCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -343,6 +345,7 @@ type CreateSecondaryDatabaseOptions struct {
 	DefaultDDLCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -490,6 +493,7 @@ type DatabaseSet struct {
 	DefaultDDLCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	TraceLevel                              *TraceLevel                 `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -519,6 +523,7 @@ func (v *DatabaseSet) validate() error {
 		v.DefaultDDLCollation,
 		v.StorageSerializationPolicy,
 		v.LogLevel,
+		v.LogEventLevel,
 		v.TraceLevel,
 		v.SuspendTaskAfterNumFailures,
 		v.TaskAutoRetryAttempts,
@@ -539,6 +544,7 @@ func (v *DatabaseSet) validate() error {
 			"DefaultDDLCollation",
 			"StorageSerializationPolicy",
 			"LogLevel",
+			"LogEventLevel",
 			"TraceLevel",
 			"SuspendTaskAfterNumFailures",
 			"TaskAutoRetryAttempts",
@@ -563,6 +569,7 @@ type DatabaseUnset struct {
 	DefaultDDLCollation                     *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
 	StorageSerializationPolicy              *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	LogEventLevel                           *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	TraceLevel                              *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
 	SuspendTaskAfterNumFailures             *bool `ddl:"keyword" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *bool `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -586,6 +593,7 @@ func (v *DatabaseUnset) validate() error {
 		v.DefaultDDLCollation,
 		v.StorageSerializationPolicy,
 		v.LogLevel,
+		v.LogEventLevel,
 		v.TraceLevel,
 		v.SuspendTaskAfterNumFailures,
 		v.TaskAutoRetryAttempts,
@@ -606,6 +614,7 @@ func (v *DatabaseUnset) validate() error {
 			"DefaultDDLCollation",
 			"StorageSerializationPolicy",
 			"LogLevel",
+			"LogEventLevel",
 			"TraceLevel",
 			"SuspendTaskAfterNumFailures",
 			"TaskAutoRetryAttempts",

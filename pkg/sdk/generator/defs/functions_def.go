@@ -290,9 +290,10 @@ var functionsDef = g.NewInterface(
 				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
 				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
+				OptionalAssignment("LOG_EVENT_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -302,9 +303,10 @@ var functionsDef = g.NewInterface(
 				OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
 				OptionalSQL("ENABLE_CONSOLE_OUTPUT").
 				OptionalSQL("LOG_LEVEL").
+				OptionalSQL("LOG_EVENT_LEVEL").
 				OptionalSQL("METRIC_LEVEL").
 				OptionalSQL("TRACE_LEVEL").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("UNSET"),
 		).
 		OptionalSQL("SET SECURE").
