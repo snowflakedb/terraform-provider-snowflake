@@ -122,7 +122,7 @@ type ExternalFunction struct {
 	IsAnsi             bool
 	MinNumArguments    int
 	MaxNumArguments    int
-	Arguments          []DataType
+	Arguments          []DataType // added manually
 	ArgumentsRaw       string
 	Description        string
 	CatalogName        string
