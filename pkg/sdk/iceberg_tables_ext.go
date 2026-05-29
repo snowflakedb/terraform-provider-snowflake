@@ -2,6 +2,7 @@ package sdk
 
 import "fmt"
 
+// TODO [next PRs]: define these validations too (adjust generator if needed)
 func (opts *CreateIcebergTableOptions) additionalValidations() error {
 	var errs []error
 	for i, col := range opts.ColumnsAndConstraints.Columns {
