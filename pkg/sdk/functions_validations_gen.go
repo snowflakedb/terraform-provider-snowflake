@@ -171,13 +171,13 @@ func (opts *AlterFunctionOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterFunctionOptions", "RenameTo", "Set", "Unset", "SetSecure", "UnsetSecure", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.Comment, opts.Set.ExternalAccessIntegrations, opts.Set.SecretsList, opts.Set.EnableConsoleOutput, opts.Set.LogLevel, opts.Set.MetricLevel, opts.Set.TraceLevel) {
-			errs = append(errs, errAtLeastOneOf("AlterFunctionOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"))
+		if !anyValueSet(opts.Set.Comment, opts.Set.ExternalAccessIntegrations, opts.Set.SecretsList, opts.Set.EnableConsoleOutput, opts.Set.LogLevel, opts.Set.LogEventLevel, opts.Set.MetricLevel, opts.Set.TraceLevel) {
+			errs = append(errs, errAtLeastOneOf("AlterFunctionOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.Comment, opts.Unset.ExternalAccessIntegrations, opts.Unset.EnableConsoleOutput, opts.Unset.LogLevel, opts.Unset.MetricLevel, opts.Unset.TraceLevel) {
-			errs = append(errs, errAtLeastOneOf("AlterFunctionOptions.Unset", "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"))
+		if !anyValueSet(opts.Unset.Comment, opts.Unset.ExternalAccessIntegrations, opts.Unset.EnableConsoleOutput, opts.Unset.LogLevel, opts.Unset.LogEventLevel, opts.Unset.MetricLevel, opts.Unset.TraceLevel) {
+			errs = append(errs, errAtLeastOneOf("AlterFunctionOptions.Unset", "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 		}
 	}
 	return JoinErrors(errs...)

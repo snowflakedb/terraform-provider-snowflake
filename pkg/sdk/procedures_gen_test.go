@@ -1144,16 +1144,16 @@ func TestProcedures_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterProcedureOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "ExecuteAs"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.Comment opts.Set.ExternalAccessIntegrations opts.Set.SecretsList opts.Set.AutoEventLogging opts.Set.EnableConsoleOutput opts.Set.LogLevel opts.Set.MetricLevel opts.Set.TraceLevel] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.Comment opts.Set.ExternalAccessIntegrations opts.Set.SecretsList opts.Set.AutoEventLogging opts.Set.EnableConsoleOutput opts.Set.LogLevel opts.Set.LogEventLevel opts.Set.MetricLevel opts.Set.TraceLevel] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ProcedureSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterProcedureOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterProcedureOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.Comment opts.Unset.ExternalAccessIntegrations opts.Unset.AutoEventLogging opts.Unset.EnableConsoleOutput opts.Unset.LogLevel opts.Unset.MetricLevel opts.Unset.TraceLevel] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Unset.Comment opts.Unset.ExternalAccessIntegrations opts.Unset.AutoEventLogging opts.Unset.EnableConsoleOutput opts.Unset.LogLevel opts.Unset.LogEventLevel opts.Unset.MetricLevel opts.Unset.TraceLevel] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &ProcedureUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterProcedureOptions.Unset", "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterProcedureOptions.Unset", "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 	})
 
 	// all variants added manually

@@ -48,6 +48,7 @@ func TestInt_Procedures(t *testing.T) {
 			// HasAutoEventLogging(sdk.AutoEventLoggingTracing).
 			HasEnableConsoleOutput(true).
 			HasLogLevel(sdk.LogLevelWarn).
+			HasLogEventLevel(sdk.LogLevelWarn).
 			HasMetricLevel(sdk.MetricLevelAll).
 			HasTraceLevel(sdk.TraceLevelAlways),
 		)
@@ -1915,6 +1916,7 @@ def filter_by_role(session, table_name, role):
 			// WithAutoEventLogging(sdk.AutoEventLoggingAll).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(sdk.LogLevelWarn).
+			WithLogEventLevel(sdk.LogLevelWarn).
 			WithMetricLevel(sdk.MetricLevelAll).
 			WithTraceLevel(sdk.TraceLevelAlways).
 			WithComment("new comment"),
@@ -1942,6 +1944,7 @@ def filter_by_role(session, table_name, role):
 			// WithAutoEventLogging(true).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(true).
+			WithLogEventLevel(true).
 			WithMetricLevel(true).
 			WithTraceLevel(true).
 			WithComment(true),
@@ -1996,6 +1999,7 @@ def filter_by_role(session, table_name, role):
 			// WithAutoEventLogging(sdk.AutoEventLoggingTracing).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(sdk.LogLevelWarn).
+			WithLogEventLevel(sdk.LogLevelWarn).
 			WithMetricLevel(sdk.MetricLevelAll).
 			WithTraceLevel(sdk.TraceLevelAlways).
 			WithComment("new comment"),
@@ -2015,6 +2019,7 @@ def filter_by_role(session, table_name, role):
 			// WithAutoEventLogging(true).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(true).
+			WithLogEventLevel(true).
 			WithMetricLevel(true).
 			WithTraceLevel(true).
 			WithComment(true),

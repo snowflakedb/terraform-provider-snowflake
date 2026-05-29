@@ -1144,13 +1144,13 @@ func TestFunctions_Alter(t *testing.T) {
 	t.Run("validation: at least one of the fields [opts.Set.Comment opts.Set.ExternalAccessIntegrations opts.Set.SecretsList opts.Set.EnableConsoleOutput opts.Set.LogLevel opts.Set.MetricLevel opts.Set.TraceLevel] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &FunctionSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterFunctionOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterFunctionOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Unset.Comment opts.Unset.ExternalAccessIntegrations opts.Unset.EnableConsoleOutput opts.Unset.LogLevel opts.Unset.MetricLevel opts.Unset.TraceLevel] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &FunctionUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterFunctionOptions.Unset", "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterFunctionOptions.Unset", "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
 	})
 
 	// all variants added manually
