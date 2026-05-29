@@ -124,7 +124,7 @@ func TestFunctions_CreateForJava(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - two present", func(t *testing.T) {
@@ -136,7 +136,7 @@ func TestFunctions_CreateForJava(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - one valid, one invalid", func(t *testing.T) {
@@ -149,7 +149,7 @@ func TestFunctions_CreateForJava(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	// below validation added manually
@@ -397,7 +397,7 @@ func TestFunctions_CreateForJavascript(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - two present", func(t *testing.T) {
@@ -409,7 +409,7 @@ func TestFunctions_CreateForJavascript(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - one valid, one invalid", func(t *testing.T) {
@@ -422,7 +422,7 @@ func TestFunctions_CreateForJavascript(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	// all variants added manually
@@ -602,7 +602,7 @@ func TestFunctions_CreateForPython(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - two present", func(t *testing.T) {
@@ -614,7 +614,7 @@ func TestFunctions_CreateForPython(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - one valid, one invalid", func(t *testing.T) {
@@ -626,7 +626,7 @@ func TestFunctions_CreateForPython(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
 	})
 
 	// validation added manually
