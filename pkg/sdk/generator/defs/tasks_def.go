@@ -17,7 +17,7 @@ var taskPairs = g.StructPair("taskDBRow", "Task").
 	Field("warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Warehouse"), g.WithManualConvert()).
 	OptionalText("schedule", g.WithRequiredInPlain()).
 	Field("predecessors", "string", "[]SchemaObjectIdentifier", g.WithManualConvert()).
-	PlainField("state", "TaskState", g.WithCustomParser("ToTaskState")).
+	PlainField("state", "TaskState", g.WithManualConvert()).
 	Text("definition").
 	OptionalText("condition", g.WithRequiredInPlain()).
 	Field("allow_overlapping_execution", "string", "bool", g.WithBoolTrueValue("true")).

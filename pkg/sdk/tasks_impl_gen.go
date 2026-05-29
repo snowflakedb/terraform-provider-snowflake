@@ -263,11 +263,6 @@ func (r taskDBRow) convert() (*Task, error) {
 	}
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
 	mapNullStringToNonNullableField(&result.Schedule, r.Schedule)
-	if v, err := ToTaskState(r.State); err == nil {
-		result.State = v
-	} else {
-		return nil, fmt.Errorf("parsing task state: %w", err)
-	}
 	mapNullStringToNonNullableField(&result.Condition, r.Condition)
 	mapNullStringToNonNullableField(&result.LastCommittedOn, r.LastCommittedOn)
 	mapNullStringToNonNullableField(&result.LastSuspendedOn, r.LastSuspendedOn)
