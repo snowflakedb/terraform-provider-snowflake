@@ -349,6 +349,14 @@ func (r taskDBRow) additionalConvert(result *Task) error {
 		}
 		result.Warehouse = &id
 	}
+	if len(r.State) > 0 {
+		taskState, err := ToTaskState(r.State)
+		if err != nil {
+			return fmt.Errorf("failed to convert to task state: %w", err)
+		} else {
+			result.State = taskState
+		}
+	}
 	if len(r.Predecessors) > 0 {
 		names, err := getPredecessors(r.Predecessors)
 		ids := make([]SchemaObjectIdentifier, len(names))
