@@ -313,3 +313,67 @@ func parseTargetCompletionInterval(interval string) (*TaskTargetCompletionInterv
 		return nil, fmt.Errorf("invalid task target completion interval unit: %s", unit)
 	}
 }
+
+// getPredecessors parses the JSON-encoded predecessors string returned by Snowflake.
+// Since 2022_03, Snowflake returns this as a JSON array (even when empty).
+// The list is formatted, e.g.:
+// `[\n  \"\\\"qgb)Z1KcNWJ(\\\".\\\"glN@JtR=7dzP$7\\\".\\\"_XEL(7N_F?@frgT5>dQS>V|vSy,J\\\"\"\n]`.
+func getPredecessors(predecessors string) ([]string, error) {
+	predecessorNames := make([]string, 0)
+	err := json.Unmarshal([]byte(predecessors), &predecessorNames)
+	if err == nil {
+		for i, predecessorName := range predecessorNames {
+			formattedName := strings.Trim(predecessorName, "\\\"")
+			idx := strings.LastIndex(formattedName, "\"") + 1
+			// -1 because of not found +1 is 0
+			if idx == 0 {
+				idx = strings.LastIndex(formattedName, ".") + 1
+			} else if strings.LastIndex(formattedName, ".\"")+2 < idx {
+				idx++
+			}
+			formattedName = formattedName[idx:]
+			predecessorNames[i] = formattedName
+		}
+	}
+	return predecessorNames, err
+}
+
+// additionalConvert handles the four fields in taskDBRow that cannot be expressed
+// by the generator: predecessors (JSON + row context), warehouse / error_integration
+// ("null" string exclusion), and target_completion_interval (custom parser).
+func (r taskDBRow) additionalConvert(result *Task) error {
+	if r.Warehouse.Valid && r.Warehouse.String != "null" {
+		id, err := ParseAccountObjectIdentifier(r.Warehouse.String)
+		if err != nil {
+			return fmt.Errorf("failed to parse warehouse: %w", err)
+		}
+		result.Warehouse = &id
+	}
+	if len(r.Predecessors) > 0 {
+		names, err := getPredecessors(r.Predecessors)
+		ids := make([]SchemaObjectIdentifier, len(names))
+		if err == nil {
+			for i, name := range names {
+				ids[i] = NewSchemaObjectIdentifier(r.DatabaseName, r.SchemaName, name)
+			}
+		}
+		result.Predecessors = ids
+	} else {
+		result.Predecessors = make([]SchemaObjectIdentifier, 0)
+	}
+	if r.ErrorIntegration.Valid && r.ErrorIntegration.String != "null" {
+		id, err := ParseAccountObjectIdentifier(r.ErrorIntegration.String)
+		if err != nil {
+			return fmt.Errorf("failed to parse error_integration: %w", err)
+		}
+		result.ErrorIntegration = &id
+	}
+	if r.TargetCompletionInterval.Valid {
+		targetCompletionInterval, err := parseTargetCompletionInterval(r.TargetCompletionInterval.String)
+		if err != nil {
+			return fmt.Errorf("failed to parse target completion interval: %w", err)
+		}
+		result.TargetCompletionInterval = targetCompletionInterval
+	}
+	return nil
+}

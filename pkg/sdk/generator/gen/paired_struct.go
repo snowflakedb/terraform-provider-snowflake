@@ -69,6 +69,18 @@ func WithBoolTrueValue(v string) PairedFieldOption {
 	}
 }
 
+// WithManualConvert marks this field to be skipped in the generated convert() body.
+// Use this when the field's conversion requires logic that cannot be expressed by the generator
+// (e.g. row-context-dependent parsing, non-standard null exclusion strings).
+// The field must then be handled manually inside the additionalConvert() method.
+// When any field carries WithManualConvert(), the generated convert() automatically emits
+// a call to r.additionalConvert(result) — no separate WithConvertHook() is needed.
+func WithManualConvert() PairedFieldOption {
+	return func(f *pairedField) {
+		f.manualConvert = true
+	}
+}
+
 // WithBoolParsed routes string → bool or sql.NullString → bool conversions through strconv.ParseBool
 // instead of a fixed string comparison. Use when the db column returns "true"/"false" and robust
 // parsing is preferred over a hard-coded truthy value.
@@ -103,6 +115,8 @@ type pairedField struct {
 	boolTrueValue string
 	// boolParsed routes string/NullString → bool conversions through strconv.ParseBool.
 	boolParsed bool
+	// manualConvert marks this field to be skipped in generated convert code.
+	manualConvert bool
 }
 
 // resolvedPlainFieldName returns the explicit override or the CamelCase conversion of dbColumnName.
@@ -427,6 +441,7 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 			CustomParser:   f.customParser,
 			BoolTrueValue:  f.boolTrueValue,
 			BoolParsed:     f.boolParsed,
+			manualConvert:  f.manualConvert,
 		}
 	}
 	return pairs
