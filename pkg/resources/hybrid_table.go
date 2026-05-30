@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -540,7 +541,7 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	if diags := handleHybridTableParametersCreate(d, set); diags.HasError() {
 		return diags
 	}
-	if set.DataRetentionTimeInDays != nil || set.MaxDataExtensionTimeInDays != nil {
+	if !reflect.DeepEqual(*set, *sdk.NewHybridTableSetPropertiesRequest()) {
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
@@ -649,12 +650,12 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		return diags
 	}
 
-	if set.Comment != nil || set.DataRetentionTimeInDays != nil || set.MaxDataExtensionTimeInDays != nil {
+	if !reflect.DeepEqual(*set, *sdk.NewHybridTableSetPropertiesRequest()) {
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
-	if unset.Comment != nil || unset.DataRetentionTimeInDays != nil || unset.MaxDataExtensionTimeInDays != nil {
+	if !reflect.DeepEqual(*unset, *sdk.NewHybridTableUnsetPropertiesRequest()) {
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*unset)); err != nil {
 			return diag.FromErr(fmt.Errorf("error unsetting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
