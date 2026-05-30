@@ -256,7 +256,6 @@ func HybridTable() *schema.Resource {
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
 			forceNewIfColumnCollateChanged(),
 			forceNewIfColumnNullableChanged(),
-			validateColumnDefaultExactlyOneOf(),
 		)),
 
 		Schema: collections.MergeMaps(hybridTableSchema, hybridTableParametersSchema),
@@ -384,9 +383,11 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 
 		if defaultList, ok := c["default"].([]any); ok && len(defaultList) == 1 {
 			defMap := defaultList[0].(map[string]any)
-			if defaultValue := buildHybridColumnDefaultValue(defMap, dataType); defaultValue != nil {
-				req.WithDefaultValue(*defaultValue)
+			defaultValue, err := buildHybridColumnDefaultValue(defMap, dataType)
+			if err != nil {
+				return nil, fmt.Errorf("column %q: %w", c["name"].(string), err)
 			}
+			req.WithDefaultValue(*defaultValue)
 		}
 
 		if collate, ok := c["collate"].(string); ok && collate != "" {
@@ -402,10 +403,12 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 	return requests, nil
 }
 
-// buildHybridColumnDefaultValue builds a ColumnDefaultValue from a default block map.
-// Mutual exclusivity of constant/expression/sequence is not validated here;
-// invalid combinations are rejected by Snowflake (matches table.go approach).
-func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.DataType) *sdk.ColumnDefaultValue {
+// buildHybridColumnDefaultValue builds a ColumnDefaultValue from a default block map
+// and validates that exactly one of constant/expression/sequence is set. This
+// validation lives here, rather than at the schema level, because Terraform
+// plugin SDK v2 cannot express ExactlyOneOf across non-zero indices inside
+// multi-element TypeLists (the parent column list).
+func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.DataType) (*sdk.ColumnDefaultValue, error) {
 	constant, hasConstant := defMap["constant"].(string)
 	hasConstant = hasConstant && len(constant) > 0
 
@@ -414,6 +417,16 @@ func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.Dat
 
 	seq, hasSequence := defMap["sequence"].(string)
 	hasSequence = hasSequence && len(seq) > 0
+
+	set := 0
+	for _, has := range []bool{hasConstant, hasExpression, hasSequence} {
+		if has {
+			set++
+		}
+	}
+	if set != 1 {
+		return nil, fmt.Errorf("default block must have exactly one of %q, %q, or %q set", "constant", "expression", "sequence")
+	}
 
 	var expression string
 	switch {
@@ -427,11 +440,9 @@ func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.Dat
 		expression = expr
 	case hasSequence:
 		expression = fmt.Sprintf("%v.NEXTVAL", seq)
-	default:
-		return nil
 	}
 
-	return &sdk.ColumnDefaultValue{Expression: &expression}
+	return &sdk.ColumnDefaultValue{Expression: &expression}, nil
 }
 
 func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLineConstraintRequest, error) {
@@ -691,9 +702,11 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 				if col._default.sequence != nil {
 					defMap["sequence"] = *col._default.sequence
 				}
-				if defaultValue := buildHybridColumnDefaultValue(defMap, dataType); defaultValue != nil {
-					addReq.WithDefaultValue(*defaultValue)
+				defaultValue, err := buildHybridColumnDefaultValue(defMap, dataType)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("column %q: %w", col.name, err))
 				}
+				addReq.WithDefaultValue(*defaultValue)
 			}
 			if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithAddColumnAction(*addReq)); err != nil {
 				return diag.FromErr(fmt.Errorf("error adding column %s to hybrid table %v: %w", col.name, id.FullyQualifiedName(), err))
@@ -961,52 +974,6 @@ func forceNewIfColumnFieldChanged(fieldName string, changed func(old, new hybrid
 				if o.name == n.name && changed(o, n) {
 					return diff.ForceNew(fmt.Sprintf("column.%d.%s", newIdx, fieldName))
 				}
-			}
-		}
-		return nil
-	}
-}
-
-// validateColumnDefaultExactlyOneOf enforces that each column.default block has
-// exactly one of {constant, expression, sequence} set. This validation cannot
-// be expressed declaratively via ExactlyOneOf in the schema, because
-// terraform-plugin-sdk/v2 rejects ExactlyOneOf paths with non-zero indices
-// inside multi-element TypeLists at provider boot.
-func validateColumnDefaultExactlyOneOf() schema.CustomizeDiffFunc {
-	return func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
-		raw, ok := diff.GetOk("column")
-		if !ok {
-			return nil
-		}
-		cols, ok := raw.([]any)
-		if !ok {
-			return nil
-		}
-		for i, rawCol := range cols {
-			colMap, ok := rawCol.(map[string]any)
-			if !ok {
-				continue
-			}
-			defaultList, ok := colMap["default"].([]any)
-			if !ok || len(defaultList) == 0 {
-				continue
-			}
-			defMap, ok := defaultList[0].(map[string]any)
-			if !ok {
-				continue
-			}
-			set := 0
-			for _, key := range []string{"constant", "expression", "sequence"} {
-				if v, ok := defMap[key].(string); ok && v != "" {
-					set++
-				}
-			}
-			colName, _ := colMap["name"].(string)
-			if set == 0 {
-				return fmt.Errorf("column %q (index %d): exactly one of \"constant\", \"expression\", or \"sequence\" must be set in default block", colName, i)
-			}
-			if set > 1 {
-				return fmt.Errorf("column %q (index %d): only one of \"constant\", \"expression\", or \"sequence\" may be set in default block", colName, i)
 			}
 		}
 		return nil
