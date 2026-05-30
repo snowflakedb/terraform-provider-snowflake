@@ -153,12 +153,6 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 		"column",
 		// Constraint name may differ between config (empty) and what DESCRIBE returns.
 		"primary_key",
-		// Computed + Optional parameter fields: import reads the live Snowflake value via
-		// ShowParameters (e.g. the account default), which can differ from a config that
-		// omits the field. Ignoring during ImportStateVerify is standard for
-		// Computed + Optional fields.
-		"data_retention_time_in_days",
-		"max_data_extension_time_in_days",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -286,12 +280,6 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 		"column",
 		// Constraint name may differ between config (empty) and what DESCRIBE returns.
 		"primary_key",
-		// Computed + Optional parameter fields: import reads the live Snowflake value via
-		// ShowParameters (e.g. the account default), which can differ from a config that
-		// omits the field. Ignoring during ImportStateVerify is standard for
-		// Computed + Optional fields.
-		"data_retention_time_in_days",
-		"max_data_extension_time_in_days",
 	}
 
 	resource.Test(t, resource.TestCase{
