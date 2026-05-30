@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -761,16 +760,16 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) ([]any, error) {
 	flattened := make([]any, 0)
 
-	// Build lookups from config for fields where DESCRIBE returns a normalized/different value
-	// that would cause permanent drift against the user's config:
-	// - type: DESCRIBE normalizes e.g. INTEGER -> NUMBER(38,0), which triggers HasChange("column")
-	//   and cascading ComputedIfAnyAttributeChanged drift on describe_output/show_output.
-	//   DiffSuppressDataTypes handles this at plan level but not for the non-refresh plan check.
-	// - collate: DESCRIBE does not return collation at all.
+	// Build lookups from config for fields where DESCRIBE returns a different value
+	// than the user wrote and the framework cannot reconcile it via DiffSuppressFunc:
+	// - collate: DESCRIBE returns "X COLLATE 'Y'" combined; the SDK splits it but the
+	//   server-side spelling can differ from what the user wrote (e.g. case).
 	// - nullable: DESCRIBE returns NOT NULL for PK columns even when config says nullable=true.
 	//   Preserve the config value since Snowflake silently enforces NOT NULL on PK columns.
+	//
+	// Data type drift (e.g. INTEGER vs NUMBER(38,0)) is handled by DiffSuppressDataTypes
+	// on the column.type field — we do not need to substitute the config value here.
 	type configColumnInfo struct {
-		dataType string
 		collate  string
 		nullable bool
 	}
@@ -780,9 +779,6 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			colMap := rawCol.(map[string]any)
 			if colName, ok := colMap["name"].(string); ok {
 				info := configColumnInfo{nullable: true}
-				if dt, ok := colMap["type"].(string); ok {
-					info.dataType = dt
-				}
 				if collate, ok := colMap["collate"].(string); ok {
 					info.collate = collate
 				}
@@ -806,22 +802,6 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			// would produce a spurious delete+create plan instead of the desired Update.
 			colInfo = configColumnInfo{nullable: true}
 		}
-		// Use the config type if it's semantically equivalent to the DESCRIBE type,
-		// to avoid spurious diffs (e.g. config "INTEGER" vs DESCRIBE "NUMBER(38,0)").
-		colType := td.Type
-		if colInfo.dataType != "" {
-			configDT, configErr := datatypes.ParseDataType(colInfo.dataType)
-			describeDT, describeErr := datatypes.ParseDataType(td.Type)
-			if configErr != nil {
-				log.Printf("[WARN] hybrid_table Read: failed to parse config data type %q for column %q: %v", colInfo.dataType, td.Name, configErr)
-			}
-			if describeErr != nil {
-				log.Printf("[WARN] hybrid_table Read: failed to parse describe data type %q for column %q: %v", td.Type, td.Name, describeErr)
-			}
-			if configErr == nil && describeErr == nil && datatypes.AreTheSame(configDT, describeDT) {
-				colType = colInfo.dataType
-			}
-		}
 		// Prefer the user's config value for collate (it preserves the exact spelling
 		// the user wrote, e.g. "en-ci"). Fall back to the SDK-split Collation from
 		// DESCRIBE for imported tables where no config exists.
@@ -831,7 +811,7 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 		}
 		flat := map[string]any{
 			"name":     td.Name,
-			"type":     colType,
+			"type":     td.Type,
 			"nullable": colInfo.nullable,
 			"comment":  td.Comment,
 			"collate":  collate,
