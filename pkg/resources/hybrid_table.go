@@ -30,14 +30,12 @@ var hybridTableSchema = map[string]*schema.Schema{
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the hybrid table."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the hybrid table."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -623,16 +621,18 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
-	// Handle rename
-	if d.HasChange("name") {
-		databaseName := d.Get("database").(string)
-		schemaName := d.Get("schema").(string)
-		name := d.Get("name").(string)
-		newId := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
+	// Handle rename (name, database, or schema change). RENAME TO accepts a
+	// fully-qualified identifier, so a database or schema change is realised
+	// as a server-side move via the same statement.
+	if d.HasChange("name") || d.HasChange("database") || d.HasChange("schema") {
+		newId := sdk.NewSchemaObjectIdentifier(
+			d.Get("database").(string),
+			d.Get("schema").(string),
+			d.Get("name").(string),
+		)
 
-		err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithNewName(newId))
-		if err != nil {
-			return diag.FromErr(err)
+		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithNewName(newId)); err != nil {
+			return diag.FromErr(fmt.Errorf("error renaming hybrid table from %v to %v: %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))
 		}
 
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
