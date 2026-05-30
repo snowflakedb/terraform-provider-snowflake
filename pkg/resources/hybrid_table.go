@@ -364,41 +364,80 @@ func (c hybridTableColumns) diffs(new hybridTableColumns) (removed hybridTableCo
 // ---------------------------------------------------------------------------
 
 func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest, error) {
-	requests := make([]sdk.HybridTableColumnRequest, len(cols))
-	for i, rawCol := range cols {
-		c := rawCol.(map[string]any)
-		colType := c["type"].(string)
-		dataType, err := datatypes.ParseDataType(colType)
+	parsed := parseHybridColumns(cols)
+	requests := make([]sdk.HybridTableColumnRequest, len(parsed))
+	for i, col := range parsed {
+		dataType, err := datatypes.ParseDataType(col.dataType)
 		if err != nil {
-			return nil, fmt.Errorf("invalid data type for column %s: %w", c["name"].(string), err)
+			return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
 		}
 
-		req := sdk.NewHybridTableColumnRequest(c["name"].(string), sdk.LegacyDataTypeFrom(dataType))
-
-		if nullable, ok := c["nullable"].(bool); ok && !nullable {
+		req := sdk.NewHybridTableColumnRequest(col.name, sdk.LegacyDataTypeFrom(dataType))
+		if !col.nullable {
 			req.WithNotNull(true)
 		}
-
-		if defaultList, ok := c["default"].([]any); ok && len(defaultList) == 1 {
-			defMap := defaultList[0].(map[string]any)
-			defaultValue, err := buildHybridColumnDefaultValue(defMap, dataType)
+		if col._default != nil {
+			defaultValue, err := buildHybridColumnDefaultFromParsed(col._default, dataType)
 			if err != nil {
-				return nil, fmt.Errorf("column %q: %w", c["name"].(string), err)
+				return nil, fmt.Errorf("column %q: %w", col.name, err)
 			}
 			req.WithDefaultValue(*defaultValue)
 		}
-
-		if collate, ok := c["collate"].(string); ok && collate != "" {
-			req.WithCollate(collate)
+		if col.collate != "" {
+			req.WithCollate(col.collate)
 		}
-
-		if comment, ok := c["comment"].(string); ok && comment != "" {
-			req.WithComment(comment)
+		if col.comment != "" {
+			req.WithComment(col.comment)
 		}
-
 		requests[i] = *req
 	}
 	return requests, nil
+}
+
+// buildHybridAddColumnAction builds the alter-time add-column action from a parsed column.
+// Mirrors the create-time path in buildHybridTableColumnRequests so that the two paths share
+// data-type parsing and default-value handling. Note that HybridTableAddColumnActionRequest
+// has no NotNull field — non-nullable columns can only be added via an InlineConstraint, but
+// the resource forces recreation on nullable changes (see forceNewIfColumnNullableChanged),
+// so a nullable=false branch here would be unreachable.
+func buildHybridAddColumnAction(col hybridTableColumn) (*sdk.HybridTableAddColumnActionRequest, error) {
+	dataType, err := datatypes.ParseDataType(col.dataType)
+	if err != nil {
+		return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
+	}
+	req := sdk.NewHybridTableAddColumnActionRequest(col.name, sdk.LegacyDataTypeFrom(dataType))
+	if col._default != nil {
+		defaultValue, err := buildHybridColumnDefaultFromParsed(col._default, dataType)
+		if err != nil {
+			return nil, fmt.Errorf("column %q: %w", col.name, err)
+		}
+		req.WithDefaultValue(*defaultValue)
+	}
+	if col.collate != "" {
+		req.WithCollate(col.collate)
+	}
+	if col.comment != "" {
+		req.WithComment(col.comment)
+	}
+	return req, nil
+}
+
+// buildHybridColumnDefaultFromParsed converts the resource-level columnDefault
+// into the map shape expected by buildHybridColumnDefaultValue, then delegates.
+// It exists so the create-time and alter-time paths share the same default-value
+// formatting and exclusivity validation.
+func buildHybridColumnDefaultFromParsed(cd *columnDefault, dataType datatypes.DataType) (*sdk.ColumnDefaultValue, error) {
+	defMap := map[string]any{}
+	if cd.constant != nil {
+		defMap["constant"] = *cd.constant
+	}
+	if cd.expression != nil {
+		defMap["expression"] = *cd.expression
+	}
+	if cd.sequence != nil {
+		defMap["sequence"] = *cd.sequence
+	}
+	return buildHybridColumnDefaultValue(defMap, dataType)
 }
 
 // buildHybridColumnDefaultValue builds a ColumnDefaultValue from a default block map
@@ -680,33 +719,9 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 
 		// Add new columns (one at a time)
 		for _, col := range added {
-			dataType, err := datatypes.ParseDataType(col.dataType)
+			addReq, err := buildHybridAddColumnAction(col)
 			if err != nil {
 				return diag.FromErr(err)
-			}
-			addReq := sdk.NewHybridTableAddColumnActionRequest(col.name, sdk.DataType(col.dataType))
-			if col.collate != "" {
-				addReq.WithCollate(col.collate)
-			}
-			if col.comment != "" {
-				addReq.WithComment(col.comment)
-			}
-			if col._default != nil {
-				defMap := map[string]any{}
-				if col._default.constant != nil {
-					defMap["constant"] = *col._default.constant
-				}
-				if col._default.expression != nil {
-					defMap["expression"] = *col._default.expression
-				}
-				if col._default.sequence != nil {
-					defMap["sequence"] = *col._default.sequence
-				}
-				defaultValue, err := buildHybridColumnDefaultValue(defMap, dataType)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("column %q: %w", col.name, err))
-				}
-				addReq.WithDefaultValue(*defaultValue)
 			}
 			if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithAddColumnAction(*addReq)); err != nil {
 				return diag.FromErr(fmt.Errorf("error adding column %s to hybrid table %v: %w", col.name, id.FullyQualifiedName(), err))
