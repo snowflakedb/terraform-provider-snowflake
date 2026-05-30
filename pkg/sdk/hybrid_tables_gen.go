@@ -20,8 +20,6 @@ type HybridTables interface {
 	CreateIndex(ctx context.Context, request *CreateIndexHybridTableRequest) error
 	DropIndex(ctx context.Context, request *DropIndexHybridTableRequest) error
 	ShowIndexes(ctx context.Context, request *ShowIndexesHybridTableRequest) ([]HybridTableIndex, error)
-	// NOTE: ShowParameters is a hand-written extension in hybrid_tables_ext.go. The code generator
-	// does not emit SHOW PARAMETERS methods; see pkg/sdk/functions_ext.go:155 for the same pattern.
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
 }
 

@@ -320,4 +320,9 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
+).WithCustomInterfaceMethod(
+	"ShowParameters",
+	"",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+	"[]*Parameter", "error",
 )
