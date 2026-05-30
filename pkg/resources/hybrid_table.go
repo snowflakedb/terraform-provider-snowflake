@@ -15,7 +15,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -377,7 +376,7 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 			return nil, fmt.Errorf("invalid data type for column %s: %w", c["name"].(string), err)
 		}
 
-		req := sdk.NewHybridTableColumnRequest(c["name"].(string), sdk.DataType(colType))
+		req := sdk.NewHybridTableColumnRequest(c["name"].(string), sdk.LegacyDataTypeFrom(dataType))
 
 		if nullable, ok := c["nullable"].(bool); ok && !nullable {
 			req.WithNotNull(true)
@@ -420,7 +419,7 @@ func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.Dat
 	switch {
 	case hasConstant:
 		if datatypes.IsTextDataType(dataType) {
-			expression = snowflake.EscapeSnowflakeString(constant)
+			expression = "'" + strings.ReplaceAll(constant, "'", "''") + "'"
 		} else {
 			expression = constant
 		}
@@ -908,8 +907,9 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) ([]any, error) {
 
 	// Constant: unescape for string types
 	if sdk.IsStringType(td.Type) {
+		unquoted := strings.TrimSuffix(strings.TrimPrefix(defaultRaw, "'"), "'")
 		return []any{map[string]any{
-			"constant": snowflake.UnescapeSnowflakeString(defaultRaw),
+			"constant": strings.ReplaceAll(unquoted, "''", "'"),
 		}}, nil
 	}
 
