@@ -661,7 +661,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 
 	// Handle rename (name, database, or schema change). RENAME TO accepts a
-	// fully-qualified identifier, so a database or schema change is realised
+	// fully-qualified identifier, so a database or schema change is realized
 	// as a server-side move via the same statement.
 	if d.HasChange("name") || d.HasChange("database") || d.HasChange("schema") {
 		newId := sdk.NewSchemaObjectIdentifier(
