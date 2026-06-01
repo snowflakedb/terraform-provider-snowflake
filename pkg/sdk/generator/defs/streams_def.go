@@ -40,7 +40,7 @@ var (
 			Text("schema_name").
 			OptionalText("owner").
 			OptionalText("comment").
-			OptionalSchemaObjectIdentifier("table_name", g.WithPlainFieldName("TableName")).
+			OptionalSchemaObjectIdentifier("table_name", g.WithPlainFieldName("TableName"), g.WithManualConvert()).
 			OptionalEnum("source_type", StreamSourceTypeEnumDef).
 			NullableSchemaObjectIdentifierArray("base_tables").
 			OptionalText("type").
