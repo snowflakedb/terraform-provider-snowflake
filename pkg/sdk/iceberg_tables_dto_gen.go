@@ -16,8 +16,8 @@ type CreateIcebergTableRequest struct {
 	OrReplace                  *bool
 	Transient                  *bool
 	IfNotExists                *bool
-	name                       SchemaObjectIdentifier // required
-	ColumnsAndConstraints      IcebergTableColumnsAndConstraintsRequest
+	name                       SchemaObjectIdentifier                   // required
+	ColumnsAndConstraints      IcebergTableColumnsAndConstraintsRequest // required
 	PartitionBy                []IcebergTablePartitionExpressionRequest
 	PathLayout                 *IcebergTablePathLayout
 	ClusterBy                  []string

@@ -226,6 +226,10 @@ func (d *TableDropSearchOptimization) additionalValidations() error {
 	return JoinErrors(errs...)
 }
 
+func (r *CreateIcebergTableRequest) GetName() SchemaObjectIdentifier {
+	return r.name
+}
+
 // icebergTableExternalVolumeQuoted formats an AccountObjectIdentifier for the
 // EXTERNAL_VOLUME clause of CREATE ICEBERG TABLE, which expects a single-quoted
 // string literal whose content is the double-quoted volume name (e.g. '"vol1"').
@@ -266,11 +270,15 @@ func TableColumnInlineConstraintFromRequest(r *TableColumnInlineConstraintReques
 		}
 	}
 	if r.FK != nil {
+		var refColumns []Column
+		if r.FK.RefColumn != nil {
+			refColumns = []Column{{Value: *r.FK.RefColumn}}
+		}
 		out.FK = &TableColumnInlineFK{
 			Name:               r.FK.Name,
 			ForeignKey:         r.FK.ForeignKey,
 			References:         r.FK.References,
-			RefColumn:          r.FK.RefColumn,
+			RefColumns:         refColumns,
 			Match:              r.FK.Match,
 			On:                 r.FK.On,
 			Enforced:           r.FK.Enforced,

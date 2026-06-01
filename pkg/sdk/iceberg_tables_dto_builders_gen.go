@@ -6,9 +6,11 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes
 
 func NewCreateIcebergTableRequest(
 	name SchemaObjectIdentifier,
+	columnsAndConstraints IcebergTableColumnsAndConstraintsRequest,
 ) *CreateIcebergTableRequest {
 	s := CreateIcebergTableRequest{}
 	s.name = name
+	s.ColumnsAndConstraints = columnsAndConstraints
 	return &s
 }
 
@@ -24,11 +26,6 @@ func (s *CreateIcebergTableRequest) WithTransient(transient bool) *CreateIceberg
 
 func (s *CreateIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateIcebergTableRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateIcebergTableRequest) WithColumnsAndConstraints(columnsAndConstraints IcebergTableColumnsAndConstraintsRequest) *CreateIcebergTableRequest {
-	s.ColumnsAndConstraints = columnsAndConstraints
 	return s
 }
 

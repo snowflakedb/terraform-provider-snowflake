@@ -182,7 +182,7 @@ var icebergTablesDef = g.NewInterface(
 		SQL("ICEBERG TABLE").
 		IfNotExists().
 		Name().
-		QueryStructField("ColumnsAndConstraints", icebergTableColumnsAndConstraints, g.ListOptions().Parentheses()).
+		QueryStructField("ColumnsAndConstraints", icebergTableColumnsAndConstraints, g.ListOptions().Parentheses().Required()).
 		ListQueryStructField("PartitionBy", icebergTablePartitionExpression, g.KeywordOptions().Parentheses().SQL("PARTITION BY")).
 		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).

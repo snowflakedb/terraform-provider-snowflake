@@ -51,6 +51,7 @@ type Client struct {
 	GitRepositories              GitRepositories
 	Grants                       Grants
 	HybridTables                 HybridTables
+	IcebergTables                IcebergTables
 	ImageRepositories            ImageRepositories
 	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
@@ -192,6 +193,7 @@ func (c *Client) initialize() {
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
 	c.HybridTables = &hybridTables{client: c}
+	c.IcebergTables = &icebergTables{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
 	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}

@@ -36,6 +36,10 @@ var (
 	DataTypeTimestampNTZ, _ = datatypes.ParseDataType("TIMESTAMP_NTZ")
 	DataTypeTimestampLTZ, _ = datatypes.ParseDataType("TIMESTAMP_LTZ")
 	DataTypeTimestampTZ, _  = datatypes.ParseDataType("TIMESTAMP_TZ")
+	// DataTypeVarcharIceberg is VARCHAR(134217728) — the only VARCHAR length accepted by Snowflake iceberg tables.
+	DataTypeVarcharIceberg, _ = datatypes.ParseDataType("VARCHAR(134217728)")
+	// DataTypeTimestampNTZIceberg is TIMESTAMP_NTZ(6) — iceberg tables only support scale 0 or 6 for timestamps.
+	DataTypeTimestampNTZIceberg, _ = datatypes.ParseDataType("TIMESTAMP_NTZ(6)")
 )
 
 var DefaultVarcharAsString = fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength)

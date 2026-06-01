@@ -68,6 +68,17 @@ func (c *TableClient) CreateWithPredefinedColumns(t *testing.T) (*sdk.Table, fun
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), columns))
 }
 
+func (c *TableClient) CreateWithPredefinedColumnsForIcebergTable(t *testing.T) (*sdk.Table, func()) {
+	t.Helper()
+
+	table, cleanup := c.CreateWithPredefinedColumns(t)
+	t.Cleanup(cleanup)
+
+	c.client().Alter(context.Background(), sdk.NewAlterTableRequest(table.ID()).WithConstraintAction(sdk.NewTableConstraintActionRequest().WithAdd(sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithName(new("pk_id")).WithColumns([]string{"id"}))))
+
+	return table, cleanup
+}
+
 func (c *TableClient) CreateWithChangeTrackingInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.Table, func()) {
 	t.Helper()
 
