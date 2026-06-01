@@ -427,30 +427,28 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 	return requests, nil
 }
 
-// buildHybridAddColumnAction builds the alter-time add-column action from a parsed column.
-// Mirrors the create-time path in buildHybridTableColumnRequests so that the two paths share
-// data-type parsing and default-value handling. Note that HybridTableAddColumnActionRequest
-// has no NotNull field — non-nullable columns can only be added via an InlineConstraint, but
-// the resource forces recreation on nullable changes (see forceNewIfColumnNullableChanged),
-// so a nullable=false branch here would be unreachable.
+// buildHybridAddColumnAction builds the alter-time add-column action from a
+// parsed column. Delegates the shared parsing/validation work to
+// buildHybridColumnSpec and only maps the spec onto the
+// HybridTableAddColumnActionRequest type-specific fields. Note that this
+// request has no NotNull — non-nullable columns can only be added via an
+// InlineConstraint, but the resource forces recreation on nullable changes
+// (see forceNewIfColumnNullableChanged), so a nullable=false branch here
+// would be unreachable.
 func buildHybridAddColumnAction(col hybridTableColumn) (*sdk.HybridTableAddColumnActionRequest, error) {
-	dataType, err := datatypes.ParseDataType(col.dataType)
+	spec, err := buildHybridColumnSpec(col)
 	if err != nil {
-		return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
+		return nil, err
 	}
-	req := sdk.NewHybridTableAddColumnActionRequest(col.name, sdk.LegacyDataTypeWithAttrs(dataType))
-	if col._default != nil {
-		defaultValue, err := buildHybridColumnDefaultFromParsed(col._default, dataType)
-		if err != nil {
-			return nil, fmt.Errorf("column %q: %w", col.name, err)
-		}
-		req.WithDefaultValue(*defaultValue)
+	req := sdk.NewHybridTableAddColumnActionRequest(col.name, sdk.LegacyDataTypeWithAttrs(spec.dataType))
+	if spec.defaultValue != nil {
+		req.WithDefaultValue(*spec.defaultValue)
 	}
-	if col.collate != "" {
-		req.WithCollate(col.collate)
+	if spec.collate != "" {
+		req.WithCollate(spec.collate)
 	}
-	if col.comment != "" {
-		req.WithComment(col.comment)
+	if spec.comment != "" {
+		req.WithComment(spec.comment)
 	}
 	return req, nil
 }
