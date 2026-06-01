@@ -16,7 +16,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO(SNOW-3580377): Investigate and unskip:
+// Postgres UYGUAKIT_8AE63E88BB17CC8C28DE09F9AEE5ED24554736ADAL failed to be created due to: Internal error occurred during operation. ID: 57de7cad-0c94-43dc-9c24-daa681a65c4b.
 func TestInt_PostgresInstances(t *testing.T) {
+	t.Skip("TODO(SNOW-3580377): Investigate and unskip")
 	client := testClient(t)
 	ctx := testContext(t)
 
