@@ -58,14 +58,15 @@ func hybridTableParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.Sch
 	return c.HybridTables.ShowParameters
 }
 
-// handleHybridTableParametersCreate populates a SET request for the post-CREATE ALTER call.
-// CreateHybridTableOptions does not carry DATA_RETENTION_TIME_IN_DAYS or MAX_DATA_EXTENSION_TIME_IN_DAYS
-// (see pkg/sdk/hybrid_tables_gen.go:26) — they must be applied via a follow-up ALTER TABLE ... SET
-// after the initial CREATE succeeds.
-func handleHybridTableParametersCreate(d *schema.ResourceData, set *sdk.HybridTableSetPropertiesRequest) diag.Diagnostics {
+// handleHybridTableParametersCreate populates retention parameters directly on a
+// CreateHybridTableRequest. Both DATA_RETENTION_TIME_IN_DAYS and
+// MAX_DATA_EXTENSION_TIME_IN_DAYS are accepted at CREATE HYBRID TABLE time even
+// though the public docs omit them from the syntax diagram (verified against
+// production via SHOW PARAMETERS).
+func handleHybridTableParametersCreate(d *schema.ResourceData, req *sdk.CreateHybridTableRequest) diag.Diagnostics {
 	return JoinDiags(
-		handleParameterCreate(d, sdk.ObjectParameterDataRetentionTimeInDays, &set.DataRetentionTimeInDays),
-		handleParameterCreate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &set.MaxDataExtensionTimeInDays),
+		handleParameterCreate(d, sdk.ObjectParameterDataRetentionTimeInDays, &req.DataRetentionTimeInDays),
+		handleParameterCreate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &req.MaxDataExtensionTimeInDays),
 	)
 }
 

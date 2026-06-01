@@ -617,27 +617,15 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		request.WithComment(v.(string))
 	}
 
+	if diags := handleHybridTableParametersCreate(d, request); diags.HasError() {
+		return diags
+	}
+
 	if err := client.HybridTables.Create(ctx, request); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating hybrid table %v: %w", id.FullyQualifiedName(), err))
 	}
 
-	// CRITICAL: Set ID immediately after CREATE, BEFORE any ALTER.
-	// If ALTER fails, the table exists in Snowflake and must be in state
-	// so the next apply can update it rather than fail on duplicate create.
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	// Set properties not available on CREATE (data_retention, max_data_extension).
-	// CreateHybridTableOptions only has Comment *string, so apply parameters via a follow-up ALTER.
-	set := sdk.NewHybridTableSetPropertiesRequest()
-	if diags := handleHybridTableParametersCreate(d, set); diags.HasError() {
-		return diags
-	}
-	if !reflect.DeepEqual(*set, *sdk.NewHybridTableSetPropertiesRequest()) {
-		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithSet(*set)); err != nil {
-			d.Partial(true)
-			return diag.FromErr(fmt.Errorf("error setting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
-		}
-	}
 
 	return GetReadHybridTableFunc(false)(ctx, d, meta)
 }
