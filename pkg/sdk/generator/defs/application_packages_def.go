@@ -147,8 +147,7 @@ var applicationPackagesDef = g.NewInterface(
 		Number("retention_time").
 		Text("options").
 		OptionalText("dropped_on", g.WithRequiredInPlain()).
-		OptionalText("application_class", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("application_class", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowApplicationPackages").
 		Show().
 		SQL("APPLICATION PACKAGES").

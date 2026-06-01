@@ -92,8 +92,7 @@ var sessionPoliciesDef = g.NewInterface(
 			Text("owner").
 			Text("comment").
 			Text("owner_role_type").
-			Text("options").
-			WithConvertGeneration(),
+			Text("options"),
 		g.NewQueryStruct("ShowSessionPolicies").
 			Show().
 			SQL("SESSION POLICIES").
@@ -112,8 +111,7 @@ var sessionPoliciesDef = g.NewInterface(
 			Text("property").
 			Text("value").
 			Text("default").
-			Text("description").
-			WithConvertGeneration(),
+			Text("description"),
 		g.NewQueryStruct("DescribeSessionPolicy").
 			Describe().
 			SQL("SESSION POLICY").

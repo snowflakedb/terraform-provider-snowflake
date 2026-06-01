@@ -87,8 +87,7 @@ var streamlitsDef = g.NewInterface(
 		OptionalText("comment", g.WithRequiredInPlain()).
 		OptionalText("query_warehouse", g.WithRequiredInPlain()).
 		Text("url_id").
-		Text("owner_role_type").
-		WithConvertGeneration(),
+		Text("owner_role_type"),
 	g.NewQueryStruct("ShowStreamlits").
 		Show().
 		Terse().
@@ -113,8 +112,7 @@ var streamlitsDef = g.NewInterface(
 		StringList("user_packages").
 		StringList("import_urls").
 		StringList("external_access_integrations", g.WithManualConvert()).
-		Text("external_access_secrets").
-		WithConvertGeneration(),
+		Text("external_access_secrets"),
 	g.NewQueryStruct("DescribeStreamlit").
 		Describe().
 		SQL("STREAMLIT").

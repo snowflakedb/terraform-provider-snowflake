@@ -450,13 +450,6 @@ func (p *PairedStructs) JsonField(dbColumnName, kind string, opts ...PairedField
 	return p
 }
 
-// WithConvertGeneration opts this PairedStructs into automatic convert() body generation.
-// Deprecated: convert generation is now enabled by default. This method is a no-op kept for compatibility until all call sites are cleaned up.
-func (p *PairedStructs) WithConvertGeneration() *PairedStructs {
-	p.generateConvert = true
-	return p
-}
-
 // WithoutConvertGeneration disables automatic convert() body generation for this pair.
 // Use when the manual convert() implementation cannot yet be expressed via the generator.
 func (p *PairedStructs) WithoutConvertGeneration() *PairedStructs {

@@ -93,8 +93,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		OptionalText("custom_ingress_hostname").
 		OptionalText("openflow_key").
 		Text("owner").
-		OptionalText("comment").
-		WithConvertGeneration(),
+		OptionalText("comment"),
 	g.NewQueryStruct("ShowOpenflowDeployments").
 		Show().
 		SQL("OPENFLOW DEPLOYMENTS").
@@ -118,8 +117,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		Time("created_on").
 		Time("updated_on").
 		OptionalText("error_code").
-		OptionalText("status_message").
-		WithConvertGeneration(),
+		OptionalText("status_message"),
 	g.NewQueryStruct("DescribeOpenflowDeployment").
 		Describe().
 		SQL("OPENFLOW DEPLOYMENT").

@@ -76,13 +76,11 @@ var functionPairs = g.StructPair("functionRow", "Function").
 	BoolFromText("is_external_function").
 	Text("language").
 	OptionalBoolFromText("is_memoizable", g.WithRequiredInPlain()).
-	OptionalBoolFromText("is_data_metric", g.WithRequiredInPlain()).
-	WithConvertGeneration()
+	OptionalBoolFromText("is_data_metric", g.WithRequiredInPlain())
 
 var functionDetailPairs = g.StructPair("functionDetailRow", "FunctionDetail").
 	Text("property").
-	OptionalText("value", g.WithManualConvert()).
-	WithConvertGeneration()
+	OptionalText("value", g.WithManualConvert())
 
 var functionsDef = g.NewInterface(
 	"Functions",

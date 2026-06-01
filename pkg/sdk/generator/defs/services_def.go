@@ -178,8 +178,7 @@ var servicesDef = g.NewInterface(
 		Text("spec_digest").
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
-		OptionalText("managing_object_name").
-		WithConvertGeneration(),
+		OptionalText("managing_object_name"),
 	g.NewQueryStruct("ShowServices").
 		Show().
 		OptionalSQL("JOB").
@@ -224,8 +223,7 @@ var servicesDef = g.NewInterface(
 		Text("spec_digest").
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
-		OptionalText("managing_object_name").
-		WithConvertGeneration(),
+		OptionalText("managing_object_name"),
 	g.NewQueryStruct("DescService").
 		Describe().
 		SQL("SERVICE").

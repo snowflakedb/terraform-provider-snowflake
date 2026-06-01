@@ -81,8 +81,7 @@ var tagReferencesDef = g.NewInterface(
 		Text("OBJECT_NAME").
 		Enum("DOMAIN", TagReferenceObjectDomainDef).
 		OptionalText("COLUMN_NAME").
-		Enum("APPLY_METHOD", TagReferenceApplyMethodDef).
-		WithConvertGeneration(),
+		Enum("APPLY_METHOD", TagReferenceApplyMethodDef),
 	g.NewQueryStruct("GetForEntity").
 		SQLWithCustomFieldName("selectEverythingFrom", "SELECT * FROM TABLE").
 		OptionalQueryStructField(

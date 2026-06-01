@@ -113,8 +113,7 @@ var (
 				Number("entries_in_allowed_ip_list").
 				Number("entries_in_blocked_ip_list").
 				Number("entries_in_allowed_network_rules").
-				Number("entries_in_blocked_network_rules").
-				WithConvertGeneration(),
+				Number("entries_in_blocked_network_rules"),
 			g.NewQueryStruct("ShowNetworkPolicies").
 				Show().
 				SQL("NETWORK POLICIES").
@@ -125,8 +124,7 @@ var (
 			"https://docs.snowflake.com/en/sql-reference/sql/desc-network-policy",
 			g.StructPair("describeNetworkPolicyDBRow", "NetworkPolicyProperty").
 				Text("name").
-				Text("value").
-				WithConvertGeneration(),
+				Text("value"),
 			g.NewQueryStruct("DescribeNetworkPolicy").
 				Describe().
 				SQL("NETWORK POLICY").

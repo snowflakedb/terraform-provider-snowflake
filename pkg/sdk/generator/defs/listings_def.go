@@ -50,8 +50,7 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 	OptionalText("rejected_on").
 	OptionalText("organization_profile_name").
 	OptionalText("uniform_listing_locator").
-	OptionalText("detailed_target_accounts").
-	WithConvertGeneration()
+	OptionalText("detailed_target_accounts")
 
 // There are more fields listed than in https://docs.snowflake.com/en/sql-reference/sql/desc-listing
 // They are mapped straight from the DESC LISTING output.
@@ -114,8 +113,7 @@ var listingDetailsPairs = g.StructPair("listingDetailsDBRow", "ListingDetails").
 	OptionalBool("is_share").
 	OptionalText("request_approval_type").
 	OptionalText("monetization_display_order").
-	OptionalText("legacy_uniform_listing_locators").
-	WithConvertGeneration()
+	OptionalText("legacy_uniform_listing_locators")
 
 var listingVersionPairs = g.StructPair("listingVersionDBRow", "ListingVersion").
 	Text("created_on").
@@ -128,8 +126,7 @@ var listingVersionPairs = g.StructPair("listingVersionDBRow", "ListingVersion").
 	Bool("is_last").
 	OptionalText("comment").
 	Text("source_location_url").
-	OptionalText("git_commit_hash").
-	WithConvertGeneration()
+	OptionalText("git_commit_hash")
 
 var listingsDef = g.NewInterface(
 	"Listings",

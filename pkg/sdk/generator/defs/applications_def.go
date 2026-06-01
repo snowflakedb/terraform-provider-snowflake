@@ -117,8 +117,7 @@ var applicationsDef = g.NewInterface(
 		Text("label").
 		Number("patch").
 		Text("options").
-		Number("retention_time").
-		WithConvertGeneration(),
+		Number("retention_time"),
 	g.NewQueryStruct("ShowApplications").
 		Show().
 		SQL("APPLICATIONS").
@@ -130,8 +129,7 @@ var applicationsDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-application",
 	g.StructPair("applicationPropertyRow", "ApplicationProperty").
 		Text("property").
-		OptionalText("value", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("value", g.WithRequiredInPlain()),
 	g.NewQueryStruct("DescribeApplication").
 		Describe().
 		SQL("APPLICATION").

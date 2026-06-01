@@ -49,8 +49,7 @@ var applicationRolesDef = g.NewInterface(
 		Text("name").
 		Text("owner").
 		Text("comment").
-		Text("owner_role_type").
-		WithConvertGeneration(),
+		Text("owner_role_type"),
 	g.NewQueryStruct("ShowApplicationRoles").
 		Show().
 		SQL("APPLICATION ROLES IN APPLICATION").

@@ -48,8 +48,7 @@ var (
 			OptionalEnum("mode", StreamModeEnumDef).
 			OptionalTime("stale_after").
 			OptionalText("invalid_reason").
-			OptionalText("owner_role_type").
-			WithConvertGeneration()
+			OptionalText("owner_role_type")
 
 	streamsDef = g.NewInterface(
 		"Streams",

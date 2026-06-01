@@ -332,8 +332,7 @@ var icebergTablesDef = g.NewInterface(
 		Text("auto_refresh_status").
 		Text("partition_specs").
 		Number("current_partition_spec_id").
-		Number("iceberg_table_format_version").
-		WithConvertGeneration(),
+		Number("iceberg_table_format_version"),
 	g.NewQueryStruct("ShowIcebergTables").
 		Show().
 		Terse().
@@ -364,8 +363,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalText("policy name", g.WithPlainFieldName("PolicyName")).
 		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain")).
 		OptionalText("name mapping", g.WithPlainFieldName("NameMapping")).
-		OptionalText("write default", g.WithPlainFieldName("WriteDefault")).
-		WithConvertGeneration(),
+		OptionalText("write default", g.WithPlainFieldName("WriteDefault")),
 	g.NewQueryStruct("DescribeIcebergTable").
 		Describe().
 		SQL("ICEBERG TABLE").

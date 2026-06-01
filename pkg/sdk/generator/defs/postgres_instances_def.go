@@ -40,13 +40,11 @@ var postgresInstancesPairs = g.StructPair("postgresInstancesRow", "PostgresInsta
 	BoolFromText("is_ha", g.WithBoolTrueValue("true")).
 	Number("retention_time").
 	Enum("state", PostgresInstanceStateEnumDef).
-	OptionalText("comment").
-	WithConvertGeneration()
+	OptionalText("comment")
 
 var postgresInstanceDetailPairs = g.StructPair("postgresInstanceDetailsRow", "PostgresInstanceProperty").
 	Text("property").
-	OptionalText("value", g.WithRequiredInPlain()).
-	WithConvertGeneration()
+	OptionalText("value", g.WithRequiredInPlain())
 
 var postgresInstancesDef = g.NewInterface(
 	"PostgresInstances",

@@ -87,8 +87,7 @@ var eventTablesDef = g.NewInterface(
 		Text("schema_name").
 		OptionalText("owner", g.WithRequiredInPlain()).
 		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowEventTables").
 		Show().
 		Terse().
@@ -105,8 +104,7 @@ var eventTablesDef = g.NewInterface(
 	g.StructPair("eventTableDetailsRow", "EventTableDetails").
 		Text("name").
 		Text("kind").
-		Text("comment").
-		WithConvertGeneration(),
+		Text("comment"),
 	g.NewQueryStruct("DescribeEventTable").
 		Describe().
 		SQL("EVENT TABLE").

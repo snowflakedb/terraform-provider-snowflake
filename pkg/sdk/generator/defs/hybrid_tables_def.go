@@ -221,8 +221,7 @@ var hybridTablesDef = g.NewInterface(
 		OptionalNumber("rows").
 		OptionalNumber("bytes").
 		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowHybridTables").
 		Show().
 		Terse().
@@ -249,8 +248,7 @@ var hybridTablesDef = g.NewInterface(
 		OptionalText("comment", g.WithRequiredInPlain()).
 		OptionalText("policy name", g.WithPlainFieldName("PolicyName"), g.WithRequiredInPlain()).
 		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"), g.WithRequiredInPlain()).
-		OptionalText("schema_evolution_record", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("schema_evolution_record", g.WithRequiredInPlain()),
 	g.NewQueryStruct("DescribeHybridTable").
 		Describe().
 		SQL("TABLE").
@@ -295,8 +293,7 @@ var hybridTablesDef = g.NewInterface(
 		Text("database_name").
 		Text("schema_name").
 		OptionalText("owner", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowHybridTableIndexes").
 		Show().
 		SQL("INDEXES").

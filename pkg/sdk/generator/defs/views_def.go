@@ -24,8 +24,7 @@ var viewPairs = g.StructPair("viewDBRow", "View").
 	OptionalBool("is_secure", g.WithRequiredInPlain()).
 	OptionalBool("is_materialized", g.WithRequiredInPlain()).
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).
-	OptionalText("change_tracking", g.WithRequiredInPlain()).
-	WithConvertGeneration()
+	OptionalText("change_tracking", g.WithRequiredInPlain())
 
 // TODO [SNOW-965322]: extract common type for describe
 var viewDetailsPairs = g.StructPair("viewDetailsRow", "ViewDetails").
@@ -40,8 +39,7 @@ var viewDetailsPairs = g.StructPair("viewDetailsRow", "ViewDetails").
 	OptionalText("expression").
 	OptionalText("comment").
 	OptionalText("policy name", g.WithPlainFieldName("PolicyName")).
-	OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain")).
-	WithConvertGeneration()
+	OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"))
 
 var columnDef = g.NewQueryStruct("Column").
 	Text("Value", g.KeywordOptions().Required().DoubleQuotes())
