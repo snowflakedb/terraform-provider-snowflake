@@ -165,6 +165,11 @@ var hybridTablesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		QueryStructField("ColumnsAndConstraints", hybridTableColumnsConstraintsAndIndexes, g.ListOptions().Parentheses()).
+		// NOTE: DATA_RETENTION_TIME_IN_DAYS and MAX_DATA_EXTENSION_TIME_IN_DAYS are
+		// accepted at CREATE HYBRID TABLE time even though the public docs omit them
+		// from the syntax diagram. Verified against production via SHOW PARAMETERS.
+		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
+		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),

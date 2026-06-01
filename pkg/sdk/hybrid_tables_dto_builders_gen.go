@@ -22,6 +22,16 @@ func (s *CreateHybridTableRequest) WithIfNotExists(ifNotExists bool) *CreateHybr
 	return s
 }
 
+func (s *CreateHybridTableRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateHybridTableRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *CreateHybridTableRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateHybridTableRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
 func (s *CreateHybridTableRequest) WithComment(comment string) *CreateHybridTableRequest {
 	s.Comment = &comment
 	return s

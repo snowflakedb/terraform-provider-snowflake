@@ -789,6 +789,27 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "name" VARCHAR(100) NOT NULL COLLATE 'en-ci' COMMENT 'name column')`, id.FullyQualifiedName())
 	})
+
+	t.Run("create with retention parameters", func(t *testing.T) {
+		opts := &CreateHybridTableOptions{
+			name: id,
+			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
+				Columns: []HybridTableColumn{
+					{
+						Name: "id",
+						Type: DataType("NUMBER(38,0)"),
+						InlineConstraint: &ColumnInlineConstraint{
+							Type: ColumnConstraintTypePrimaryKey,
+						},
+					},
+				},
+			},
+			DataRetentionTimeInDays:    Int(7),
+			MaxDataExtensionTimeInDays: Int(14),
+			Comment:                    String("with retention"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY) DATA_RETENTION_TIME_IN_DAYS = 7 MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 COMMENT = 'with retention'`, id.FullyQualifiedName())
+	})
 }
 
 func TestHybridTables_Alter_DropMultipleColumns(t *testing.T) {

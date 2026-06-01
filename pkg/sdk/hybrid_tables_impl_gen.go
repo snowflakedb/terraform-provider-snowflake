@@ -95,10 +95,12 @@ func (v *hybridTables) ShowIndexes(ctx context.Context, request *ShowIndexesHybr
 
 func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 	opts := &CreateHybridTableOptions{
-		OrReplace:   r.OrReplace,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		Comment:     r.Comment,
+		OrReplace:                  r.OrReplace,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		DataRetentionTimeInDays:    r.DataRetentionTimeInDays,
+		MaxDataExtensionTimeInDays: r.MaxDataExtensionTimeInDays,
+		Comment:                    r.Comment,
 	}
 	opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
 	if r.ColumnsAndConstraints.Columns != nil {

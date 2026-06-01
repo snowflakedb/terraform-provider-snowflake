@@ -14,11 +14,13 @@ var (
 )
 
 type CreateHybridTableRequest struct {
-	OrReplace             *bool
-	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ColumnsAndConstraints HybridTableColumnsConstraintsAndIndexesRequest
-	Comment               *string
+	OrReplace                  *bool
+	IfNotExists                *bool
+	name                       SchemaObjectIdentifier // required
+	ColumnsAndConstraints      HybridTableColumnsConstraintsAndIndexesRequest
+	DataRetentionTimeInDays    *int
+	MaxDataExtensionTimeInDays *int
+	Comment                    *string
 }
 
 type HybridTableColumnsConstraintsAndIndexesRequest struct {
