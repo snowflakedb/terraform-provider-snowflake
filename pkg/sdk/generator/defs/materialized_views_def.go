@@ -61,7 +61,7 @@ var materializedViewPairs = g.StructPair("materializedViewDBRow", "MaterializedV
 	OptionalText("invalid_reason", g.WithRequiredInPlain()).
 	Text("behind_by").
 	OptionalText("comment", g.WithRequiredInPlain()).
-	Text("text").
+	Text("text", g.WithValueAdjuster("tracking.TrimMetadata")).
 	Bool("is_secure").
 	Field("automatic_clustering", "string", "bool", g.WithBoolTrueValue("ON")).
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).

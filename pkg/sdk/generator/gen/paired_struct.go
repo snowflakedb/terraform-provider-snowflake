@@ -57,6 +57,17 @@ func WithCustomParser(funcName string) PairedFieldOption {
 	}
 }
 
+// WithValueAdjuster sets a custom value adjustment function name to use when assigning value to field without conversion.
+// The function must have signature func(T) (T) where T matches the plain kind. There is no error returned.
+// Example:
+//
+//	Text("text", g.WithValueAdjuster("tracking.TrimMetadata")).
+func WithValueAdjuster(funcName string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.valueAdjuster = funcName
+	}
+}
+
 // WithBoolTrueValue overrides the truthy string compared against the db field for string → bool conversions.
 // The default is "Y". Use this when Snowflake returns a different truthy value, e.g. "true" or "ON".
 // Example:
@@ -111,6 +122,8 @@ type pairedField struct {
 	isJson bool
 	// customParser is the name of a custom parse function to use for conversion.
 	customParser string
+	// valueAdjuster is the name of the custom adjustment function which returns the value of the same type, no error
+	valueAdjuster string
 	// boolTrueValue overrides the default "Y" comparison for string/NullString → bool conversions.
 	boolTrueValue string
 	// boolParsed routes string/NullString → bool conversions through strconv.ParseBool.
@@ -463,6 +476,7 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 			IsEnum:         f.isEnum,
 			IsJson:         f.isJson,
 			CustomParser:   f.customParser,
+			ValueAdjuster:  f.valueAdjuster,
 			BoolTrueValue:  f.boolTrueValue,
 			BoolParsed:     f.boolParsed,
 			manualConvert:  f.manualConvert,

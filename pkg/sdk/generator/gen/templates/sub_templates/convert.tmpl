@@ -5,7 +5,7 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
     result := &{{ .To.KindNoPtr }}{
     {{- range .FieldPairs }}
         {{- if .AssignmentKindDirect }}
-            {{ .PlainFieldName }}: r.{{ .DbFieldName }},
+            {{ .PlainFieldName }}: {{ if .ValueAdjuster }}{{ .ValueAdjuster}}({{ end }}r.{{ .DbFieldName }}{{ if .ValueAdjuster }}){{ end }},
         {{- else if .AssignmentKindStringToBool }}
             {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "Y",
         {{- else if .AssignmentKindStringToBoolValue }}

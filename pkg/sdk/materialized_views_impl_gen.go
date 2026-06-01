@@ -2,7 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 
@@ -198,7 +197,7 @@ func (r materializedViewDBRow) convert() (*MaterializedView, error) {
 		Owner:               r.Owner,
 		Invalid:             r.Invalid,
 		BehindBy:            r.BehindBy,
-		Text:                tracking.TrimMetadata(r.Text), // adjusted manually: tracking added
+		Text:                tracking.TrimMetadata(r.Text),
 		IsSecure:            r.IsSecure,
 		AutomaticClustering: r.AutomaticClustering == "ON",
 	}

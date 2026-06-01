@@ -16,6 +16,7 @@ type FieldPair struct {
 	IsEnum         bool
 	IsJson         bool
 	CustomParser   string
+	ValueAdjuster  string
 	BoolTrueValue  string
 	BoolParsed     bool
 
