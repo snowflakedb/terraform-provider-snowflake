@@ -10,12 +10,12 @@ import (
 
 var _ HybridTables = (*hybridTables)(nil)
 
-// adjusted manually
 var (
 	_ convertibleRow[HybridTable]        = new(hybridTableRow)
 	_ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
-	_ convertibleRow[HybridTableIndex]   = new(hybridTableIndexRow)
 )
+
+var _ convertibleRow[HybridTableIndex] = new(hybridTableIndexRow)
 
 type hybridTables struct {
 	client *Client

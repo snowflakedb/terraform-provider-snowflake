@@ -11,7 +11,6 @@ import (
 
 var _ Tasks = (*tasks)(nil)
 
-// second type assert removed manually
 var _ convertibleRow[Task] = new(taskDBRow)
 
 type tasks struct {
@@ -286,8 +285,6 @@ func (r *DescribeTaskRequest) toOpts() *DescribeTaskOptions {
 	}
 	return opts
 }
-
-// convert for describe removed manually - same structs
 
 func (r *ExecuteTaskRequest) toOpts() *ExecuteTaskOptions {
 	opts := &ExecuteTaskOptions{

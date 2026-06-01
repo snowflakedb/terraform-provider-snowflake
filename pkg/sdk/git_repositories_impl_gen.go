@@ -10,11 +10,11 @@ import (
 
 var _ GitRepositories = (*gitRepositories)(nil)
 
+var _ convertibleRow[GitRepository] = new(gitRepositoriesRow)
+
 var (
-	// adjusted manually
-	_ convertibleRow[GitRepository] = new(gitRepositoriesRow)
-	_ convertibleRow[GitBranch]     = new(gitBranchesRow)
-	_ convertibleRow[GitTag]        = new(gitTagsRow)
+	_ convertibleRow[GitBranch] = new(gitBranchesRow)
+	_ convertibleRow[GitTag]    = new(gitTagsRow)
 )
 
 type gitRepositories struct {
@@ -171,8 +171,6 @@ func (r *ShowGitRepositoryRequest) toOpts() *ShowGitRepositoryOptions {
 	}
 	return opts
 }
-
-// second convert removed manually
 
 func (r *ShowGitBranchesGitRepositoryRequest) toOpts() *ShowGitBranchesGitRepositoryOptions {
 	opts := &ShowGitBranchesGitRepositoryOptions{

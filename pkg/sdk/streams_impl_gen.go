@@ -10,7 +10,6 @@ import (
 
 var _ Streams = (*streams)(nil)
 
-// second type assert removed manually
 var _ convertibleRow[Stream] = new(showStreamsDbRow)
 
 type streams struct {
@@ -258,5 +257,3 @@ func (r *DescribeStreamRequest) toOpts() *DescribeStreamOptions {
 	}
 	return opts
 }
-
-// second convert removed manually

@@ -87,6 +87,9 @@ type Mapping struct {
 	// The mapping needs to be built from a PairedStructs definition with WithConvertGeneration() enabled.
 	// Otherwise, the old placeholder is used.
 	FieldPairs []FieldPair
+	// SkipConvert is set by preprocessDefinition when another Mapping with the same From.Name has
+	// already been scheduled for emission in the same interface. Guards and convert bodies are suppressed.
+	SkipConvert bool
 }
 
 // HasManualConvert reports whether any field in this Mapping is marked as manual convert.
