@@ -725,9 +725,11 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	unset := sdk.NewHybridTableUnsetPropertiesRequest()
 
 	if err := stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment); err != nil {
+		d.Partial(true)
 		return diag.FromErr(err)
 	}
 	if diags := handleHybridTableParametersChanges(d, set, unset); diags.HasError() {
+		d.Partial(true)
 		return diags
 	}
 
