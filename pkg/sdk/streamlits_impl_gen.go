@@ -176,12 +176,8 @@ func (r streamlitsDetailRow) convert() (*StreamlitDetail, error) {
 	mapNullStringToNonNullableField(&result.QueryWarehouse, r.QueryWarehouse)
 	result.UserPackages = ParseCommaSeparatedStringArray(r.UserPackages, false)
 	result.ImportUrls = ParseCommaSeparatedStringArray(r.ImportUrls, false)
-	result.ExternalAccessIntegrations = ParseCommaSeparatedStringArray(r.ExternalAccessIntegrations, false)
-	// added manually
-	externalAccessIntegrations := make([]string, len(result.ExternalAccessIntegrations))
-	for i, v := range result.ExternalAccessIntegrations {
-		externalAccessIntegrations[i] = NewObjectIdentifierFromFullyQualifiedName(v).Name()
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	result.ExternalAccessIntegrations = externalAccessIntegrations
 	return result, nil
 }

@@ -112,7 +112,7 @@ var streamlitsDef = g.NewInterface(
 		Text("default_packages").
 		StringList("user_packages").
 		StringList("import_urls").
-		StringList("external_access_integrations").
+		StringList("external_access_integrations", g.WithManualConvert()).
 		Text("external_access_secrets").
 		WithConvertGeneration(),
 	g.NewQueryStruct("DescribeStreamlit").
