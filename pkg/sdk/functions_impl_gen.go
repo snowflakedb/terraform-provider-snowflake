@@ -431,6 +431,7 @@ func (r *AlterFunctionRequest) toOpts() *AlterFunctionOptions {
 			ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations,
 			EnableConsoleOutput:        r.Set.EnableConsoleOutput,
 			LogLevel:                   r.Set.LogLevel,
+			LogEventLevel:              r.Set.LogEventLevel,
 			MetricLevel:                r.Set.MetricLevel,
 			TraceLevel:                 r.Set.TraceLevel,
 		}
@@ -446,6 +447,7 @@ func (r *AlterFunctionRequest) toOpts() *AlterFunctionOptions {
 			ExternalAccessIntegrations: r.Unset.ExternalAccessIntegrations,
 			EnableConsoleOutput:        r.Unset.EnableConsoleOutput,
 			LogLevel:                   r.Unset.LogLevel,
+			LogEventLevel:              r.Unset.LogEventLevel,
 			MetricLevel:                r.Unset.MetricLevel,
 			TraceLevel:                 r.Unset.TraceLevel,
 		}

@@ -78,6 +78,7 @@ func TestInt_Users(t *testing.T) {
 			HasJsonIndent(4).
 			HasLockTimeout(21222).
 			HasLogLevel(sdk.LogLevelError).
+			HasLogEventLevel(sdk.LogLevelError).
 			HasMultiStatementCount(0).
 			HasNoorderSequenceAsDefault(false).
 			HasOdbcTreatDecimalAsInt(true).
@@ -1041,6 +1042,7 @@ func TestInt_Users(t *testing.T) {
 					JsonIndent:                               sdk.Int(4),
 					LockTimeout:                              sdk.Int(21222),
 					LogLevel:                                 sdk.Pointer(sdk.LogLevelError),
+					LogEventLevel:                            sdk.Pointer(sdk.LogLevelError),
 					MultiStatementCount:                      sdk.Int(0),
 					NoorderSequenceAsDefault:                 sdk.Bool(false),
 					OdbcTreatDecimalAsInt:                    sdk.Bool(true),
@@ -1896,6 +1898,7 @@ func TestInt_Users(t *testing.T) {
 						JsonIndent:                               sdk.Int(4),
 						LockTimeout:                              sdk.Int(21222),
 						LogLevel:                                 sdk.Pointer(sdk.LogLevelError),
+						LogEventLevel:                            sdk.Pointer(sdk.LogLevelError),
 						MultiStatementCount:                      sdk.Int(0),
 						NoorderSequenceAsDefault:                 sdk.Bool(false),
 						OdbcTreatDecimalAsInt:                    sdk.Bool(true),
@@ -1973,6 +1976,7 @@ func TestInt_Users(t *testing.T) {
 						JsonIndent:                               sdk.Bool(true),
 						LockTimeout:                              sdk.Bool(true),
 						LogLevel:                                 sdk.Bool(true),
+						LogEventLevel:                            sdk.Bool(true),
 						MultiStatementCount:                      sdk.Bool(true),
 						NoorderSequenceAsDefault:                 sdk.Bool(true),
 						OdbcTreatDecimalAsInt:                    sdk.Bool(true),
