@@ -404,27 +404,23 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 	parsed := parseHybridColumns(cols)
 	requests := make([]sdk.HybridTableColumnRequest, len(parsed))
 	for i, col := range parsed {
-		dataType, err := datatypes.ParseDataType(col.dataType)
+		spec, err := buildHybridColumnSpec(col)
 		if err != nil {
-			return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
+			return nil, err
 		}
 
-		req := sdk.NewHybridTableColumnRequest(col.name, sdk.LegacyDataTypeWithAttrs(dataType))
+		req := sdk.NewHybridTableColumnRequest(col.name, sdk.LegacyDataTypeWithAttrs(spec.dataType))
 		if !col.nullable {
 			req.WithNotNull(true)
 		}
-		if col._default != nil {
-			defaultValue, err := buildHybridColumnDefaultFromParsed(col._default, dataType)
-			if err != nil {
-				return nil, fmt.Errorf("column %q: %w", col.name, err)
-			}
-			req.WithDefaultValue(*defaultValue)
+		if spec.defaultValue != nil {
+			req.WithDefaultValue(*spec.defaultValue)
 		}
-		if col.collate != "" {
-			req.WithCollate(col.collate)
+		if spec.collate != "" {
+			req.WithCollate(spec.collate)
 		}
-		if col.comment != "" {
-			req.WithComment(col.comment)
+		if spec.comment != "" {
+			req.WithComment(spec.comment)
 		}
 		requests[i] = *req
 	}
