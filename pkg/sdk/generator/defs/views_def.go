@@ -83,7 +83,7 @@ var viewRowAccessPolicy = g.NewQueryStruct("ViewRowAccessPolicy").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
-	WithAdditionalValidations()
+	WithValidation(g.ValidateValueSet, "On")
 
 var viewAggregationPolicy = g.NewQueryStruct("ViewAggregationPolicy").
 	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
@@ -114,7 +114,7 @@ var viewAddRowAccessPolicy = g.NewQueryStruct("ViewAddRowAccessPolicy").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
-	WithAdditionalValidations()
+	WithValidation(g.ValidateValueSet, "On")
 
 var viewDropRowAccessPolicy = g.NewQueryStruct("ViewDropRowAccessPolicy").
 	SQL("DROP").
