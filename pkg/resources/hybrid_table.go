@@ -601,6 +601,7 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 	if !reflect.DeepEqual(*set, *sdk.NewHybridTableSetPropertiesRequest()) {
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithSet(*set)); err != nil {
+			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error setting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
