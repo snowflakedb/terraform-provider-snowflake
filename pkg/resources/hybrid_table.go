@@ -98,10 +98,11 @@ var hybridTableSchema = map[string]*schema.Schema{
 					},
 				},
 				"collate": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Default:     "",
-					Description: "Column collation specification, e.g. en-ci.",
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          "",
+					DiffSuppressFunc: ignoreCaseSuppressFunc,
+					Description:      "Column collation specification, e.g. en-ci. Case-insensitive (en-ci and EN-CI are treated as equal).",
 				},
 				"comment": {
 					Type:        schema.TypeString,
