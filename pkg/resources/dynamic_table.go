@@ -82,6 +82,41 @@ var dynamicTableSchema = map[string]*schema.Schema{
 		Description:      "Specifies the query to use to populate the dynamic table.",
 		DiffSuppressFunc: DiffSuppressStatement,
 	},
+	"column": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "Inline column definitions to apply at CREATE time. When set, the list must enumerate every output column of `query` in order, mirroring Snowflake's `CREATE DYNAMIC TABLE (<col_list>) ... AS <query>` syntax. Use this to attach constraints (e.g. `not_null`) to selected columns. Changes require the dynamic table to be recreated.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"name": {
+					Type:        schema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "The column name. Must match the corresponding column produced by `query`.",
+				},
+				"type": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Optional inline data type for the column (e.g. `STRING`, `NUMBER(38,0)`). When omitted, the type is inferred from `query`.",
+				},
+				"not_null": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					ForceNew:    true,
+					Default:     false,
+					Description: "When `true`, the column is marked `NOT NULL` in the resulting dynamic table.",
+				},
+				"comment": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Optional column-level comment.",
+				},
+			},
+		},
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -331,7 +366,65 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
+	if existing, ok := d.Get("column").([]interface{}); ok && len(existing) > 0 {
+		describeRequest := sdk.NewDescribeDynamicTableRequest(id)
+		describedColumns, err := client.DynamicTables.DescribeColumns(ctx, describeRequest)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		nullByName := make(map[string]bool, len(describedColumns))
+		for _, c := range describedColumns {
+			nullByName[c.Name] = c.IsNull
+		}
+		updated := make([]interface{}, 0, len(existing))
+		for _, item := range existing {
+			m, ok := item.(map[string]interface{})
+			if !ok {
+				updated = append(updated, item)
+				continue
+			}
+			name, _ := m["name"].(string)
+			if isNull, found := nullByName[name]; found {
+				m["not_null"] = !isNull
+			}
+			updated = append(updated, m)
+		}
+		if err := d.Set("column", updated); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return nil
+}
+
+func parseDynamicTableColumns(v interface{}) []sdk.DynamicTableColumnRequest {
+	raw, ok := v.([]interface{})
+	if !ok || len(raw) == 0 {
+		return nil
+	}
+	columns := make([]sdk.DynamicTableColumnRequest, 0, len(raw))
+	for _, item := range raw {
+		m, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		name, _ := m["name"].(string)
+		if name == "" {
+			continue
+		}
+		req := sdk.NewDynamicTableColumnRequest(name)
+		if t, ok := m["type"].(string); ok && t != "" {
+			req.WithType(t)
+		}
+		if nn, ok := m["not_null"].(bool); ok && nn {
+			req.WithNotNull(true)
+		}
+		if c, ok := m["comment"].(string); ok && c != "" {
+			req.WithComment(c)
+		}
+		columns = append(columns, *req)
+	}
+	return columns
 }
 
 func parseTargetLag(v interface{}) sdk.TargetLag {
@@ -372,6 +465,9 @@ func CreateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 	if v, ok := d.GetOk("initialize"); ok {
 		request.WithInitialize(sdk.DynamicTableInitialize(v.(string)))
+	}
+	if columns := parseDynamicTableColumns(d.Get("column")); len(columns) > 0 {
+		request.WithColumns(columns)
 	}
 	if err := client.DynamicTables.Create(ctx, request); err != nil {
 		return diag.FromErr(err)

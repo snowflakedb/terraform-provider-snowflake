@@ -29,6 +29,30 @@ resource "snowflake_dynamic_table" "dt" {
   query     = "SELECT product_id, product_name FROM \"mydb\".\"myschema\".\"staging_table\""
   comment   = "example comment"
 }
+
+# Optional: attach column-level constraints (e.g. NOT NULL) at CREATE time.
+# When `column` blocks are provided, the list must enumerate every output
+# column of `query`, in order, to match Snowflake's CREATE DYNAMIC TABLE
+# (<col_list>) ... AS <query> syntax. Changes to `column` blocks force the
+# dynamic table to be recreated.
+resource "snowflake_dynamic_table" "dt_with_columns" {
+  name     = "product_required"
+  database = "mydb"
+  schema   = "myschema"
+  target_lag {
+    downstream = true
+  }
+  warehouse = "mywh"
+  query     = "SELECT product_id, product_name FROM \"mydb\".\"myschema\".\"staging_table\""
+
+  column {
+    name = "product_id"
+  }
+  column {
+    name     = "product_name"
+    not_null = true
+  }
+}
 ```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
@@ -47,6 +71,7 @@ resource "snowflake_dynamic_table" "dt" {
 
 ### Optional
 
+- `column` (Block List) Inline column definitions to apply at CREATE time. When set, the list must enumerate every output column of `query` in order, mirroring Snowflake's `CREATE DYNAMIC TABLE (<col_list>) ... AS <query>` syntax. Use this to attach constraints (e.g. `not_null`) to selected columns. Changes require the dynamic table to be recreated. (see [below for nested schema](#nestedblock--column))
 - `comment` (String) Specifies a comment for the dynamic table.
 - `initialize` (String) (Default: `ON_CREATE`) Initialize trigger for the dynamic table. Can only be set on creation. Available options are ON_CREATE and ON_SCHEDULE.
 - `or_replace` (Boolean) (Default: `false`) Specifies whether to replace the dynamic table if it already exists.
@@ -77,6 +102,20 @@ Optional:
 
 - `downstream` (Boolean) Specifies whether the target lag time is downstream.
 - `maximum_duration` (String) Specifies the maximum target lag time for the dynamic table.
+
+
+<a id="nestedblock--column"></a>
+### Nested Schema for `column`
+
+Required:
+
+- `name` (String) The column name. Must match the corresponding column produced by `query`.
+
+Optional:
+
+- `comment` (String) Optional column-level comment.
+- `not_null` (Boolean) When `true`, the column is marked `NOT NULL` in the resulting dynamic table.
+- `type` (String) Optional inline data type for the column (e.g. `STRING`, `NUMBER(38,0)`). When omitted, the type is inferred from `query`.
 
 
 <a id="nestedblock--timeouts"></a>

@@ -44,6 +44,18 @@ func (v *dynamicTables) Describe(ctx context.Context, request *DescribeDynamicTa
 	return conversionErrorWrapped(row.convert())
 }
 
+// DescribeColumns returns one DynamicTableDetails entry per column produced by
+// `DESCRIBE DYNAMIC TABLE`. Use this when you need column-level metadata such
+// as nullability, in contrast to Describe which returns only the first column.
+func (v *dynamicTables) DescribeColumns(ctx context.Context, request *DescribeDynamicTableRequest) ([]DynamicTableDetails, error) {
+	opts := request.toOpts()
+	rows, err := validateAndQuery[dynamicTableDetailsRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[dynamicTableDetailsRow, DynamicTableDetails](rows)
+}
+
 func (v *dynamicTables) Show(ctx context.Context, request *ShowDynamicTableRequest) ([]DynamicTable, error) {
 	opts := request.toOpts()
 	rows, err := validateAndQuery[dynamicTableRow](v.client, ctx, opts)

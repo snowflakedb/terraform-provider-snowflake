@@ -13,6 +13,7 @@ type DynamicTables interface {
 	Create(ctx context.Context, request *CreateDynamicTableRequest) error
 	Alter(ctx context.Context, request *AlterDynamicTableRequest) error
 	Describe(ctx context.Context, request *DescribeDynamicTableRequest) (*DynamicTableDetails, error)
+	DescribeColumns(ctx context.Context, request *DescribeDynamicTableRequest) ([]DynamicTableDetails, error)
 	Drop(ctx context.Context, request *DropDynamicTableRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 	Show(ctx context.Context, request *ShowDynamicTableRequest) ([]DynamicTable, error)
