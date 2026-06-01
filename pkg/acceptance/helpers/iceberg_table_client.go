@@ -24,7 +24,7 @@ func NewIcebergTableClient(context *TestClientContext, idsGenerator *IdsGenerato
 func (c *IcebergTableClient) Create(t *testing.T, externalVolume sdk.AccountObjectIdentifier) (*sdk.IcebergTable, func()) {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifier()
-	return c.CreateWithRequest(t, c.minimalRequest(id, externalVolume))
+	return c.CreateWithRequest(t, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{Columns: []sdk.IcebergTableColumnRequest{{Name: "ID", ColumnType: testdatatypes.DataTypeNumber}}}))
 }
 
 func (c *IcebergTableClient) CreateWithRequest(t *testing.T, request *sdk.CreateIcebergTableRequest) (*sdk.IcebergTable, func()) {
@@ -36,14 +36,6 @@ func (c *IcebergTableClient) CreateWithRequest(t *testing.T, request *sdk.Create
 	obj, err := c.context.client.IcebergTables.ShowByID(ctx, id)
 	require.NoError(t, err)
 	return obj, c.DropFunc(t, id)
-}
-
-func (c *IcebergTableClient) minimalRequest(id sdk.SchemaObjectIdentifier, externalVolume sdk.AccountObjectIdentifier) *sdk.CreateIcebergTableRequest {
-	return sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
-		Columns: []sdk.IcebergTableColumnRequest{
-			{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
-		},
-	})
 }
 
 func (c *IcebergTableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {

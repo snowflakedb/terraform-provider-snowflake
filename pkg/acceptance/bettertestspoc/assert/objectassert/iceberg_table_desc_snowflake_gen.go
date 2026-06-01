@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type IcebergTableDetailsAssert struct {
@@ -34,11 +35,12 @@ func (i *IcebergTableDetailsAssert) HasName(expected string) *IcebergTableDetail
 	return i
 }
 
-func (i *IcebergTableDetailsAssert) HasType(expected string) *IcebergTableDetailsAssert {
+// Adjusted manually: uses datatypes.AreTheSame for semantic comparison instead of direct equality.
+func (i *IcebergTableDetailsAssert) HasType(expected datatypes.DataType) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
-		if o.Type != expected {
-			return fmt.Errorf("expected type: %v; got: %v", expected, o.Type)
+		if !datatypes.AreTheSame(o.Type, expected) {
+			return fmt.Errorf("expected type: %v; got: %v", expected.ToSql(), o.Type.ToSql())
 		}
 		return nil
 	})

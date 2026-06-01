@@ -273,15 +273,11 @@ func TableColumnInlineConstraintFromRequest(r *TableColumnInlineConstraintReques
 		}
 	}
 	if r.FK != nil {
-		var refColumns []Column
-		if r.FK.RefColumn != nil {
-			refColumns = []Column{{Value: *r.FK.RefColumn}}
-		}
 		out.FK = &TableColumnInlineFK{
 			Name:               r.FK.Name,
 			ForeignKey:         r.FK.ForeignKey,
 			References:         r.FK.References,
-			RefColumns:         refColumns,
+			RefColumn:          r.FK.RefColumn,
 			Match:              r.FK.Match,
 			On:                 r.FK.On,
 			Enforced:           r.FK.Enforced,

@@ -351,7 +351,7 @@ var icebergTablesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-iceberg-table",
 	g.StructPair("icebergTableDetailsRow", "IcebergTableDetails").
 		Text("name").
-		Text("type").
+		PlainField("type", "datatypes.DataType", g.WithCustomParser("datatypes.ParseDataType")).
 		Text("source iceberg type").
 		Text("kind").
 		PlainField("null", "bool", g.WithPlainFieldName("IsNullable")).

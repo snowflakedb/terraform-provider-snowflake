@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -83,9 +84,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[0]).
 			HasName("ID").
-			// TODO (next PRs): Snowflake returns without spaces between arguments. Verify the compatibility with
-			// https://docs.snowflake.com/en/user-guide/tables-iceberg-data-types
-			HasType("NUMBER(38,0)").
+			HasType(testdatatypes.DataTypeNumber_38_0).
 			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
 			HasIsNullable(false).
@@ -137,7 +136,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		// ID — NOT NULL, PK=true, comment="id column"
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[0]).
 			HasName("ID").
-			HasType("NUMBER(38,0)").
+			HasType(testdatatypes.DataTypeNumber_38_0).
 			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
 			HasIsNullable(false).
@@ -156,7 +155,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		// FK_ID — nullable, no pk/uk
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[1]).
 			HasName("FK_ID").
-			HasType("NUMBER(38,0)").
+			HasType(testdatatypes.DataTypeNumber_38_0).
 			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
 			HasIsNullable(false).
@@ -175,7 +174,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		// EVENT_TS
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[2]).
 			HasName("EVENT_TS").
-			HasType(testdatatypes.DataTypeTimestampNTZ_6.ToSql()).
+			HasType(testdatatypes.DataTypeTimestampNTZ_6).
 			HasSourceIcebergType("TIMESTAMP").
 			HasKind("COLUMN").
 			HasIsNullable(false).
@@ -194,7 +193,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		// REGION
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[3]).
 			HasName("REGION").
-			HasType(testdatatypes.DataTypeVarcharIceberg.ToSql()).
+			HasType(testdatatypes.DataTypeVarcharIceberg).
 			HasSourceIcebergType("STRING").
 			HasKind("COLUMN").
 			HasIsNullable(false).
@@ -213,15 +212,15 @@ func TestInt_IcebergTables(t *testing.T) {
 		// BUCKET_COL, TRUNC_COL, YEAR_COL, MONTH_COL, DAY_COL, HOUR_COL
 		colDefs := []struct {
 			name          string
-			typ           string
+			typ           datatypes.DataType
 			sourceIceberg string
 		}{
-			{"BUCKET_COL", testdatatypes.DataTypeVarcharIceberg.ToSql(), "STRING"},
-			{"TRUNC_COL", testdatatypes.DataTypeVarcharIceberg.ToSql(), "STRING"},
-			{"YEAR_COL", testdatatypes.DataTypeTimestampNTZ_6.ToSql(), "TIMESTAMP"},
-			{"MONTH_COL", testdatatypes.DataTypeTimestampNTZ_6.ToSql(), "TIMESTAMP"},
-			{"DAY_COL", testdatatypes.DataTypeTimestampNTZ_6.ToSql(), "TIMESTAMP"},
-			{"HOUR_COL", testdatatypes.DataTypeTimestampNTZ_6.ToSql(), "TIMESTAMP"},
+			{"BUCKET_COL", testdatatypes.DataTypeVarcharIceberg, "STRING"},
+			{"TRUNC_COL", testdatatypes.DataTypeVarcharIceberg, "STRING"},
+			{"YEAR_COL", testdatatypes.DataTypeTimestampNTZ_6, "TIMESTAMP"},
+			{"MONTH_COL", testdatatypes.DataTypeTimestampNTZ_6, "TIMESTAMP"},
+			{"DAY_COL", testdatatypes.DataTypeTimestampNTZ_6, "TIMESTAMP"},
+			{"HOUR_COL", testdatatypes.DataTypeTimestampNTZ_6, "TIMESTAMP"},
 		}
 		for i, def := range colDefs {
 			assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[4+i]).
@@ -322,7 +321,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		req := sdk.NewCreateIcebergTableRequest(id, colDef).
 			WithIfNotExists(true).
 			WithCatalog(catalog).
-			// TODO (next PRs): these are commmented out for now because the current external volume is not writable.
+			// TODO (next PRs): these are commented out for now because the current external volume is not writable.
 			// WithExternalVolume(volumeId).
 			// WithBaseLocation(baseLocation).
 			WithPartitionBy([]sdk.IcebergTablePartitionExpressionRequest{

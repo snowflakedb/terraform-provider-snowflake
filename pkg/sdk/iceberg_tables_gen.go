@@ -101,7 +101,7 @@ type TableColumnInlineFK struct {
 	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
 	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
-	RefColumns         []Column               `ddl:"keyword,parentheses"`
+	RefColumn          *string                `ddl:"keyword,double_quotes,parentheses"`
 	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
 	On                 *ForeignKeyOnAction    `ddl:"keyword"`
 	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
@@ -564,7 +564,7 @@ type icebergTableDetailsRow struct {
 
 type IcebergTableDetails struct {
 	Name              string
-	Type              string
+	Type              datatypes.DataType
 	SourceIcebergType string
 	Kind              string
 	IsNullable        bool

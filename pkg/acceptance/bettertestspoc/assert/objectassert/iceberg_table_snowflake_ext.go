@@ -102,7 +102,7 @@ func (c *IcebergTableAssert) HasPartitionSpecsJson(expected []sdk.IcebergTablePa
 			return fmt.Errorf("expected partition specs to be a valid JSON string; got: %s", o.PartitionSpecs)
 		}
 		if !reflect.DeepEqual(got, expected) {
-			return fmt.Errorf("expected partition specs: %+v; got: %+v", expected, o.PartitionSpecs)
+			return fmt.Errorf("expected partition specs: %+v; got: %+v", expected, got)
 		}
 		return nil
 	})

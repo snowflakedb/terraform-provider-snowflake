@@ -4,8 +4,10 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 var _ IcebergTables = (*icebergTables)(nil)
@@ -447,12 +449,16 @@ func (r *DescribeIcebergTableRequest) toOpts() *DescribeIcebergTableOptions {
 func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 	result := &IcebergTableDetails{
 		Name:              r.Name,
-		Type:              r.Type,
 		SourceIcebergType: r.SourceIcebergType,
 		Kind:              r.Kind,
 		IsNullable:        r.Null == "Y",
 		PrimaryKey:        r.PrimaryKey == "Y",
 		UniqueKey:         r.UniqueKey == "Y",
+	}
+	if v, err := datatypes.ParseDataType(r.Type); err == nil {
+		result.Type = v
+	} else {
+		return nil, fmt.Errorf("parsing data type: %w", err) // Adjusted manually
 	}
 	mapNullString(&result.Default, r.Default)
 	mapNullString(&result.Check, r.Check)
