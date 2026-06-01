@@ -21,6 +21,7 @@ const (
 	ValidIdentifier ValidationType = iota
 	ValidIdentifierIfSet
 	ConflictingFields
+	MoreThanOneValueSet
 	ExactlyOneValueSet
 	AtLeastOneValueSet
 	ValidateValue
@@ -87,6 +88,8 @@ func (v *Validation) Condition(field *Field) string {
 		return fmt.Sprintf("%s != nil && !ValidObjectIdentifier(%s)", strings.Join(fieldNamesProvider(field), ","), strings.Join(fieldNamesProvider(field), ","))
 	case ConflictingFields:
 		return fmt.Sprintf("everyValueSet(%s)", strings.Join(fieldNamesProvider(field), ","))
+	case MoreThanOneValueSet:
+		return fmt.Sprintf("moreThanOneValueSet(%s)", strings.Join(fieldNamesProvider(field), ","))
 	case ExactlyOneValueSet:
 		return fmt.Sprintf("!exactlyOneValueSet(%s)", strings.Join(fieldNamesProvider(field), ","))
 	case AtLeastOneValueSet:
@@ -112,6 +115,8 @@ func (v *Validation) ReturnedError(field *Field) string {
 		return "ErrInvalidObjectIdentifier"
 	case ConflictingFields:
 		return fmt.Sprintf(`errOneOf("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
+	case MoreThanOneValueSet:
+		return fmt.Sprintf(`errMoreThanOneOf("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
 	case ExactlyOneValueSet:
 		return fmt.Sprintf(`errExactlyOneOf("%s", %s)`, field.PathWithRoot(), strings.Join(v.paramsQuoted(), ","))
 	case AtLeastOneValueSet:
@@ -136,6 +141,8 @@ func (v *Validation) TodoComment(field *Field) string {
 		return fmt.Sprintf("validation: valid identifier for %v if set", v.fieldsWithPath(field))
 	case ConflictingFields:
 		return fmt.Sprintf("validation: conflicting fields for %v", v.fieldsWithPath(field))
+	case MoreThanOneValueSet:
+		return fmt.Sprintf("validation: more than one field from %v cannot be set at the same time", v.fieldsWithPath(field))
 	case ExactlyOneValueSet:
 		return fmt.Sprintf("validation: exactly one field from %v should be present", v.fieldsWithPath(field))
 	case AtLeastOneValueSet:
