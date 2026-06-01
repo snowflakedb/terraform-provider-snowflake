@@ -34,6 +34,30 @@ func (s *CreateDynamicTableRequest) WithInitialize(initialize DynamicTableInitia
 	return s
 }
 
+func (s *CreateDynamicTableRequest) WithColumns(columns []DynamicTableColumnRequest) *CreateDynamicTableRequest {
+	s.columns = columns
+	return s
+}
+
+func NewDynamicTableColumnRequest(name string) *DynamicTableColumnRequest {
+	return &DynamicTableColumnRequest{name: name}
+}
+
+func (s *DynamicTableColumnRequest) WithType(typ string) *DynamicTableColumnRequest {
+	s.typ = &typ
+	return s
+}
+
+func (s *DynamicTableColumnRequest) WithNotNull(notNull bool) *DynamicTableColumnRequest {
+	s.notNull = &notNull
+	return s
+}
+
+func (s *DynamicTableColumnRequest) WithComment(comment string) *DynamicTableColumnRequest {
+	s.comment = &comment
+	return s
+}
+
 func NewAlterDynamicTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterDynamicTableRequest {

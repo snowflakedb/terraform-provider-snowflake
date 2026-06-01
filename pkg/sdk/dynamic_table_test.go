@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -42,6 +43,32 @@ func TestDynamicTableCreate(t *testing.T) {
 		opts.RefreshMode = DynamicTableRefreshModeFull.ToPointer()
 		opts.Initialize = DynamicTableInitializeOnSchedule.ToPointer()
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE DYNAMIC TABLE %s TARGET_LAG = '1 minutes' INITIALIZE = ON_SCHEDULE REFRESH_MODE = FULL WAREHOUSE = "warehouse_name" COMMENT = 'comment' AS SELECT product_id, product_name FROM staging_table`, id.FullyQualifiedName())
+	})
+
+	t.Run("with columns - not null only", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Columns = []DynamicTableColumn{
+			{Name: "PRODUCT_ID"},
+			{Name: "PRODUCT_NAME", NotNull: Bool(true)},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE DYNAMIC TABLE %s (PRODUCT_ID, PRODUCT_NAME NOT NULL) TARGET_LAG = '1 minutes' WAREHOUSE = "warehouse_name" AS SELECT product_id, product_name FROM staging_table`, id.FullyQualifiedName())
+	})
+
+	t.Run("with columns - type, not null, and comment", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Columns = []DynamicTableColumn{
+			{Name: "PRODUCT_ID"},
+			{Name: "PRODUCT_NAME", Type: String("STRING"), NotNull: Bool(true), Comment: String("required")},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE DYNAMIC TABLE %s (PRODUCT_ID, PRODUCT_NAME STRING NOT NULL COMMENT 'required') TARGET_LAG = '1 minutes' WAREHOUSE = "warehouse_name" AS SELECT product_id, product_name FROM staging_table`, id.FullyQualifiedName())
+	})
+
+	t.Run("validation: column without name", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Columns = []DynamicTableColumn{
+			{Name: ""},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("createDynamicTableOptions.Columns[0]: name must be set"))
 	})
 }
 

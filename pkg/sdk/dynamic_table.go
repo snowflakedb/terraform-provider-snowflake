@@ -26,12 +26,26 @@ type createDynamicTableOptions struct {
 	OrReplace    *bool                    `ddl:"keyword" sql:"OR REPLACE"`
 	dynamicTable bool                     `ddl:"static" sql:"DYNAMIC TABLE"`
 	name         SchemaObjectIdentifier   `ddl:"identifier"`
+	Columns      []DynamicTableColumn     `ddl:"keyword,parentheses"`
 	targetLag    TargetLag                `ddl:"parameter,no_quotes" sql:"TARGET_LAG"`
 	Initialize   *DynamicTableInitialize  `ddl:"parameter,no_quotes" sql:"INITIALIZE"`
 	RefreshMode  *DynamicTableRefreshMode `ddl:"parameter,no_quotes" sql:"REFRESH_MODE"`
 	warehouse    AccountObjectIdentifier  `ddl:"identifier,equals" sql:"WAREHOUSE"`
 	Comment      *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	query        string                   `ddl:"parameter,no_equals,no_quotes" sql:"AS"`
+}
+
+// DynamicTableColumn represents an inline column definition in CREATE DYNAMIC TABLE.
+// Only Name is required; Type, NotNull and Comment are optional. Types and ordering
+// are normally driven by the SELECT in the query, so columns are typically used to
+// attach constraints (e.g. NOT NULL) to selected columns. When any DynamicTableColumn
+// is provided, the column list must enumerate every output column of the SELECT, in
+// order, to satisfy Snowflake's DDL grammar.
+type DynamicTableColumn struct {
+	Name    string  `ddl:"keyword"`
+	Type    *string `ddl:"keyword"`
+	NotNull *bool   `ddl:"keyword" sql:"NOT NULL"`
+	Comment *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
 }
 
 type TargetLag struct {

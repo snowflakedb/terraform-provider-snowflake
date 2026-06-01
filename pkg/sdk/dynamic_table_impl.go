@@ -67,7 +67,7 @@ func (v *dynamicTables) ShowByIDSafely(ctx context.Context, id SchemaObjectIdent
 }
 
 func (s *CreateDynamicTableRequest) toOpts() *createDynamicTableOptions {
-	return &createDynamicTableOptions{
+	opts := &createDynamicTableOptions{
 		OrReplace:   Bool(s.orReplace),
 		name:        s.name,
 		warehouse:   s.warehouse,
@@ -77,6 +77,18 @@ func (s *CreateDynamicTableRequest) toOpts() *createDynamicTableOptions {
 		RefreshMode: s.refreshMode,
 		Initialize:  s.initialize,
 	}
+	if len(s.columns) > 0 {
+		opts.Columns = make([]DynamicTableColumn, 0, len(s.columns))
+		for _, c := range s.columns {
+			opts.Columns = append(opts.Columns, DynamicTableColumn{
+				Name:    c.name,
+				Type:    c.typ,
+				NotNull: c.notNull,
+				Comment: c.comment,
+			})
+		}
+	}
+	return opts
 }
 
 func (s *AlterDynamicTableRequest) toOpts() *alterDynamicTableOptions {

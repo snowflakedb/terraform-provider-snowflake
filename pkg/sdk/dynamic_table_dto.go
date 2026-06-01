@@ -17,9 +17,17 @@ type CreateDynamicTableRequest struct {
 	targetLag TargetLag               // required
 	query     string                  // required
 
+	columns     []DynamicTableColumnRequest
 	comment     *string
 	refreshMode *DynamicTableRefreshMode
 	initialize  *DynamicTableInitialize
+}
+
+type DynamicTableColumnRequest struct {
+	name    string // required
+	typ     *string
+	notNull *bool
+	comment *string
 }
 
 type AlterDynamicTableRequest struct {

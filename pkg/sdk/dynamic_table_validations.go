@@ -1,5 +1,7 @@
 package sdk
 
+import "fmt"
+
 var (
 	_ validatable = new(createDynamicTableOptions)
 	_ validatable = new(alterDynamicTableOptions)
@@ -29,6 +31,11 @@ func (opts *createDynamicTableOptions) validate() error {
 	}
 	if !ValidObjectIdentifier(opts.warehouse) {
 		errs = append(errs, errInvalidIdentifier("createDynamicTableOptions", "warehouse"))
+	}
+	for i, c := range opts.Columns {
+		if c.Name == "" {
+			errs = append(errs, fmt.Errorf("createDynamicTableOptions.Columns[%d]: name must be set", i))
+		}
 	}
 	return JoinErrors(errs...)
 }
