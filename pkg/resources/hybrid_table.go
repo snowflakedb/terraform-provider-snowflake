@@ -691,6 +691,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		)
 
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithNewName(newId)); err != nil {
+			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error renaming hybrid table from %v to %v: %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))
 		}
 
@@ -711,11 +712,13 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	if !reflect.DeepEqual(*set, *sdk.NewHybridTableSetPropertiesRequest()) {
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithSet(*set)); err != nil {
+			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error setting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
 	if !reflect.DeepEqual(*unset, *sdk.NewHybridTableUnsetPropertiesRequest()) {
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithUnset(*unset)); err != nil {
+			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error unsetting hybrid table properties %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
@@ -733,6 +736,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			}
 			dropReq := sdk.NewHybridTableDropColumnActionRequest(dropNames).WithIfExists(true)
 			if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithDropColumnAction(*dropReq)); err != nil {
+				d.Partial(true)
 				return diag.FromErr(fmt.Errorf("error dropping columns from hybrid table %v: %w", id.FullyQualifiedName(), err))
 			}
 		}
@@ -741,9 +745,11 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		for _, col := range added {
 			addReq, err := buildHybridAddColumnAction(col)
 			if err != nil {
+				d.Partial(true)
 				return diag.FromErr(err)
 			}
 			if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithAddColumnAction(*addReq)); err != nil {
+				d.Partial(true)
 				return diag.FromErr(fmt.Errorf("error adding column %s to hybrid table %v: %w", col.name, id.FullyQualifiedName(), err))
 			}
 		}
@@ -753,10 +759,12 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			if ch.changedDataType {
 				alterReq, err := buildHybridAlterColumnTypeAction(ch.newColumn)
 				if err != nil {
+					d.Partial(true)
 					return diag.FromErr(err)
 				}
 				if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 					WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{*alterReq})); err != nil {
+					d.Partial(true)
 					return diag.FromErr(fmt.Errorf("error altering column type %s on hybrid table %v: %w",
 						ch.newColumn.name, id.FullyQualifiedName(), err))
 				}
@@ -771,6 +779,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 				}
 				if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 					WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{*alterReq})); err != nil {
+					d.Partial(true)
 					return diag.FromErr(fmt.Errorf("error altering column comment %s on hybrid table %v: %w",
 						ch.newColumn.name, id.FullyQualifiedName(), err))
 				}
@@ -781,6 +790,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 					WithDropDefault(true)
 				if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 					WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{*alterReq})); err != nil {
+					d.Partial(true)
 					return diag.FromErr(fmt.Errorf("error dropping column default %s on hybrid table %v: %w",
 						ch.newColumn.name, id.FullyQualifiedName(), err))
 				}
