@@ -153,10 +153,10 @@ func (r describeRowAccessPolicyDBRow) convert() (*RowAccessPolicyDescription, er
 		ReturnType: r.ReturnType,
 		Body:       r.Body,
 	}
-	if v, err := ParseTableColumnSignature(r.Signature); err == nil {
-		result.Signature = v
-	} else {
+	if v, err := ParseTableColumnSignature(r.Signature); err != nil {
 		return nil, fmt.Errorf("parsing table column signature: %w", err)
+	} else {
+		result.Signature = v
 	}
 	return result, nil
 }
