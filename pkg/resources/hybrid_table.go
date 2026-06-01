@@ -253,6 +253,7 @@ func HybridTable() *schema.Resource {
 			ComputedIfAnyAttributeChanged(hybridTableSchema, ShowOutputAttributeName, "name", "comment"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, DescribeOutputAttributeName, "name", "comment", "column"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
+			suppressNullableForPrimaryKeyColumns(),
 			forceNewIfColumnCollateChanged(),
 			forceNewIfColumnNullableChanged(),
 		)),
@@ -1034,6 +1035,63 @@ func forceNewIfColumnFieldChanged(fieldName string, changed func(old, new hybrid
 				if o.name == n.name && changed(o, n) {
 					return diff.ForceNew(fmt.Sprintf("column.%d.%s", newIdx, fieldName))
 				}
+			}
+		}
+		return nil
+	}
+}
+
+// suppressNullableForPrimaryKeyColumns clears the planned diff on
+// `column.<idx>.nullable` when the column is part of `primary_key.0.keys`
+// and the only change is from old=false (DESCRIBE-derived) to new=true
+// (the schema default). Snowflake silently enforces NOT NULL on PK columns,
+// so DESCRIBE always returns null="N" for them — the diff is spurious and
+// has no corresponding ALTER (hybrid tables do not support SET/DROP NOT NULL).
+//
+// This sits in CustomizeDiff rather than DiffSuppressFunc because resolving
+// the diff requires looking at sibling fields (primary_key.0.keys), which a
+// per-field DiffSuppressFunc cannot access.
+func suppressNullableForPrimaryKeyColumns() schema.CustomizeDiffFunc {
+	return func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+		if !diff.HasChange("column") {
+			return nil
+		}
+		pkRaw, ok := diff.Get("primary_key").([]any)
+		if !ok || len(pkRaw) == 0 {
+			return nil
+		}
+		pkMap, ok := pkRaw[0].(map[string]any)
+		if !ok {
+			return nil
+		}
+		pkKeysRaw, ok := pkMap["keys"].([]any)
+		if !ok {
+			return nil
+		}
+		pkKeys := make(map[string]struct{}, len(pkKeysRaw))
+		for _, k := range pkKeysRaw {
+			if s, ok := k.(string); ok {
+				pkKeys[strings.ToUpper(s)] = struct{}{}
+			}
+		}
+
+		oldRaw, newRaw := diff.GetChange("column")
+		oldCols := parseHybridColumns(oldRaw)
+		newCols := parseHybridColumns(newRaw)
+		for newIdx, n := range newCols {
+			if _, isPK := pkKeys[strings.ToUpper(n.name)]; !isPK {
+				continue
+			}
+			for _, o := range oldCols {
+				if o.name != n.name {
+					continue
+				}
+				if !o.nullable && n.nullable {
+					if err := diff.Clear(fmt.Sprintf("column.%d.nullable", newIdx)); err != nil {
+						return err
+					}
+				}
+				break
 			}
 		}
 		return nil

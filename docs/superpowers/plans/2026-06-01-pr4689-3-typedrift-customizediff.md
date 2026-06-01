@@ -104,7 +104,7 @@ rather than introducing a new one."
 - Modify: `pkg/resources/hybrid_table.go` (add helper next to existing `forceNewIfColumnFieldChanged` at L955-977)
 - Modify: `pkg/resources/hybrid_table.go:250-257` (chain it into `customdiff.All`)
 
-- [ ] **Step 1: Write the failing acceptance test**
+- [x] **Step 1: Write the failing acceptance test**
 
 Append to `pkg/testacc/resource_hybrid_table_acceptance_test.go`:
 
@@ -150,14 +150,14 @@ func TestAcc_HybridTable_PKNullableNoSpurious(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run the failing test**
+- [x] **Step 2: Run the failing test** — SKIPPED (acceptance tests not run per task instructions)
 
 Run: `TF_ACC=1 go test ./pkg/testacc/ -run TestAcc_HybridTable_PKNullableNoSpurious -v -timeout 30m`
 Expected: PASS today (because Read currently substitutes nullable=true from config). The test is the contract we want preserved after the refactor.
 
 If it fails, stop — that signals the existing substitution logic has already broken and the rest of this plan needs re-scoping.
 
-- [ ] **Step 3: Write the helper (still preserving Read substitution; will be flipped in Task 4)**
+- [x] **Step 3: Write the helper (still preserving Read substitution; will be flipped in Task 4)**
 
 Insert into `pkg/resources/hybrid_table.go` immediately after `forceNewIfColumnFieldChanged` (currently ends at L977):
 
@@ -220,7 +220,7 @@ func suppressNullableForPrimaryKeyColumns() schema.CustomizeDiffFunc {
 }
 ```
 
-- [ ] **Step 4: Wire it into the CustomizeDiff chain**
+- [x] **Step 4: Wire it into the CustomizeDiff chain**
 
 Replace at `pkg/resources/hybrid_table.go:250-257`:
 
@@ -251,17 +251,17 @@ with:
 
 NOTE: `suppressNullableForPrimaryKeyColumns` runs **before** `forceNewIfColumnNullableChanged` so the spurious nullable diff is cleared before the latter would otherwise trigger ForceNew on it.
 
-- [ ] **Step 5: Verify build and provider validation**
+- [x] **Step 5: Verify build and provider validation**
 
 Run: `go build ./pkg/resources/... && go test ./pkg/provider/ -run TestProvider -v -count=1`
 Expected: build passes, TestProvider passes.
 
-- [ ] **Step 6: Verify the acceptance test still passes**
+- [x] **Step 6: Verify the acceptance test still passes** — SKIPPED (acceptance tests not run per task instructions)
 
 Run: `TF_ACC=1 go test ./pkg/testacc/ -run TestAcc_HybridTable_PKNullableNoSpurious -v -timeout 30m`
 Expected: PASS (the refactor in Task 4 hasn't started yet, so Read still substitutes — but the new CustomizeDiff is now in place and idempotent under the existing setup).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add pkg/resources/hybrid_table.go pkg/testacc/resource_hybrid_table_acceptance_test.go

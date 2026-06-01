@@ -18,7 +18,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -1314,6 +1313,46 @@ func TestAcc_HybridTable_Rename(t *testing.T) {
 						HasSchemaName(newId.SchemaName()).
 						HasComment(renamedComment),
 				),
+			},
+		},
+	})
+}
+
+// TestAcc_HybridTable_PKNullableNoSpurious verifies that a primary-key column
+// declared as nullable=true (the schema default) does not produce a spurious
+// diff after Read, even though Snowflake silently enforces NOT NULL on PK
+// columns and DESCRIBE reports null="N". The reconciliation must happen in
+// CustomizeDiff, not via Read-time substitution.
+func TestAcc_HybridTable_PKNullableNoSpurious(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+	pk := []sdk.TableColumnSignature{
+		{Name: "ID"},
+	}
+	model := model.HybridTableFromId("test", id, columns, pk)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, model),
+			},
+			// A second apply with no config change must produce a no-op plan.
+			{
+				Config: accconfig.FromModels(t, model),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})
