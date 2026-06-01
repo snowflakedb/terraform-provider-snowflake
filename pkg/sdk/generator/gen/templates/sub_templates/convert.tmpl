@@ -29,10 +29,18 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             	result.{{ .PlainFieldName }} = ids
             }
         {{- else if .AssignmentKindCustom }}
-            if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}); err == nil {
-            	result.{{ .PlainFieldName }} = v
-            } else {
+            if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}); err != nil {
                 return nil, fmt.Errorf("parsing {{ CamelToWords (TypeWithoutPointerAndBrackets .PlainKind) }}: %w", err)
+            } else {
+            	result.{{ .PlainFieldName }} = v
+            }
+        {{- else if .AssignmentKindNullableCustom }}
+            if r.{{ .DbFieldName }}.Valid {
+                if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}.String); err != nil {
+                    return nil, fmt.Errorf("parsing {{ CamelToWords (TypeWithoutPointerAndBrackets .PlainKind) }}: %w", err)
+                } else {
+                    result.{{ .PlainFieldName }} = v
+                }
             }
         {{- else if .AssignmentKindStringToEnum }}
             mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
