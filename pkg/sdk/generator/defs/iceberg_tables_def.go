@@ -372,7 +372,7 @@ var icebergTablesDef = g.NewInterface(
 		Name().
 		OptionalAssignmentWithFieldName("TYPE", IcebergTableDescribeTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes(), "DescribeType").
 		WithValidation(g.ValidIdentifier, "name"),
-).WithEnums(
+).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).WithEnums(
 	IcebergTableTargetFileSizeEnumDef,
 	IcebergTablePathLayoutEnumDef,
 	IcebergTableDescribeTypeEnumDef,

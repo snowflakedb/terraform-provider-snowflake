@@ -1,5 +1,7 @@
 package gen
 
+import "fmt"
+
 type OperationKind string
 
 const (
@@ -294,4 +296,17 @@ func (i *Interface) describeOperation(describeKind DescriptionMappingKind, doc s
 
 func (i *Interface) CustomOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	return i.newSimpleOperation(kind, doc, queryStruct, helperStructs...)
+}
+
+func (i *Interface) ShowParameters(identifierKind string) *Interface {
+	objectIdentifierKind, err := ToObjectIdentifierKind(identifierKind)
+	if err != nil {
+		panic(fmt.Errorf("invalid identifier kind: %s", identifierKind))
+	}
+	return i.WithCustomInterfaceMethod(
+		"ShowParameters",
+		"",
+		[]*MethodParameter{NewMethodParameter("id", string(objectIdentifierKind))},
+		"[]*Parameter", "error",
+	)
 }

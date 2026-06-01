@@ -1168,6 +1168,48 @@ var AllProcedureParameters = []ProcedureParameter{
 	ProcedureParameterTraceLevel,
 }
 
+type IcebergTableParameter string
+
+const (
+	IcebergTableParameterAllowRowTimestamp          IcebergTableParameter = "ALLOW_ROW_TIMESTAMP"
+	IcebergTableParameterCatalog                    IcebergTableParameter = "CATALOG"
+	IcebergTableParameterCatalogSync                IcebergTableParameter = "CATALOG_SYNC"
+	IcebergTableParameterDataMetricSchedule         IcebergTableParameter = "DATA_METRIC_SCHEDULE"
+	IcebergTableParameterDataRetentionTimeInDays    IcebergTableParameter = "DATA_RETENTION_TIME_IN_DAYS"
+	IcebergTableParameterDefaultDDLCollation        IcebergTableParameter = "DEFAULT_DDL_COLLATION"
+	IcebergTableParameterEnableDataCompaction       IcebergTableParameter = "ENABLE_DATA_COMPACTION"
+	IcebergTableParameterEnableIcebergMergeOnRead   IcebergTableParameter = "ENABLE_ICEBERG_MERGE_ON_READ"
+	IcebergTableParameterExternalVolume             IcebergTableParameter = "EXTERNAL_VOLUME"
+	IcebergTableParameterIcebergMergeOnReadBehavior IcebergTableParameter = "ICEBERG_MERGE_ON_READ_BEHAVIOR"
+	IcebergTableParameterLogEventLevel              IcebergTableParameter = "LOG_EVENT_LEVEL"
+	IcebergTableParameterMaxDataExtensionTimeInDays IcebergTableParameter = "MAX_DATA_EXTENSION_TIME_IN_DAYS"
+	IcebergTableParameterOptimizeDataLayout         IcebergTableParameter = "OPTIMIZE_DATA_LAYOUT"
+	IcebergTableParameterQuotedIdentifiersIgnoreCase IcebergTableParameter = "QUOTED_IDENTIFIERS_IGNORE_CASE"
+	IcebergTableParameterReplaceInvalidCharacters   IcebergTableParameter = "REPLACE_INVALID_CHARACTERS"
+	IcebergTableParameterStorageSerializationPolicy IcebergTableParameter = "STORAGE_SERIALIZATION_POLICY"
+	IcebergTableParameterTargetFileSize             IcebergTableParameter = "TARGET_FILE_SIZE"
+)
+
+var AllIcebergTableParameters = []IcebergTableParameter{
+	IcebergTableParameterAllowRowTimestamp,
+	IcebergTableParameterCatalog,
+	IcebergTableParameterCatalogSync,
+	IcebergTableParameterDataMetricSchedule,
+	IcebergTableParameterDataRetentionTimeInDays,
+	IcebergTableParameterDefaultDDLCollation,
+	IcebergTableParameterEnableDataCompaction,
+	IcebergTableParameterEnableIcebergMergeOnRead,
+	IcebergTableParameterExternalVolume,
+	IcebergTableParameterIcebergMergeOnReadBehavior,
+	IcebergTableParameterLogEventLevel,
+	IcebergTableParameterMaxDataExtensionTimeInDays,
+	IcebergTableParameterOptimizeDataLayout,
+	IcebergTableParameterQuotedIdentifiersIgnoreCase,
+	IcebergTableParameterReplaceInvalidCharacters,
+	IcebergTableParameterStorageSerializationPolicy,
+	IcebergTableParameterTargetFileSize,
+}
+
 // LegacyAccountParameters is based on https://docs.snowflake.com/en/sql-reference/parameters.
 type LegacyAccountParameters struct {
 	// Account Parameters
@@ -2200,6 +2242,7 @@ const (
 	ParameterTypeTask             ParameterType = "TASK"
 	ParameterTypeFunction         ParameterType = "FUNCTION"
 	ParameterTypeProcedure        ParameterType = "PROCEDURE"
+	ParameterTypeTable            ParameterType = "TABLE"
 )
 
 var AllParameterTypes = []ParameterType{
@@ -2214,6 +2257,7 @@ var AllParameterTypes = []ParameterType{
 	ParameterTypeTask,
 	ParameterTypeFunction,
 	ParameterTypeProcedure,
+	ParameterTypeTable,
 	ParameterTypeSnowflakeDefault,
 }
 

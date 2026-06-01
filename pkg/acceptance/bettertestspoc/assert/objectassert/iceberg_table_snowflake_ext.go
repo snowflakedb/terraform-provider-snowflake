@@ -1,7 +1,10 @@
 package objectassert
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -85,6 +88,33 @@ func (i *IcebergTableAssert) HasNoNameMapping() *IcebergTableAssert {
 		t.Helper()
 		if o.NameMapping != nil {
 			return fmt.Errorf("expected name mapping to be nil; got: %s", *o.NameMapping)
+		}
+		return nil
+	})
+	return i
+}
+
+func (c *IcebergTableAssert) HasPartitionSpecsJson(expected []sdk.IcebergTablePartitionSpec) *IcebergTableAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		var got []sdk.IcebergTablePartitionSpec
+		if err := json.Unmarshal([]byte(o.PartitionSpecs), &got); err != nil {
+			return fmt.Errorf("expected partition specs to be a valid JSON string; got: %s", o.PartitionSpecs)
+		}
+		if !reflect.DeepEqual(got, expected) {
+			return fmt.Errorf("expected partition specs: %+v; got: %+v", expected, o.PartitionSpecs)
+		}
+		return nil
+	})
+	return c
+}
+
+func (i *IcebergTableAssert) HasBaseLocationPrefix(id sdk.SchemaObjectIdentifier) *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		expected := fmt.Sprintf("%s/%s/%s", id.DatabaseName(), id.SchemaName(), id.Name())
+		if !strings.HasPrefix(o.BaseLocation, expected) {
+			return fmt.Errorf("expected base location to have prefix: %v; got: %v", expected, o.BaseLocation)
 		}
 		return nil
 	})

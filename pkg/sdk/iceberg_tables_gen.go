@@ -19,6 +19,7 @@ type IcebergTables interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTable, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTable, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]IcebergTableDetails, error)
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
 }
 
 // CreateIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake.

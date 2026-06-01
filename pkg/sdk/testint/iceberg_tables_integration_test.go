@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -46,7 +47,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		return volumeId
 	}
 
-	basicAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier, baseLocation string) {
+	basicAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
 		t.Helper()
 
 		assertThatObject(t, objectassert.IcebergTable(t, id).
@@ -59,14 +60,19 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasIcebergTableType(sdk.IcebergTableTypeManaged).
 			HasNoCatalogTableName().
 			HasNoCatalogNamespace().
-			HasBaseLocation(baseLocation).
+			HasBaseLocationPrefix(id).
 			HasCanWriteMetadata(true).
-			HasNoComment().
+			HasComment("").
 			HasNoNameMapping().
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
 			HasAutoRefreshStatus("").
-			HasPartitionSpecs("[]").
+			HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
+				{
+					SpecId: 0,
+					Fields: []any{},
+				},
+			}).
 			HasCurrentPartitionSpecId(0).
 			HasIcebergTableFormatVersion(2),
 		)
@@ -77,24 +83,30 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[0]).
 			HasName("ID").
+			// TODO (next PRs): Snowflake returns without spaces between arguments. Verify the compatibility with
+			// https://docs.snowflake.com/en/user-guide/tables-iceberg-data-types
 			HasType("NUMBER(38,0)").
-			HasSourceIcebergType("long").
+			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
-			HasIsNullable(true).
+			HasIsNullable(false).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
 			HasNoCheck().
 			HasNoExpression().
-			HasComment("").
+			HasNoComment().
 			HasNoPolicyName().
 			HasNoPrivacyDomain().
 			HasNoNameMapping().
 			HasNoWriteDefault(),
 		)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasAllDefaultsExplicit(),
+		)
 	}
 
-	completeAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier, baseLocation string, volumeId sdk.AccountObjectIdentifier) {
+	completeAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier, _ string, _ sdk.AccountObjectIdentifier) {
 		t.Helper()
 
 		assertThatObject(t, objectassert.IcebergTable(t, id).
@@ -102,12 +114,12 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner("ACCOUNTADMIN").
-			HasExternalVolumeName(volumeId).
+			HasExternalVolumeName(snowflakeManagedExternalVolume).
 			HasCatalogName(sdk.NewAccountObjectIdentifier("SNOWFLAKE")).
 			HasIcebergTableType(sdk.IcebergTableTypeManaged).
 			HasNoCatalogTableName().
 			HasNoCatalogNamespace().
-			HasBaseLocation(baseLocation).
+			HasBaseLocationPrefix(id).
 			HasCanWriteMetadata(true).
 			HasComment("integration test").
 			HasNoNameMapping().
@@ -126,7 +138,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[0]).
 			HasName("ID").
 			HasType("NUMBER(38,0)").
-			HasSourceIcebergType("long").
+			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
 			HasIsNullable(false).
 			HasNoDefault().
@@ -145,9 +157,9 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[1]).
 			HasName("FK_ID").
 			HasType("NUMBER(38,0)").
-			HasSourceIcebergType("long").
+			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
-			HasIsNullable(true).
+			HasIsNullable(false).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -163,10 +175,10 @@ func TestInt_IcebergTables(t *testing.T) {
 		// EVENT_TS
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[2]).
 			HasName("EVENT_TS").
-			HasType("TIMESTAMP_NTZ(9)").
-			HasSourceIcebergType("timestamptz").
+			HasType(testdatatypes.DataTypeTimestampNTZ_6.ToSql()).
+			HasSourceIcebergType("TIMESTAMP").
 			HasKind("COLUMN").
-			HasIsNullable(true).
+			HasIsNullable(false).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -182,10 +194,10 @@ func TestInt_IcebergTables(t *testing.T) {
 		// REGION
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[3]).
 			HasName("REGION").
-			HasType("VARCHAR(16777216)").
-			HasSourceIcebergType("string").
+			HasType(testdatatypes.DataTypeVarcharIceberg.ToSql()).
+			HasSourceIcebergType("STRING").
 			HasKind("COLUMN").
-			HasIsNullable(true).
+			HasIsNullable(false).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(true).
@@ -204,12 +216,12 @@ func TestInt_IcebergTables(t *testing.T) {
 			typ           string
 			sourceIceberg string
 		}{
-			{"BUCKET_COL", "VARCHAR(16777216)", "string"},
-			{"TRUNC_COL", "VARCHAR(16777216)", "string"},
-			{"YEAR_COL", "TIMESTAMP_NTZ(9)", "timestamptz"},
-			{"MONTH_COL", "TIMESTAMP_NTZ(9)", "timestamptz"},
-			{"DAY_COL", "TIMESTAMP_NTZ(9)", "timestamptz"},
-			{"HOUR_COL", "TIMESTAMP_NTZ(9)", "timestamptz"},
+			{"BUCKET_COL", testdatatypes.DataTypeVarcharIceberg.ToSql(), "STRING"},
+			{"TRUNC_COL", testdatatypes.DataTypeVarcharIceberg.ToSql(), "STRING"},
+			{"YEAR_COL", testdatatypes.DataTypeTimestampNTZ_6.ToSql(), "TIMESTAMP"},
+			{"MONTH_COL", testdatatypes.DataTypeTimestampNTZ_6.ToSql(), "TIMESTAMP"},
+			{"DAY_COL", testdatatypes.DataTypeTimestampNTZ_6.ToSql(), "TIMESTAMP"},
+			{"HOUR_COL", testdatatypes.DataTypeTimestampNTZ_6.ToSql(), "TIMESTAMP"},
 		}
 		for i, def := range colDefs {
 			assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[4+i]).
@@ -217,7 +229,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasType(def.typ).
 				HasSourceIcebergType(def.sourceIceberg).
 				HasKind("COLUMN").
-				HasIsNullable(true).
+				HasIsNullable(false).
 				HasNoDefault().
 				HasPrimaryKey(false).
 				HasUniqueKey(false).
@@ -230,46 +242,11 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasNoWriteDefault(),
 			)
 		}
-	}
-
-	// print all SHOW and DESCRIBE fields for discovery
-	logIcebergTableFields := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
-		t.Helper()
-		obj, err := client.IcebergTables.ShowByID(ctx, id)
-		require.NoError(t, err)
-		t.Logf("SHOW fields:\n"+
-			"  Name=%q DatabaseName=%q SchemaName=%q Owner=%v\n"+
-			"  ExternalVolumeName=%v CatalogName=%v IcebergTableType=%q\n"+
-			"  CatalogTableName=%v CatalogNamespace=%v BaseLocation=%q\n"+
-			"  CanWriteMetadata=%v Comment=%v NameMapping=%v\n"+
-			"  OwnerRoleType=%q CatalogSyncName=%q AutoRefreshStatus=%q\n"+
-			"  PartitionSpecs=%q CurrentPartitionSpecId=%d IcebergTableFormatVersion=%d",
-			obj.Name, obj.DatabaseName, obj.SchemaName, obj.Owner,
-			obj.ExternalVolumeName, obj.CatalogName, obj.IcebergTableType,
-			obj.CatalogTableName, obj.CatalogNamespace, obj.BaseLocation,
-			obj.CanWriteMetadata, obj.Comment, obj.NameMapping,
-			obj.OwnerRoleType, obj.CatalogSyncName, obj.AutoRefreshStatus,
-			obj.PartitionSpecs, obj.CurrentPartitionSpecId, obj.IcebergTableFormatVersion,
-		)
-		details, err := client.IcebergTables.Describe(ctx, id)
-		require.NoError(t, err)
-		for i, d := range details {
-			t.Logf("DESCRIBE col[%d]:\n"+
-				"  Name=%q Type=%q SourceIcebergType=%q Kind=%q\n"+
-				"  IsNullable=%v Default=%v PrimaryKey=%v UniqueKey=%v\n"+
-				"  Check=%v Expression=%v Comment=%v PolicyName=%v\n"+
-				"  PrivacyDomain=%v NameMapping=%v WriteDefault=%v",
-				i, d.Name, d.Type, d.SourceIcebergType, d.Kind,
-				d.IsNullable, d.Default, d.PrimaryKey, d.UniqueKey,
-				d.Check, d.Expression, d.Comment, d.PolicyName,
-				d.PrivacyDomain, d.NameMapping, d.WriteDefault,
-			)
-		}
+		// TODO (next PRs): add assertions for the constraints.
 	}
 
 	t.Run("create Snowflake managed: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		baseLocation := random.AlphaLowerN(8)
 
 		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
 			Columns: []sdk.IcebergTableColumnRequest{
@@ -279,8 +256,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
-		logIcebergTableFields(t, id)
-		basicAssertions(t, id, baseLocation)
+		basicAssertions(t, id)
 	})
 
 	t.Run("create Snowflake managed: all options", func(t *testing.T) {
@@ -323,14 +299,14 @@ func TestInt_IcebergTables(t *testing.T) {
 						},
 					},
 				},
-				{Name: "EVENT_TS", ColumnType: testdatatypes.DataTypeTimestampNTZIceberg},
+				{Name: "EVENT_TS", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
 				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
 				{Name: "BUCKET_COL", ColumnType: testdatatypes.DataTypeVarcharIceberg},
 				{Name: "TRUNC_COL", ColumnType: testdatatypes.DataTypeVarcharIceberg},
-				{Name: "YEAR_COL", ColumnType: testdatatypes.DataTypeTimestampNTZIceberg},
-				{Name: "MONTH_COL", ColumnType: testdatatypes.DataTypeTimestampNTZIceberg},
-				{Name: "DAY_COL", ColumnType: testdatatypes.DataTypeTimestampNTZIceberg},
-				{Name: "HOUR_COL", ColumnType: testdatatypes.DataTypeTimestampNTZIceberg},
+				{Name: "YEAR_COL", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
+				{Name: "MONTH_COL", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
+				{Name: "DAY_COL", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
+				{Name: "HOUR_COL", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
 			},
 			OutOfLineConstraint: []sdk.TableOutOfLineConstraintRequest{
 				{
@@ -346,7 +322,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		req := sdk.NewCreateIcebergTableRequest(id, colDef).
 			WithIfNotExists(true).
 			WithCatalog(catalog).
-			// TODO: these are commmented out for now because the current external volume is not writable.
+			// TODO (next PRs): these are commmented out for now because the current external volume is not writable.
 			// WithExternalVolume(volumeId).
 			// WithBaseLocation(baseLocation).
 			WithPartitionBy([]sdk.IcebergTablePartitionExpressionRequest{
@@ -381,8 +357,16 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
-		logIcebergTableFields(t, id)
 		completeAssertions(t, id, baseLocation, volumeId)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasDataRetentionTimeInDays(1).
+			HasMaxDataExtensionTimeInDays(8).
+			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+			HasEnableDataCompaction(true).
+			HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
+			HasEnableIcebergMergeOnRead(true),
+		)
 	})
 
 	t.Run("create Snowflake managed: copy grants", func(t *testing.T) {

@@ -1,6 +1,9 @@
 package sdk
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 func (opts *CreateIcebergTableOptions) additionalValidations() error {
 	var errs []error
@@ -366,4 +369,17 @@ func TableOutOfLineConstraintFromRequest(r *TableOutOfLineConstraintRequest) *Ta
 		}
 	}
 	return out
+}
+
+func (v *icebergTables) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
+	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
+		In: &ParametersIn{
+			Table: id,
+		},
+	})
+}
+
+type IcebergTablePartitionSpec struct {
+	SpecId int   `json:"spec-id"`
+	Fields []any `json:"fields"`
 }

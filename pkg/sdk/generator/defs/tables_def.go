@@ -229,7 +229,7 @@ func tableColumnInlineFK() *g.QueryStruct {
 			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 			OptionalSQL("FOREIGN KEY").
 			Identifier("References", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("REFERENCES").Required()).
-			PredefinedQueryStructField("RefColumn", "*string", g.KeywordOptions().Parentheses().DoubleQuotes()).
+			PredefinedQueryStructField("RefColumn", "*Column", g.KeywordOptions().Parentheses().DoubleQuotes()).
 			PredefinedQueryStructField("Match", g.KindOfTPointer[sdkcommons.MatchType](), g.ParameterOptions().NoEquals().SQL("MATCH")).
 			PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions()),
 		// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
