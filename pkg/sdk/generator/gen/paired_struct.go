@@ -142,16 +142,17 @@ type PairedStructs struct {
 	dbName    string
 	plainName string
 	fields    []pairedField
-	// generateConvert controls whether convert() body generation is enabled for this pair.
+	// generateConvert controls whether convert() body generation is enabled for this pair. Default: true.
 	generateConvert bool
 }
 
 // StructPair creates a new PairedStructs with the given DB row struct name and plain struct name.
 func StructPair(dbName, plainName string) *PairedStructs {
 	return &PairedStructs{
-		dbName:    dbName,
-		plainName: plainName,
-		fields:    make([]pairedField, 0),
+		dbName:          dbName,
+		plainName:       plainName,
+		fields:          make([]pairedField, 0),
+		generateConvert: true,
 	}
 }
 
@@ -437,9 +438,16 @@ func (p *PairedStructs) JsonField(dbColumnName, kind string, opts ...PairedField
 }
 
 // WithConvertGeneration opts this PairedStructs into automatic convert() body generation.
-// By default, convert generation is disabled so existing PairedStructs usages in production defs continue to emit the placeholder.
+// Deprecated: convert generation is now enabled by default. This method is a no-op kept for compatibility until all call sites are cleaned up.
 func (p *PairedStructs) WithConvertGeneration() *PairedStructs {
 	p.generateConvert = true
+	return p
+}
+
+// WithoutConvertGeneration disables automatic convert() body generation for this pair.
+// Use when the manual convert() implementation cannot yet be expressed via the generator.
+func (p *PairedStructs) WithoutConvertGeneration() *PairedStructs {
+	p.generateConvert = false
 	return p
 }
 
