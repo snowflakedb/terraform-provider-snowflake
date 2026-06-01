@@ -309,7 +309,9 @@ func (opts *CreateAndCallForJavaProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations())
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if valueSet(opts.Arguments) {
 		for _, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
@@ -356,7 +358,9 @@ func (opts *CreateAndCallForScalaProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations())
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if valueSet(opts.Arguments) {
 		for _, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
@@ -400,7 +404,9 @@ func (opts *CreateAndCallForJavaScriptProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations())
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if valueSet(opts.Arguments) {
 		for _, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
@@ -428,7 +434,9 @@ func (opts *CreateAndCallForPythonProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations())
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if valueSet(opts.Arguments) {
 		for _, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
@@ -469,7 +477,9 @@ func (opts *CreateAndCallForSQLProcedureOptions) validate() error {
 	if !ValidObjectIdentifier(opts.Name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	errs = append(errs, opts.additionalValidations())
+	if !ValidObjectIdentifier(opts.ProcedureName) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if valueSet(opts.Arguments) {
 		for _, argument := range opts.Arguments {
 			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
