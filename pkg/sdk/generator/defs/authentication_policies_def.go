@@ -177,8 +177,8 @@ var authenticationPoliciesDef = g.NewInterface(
 			OptionalTime("created_on", g.WithRequiredInPlain()).
 			Text("name").
 			Text("comment").
-			OptionalText("database_name", g.WithRequiredInPlain()).
-			OptionalText("schema_name", g.WithRequiredInPlain()).
+			OptionalText("database_name", g.WithManualConvert()).
+			OptionalText("schema_name", g.WithManualConvert()).
 			Text("kind").
 			OptionalText("owner", g.WithRequiredInPlain()).
 			OptionalText("owner_role_type", g.WithRequiredInPlain()).
