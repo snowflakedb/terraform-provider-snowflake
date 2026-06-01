@@ -282,7 +282,7 @@ Step 1 of moving Snowflake-vs-config reconciliation out of Read."
 **Files:**
 - Modify: `pkg/resources/hybrid_table.go:776-847` (`buildHybridColumnStateFromDescribe`)
 
-- [ ] **Step 1: Add an acceptance test for the collate case-only-drift case**
+- [x] **Step 1: Add an acceptance test for the collate case-only-drift case**
 
 Append to `pkg/testacc/resource_hybrid_table_acceptance_test.go`:
 
@@ -328,12 +328,12 @@ func TestAcc_HybridTable_CollateCaseInsensitive(t *testing.T) {
 
 NOTE: The `model.HybridTableFromId` builder may not yet expose `Collate` per-column. If it doesn't, add a `WithColumnCollate` builder method or — if that pulls in too much scaffolding — write the config inline using `config.HybridTableConfig` raw HCL. Verify with: `grep -n "Collate" pkg/acceptance/bettertestspoc/config/model/hybrid_table_model.go`.
 
-- [ ] **Step 2: Run the failing test**
+- [x] **Step 2: Run the failing test** — SKIPPED (acceptance tests not run per task instructions)
 
 Run: `TF_ACC=1 go test ./pkg/testacc/ -run TestAcc_HybridTable_CollateCaseInsensitive -v -timeout 30m`
 Expected: PASS today (Read substitutes config collate; DiffSuppress is also in place from Task 2). This test pins the contract.
 
-- [ ] **Step 3: Edit `buildHybridColumnStateFromDescribe` to drop the substitution**
+- [x] **Step 3: Edit `buildHybridColumnStateFromDescribe` to drop the substitution**
 
 Replace at `pkg/resources/hybrid_table.go:776-847`:
 
@@ -468,12 +468,12 @@ If `IsNullable` is `bool`, replace the `nullable` line with:
 
 and delete the `descIsNotNull` reference (it should not exist).
 
-- [ ] **Step 4: Verify build**
+- [x] **Step 4: Verify build**
 
 Run: `go build ./pkg/resources/...`
 Expected: no errors.
 
-- [ ] **Step 5: Run the two acceptance tests added in Tasks 3 and 4**
+- [x] **Step 5: Run the two acceptance tests added in Tasks 3 and 4** — SKIPPED (acceptance tests not run per task instructions)
 
 Run:
 ```bash
@@ -483,12 +483,12 @@ TF_ACC=1 go test ./pkg/testacc/ \
 ```
 Expected: both PASS. The CustomizeDiff (Task 3) and the DiffSuppressFunc (Task 2) now do the reconciliation that Read used to do.
 
-- [ ] **Step 6: Run the existing hybrid_table acceptance tests**
+- [x] **Step 6: Run the existing hybrid_table acceptance tests** — SKIPPED (acceptance tests not run per task instructions)
 
 Run: `TF_ACC=1 go test ./pkg/testacc/ -run 'TestAcc_HybridTable_' -v -timeout 90m`
 Expected: all PASS, including `TestAcc_HybridTable_Basic` and `TestAcc_HybridTable_CompleteUseCase`. Any new failure indicates the refactor regressed an existing scenario.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add pkg/resources/hybrid_table.go pkg/testacc/resource_hybrid_table_acceptance_test.go

@@ -841,59 +841,28 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) ([]any, error) {
 	flattened := make([]any, 0)
 
-	// Build lookups from config for fields where DESCRIBE returns a different value
-	// than the user wrote and the framework cannot reconcile it via DiffSuppressFunc:
-	// - collate: DESCRIBE returns "X COLLATE 'Y'" combined; the SDK splits it but the
-	//   server-side spelling can differ from what the user wrote (e.g. case).
-	// - nullable: DESCRIBE returns NOT NULL for PK columns even when config says nullable=true.
-	//   Preserve the config value since Snowflake silently enforces NOT NULL on PK columns.
-	//
-	// Data type drift (e.g. INTEGER vs NUMBER(38,0)) is handled by DiffSuppressDataTypes
-	// on the column.type field — we do not need to substitute the config value here.
-	type configColumnInfo struct {
-		collate  string
-		nullable bool
-	}
-	configByName := make(map[string]configColumnInfo)
-	if configCols, ok := d.GetOk("column"); ok {
-		for _, rawCol := range configCols.([]any) {
-			colMap := rawCol.(map[string]any)
-			if colName, ok := colMap["name"].(string); ok {
-				info := configColumnInfo{nullable: true}
-				if collate, ok := colMap["collate"].(string); ok {
-					info.collate = collate
-				}
-				if nullable, ok := colMap["nullable"].(bool); ok {
-					info.nullable = nullable
-				}
-				configByName[strings.ToUpper(colName)] = info
-			}
-		}
-	}
-
+	// Reconciliation between the raw DESCRIBE values and user config is now done
+	// in CustomizeDiff and DiffSuppressFunc, not here:
+	// - column.<idx>.nullable: PK columns always come back as NOT NULL; the
+	//   spurious old=false -> new=true diff is cleared by
+	//   suppressNullableForPrimaryKeyColumns.
+	// - column.<idx>.collate: case-only drift is absorbed by
+	//   ignoreCaseSuppressFunc on the field.
+	// - column.<idx>.type: format normalization (e.g. INTEGER vs NUMBER(38,0))
+	//   is absorbed by DiffSuppressDataTypes on the field.
 	for _, td := range details {
 		if td.Kind != "COLUMN" {
 			continue
 		}
 
-		colInfo, found := configByName[strings.ToUpper(td.Name)]
-		if !found {
-			// Externally added column not in config: schema default is nullable=true.
-			// Without this, zero-value would set nullable=false, which is ForceNew and
-			// would produce a spurious delete+create plan instead of the desired Update.
-			colInfo = configColumnInfo{nullable: true}
-		}
-		// Prefer the user's config value for collate (it preserves the exact spelling
-		// the user wrote, e.g. "en-ci"). Fall back to the SDK-split Collation from
-		// DESCRIBE for imported tables where no config exists.
-		collate := colInfo.collate
-		if collate == "" && td.Collation != nil {
+		collate := ""
+		if td.Collation != nil {
 			collate = *td.Collation
 		}
 		flat := map[string]any{
 			"name":     td.Name,
 			"type":     td.Type,
-			"nullable": colInfo.nullable,
+			"nullable": td.IsNullable,
 			"comment":  td.Comment,
 			"collate":  collate,
 		}

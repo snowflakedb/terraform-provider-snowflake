@@ -1357,3 +1357,47 @@ func TestAcc_HybridTable_PKNullableNoSpurious(t *testing.T) {
 		},
 	})
 }
+
+// TestAcc_HybridTable_CollateCaseInsensitive verifies that a config-supplied
+// collate of "en-ci" produces no spurious diff even if DESCRIBE returns it
+// as "EN-CI" or some other case variant. Reconciliation must come from the
+// DiffSuppressFunc on the field, not from Read-time substitution.
+func TestAcc_HybridTable_CollateCaseInsensitive(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+	pk := []sdk.TableColumnSignature{
+		{Name: "ID"},
+	}
+	// HybridTableFromId / WithColumn does not expose per-column collate, so use
+	// the richer WithColumnConfigs builder that does.
+	tableModel := model.HybridTableFromId("test", id, columns, pk).
+		WithColumnConfigs([]model.HybridTableColumnConfig{
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Collate: "en-ci"},
+		})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tableModel),
+			},
+			{
+				Config: accconfig.FromModels(t, tableModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
