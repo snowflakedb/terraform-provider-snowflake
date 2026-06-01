@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ComputePools = (*computePools)(nil)
-
 var (
+	_ ComputePools                       = (*computePools)(nil)
 	_ convertibleRow[ComputePool]        = new(computePoolsRow)
 	_ convertibleRow[ComputePoolDetails] = new(computePoolDescRow)
 )

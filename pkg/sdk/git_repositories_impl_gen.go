@@ -8,13 +8,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ GitRepositories = (*gitRepositories)(nil)
-
-var _ convertibleRow[GitRepository] = new(gitRepositoriesRow)
-
 var (
-	_ convertibleRow[GitBranch] = new(gitBranchesRow)
-	_ convertibleRow[GitTag]    = new(gitTagsRow)
+	_ GitRepositories               = (*gitRepositories)(nil)
+	_ convertibleRow[GitRepository] = new(gitRepositoriesRow)
+	_ convertibleRow[GitBranch]     = new(gitBranchesRow)
+	_ convertibleRow[GitTag]        = new(gitTagsRow)
 )
 
 type gitRepositories struct {

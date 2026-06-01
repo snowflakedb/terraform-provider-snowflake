@@ -10,9 +10,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ PasswordPolicies = (*passwordPolicies)(nil)
-
 var (
+	_ PasswordPolicies                       = (*passwordPolicies)(nil)
 	_ convertibleRow[PasswordPolicy]         = new(passwordPolicyDBRow)
 	_ convertibleRow[PasswordPolicyProperty] = new(describePasswordPolicyDBRow)
 )

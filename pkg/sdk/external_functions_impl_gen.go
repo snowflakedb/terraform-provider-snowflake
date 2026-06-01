@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ExternalFunctions = (*externalFunctions)(nil)
-
 var (
+	_ ExternalFunctions                        = (*externalFunctions)(nil)
 	_ convertibleRow[ExternalFunction]         = new(externalFunctionRow)
 	_ convertibleRow[ExternalFunctionProperty] = new(externalFunctionPropertyRow)
 )

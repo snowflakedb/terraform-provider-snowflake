@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Views = (*views)(nil)
-
 var (
+	_ Views                       = (*views)(nil)
 	_ convertibleRow[View]        = new(viewDBRow)
 	_ convertibleRow[ViewDetails] = new(viewDetailsRow)
 )

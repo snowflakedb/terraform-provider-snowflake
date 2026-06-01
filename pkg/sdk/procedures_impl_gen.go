@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Procedures = (*procedures)(nil)
-
 var (
+	_ Procedures                      = (*procedures)(nil)
 	_ convertibleRow[Procedure]       = new(procedureRow)
 	_ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
 )
