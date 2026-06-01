@@ -494,9 +494,12 @@ func buildHybridColumnDefaultFromParsed(cd *columnDefault, dataType datatypes.Da
 
 // buildHybridColumnDefaultValue builds a ColumnDefaultValue from a default block map
 // and validates that exactly one of constant/expression/sequence is set. This
-// validation lives here, rather than at the schema level, because Terraform
-// plugin SDK v2 cannot express ExactlyOneOf across non-zero indices inside
-// multi-element TypeLists (the parent column list).
+// validation lives here, rather than at the schema level. Schema-level
+// ExactlyOneOf would require paths like "column.0.default.0.constant", but
+// terraform-plugin-sdk/v2 (helper/schema/schema.go: checkKeysAgainstSchemaFlags)
+// rejects multi-element TypeList parents in path references at provider boot:
+// "configuration block reference (...) can only be used with TypeList and
+// MaxItems: 1 configuration blocks". The `column` list has no MaxItems.
 func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.DataType) (*sdk.ColumnDefaultValue, error) {
 	constant, hasConstant := defMap["constant"].(string)
 	hasConstant = hasConstant && len(constant) > 0
