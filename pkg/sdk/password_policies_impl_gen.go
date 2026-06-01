@@ -2,8 +2,10 @@
 
 package sdk
 
+// imports adjusted manually
 import (
 	"context"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
