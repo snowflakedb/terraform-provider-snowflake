@@ -372,7 +372,7 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 			return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
 		}
 
-		req := sdk.NewHybridTableColumnRequest(col.name, sdk.LegacyDataTypeFrom(dataType))
+		req := sdk.NewHybridTableColumnRequest(col.name, sdk.LegacyDataTypeWithAttrs(dataType))
 		if !col.nullable {
 			req.WithNotNull(true)
 		}
@@ -405,7 +405,7 @@ func buildHybridAddColumnAction(col hybridTableColumn) (*sdk.HybridTableAddColum
 	if err != nil {
 		return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
 	}
-	req := sdk.NewHybridTableAddColumnActionRequest(col.name, sdk.LegacyDataTypeFrom(dataType))
+	req := sdk.NewHybridTableAddColumnActionRequest(col.name, sdk.LegacyDataTypeWithAttrs(dataType))
 	if col._default != nil {
 		defaultValue, err := buildHybridColumnDefaultFromParsed(col._default, dataType)
 		if err != nil {
@@ -420,6 +420,25 @@ func buildHybridAddColumnAction(col hybridTableColumn) (*sdk.HybridTableAddColum
 		req.WithComment(col.comment)
 	}
 	return req, nil
+}
+
+// buildHybridAlterColumnTypeAction constructs a SET DATA TYPE alter-column
+// action from a parsed column. Mirrors the Create and ADD COLUMN paths by
+// running the raw type string through datatypes.ParseDataType (so that an
+// invalid type fails client-side with a clear error) before converting via
+// sdk.LegacyDataTypeWithAttrs, which preserves precision/scale/length on the
+// way out (e.g. NUMBER(20,5) and VARCHAR(100) survive the round-trip).
+//
+// Using LegacyDataTypeFrom here would be a regression: it strips attributes,
+// silently degrading NUMBER(20,5) to NUMBER (which Snowflake interprets as
+// the default NUMBER(38,0)).
+func buildHybridAlterColumnTypeAction(col hybridTableColumn) (*sdk.HybridTableAlterColumnActionRequest, error) {
+	dataType, err := datatypes.ParseDataType(col.dataType)
+	if err != nil {
+		return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
+	}
+	return sdk.NewHybridTableAlterColumnActionRequest(col.name).
+		WithType(sdk.LegacyDataTypeWithAttrs(dataType)), nil
 }
 
 // buildHybridColumnDefaultFromParsed converts the resource-level columnDefault
@@ -731,8 +750,10 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		// Alter changed columns
 		for _, ch := range changed {
 			if ch.changedDataType {
-				alterReq := sdk.NewHybridTableAlterColumnActionRequest(ch.newColumn.name).
-					WithType(sdk.DataType(ch.newColumn.dataType))
+				alterReq, err := buildHybridAlterColumnTypeAction(ch.newColumn)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 				if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 					WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{*alterReq})); err != nil {
 					return diag.FromErr(fmt.Errorf("error altering column type %s on hybrid table %v: %w",
