@@ -19,6 +19,12 @@ func mapNullStringToNonNullableField(stringField *string, sqlValue sql.NullStrin
 	}
 }
 
+func mapNullStringToNonNullableFieldWithAdjuster(stringField *string, sqlValue sql.NullString, adjuster func(string) string) {
+	if sqlValue.Valid {
+		*stringField = adjuster(sqlValue.String)
+	}
+}
+
 func mapNullString(stringField **string, sqlValue sql.NullString) {
 	if sqlValue.Valid {
 		*stringField = &sqlValue.String

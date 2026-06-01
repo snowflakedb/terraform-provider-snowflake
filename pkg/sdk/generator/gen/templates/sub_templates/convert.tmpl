@@ -51,7 +51,7 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
         {{- else if .AssignmentKindNullableToNullable }}
             {{ .NullMapFunc }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
         {{- else if .AssignmentKindNullableToRequired }}
-            {{ .NullRequiredMapFunc }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
+            {{ .NullRequiredMapFunc }}{{ if .ValueAdjuster }}WithAdjuster{{ end }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}{{ if .ValueAdjuster }}, {{ .ValueAdjuster }}{{ end }})
         {{- else if .AssignmentKindNullableToIdentifier }}
             mapNullStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, Parse{{ TypeWithoutPointer .PlainKind }})
         {{- else if .AssignmentKindNullableToEnum }}

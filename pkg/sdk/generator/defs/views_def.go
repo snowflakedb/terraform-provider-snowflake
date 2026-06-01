@@ -20,7 +20,7 @@ var viewPairs = g.StructPair("viewDBRow", "View").
 	Text("schema_name").
 	OptionalText("owner", g.WithRequiredInPlain()).
 	OptionalText("comment", g.WithRequiredInPlain()).
-	OptionalText("text", g.WithRequiredInPlain()).
+	OptionalText("text", g.WithRequiredInPlain(), g.WithValueAdjuster("tracking.TrimMetadata")).
 	OptionalBool("is_secure", g.WithRequiredInPlain()).
 	OptionalBool("is_materialized", g.WithRequiredInPlain()).
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).

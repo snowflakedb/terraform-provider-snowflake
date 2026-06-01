@@ -2,7 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 
@@ -264,10 +263,7 @@ func (r viewDBRow) convert() (*View, error) {
 	mapNullStringToNonNullableField(&result.Reserved, r.Reserved)
 	mapNullStringToNonNullableField(&result.Owner, r.Owner)
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
-	// TODO [this PR]: allow metadata trimming
-	if r.Text.Valid {
-		result.Text = tracking.TrimMetadata(r.Text.String)
-	}
+	mapNullStringToNonNullableFieldWithAdjuster(&result.Text, r.Text, tracking.TrimMetadata)
 	mapNullBoolToNonNullableField(&result.IsSecure, r.IsSecure)
 	mapNullBoolToNonNullableField(&result.IsMaterialized, r.IsMaterialized)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
