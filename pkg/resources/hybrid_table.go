@@ -363,6 +363,43 @@ func (c hybridTableColumns) diffs(new hybridTableColumns) (removed hybridTableCo
 // Create helpers
 // ---------------------------------------------------------------------------
 
+// hybridColumnSpec is the parsed form of a single hybrid-table column declaration,
+// shared between the Create path (CREATE TABLE) and the alter-time ADD COLUMN
+// path. The two paths hit the same parsing/validation routines but populate
+// distinct SDK request types, so the spec carries only the fields that both
+// requests can consume directly. Per-request-only fields (e.g. NotNull, which
+// HybridTableAddColumnActionRequest does not support) live in their respective
+// builders.
+type hybridColumnSpec struct {
+	dataType     datatypes.DataType
+	defaultValue *sdk.ColumnDefaultValue // nil when no default block was provided
+	collate      string                  // empty when not set
+	comment      string                  // empty when not set
+}
+
+func buildHybridColumnSpec(col hybridTableColumn) (hybridColumnSpec, error) {
+	dataType, err := datatypes.ParseDataType(col.dataType)
+	if err != nil {
+		return hybridColumnSpec{}, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
+	}
+
+	spec := hybridColumnSpec{
+		dataType: dataType,
+		collate:  col.collate,
+		comment:  col.comment,
+	}
+
+	if col._default != nil {
+		defaultValue, err := buildHybridColumnDefaultFromParsed(col._default, dataType)
+		if err != nil {
+			return hybridColumnSpec{}, fmt.Errorf("column %q: %w", col.name, err)
+		}
+		spec.defaultValue = defaultValue
+	}
+
+	return spec, nil
+}
+
 func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest, error) {
 	parsed := parseHybridColumns(cols)
 	requests := make([]sdk.HybridTableColumnRequest, len(parsed))
