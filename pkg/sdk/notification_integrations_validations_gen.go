@@ -49,7 +49,9 @@ func (opts *AlterNotificationIntegrationOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		errs = append(errs, opts.Set.additionalValidations())
+		if moreThanOneValueSet(opts.Set.SetPushParams, opts.Set.SetEmailParams, opts.Set.SetWebhookParams) {
+			errs = append(errs, errMoreThanOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams", "SetWebhookParams"))
+		}
 		if !anyValueSet(opts.Set.Enabled, opts.Set.SetPushParams, opts.Set.SetEmailParams, opts.Set.SetWebhookParams, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterNotificationIntegrationOptions.Set", "Enabled", "SetPushParams", "SetEmailParams", "SetWebhookParams", "Comment"))
 		}
