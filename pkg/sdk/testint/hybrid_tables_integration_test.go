@@ -240,6 +240,26 @@ func TestInt_HybridTables(t *testing.T) {
 			err = client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns).WithIfNotExists(true))
 			require.NoError(t, err)
 		})
+
+		t.Run("with retention parameters", func(t *testing.T) {
+			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				},
+			}
+			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns).
+				WithDataRetentionTimeInDays(5).
+				WithMaxDataExtensionTimeInDays(10))
+			require.NoError(t, err)
+			t.Cleanup(testClientHelper().HybridTable.DropFunc(t, id))
+
+			// Both parameters must be set at TABLE level by the CREATE itself,
+			// proving they are accepted in CREATE HYBRID TABLE despite the docs omission.
+			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).
+				HasDataRetentionTimeInDays(5).
+				HasMaxDataExtensionTimeInDays(10))
+		})
 	})
 
 	t.Run("create operations - error cases", func(t *testing.T) {
@@ -420,10 +440,8 @@ func TestInt_HybridTables(t *testing.T) {
 		})
 
 		t.Run("unset properties", func(t *testing.T) {
-			// Arrange: create the table with COMMENT already set, then SET the
-			// retention properties (DATA_RETENTION_TIME_IN_DAYS and
-			// MAX_DATA_EXTENSION_TIME_IN_DAYS are not accepted on CREATE HYBRID TABLE,
-			// so they must be applied via a follow-up ALTER).
+			// Arrange: create the table with COMMENT and the retention properties set,
+			// so the multi-property UNSET below has all three fields at non-default values.
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
@@ -435,15 +453,12 @@ func TestInt_HybridTables(t *testing.T) {
 						},
 					},
 				},
-			}).WithComment("to be unset"))
+			}).
+				WithComment("to be unset").
+				WithDataRetentionTimeInDays(3).
+				WithMaxDataExtensionTimeInDays(7))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().HybridTable.DropFunc(t, id))
-
-			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithSet(*sdk.NewHybridTableSetPropertiesRequest().
-					WithDataRetentionTimeInDays(3).
-					WithMaxDataExtensionTimeInDays(7)))
-			require.NoError(t, err, "SET must succeed so UNSET has non-default values to target")
 
 			// Single-property UNSET — baseline (expected to succeed regardless of multi-property capability).
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
