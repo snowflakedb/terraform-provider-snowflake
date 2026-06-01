@@ -75,13 +75,13 @@ var tagReferencesDef = g.NewInterface(
 		Text("TAG_SCHEMA").
 		Text("TAG_NAME").
 		Text("TAG_VALUE").
-		PlainField("LEVEL", "TagReferenceObjectDomain").
+		Enum("LEVEL", TagReferenceObjectDomainDef).
 		OptionalText("OBJECT_DATABASE").
 		OptionalText("OBJECT_SCHEMA").
 		Text("OBJECT_NAME").
-		PlainField("DOMAIN", "TagReferenceObjectDomain").
+		Enum("DOMAIN", TagReferenceObjectDomainDef).
 		OptionalText("COLUMN_NAME").
-		PlainField("APPLY_METHOD", "TagReferenceApplyMethod").
+		Enum("APPLY_METHOD", TagReferenceApplyMethodDef).
 		WithConvertGeneration(),
 	g.NewQueryStruct("GetForEntity").
 		SQLWithCustomFieldName("selectEverythingFrom", "SELECT * FROM TABLE").

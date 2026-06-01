@@ -46,14 +46,11 @@ func (r tagReferenceDBRow) convert() (*TagReference, error) {
 		TagValue:    r.TagValue,
 		ObjectName:  r.ObjectName,
 	}
-	// Adjusted manually, Mapping for Level (string -> TagReferenceObjectDomain)
 	mapStringWithMapping(&result.Level, r.Level, ToTagReferenceObjectDomain)
 	mapNullString(&result.ObjectDatabase, r.ObjectDatabase)
 	mapNullString(&result.ObjectSchema, r.ObjectSchema)
-	// Adjusted manually, Mapping for Domain (string -> TagReferenceObjectDomain)
 	mapStringWithMapping(&result.Domain, r.Domain, ToTagReferenceObjectDomain)
 	mapNullString(&result.ColumnName, r.ColumnName)
-	// Adjusted manually, Mapping for ApplyMethod (string -> TagReferenceApplyMethod)
 	mapStringWithMapping(&result.ApplyMethod, r.ApplyMethod, ToTagReferenceApplyMethod)
 	return result, nil
 }
