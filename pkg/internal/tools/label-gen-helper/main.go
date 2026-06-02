@@ -39,7 +39,7 @@ var manualShortLabels = map[string]string{
 	"snowflake_api_authentication_integration_with_client_credentials":       "api_authn_integration_client_credentials",
 	"snowflake_api_authentication_integration_with_jwt_bearer":               "api_authn_integration_jwt_bearer",
 	"snowflake_oauth_integration_for_partner_applications":                   "oauth_integration_for_partner_application",
-}
+} // #nosec G101
 
 func main() {
 	if len(os.Args) < 2 {
@@ -179,7 +179,8 @@ func updateIssueTemplate(path string, options []string) error {
 		return err
 	}
 
-	return os.WriteFile(filepath.Clean(path), []byte(file.String()), 0o600)
+	// The path is derived from the repository root passed in by the Makefile, not from untrusted input.
+	return os.WriteFile(filepath.Clean(path), []byte(file.String()), 0o600) // #nosec G703
 }
 
 // objectTypeIndex returns the index of the object_type dropdown within the issue form body.
