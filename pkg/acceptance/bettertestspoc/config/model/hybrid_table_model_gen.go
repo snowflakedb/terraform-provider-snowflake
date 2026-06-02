@@ -74,10 +74,12 @@ func (h *HybridTableModel) MarshalJSON() ([]byte, error) {
 	type Alias HybridTableModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(h),
 		DependsOn: h.DependsOn(),
+		Timeouts:  h.Timeouts(),
 	})
 }
 
@@ -88,6 +90,11 @@ func (h *HybridTableModel) WithDependsOn(values ...string) *HybridTableModel {
 
 func (h *HybridTableModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *HybridTableModel {
 	h.DynamicBlock = dynamicBlock
+	return h
+}
+
+func (h *HybridTableModel) WithTimeout(timeout config.Timeouts) *HybridTableModel {
+	h.SetTimeout(timeout)
 	return h
 }
 
