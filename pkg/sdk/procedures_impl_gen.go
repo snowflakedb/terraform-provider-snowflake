@@ -69,7 +69,6 @@ func (v *procedures) Show(ctx context.Context, request *ShowProcedureRequest) ([
 func (v *procedures) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Procedure, error) {
 	request := NewShowProcedureRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		// adjusted manually
 		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
 	procedures, err := v.Show(ctx, request)
 	if err != nil {

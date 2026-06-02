@@ -227,7 +227,7 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-	g.ShowByIDInFiltering,
+	g.ShowByIDTableInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
