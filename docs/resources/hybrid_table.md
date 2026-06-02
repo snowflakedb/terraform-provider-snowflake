@@ -112,7 +112,7 @@ Required:
 
 Optional:
 
-- `collate` (String) (Default: ``) Column collation specification, e.g. en-ci.
+- `collate` (String) (Default: ``) Column collation specification, e.g. en-ci. Case-insensitive (en-ci and EN-CI are treated as equal).
 - `comment` (String) (Default: ``) Column-level comment.
 - `default` (Block List, Max: 1) Defines the column default value. Only one of constant, expression, or sequence may be set. (see [below for nested schema](#nestedblock--column--default))
 - `nullable` (Boolean) (Default: `true`) Whether this column allows NULLs. Changing this on an existing column forces recreation because hybrid tables do not support ALTER SET/DROP NOT NULL.
