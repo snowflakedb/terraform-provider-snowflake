@@ -90,10 +90,8 @@ var icebergTablePartitionExpression = g.NewQueryStruct("IcebergTablePartitionExp
 	OptionalQueryStructField("Year", icebergTablePartitionYear, g.KeywordOptions()).
 	OptionalQueryStructField("Month", icebergTablePartitionMonth, g.KeywordOptions()).
 	OptionalQueryStructField("Day", icebergTablePartitionDay, g.KeywordOptions()).
-	OptionalQueryStructField("Hour", icebergTablePartitionHour, g.KeywordOptions())
-
-// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-// .WithValidation(g.ExactlyOneValueSet, "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour")
+	OptionalQueryStructField("Hour", icebergTablePartitionHour, g.KeywordOptions()).
+	WithValidation(g.ExactlyOneValueSet, "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour")
 
 var icebergTableSetProperties = g.NewQueryStruct("IcebergTableSetProperties").
 	OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
@@ -143,10 +141,8 @@ var icebergTableAlterColumnAction = g.NewQueryStruct("IcebergTableAlterColumnAct
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
 	OptionalSQL("UNSET COMMENT").
 	OptionalTextAssignment("SET WRITE DEFAULT", g.ParameterOptions().NoEquals()).
-	OptionalSQL("DROP WRITE DEFAULT")
-
-// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-// .WithValidation(g.ExactlyOneValueSet, "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault")
+	OptionalSQL("DROP WRITE DEFAULT").
+	WithValidation(g.ExactlyOneValueSet, "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault")
 
 var icebergTableClusteringAction = g.NewQueryStruct("IcebergTableClusteringAction").
 	ListAssignment("CLUSTER BY", "string", g.ParameterOptions().NoEquals().Parentheses()).

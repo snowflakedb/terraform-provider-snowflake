@@ -11,18 +11,16 @@ var procedureArgument = func() *g.QueryStruct {
 		Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
 		PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 		PredefinedQueryStructField("ArgDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT"))
-	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-	// .WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT")).
+		WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
 }
 
 var procedureColumn = func() *g.QueryStruct {
 	return g.NewQueryStruct("ProcedureColumn").
 		Text("ColumnName", g.KeywordOptions().DoubleQuotes().Required()).
 		PredefinedQueryStructField("ColumnDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
-		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required())
-	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-	// .WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
+		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
+		WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
 }
 
 var procedureReturns = func() *g.QueryStruct {
@@ -43,8 +41,7 @@ var procedureReturns = func() *g.QueryStruct {
 					"Columns",
 					procedureColumn(),
 					g.ListOptions().MustParentheses(),
-				).
-				WithAdditionalValidations(),
+				),
 			g.KeywordOptions().SQL("TABLE"),
 		).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 }
@@ -65,8 +62,7 @@ var procedureSQLReturns = g.NewQueryStruct("ProcedureSQLReturns").
 				"Columns",
 				procedureColumn(),
 				g.ListOptions().MustParentheses(),
-			).
-			WithAdditionalValidations(),
+			),
 		g.KeywordOptions().SQL("TABLE"),
 	).
 	OptionalSQL("NOT NULL").
@@ -186,8 +182,7 @@ var proceduresDef = g.NewInterface(
 		PredefinedQueryStructField("ProcedureDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType").
-		WithAdditionalValidations(),
+		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
 ).CustomOperation(
 	"CreateForPython",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-procedure#python-handler",
@@ -231,8 +226,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
-		WithValidation(g.ValidIdentifier, "name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "name"),
 ).CustomOperation(
 	"CreateForScala",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-procedure#scala-handler",
@@ -306,8 +300,7 @@ var proceduresDef = g.NewInterface(
 		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.ParameterOptions().NoQuotes().NoEquals().SQL("EXECUTE AS")).
 		PredefinedQueryStructField("ProcedureDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
-		WithValidation(g.ValidIdentifier, "name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "name"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-procedure",
 	g.NewQueryStruct("AlterProcedure").
