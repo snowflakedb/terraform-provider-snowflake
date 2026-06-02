@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ MaterializedViews = (*materializedViews)(nil)
-
 var (
+	_ MaterializedViews                       = (*materializedViews)(nil)
 	_ convertibleRow[MaterializedView]        = new(materializedViewDBRow)
 	_ convertibleRow[MaterializedViewDetails] = new(materializedViewDetailsRow)
 )

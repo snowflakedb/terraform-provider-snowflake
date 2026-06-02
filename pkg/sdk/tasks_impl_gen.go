@@ -9,10 +9,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tasks = (*tasks)(nil)
-
-// second type assert removed manually
-var _ convertibleRow[Task] = new(taskDBRow)
+var (
+	_ Tasks                = (*tasks)(nil)
+	_ convertibleRow[Task] = new(taskDBRow)
+)
 
 type tasks struct {
 	client *Client
@@ -286,8 +286,6 @@ func (r *DescribeTaskRequest) toOpts() *DescribeTaskOptions {
 	}
 	return opts
 }
-
-// convert for describe removed manually - same structs
 
 func (r *ExecuteTaskRequest) toOpts() *ExecuteTaskOptions {
 	opts := &ExecuteTaskOptions{

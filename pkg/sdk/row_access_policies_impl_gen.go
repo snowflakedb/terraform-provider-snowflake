@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ RowAccessPolicies = (*rowAccessPolicies)(nil)
-
 var (
+	_ RowAccessPolicies                          = (*rowAccessPolicies)(nil)
 	_ convertibleRow[RowAccessPolicy]            = new(rowAccessPolicyDBRow)
 	_ convertibleRow[RowAccessPolicyDescription] = new(describeRowAccessPolicyDBRow)
 )

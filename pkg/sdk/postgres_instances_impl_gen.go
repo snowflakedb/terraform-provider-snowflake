@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ PostgresInstances = (*postgresInstances)(nil)
-
 var (
+	_ PostgresInstances                        = (*postgresInstances)(nil)
 	_ convertibleRow[PostgresInstance]         = new(postgresInstancesRow)
 	_ convertibleRow[PostgresInstanceProperty] = new(postgresInstanceDetailsRow)
 )

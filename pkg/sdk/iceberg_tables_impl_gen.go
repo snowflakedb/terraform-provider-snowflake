@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ IcebergTables = (*icebergTables)(nil)
-
 var (
+	_ IcebergTables                       = (*icebergTables)(nil)
 	_ convertibleRow[IcebergTable]        = new(icebergTableRow)
 	_ convertibleRow[IcebergTableDetails] = new(icebergTableDetailsRow)
 )

@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ CortexAgents = (*cortexAgents)(nil)
-
 var (
+	_ CortexAgents                       = (*cortexAgents)(nil)
 	_ convertibleRow[CortexAgent]        = new(showCortexAgentDBRow)
 	_ convertibleRow[CortexAgentDetails] = new(cortexAgentDetailsRow)
 )

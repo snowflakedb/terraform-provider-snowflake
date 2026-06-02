@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ OpenflowConnectors = (*openflowConnectors)(nil)
-
 var (
+	_ OpenflowConnectors                       = (*openflowConnectors)(nil)
 	_ convertibleRow[OpenflowConnector]        = new(openflowConnectorRow)
 	_ convertibleRow[OpenflowConnectorDetails] = new(openflowConnectorDetailsRow)
 )

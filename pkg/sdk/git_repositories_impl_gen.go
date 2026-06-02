@@ -8,10 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ GitRepositories = (*gitRepositories)(nil)
-
 var (
-	// adjusted manually
+	_ GitRepositories               = (*gitRepositories)(nil)
 	_ convertibleRow[GitRepository] = new(gitRepositoriesRow)
 	_ convertibleRow[GitBranch]     = new(gitBranchesRow)
 	_ convertibleRow[GitTag]        = new(gitTagsRow)
@@ -171,8 +169,6 @@ func (r *ShowGitRepositoryRequest) toOpts() *ShowGitRepositoryOptions {
 	}
 	return opts
 }
-
-// second convert removed manually
 
 func (r *ShowGitBranchesGitRepositoryRequest) toOpts() *ShowGitBranchesGitRepositoryOptions {
 	opts := &ShowGitBranchesGitRepositoryOptions{

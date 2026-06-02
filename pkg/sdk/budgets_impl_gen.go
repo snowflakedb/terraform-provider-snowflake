@@ -6,11 +6,11 @@ import (
 	"context"
 )
 
-var _ Budgets = (*budgets)(nil)
-
-var _ convertibleRow[BudgetNotificationIntegration] = new(getNotificationIntegrationsRow)
-
-var _ convertibleRow[BudgetCycleStartAction] = new(getCycleStartActionRow)
+var (
+	_ Budgets                                       = (*budgets)(nil)
+	_ convertibleRow[BudgetNotificationIntegration] = new(getNotificationIntegrationsRow)
+	_ convertibleRow[BudgetCycleStartAction]        = new(getCycleStartActionRow)
+)
 
 type budgets struct {
 	client *Client

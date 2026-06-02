@@ -75,6 +75,22 @@ func preprocessDefinition(definition *Interface) {
 			o.DtosToGenerate = dtosToGenerate
 		}
 	}
+
+	// Deduplicate convert() and convertibleRow guard emissions.
+	// A convert() method can only be declared once per receiver type per package.
+	seenMappingReceivers := make([]string, 0)
+	for _, o := range definition.Operations {
+		for _, mapping := range []*Mapping{o.ShowMapping, o.DescribeMapping, o.InstanceMethodMapping} {
+			if mapping == nil {
+				continue
+			}
+			if slices.Contains(seenMappingReceivers, mapping.From.Name) {
+				mapping.SkipConvert = true
+			} else {
+				seenMappingReceivers = append(seenMappingReceivers, mapping.From.Name)
+			}
+		}
+	}
 }
 
 func setParent(field *Field) {

@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Streamlits = (*streamlits)(nil)
-
 var (
+	_ Streamlits                      = (*streamlits)(nil)
 	_ convertibleRow[Streamlit]       = new(streamlitsRow)
 	_ convertibleRow[StreamlitDetail] = new(streamlitsDetailRow)
 )

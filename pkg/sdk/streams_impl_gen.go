@@ -8,10 +8,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Streams = (*streams)(nil)
-
-// second type assert removed manually
-var _ convertibleRow[Stream] = new(showStreamsDbRow)
+var (
+	_ Streams                = (*streams)(nil)
+	_ convertibleRow[Stream] = new(showStreamsDbRow)
+)
 
 type streams struct {
 	client *Client
@@ -258,5 +258,3 @@ func (r *DescribeStreamRequest) toOpts() *DescribeStreamOptions {
 	}
 	return opts
 }
-
-// second convert removed manually
