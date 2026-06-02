@@ -11,18 +11,16 @@ var functionArgument = func() *g.QueryStruct {
 		Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
 		PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 		PredefinedQueryStructField("ArgDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT"))
-	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-	// .WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT")).
+		WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
 }
 
 var functionColumn = func() *g.QueryStruct {
 	return g.NewQueryStruct("FunctionColumn").
 		Text("ColumnName", g.KeywordOptions().DoubleQuotes().Required()).
 		PredefinedQueryStructField("ColumnDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
-		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required())
-	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-	// .WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
+		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
+		WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
 }
 
 var functionReturns = func() *g.QueryStruct {
@@ -42,8 +40,7 @@ var functionReturns = func() *g.QueryStruct {
 					"Columns",
 					functionColumn(),
 					g.ParameterOptions().Parentheses().NoEquals(),
-				).
-				WithAdditionalValidations(),
+				),
 			g.KeywordOptions().SQL("TABLE"),
 		).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 }
@@ -167,8 +164,7 @@ var functionsDef = g.NewInterface(
 		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
-		WithValidation(g.ValidIdentifier, "name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "name"),
 ).CustomOperation(
 	"CreateForPython",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-function#python-handler",
@@ -299,8 +295,7 @@ var functionsDef = g.NewInterface(
 		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
-		WithValidation(g.ValidIdentifier, "name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "name"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-function",
 	g.NewQueryStruct("AlterFunction").
