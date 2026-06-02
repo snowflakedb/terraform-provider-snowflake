@@ -3622,7 +3622,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_McpServers_InD
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_ModelMonitors_InDatabase_v2_14_1_NonEmptyPlan(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_ModelMonitors_InDatabase_v2_17_0_NonEmptyPlan(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -3636,7 +3636,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_ModelMonitors_
 		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				ExternalProviders:  ExternalProviderWithExactVersion("2.14.1"),
+				ExternalProviders:  ExternalProviderWithExactVersion("2.17.0"),
 				Config:             grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeModelMonitors, databaseName),
 				ExpectNonEmptyPlan: true,
 			},
