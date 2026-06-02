@@ -12,7 +12,11 @@ func (h *HybridTableResourceAssert) HasColumns(columns []sdk.TableColumnSignatur
 	h.AddAssertion(assert.ValueSet("column.#", strconv.Itoa(len(columns))))
 	for i, col := range columns {
 		h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.name", i), col.Name))
-		h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type.ToSql()))
+		// Read writes raw DESCRIBE values (commit 8d76f001), so state holds the
+		// canonical form Snowflake stores (e.g. "NUMBER(38,0)" for INTEGER, not
+		// the user's configured spelling). Plan-time drift is suppressed by
+		// DiffSuppressDataTypes on the column.type field.
+		h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type.Canonical()))
 	}
 	return h
 }
