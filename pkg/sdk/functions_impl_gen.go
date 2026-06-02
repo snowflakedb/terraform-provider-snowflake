@@ -74,7 +74,6 @@ func (v *functions) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithA
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
 	return collections.FindFirst(functions, func(r Function) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
 }
 

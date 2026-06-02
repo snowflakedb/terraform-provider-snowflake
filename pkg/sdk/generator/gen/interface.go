@@ -15,6 +15,24 @@ const (
 	SchemaObjectIdentifierWithArguments objectIdentifierKind = "SchemaObjectIdentifierWithArguments"
 )
 
+// ShowByIDFindPredicateKind selects the predicate strategy used in the generated ShowByID FindFirst call.
+// Use ResolvedShowByIDFindPredicateKind() to get the fully-resolved value (manual > auto-detect > default).
+type ShowByIDFindPredicateKind string
+
+const (
+	ShowByIDFindPredicateName           ShowByIDFindPredicateKind = "name"
+	ShowByIDFindPredicateFullID         ShowByIDFindPredicateKind = "full_id"
+	ShowByIDFindPredicateAccountName    ShowByIDFindPredicateKind = "account_name"
+	ShowByIDFindPredicateNameAndLocator ShowByIDFindPredicateKind = "name_and_locator"
+)
+
+func (k ShowByIDFindPredicateKind) IsName() bool        { return k == ShowByIDFindPredicateName }
+func (k ShowByIDFindPredicateKind) IsFullID() bool      { return k == ShowByIDFindPredicateFullID }
+func (k ShowByIDFindPredicateKind) IsAccountName() bool { return k == ShowByIDFindPredicateAccountName }
+func (k ShowByIDFindPredicateKind) IsNameAndLocator() bool {
+	return k == ShowByIDFindPredicateNameAndLocator
+}
+
 func ToObjectIdentifierKind(s string) (objectIdentifierKind, error) {
 	switch s {
 	case "AccountObjectIdentifier":
@@ -50,6 +68,8 @@ type Interface struct {
 	ShowObjectTypeName string
 	// ShowObjectName is the name of the main object returned from this interface through Show methods family.
 	ShowObjectName string
+	// ShowByIDFindPredicateKind selects the predicate strategy for the generated ShowByID FindFirst call.
+	ShowByIDFindPredicateKind ShowByIDFindPredicateKind
 
 	*genhelpers.PreambleModel
 	*genhelpers.ObjectGenerationSettings
@@ -99,4 +119,22 @@ func (i *Interface) WithEnums(enums ...*Enum) *Interface {
 func (i *Interface) WithShowObjectType(name string) *Interface {
 	i.ShowObjectTypeName = name
 	return i
+}
+
+// WithShowByIDFindPredicateKind sets the predicate strategy used in the generated ShowByID FindFirst call.
+// All comparison expressions live in the template; this field only selects which one to emit.
+func (i *Interface) WithShowByIDFindPredicateKind(kind ShowByIDFindPredicateKind) *Interface {
+	i.ShowByIDFindPredicateKind = kind
+	return i
+}
+
+// ResolvedShowByIDFindPredicateKind returns the fully-resolved predicate strategy for ShowByID.
+func (i *Interface) ResolvedShowByIDFindPredicateKind() ShowByIDFindPredicateKind {
+	if i.ShowByIDFindPredicateKind != "" {
+		return i.ShowByIDFindPredicateKind
+	}
+	if i.IdentifierKind == string(SchemaObjectIdentifierWithArguments) {
+		return ShowByIDFindPredicateFullID
+	}
+	return ShowByIDFindPredicateName
 }

@@ -74,7 +74,6 @@ func (v *procedures) ShowByID(ctx context.Context, id SchemaObjectIdentifierWith
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
 	return collections.FindFirst(procedures, func(r Procedure) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
 }
 
