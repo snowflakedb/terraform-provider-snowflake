@@ -2,9 +2,15 @@
 
 {{- $field := . -}}
 {{- range .Validations }}
-    if {{ .Condition $field }} {
-        errs = append(errs, {{ .ReturnedError $field }})
-    }
+    {{- if .IsAdditionalValidations }}
+        errs = append(errs, opts{{ $field.Path }}.additionalValidations())
+    {{- else }}
+        {{- if $field.IsSlice }}for _, {{ $field.SliceElemVar }} := range opts{{ $field.Path }} { {{ end }}
+            if {{ .Condition $field }} {
+                errs = append(errs, {{ .ReturnedError $field }})
+            }
+        {{- if $field.IsSlice }} } {{ end }}
+    {{- end }}
 {{- end -}}
 {{- range .Fields }}
     {{- if .HasAnyValidationInSubtree }}

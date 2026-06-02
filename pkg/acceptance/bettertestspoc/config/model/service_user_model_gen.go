@@ -48,6 +48,7 @@ type ServiceUserModel struct {
 	JdbcUseSessionTimezone                   tfconfig.Variable `json:"jdbc_use_session_timezone,omitempty"`
 	JsonIndent                               tfconfig.Variable `json:"json_indent,omitempty"`
 	LockTimeout                              tfconfig.Variable `json:"lock_timeout,omitempty"`
+	LogEventLevel                            tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                 tfconfig.Variable `json:"log_level,omitempty"`
 	LoginName                                tfconfig.Variable `json:"login_name,omitempty"`
 	MinsToUnlock                             tfconfig.Variable `json:"mins_to_unlock,omitempty"`
@@ -121,10 +122,12 @@ func (s *ServiceUserModel) MarshalJSON() ([]byte, error) {
 	type Alias ServiceUserModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -135,6 +138,11 @@ func (s *ServiceUserModel) WithDependsOn(values ...string) *ServiceUserModel {
 
 func (s *ServiceUserModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ServiceUserModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *ServiceUserModel) WithTimeout(timeout config.Timeouts) *ServiceUserModel {
+	s.SetTimeout(timeout)
 	return s
 }
 
@@ -321,6 +329,11 @@ func (s *ServiceUserModel) WithJsonIndent(jsonIndent int) *ServiceUserModel {
 
 func (s *ServiceUserModel) WithLockTimeout(lockTimeout int) *ServiceUserModel {
 	s.LockTimeout = tfconfig.IntegerVariable(lockTimeout)
+	return s
+}
+
+func (s *ServiceUserModel) WithLogEventLevel(logEventLevel string) *ServiceUserModel {
+	s.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return s
 }
 
@@ -700,6 +713,11 @@ func (s *ServiceUserModel) WithJsonIndentValue(value tfconfig.Variable) *Service
 
 func (s *ServiceUserModel) WithLockTimeoutValue(value tfconfig.Variable) *ServiceUserModel {
 	s.LockTimeout = value
+	return s
+}
+
+func (s *ServiceUserModel) WithLogEventLevelValue(value tfconfig.Variable) *ServiceUserModel {
+	s.LogEventLevel = value
 	return s
 }
 

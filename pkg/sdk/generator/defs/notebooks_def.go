@@ -78,7 +78,8 @@ var notebooksDef = g.NewInterface(
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 		WithValidation(g.ValidIdentifierIfSet, "Warehouse").
 		WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
-		WithValidation(g.ValidIdentifierIfSet, "ComputePool"),
+		WithValidation(g.ValidIdentifierIfSet, "ComputePool").
+		WithAdditionalValidations(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-notebook",
 	g.NewQueryStruct("AlterNotebook").
@@ -103,7 +104,8 @@ var notebooksDef = g.NewInterface(
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 				WithValidation(g.ValidIdentifierIfSet, "Warehouse").
 				WithValidation(g.ValidIdentifierIfSet, "ComputePool").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "SecretsList", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion").
+				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(

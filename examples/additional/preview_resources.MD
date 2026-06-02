@@ -11,6 +11,7 @@
 - [snowflake_catalog_integration_iceberg_rest](./docs/resources/catalog_integration_iceberg_rest)
 - [snowflake_catalog_integration_object_storage](./docs/resources/catalog_integration_object_storage)
 - [snowflake_catalog_integration_open_catalog](./docs/resources/catalog_integration_open_catalog)
+- [snowflake_cortex_agent](./docs/resources/cortex_agent)
 - [snowflake_cortex_search_service](./docs/resources/cortex_search_service)
 - [snowflake_current_account](./docs/resources/current_account)
 - [snowflake_current_organization_account](./docs/resources/current_organization_account)

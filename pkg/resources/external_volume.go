@@ -91,7 +91,7 @@ var externalVolumeSchema = map[string]*schema.Schema{
 					ValidateDiagFunc: validateBooleanString,
 					Description:      booleanStringFieldDescription("Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers."),
 					DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
-						return oldValue == "" && newValue == BooleanDefault
+						return oldValue == "" && (newValue == BooleanDefault || newValue == BooleanFalse)
 					},
 				},
 				"azure_tenant_id": {
@@ -207,6 +207,9 @@ func storageLocationDetailsToStateMaps(locations []sdk.ExternalVolumeStorageLoca
 			}
 		case loc.AzureStorageLocation != nil:
 			m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
+			if loc.AzureStorageLocation.UsePrivatelinkEndpoint != nil {
+				m["use_privatelink_endpoint"] = booleanStringFromBool(*loc.AzureStorageLocation.UsePrivatelinkEndpoint)
+			}
 		case loc.S3CompatStorageLocation != nil:
 			m["storage_endpoint"] = loc.S3CompatStorageLocation.Endpoint
 			m["storage_aws_key_id"] = loc.S3CompatStorageLocation.AwsAccessKeyId
@@ -707,13 +710,21 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				}
 			}
 
-			// TODO(SNOW-2356128): handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
+			azureStorageLocation := &sdk.AzureStorageLocationParams{
+				AzureTenantId:  azureTenantId,
+				StorageBaseUrl: storageBaseUrl,
+			}
+			usePrivatelinkEndpoint, ok := storageLocationConfig["use_privatelink_endpoint"].(string)
+			if ok && usePrivatelinkEndpoint != BooleanDefault && len(usePrivatelinkEndpoint) > 0 {
+				b, err := booleanStringToBool(usePrivatelinkEndpoint)
+				if err != nil {
+					return nil, err
+				}
+				azureStorageLocation.UsePrivatelinkEndpoint = &b
+			}
 			storageLocation = sdk.ExternalVolumeStorageLocation{
-				Name: name,
-				AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
-					AzureTenantId:  azureTenantId,
-					StorageBaseUrl: storageBaseUrl,
-				},
+				Name:                       name,
+				AzureStorageLocationParams: azureStorageLocation,
 			}
 		case sdk.StorageProviderS3compat:
 			// Validate that provider-incompatible fields are not given
@@ -842,7 +853,9 @@ func addStorageLocation(
 			addedLocation.AzureTenantId,
 			addedLocation.StorageBaseUrl,
 		)
-		// TODO(SNOW-2356128): handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
+		if addedLocation.UsePrivatelinkEndpoint != nil {
+			azureParamsRequest = azureParamsRequest.WithUsePrivatelinkEndpoint(*addedLocation.UsePrivatelinkEndpoint)
+		}
 		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithAzureStorageLocationParams(*azureParamsRequest)
 	case sdk.StorageProviderS3compat:
 		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.S3CompatStorageLocationParams

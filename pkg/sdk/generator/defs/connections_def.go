@@ -82,9 +82,9 @@ var connectionsDef = g.NewInterface(
 		Text("account_name").
 		Text("name").
 		OptionalText("comment").
-		Field("is_primary", "string", "bool").
+		Field("is_primary", "string", "bool", g.WithBoolParsed()).
 		Field("primary", "string", "ExternalObjectIdentifier").
-		Field("failover_allowed_to_accounts", "string", "[]AccountIdentifier").
+		AccountIdentifierArray("failover_allowed_to_accounts").
 		Text("connection_url").
 		Text("organization_name").
 		Text("account_locator"),

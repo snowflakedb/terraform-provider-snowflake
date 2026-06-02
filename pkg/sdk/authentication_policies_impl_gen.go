@@ -2,18 +2,16 @@
 
 package sdk
 
+// imports adjusted manually
 import (
 	"context"
-	"errors"
-	"fmt"
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ AuthenticationPolicies = (*authenticationPolicies)(nil)
-
 var (
+	_ AuthenticationPolicies                          = (*authenticationPolicies)(nil)
 	_ convertibleRow[AuthenticationPolicy]            = new(showAuthenticationPolicyDBRow)
 	_ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
 )
@@ -201,32 +199,19 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 }
 
 func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
-	// adjusted manually
-	policy := &AuthenticationPolicy{
+	result := &AuthenticationPolicy{
 		Name:    r.Name,
+		Comment: r.Comment,
 		Kind:    r.Kind,
 		Options: r.Options,
-		Comment: r.Comment,
 	}
-
-	var errs []error
-	if !r.DatabaseName.Valid {
-		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
+	mapNullTimeToNonNullableField(&result.CreatedOn, r.CreatedOn)
+	mapNullStringToNonNullableField(&result.Owner, r.Owner)
+	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	if !r.SchemaName.Valid {
-		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
-	}
-	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
-	}
-
-	mapNullStringToNonNullableField(&policy.DatabaseName, r.DatabaseName)
-	mapNullStringToNonNullableField(&policy.SchemaName, r.SchemaName)
-	mapNullTimeToNonNullableField(&policy.CreatedOn, r.CreatedOn)
-	mapNullStringToNonNullableField(&policy.Owner, r.Owner)
-	mapNullStringToNonNullableField(&policy.OwnerRoleType, r.OwnerRoleType)
-
-	return policy, nil
+	return result, nil
 }
 
 func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPolicyOptions {
@@ -237,11 +222,11 @@ func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPo
 }
 
 func (r describeAuthenticationPolicyDBRow) convert() (*AuthenticationPolicyDescription, error) {
-	// adjusted manually
-	return &AuthenticationPolicyDescription{
+	result := &AuthenticationPolicyDescription{
 		Property:    r.Property,
 		Value:       r.Value,
 		Default:     r.Default,
 		Description: r.Description,
-	}, nil
+	}
+	return result, nil
 }

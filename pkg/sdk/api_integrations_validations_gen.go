@@ -45,7 +45,6 @@ func (opts *AlterApiIntegrationOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterApiIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		// Edited manually
 		if moreThanOneValueSet(opts.Set.AwsParams, opts.Set.AzureParams, opts.Set.GoogleParams) {
 			errs = append(errs, errMoreThanOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams"))
 		}

@@ -23,6 +23,7 @@ type ProcedureJavaModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -94,10 +95,12 @@ func (p *ProcedureJavaModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedureJavaModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -108,6 +111,11 @@ func (p *ProcedureJavaModel) WithDependsOn(values ...string) *ProcedureJavaModel
 
 func (p *ProcedureJavaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedureJavaModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *ProcedureJavaModel) WithTimeout(timeout config.Timeouts) *ProcedureJavaModel {
+	p.SetTimeout(timeout)
 	return p
 }
 
@@ -163,6 +171,11 @@ func (p *ProcedureJavaModel) WithHandler(handler string) *ProcedureJavaModel {
 
 func (p *ProcedureJavaModel) WithIsSecure(isSecure string) *ProcedureJavaModel {
 	p.IsSecure = tfconfig.StringVariable(isSecure)
+	return p
+}
+
+func (p *ProcedureJavaModel) WithLogEventLevel(logEventLevel string) *ProcedureJavaModel {
+	p.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return p
 }
 
@@ -278,6 +291,11 @@ func (p *ProcedureJavaModel) WithImportsValue(value tfconfig.Variable) *Procedur
 
 func (p *ProcedureJavaModel) WithIsSecureValue(value tfconfig.Variable) *ProcedureJavaModel {
 	p.IsSecure = value
+	return p
+}
+
+func (p *ProcedureJavaModel) WithLogEventLevelValue(value tfconfig.Variable) *ProcedureJavaModel {
+	p.LogEventLevel = value
 	return p
 }
 

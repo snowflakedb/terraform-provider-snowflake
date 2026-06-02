@@ -84,9 +84,9 @@ var openflowDeploymentsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowDeploymentRow", "OpenflowDeployment").
 		Text("name").
-		Field("type", "string", OpenflowDeploymentTypeEnumDef.Kind(), g.WithDbFieldName("DeploymentType")).
-		PlainField("status", OpenflowDeploymentStatusEnumDef.Kind()).
-		Field("vpc_type", "sql.NullString", OpenflowVpcTypeEnumDef.KindPtr()).
+		Enum("type", OpenflowDeploymentTypeEnumDef, g.WithDbFieldName("DeploymentType")).
+		Enum("status", OpenflowDeploymentStatusEnumDef).
+		OptionalEnum("vpc_type", OpenflowVpcTypeEnumDef).
 		OptionalText("display_name").
 		Bool("use_private_link").
 		Bool("use_user_auth_over_private_link").
@@ -104,9 +104,9 @@ var openflowDeploymentsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowDeploymentDetailsRow", "OpenflowDeploymentDetails").
 		Text("name").
-		Field("type", "string", OpenflowDeploymentTypeEnumDef.Kind(), g.WithDbFieldName("DeploymentType")).
-		PlainField("status", OpenflowDeploymentStatusEnumDef.Kind()).
-		Field("vpc_type", "sql.NullString", OpenflowVpcTypeEnumDef.KindPtr()).
+		Enum("type", OpenflowDeploymentTypeEnumDef, g.WithDbFieldName("DeploymentType")).
+		Enum("status", OpenflowDeploymentStatusEnumDef).
+		OptionalEnum("vpc_type", OpenflowVpcTypeEnumDef).
 		OptionalText("display_name").
 		Bool("use_private_link").
 		Bool("use_user_auth_over_private_link").

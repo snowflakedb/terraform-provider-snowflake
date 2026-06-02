@@ -27,9 +27,15 @@ import (
 
 var accountSchema = map[string]*schema.Schema{
 	"name": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "Specifies the identifier (i.e. name) for the account. It must be unique within an organization, regardless of which Snowflake Region the account is in and must start with an alphabetic character and cannot contain spaces or special characters except for underscores (_). Note that if the account name includes underscores, features that do not accept account names with underscores (e.g. Okta SSO or SCIM) can reference a version of the account name that substitutes hyphens (-) for the underscores.",
+		Type:     schema.TypeString,
+		Required: true,
+		Description: joinWithSpace(
+			"Specifies the identifier (i.e. name) for the account. It must be unique within an organization,",
+			"regardless of which Snowflake Region the account is in and must start with an alphabetic character and cannot contain spaces or special characters except for underscores (_).",
+			"Note that if the account name includes underscores, features that do not accept account names with underscores (e.g. Okta SSO or SCIM) can reference a version of the account name that substitutes hyphens (-) for the underscores.",
+			"Note: with the 2026_03 bundle ([BCR-2215](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03/bcr-2215)), Snowflake enforces that the combined `<orgname>-<name>` identifier is at most 63 characters and that `name` does not end with `_`;",
+			"otherwise `CREATE ACCOUNT` and `ALTER ACCOUNT ... RENAME TO` fail with `ORG_ACCOUNT_NAME_EXCEEDS_DNS_LIMIT` / `ACCOUNT_NAME_INVALID_FOR_DNS`. Existing accounts that do not comply keep working but cannot be renamed back to a non-compliant value once renamed to a compliant one.",
+		),
 	},
 	"admin_name": {
 		Type:             schema.TypeString,
@@ -132,7 +138,7 @@ var accountSchema = map[string]*schema.Schema{
 	"grace_period_in_days": {
 		Type:             schema.TypeInt,
 		Required:         true,
-		Description:      "Specifies the number of days during which the account can be restored (“undropped”). The minimum is 3 days and the maximum is 90 days.",
+		Description:      "Specifies the number of days during which the account can be restored (\"undropped\"). The minimum is 3 days and the maximum is 90 days.",
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(3)),
 	},
 	"consumption_billing_entity": {
@@ -298,7 +304,7 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		_, err = client.Accounts.ShowByID(ctx, id)
 		if err != nil {
 			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
-			if errors.Is(err, sdk.ErrObjectNotFound) {
+			if errors.Is(err, sdk.ErrObjectNotFound) || errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 				return nil, false
 			} else {
 				return err, true

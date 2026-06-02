@@ -3,13 +3,19 @@
 {{ range .Operations }}
     {{- if .OptsField -}}
         {{- if .ShowMapping -}}
-            {{- template "convertGuard" .ShowMapping -}}
+            {{- if not .ShowMapping.SkipConvert -}}
+                {{- template "convertGuard" .ShowMapping -}}
+            {{- end }}
         {{- end }}
         {{- if .DescribeMapping -}}
-            {{- template "convertGuard" .DescribeMapping -}}
+            {{- if not .DescribeMapping.SkipConvert -}}
+                {{- template "convertGuard" .DescribeMapping -}}
+            {{- end }}
         {{- end }}
         {{- if .InstanceMethodMapping -}}
-            {{- template "convertGuard" .InstanceMethodMapping -}}
+            {{- if not .InstanceMethodMapping.SkipConvert -}}
+                {{- template "convertGuard" .InstanceMethodMapping -}}
+            {{- end }}
         {{- end }}
-    {{ end -}}
+    {{- end -}}
 {{- end }}

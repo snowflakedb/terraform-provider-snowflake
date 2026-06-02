@@ -21,6 +21,7 @@ type FunctionSqlModel struct {
 	FunctionDefinition    tfconfig.Variable `json:"function_definition,omitempty"`
 	FunctionLanguage      tfconfig.Variable `json:"function_language,omitempty"`
 	IsSecure              tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel         tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel              tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel           tfconfig.Variable `json:"metric_level,omitempty"`
 	ReturnResultsBehavior tfconfig.Variable `json:"return_results_behavior,omitempty"`
@@ -77,10 +78,12 @@ func (f *FunctionSqlModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionSqlModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
+		Timeouts:  f.Timeouts(),
 	})
 }
 
@@ -91,6 +94,11 @@ func (f *FunctionSqlModel) WithDependsOn(values ...string) *FunctionSqlModel {
 
 func (f *FunctionSqlModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionSqlModel {
 	f.DynamicBlock = dynamicBlock
+	return f
+}
+
+func (f *FunctionSqlModel) WithTimeout(timeout config.Timeouts) *FunctionSqlModel {
+	f.SetTimeout(timeout)
 	return f
 }
 
@@ -142,6 +150,11 @@ func (f *FunctionSqlModel) WithFunctionLanguage(functionLanguage string) *Functi
 
 func (f *FunctionSqlModel) WithIsSecure(isSecure string) *FunctionSqlModel {
 	f.IsSecure = tfconfig.StringVariable(isSecure)
+	return f
+}
+
+func (f *FunctionSqlModel) WithLogEventLevel(logEventLevel string) *FunctionSqlModel {
+	f.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return f
 }
 
@@ -221,6 +234,11 @@ func (f *FunctionSqlModel) WithFunctionLanguageValue(value tfconfig.Variable) *F
 
 func (f *FunctionSqlModel) WithIsSecureValue(value tfconfig.Variable) *FunctionSqlModel {
 	f.IsSecure = value
+	return f
+}
+
+func (f *FunctionSqlModel) WithLogEventLevelValue(value tfconfig.Variable) *FunctionSqlModel {
+	f.LogEventLevel = value
 	return f
 }
 

@@ -25,6 +25,7 @@ type FunctionPythonModel struct {
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsAggregate                tfconfig.Variable `json:"is_aggregate,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -89,10 +90,12 @@ func (f *FunctionPythonModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionPythonModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
+		Timeouts:  f.Timeouts(),
 	})
 }
 
@@ -103,6 +106,11 @@ func (f *FunctionPythonModel) WithDependsOn(values ...string) *FunctionPythonMod
 
 func (f *FunctionPythonModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionPythonModel {
 	f.DynamicBlock = dynamicBlock
+	return f
+}
+
+func (f *FunctionPythonModel) WithTimeout(timeout config.Timeouts) *FunctionPythonModel {
+	f.SetTimeout(timeout)
 	return f
 }
 
@@ -168,6 +176,11 @@ func (f *FunctionPythonModel) WithIsAggregate(isAggregate string) *FunctionPytho
 
 func (f *FunctionPythonModel) WithIsSecure(isSecure string) *FunctionPythonModel {
 	f.IsSecure = tfconfig.StringVariable(isSecure)
+	return f
+}
+
+func (f *FunctionPythonModel) WithLogEventLevel(logEventLevel string) *FunctionPythonModel {
+	f.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return f
 }
 
@@ -281,6 +294,11 @@ func (f *FunctionPythonModel) WithIsAggregateValue(value tfconfig.Variable) *Fun
 
 func (f *FunctionPythonModel) WithIsSecureValue(value tfconfig.Variable) *FunctionPythonModel {
 	f.IsSecure = value
+	return f
+}
+
+func (f *FunctionPythonModel) WithLogEventLevelValue(value tfconfig.Variable) *FunctionPythonModel {
+	f.LogEventLevel = value
 	return f
 }
 

@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ EventTables = (*eventTables)(nil)
-
 var (
+	_ EventTables                       = (*eventTables)(nil)
 	_ convertibleRow[EventTable]        = new(eventTableRow)
 	_ convertibleRow[EventTableDetails] = new(eventTableDetailsRow)
 )
@@ -103,23 +102,16 @@ func (r *ShowEventTableRequest) toOpts() *ShowEventTableOptions {
 }
 
 func (r eventTableRow) convert() (*EventTable, error) {
-	// adjusted manually
-	t := &EventTable{
+	result := &EventTable{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 	}
-	if r.Owner.Valid {
-		t.Owner = r.Owner.String
-	}
-	if r.Comment.Valid {
-		t.Comment = r.Comment.String
-	}
-	if r.OwnerRoleType.Valid {
-		t.OwnerRoleType = r.OwnerRoleType.String
-	}
-	return t, nil
+	mapNullStringToNonNullableField(&result.Owner, r.Owner)
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	return result, nil
 }
 
 func (r *DescribeEventTableRequest) toOpts() *DescribeEventTableOptions {
@@ -130,12 +122,12 @@ func (r *DescribeEventTableRequest) toOpts() *DescribeEventTableOptions {
 }
 
 func (r eventTableDetailsRow) convert() (*EventTableDetails, error) {
-	// adjusted manually
-	return &EventTableDetails{
+	result := &EventTableDetails{
 		Name:    r.Name,
 		Kind:    r.Kind,
 		Comment: r.Comment,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *DropEventTableRequest) toOpts() *DropEventTableOptions {

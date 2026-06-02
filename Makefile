@@ -18,7 +18,7 @@ GIT_DIFF_CHECK = git diff --exit-code -- $(1) || ( status=$$?; git restore -- $(
 default: help
 
 dev-setup: ## setup development dependencies
-	@which ./bin/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ./bin v2.6.1
+	@which ./bin/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ./bin v2.12.2
 	cd tools && mkdir -p bin/
 	cd tools && env GOBIN=$$PWD/bin go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 	cd tools && env GOBIN=$$PWD/bin go install mvdan.cc/gofumpt
@@ -61,15 +61,15 @@ lint-fix: ## Run linters and formatters. If linters or formatters support autofi
 	./bin/golangci-lint run -v --fix
 
 mod: ## add missing and remove unused modules
-	go mod tidy -compat=1.25.7
+	go mod tidy -compat=1.26.3
 
 mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
-	go mod tidy -compat=1.25.7 -diff
+	go mod tidy -compat=1.26.3 -diff
 
-pre-push: generate-all-config-model-builders mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
+pre-push: generate-all-config-model-builders generate-sdk-validations mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
-pre-push-check: generate-all-config-model-builders-check mod-check fmt-check generate-docs-additional-files-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
+pre-push-check: generate-all-config-model-builders-check generate-sdk-validations-check mod-check fmt-check generate-docs-additional-files-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -151,6 +151,12 @@ generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
+
+generate-sdk-validations: ## check that SDK validations are up-to-date
+	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=validations'
+
+generate-sdk-validations-check: generate-sdk-validations ## check that SDK validations are up-to-date
+	$(call GIT_DIFF_CHECK,pkg/sdk/*_validations_gen.go)
 
 clean-generated-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/*_gen.go
@@ -245,4 +251,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf
+.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-validations-check

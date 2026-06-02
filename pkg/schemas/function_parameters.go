@@ -14,6 +14,7 @@ var (
 	functionParameters           = []sdk.FunctionParameter{
 		sdk.FunctionParameterEnableConsoleOutput,
 		sdk.FunctionParameterLogLevel,
+		sdk.FunctionParameterLogEventLevel,
 		sdk.FunctionParameterMetricLevel,
 		sdk.FunctionParameterTraceLevel,
 	}

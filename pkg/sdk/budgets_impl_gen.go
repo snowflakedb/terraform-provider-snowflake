@@ -4,14 +4,13 @@ package sdk
 
 import (
 	"context"
-	"fmt"
 )
 
-var _ Budgets = (*budgets)(nil)
-
-var _ convertibleRow[BudgetNotificationIntegration] = new(getNotificationIntegrationsRow)
-
-var _ convertibleRow[BudgetCycleStartAction] = new(getCycleStartActionRow)
+var (
+	_ Budgets                                       = (*budgets)(nil)
+	_ convertibleRow[BudgetNotificationIntegration] = new(getNotificationIntegrationsRow)
+	_ convertibleRow[BudgetCycleStartAction]        = new(getCycleStartActionRow)
+)
 
 type budgets struct {
 	client *Client
@@ -135,12 +134,12 @@ func (r *GetNotificationIntegrationsBudgetRequest) toOpts() *GetNotificationInte
 }
 
 func (r getNotificationIntegrationsRow) convert() (*BudgetNotificationIntegration, error) {
-	// added manually
-	return &BudgetNotificationIntegration{
+	result := &BudgetNotificationIntegration{
 		IntegrationName:      r.IntegrationName,
 		LastNotificationTime: r.LastNotificationTime,
 		AddedDate:            r.AddedDate,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *GetNotificationEmailBudgetRequest) toOpts() *GetNotificationEmailBudgetOptions {
@@ -176,18 +175,12 @@ func (r *GetCycleStartActionBudgetRequest) toOpts() *GetCycleStartActionBudgetOp
 }
 
 func (r getCycleStartActionRow) convert() (*BudgetCycleStartAction, error) {
-	// added manually
-	budget := &BudgetCycleStartAction{
+	result := &BudgetCycleStartAction{
 		ActionUuid:             r.ActionUuid,
-		ProcedureArgs:          ParseCommaSeparatedStringArray(r.ProcedureArgs, false),
 		AddedTimestamp:         r.AddedTimestamp,
 		LastTriggeredTimestamp: r.LastTriggeredTimestamp,
 	}
-	id, err := ParseSchemaObjectIdentifierWithArguments(r.ProcedureFqn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse procedure fully qualified name for budget: %w", err)
-	} else {
-		budget.ProcedureId = id
-	}
-	return budget, nil
+	mapStringWithMapping(&result.ProcedureId, r.ProcedureFqn, ParseSchemaObjectIdentifierWithArguments)
+	result.ProcedureArgs = ParseCommaSeparatedStringArray(r.ProcedureArgs, false)
+	return result, nil
 }

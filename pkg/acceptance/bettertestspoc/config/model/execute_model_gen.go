@@ -54,10 +54,12 @@ func (e *ExecuteModel) MarshalJSON() ([]byte, error) {
 	type Alias ExecuteModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(e),
 		DependsOn: e.DependsOn(),
+		Timeouts:  e.Timeouts(),
 	})
 }
 
@@ -68,6 +70,11 @@ func (e *ExecuteModel) WithDependsOn(values ...string) *ExecuteModel {
 
 func (e *ExecuteModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExecuteModel {
 	e.DynamicBlock = dynamicBlock
+	return e
+}
+
+func (e *ExecuteModel) WithTimeout(timeout config.Timeouts) *ExecuteModel {
+	e.SetTimeout(timeout)
 	return e
 }
 

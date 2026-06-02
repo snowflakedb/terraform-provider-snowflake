@@ -33,7 +33,7 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 	Text("created_on").
 	Text("updated_on").
 	OptionalText("published_on").
-	PlainField("state", ListingStateEnumDef.Kind()).
+	Enum("state", ListingStateEnumDef).
 	OptionalText("review_state").
 	OptionalText("comment").
 	Text("owner").
@@ -66,7 +66,7 @@ var listingDetailsPairs = g.StructPair("listingDetailsDBRow", "ListingDetails").
 	OptionalText("subtitle").
 	OptionalText("description").
 	OptionalText("listing_terms").
-	PlainField("state", "ListingState").
+	Enum("state", ListingStateEnumDef).
 	OptionalAccountObjectIdentifier("share", g.WithPlainFieldName("Share")).
 	OptionalAccountObjectIdentifier("application_package", g.WithPlainFieldName("ApplicationPackage")).
 	OptionalText("business_needs").
@@ -222,7 +222,7 @@ var listingsDef = g.NewInterface(
 			Describe().
 			SQL("LISTING").
 			Name().
-			OptionalAssignment("REVISION", ListingRevisionEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
+			OptionalEnumAssignment("REVISION", ListingRevisionEnumDef, g.ParameterOptions().NoQuotes()).
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	CustomShowOperationWithPairedStructs(

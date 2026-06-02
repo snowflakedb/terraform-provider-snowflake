@@ -9,28 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (c *CortexAgentAssert) HasNoComment() *CortexAgentAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be empty")
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *CortexAgentAssert) HasNoProfile() *CortexAgentAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
-		t.Helper()
-		if o.Profile != nil {
-			return fmt.Errorf("expected profile to be empty")
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *CortexAgentAssert) HasCreatedOnNotEmpty() *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
@@ -45,23 +23,10 @@ func (c *CortexAgentAssert) HasCreatedOnNotEmpty() *CortexAgentAssert {
 func (c *CortexAgentAssert) HasCortexAgentProfile(expected sdk.CortexAgentProfile) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
-		return assertCortexAgentProfileJsonEqual(o.Profile, expected)
+		if !reflect.DeepEqual(o.Profile, expected) {
+			return fmt.Errorf("expected profile: %+v; got: %+v", expected, o.Profile)
+		}
+		return nil
 	})
 	return c
-}
-
-func assertCortexAgentProfileJsonEqual(profile *string, expected sdk.CortexAgentProfile) error {
-	if profile == nil {
-		return fmt.Errorf("expected profile to be non-nil")
-	}
-
-	actual, err := sdk.UnmarshalCortexAgentProfile(*profile)
-	if err != nil {
-		return fmt.Errorf("unmarshal cortex agent profile: %w", err)
-	}
-
-	if !reflect.DeepEqual(actual, &expected) {
-		return fmt.Errorf("expected profile %+v; got %+v", &expected, actual)
-	}
-	return nil
 }

@@ -1,8 +1,27 @@
 package sdk
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
+
+func (r showAuthenticationPolicyDBRow) additionalConvert(result *AuthenticationPolicy) error {
+	var errs []error
+	if !r.DatabaseName.Valid {
+		errs = append(errs, fmt.Errorf("missing database name for authentication policy with name: %s", r.Name))
+	}
+	if !r.SchemaName.Valid {
+		errs = append(errs, fmt.Errorf("missing schema name for authentication policy with name: %s", r.Name))
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+	mapNullStringToNonNullableField(&result.DatabaseName, r.DatabaseName)
+	mapNullStringToNonNullableField(&result.SchemaName, r.SchemaName)
+	return nil
+}
 
 type AuthenticationPolicyDetails []AuthenticationPolicyDescription
 

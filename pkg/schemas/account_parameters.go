@@ -25,6 +25,7 @@ var (
 		sdk.AccountParameterGeographyOutputFormat,
 		sdk.AccountParameterLockTimeout,
 		sdk.AccountParameterLogLevel,
+		sdk.AccountParameterLogEventLevel,
 		sdk.AccountParameterMultiStatementCount,
 		sdk.AccountParameterQueryTag,
 		sdk.AccountParameterQuotedIdentifiersIgnoreCase,

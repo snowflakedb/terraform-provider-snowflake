@@ -23,6 +23,7 @@ type ProcedureScalaModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -94,10 +95,12 @@ func (p *ProcedureScalaModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedureScalaModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -108,6 +111,11 @@ func (p *ProcedureScalaModel) WithDependsOn(values ...string) *ProcedureScalaMod
 
 func (p *ProcedureScalaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedureScalaModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *ProcedureScalaModel) WithTimeout(timeout config.Timeouts) *ProcedureScalaModel {
+	p.SetTimeout(timeout)
 	return p
 }
 
@@ -163,6 +171,11 @@ func (p *ProcedureScalaModel) WithHandler(handler string) *ProcedureScalaModel {
 
 func (p *ProcedureScalaModel) WithIsSecure(isSecure string) *ProcedureScalaModel {
 	p.IsSecure = tfconfig.StringVariable(isSecure)
+	return p
+}
+
+func (p *ProcedureScalaModel) WithLogEventLevel(logEventLevel string) *ProcedureScalaModel {
+	p.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return p
 }
 
@@ -278,6 +291,11 @@ func (p *ProcedureScalaModel) WithImportsValue(value tfconfig.Variable) *Procedu
 
 func (p *ProcedureScalaModel) WithIsSecureValue(value tfconfig.Variable) *ProcedureScalaModel {
 	p.IsSecure = value
+	return p
+}
+
+func (p *ProcedureScalaModel) WithLogEventLevelValue(value tfconfig.Variable) *ProcedureScalaModel {
+	p.LogEventLevel = value
 	return p
 }
 

@@ -2,8 +2,6 @@
 
 package sdk
 
-import "fmt"
-
 var (
 	_ validatable = new(CreateExternalVolumeOptions)
 	_ validatable = new(AlterExternalVolumeOptions)
@@ -23,22 +21,7 @@ func (opts *CreateExternalVolumeOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-
-	// Added manually
-
-	// Apply errExactlyOneOf to each element in storage locations list
-	for i, storageLocationItem := range opts.StorageLocations {
-		storageLocation := storageLocationItem.ExternalVolumeStorageLocation
-		if !exactlyOneValueSet(storageLocation.S3StorageLocationParams, storageLocation.GCSStorageLocationParams, storageLocation.AzureStorageLocationParams, storageLocation.S3CompatStorageLocationParams) {
-			errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateExternalVolumeOptions.StorageLocation[%d]", i), "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
-		}
-	}
-
-	// Check the storage location list is not empty, as at least 1 storage location is required for an external volume
-	if len(opts.StorageLocations) == 0 {
-		errs = append(errs, errNotSet("CreateExternalVolumeOptions", "StorageLocations"))
-	}
-
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 

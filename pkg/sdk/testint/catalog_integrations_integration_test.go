@@ -130,7 +130,9 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(""))
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty())
 	})
 
 	t.Run("create catalog integration: object storage basic", func(t *testing.T) {
@@ -223,7 +225,9 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(catalogNamespace))
+			HasCatalogNamespace(catalogNamespace).
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty())
 	})
 
 	t.Run("create catalog integration: object storage all options", func(t *testing.T) {

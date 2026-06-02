@@ -91,25 +91,19 @@ func (c *CortexAgentAssert) HasOwner(expected string) *CortexAgentAssert {
 func (c *CortexAgentAssert) HasComment(expected string) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
-		if o.Comment == nil {
-			return fmt.Errorf("expected comment to have value; got: nil")
-		}
-		if *o.Comment != expected {
-			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
+		if o.Comment != expected {
+			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
 		}
 		return nil
 	})
 	return c
 }
 
-func (c *CortexAgentAssert) HasProfile(expected string) *CortexAgentAssert {
+func (c *CortexAgentAssert) HasProfile(expected sdk.CortexAgentProfile) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
-		if o.Profile == nil {
-			return fmt.Errorf("expected profile to have value; got: nil")
-		}
-		if *o.Profile != expected {
-			return fmt.Errorf("expected profile: %v; got: %v", expected, *o.Profile)
+		if o.Profile != expected {
+			return fmt.Errorf("expected profile: %v; got: %v", expected, o.Profile)
 		}
 		return nil
 	})

@@ -79,7 +79,8 @@ var servicesDef = g.NewInterface(
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "FromSpecification", "FromSpecificationTemplate").
-		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
+		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
+		WithAdditionalValidations(),
 	serviceExternalAccessIntegrationsDef,
 	listItemDef,
 	serviceFromSpecificationDef,
@@ -116,7 +117,8 @@ var servicesDef = g.NewInterface(
 				OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalComment().
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
-				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment").
+				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -150,7 +152,7 @@ var servicesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-services",
 	g.StructPair("servicesRow", "Service").
 		Text("name").
-		PlainField("status", ServiceStatusEnumDef.Kind()).
+		Enum("status", ServiceStatusEnumDef).
 		Text("database_name").
 		Text("schema_name").
 		Text("owner").
@@ -194,7 +196,7 @@ var servicesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-service",
 	g.StructPair("serviceDescRow", "ServiceDetails").
 		Text("name").
-		PlainField("status", ServiceStatusEnumDef.Kind()).
+		Enum("status", ServiceStatusEnumDef).
 		Text("database_name").
 		Text("schema_name").
 		Text("owner").

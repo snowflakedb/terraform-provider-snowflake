@@ -2,18 +2,16 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Streams = (*streams)(nil)
-
-// second type assert removed manually
-var _ convertibleRow[Stream] = new(showStreamsDbRow)
+var (
+	_ Streams                = (*streams)(nil)
+	_ convertibleRow[Stream] = new(showStreamsDbRow)
+)
 
 type streams struct {
 	client *Client
@@ -228,55 +226,30 @@ func (r *ShowStreamRequest) toOpts() *ShowStreamOptions {
 }
 
 func (r showStreamsDbRow) convert() (*Stream, error) {
-	// adjusted manually
-	s := &Stream{
+	result := &Stream{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Stale:        r.Stale == "true",
 	}
-	if r.StaleAfter.Valid {
-		s.StaleAfter = &r.StaleAfter.Time
-	}
-	if r.Owner.Valid {
-		s.Owner = &r.Owner.String
-	}
-	if r.Comment.Valid {
-		s.Comment = &r.Comment.String
-	}
-	if r.TableName.Valid {
-		s.TableName = &r.TableName.String
-	}
-	if r.SourceType.Valid {
-		sourceType, err := ToStreamSourceType(r.SourceType.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting show stream: %w", err)
-		} else {
-			s.SourceType = &sourceType
-		}
-	}
+	mapNullString(&result.Owner, r.Owner)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullStringWithMapping(&result.SourceType, r.SourceType, ToStreamSourceType)
 	if r.BaseTables.Valid {
-		s.BaseTables = ParseCommaSeparatedStringArray(r.BaseTables.String, false)
-	}
-	if r.Type.Valid {
-		s.Type = &r.Type.String
-	}
-	if r.Mode.Valid {
-		mode, err := ToStreamMode(r.Mode.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting show stream: %w", err)
-		} else {
-			s.Mode = &mode
+		if ids, err := ParseCommaSeparatedSchemaObjectIdentifierArray(r.BaseTables.String); err == nil {
+			result.BaseTables = ids
 		}
 	}
-	if r.InvalidReason.Valid {
-		s.InvalidReason = &r.InvalidReason.String
+	mapNullString(&result.Type, r.Type)
+	mapNullStringWithMapping(&result.Mode, r.Mode, ToStreamMode)
+	mapNullTime(&result.StaleAfter, r.StaleAfter)
+	mapNullString(&result.InvalidReason, r.InvalidReason)
+	mapNullString(&result.OwnerRoleType, r.OwnerRoleType)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	if r.OwnerRoleType.Valid {
-		s.OwnerRoleType = &r.OwnerRoleType.String
-	}
-	return s, nil
+	return result, nil
 }
 
 func (r *DescribeStreamRequest) toOpts() *DescribeStreamOptions {
@@ -285,5 +258,3 @@ func (r *DescribeStreamRequest) toOpts() *DescribeStreamOptions {
 	}
 	return opts
 }
-
-// second convert removed manually

@@ -8,9 +8,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ OrganizationAccounts = (*organizationAccounts)(nil)
-
-var _ convertibleRow[OrganizationAccount] = new(organizationAccountDbRow)
+var (
+	_ OrganizationAccounts                = (*organizationAccounts)(nil)
+	_ convertibleRow[OrganizationAccount] = new(organizationAccountDbRow)
+)
 
 type organizationAccounts struct {
 	client *Client
@@ -110,8 +111,7 @@ func (r *ShowOrganizationAccountRequest) toOpts() *ShowOrganizationAccountOption
 }
 
 func (r organizationAccountDbRow) convert() (*OrganizationAccount, error) {
-	// adjusted manually
-	oa := &OrganizationAccount{
+	result := &OrganizationAccount{
 		OrganizationName:             r.OrganizationName,
 		AccountName:                  r.AccountName,
 		SnowflakeRegion:              r.SnowflakeRegion,
@@ -125,15 +125,15 @@ func (r organizationAccountDbRow) convert() (*OrganizationAccount, error) {
 		IsEventsAccount:              r.IsEventsAccount,
 		IsOrganizationAccount:        r.IsOrganizationAccount,
 	}
-	mapStringWithMapping(&oa.Edition, r.Edition, ToOrganizationAccountEdition)
-	mapNullString(&oa.Comment, r.Comment)
-	mapNullString(&oa.MarketplaceConsumerBillingEntityName, r.MarketplaceConsumerBillingEntityName)
-	mapNullString(&oa.MarketplaceProviderBillingEntityName, r.MarketplaceProviderBillingEntityName)
-	mapNullString(&oa.OldAccountUrl, r.OldAccountUrl)
-	mapNullString(&oa.AccountOldUrlSavedOn, r.AccountOldUrlSavedOn)
-	mapNullString(&oa.AccountOldUrlLastUsed, r.AccountOldUrlLastUsed)
-	mapNullString(&oa.OrganizationOldUrl, r.OrganizationOldUrl)
-	mapNullString(&oa.OrganizationOldUrlSavedOn, r.OrganizationOldUrlSavedOn)
-	mapNullString(&oa.OrganizationOldUrlLastUsed, r.OrganizationOldUrlLastUsed)
-	return oa, nil
+	mapStringWithMapping(&result.Edition, r.Edition, ToOrganizationAccountEdition)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.MarketplaceConsumerBillingEntityName, r.MarketplaceConsumerBillingEntityName)
+	mapNullString(&result.MarketplaceProviderBillingEntityName, r.MarketplaceProviderBillingEntityName)
+	mapNullString(&result.OldAccountUrl, r.OldAccountUrl)
+	mapNullString(&result.AccountOldUrlSavedOn, r.AccountOldUrlSavedOn)
+	mapNullString(&result.AccountOldUrlLastUsed, r.AccountOldUrlLastUsed)
+	mapNullString(&result.OrganizationOldUrl, r.OrganizationOldUrl)
+	mapNullString(&result.OrganizationOldUrlSavedOn, r.OrganizationOldUrlSavedOn)
+	mapNullString(&result.OrganizationOldUrlLastUsed, r.OrganizationOldUrlLastUsed)
+	return result, nil
 }

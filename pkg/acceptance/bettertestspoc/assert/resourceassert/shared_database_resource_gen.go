@@ -72,6 +72,11 @@ func (s *SharedDatabaseResourceAssert) HasFullyQualifiedName(expected string) *S
 	return s
 }
 
+func (s *SharedDatabaseResourceAssert) HasLogEventLevel(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("log_event_level", expected)
+	return s
+}
+
 func (s *SharedDatabaseResourceAssert) HasLogLevel(expected string) *SharedDatabaseResourceAssert {
 	s.StringValueSet("log_level", expected)
 	return s
@@ -163,6 +168,11 @@ func (s *SharedDatabaseResourceAssert) HasFromShareString(expected string) *Shar
 
 func (s *SharedDatabaseResourceAssert) HasFullyQualifiedNameString(expected string) *SharedDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasLogEventLevelString(expected string) *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return s
 }
 
@@ -260,6 +270,11 @@ func (s *SharedDatabaseResourceAssert) HasNoFullyQualifiedName() *SharedDatabase
 	return s
 }
 
+func (s *SharedDatabaseResourceAssert) HasNoLogEventLevel() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return s
+}
+
 func (s *SharedDatabaseResourceAssert) HasNoLogLevel() *SharedDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("log_level"))
 	return s
@@ -341,6 +356,11 @@ func (s *SharedDatabaseResourceAssert) HasExternalVolumeEmpty() *SharedDatabaseR
 
 func (s *SharedDatabaseResourceAssert) HasFullyQualifiedNameEmpty() *SharedDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasLogEventLevelEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return s
 }
 
@@ -435,6 +455,11 @@ func (s *SharedDatabaseResourceAssert) HasFromShareNotEmpty() *SharedDatabaseRes
 
 func (s *SharedDatabaseResourceAssert) HasFullyQualifiedNameNotEmpty() *SharedDatabaseResourceAssert {
 	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasLogEventLevelNotEmpty() *SharedDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("log_event_level"))
 	return s
 }
 

@@ -214,6 +214,11 @@ func (s *ServiceUserResourceAssert) HasLockTimeout(expected int) *ServiceUserRes
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasLogEventLevel(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("log_event_level", expected)
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasLogLevel(expected string) *ServiceUserResourceAssert {
 	s.StringValueSet("log_level", expected)
 	return s
@@ -585,6 +590,11 @@ func (s *ServiceUserResourceAssert) HasJsonIndentString(expected string) *Servic
 
 func (s *ServiceUserResourceAssert) HasLockTimeoutString(expected string) *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueSet("lock_timeout", expected))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLogEventLevelString(expected string) *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return s
 }
 
@@ -962,6 +972,11 @@ func (s *ServiceUserResourceAssert) HasNoLockTimeout() *ServiceUserResourceAsser
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasNoLogEventLevel() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasNoLogLevel() *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("log_level"))
 	return s
@@ -1336,6 +1351,11 @@ func (s *ServiceUserResourceAssert) HasLockTimeoutEmpty() *ServiceUserResourceAs
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasLogEventLevelEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_event_level", ""))
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasLogLevelEmpty() *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueSet("log_level", ""))
 	return s
@@ -1707,6 +1727,11 @@ func (s *ServiceUserResourceAssert) HasJsonIndentNotEmpty() *ServiceUserResource
 
 func (s *ServiceUserResourceAssert) HasLockTimeoutNotEmpty() *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValuePresent("lock_timeout"))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLogEventLevelNotEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValuePresent("log_event_level"))
 	return s
 }
 

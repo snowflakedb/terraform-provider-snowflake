@@ -553,6 +553,11 @@ func (s *ProcedureSetRequest) WithLogLevel(logLevel LogLevel) *ProcedureSetReque
 	return s
 }
 
+func (s *ProcedureSetRequest) WithLogEventLevel(logEventLevel LogLevel) *ProcedureSetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
 func (s *ProcedureSetRequest) WithMetricLevel(metricLevel MetricLevel) *ProcedureSetRequest {
 	s.MetricLevel = &metricLevel
 	return s
@@ -592,6 +597,11 @@ func (s *ProcedureUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool
 
 func (s *ProcedureUnsetRequest) WithLogLevel(logLevel bool) *ProcedureUnsetRequest {
 	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *ProcedureUnsetRequest) WithLogEventLevel(logEventLevel bool) *ProcedureUnsetRequest {
+	s.LogEventLevel = &logEventLevel
 	return s
 }
 

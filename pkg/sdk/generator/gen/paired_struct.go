@@ -46,6 +46,64 @@ func WithRequiredInPlain() PairedFieldOption {
 	}
 }
 
+// WithCustomParser sets a custom parse function name to use when converting the db field to the plain field.
+// The function must have signature func(string) (T, error) where T matches the plain kind.
+// Example:
+//
+//	Field("signature", "string", "[]TableColumnSignature", WithCustomParser("ParseTableColumnSignature"))
+func WithCustomParser(funcName string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.customParser = funcName
+	}
+}
+
+// WithValueAdjuster sets a custom value adjustment function name to use when assigning value to field without conversion.
+// The function must have signature func(T) (T) where T matches the plain kind. There is no error returned.
+// Example:
+//
+//	Text("text", g.WithValueAdjuster("tracking.TrimMetadata")).
+func WithValueAdjuster(funcName string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.valueAdjuster = funcName
+	}
+}
+
+// WithBoolTrueValue overrides the truthy string compared against the db field for string → bool conversions.
+// The default is "Y". Use this when Snowflake returns a different truthy value, e.g. "true" or "ON".
+// Example:
+//
+//	Field("automatic_clustering", "string", "bool", WithBoolTrueValue("ON"))
+//	// plain: AutomaticClustering = r.AutomaticClustering == "ON"
+func WithBoolTrueValue(v string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.boolTrueValue = v
+	}
+}
+
+// WithManualConvert marks this field to be skipped in the generated convert() body.
+// Use this when the field's conversion requires logic that cannot be expressed by the generator
+// (e.g. row-context-dependent parsing, non-standard null exclusion strings).
+// The field must then be handled manually inside the additionalConvert() method.
+// When any field carries WithManualConvert(), the generated convert() automatically emits
+// a call to r.additionalConvert(result) — no separate WithConvertHook() is needed.
+func WithManualConvert() PairedFieldOption {
+	return func(f *pairedField) {
+		f.manualConvert = true
+	}
+}
+
+// WithBoolParsed routes string → bool or sql.NullString → bool conversions through strconv.ParseBool
+// instead of a fixed string comparison. Use when the db column returns "true"/"false" and robust
+// parsing is preferred over a hard-coded truthy value.
+// Example:
+//
+//	Field("is_primary", "string", "bool", WithBoolParsed())
+func WithBoolParsed() PairedFieldOption {
+	return func(f *pairedField) {
+		f.boolParsed = true
+	}
+}
+
 // pairedField holds the definition for a single field in both the DB row struct and the plain SDK struct.
 type pairedField struct {
 	// dbColumnName is the snake_case column name used for the db: tag and to auto-derive the field names.
@@ -58,6 +116,20 @@ type pairedField struct {
 	dbKind string
 	// plainKind is the Go type used in the plain SDK struct (e.g. "string", "*string", "bool").
 	plainKind string
+	// isEnum marks that the plain field is an enum type.
+	isEnum bool
+	// isJson marks that the db string column should be JSON-unmarshaled into the plain field.
+	isJson bool
+	// customParser is the name of a custom parse function to use for conversion.
+	customParser string
+	// valueAdjuster is the name of the custom adjustment function which returns the value of the same type, no error
+	valueAdjuster string
+	// boolTrueValue overrides the default "Y" comparison for string/NullString → bool conversions.
+	boolTrueValue string
+	// boolParsed routes string/NullString → bool conversions through strconv.ParseBool.
+	boolParsed bool
+	// manualConvert marks this field to be skipped in generated convert code.
+	manualConvert bool
 }
 
 // resolvedPlainFieldName returns the explicit override or the CamelCase conversion of dbColumnName.
@@ -83,14 +155,17 @@ type PairedStructs struct {
 	dbName    string
 	plainName string
 	fields    []pairedField
+	// generateConvert controls whether convert() body generation is enabled for this pair. Default: true.
+	generateConvert bool
 }
 
 // StructPair creates a new PairedStructs with the given DB row struct name and plain struct name.
 func StructPair(dbName, plainName string) *PairedStructs {
 	return &PairedStructs{
-		dbName:    dbName,
-		plainName: plainName,
-		fields:    make([]pairedField, 0),
+		dbName:          dbName,
+		plainName:       plainName,
+		fields:          make([]pairedField, 0),
+		generateConvert: true,
 	}
 }
 
@@ -147,6 +222,22 @@ func (p *PairedStructs) OptionalBool(dbColumnName string, opts ...PairedFieldOpt
 	return p.addField(dbColumnName, "sql.NullBool", "*bool", opts)
 }
 
+// BoolFromText adds a non-nullable boolean field to the plain struct converted from non-nullable string value ("Y" by default).
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> bool
+func (p *PairedStructs) BoolFromText(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "string", "bool", opts)
+}
+
+// OptionalBoolFromText adds a nullable boolean field to the plain struct converted from nullable string value ("Y" by default).
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> *bool
+func (p *PairedStructs) OptionalBoolFromText(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", "*bool", opts)
+}
+
 // Number adds a non-nullable integer field to both the db row struct and the plain struct.
 //
 //	db:    <FieldName> int `db:"<dbColumnName>"`
@@ -189,6 +280,25 @@ func (p *PairedStructs) OptionalTime(dbColumnName string, opts ...PairedFieldOpt
 //	plain: <FieldName> <plainKind>
 func (p *PairedStructs) PlainField(dbColumnName, plainKind string, opts ...PairedFieldOption) *PairedStructs {
 	return p.addField(dbColumnName, "string", plainKind, opts)
+}
+
+// OptionalPlainField adds a nullable field where the db kind is sql.NullString and the plain kind is a custom type.
+// Use this for fields that are stored as nullable raw strings in the db but represented as a custom
+// SDK type in the plain struct (e.g. enums, identifiers, or slices parsed from the db string).
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> <plainKind>
+func (p *PairedStructs) OptionalPlainField(dbColumnName, plainKind string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", plainKind, opts)
+}
+
+// DataType adds a datatypes.DataType field parsed via datatypes.ParseDataType.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> datatypes.DataType
+func (p *PairedStructs) DataType(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithCustomParser("datatypes.ParseDataType")}, opts...)
+	return p.addField(dbColumnName, "string", "datatypes.DataType", allOpts)
 }
 
 // StringList adds a field where the db kind is string and the plain kind is []string.
@@ -254,6 +364,25 @@ func (p *PairedStructs) OptionalSchemaObjectIdentifier(dbColumnName string, opts
 	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifier", allOpts)
 }
 
+// NullableSchemaObjectIdentifierArray adds a nullable SchemaObjectIdentifier slice field. The db kind is
+// sql.NullString and the plain kind is []SchemaObjectIdentifier. The plain field name defaults to the
+// camel-cased column name unless overridden with WithPlainFieldName.
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> []SchemaObjectIdentifier
+func (p *PairedStructs) NullableSchemaObjectIdentifierArray(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", "[]SchemaObjectIdentifier", opts)
+}
+
+// AccountIdentifierArray adds a required AccountIdentifier slice field. The db kind is string and the
+// plain kind is []AccountIdentifier.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> []AccountIdentifier
+func (p *PairedStructs) AccountIdentifierArray(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "string", "[]AccountIdentifier", opts)
+}
+
 // SchemaObjectIdentifierWithArguments adds a SchemaObjectIdentifierWithArguments field. The db kind is string and the plain kind
 // is SchemaObjectIdentifierWithArguments. The plain field name defaults to "Id", but can be overridden with WithPlainFieldName.
 //
@@ -275,6 +404,89 @@ func (p *PairedStructs) OptionalSchemaObjectIdentifierWithArguments(dbColumnName
 	return p.addField(dbColumnName, "sql.NullString", "*SchemaObjectIdentifierWithArguments", allOpts)
 }
 
+// Enum adds a field where the db kind is string and the plain kind is a custom enum type.
+// Use this when the plain struct field is an SDK enum backed by a string column in the db.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> <enumType>
+func (p *PairedStructs) Enum(dbColumnName string, enum *Enum, opts ...PairedFieldOption) *PairedStructs {
+	f := pairedField{
+		dbColumnName: dbColumnName,
+		dbKind:       "string",
+		plainKind:    enum.Kind(),
+		isEnum:       true,
+	}
+	for _, opt := range opts {
+		opt(&f)
+	}
+	p.fields = append(p.fields, f)
+	return p
+}
+
+// OptionalEnum adds a nullable enum field. The db kind is sql.NullString and the plain kind is *<enumType>.
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> *<enumType>
+func (p *PairedStructs) OptionalEnum(dbColumnName string, enum *Enum, opts ...PairedFieldOption) *PairedStructs {
+	f := pairedField{
+		dbColumnName: dbColumnName,
+		dbKind:       "sql.NullString",
+		plainKind:    enum.KindPtr(),
+		isEnum:       true,
+	}
+	for _, opt := range opts {
+		opt(&f)
+	}
+	p.fields = append(p.fields, f)
+	return p
+}
+
+// JsonField adds a field where the db kind is string and the plain kind is a custom type that will be populated via JSON unmarshalling.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> <kind>
+func (p *PairedStructs) JsonField(dbColumnName, kind string, opts ...PairedFieldOption) *PairedStructs {
+	f := pairedField{
+		dbColumnName: dbColumnName,
+		dbKind:       "string",
+		plainKind:    kind,
+		isJson:       true,
+	}
+	for _, opt := range opts {
+		opt(&f)
+	}
+	p.fields = append(p.fields, f)
+	return p
+}
+
+// WithoutConvertGeneration disables automatic convert() body generation for this pair.
+// Use when the manual convert() implementation cannot yet be expressed via the generator.
+func (p *PairedStructs) WithoutConvertGeneration() *PairedStructs {
+	p.generateConvert = false
+	return p
+}
+
+// toFieldPairs converts the paired field definitions into a slice of FieldPair values used in conversion generation.
+func (p *PairedStructs) toFieldPairs() []FieldPair {
+	pairs := make([]FieldPair, len(p.fields))
+	for i, f := range p.fields {
+		pairs[i] = FieldPair{
+			DbFieldName:    f.resolvedDbFieldName(),
+			PlainFieldName: f.resolvedPlainFieldName(),
+			DbKind:         f.dbKind,
+			PlainKind:      f.plainKind,
+			IsEnum:         f.isEnum,
+			IsJson:         f.isJson,
+			CustomParser:   f.customParser,
+			ValueAdjuster:  f.valueAdjuster,
+			BoolTrueValue:  f.boolTrueValue,
+			BoolParsed:     f.boolParsed,
+			manualConvert:  f.manualConvert,
+		}
+	}
+	return pairs
+}
+
 // asDbStruct materializes the definition as a *dbStruct following the old implementation.
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
@@ -293,22 +505,48 @@ func (p *PairedStructs) asPlainStruct() *plainStruct {
 	return s
 }
 
+func (p *PairedStructs) addMappingFunc() func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		addShowMapping(op, from, to)
+		if p.generateConvert {
+			op.ShowMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
+func (p *PairedStructs) addDescribeMappingFunc() func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		addDescriptionMapping(op, from, to)
+		if p.generateConvert {
+			op.DescribeMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
+func (p *PairedStructs) instanceMethodMappingFunc(kind InstanceMethodKind) func(op *Operation, from, to *Field) {
+	return func(op *Operation, from, to *Field) {
+		op.InstanceMethodMapping = newMapping("convert", from, to)
+		op.InstanceMethodKind = &kind
+		if p.generateConvert {
+			op.InstanceMethodMapping.FieldPairs = p.toFieldPairs()
+		}
+	}
+}
+
 // ShowOperationWithPairedStructs is equivalent to ShowOperation but accepts a single PairedStructs
-// definition instead of separate DbStruct and PlainStruct arguments. The PairedStructs is
-// materialized into both structs and forwarded to the existing ShowOperation unchanged.
+// definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, filtering ...ShowByIDFilteringKind) *Interface {
-	return i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, filtering...)
+	return i.showOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addMappingFunc(), filtering...)
 }
 
 // DescribeOperationWithPairedStructs is equivalent to DescribeOperation but accepts a single
-// PairedStructs definition instead of separate DbStruct and PlainStruct arguments. The
-// PairedStructs is materialized into both structs and forwarded to the existing DescribeOperation.
+// PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
 func (i *Interface) DescribeOperationWithPairedStructs(describeKind DescriptionMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
-	return i.DescribeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, helperStructs...)
+	return i.describeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addDescribeMappingFunc(), helperStructs...)
 }
 
 // CustomShowOperationWithPairedStructs is equivalent to CustomShowOperation but accepts a
 // single PairedStructs definition instead of separate DbStruct and PlainStruct arguments.
-func (i *Interface) CustomShowOperationWithPairedStructs(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct) *Interface {
-	return i.CustomShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct)
+func (i *Interface) CustomShowOperationWithPairedStructs(operationName string, showKind ShowMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
+	return i.customShowOperation(operationName, showKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, pairedStructs.addMappingFunc(), helperStructs...)
 }

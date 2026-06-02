@@ -21,6 +21,7 @@ type FunctionJavascriptModel struct {
 	FunctionDefinition    tfconfig.Variable `json:"function_definition,omitempty"`
 	FunctionLanguage      tfconfig.Variable `json:"function_language,omitempty"`
 	IsSecure              tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel         tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel              tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel           tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior     tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -78,10 +79,12 @@ func (f *FunctionJavascriptModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionJavascriptModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
+		Timeouts:  f.Timeouts(),
 	})
 }
 
@@ -92,6 +95,11 @@ func (f *FunctionJavascriptModel) WithDependsOn(values ...string) *FunctionJavas
 
 func (f *FunctionJavascriptModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionJavascriptModel {
 	f.DynamicBlock = dynamicBlock
+	return f
+}
+
+func (f *FunctionJavascriptModel) WithTimeout(timeout config.Timeouts) *FunctionJavascriptModel {
+	f.SetTimeout(timeout)
 	return f
 }
 
@@ -143,6 +151,11 @@ func (f *FunctionJavascriptModel) WithFunctionLanguage(functionLanguage string) 
 
 func (f *FunctionJavascriptModel) WithIsSecure(isSecure string) *FunctionJavascriptModel {
 	f.IsSecure = tfconfig.StringVariable(isSecure)
+	return f
+}
+
+func (f *FunctionJavascriptModel) WithLogEventLevel(logEventLevel string) *FunctionJavascriptModel {
+	f.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return f
 }
 
@@ -227,6 +240,11 @@ func (f *FunctionJavascriptModel) WithFunctionLanguageValue(value tfconfig.Varia
 
 func (f *FunctionJavascriptModel) WithIsSecureValue(value tfconfig.Variable) *FunctionJavascriptModel {
 	f.IsSecure = value
+	return f
+}
+
+func (f *FunctionJavascriptModel) WithLogEventLevelValue(value tfconfig.Variable) *FunctionJavascriptModel {
+	f.LogEventLevel = value
 	return f
 }
 

@@ -96,6 +96,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
@@ -137,6 +138,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasDefaultDdlCollationString("en_US").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 			HasLogLevelString(string(sdk.LogLevelInfo)).
+			HasLogEventLevelString(string(sdk.LogLevelInfo)).
 			HasTraceLevelString(string(sdk.TraceLevelPropagate)).
 			HasSuspendTaskAfterNumFailuresString("20").
 			HasTaskAutoRetryAttemptsString("20").
@@ -296,6 +298,7 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
@@ -343,6 +346,7 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 						HasDefaultDdlCollationString("en_US").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasLogEventLevelString(string(sdk.LogLevelInfo)).
 						HasTraceLevelString(string(sdk.TraceLevelPropagate)).
 						HasSuspendTaskAfterNumFailuresString("20").
 						HasTaskAutoRetryAttemptsString("20").
@@ -1111,6 +1115,13 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, parameterSetToEmptyString),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(parameterSetToEmptyString.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", tfjson.ActionUpdate, sdk.String(""), nil),
+						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
+					},
+				},
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
@@ -1138,6 +1149,68 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
 				),
 				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+// TestAcc_Schema_EmptyParameterAsDefaultValue_WithDatabaseLevel mirrors the first three steps of
+// TestAcc_Schema_EmptyParameterAsDefaultValue, but creates the schema inside a custom database that already has
+// DEFAULT_DDL_COLLATION set. This proves the schema-level parameter behavior is correct even when the parent
+// database supplies a non-empty default: setting the schema parameter to null should make it inherit the
+// database's value, and setting it to empty string should override inheritance with "" on the schema level.
+func TestAcc_Schema_EmptyParameterAsDefaultValue_WithDatabaseLevel(t *testing.T) {
+	db, dbCleanup := testClient().Database.CreateDatabaseWithOptions(t, testClient().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
+		DefaultDDLCollation: sdk.String("en_US"),
+	})
+	t.Cleanup(dbCleanup)
+
+	id := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(db.ID())
+	parameterSet := model.Schema("test", id.DatabaseName(), id.Name()).WithDefaultDdlCollation("en_nz")
+	parameterSetToNull := model.Schema("test", id.DatabaseName(), id.Name()).WithDefaultDdlCollationValue(accconfig.ReplacementPlaceholderVariable(accconfig.SnowflakeProviderConfigNull))
+	parameterSetToEmptyString := model.Schema("test", id.DatabaseName(), id.Name()).WithDefaultDdlCollation("")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Schema),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, parameterSet),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "database", id.DatabaseName()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, parameterSetToNull),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(parameterSetToNull.ResourceReference(), "database", id.DatabaseName()),
+					resource.TestCheckResourceAttr(parameterSetToNull.ResourceReference(), "name", id.Name()),
+					resource.TestCheckResourceAttr(parameterSetToNull.ResourceReference(), "default_ddl_collation", "en_US"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, parameterSetToEmptyString),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(parameterSetToEmptyString.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", tfjson.ActionUpdate, sdk.String("en_US"), nil),
+						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
+					},
+				},
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
+					// Prove the parameter is set to empty string and on the right level.
+					objectparametersassert.SchemaParameters(t, id).
+						HasDefaultDdlCollation("").
+						HasDefaultDdlCollationLevel(sdk.ParameterTypeSchema),
+				),
 			},
 		},
 	})

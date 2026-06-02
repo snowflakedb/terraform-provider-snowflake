@@ -31,16 +31,16 @@ var (
 
 var openCatalogRestConfigDef = g.NewQueryStruct("OpenCatalogRestConfig").
 	TextAssignment("CATALOG_URI", g.ParameterOptions().SingleQuotes().Required()).
-	OptionalAssignment("CATALOG_API_TYPE", CatalogIntegrationCatalogApiTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
+	OptionalEnumAssignment("CATALOG_API_TYPE", CatalogIntegrationCatalogApiTypeEnumDef, g.ParameterOptions().NoQuotes()).
 	TextAssignment("CATALOG_NAME", g.ParameterOptions().SingleQuotes().Required()).
-	OptionalAssignment("ACCESS_DELEGATION_MODE", CatalogIntegrationAccessDelegationModeEnumDef.Kind(), g.ParameterOptions().NoQuotes())
+	OptionalEnumAssignment("ACCESS_DELEGATION_MODE", CatalogIntegrationAccessDelegationModeEnumDef, g.ParameterOptions().NoQuotes())
 
 var icebergRestRestConfigDef = g.NewQueryStruct("IcebergRestRestConfig").
 	TextAssignment("CATALOG_URI", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("PREFIX", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("CATALOG_NAME", g.ParameterOptions().SingleQuotes()).
-	OptionalAssignment("CATALOG_API_TYPE", CatalogIntegrationCatalogApiTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes()).
-	OptionalAssignment("ACCESS_DELEGATION_MODE", CatalogIntegrationAccessDelegationModeEnumDef.Kind(), g.ParameterOptions().NoQuotes())
+	OptionalEnumAssignment("CATALOG_API_TYPE", CatalogIntegrationCatalogApiTypeEnumDef, g.ParameterOptions().NoQuotes()).
+	OptionalEnumAssignment("ACCESS_DELEGATION_MODE", CatalogIntegrationAccessDelegationModeEnumDef, g.ParameterOptions().NoQuotes())
 
 var oAuthRestAuthenticationDef = g.NewQueryStruct("OAuthRestAuthentication").
 	SQLWithCustomFieldName("restAuthType", "TYPE = OAUTH").
@@ -87,7 +87,7 @@ var catalogIntegrationsDef = g.NewInterface(
 				"ObjectStorageCatalogSourceParams",
 				g.NewQueryStruct("ObjectStorageParams").
 					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = OBJECT_STORE").
-					Assignment("TABLE_FORMAT", CatalogIntegrationTableFormatEnumDef.Kind(), g.ParameterOptions().NoQuotes().Required()),
+					EnumAssignment("TABLE_FORMAT", CatalogIntegrationTableFormatEnumDef, g.ParameterOptions().NoQuotes().Required()),
 				g.KeywordOptions()).
 			OptionalQueryStructField(
 				"OpenCatalogCatalogSourceParams",
@@ -207,26 +207,28 @@ var catalogIntegrationsDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name"),
 		g.PlainStruct("CatalogIntegrationAwsGlueDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
-			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
+			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
+			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
 			Text("GlueAwsRoleArn").
 			Text("GlueCatalogId").
 			Text("GlueRegion").
-			Text("CatalogNamespace"),
+			Text("CatalogNamespace").
+			Text("GlueAwsIamUserArn").
+			Text("GlueAwsExternalId"),
 		g.PlainStruct("CatalogIntegrationObjectStorageDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
-			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
+			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
+			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment"),
 		g.PlainStruct("CatalogIntegrationOpenCatalogDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
-			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
+			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
+			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
@@ -235,8 +237,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			Field("RestAuthentication", "OAuthRestAuthenticationDetails"),
 		g.PlainStruct("CatalogIntegrationIcebergRestDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
-			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
+			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
+			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
@@ -247,8 +249,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
 		g.PlainStruct("CatalogIntegrationAllDetails").
 			AccountObjectIdentifier().
-			Field("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef.Kind()).
-			Field("TableFormat", CatalogIntegrationTableFormatEnumDef.Kind()).
+			Enum("CatalogSource", CatalogIntegrationCatalogSourceTypeEnumDef).
+			Enum("TableFormat", CatalogIntegrationTableFormatEnumDef).
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
@@ -256,6 +258,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("GlueCatalogId").
 			Text("GlueRegion").
 			Text("CatalogNamespace").
+			Text("GlueAwsIamUserArn").
+			Text("GlueAwsExternalId").
 			// IcebergRestRestConfigDetails contains all properties of OpenCatalogRestConfigDetails
 			OptionalField("RestConfig", "IcebergRestRestConfigDetails").
 			OptionalField("OAuthRestAuthentication", "OAuthRestAuthenticationDetails").
@@ -263,15 +267,15 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
 		g.PlainStruct("OpenCatalogRestConfigDetails").
 			Text("CatalogUri").
-			Field("CatalogApiType", CatalogIntegrationCatalogApiTypeEnumDef.Kind()).
+			Enum("CatalogApiType", CatalogIntegrationCatalogApiTypeEnumDef).
 			Text("CatalogName").
-			Field("AccessDelegationMode", CatalogIntegrationAccessDelegationModeEnumDef.Kind()),
+			Enum("AccessDelegationMode", CatalogIntegrationAccessDelegationModeEnumDef),
 		g.PlainStruct("IcebergRestRestConfigDetails").
 			Text("CatalogUri").
 			Text("Prefix").
 			Text("CatalogName").
-			Field("CatalogApiType", CatalogIntegrationCatalogApiTypeEnumDef.Kind()).
-			Field("AccessDelegationMode", CatalogIntegrationAccessDelegationModeEnumDef.Kind()),
+			Enum("CatalogApiType", CatalogIntegrationCatalogApiTypeEnumDef).
+			Enum("AccessDelegationMode", CatalogIntegrationAccessDelegationModeEnumDef),
 		g.PlainStruct("OAuthRestAuthenticationDetails").
 			Text("OauthTokenUri").
 			Text("OauthClientId").

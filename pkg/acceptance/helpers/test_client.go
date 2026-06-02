@@ -47,6 +47,7 @@ type TestClient struct {
 	GitRepository                *GitRepositoryClient
 	Grant                        *GrantClient
 	HybridTable                  *HybridTableClient
+	IcebergTable                 *IcebergTableClient
 	ImageRepository              *ImageRepositoryClient
 	InformationSchema            *InformationSchemaClient
 	Listing                      *ListingClient
@@ -147,6 +148,7 @@ func NewTestClient(
 		GitRepository:                NewGitRepositoryClient(context, idsGenerator),
 		Grant:                        NewGrantClient(context, idsGenerator),
 		HybridTable:                  NewHybridTableClient(context, idsGenerator),
+		IcebergTable:                 NewIcebergTableClient(context, idsGenerator),
 		ImageRepository:              NewImageRepositoryClient(context, idsGenerator),
 		InformationSchema:            NewInformationSchemaClient(context, idsGenerator),
 		Listing:                      NewListingClient(context, idsGenerator),

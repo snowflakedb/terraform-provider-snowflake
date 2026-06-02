@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ PostgresInstances = (*postgresInstances)(nil)
-
 var (
+	_ PostgresInstances                        = (*postgresInstances)(nil)
 	_ convertibleRow[PostgresInstance]         = new(postgresInstancesRow)
 	_ convertibleRow[PostgresInstanceProperty] = new(postgresInstanceDetailsRow)
 )
@@ -184,9 +183,41 @@ func (r *ShowPostgresInstanceRequest) toOpts() *ShowPostgresInstanceOptions {
 	return opts
 }
 
+func (r postgresInstancesRow) convert() (*PostgresInstance, error) {
+	result := &PostgresInstance{
+		Name:                    r.Name,
+		Owner:                   r.Owner,
+		OwnerRoleType:           r.OwnerRoleType,
+		CreatedOn:               r.CreatedOn,
+		UpdatedOn:               r.UpdatedOn,
+		Type:                    r.Type,
+		ComputeFamily:           r.ComputeFamily,
+		AuthenticationAuthority: r.AuthenticationAuthority,
+		StorageSize:             r.StorageSize,
+		PostgresVersion:         r.PostgresVersion,
+		IsHa:                    r.IsHa == "true",
+		RetentionTime:           r.RetentionTime,
+	}
+	mapNullString(&result.Origin, r.Origin)
+	mapNullString(&result.Host, r.Host)
+	mapNullString(&result.PrivatelinkServiceIdentifier, r.PrivatelinkServiceIdentifier)
+	mapNullString(&result.PostgresSettings, r.PostgresSettings)
+	mapStringWithMapping(&result.State, r.State, ToPostgresInstanceState)
+	mapNullString(&result.Comment, r.Comment)
+	return result, nil
+}
+
 func (r *DescribePostgresInstanceRequest) toOpts() *DescribePostgresInstanceOptions {
 	opts := &DescribePostgresInstanceOptions{
 		name: r.name,
 	}
 	return opts
+}
+
+func (r postgresInstanceDetailsRow) convert() (*PostgresInstanceProperty, error) {
+	result := &PostgresInstanceProperty{
+		Property: r.Property,
+	}
+	mapNullStringToNonNullableField(&result.Value, r.Value)
+	return result, nil
 }

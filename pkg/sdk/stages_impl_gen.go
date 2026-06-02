@@ -4,14 +4,12 @@ package sdk
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Stages = (*stages)(nil)
-
 var (
+	_ Stages                        = (*stages)(nil)
 	_ convertibleRow[StageProperty] = new(stageDescRow)
 	_ convertibleRow[Stage]         = new(stageShowRow)
 )
@@ -513,15 +511,14 @@ func (r *DescribeStageRequest) toOpts() *DescribeStageOptions {
 }
 
 func (r stageDescRow) convert() (*StageProperty, error) {
-	// adjusted manually
-	stageProp := &StageProperty{
+	result := &StageProperty{
 		Parent:  r.ParentProperty,
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
 	}
-	return stageProp, nil
+	return result, nil
 }
 
 func (r *ShowStageRequest) toOpts() *ShowStageOptions {
@@ -533,8 +530,7 @@ func (r *ShowStageRequest) toOpts() *ShowStageOptions {
 }
 
 func (r stageShowRow) convert() (*Stage, error) {
-	// adjusted manually
-	stage := &Stage{
+	result := &Stage{
 		CreatedOn:        r.CreatedOn,
 		Name:             r.Name,
 		DatabaseName:     r.DatabaseName,
@@ -546,33 +542,11 @@ func (r stageShowRow) convert() (*Stage, error) {
 		Comment:          r.Comment,
 		DirectoryEnabled: r.DirectoryEnabled == "Y",
 	}
-	stageType, err := ToStageType(r.Type)
-	if err != nil {
-		return nil, err
-	}
-	stage.Type = stageType
-	if r.Region.Valid {
-		stage.Region = &r.Region.String
-	}
-	if r.Cloud.Valid {
-		cloud, err := ToStageCloud(r.Cloud.String)
-		if err != nil {
-			return nil, err
-		}
-		stage.Cloud = &cloud
-	}
-	if r.StorageIntegration.Valid {
-		id, err := ParseAccountObjectIdentifier(r.StorageIntegration.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse storage integration: %w", err)
-		}
-		stage.StorageIntegration = &id
-	}
-	if r.Endpoint.Valid {
-		stage.Endpoint = &r.Endpoint.String
-	}
-	if r.OwnerRoleType.Valid {
-		stage.OwnerRoleType = &r.OwnerRoleType.String
-	}
-	return stage, nil
+	mapNullString(&result.Region, r.Region)
+	mapStringWithMapping(&result.Type, r.Type, ToStageType)
+	mapNullStringWithMapping(&result.Cloud, r.Cloud, ToStageCloud)
+	mapNullStringWithMapping(&result.StorageIntegration, r.StorageIntegration, ParseAccountObjectIdentifier)
+	mapNullString(&result.Endpoint, r.Endpoint)
+	mapNullString(&result.OwnerRoleType, r.OwnerRoleType)
+	return result, nil
 }

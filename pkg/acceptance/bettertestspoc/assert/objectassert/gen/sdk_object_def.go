@@ -263,12 +263,21 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.IcebergTableDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.PasswordPolicy{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.HybridTable{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.IcebergTable{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -282,6 +291,10 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.SchemaObjectIdentifier",
 		ObjectStruct:       sdk.CortexAgentDetails{},
 		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.TagReference{},
 	},
 }
 

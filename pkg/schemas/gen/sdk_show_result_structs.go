@@ -13,6 +13,7 @@ var SdkShowResultStructs = []any{
 	sdk.CatalogIntegration{},
 	sdk.ComputePool{},
 	sdk.Connection{},
+	sdk.CortexAgent{},
 	sdk.DatabaseRole{},
 	sdk.Database{},
 	sdk.DynamicTable{},
@@ -79,4 +80,5 @@ var AdditionalStructs = []any{
 	sdk.CatalogIntegrationObjectStorageDetails{},
 	sdk.SessionPolicyDetails{},
 	sdk.PasswordPolicyDetails{},
+	sdk.CortexAgentDetails{},
 }

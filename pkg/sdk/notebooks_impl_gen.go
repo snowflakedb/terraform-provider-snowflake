@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Notebooks = (*notebooks)(nil)
-
 var (
+	_ Notebooks                       = (*notebooks)(nil)
 	_ convertibleRow[NotebookDetails] = new(NotebookDetailsRow)
 	_ convertibleRow[Notebook]        = new(notebookRow)
 )
@@ -156,8 +155,7 @@ func (r *DescribeNotebookRequest) toOpts() *DescribeNotebookOptions {
 }
 
 func (r NotebookDetailsRow) convert() (*NotebookDetails, error) {
-	// adjusted manually
-	n := &NotebookDetails{
+	result := &NotebookDetails{
 		MainFile:                    r.MainFile,
 		UrlId:                       r.UrlId,
 		DefaultPackages:             r.DefaultPackages,
@@ -175,23 +173,20 @@ func (r NotebookDetailsRow) convert() (*NotebookDetails, error) {
 		LastVersionName:             r.LastVersionName,
 		LastVersionLocationUri:      r.LastVersionLocationUri,
 	}
-
-	// Optionals.
-	mapNullString(&n.Title, r.Title)
-	mapNullStringWithMapping(&n.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
-	mapNullString(&n.UserPackages, r.UserPackages)
-	mapNullString(&n.RuntimeName, r.RuntimeName)
-	mapNullStringWithMapping(&n.ComputePool, r.ComputePool, ParseAccountObjectIdentifier)
-	mapNullString(&n.Comment, r.Comment)
-	mapNullString(&n.DefaultVersionAlias, r.DefaultVersionAlias)
-	mapNullString(&n.DefaultVersionSourceLocationUri, r.DefaultVersionSourceLocationUri)
-	mapNullString(&n.DefaultVersionGitCommitHash, r.DefaultVersionGitCommitHash)
-	mapNullString(&n.LastVersionAlias, r.LastVersionAlias)
-	mapNullString(&n.LastVersionSourceLocationUri, r.LastVersionSourceLocationUri)
-	mapNullString(&n.LastVersionGitCommitHash, r.LastVersionGitCommitHash)
-	mapNullString(&n.LiveVersionLocationUri, r.LiveVersionLocationUri)
-
-	return n, nil
+	mapNullString(&result.Title, r.Title)
+	mapNullStringWithMapping(&result.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
+	mapNullString(&result.UserPackages, r.UserPackages)
+	mapNullString(&result.RuntimeName, r.RuntimeName)
+	mapNullStringWithMapping(&result.ComputePool, r.ComputePool, ParseAccountObjectIdentifier)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.DefaultVersionAlias, r.DefaultVersionAlias)
+	mapNullString(&result.DefaultVersionSourceLocationUri, r.DefaultVersionSourceLocationUri)
+	mapNullString(&result.DefaultVersionGitCommitHash, r.DefaultVersionGitCommitHash)
+	mapNullString(&result.LastVersionAlias, r.LastVersionAlias)
+	mapNullString(&result.LastVersionSourceLocationUri, r.LastVersionSourceLocationUri)
+	mapNullString(&result.LastVersionGitCommitHash, r.LastVersionGitCommitHash)
+	mapNullString(&result.LiveVersionLocationUri, r.LiveVersionLocationUri)
+	return result, nil
 }
 
 func (r *ShowNotebookRequest) toOpts() *ShowNotebookOptions {
@@ -205,8 +200,7 @@ func (r *ShowNotebookRequest) toOpts() *ShowNotebookOptions {
 }
 
 func (r notebookRow) convert() (*Notebook, error) {
-	// adjusted manually
-	n := &Notebook{
+	result := &Notebook{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		DatabaseName:  r.DatabaseName,
@@ -214,11 +208,9 @@ func (r notebookRow) convert() (*Notebook, error) {
 		Owner:         r.Owner,
 		UrlId:         r.UrlId,
 		OwnerRoleType: r.OwnerRoleType,
-		CodeWarehouse: AccountObjectIdentifier{r.CodeWarehouse},
 	}
-
-	mapNullString(&n.Comment, r.Comment)
-	mapNullStringWithMapping(&n.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
-
-	return n, nil
+	mapNullString(&result.Comment, r.Comment)
+	mapNullStringWithMapping(&result.QueryWarehouse, r.QueryWarehouse, ParseAccountObjectIdentifier)
+	mapStringWithMapping(&result.CodeWarehouse, r.CodeWarehouse, ParseAccountObjectIdentifier)
+	return result, nil
 }

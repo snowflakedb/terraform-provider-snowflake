@@ -44,10 +44,15 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 
 		configValue, ok := d.GetRawConfig().AsValueMap()[key]
 
-		// For cases where currently set value (in the config) is equal to the parameter, but not set on the right level.
-		// The parameter is set somewhere higher in the hierarchy, and we need to "forcefully" set the value to
-		// perform the actual set on Snowflake (and set the parameter on the correct level).
-		if ok && !configValue.IsNull() && parameter.Level != objectParameterLevel && parameter.Value == valueToString(d.Get(key)) {
+		// When the value is set in the configuration but the parameter is not set on the object level,
+		// the parameter is inherited from a higher level (account/database/etc.). In this case we must
+		// "forcefully" mark the value as computed so the update can set the parameter on the correct level.
+		// This covers two sub-cases:
+		//   1. The configured value equals the inherited value: we still need the SET to lock it in at the object level.
+		//   2. The configured value differs from the inherited value (e.g. empty string overriding a non-empty parent
+		//      value): SDKv2 would otherwise suppress the diff because the field is Computed+Optional and "" is treated
+		//      as "no value", so d.HasChange returns false during update. SetNewComputed forces the update path to run.
+		if ok && !configValue.IsNull() && parameter.Level != objectParameterLevel {
 			return d.SetNewComputed(key)
 		}
 
@@ -122,6 +127,15 @@ func ComputedIfAnyAttributeChanged(resourceSchema map[string]*schema.Schema, key
 		var result bool
 		for _, changedKey := range changedAttributeKeys {
 			if diff.HasChange(changedKey) || !diff.NewValueKnown(changedKey) {
+				// An unknown new value (e.g. a reference to a not-yet-created resource) cannot be compared by a DiffSuppressFunc —
+				// diff.GetChange would coerce it to the zero value and the suppressor could incorrectly suppress the change, leaving
+				// the dependent output marked known. At apply time the real value arrives and the output flips to unknown, producing
+				// "Provider produced inconsistent final plan". Mark the computed key as computed instead.
+				if !diff.NewValueKnown(changedKey) {
+					log.Printf("[DEBUG] ComputedIfAnyAttributeChanged: key %s has an unknown new value; marking %s computed", changedKey, key)
+					result = true
+					continue
+				}
 				oldValue, newValue := diff.GetChange(changedKey)
 				log.Printf("[DEBUG] ComputedIfAnyAttributeChanged: changed key: %s", changedKey)
 

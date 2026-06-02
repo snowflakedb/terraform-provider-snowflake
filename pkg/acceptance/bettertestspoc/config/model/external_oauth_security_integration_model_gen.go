@@ -84,10 +84,12 @@ func (e *ExternalOauthSecurityIntegrationModel) MarshalJSON() ([]byte, error) {
 	type Alias ExternalOauthSecurityIntegrationModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(e),
 		DependsOn: e.DependsOn(),
+		Timeouts:  e.Timeouts(),
 	})
 }
 
@@ -98,6 +100,11 @@ func (e *ExternalOauthSecurityIntegrationModel) WithDependsOn(values ...string) 
 
 func (e *ExternalOauthSecurityIntegrationModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalOauthSecurityIntegrationModel {
 	e.DynamicBlock = dynamicBlock
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationModel) WithTimeout(timeout config.Timeouts) *ExternalOauthSecurityIntegrationModel {
+	e.SetTimeout(timeout)
 	return e
 }
 

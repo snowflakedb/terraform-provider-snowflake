@@ -75,7 +75,7 @@ func IntInSlice(valid []int) schema.SchemaValidateDiagFunc {
 			}
 		}
 
-		return diag.Errorf("expected %v to be one of %q, got %d", path, valid, v)
+		return diag.Errorf("expected %v to be one of %v, got %d", path, valid, v)
 	}
 }
 

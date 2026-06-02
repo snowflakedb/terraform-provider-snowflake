@@ -64,10 +64,12 @@ func (n *NotebookModel) MarshalJSON() ([]byte, error) {
 	type Alias NotebookModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(n),
 		DependsOn: n.DependsOn(),
+		Timeouts:  n.Timeouts(),
 	})
 }
 
@@ -78,6 +80,11 @@ func (n *NotebookModel) WithDependsOn(values ...string) *NotebookModel {
 
 func (n *NotebookModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *NotebookModel {
 	n.DynamicBlock = dynamicBlock
+	return n
+}
+
+func (n *NotebookModel) WithTimeout(timeout config.Timeouts) *NotebookModel {
+	n.SetTimeout(timeout)
 	return n
 }
 

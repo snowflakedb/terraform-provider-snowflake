@@ -50,6 +50,7 @@ resource "snowflake_task" "test" {
   json_indent                                   = var.json_indent
   lock_timeout                                  = var.lock_timeout
   log_level                                     = var.log_level
+  log_event_level                               = var.log_event_level
   multi_statement_count                         = var.multi_statement_count
   noorder_sequence_as_default                   = var.noorder_sequence_as_default
   odbc_treat_decimal_as_int                     = var.odbc_treat_decimal_as_int

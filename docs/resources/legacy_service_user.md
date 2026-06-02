@@ -231,6 +231,7 @@ resource "snowflake_legacy_service_user" "with_oidc_wif" {
 - `jdbc_use_session_timezone` (Boolean) Specifies whether the JDBC Driver uses the time zone of the JVM or the time zone of the session (specified by the [TIMEZONE](https://docs.snowflake.com/en/sql-reference/parameters#label-timezone) parameter) for the getDate(), getTime(), and getTimestamp() methods of the ResultSet class. For more information, check [JDBC_USE_SESSION_TIMEZONE docs](https://docs.snowflake.com/en/sql-reference/parameters#jdbc-use-session-timezone).
 - `json_indent` (Number) Specifies the number of blank spaces to indent each new element in JSON output in the session. Also specifies whether to insert newline characters after each element. For more information, check [JSON_INDENT docs](https://docs.snowflake.com/en/sql-reference/parameters#json-indent).
 - `lock_timeout` (Number) Number of seconds to wait while trying to lock a resource, before timing out and aborting the statement. For more information, check [LOCK_TIMEOUT docs](https://docs.snowflake.com/en/sql-reference/parameters#lock-timeout).
+- `log_event_level` (String) Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. For more information, see [LOG_EVENT_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level). Valid values are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. For more information, check [LOG_EVENT_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level).
 - `log_level` (String) Specifies the severity level of messages that should be ingested and made available in the active event table. Messages at the specified level (and at more severe levels) are ingested. For more information about log levels, see [Setting log level](https://docs.snowflake.com/en/developer-guide/logging-tracing/logging-log-level). For more information, check [LOG_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-level).
 - `login_name` (String, Sensitive) The name users use to log in. If not supplied, snowflake will use name instead. Login names are always case-insensitive.
 - `mins_to_unlock` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the number of minutes until the temporary lock on the user login is cleared. To protect against unauthorized user login, Snowflake places a temporary lock on a user after five consecutive unsuccessful login attempts. When creating a user, this property can be set to prevent them from logging in until the specified amount of time passes. To remove a lock immediately for a user, specify a value of 0 for this parameter. **Note** because this value changes continuously after setting it, the provider is currently NOT handling the external changes to it. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
@@ -358,6 +359,7 @@ Read-Only:
 - `jdbc_use_session_timezone` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--jdbc_use_session_timezone))
 - `json_indent` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--json_indent))
 - `lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--lock_timeout))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_level))
 - `multi_statement_count` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--multi_statement_count))
 - `network_policy` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--network_policy))
@@ -682,6 +684,18 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--lock_timeout"></a>
 ### Nested Schema for `parameters.lock_timeout`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--log_event_level"></a>
+### Nested Schema for `parameters.log_event_level`
 
 Read-Only:
 

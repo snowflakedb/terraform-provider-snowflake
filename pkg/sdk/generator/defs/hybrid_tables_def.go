@@ -17,7 +17,7 @@ var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
 	OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.ColumnConstraintType](), g.KeywordOptions().Required()).
+	WithField(g.EnumLegacy[sdkcommons.ColumnConstraintType]("Type", g.KeywordOptions().Required())).
 	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
 	// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
 	// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
@@ -83,7 +83,7 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	SQL("COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("DROP DEFAULT").
-	PredefinedQueryStructField("SetDefault", g.KindOfTPointer[sdkcommons.SequenceName](), g.ParameterOptions().NoEquals().SQL("SET DEFAULT")).
+	WithField(g.OptionalEnumLegacy[sdkcommons.SequenceName]("SetDefault", g.ParameterOptions().NoEquals().SQL("SET DEFAULT"))).
 	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
 	OptionalSQL("UNSET COMMENT").
@@ -112,7 +112,7 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 	OptionalQueryStructField(
 		"ChangeReclusterState",
 		g.NewQueryStruct("HybridTableReclusterChangeState").
-			PredefinedQueryStructField("State", g.KindOfTPointer[sdkcommons.ReclusterState](), g.KeywordOptions()).
+			WithField(g.OptionalEnumLegacy[sdkcommons.ReclusterState]("State", g.KeywordOptions())).
 			SQL("RECLUSTER"),
 		g.KeywordOptions(),
 	).
@@ -263,10 +263,10 @@ var hybridTablesDef = g.NewInterface(
 		Text("name").
 		Text("type").
 		Text("kind").
-		Text("null", g.WithPlainFieldName("IsNullable")).
+		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 		OptionalText("default", g.WithRequiredInPlain()).
-		Text("primary key", g.WithPlainFieldName("PrimaryKey")).
-		Text("unique key", g.WithPlainFieldName("UniqueKey")).
+		Field("primary key", "string", "bool").
+		Field("unique key", "string", "bool").
 		OptionalText("check", g.WithRequiredInPlain()).
 		OptionalText("expression", g.WithRequiredInPlain()).
 		OptionalText("comment", g.WithRequiredInPlain()).

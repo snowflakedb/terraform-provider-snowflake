@@ -96,6 +96,11 @@ func (f *FunctionPythonResourceAssert) HasIsSecure(expected string) *FunctionPyt
 	return f
 }
 
+func (f *FunctionPythonResourceAssert) HasLogEventLevel(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("log_event_level", expected)
+	return f
+}
+
 func (f *FunctionPythonResourceAssert) HasLogLevel(expected string) *FunctionPythonResourceAssert {
 	f.StringValueSet("log_level", expected)
 	return f
@@ -197,6 +202,11 @@ func (f *FunctionPythonResourceAssert) HasIsSecureString(expected string) *Funct
 	return f
 }
 
+func (f *FunctionPythonResourceAssert) HasLogEventLevelString(expected string) *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_event_level", expected))
+	return f
+}
+
 func (f *FunctionPythonResourceAssert) HasLogLevelString(expected string) *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueSet("log_level", expected))
 	return f
@@ -291,6 +301,11 @@ func (f *FunctionPythonResourceAssert) HasNoIsSecure() *FunctionPythonResourceAs
 	return f
 }
 
+func (f *FunctionPythonResourceAssert) HasNoLogEventLevel() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return f
+}
+
 func (f *FunctionPythonResourceAssert) HasNoLogLevel() *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("log_level"))
 	return f
@@ -377,6 +392,11 @@ func (f *FunctionPythonResourceAssert) HasIsAggregateEmpty() *FunctionPythonReso
 
 func (f *FunctionPythonResourceAssert) HasIsSecureEmpty() *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueSet("is_secure", ""))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasLogEventLevelEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return f
 }
 
@@ -471,6 +491,11 @@ func (f *FunctionPythonResourceAssert) HasIsAggregateNotEmpty() *FunctionPythonR
 
 func (f *FunctionPythonResourceAssert) HasIsSecureNotEmpty() *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValuePresent("is_secure"))
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasLogEventLevelNotEmpty() *FunctionPythonResourceAssert {
+	f.AddAssertion(assert.ValuePresent("log_event_level"))
 	return f
 }
 

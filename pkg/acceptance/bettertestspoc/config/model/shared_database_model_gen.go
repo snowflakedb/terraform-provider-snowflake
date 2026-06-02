@@ -19,6 +19,7 @@ type SharedDatabaseModel struct {
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
 	FromShare                               tfconfig.Variable `json:"from_share,omitempty"`
 	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	ReplaceInvalidCharacters                tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
@@ -68,10 +69,12 @@ func (s *SharedDatabaseModel) MarshalJSON() ([]byte, error) {
 	type Alias SharedDatabaseModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -82,6 +85,11 @@ func (s *SharedDatabaseModel) WithDependsOn(values ...string) *SharedDatabaseMod
 
 func (s *SharedDatabaseModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SharedDatabaseModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *SharedDatabaseModel) WithTimeout(timeout config.Timeouts) *SharedDatabaseModel {
+	s.SetTimeout(timeout)
 	return s
 }
 
@@ -126,6 +134,11 @@ func (s *SharedDatabaseModel) WithFromShare(fromShare string) *SharedDatabaseMod
 
 func (s *SharedDatabaseModel) WithFullyQualifiedName(fullyQualifiedName string) *SharedDatabaseModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+	return s
+}
+
+func (s *SharedDatabaseModel) WithLogEventLevel(logEventLevel string) *SharedDatabaseModel {
+	s.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return s
 }
 
@@ -220,6 +233,11 @@ func (s *SharedDatabaseModel) WithFromShareValue(value tfconfig.Variable) *Share
 
 func (s *SharedDatabaseModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *SharedDatabaseModel {
 	s.FullyQualifiedName = value
+	return s
+}
+
+func (s *SharedDatabaseModel) WithLogEventLevelValue(value tfconfig.Variable) *SharedDatabaseModel {
+	s.LogEventLevel = value
 	return s
 }
 

@@ -44,6 +44,7 @@ type TaskModel struct {
 	JdbcUseSessionTimezone                   tfconfig.Variable `json:"jdbc_use_session_timezone,omitempty"`
 	JsonIndent                               tfconfig.Variable `json:"json_indent,omitempty"`
 	LockTimeout                              tfconfig.Variable `json:"lock_timeout,omitempty"`
+	LogEventLevel                            tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                 tfconfig.Variable `json:"log_level,omitempty"`
 	MultiStatementCount                      tfconfig.Variable `json:"multi_statement_count,omitempty"`
 	NoorderSequenceAsDefault                 tfconfig.Variable `json:"noorder_sequence_as_default,omitempty"`
@@ -138,10 +139,12 @@ func (t *TaskModel) MarshalJSON() ([]byte, error) {
 	type Alias TaskModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(t),
 		DependsOn: t.DependsOn(),
+		Timeouts:  t.Timeouts(),
 	})
 }
 
@@ -152,6 +155,11 @@ func (t *TaskModel) WithDependsOn(values ...string) *TaskModel {
 
 func (t *TaskModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *TaskModel {
 	t.DynamicBlock = dynamicBlock
+	return t
+}
+
+func (t *TaskModel) WithTimeout(timeout config.Timeouts) *TaskModel {
+	t.SetTimeout(timeout)
 	return t
 }
 
@@ -318,6 +326,11 @@ func (t *TaskModel) WithJsonIndent(jsonIndent int) *TaskModel {
 
 func (t *TaskModel) WithLockTimeout(lockTimeout int) *TaskModel {
 	t.LockTimeout = tfconfig.IntegerVariable(lockTimeout)
+	return t
+}
+
+func (t *TaskModel) WithLogEventLevel(logEventLevel string) *TaskModel {
+	t.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return t
 }
 
@@ -696,6 +709,11 @@ func (t *TaskModel) WithJsonIndentValue(value tfconfig.Variable) *TaskModel {
 
 func (t *TaskModel) WithLockTimeoutValue(value tfconfig.Variable) *TaskModel {
 	t.LockTimeout = value
+	return t
+}
+
+func (t *TaskModel) WithLogEventLevelValue(value tfconfig.Variable) *TaskModel {
+	t.LogEventLevel = value
 	return t
 }
 

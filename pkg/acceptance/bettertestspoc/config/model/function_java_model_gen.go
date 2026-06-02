@@ -24,6 +24,7 @@ type FunctionJavaModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -85,10 +86,12 @@ func (f *FunctionJavaModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionJavaModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
+		Timeouts:  f.Timeouts(),
 	})
 }
 
@@ -99,6 +102,11 @@ func (f *FunctionJavaModel) WithDependsOn(values ...string) *FunctionJavaModel {
 
 func (f *FunctionJavaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionJavaModel {
 	f.DynamicBlock = dynamicBlock
+	return f
+}
+
+func (f *FunctionJavaModel) WithTimeout(timeout config.Timeouts) *FunctionJavaModel {
+	f.SetTimeout(timeout)
 	return f
 }
 
@@ -159,6 +167,11 @@ func (f *FunctionJavaModel) WithHandler(handler string) *FunctionJavaModel {
 
 func (f *FunctionJavaModel) WithIsSecure(isSecure string) *FunctionJavaModel {
 	f.IsSecure = tfconfig.StringVariable(isSecure)
+	return f
+}
+
+func (f *FunctionJavaModel) WithLogEventLevel(logEventLevel string) *FunctionJavaModel {
+	f.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return f
 }
 
@@ -269,6 +282,11 @@ func (f *FunctionJavaModel) WithImportsValue(value tfconfig.Variable) *FunctionJ
 
 func (f *FunctionJavaModel) WithIsSecureValue(value tfconfig.Variable) *FunctionJavaModel {
 	f.IsSecure = value
+	return f
+}
+
+func (f *FunctionJavaModel) WithLogEventLevelValue(value tfconfig.Variable) *FunctionJavaModel {
+	f.LogEventLevel = value
 	return f
 }
 

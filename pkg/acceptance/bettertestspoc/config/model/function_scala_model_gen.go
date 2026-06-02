@@ -24,6 +24,7 @@ type FunctionScalaModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -89,10 +90,12 @@ func (f *FunctionScalaModel) MarshalJSON() ([]byte, error) {
 	type Alias FunctionScalaModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(f),
 		DependsOn: f.DependsOn(),
+		Timeouts:  f.Timeouts(),
 	})
 }
 
@@ -103,6 +106,11 @@ func (f *FunctionScalaModel) WithDependsOn(values ...string) *FunctionScalaModel
 
 func (f *FunctionScalaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *FunctionScalaModel {
 	f.DynamicBlock = dynamicBlock
+	return f
+}
+
+func (f *FunctionScalaModel) WithTimeout(timeout config.Timeouts) *FunctionScalaModel {
+	f.SetTimeout(timeout)
 	return f
 }
 
@@ -163,6 +171,11 @@ func (f *FunctionScalaModel) WithHandler(handler string) *FunctionScalaModel {
 
 func (f *FunctionScalaModel) WithIsSecure(isSecure string) *FunctionScalaModel {
 	f.IsSecure = tfconfig.StringVariable(isSecure)
+	return f
+}
+
+func (f *FunctionScalaModel) WithLogEventLevel(logEventLevel string) *FunctionScalaModel {
+	f.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return f
 }
 
@@ -273,6 +286,11 @@ func (f *FunctionScalaModel) WithImportsValue(value tfconfig.Variable) *Function
 
 func (f *FunctionScalaModel) WithIsSecureValue(value tfconfig.Variable) *FunctionScalaModel {
 	f.IsSecure = value
+	return f
+}
+
+func (f *FunctionScalaModel) WithLogEventLevelValue(value tfconfig.Variable) *FunctionScalaModel {
+	f.LogEventLevel = value
 	return f
 }
 

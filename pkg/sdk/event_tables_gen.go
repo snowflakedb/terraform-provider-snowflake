@@ -21,20 +21,20 @@ type EventTables interface {
 
 // CreateEventTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-event-table.
 type CreateEventTableOptions struct {
-	create                     bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace                  *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	eventTable                 bool                   `ddl:"static" sql:"EVENT TABLE"`
-	IfNotExists                *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                       SchemaObjectIdentifier `ddl:"identifier"`
-	ClusterBy                  []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	DataRetentionTimeInDays    *int                   `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int                   `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool                  `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *string                `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
-	CopyGrants                 *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-	Comment                    *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	RowAccessPolicy            *TableRowAccessPolicy  `ddl:"keyword"`
-	Tag                        []TagAssociation       `ddl:"keyword,parentheses" sql:"TAG"`
+	create                     bool                        `ddl:"static" sql:"CREATE"`
+	OrReplace                  *bool                       `ddl:"keyword" sql:"OR REPLACE"`
+	eventTable                 bool                        `ddl:"static" sql:"EVENT TABLE"`
+	IfNotExists                *bool                       `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                       SchemaObjectIdentifier      `ddl:"identifier"`
+	ClusterBy                  []string                    `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	DataRetentionTimeInDays    *int                        `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool                       `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	DefaultDdlCollation        *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	CopyGrants                 *bool                       `ddl:"keyword" sql:"COPY GRANTS"`
+	Comment                    *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	RowAccessPolicy            *TableRowAccessPolicyLegacy `ddl:"keyword"` // adjusted manually
+	Tag                        []TagAssociation            `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 // ShowEventTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-event-tables.

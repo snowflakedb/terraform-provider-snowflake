@@ -40,6 +40,14 @@ func (c *AgentClient) CreateWithRequest(t *testing.T, req *sdk.CreateCortexAgent
 	return c.DropFunc(t, req.GetName())
 }
 
+func (c *AgentClient) Alter(t *testing.T, req *sdk.AlterCortexAgentRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *AgentClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

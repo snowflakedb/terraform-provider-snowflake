@@ -2,17 +2,14 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NetworkRules = (*networkRules)(nil)
-
 var (
+	_ NetworkRules                       = (*networkRules)(nil)
 	_ convertibleRow[NetworkRule]        = new(ShowNetworkRulesRow)
 	_ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
 )
@@ -126,20 +123,19 @@ func (r *ShowNetworkRuleRequest) toOpts() *ShowNetworkRuleOptions {
 }
 
 func (r ShowNetworkRulesRow) convert() (*NetworkRule, error) {
-	// adjusted manually
-	return &NetworkRule{
-		CreatedOn:    r.CreatedOn,
-		Name:         r.Name,
-		DatabaseName: r.DatabaseName,
-		SchemaName:   r.SchemaName,
-		Owner:        r.Owner,
-		Comment:      r.Comment,
-		// TODO [SNOW-3108659]: use enum mapping instead
-		Type:               NetworkRuleType(r.Type),
-		Mode:               NetworkRuleMode(r.Mode),
+	result := &NetworkRule{
+		CreatedOn:          r.CreatedOn,
+		Name:               r.Name,
+		DatabaseName:       r.DatabaseName,
+		SchemaName:         r.SchemaName,
+		Owner:              r.Owner,
+		Comment:            r.Comment,
 		EntriesInValueList: r.EntriesInValuelist,
 		OwnerRoleType:      r.OwnerRoleType,
-	}, nil
+	}
+	mapStringWithMapping(&result.Type, r.Type, ToNetworkRuleType)
+	mapStringWithMapping(&result.Mode, r.Mode, ToNetworkRuleMode)
+	return result, nil
 }
 
 func (r *DescribeNetworkRuleRequest) toOpts() *DescribeNetworkRuleOptions {
@@ -150,20 +146,16 @@ func (r *DescribeNetworkRuleRequest) toOpts() *DescribeNetworkRuleOptions {
 }
 
 func (r DescNetworkRulesRow) convert() (*NetworkRuleDetails, error) {
-	// adjusted manually
-	valueList := strings.Split(r.ValueList, ",")
-	if len(valueList) == 1 && valueList[0] == "" {
-		valueList = []string{}
-	}
-	return &NetworkRuleDetails{
+	result := &NetworkRuleDetails{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
 		Comment:      r.Comment,
-		Type:         NetworkRuleType(r.Type),
-		Mode:         NetworkRuleMode(r.Mode),
-		ValueList:    valueList,
-	}, nil
+	}
+	mapStringWithMapping(&result.Type, r.Type, ToNetworkRuleType)
+	mapStringWithMapping(&result.Mode, r.Mode, ToNetworkRuleMode)
+	result.ValueList = ParseCommaSeparatedStringArray(r.ValueList, false)
+	return result, nil
 }

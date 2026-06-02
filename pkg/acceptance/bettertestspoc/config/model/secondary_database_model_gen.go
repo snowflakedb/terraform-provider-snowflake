@@ -21,6 +21,7 @@ type SecondaryDatabaseModel struct {
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
 	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsTransient                             tfconfig.Variable `json:"is_transient,omitempty"`
+	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
@@ -71,10 +72,12 @@ func (s *SecondaryDatabaseModel) MarshalJSON() ([]byte, error) {
 	type Alias SecondaryDatabaseModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -85,6 +88,11 @@ func (s *SecondaryDatabaseModel) WithDependsOn(values ...string) *SecondaryDatab
 
 func (s *SecondaryDatabaseModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SecondaryDatabaseModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *SecondaryDatabaseModel) WithTimeout(timeout config.Timeouts) *SecondaryDatabaseModel {
+	s.SetTimeout(timeout)
 	return s
 }
 
@@ -139,6 +147,11 @@ func (s *SecondaryDatabaseModel) WithFullyQualifiedName(fullyQualifiedName strin
 
 func (s *SecondaryDatabaseModel) WithIsTransient(isTransient bool) *SecondaryDatabaseModel {
 	s.IsTransient = tfconfig.BoolVariable(isTransient)
+	return s
+}
+
+func (s *SecondaryDatabaseModel) WithLogEventLevel(logEventLevel string) *SecondaryDatabaseModel {
+	s.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return s
 }
 
@@ -248,6 +261,11 @@ func (s *SecondaryDatabaseModel) WithFullyQualifiedNameValue(value tfconfig.Vari
 
 func (s *SecondaryDatabaseModel) WithIsTransientValue(value tfconfig.Variable) *SecondaryDatabaseModel {
 	s.IsTransient = value
+	return s
+}
+
+func (s *SecondaryDatabaseModel) WithLogEventLevelValue(value tfconfig.Variable) *SecondaryDatabaseModel {
+	s.LogEventLevel = value
 	return s
 }
 

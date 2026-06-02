@@ -61,6 +61,8 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 		sessionParameters.DateInputFormat = &value
 	case SessionParameterDateOutputFormat:
 		sessionParameters.DateOutputFormat = &value
+	case SessionParameterEnableCortexAnalyst:
+		err = setBooleanValue(parameter, value, &sessionParameters.EnableCortexAnalyst)
 	case SessionParameterEnableGetDdlUseDataTypeAlias:
 		err = setBooleanValue(parameter, value, &sessionParameters.EnableGetDdlUseDataTypeAlias)
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
@@ -89,6 +91,8 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 		err = setIntegerValue(parameter, value, &sessionParameters.LockTimeout)
 	case SessionParameterLogLevel:
 		sessionParameters.LogLevel = Pointer(LogLevel(value))
+	case SessionParameterLogEventLevel:
+		sessionParameters.LogEventLevel = Pointer(LogLevel(value))
 	case SessionParameterMultiStatementCount:
 		err = setIntegerValue(parameter, value, &sessionParameters.MultiStatementCount)
 	case SessionParameterNoorderSequenceAsDefault:
@@ -209,6 +213,8 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 		unsetField = &sessionParametersUnset.DateInputFormat
 	case SessionParameterDateOutputFormat:
 		unsetField = &sessionParametersUnset.DateOutputFormat
+	case SessionParameterEnableCortexAnalyst:
+		unsetField = &sessionParametersUnset.EnableCortexAnalyst
 	case SessionParameterEnableGetDdlUseDataTypeAlias:
 		unsetField = &sessionParametersUnset.EnableGetDdlUseDataTypeAlias
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
@@ -237,6 +243,8 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 		unsetField = &sessionParametersUnset.LockTimeout
 	case SessionParameterLogLevel:
 		unsetField = &sessionParametersUnset.LogLevel
+	case SessionParameterLogEventLevel:
+		unsetField = &sessionParametersUnset.LogEventLevel
 	case SessionParameterMultiStatementCount:
 		unsetField = &sessionParametersUnset.MultiStatementCount
 	case SessionParameterNoorderSequenceAsDefault:

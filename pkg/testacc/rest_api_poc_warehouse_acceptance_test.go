@@ -52,8 +52,8 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 						HasAutoResume(true).
 						HasResourceMonitor(sdk.AccountObjectIdentifier{}).
 						HasComment("").
-						HasEnableQueryAcceleration(false).
-						HasQueryAccelerationMaxScaleFactor(8),
+						HasEnableQueryAcceleration(true).
+						HasQueryAccelerationMaxScaleFactor(2),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasAllDefaults(),
 				),

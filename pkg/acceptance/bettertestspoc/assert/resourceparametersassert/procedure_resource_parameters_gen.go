@@ -52,6 +52,11 @@ func (p *ProcedureResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *
 	return p
 }
 
+func (p *ProcedureResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *ProcedureResourceParametersAssert {
+	p.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.ProcedureParameterLogEventLevel, expected))
+	return p
+}
+
 func (p *ProcedureResourceParametersAssert) HasMetricLevel(expected sdk.MetricLevel) *ProcedureResourceParametersAssert {
 	p.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.ProcedureParameterMetricLevel, expected))
 	return p
@@ -78,6 +83,11 @@ func (p *ProcedureResourceParametersAssert) HasEnableConsoleOutputLevel(expected
 
 func (p *ProcedureResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *ProcedureResourceParametersAssert {
 	p.AddAssertion(assert.ResourceParameterLevelSet(sdk.ProcedureParameterLogLevel, expected))
+	return p
+}
+
+func (p *ProcedureResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *ProcedureResourceParametersAssert {
+	p.AddAssertion(assert.ResourceParameterLevelSet(sdk.ProcedureParameterLogEventLevel, expected))
 	return p
 }
 

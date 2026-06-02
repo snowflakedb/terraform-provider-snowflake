@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ExternalVolumes = (*externalVolumes)(nil)
-
 var (
+	_ ExternalVolumes                        = (*externalVolumes)(nil)
 	_ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
 	_ convertibleRow[ExternalVolume]         = new(externalVolumeShowRow)
 )
@@ -174,13 +173,14 @@ func (r *DescribeExternalVolumeRequest) toOpts() *DescribeExternalVolumeOptions 
 }
 
 func (r externalVolumeDescRow) convert() (*ExternalVolumeProperty, error) {
-	return &ExternalVolumeProperty{
+	result := &ExternalVolumeProperty{
 		Parent:  r.ParentProperty,
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
@@ -191,14 +191,10 @@ func (r *ShowExternalVolumeRequest) toOpts() *ShowExternalVolumeOptions {
 }
 
 func (r externalVolumeShowRow) convert() (*ExternalVolume, error) {
-	externalVolume := ExternalVolume{
+	result := &ExternalVolume{
 		Name:        r.Name,
 		AllowWrites: r.AllowWrites,
 	}
-
-	if r.Comment.Valid {
-		externalVolume.Comment = r.Comment.String
-	}
-
-	return &externalVolume, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
 }

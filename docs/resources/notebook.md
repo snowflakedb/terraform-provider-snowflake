@@ -2,7 +2,7 @@
 page_title: "snowflake_notebook Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage notebooks. For more information, check notebooks documentation https://docs.snowflake.com/en/sql-reference/sql/create-notebook.
+  Resource used to manage Legacy Notebooks https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks (created with CREATE NOTEBOOK https://docs.snowflake.com/en/sql-reference/sql/create-notebook). This resource does not manage the newer Notebooks in Workspaces / Notebook Project Objects (created with CREATE NOTEBOOK PROJECT https://docs.snowflake.com/en/sql-reference/sql/create-notebook-project). For more information, check notebooks documentation https://docs.snowflake.com/en/sql-reference/sql/create-notebook.
 ---
 
 -> **Note** Due to Snowflake limitations, external changes to `from` are not currently detected.
@@ -15,7 +15,7 @@ description: |-
 
 # snowflake_notebook (Resource)
 
-Resource used to manage notebooks. For more information, check [notebooks documentation](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).
+Resource used to manage [Legacy Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks) (created with [CREATE NOTEBOOK](https://docs.snowflake.com/en/sql-reference/sql/create-notebook)). This resource does not manage the newer Notebooks in Workspaces / Notebook Project Objects (created with [CREATE NOTEBOOK PROJECT](https://docs.snowflake.com/en/sql-reference/sql/create-notebook-project)). For more information, check [notebooks documentation](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).
 
 ## Example Usage
 

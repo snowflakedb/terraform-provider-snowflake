@@ -52,7 +52,8 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 			g.NewQueryStruct("StageFileFormat").
 				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
 				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
-				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
+				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions").
+				WithAdditionalValidations(),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
 		OptionalComment().
@@ -74,7 +75,8 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 			g.NewQueryStruct("StageFileFormat").
 				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
 				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
-				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
+				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions").
+				WithAdditionalValidations(),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
 		// TODO(SNOW-3035788): use COMMENT in unset and here use OptionalComment
@@ -110,27 +112,27 @@ var externalS3StageParamsDef = func() *g.QueryStruct {
 			OptionalQueryStructField(
 				"AwsCse",
 				g.NewQueryStruct("ExternalStageS3EncryptionAwsCse").
-					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_CSE'")).
+					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_CSE'").
 					TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
 				"AwsSseS3",
 				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseS3").
-					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_SSE_S3'")),
+					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_SSE_S3'"),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
 				"AwsSseKms",
 				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseKms").
-					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_SSE_KMS'")).
+					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_SSE_KMS'").
 					OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
 				"None",
 				g.NewQueryStruct("ExternalStageS3EncryptionNone").
-					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+					SQLWithCustomFieldName("encryptionType", "TYPE = 'NONE'"),
 				g.KeywordOptions(),
 			).
 			WithValidation(g.ExactlyOneValueSet, "AwsCse", "AwsSseS3", "AwsSseKms", "None"),
@@ -151,14 +153,14 @@ var externalGCSStageParamsDef = func() *g.QueryStruct {
 				OptionalQueryStructField(
 					"GcsSseKms",
 					g.NewQueryStruct("ExternalStageGCSEncryptionGcsSseKms").
-						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'GCS_SSE_KMS'")).
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'GCS_SSE_KMS'").
 						OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 					g.KeywordOptions(),
 				).
 				OptionalQueryStructField(
 					"None",
 					g.NewQueryStruct("ExternalStageGCSEncryptionNone").
-						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'NONE'"),
 					g.KeywordOptions(),
 				).
 				WithValidation(g.ExactlyOneValueSet, "GcsSseKms", "None"),
@@ -182,14 +184,14 @@ var externalAzureStageParamsDef = func() *g.QueryStruct {
 				OptionalQueryStructField(
 					"AzureCse",
 					g.NewQueryStruct("ExternalStageAzureEncryptionAzureCse").
-						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AZURE_CSE'")).
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'AZURE_CSE'").
 						TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
 					g.KeywordOptions(),
 				).
 				OptionalQueryStructField(
 					"None",
 					g.NewQueryStruct("ExternalStageAzureEncryptionNone").
-						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'NONE'"),
 					g.KeywordOptions(),
 				).
 				WithValidation(g.ExactlyOneValueSet, "AzureCse", "None"),
@@ -229,13 +231,13 @@ var stagesDef = g.NewInterface(
 						OptionalQueryStructField(
 							"SnowflakeFull",
 							g.NewQueryStruct("InternalStageEncryptionSnowflakeFull").
-								PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'SNOWFLAKE_FULL'")),
+								SQLWithCustomFieldName("encryptionType", "TYPE = 'SNOWFLAKE_FULL'"),
 							g.KeywordOptions(),
 						).
 						OptionalQueryStructField(
 							"SnowflakeSse",
 							g.NewQueryStruct("InternalStageEncryptionSnowflakeSse").
-								PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'SNOWFLAKE_SSE'")),
+								SQLWithCustomFieldName("encryptionType", "TYPE = 'SNOWFLAKE_SSE'"),
 							g.KeywordOptions(),
 						).
 						WithValidation(g.ExactlyOneValueSet, "SnowflakeFull", "SnowflakeSse"),
@@ -408,8 +410,8 @@ var stagesDef = g.NewInterface(
 			Text("owner").
 			Text("comment").
 			OptionalText("region").
-			PlainField("type", "StageType").
-			Field("cloud", "sql.NullString", "*StageCloud").
+			Enum("type", StageTypeEnumDef).
+			OptionalEnum("cloud", StageCloudEnumDef).
 			// notification_channel is deprecated in Snowflake.
 			Field("storage_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("StorageIntegration")).
 			OptionalText("endpoint").

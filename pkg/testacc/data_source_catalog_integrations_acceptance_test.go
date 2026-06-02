@@ -169,7 +169,9 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasComment("").
 						HasGlueAwsRoleArn(glueAwsRoleArn).
 						HasGlueCatalogId(glueCatalogId).
-						HasCatalogNamespace(""),
+						HasCatalogNamespace("").
+						HasGlueAwsIamUserArnNotEmpty().
+						HasGlueAwsExternalIdNotEmpty(),
 				),
 			},
 			// Object Storage with describe

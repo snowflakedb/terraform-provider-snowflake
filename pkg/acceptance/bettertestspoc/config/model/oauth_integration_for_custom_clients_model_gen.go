@@ -71,10 +71,12 @@ func (o *OauthIntegrationForCustomClientsModel) MarshalJSON() ([]byte, error) {
 	type Alias OauthIntegrationForCustomClientsModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(o),
 		DependsOn: o.DependsOn(),
+		Timeouts:  o.Timeouts(),
 	})
 }
 
@@ -85,6 +87,11 @@ func (o *OauthIntegrationForCustomClientsModel) WithDependsOn(values ...string) 
 
 func (o *OauthIntegrationForCustomClientsModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *OauthIntegrationForCustomClientsModel {
 	o.DynamicBlock = dynamicBlock
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsModel) WithTimeout(timeout config.Timeouts) *OauthIntegrationForCustomClientsModel {
+	o.SetTimeout(timeout)
 	return o
 }
 

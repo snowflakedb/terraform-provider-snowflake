@@ -679,6 +679,11 @@ func (s *FunctionSetRequest) WithLogLevel(logLevel LogLevel) *FunctionSetRequest
 	return s
 }
 
+func (s *FunctionSetRequest) WithLogEventLevel(logEventLevel LogLevel) *FunctionSetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
 func (s *FunctionSetRequest) WithMetricLevel(metricLevel MetricLevel) *FunctionSetRequest {
 	s.MetricLevel = &metricLevel
 	return s
@@ -719,6 +724,11 @@ func (s *FunctionUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool)
 
 func (s *FunctionUnsetRequest) WithLogLevel(logLevel bool) *FunctionUnsetRequest {
 	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *FunctionUnsetRequest) WithLogEventLevel(logEventLevel bool) *FunctionUnsetRequest {
+	s.LogEventLevel = &logEventLevel
 	return s
 }
 

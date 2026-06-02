@@ -2,6 +2,7 @@
 
 package sdk
 
+// imports adjusted manually
 import (
 	"context"
 	"fmt"
@@ -9,9 +10,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ SecurityIntegrations = (*securityIntegrations)(nil)
-
 var (
+	_ SecurityIntegrations                        = (*securityIntegrations)(nil)
 	_ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
 	_ convertibleRow[SecurityIntegration]         = new(securityIntegrationShowRow)
 )
@@ -633,13 +633,13 @@ func (r *DescribeSecurityIntegrationRequest) toOpts() *DescribeSecurityIntegrati
 }
 
 func (r securityIntegrationDescRow) convert() (*SecurityIntegrationProperty, error) {
-	// adjusted manually
-	return &SecurityIntegrationProperty{
+	result := &SecurityIntegrationProperty{
 		Name:    r.Property,
 		Type:    r.PropertyType,
 		Value:   r.PropertyValue,
 		Default: r.PropertyDefault,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *ShowSecurityIntegrationRequest) toOpts() *ShowSecurityIntegrationOptions {
@@ -650,16 +650,13 @@ func (r *ShowSecurityIntegrationRequest) toOpts() *ShowSecurityIntegrationOption
 }
 
 func (r securityIntegrationShowRow) convert() (*SecurityIntegration, error) {
-	// adjusted manually
-	s := &SecurityIntegration{
+	result := &SecurityIntegration{
 		Name:            r.Name,
 		IntegrationType: r.Type,
+		Category:        r.Category,
 		Enabled:         r.Enabled,
 		CreatedOn:       r.CreatedOn,
-		Category:        r.Category,
 	}
-	if r.Comment.Valid {
-		s.Comment = r.Comment.String
-	}
-	return s, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	return result, nil
 }

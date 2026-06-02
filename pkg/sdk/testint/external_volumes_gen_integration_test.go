@@ -34,7 +34,6 @@ func TestInt_ExternalVolumes(t *testing.T) {
 	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
 
 	// Storage location structs for testing
-	// TODO(SNOW-2356128): Test use_privatelink_endpoint for azure
 	defaultAllowedLocation := func(baseUrl string) string {
 		return baseUrl + "*"
 	}
@@ -383,6 +382,52 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasAzureConsentUrlNotEmpty())
 	})
 
+	t.Run("Create - Azure - with privatelink endpoint", func(t *testing.T) {
+		if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakePreProdAzureEnvironment {
+			t.Skip("Skipping test, requires Azure pre-prod deployment")
+		}
+
+		azureStorageLocationsWithPrivatelink := []sdk.ExternalVolumeStorageLocationItem{
+			{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+				Name: "azure_testing_storage_location_privatelink",
+				AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
+					AzureTenantId:          azureTenantId,
+					StorageBaseUrl:         azureBaseUrl,
+					UsePrivatelinkEndpoint: sdk.Bool(true),
+				},
+			}},
+		}
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.ExternalVolumes.Create(ctx, sdk.NewCreateExternalVolumeRequest(id, azureStorageLocationsWithPrivatelink))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().ExternalVolume.DropFunc(t, id))
+
+		externalVolume, err := client.ExternalVolumes.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ExternalVolumeFromObject(t, externalVolume).
+			HasName(id.Name()).
+			HasAllowWrites(true).
+			HasComment("some comment"))
+
+		externalVolumeDetails := describeExternalVolume(t, id)
+		require.Len(t, externalVolumeDetails.StorageLocations, 1)
+
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
+			HasName(azureStorageLocationsWithPrivatelink[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(sdk.StorageProviderAzure)).
+			HasStorageBaseUrl(azureBaseUrl).
+			HasStorageAllowedLocations(defaultAllowedLocation(azureBaseUrl)).
+			HasEncryptionType("NONE"))
+
+		assertThatObject(t, objectassert.StorageLocationAzureDetailsFromObject(t, externalVolumeDetails.StorageLocations[0].AzureStorageLocation).
+			HasAzureTenantId(azureTenantId).
+			HasAzureMultiTenantAppNameNotEmpty().
+			HasAzureConsentUrlNotEmpty().
+			HasUsePrivatelinkEndpoint(true))
+	})
+
 	t.Run("Create - S3Compat - basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.ExternalVolumes.Create(ctx, sdk.NewCreateExternalVolumeRequest(id, s3CompatStorageLocationsBasic))
@@ -665,6 +710,61 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasAzureTenantId(azureTenantId).
 			HasAzureMultiTenantAppNameNotEmpty().
 			HasAzureConsentUrlNotEmpty())
+	})
+
+	t.Run("Alter - add Azure storage location with privatelink endpoint", func(t *testing.T) {
+		if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakePreProdAzureEnvironment {
+			t.Skip("Skipping test, requires Azure pre-prod deployment (SnowflakePreProdAzureEnvironment)")
+		}
+
+		id, cleanup := testClientHelper().ExternalVolume.CreateWithRequest(t, sdk.NewCreateExternalVolumeRequest(
+			testClientHelper().Ids.RandomAccountObjectIdentifier(),
+			s3StorageLocationsBasic,
+		))
+		t.Cleanup(cleanup)
+
+		req := sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(
+			*sdk.NewExternalVolumeStorageLocationItemRequest(
+				*sdk.NewExternalVolumeStorageLocationRequest("azure_testing_storage_location_privatelink").
+					WithAzureStorageLocationParams(
+						*sdk.NewAzureStorageLocationParamsRequest(azureTenantId, azureBaseUrl).
+							WithUsePrivatelinkEndpoint(true),
+					),
+			),
+		)
+
+		err := client.ExternalVolumes.Alter(ctx, req)
+		require.NoError(t, err)
+
+		externalVolumeDetails := describeExternalVolume(t, id)
+		require.Len(t, externalVolumeDetails.StorageLocations, 2)
+
+		// Location 0: S3
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
+			HasName(s3StorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(sdk.StorageProviderS3)).
+			HasStorageAllowedLocations(defaultAllowedLocation(awsBaseUrl)).
+			HasStorageBaseUrl(awsBaseUrl).
+			HasEncryptionType(string(sdk.S3EncryptionTypeNone)))
+
+		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
+			HasStorageAwsRoleArn(awsRoleARN).
+			HasStorageAwsExternalIdNotEmpty().
+			HasStorageAwsIamUserArnNotEmpty())
+
+		// Location 1: Azure with privatelink
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[1]).
+			HasName("azure_testing_storage_location_privatelink").
+			HasStorageProvider(string(sdk.StorageProviderAzure)).
+			HasStorageAllowedLocations(defaultAllowedLocation(azureBaseUrl)).
+			HasStorageBaseUrl(azureBaseUrl).
+			HasEncryptionType("NONE"))
+
+		assertThatObject(t, objectassert.StorageLocationAzureDetailsFromObject(t, externalVolumeDetails.StorageLocations[1].AzureStorageLocation).
+			HasAzureTenantId(azureTenantId).
+			HasAzureMultiTenantAppNameNotEmpty().
+			HasAzureConsentUrlNotEmpty().
+			HasUsePrivatelinkEndpoint(true))
 	})
 
 	t.Run("Show with like", func(t *testing.T) {

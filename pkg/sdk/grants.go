@@ -53,6 +53,7 @@ type GrantOnAccountObject struct {
 	ComputePool      *AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
 	Database         *AccountObjectIdentifier `ddl:"identifier" sql:"DATABASE"`
 	Integration      *AccountObjectIdentifier `ddl:"identifier" sql:"INTEGRATION"`
+	Connection       *AccountObjectIdentifier `ddl:"identifier" sql:"CONNECTION"`
 	FailoverGroup    *AccountObjectIdentifier `ddl:"identifier" sql:"FAILOVER GROUP"`
 	ReplicationGroup *AccountObjectIdentifier `ddl:"identifier" sql:"REPLICATION GROUP"`
 	ExternalVolume   *AccountObjectIdentifier `ddl:"identifier" sql:"EXTERNAL VOLUME"`
@@ -248,6 +249,9 @@ func (row grantRow) convert() (*Grant, error) {
 	if row.GrantedOn == "CORTEX_AGENT_SERVER" {
 		grantedOn = ObjectTypeMcpServer
 	}
+	if row.GrantedOn == "QUALITY_MONITOR" {
+		grantedOn = ObjectTypeModelMonitor
+	}
 
 	var grantOn ObjectType
 	// true for future grants
@@ -265,6 +269,9 @@ func (row grantRow) convert() (*Grant, error) {
 	}
 	if row.GrantOn == "CORTEX_AGENT_SERVER" {
 		grantOn = ObjectTypeMcpServer
+	}
+	if row.GrantOn == "QUALITY_MONITOR" {
+		grantOn = ObjectTypeModelMonitor
 	}
 
 	var name ObjectIdentifier

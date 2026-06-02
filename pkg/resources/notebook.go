@@ -126,7 +126,7 @@ func Notebook() *schema.Resource {
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.NotebookResource), TrackingReadWrapper(resources.Notebook, GetReadNotebookFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.NotebookResource), TrackingUpdateWrapper(resources.Notebook, UpdateNotebook)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.NotebookResource), TrackingDeleteWrapper(resources.Notebook, deleteFunc)),
-		Description:   "Resource used to manage notebooks. For more information, check [notebooks documentation](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).",
+		Description:   "Resource used to manage [Legacy Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks) (created with [CREATE NOTEBOOK](https://docs.snowflake.com/en/sql-reference/sql/create-notebook)). This resource does not manage the newer Notebooks in Workspaces / Notebook Project Objects (created with [CREATE NOTEBOOK PROJECT](https://docs.snowflake.com/en/sql-reference/sql/create-notebook-project)). For more information, check [notebooks documentation](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Notebook, customdiff.All(
 			ComputedIfAnyAttributeChanged(notebookSchema, ShowOutputAttributeName, "name", "comment", "query_warehouse", "code_warehouse"),

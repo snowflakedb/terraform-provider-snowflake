@@ -29,6 +29,7 @@ func MapSchemaToModel(schema SchemaRepresentation) (accconfig.ResourceModel, *Im
 	handleOptionalFieldWithBuilder(schema.DefaultDdlCollation, resourceModel.WithDefaultDdlCollation)
 	handleOptionalFieldWithBuilder(schema.StorageSerializationPolicy, resourceModel.WithStorageSerializationPolicy)
 	handleOptionalFieldWithBuilder(schema.LogLevel, resourceModel.WithLogLevel)
+	handleOptionalFieldWithBuilder(schema.LogEventLevel, resourceModel.WithLogEventLevel)
 	handleOptionalFieldWithBuilder(schema.TraceLevel, resourceModel.WithTraceLevel)
 	handleOptionalFieldWithBuilder(schema.SuspendTaskAfterNumFailures, resourceModel.WithSuspendTaskAfterNumFailures)
 	handleOptionalFieldWithBuilder(schema.TaskAutoRetryAttempts, resourceModel.WithTaskAutoRetryAttempts)

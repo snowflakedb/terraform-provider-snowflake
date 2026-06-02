@@ -214,6 +214,8 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 		opts.Set.LegacyParameters.ObjectParameters.DefaultDDLCollation = &value
 	case ObjectParameterLogLevel:
 		opts.Set.LegacyParameters.ObjectParameters.LogLevel = Pointer(LogLevel(value))
+	case ObjectParameterLogEventLevel:
+		opts.Set.LegacyParameters.ObjectParameters.LogEventLevel = Pointer(LogLevel(value))
 	case ObjectParameterMaxConcurrencyLevel:
 		v, err := strconv.Atoi(value)
 		if err != nil {
@@ -343,6 +345,8 @@ func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, paramete
 		opts.Unset.LegacyParameters.ObjectParameters.DefaultDDLCollation = Pointer(true)
 	case ObjectParameterLogLevel:
 		opts.Unset.LegacyParameters.ObjectParameters.LogLevel = Pointer(true)
+	case ObjectParameterLogEventLevel:
+		opts.Unset.LegacyParameters.ObjectParameters.LogEventLevel = Pointer(true)
 	case ObjectParameterMaxConcurrencyLevel:
 		opts.Unset.LegacyParameters.ObjectParameters.MaxConcurrencyLevel = Pointer(true)
 	case ObjectParameterMaxDataExtensionTimeInDays:
@@ -505,6 +509,7 @@ const (
 	AccountParameterListingAutoFulfillmentReplicationRefreshSchedule         AccountParameter = "LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE"
 	AccountParameterLockTimeout                                              AccountParameter = "LOCK_TIMEOUT"
 	AccountParameterLogLevel                                                 AccountParameter = "LOG_LEVEL"
+	AccountParameterLogEventLevel                                            AccountParameter = "LOG_EVENT_LEVEL"
 	AccountParameterMaxConcurrencyLevel                                      AccountParameter = "MAX_CONCURRENCY_LEVEL"
 	AccountParameterMaxDataExtensionTimeInDays                               AccountParameter = "MAX_DATA_EXTENSION_TIME_IN_DAYS"
 	AccountParameterMetricLevel                                              AccountParameter = "METRIC_LEVEL"
@@ -634,6 +639,7 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterListingAutoFulfillmentReplicationRefreshSchedule,
 	AccountParameterLockTimeout,
 	AccountParameterLogLevel,
+	AccountParameterLogEventLevel,
 	AccountParameterMaxConcurrencyLevel,
 	AccountParameterMaxDataExtensionTimeInDays,
 	AccountParameterMetricLevel,
@@ -719,6 +725,7 @@ const (
 	SessionParameterCsvTimestampFormat                       SessionParameter = "CSV_TIMESTAMP_FORMAT"
 	SessionParameterDateInputFormat                          SessionParameter = "DATE_INPUT_FORMAT"
 	SessionParameterDateOutputFormat                         SessionParameter = "DATE_OUTPUT_FORMAT"
+	SessionParameterEnableCortexAnalyst                      SessionParameter = "ENABLE_CORTEX_ANALYST"
 	SessionParameterEnableGetDdlUseDataTypeAlias             SessionParameter = "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"
 	SessionParameterEnableUnloadPhysicalTypeOptimization     SessionParameter = "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"
 	SessionParameterErrorOnNondeterministicMerge             SessionParameter = "ERROR_ON_NONDETERMINISTIC_MERGE"
@@ -733,6 +740,7 @@ const (
 	SessionParameterJsTreatIntegerAsBigInt                   SessionParameter = "JS_TREAT_INTEGER_AS_BIGINT"
 	SessionParameterLockTimeout                              SessionParameter = "LOCK_TIMEOUT"
 	SessionParameterLogLevel                                 SessionParameter = "LOG_LEVEL"
+	SessionParameterLogEventLevel                            SessionParameter = "LOG_EVENT_LEVEL"
 	SessionParameterMultiStatementCount                      SessionParameter = "MULTI_STATEMENT_COUNT"
 	SessionParameterNoorderSequenceAsDefault                 SessionParameter = "NOORDER_SEQUENCE_AS_DEFAULT"
 	SessionParameterOdbcTreatDecimalAsInt                    SessionParameter = "ODBC_TREAT_DECIMAL_AS_INT"
@@ -774,6 +782,7 @@ const (
 	ObjectParameterDataRetentionTimeInDays                 ObjectParameter = "DATA_RETENTION_TIME_IN_DAYS"
 	ObjectParameterDefaultDDLCollation                     ObjectParameter = "DEFAULT_DDL_COLLATION"
 	ObjectParameterLogLevel                                ObjectParameter = "LOG_LEVEL"
+	ObjectParameterLogEventLevel                           ObjectParameter = "LOG_EVENT_LEVEL"
 	ObjectParameterMaxConcurrencyLevel                     ObjectParameter = "MAX_CONCURRENCY_LEVEL"
 	ObjectParameterMaxDataExtensionTimeInDays              ObjectParameter = "MAX_DATA_EXTENSION_TIME_IN_DAYS"
 	ObjectParameterPipeExecutionPaused                     ObjectParameter = "PIPE_EXECUTION_PAUSED"
@@ -840,6 +849,7 @@ const (
 	UserParameterJsonIndent                               UserParameter = "JSON_INDENT"
 	UserParameterLockTimeout                              UserParameter = "LOCK_TIMEOUT"
 	UserParameterLogLevel                                 UserParameter = "LOG_LEVEL"
+	UserParameterLogEventLevel                            UserParameter = "LOG_EVENT_LEVEL"
 	UserParameterMultiStatementCount                      UserParameter = "MULTI_STATEMENT_COUNT"
 	UserParameterNoorderSequenceAsDefault                 UserParameter = "NOORDER_SEQUENCE_AS_DEFAULT"
 	UserParameterOdbcTreatDecimalAsInt                    UserParameter = "ODBC_TREAT_DECIMAL_AS_INT"
@@ -898,6 +908,7 @@ var AllUserParameters = []UserParameter{
 	UserParameterJsonIndent,
 	UserParameterLockTimeout,
 	UserParameterLogLevel,
+	UserParameterLogEventLevel,
 	UserParameterMultiStatementCount,
 	UserParameterNoorderSequenceAsDefault,
 	UserParameterOdbcTreatDecimalAsInt,
@@ -970,6 +981,7 @@ const (
 	TaskParameterJsonIndent                               TaskParameter = "JSON_INDENT"
 	TaskParameterLockTimeout                              TaskParameter = "LOCK_TIMEOUT"
 	TaskParameterLogLevel                                 TaskParameter = "LOG_LEVEL"
+	TaskParameterLogEventLevel                            TaskParameter = "LOG_EVENT_LEVEL"
 	TaskParameterMultiStatementCount                      TaskParameter = "MULTI_STATEMENT_COUNT"
 	TaskParameterNoorderSequenceAsDefault                 TaskParameter = "NOORDER_SEQUENCE_AS_DEFAULT"
 	TaskParameterOdbcTreatDecimalAsInt                    TaskParameter = "ODBC_TREAT_DECIMAL_AS_INT"
@@ -1036,6 +1048,7 @@ var AllTaskParameters = []TaskParameter{
 	TaskParameterJsonIndent,
 	TaskParameterLockTimeout,
 	TaskParameterLogLevel,
+	TaskParameterLogEventLevel,
 	TaskParameterMultiStatementCount,
 	TaskParameterNoorderSequenceAsDefault,
 	TaskParameterOdbcTreatDecimalAsInt,
@@ -1084,6 +1097,7 @@ var AllSchemaParameters = []ObjectParameter{
 	ObjectParameterDefaultDDLCollation,
 	ObjectParameterStorageSerializationPolicy,
 	ObjectParameterLogLevel,
+	ObjectParameterLogEventLevel,
 	ObjectParameterTraceLevel,
 	ObjectParameterSuspendTaskAfterNumFailures,
 	ObjectParameterTaskAutoRetryAttempts,
@@ -1106,6 +1120,7 @@ const (
 	DatabaseParameterDefaultDdlCollation                     DatabaseParameter = "DEFAULT_DDL_COLLATION"
 	DatabaseParameterStorageSerializationPolicy              DatabaseParameter = "STORAGE_SERIALIZATION_POLICY"
 	DatabaseParameterLogLevel                                DatabaseParameter = "LOG_LEVEL"
+	DatabaseParameterLogEventLevel                           DatabaseParameter = "LOG_EVENT_LEVEL"
 	DatabaseParameterTraceLevel                              DatabaseParameter = "TRACE_LEVEL"
 	DatabaseParameterSuspendTaskAfterNumFailures             DatabaseParameter = "SUSPEND_TASK_AFTER_NUM_FAILURES"
 	DatabaseParameterTaskAutoRetryAttempts                   DatabaseParameter = "TASK_AUTO_RETRY_ATTEMPTS"
@@ -1121,6 +1136,7 @@ type FunctionParameter string
 const (
 	FunctionParameterEnableConsoleOutput FunctionParameter = "ENABLE_CONSOLE_OUTPUT"
 	FunctionParameterLogLevel            FunctionParameter = "LOG_LEVEL"
+	FunctionParameterLogEventLevel       FunctionParameter = "LOG_EVENT_LEVEL"
 	FunctionParameterMetricLevel         FunctionParameter = "METRIC_LEVEL"
 	FunctionParameterTraceLevel          FunctionParameter = "TRACE_LEVEL"
 )
@@ -1128,6 +1144,7 @@ const (
 var AllFunctionParameters = []FunctionParameter{
 	FunctionParameterEnableConsoleOutput,
 	FunctionParameterLogLevel,
+	FunctionParameterLogEventLevel,
 	FunctionParameterMetricLevel,
 	FunctionParameterTraceLevel,
 }
@@ -1138,6 +1155,7 @@ const (
 	ProcedureParameterAutoEventLogging    ProcedureParameter = "AUTO_EVENT_LOGGING"
 	ProcedureParameterEnableConsoleOutput ProcedureParameter = "ENABLE_CONSOLE_OUTPUT"
 	ProcedureParameterLogLevel            ProcedureParameter = "LOG_LEVEL"
+	ProcedureParameterLogEventLevel       ProcedureParameter = "LOG_EVENT_LEVEL"
 	ProcedureParameterMetricLevel         ProcedureParameter = "METRIC_LEVEL"
 	ProcedureParameterTraceLevel          ProcedureParameter = "TRACE_LEVEL"
 )
@@ -1145,8 +1163,51 @@ const (
 var AllProcedureParameters = []ProcedureParameter{
 	ProcedureParameterEnableConsoleOutput,
 	ProcedureParameterLogLevel,
+	ProcedureParameterLogEventLevel,
 	ProcedureParameterMetricLevel,
 	ProcedureParameterTraceLevel,
+}
+
+type IcebergTableParameter string
+
+const (
+	IcebergTableParameterAllowRowTimestamp           IcebergTableParameter = "ALLOW_ROW_TIMESTAMP"
+	IcebergTableParameterCatalog                     IcebergTableParameter = "CATALOG"
+	IcebergTableParameterCatalogSync                 IcebergTableParameter = "CATALOG_SYNC"
+	IcebergTableParameterDataMetricSchedule          IcebergTableParameter = "DATA_METRIC_SCHEDULE"
+	IcebergTableParameterDataRetentionTimeInDays     IcebergTableParameter = "DATA_RETENTION_TIME_IN_DAYS"
+	IcebergTableParameterDefaultDDLCollation         IcebergTableParameter = "DEFAULT_DDL_COLLATION"
+	IcebergTableParameterEnableDataCompaction        IcebergTableParameter = "ENABLE_DATA_COMPACTION"
+	IcebergTableParameterEnableIcebergMergeOnRead    IcebergTableParameter = "ENABLE_ICEBERG_MERGE_ON_READ"
+	IcebergTableParameterExternalVolume              IcebergTableParameter = "EXTERNAL_VOLUME"
+	IcebergTableParameterIcebergMergeOnReadBehavior  IcebergTableParameter = "ICEBERG_MERGE_ON_READ_BEHAVIOR"
+	IcebergTableParameterLogEventLevel               IcebergTableParameter = "LOG_EVENT_LEVEL"
+	IcebergTableParameterMaxDataExtensionTimeInDays  IcebergTableParameter = "MAX_DATA_EXTENSION_TIME_IN_DAYS"
+	IcebergTableParameterOptimizeDataLayout          IcebergTableParameter = "OPTIMIZE_DATA_LAYOUT"
+	IcebergTableParameterQuotedIdentifiersIgnoreCase IcebergTableParameter = "QUOTED_IDENTIFIERS_IGNORE_CASE"
+	IcebergTableParameterReplaceInvalidCharacters    IcebergTableParameter = "REPLACE_INVALID_CHARACTERS"
+	IcebergTableParameterStorageSerializationPolicy  IcebergTableParameter = "STORAGE_SERIALIZATION_POLICY"
+	IcebergTableParameterTargetFileSize              IcebergTableParameter = "TARGET_FILE_SIZE"
+)
+
+var AllIcebergTableParameters = []IcebergTableParameter{
+	IcebergTableParameterAllowRowTimestamp,
+	IcebergTableParameterCatalog,
+	IcebergTableParameterCatalogSync,
+	IcebergTableParameterDataMetricSchedule,
+	IcebergTableParameterDataRetentionTimeInDays,
+	IcebergTableParameterDefaultDDLCollation,
+	IcebergTableParameterEnableDataCompaction,
+	IcebergTableParameterEnableIcebergMergeOnRead,
+	IcebergTableParameterExternalVolume,
+	IcebergTableParameterIcebergMergeOnReadBehavior,
+	IcebergTableParameterLogEventLevel,
+	IcebergTableParameterMaxDataExtensionTimeInDays,
+	IcebergTableParameterOptimizeDataLayout,
+	IcebergTableParameterQuotedIdentifiersIgnoreCase,
+	IcebergTableParameterReplaceInvalidCharacters,
+	IcebergTableParameterStorageSerializationPolicy,
+	IcebergTableParameterTargetFileSize,
 }
 
 // LegacyAccountParameters is based on https://docs.snowflake.com/en/sql-reference/parameters.
@@ -1295,6 +1356,7 @@ type AccountParameters struct {
 	ListingAutoFulfillmentReplicationRefreshSchedule *string                           `ddl:"parameter,double_quotes" sql:"LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE"`
 	LockTimeout                                      *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
 	LogLevel                                         *LogLevel                         `ddl:"parameter,double_quotes" sql:"LOG_LEVEL"`
+	LogEventLevel                                    *LogLevel                         `ddl:"parameter,double_quotes" sql:"LOG_EVENT_LEVEL"`
 	MaxConcurrencyLevel                              *int                              `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	MaxDataExtensionTimeInDays                       *int                              `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	MetricLevel                                      *MetricLevel                      `ddl:"parameter,double_quotes" sql:"METRIC_LEVEL"`
@@ -1474,6 +1536,7 @@ type AccountParametersUnset struct {
 	ListingAutoFulfillmentReplicationRefreshSchedule         *bool `ddl:"keyword" sql:"LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE"`
 	LockTimeout                                              *bool `ddl:"keyword" sql:"LOCK_TIMEOUT"`
 	LogLevel                                                 *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	LogEventLevel                                            *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	MaxConcurrencyLevel                                      *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
 	MaxDataExtensionTimeInDays                               *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	MetricLevel                                              *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
@@ -1807,6 +1870,7 @@ type SessionParameters struct {
 	CsvTimestampFormat                       *string                           `ddl:"parameter,single_quotes" sql:"CSV_TIMESTAMP_FORMAT"`
 	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
 	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableCortexAnalyst                      *bool                             `ddl:"parameter" sql:"ENABLE_CORTEX_ANALYST"`
 	EnableGetDdlUseDataTypeAlias             *bool                             `ddl:"parameter" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
 	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
 	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
@@ -1821,6 +1885,7 @@ type SessionParameters struct {
 	JsTreatIntegerAsBigInt                   *bool                             `ddl:"parameter" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
 	LockTimeout                              *int                              `ddl:"parameter" sql:"LOCK_TIMEOUT"`
 	LogLevel                                 *LogLevel                         `ddl:"parameter" sql:"LOG_LEVEL"`
+	LogEventLevel                            *LogLevel                         `ddl:"parameter" sql:"LOG_EVENT_LEVEL"`
 	MultiStatementCount                      *int                              `ddl:"parameter" sql:"MULTI_STATEMENT_COUNT"`
 	NoorderSequenceAsDefault                 *bool                             `ddl:"parameter" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
 	OdbcTreatDecimalAsInt                    *bool                             `ddl:"parameter" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
@@ -1946,6 +2011,7 @@ type SessionParametersUnset struct {
 	CsvTimestampFormat                       *bool `ddl:"keyword" sql:"CSV_TIMESTAMP_FORMAT"`
 	DateInputFormat                          *bool `ddl:"keyword" sql:"DATE_INPUT_FORMAT"`
 	DateOutputFormat                         *bool `ddl:"keyword" sql:"DATE_OUTPUT_FORMAT"`
+	EnableCortexAnalyst                      *bool `ddl:"keyword" sql:"ENABLE_CORTEX_ANALYST"`
 	EnableGetDdlUseDataTypeAlias             *bool `ddl:"keyword" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
 	EnableUnloadPhysicalTypeOptimization     *bool `ddl:"keyword" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
 	ErrorOnNondeterministicMerge             *bool `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
@@ -1960,6 +2026,7 @@ type SessionParametersUnset struct {
 	JsTreatIntegerAsBigInt                   *bool `ddl:"keyword" sql:"JS_TREAT_INTEGER_AS_BIGINT"`
 	LockTimeout                              *bool `ddl:"keyword" sql:"LOCK_TIMEOUT"`
 	LogLevel                                 *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	LogEventLevel                            *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	MultiStatementCount                      *bool `ddl:"keyword" sql:"MULTI_STATEMENT_COUNT"`
 	NoorderSequenceAsDefault                 *bool `ddl:"keyword" sql:"NOORDER_SEQUENCE_AS_DEFAULT"`
 	OdbcTreatDecimalAsInt                    *bool `ddl:"keyword" sql:"ODBC_TREAT_DECIMAL_AS_INT"`
@@ -1995,8 +2062,8 @@ type SessionParametersUnset struct {
 }
 
 func (v *SessionParametersUnset) validate() error {
-	if !anyValueSet(v.AbortDetachedQuery, v.ActivePythonProfiler, v.Autocommit, v.BinaryInputFormat, v.BinaryOutputFormat, v.ClientEnableLogInfoStatementParameters, v.ClientMemoryLimit, v.ClientMetadataRequestUseConnectionCtx, v.ClientPrefetchThreads, v.ClientResultChunkSize, v.ClientResultColumnCaseInsensitive, v.ClientMetadataUseSessionDatabase, v.ClientSessionKeepAlive, v.ClientSessionKeepAliveHeartbeatFrequency, v.ClientTimestampTypeMapping, v.CsvTimestampFormat, v.DateInputFormat, v.DateOutputFormat, v.EnableGetDdlUseDataTypeAlias, v.EnableUnloadPhysicalTypeOptimization, v.ErrorOnNondeterministicMerge, v.ErrorOnNondeterministicUpdate, v.GeographyOutputFormat, v.GeometryOutputFormat, v.HybridTableLockTimeout, v.JdbcTreatDecimalAsInt, v.JdbcTreatTimestampNtzAsUtc, v.JdbcUseSessionTimezone, v.JsonIndent, v.JsTreatIntegerAsBigInt, v.LockTimeout, v.LogLevel, v.MultiStatementCount, v.NoorderSequenceAsDefault, v.OdbcTreatDecimalAsInt, v.PythonProfilerModules, v.PythonProfilerTargetStage, v.QueryTag, v.QuotedIdentifiersIgnoreCase, v.RowsPerResultset, v.S3StageVpceDnsName, v.SearchPath, v.SimulatedDataSharingConsumer, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.StrictJsonOutput, v.TimestampDayIsAlways24h, v.TimestampInputFormat, v.TimestampLTZOutputFormat, v.TimestampNTZOutputFormat, v.TimestampOutputFormat, v.TimestampTypeMapping, v.TimestampTZOutputFormat, v.Timezone, v.TimeInputFormat, v.TimeOutputFormat, v.TraceLevel, v.TransactionAbortOnError, v.TransactionDefaultIsolationLevel, v.TwoDigitCenturyStart, v.UnsupportedDDLAction, v.UseCachedResult, v.WeekOfYearPolicy, v.WeekStart) {
-		return errors.Join(errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
+	if !anyValueSet(v.AbortDetachedQuery, v.ActivePythonProfiler, v.Autocommit, v.BinaryInputFormat, v.BinaryOutputFormat, v.ClientEnableLogInfoStatementParameters, v.ClientMemoryLimit, v.ClientMetadataRequestUseConnectionCtx, v.ClientPrefetchThreads, v.ClientResultChunkSize, v.ClientResultColumnCaseInsensitive, v.ClientMetadataUseSessionDatabase, v.ClientSessionKeepAlive, v.ClientSessionKeepAliveHeartbeatFrequency, v.ClientTimestampTypeMapping, v.CsvTimestampFormat, v.DateInputFormat, v.DateOutputFormat, v.EnableCortexAnalyst, v.EnableGetDdlUseDataTypeAlias, v.EnableUnloadPhysicalTypeOptimization, v.ErrorOnNondeterministicMerge, v.ErrorOnNondeterministicUpdate, v.GeographyOutputFormat, v.GeometryOutputFormat, v.HybridTableLockTimeout, v.JdbcTreatDecimalAsInt, v.JdbcTreatTimestampNtzAsUtc, v.JdbcUseSessionTimezone, v.JsonIndent, v.JsTreatIntegerAsBigInt, v.LockTimeout, v.LogLevel, v.LogEventLevel, v.MultiStatementCount, v.NoorderSequenceAsDefault, v.OdbcTreatDecimalAsInt, v.PythonProfilerModules, v.PythonProfilerTargetStage, v.QueryTag, v.QuotedIdentifiersIgnoreCase, v.RowsPerResultset, v.S3StageVpceDnsName, v.SearchPath, v.SimulatedDataSharingConsumer, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.StrictJsonOutput, v.TimestampDayIsAlways24h, v.TimestampInputFormat, v.TimestampLTZOutputFormat, v.TimestampNTZOutputFormat, v.TimestampOutputFormat, v.TimestampTypeMapping, v.TimestampTZOutputFormat, v.Timezone, v.TimeInputFormat, v.TimeOutputFormat, v.TraceLevel, v.TransactionAbortOnError, v.TransactionDefaultIsolationLevel, v.TwoDigitCenturyStart, v.UnsupportedDDLAction, v.UseCachedResult, v.WeekOfYearPolicy, v.WeekStart) {
+		return errors.Join(errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableCortexAnalyst", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "LogEventLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
 	}
 	return nil
 }
@@ -2013,6 +2080,7 @@ type ObjectParameters struct {
 	EnableUnredactedQuerySyntaxError        *bool          `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
 	IcebergVersionDefault                   *int           `ddl:"parameter" sql:"ICEBERG_VERSION_DEFAULT"`
 	LogLevel                                *LogLevel      `ddl:"parameter" sql:"LOG_LEVEL"`
+	LogEventLevel                           *LogLevel      `ddl:"parameter" sql:"LOG_EVENT_LEVEL"`
 	MaxConcurrencyLevel                     *int           `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	MaxDataExtensionTimeInDays              *int           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	PipeExecutionPaused                     *bool          `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
@@ -2092,6 +2160,7 @@ type ObjectParametersUnset struct {
 	EnableUnredactedQuerySyntaxError    *bool `ddl:"keyword" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
 	IcebergVersionDefault               *bool `ddl:"keyword" sql:"ICEBERG_VERSION_DEFAULT"`
 	LogLevel                            *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	LogEventLevel                       *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	MaxConcurrencyLevel                 *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
 	MaxDataExtensionTimeInDays          *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	PipeExecutionPaused                 *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`

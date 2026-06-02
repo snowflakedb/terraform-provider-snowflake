@@ -13,7 +13,7 @@ var programmaticAccessTokenPairs = g.StructPair("programmaticAccessTokenResultDB
 	AccountObjectIdentifier("user_name", g.WithPlainFieldName("UserName")).
 	OptionalAccountObjectIdentifier("role_restriction", g.WithPlainFieldName("RoleRestriction")).
 	Time("expires_at").
-	PlainField("status", "ProgrammaticAccessTokenStatus").
+	Enum("status", ProgrammaticAccessTokenStatusDef).
 	OptionalText("comment").
 	Time("created_on").
 	Text("created_by").
@@ -54,7 +54,7 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		OptionalNumberAssignment("MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT", g.ParameterOptions()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ValidIdentifier, "UserName").
+		WithAdditionalValidations().
 		WithValidation(g.ValidIdentifierIfSet, "RoleRestriction"),
 ).CustomOperation(
 	"Modify",
@@ -84,7 +84,7 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		).
 		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO").NoEquals()).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ValidIdentifier, "UserName").
+		WithAdditionalValidations().
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo"),
 ).CustomShowOperationWithPairedStructs(
 	"Rotate",
@@ -100,7 +100,7 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		Name().
 		OptionalNumberAssignment("EXPIRE_ROTATED_TOKEN_AFTER_HOURS", g.ParameterOptions()).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ValidIdentifier, "UserName"),
+		WithAdditionalValidations(),
 ).CustomOperation(
 	"Remove",
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-user-remove-programmatic-access-token",
@@ -112,7 +112,7 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		SQL("REMOVE PROGRAMMATIC ACCESS TOKEN").
 		Name().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ValidIdentifier, "UserName"),
+		WithAdditionalValidations(),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-user-programmatic-access-tokens",
 	programmaticAccessTokenPairs,

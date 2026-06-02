@@ -2,8 +2,10 @@ package example
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -179,3 +181,31 @@ type typedEnumTestProvider[T ~string] struct {
 func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 	t.Helper()
 }
+
+func mapNullString(_ **string, _ sql.NullString)                                         {}
+func mapNullStringToNonNullableField(_ *string, _ sql.NullString)                        {}
+func mapNullStringWithMapping[T any](_ **T, _ sql.NullString, _ func(string) (T, error)) {}
+func mapNullInt(_ **int, _ sql.NullInt64)                                                {}
+func mapNullBool(_ **bool, _ sql.NullBool)                                               {}
+func mapNullBoolToNonNullableField(_ *bool, _ sql.NullBool)                              {}
+func mapNullIntToNonNullableField(_ *int, _ sql.NullInt64)                               {}
+func mapNullTime(_ **time.Time, _ sql.NullTime)                                          {}
+func mapNullTimeToNonNullableField(_ *time.Time, _ sql.NullTime)                         {}
+func mapStringWithMapping[T any](_ *T, _ string, _ func(string) (T, error))              {}
+func ParseCommaSeparatedAccountIdentifierArray(value string) ([]AccountIdentifier, error) {
+	return nil, nil
+}
+
+func ParseCommaSeparatedStringArray(_ string, _ bool) []string {
+	return nil
+}
+
+// Identifier parse function stubs — the real implementations live in pkg/sdk/identifier_parsers.go.
+var (
+	ParseAccountObjectIdentifier  = sdk.ParseAccountObjectIdentifier
+	ParseDatabaseObjectIdentifier = sdk.ParseDatabaseObjectIdentifier
+	ParseSchemaObjectIdentifier   = sdk.ParseSchemaObjectIdentifier
+	ParseExternalObjectIdentifier = sdk.ParseExternalObjectIdentifier
+	ParseAccountIdentifier        = sdk.ParseAccountIdentifier
+	ParseTableColumnIdentifier    = sdk.ParseTableColumnIdentifier
+)

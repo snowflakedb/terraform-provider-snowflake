@@ -77,6 +77,11 @@ func (d *DatabaseResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *D
 	return d
 }
 
+func (d *DatabaseResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *DatabaseResourceParametersAssert {
+	d.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.DatabaseParameterLogEventLevel, expected))
+	return d
+}
+
 func (d *DatabaseResourceParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *DatabaseResourceParametersAssert {
 	d.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.DatabaseParameterTraceLevel, expected))
 	return d
@@ -158,6 +163,11 @@ func (d *DatabaseResourceParametersAssert) HasStorageSerializationPolicyLevel(ex
 
 func (d *DatabaseResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
 	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterLogLevel, expected))
+	return d
+}
+
+func (d *DatabaseResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
+	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterLogEventLevel, expected))
 	return d
 }
 

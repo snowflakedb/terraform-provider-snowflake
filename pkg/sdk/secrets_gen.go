@@ -29,7 +29,7 @@ type CreateWithOAuthClientCredentialsFlowSecretOptions struct {
 	secret         bool                    `ddl:"static" sql:"SECRET"`
 	IfNotExists    *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name           SchemaObjectIdentifier  `ddl:"identifier"`
-	secretType     string                  `ddl:"static" sql:"TYPE = OAUTH2"`
+	secretType     bool                    `ddl:"static" sql:"TYPE = OAUTH2"`
 	ApiIntegration AccountObjectIdentifier `ddl:"identifier,equals" sql:"API_AUTHENTICATION"`
 	OauthScopes    *OauthScopesList        `ddl:"parameter,parentheses" sql:"OAUTH_SCOPES"`
 	Comment        *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -50,7 +50,7 @@ type CreateWithOAuthAuthorizationCodeFlowSecretOptions struct {
 	secret                      bool                    `ddl:"static" sql:"SECRET"`
 	IfNotExists                 *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                        SchemaObjectIdentifier  `ddl:"identifier"`
-	secretType                  string                  `ddl:"static" sql:"TYPE = OAUTH2"`
+	secretType                  bool                    `ddl:"static" sql:"TYPE = OAUTH2"`
 	OauthRefreshToken           string                  `ddl:"parameter,single_quotes,no_parentheses" sql:"OAUTH_REFRESH_TOKEN"`
 	OauthRefreshTokenExpiryTime string                  `ddl:"parameter,single_quotes,no_parentheses" sql:"OAUTH_REFRESH_TOKEN_EXPIRY_TIME"`
 	ApiIntegration              AccountObjectIdentifier `ddl:"identifier,equals" sql:"API_AUTHENTICATION"`
@@ -64,7 +64,7 @@ type CreateWithBasicAuthenticationSecretOptions struct {
 	secret      bool                   `ddl:"static" sql:"SECRET"`
 	IfNotExists *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name        SchemaObjectIdentifier `ddl:"identifier"`
-	secretType  string                 `ddl:"static" sql:"TYPE = PASSWORD"`
+	secretType  bool                   `ddl:"static" sql:"TYPE = PASSWORD"`
 	Username    string                 `ddl:"parameter,single_quotes,no_parentheses" sql:"USERNAME"`
 	Password    string                 `ddl:"parameter,single_quotes,no_parentheses" sql:"PASSWORD"`
 	Comment     *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -77,7 +77,7 @@ type CreateWithGenericStringSecretOptions struct {
 	secret       bool                   `ddl:"static" sql:"SECRET"`
 	IfNotExists  *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name         SchemaObjectIdentifier `ddl:"identifier"`
-	secretType   string                 `ddl:"static" sql:"TYPE = GENERIC_STRING"`
+	secretType   bool                   `ddl:"static" sql:"TYPE = GENERIC_STRING"`
 	SecretString string                 `ddl:"parameter,single_quotes" sql:"SECRET_STRING"`
 	Comment      *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }

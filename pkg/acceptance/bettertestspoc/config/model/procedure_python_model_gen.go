@@ -23,6 +23,7 @@ type ProcedurePythonModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -93,10 +94,12 @@ func (p *ProcedurePythonModel) MarshalJSON() ([]byte, error) {
 	type Alias ProcedurePythonModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(p),
 		DependsOn: p.DependsOn(),
+		Timeouts:  p.Timeouts(),
 	})
 }
 
@@ -107,6 +110,11 @@ func (p *ProcedurePythonModel) WithDependsOn(values ...string) *ProcedurePythonM
 
 func (p *ProcedurePythonModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ProcedurePythonModel {
 	p.DynamicBlock = dynamicBlock
+	return p
+}
+
+func (p *ProcedurePythonModel) WithTimeout(timeout config.Timeouts) *ProcedurePythonModel {
+	p.SetTimeout(timeout)
 	return p
 }
 
@@ -162,6 +170,11 @@ func (p *ProcedurePythonModel) WithHandler(handler string) *ProcedurePythonModel
 
 func (p *ProcedurePythonModel) WithIsSecure(isSecure string) *ProcedurePythonModel {
 	p.IsSecure = tfconfig.StringVariable(isSecure)
+	return p
+}
+
+func (p *ProcedurePythonModel) WithLogEventLevel(logEventLevel string) *ProcedurePythonModel {
+	p.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return p
 }
 
@@ -275,6 +288,11 @@ func (p *ProcedurePythonModel) WithImportsValue(value tfconfig.Variable) *Proced
 
 func (p *ProcedurePythonModel) WithIsSecureValue(value tfconfig.Variable) *ProcedurePythonModel {
 	p.IsSecure = value
+	return p
+}
+
+func (p *ProcedurePythonModel) WithLogEventLevelValue(value tfconfig.Variable) *ProcedurePythonModel {
+	p.LogEventLevel = value
 	return p
 }
 

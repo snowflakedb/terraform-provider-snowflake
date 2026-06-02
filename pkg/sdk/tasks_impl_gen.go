@@ -2,20 +2,17 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Tasks = (*tasks)(nil)
-
-// second type assert removed manually
-var _ convertibleRow[Task] = new(taskDBRow)
+var (
+	_ Tasks                = (*tasks)(nil)
+	_ convertibleRow[Task] = new(taskDBRow)
+)
 
 type tasks struct {
 	client *Client
@@ -253,11 +250,10 @@ func (r *ShowTaskRequest) toOpts() *ShowTaskOptions {
 }
 
 func (r taskDBRow) convert() (*Task, error) {
-	// adjusted manually
-	task := Task{
+	result := &Task{
 		CreatedOn:                 r.CreatedOn,
-		Id:                        r.Id,
 		Name:                      r.Name,
+		Id:                        r.Id,
 		DatabaseName:              r.DatabaseName,
 		SchemaName:                r.SchemaName,
 		Owner:                     r.Owner,
@@ -265,107 +261,23 @@ func (r taskDBRow) convert() (*Task, error) {
 		AllowOverlappingExecution: r.AllowOverlappingExecution == "true",
 		OwnerRoleType:             r.OwnerRoleType,
 	}
-	if r.TaskRelations != "" {
-		taskRelations, err := ToTaskRelations(r.TaskRelations)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert task relations: %w", err)
-		} else {
-			task.TaskRelations = taskRelations
-		}
-	}
-	if r.Comment.Valid {
-		task.Comment = r.Comment.String
-	}
-	if r.Warehouse.Valid && r.Warehouse.String != "null" {
-		id, err := ParseAccountObjectIdentifier(r.Warehouse.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse warehouse: %w", err)
-		} else {
-			task.Warehouse = &id
-		}
-	}
-	if r.Schedule.Valid {
-		task.Schedule = r.Schedule.String
-	}
-	if len(r.Predecessors) > 0 {
-		names, err := getPredecessors(r.Predecessors)
-		ids := make([]SchemaObjectIdentifier, len(names))
-		if err == nil {
-			for i, name := range names {
-				ids[i] = NewSchemaObjectIdentifier(r.DatabaseName, r.SchemaName, name)
-			}
-		}
-		task.Predecessors = ids
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	mapNullStringToNonNullableField(&result.Schedule, r.Schedule)
+	mapNullStringToNonNullableField(&result.Condition, r.Condition)
+	mapNullStringToNonNullableField(&result.LastCommittedOn, r.LastCommittedOn)
+	mapNullStringToNonNullableField(&result.LastSuspendedOn, r.LastSuspendedOn)
+	mapNullStringToNonNullableField(&result.Config, r.Config)
+	mapNullStringToNonNullableField(&result.Budget, r.Budget)
+	if v, err := ToTaskRelations(r.TaskRelations); err != nil {
+		return nil, fmt.Errorf("parsing task relations: %w", err)
 	} else {
-		task.Predecessors = make([]SchemaObjectIdentifier, 0)
+		result.TaskRelations = v
 	}
-	if len(r.State) > 0 {
-		taskState, err := ToTaskState(r.State)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert to task state: %w", err)
-		} else {
-			task.State = taskState
-		}
+	mapNullStringToNonNullableField(&result.LastSuspendedReason, r.LastSuspendedReason)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	if r.Condition.Valid {
-		task.Condition = r.Condition.String
-	}
-	if r.ErrorIntegration.Valid && r.ErrorIntegration.String != "null" {
-		id, err := ParseAccountObjectIdentifier(r.ErrorIntegration.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse error_integration: %w", err)
-		} else {
-			task.ErrorIntegration = &id
-		}
-	}
-	if r.LastCommittedOn.Valid {
-		task.LastCommittedOn = r.LastCommittedOn.String
-	}
-	if r.LastSuspendedOn.Valid {
-		task.LastSuspendedOn = r.LastSuspendedOn.String
-	}
-	if r.Config.Valid {
-		task.Config = r.Config.String
-	}
-	if r.Budget.Valid {
-		task.Budget = r.Budget.String
-	}
-	if r.LastSuspendedReason.Valid {
-		task.LastSuspendedReason = r.LastSuspendedReason.String
-	}
-	if r.TargetCompletionInterval.Valid {
-		targetCompletionInterval, err := parseTargetCompletionInterval(r.TargetCompletionInterval.String)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse target completion interval: %w", err)
-		} else {
-			task.TargetCompletionInterval = targetCompletionInterval
-		}
-	}
-	return &task, nil
-}
-
-// added manually
-func getPredecessors(predecessors string) ([]string, error) {
-	// Since 2022_03, Snowflake returns this as a JSON array (even empty)
-	// The list is formatted, e.g.:
-	// e.g. `[\n  \"\\\"qgb)Z1KcNWJ(\\\".\\\"glN@JtR=7dzP$7\\\".\\\"_XEL(7N_F?@frgT5>dQS>V|vSy,J\\\"\"\n]`.
-	predecessorNames := make([]string, 0)
-	err := json.Unmarshal([]byte(predecessors), &predecessorNames)
-	if err == nil {
-		for i, predecessorName := range predecessorNames {
-			formattedName := strings.Trim(predecessorName, "\\\"")
-			idx := strings.LastIndex(formattedName, "\"") + 1
-			// -1 because of not found +1 is 0
-			if idx == 0 {
-				idx = strings.LastIndex(formattedName, ".") + 1
-			} else if strings.LastIndex(formattedName, ".\"")+2 < idx {
-				idx++
-			}
-			formattedName = formattedName[idx:]
-			predecessorNames[i] = formattedName
-		}
-	}
-	return predecessorNames, err
+	return result, nil
 }
 
 func (r *DescribeTaskRequest) toOpts() *DescribeTaskOptions {
@@ -374,8 +286,6 @@ func (r *DescribeTaskRequest) toOpts() *DescribeTaskOptions {
 	}
 	return opts
 }
-
-// convert for describe removed manually - same structs
 
 func (r *ExecuteTaskRequest) toOpts() *ExecuteTaskOptions {
 	opts := &ExecuteTaskOptions{

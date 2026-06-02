@@ -8,7 +8,7 @@ import (
 )
 
 func UserHasDefaultWorkloadIdentityOidcAssertions(issuer, subject string, audienceList ...string) []assert.ResourceAssertion {
-	assertions := []assert.ResourceAssertion{
+	assertions := []assert.ResourceAssertion{ //nolint:prealloc // fixed literal merged with variable-length appended slice below
 		assert.ValueSet("default_workload_identity.0.azure.#", "0"),
 		assert.ValueSet("default_workload_identity.0.gcp.#", "0"),
 		assert.ValueSet("default_workload_identity.0.aws.#", "0"),
@@ -17,10 +17,11 @@ func UserHasDefaultWorkloadIdentityOidcAssertions(issuer, subject string, audien
 		assert.ValueSet("default_workload_identity.0.oidc.0.subject", subject),
 		assert.ValueSet("default_workload_identity.0.oidc.0.oidc_audience_list.#", strconv.Itoa(len(audienceList))),
 	}
+	audienceListItemAssertions := make([]assert.ResourceAssertion, 0, len(audienceList))
 	for i, audience := range audienceList {
-		assertions = append(assertions, assert.ValueSet(fmt.Sprintf("default_workload_identity.0.oidc.0.oidc_audience_list.%d", i), audience))
+		audienceListItemAssertions = append(audienceListItemAssertions, assert.ValueSet(fmt.Sprintf("default_workload_identity.0.oidc.0.oidc_audience_list.%d", i), audience))
 	}
-	return assertions
+	return append(assertions, audienceListItemAssertions...)
 }
 
 func UserHasDefaultWorkloadIdentityAwsAssertions(arn string) []assert.ResourceAssertion {

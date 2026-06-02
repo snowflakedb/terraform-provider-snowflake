@@ -208,6 +208,8 @@ type CatalogIntegrationAwsGlueDetails struct {
 	GlueCatalogId          string
 	GlueRegion             string
 	CatalogNamespace       string
+	GlueAwsIamUserArn      string
+	GlueAwsExternalId      string
 }
 
 type CatalogIntegrationObjectStorageDetails struct {
@@ -256,6 +258,8 @@ type CatalogIntegrationAllDetails struct {
 	GlueCatalogId            string
 	GlueRegion               string
 	CatalogNamespace         string
+	GlueAwsIamUserArn        string
+	GlueAwsExternalId        string
 	RestConfig               *IcebergRestRestConfigDetails
 	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
 	BearerRestAuthentication *BearerRestAuthenticationDetails

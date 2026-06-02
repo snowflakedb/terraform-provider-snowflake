@@ -21,6 +21,7 @@ type SchemaModel struct {
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
 	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsTransient                             tfconfig.Variable `json:"is_transient,omitempty"`
+	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
 	PipeExecutionPaused                     tfconfig.Variable `json:"pipe_execution_paused,omitempty"`
@@ -73,10 +74,12 @@ func (s *SchemaModel) MarshalJSON() ([]byte, error) {
 	type Alias SchemaModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(s),
 		DependsOn: s.DependsOn(),
+		Timeouts:  s.Timeouts(),
 	})
 }
 
@@ -87,6 +90,11 @@ func (s *SchemaModel) WithDependsOn(values ...string) *SchemaModel {
 
 func (s *SchemaModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *SchemaModel {
 	s.DynamicBlock = dynamicBlock
+	return s
+}
+
+func (s *SchemaModel) WithTimeout(timeout config.Timeouts) *SchemaModel {
+	s.SetTimeout(timeout)
 	return s
 }
 
@@ -141,6 +149,11 @@ func (s *SchemaModel) WithFullyQualifiedName(fullyQualifiedName string) *SchemaM
 
 func (s *SchemaModel) WithIsTransient(isTransient string) *SchemaModel {
 	s.IsTransient = tfconfig.StringVariable(isTransient)
+	return s
+}
+
+func (s *SchemaModel) WithLogEventLevel(logEventLevel string) *SchemaModel {
+	s.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return s
 }
 
@@ -260,6 +273,11 @@ func (s *SchemaModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *Sche
 
 func (s *SchemaModel) WithIsTransientValue(value tfconfig.Variable) *SchemaModel {
 	s.IsTransient = value
+	return s
+}
+
+func (s *SchemaModel) WithLogEventLevelValue(value tfconfig.Variable) *SchemaModel {
+	s.LogEventLevel = value
 	return s
 }
 

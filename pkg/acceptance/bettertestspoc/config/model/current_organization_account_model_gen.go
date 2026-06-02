@@ -74,6 +74,7 @@ type CurrentOrganizationAccountModel struct {
 	JsonIndent                                       tfconfig.Variable `json:"json_indent,omitempty"`
 	ListingAutoFulfillmentReplicationRefreshSchedule tfconfig.Variable `json:"listing_auto_fulfillment_replication_refresh_schedule,omitempty"`
 	LockTimeout                                      tfconfig.Variable `json:"lock_timeout,omitempty"`
+	LogEventLevel                                    tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                         tfconfig.Variable `json:"log_level,omitempty"`
 	MaxConcurrencyLevel                              tfconfig.Variable `json:"max_concurrency_level,omitempty"`
 	MaxDataExtensionTimeInDays                       tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
@@ -167,10 +168,12 @@ func (c *CurrentOrganizationAccountModel) MarshalJSON() ([]byte, error) {
 	type Alias CurrentOrganizationAccountModel
 	return json.Marshal(&struct {
 		*Alias
-		DependsOn []string `json:"depends_on,omitempty"`
+		DependsOn []string         `json:"depends_on,omitempty"`
+		Timeouts  *config.Timeouts `json:"timeouts,omitempty"`
 	}{
 		Alias:     (*Alias)(c),
 		DependsOn: c.DependsOn(),
+		Timeouts:  c.Timeouts(),
 	})
 }
 
@@ -181,6 +184,11 @@ func (c *CurrentOrganizationAccountModel) WithDependsOn(values ...string) *Curre
 
 func (c *CurrentOrganizationAccountModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *CurrentOrganizationAccountModel {
 	c.DynamicBlock = dynamicBlock
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithTimeout(timeout config.Timeouts) *CurrentOrganizationAccountModel {
+	c.SetTimeout(timeout)
 	return c
 }
 
@@ -500,6 +508,11 @@ func (c *CurrentOrganizationAccountModel) WithListingAutoFulfillmentReplicationR
 
 func (c *CurrentOrganizationAccountModel) WithLockTimeout(lockTimeout int) *CurrentOrganizationAccountModel {
 	c.LockTimeout = tfconfig.IntegerVariable(lockTimeout)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithLogEventLevel(logEventLevel string) *CurrentOrganizationAccountModel {
+	c.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return c
 }
 
@@ -1109,6 +1122,11 @@ func (c *CurrentOrganizationAccountModel) WithListingAutoFulfillmentReplicationR
 
 func (c *CurrentOrganizationAccountModel) WithLockTimeoutValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.LockTimeout = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithLogEventLevelValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.LogEventLevel = value
 	return c
 }
 

@@ -253,6 +253,37 @@ func TestDatabasesCreateSecondary(t *testing.T) {
 	})
 }
 
+func TestDatabasesCreateFromListing(t *testing.T) {
+	defaultOpts := func() *CreateDatabaseFromListingOptions {
+		return &CreateDatabaseFromListingOptions{
+			name:        randomAccountObjectIdentifier(),
+			fromListing: "GZ1M7Z91WTX",
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *CreateDatabaseFromListingOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: invalid name", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: empty listing global name", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.fromListing = ""
+		assertOptsInvalidJoinedErrors(t, opts, NewError("CreateDatabaseFromListingOptions: listing global name must not be empty"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `CREATE DATABASE %s FROM LISTING '%s'`, opts.name.FullyQualifiedName(), opts.fromListing)
+	})
+}
+
 func TestDatabasesAlter(t *testing.T) {
 	defaultOpts := func() *AlterDatabaseOptions {
 		return &AlterDatabaseOptions{
@@ -300,6 +331,7 @@ func TestDatabasesAlter(t *testing.T) {
 			"DefaultDDLCollation",
 			"StorageSerializationPolicy",
 			"LogLevel",
+			"LogEventLevel",
 			"TraceLevel",
 			"SuspendTaskAfterNumFailures",
 			"TaskAutoRetryAttempts",
@@ -325,6 +357,7 @@ func TestDatabasesAlter(t *testing.T) {
 			"DefaultDDLCollation",
 			"StorageSerializationPolicy",
 			"LogLevel",
+			"LogEventLevel",
 			"TraceLevel",
 			"SuspendTaskAfterNumFailures",
 			"TaskAutoRetryAttempts",
