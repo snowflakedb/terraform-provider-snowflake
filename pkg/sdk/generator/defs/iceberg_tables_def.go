@@ -178,7 +178,7 @@ var icebergTablesDef = g.NewInterface(
 		SQL("ICEBERG TABLE").
 		IfNotExists().
 		Name().
-		QueryStructField("ColumnsAndConstraints", icebergTableColumnsAndConstraints, g.ListOptions().Parentheses()).
+		QueryStructField("ColumnsAndConstraints", icebergTableColumnsAndConstraints, g.ListOptions().Parentheses().Required()).
 		ListQueryStructField("PartitionBy", icebergTablePartitionExpression, g.KeywordOptions().Parentheses().SQL("PARTITION BY")).
 		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
@@ -346,7 +346,7 @@ var icebergTablesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-iceberg-table",
 	g.StructPair("icebergTableDetailsRow", "IcebergTableDetails").
 		Text("name").
-		Text("type").
+		DataType("type").
 		Text("source iceberg type").
 		Text("kind").
 		PlainField("null", "bool", g.WithPlainFieldName("IsNullable")).
@@ -356,7 +356,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalText("check").
 		OptionalText("expression").
 		OptionalText("comment").
-		OptionalText("policy name", g.WithPlainFieldName("PolicyName")).
+		OptionalSchemaObjectIdentifier("policy name", g.WithPlainFieldName("PolicyName")).
 		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain")).
 		OptionalText("name mapping", g.WithPlainFieldName("NameMapping")).
 		OptionalText("write default", g.WithPlainFieldName("WriteDefault")),
@@ -366,7 +366,7 @@ var icebergTablesDef = g.NewInterface(
 		Name().
 		OptionalAssignmentWithFieldName("TYPE", IcebergTableDescribeTypeEnumDef.Kind(), g.ParameterOptions().NoQuotes(), "DescribeType").
 		WithValidation(g.ValidIdentifier, "name"),
-).WithEnums(
+).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).WithEnums(
 	IcebergTableTargetFileSizeEnumDef,
 	IcebergTablePathLayoutEnumDef,
 	IcebergTableDescribeTypeEnumDef,

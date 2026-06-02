@@ -292,6 +292,15 @@ func (p *PairedStructs) OptionalPlainField(dbColumnName, plainKind string, opts 
 	return p.addField(dbColumnName, "sql.NullString", plainKind, opts)
 }
 
+// DataType adds a datatypes.DataType field parsed via datatypes.ParseDataType.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> datatypes.DataType
+func (p *PairedStructs) DataType(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithCustomParser("datatypes.ParseDataType")}, opts...)
+	return p.addField(dbColumnName, "string", "datatypes.DataType", allOpts)
+}
+
 // StringList adds a field where the db kind is string and the plain kind is []string.
 // Use this for fields that are stored as a single string in the db (e.g. comma-separated)
 // but represented as a string slice in the plain struct.

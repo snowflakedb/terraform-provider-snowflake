@@ -19,6 +19,7 @@ type IcebergTables interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTable, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTable, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]IcebergTableDetails, error)
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
 }
 
 // CreateIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake.
@@ -100,7 +101,7 @@ type TableColumnInlineFK struct {
 	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
 	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
-	RefColumn          *string                `ddl:"keyword,double_quotes,parentheses"`
+	RefColumn          []Column               `ddl:"keyword,parentheses"`
 	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
 	On                 *ForeignKeyOnAction    `ddl:"keyword"`
 	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
@@ -563,7 +564,7 @@ type icebergTableDetailsRow struct {
 
 type IcebergTableDetails struct {
 	Name              string
-	Type              string
+	Type              datatypes.DataType
 	SourceIcebergType string
 	Kind              string
 	IsNullable        bool
@@ -573,7 +574,7 @@ type IcebergTableDetails struct {
 	Check             *string
 	Expression        *string
 	Comment           *string
-	PolicyName        *string
+	PolicyName        *SchemaObjectIdentifier
 	PrivacyDomain     *string
 	NameMapping       *string
 	WriteDefault      *string
