@@ -15,13 +15,6 @@ const DefaultFunctionComment = "user-defined function"
 
 func (opts *CreateForJavaFunctionOptions) additionalValidations() error {
 	var errs []error
-	if valueSet(opts.Arguments) {
-		for _, arg := range opts.Arguments {
-			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-			}
-		}
-	}
 	if opts.FunctionDefinition == nil {
 		if opts.TargetPath != nil {
 			errs = append(errs, NewError("TARGET_PATH must be nil when AS is nil"))
@@ -33,27 +26,8 @@ func (opts *CreateForJavaFunctionOptions) additionalValidations() error {
 	return JoinErrors(errs...)
 }
 
-func (opts *CreateForJavascriptFunctionOptions) additionalValidations() error {
-	var errs []error
-	if valueSet(opts.Arguments) {
-		for _, arg := range opts.Arguments {
-			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-			}
-		}
-	}
-	return JoinErrors(errs...)
-}
-
 func (opts *CreateForPythonFunctionOptions) additionalValidations() error {
 	var errs []error
-	if valueSet(opts.Arguments) {
-		for _, arg := range opts.Arguments {
-			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-			}
-		}
-	}
 	if opts.FunctionDefinition == nil {
 		if len(opts.Imports) == 0 {
 			errs = append(errs, NewError("IMPORTS must not be empty when AS is nil"))
@@ -64,43 +38,12 @@ func (opts *CreateForPythonFunctionOptions) additionalValidations() error {
 
 func (opts *CreateForScalaFunctionOptions) additionalValidations() error {
 	var errs []error
-	if valueSet(opts.Arguments) {
-		for _, arg := range opts.Arguments {
-			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-			}
-		}
-	}
 	if opts.FunctionDefinition == nil {
 		if opts.TargetPath != nil {
 			errs = append(errs, NewError("TARGET_PATH must be nil when AS is nil"))
 		}
 		if len(opts.Imports) == 0 {
 			errs = append(errs, NewError("IMPORTS must not be empty when AS is nil"))
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateForSQLFunctionOptions) additionalValidations() error {
-	var errs []error
-	if valueSet(opts.Arguments) {
-		for _, arg := range opts.Arguments {
-			if !exactlyOneValueSet(arg.ArgDataTypeOld, arg.ArgDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-			}
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (t *FunctionReturnsTable) additionalValidations() error {
-	var errs []error
-	if valueSet(t.Columns) {
-		for _, col := range t.Columns {
-			if !exactlyOneValueSet(col.ColumnDataTypeOld, col.ColumnDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-			}
 		}
 	}
 	return JoinErrors(errs...)
