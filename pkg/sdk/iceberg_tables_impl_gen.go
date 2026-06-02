@@ -202,8 +202,8 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			DefaultValue: r.AddColumnAction.DefaultValue,
 			Tag:          r.AddColumnAction.Tag,
 		}
-		// Adjusted manually: convert *Request sub-struct to *Options
 		if r.AddColumnAction.InlineConstraint != nil {
+			// Adjusted manually: convert *Request sub-struct to *Options
 			opts.AddColumnAction.InlineConstraint = TableColumnInlineConstraintFromRequest(r.AddColumnAction.InlineConstraint)
 		}
 		if r.AddColumnAction.MaskingPolicy != nil {
@@ -231,10 +231,10 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		}
 	}
 	if r.AlterColumnAction != nil {
-		// Adjusted manually: drop generated alterColumn static field copy (Request type lacks it)
 		s := make([]IcebergTableAlterColumnAction, len(r.AlterColumnAction))
 		for i, v := range r.AlterColumnAction {
 			s[i] = IcebergTableAlterColumnAction{
+				// Adjusted manually: drop generated alterColumn static field copy (Request type lacks it)
 				ColumnName:       v.ColumnName,
 				SetNotNull:       v.SetNotNull,
 				DropNotNull:      v.DropNotNull,
@@ -351,9 +351,9 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			if r.SearchOptimizationAction.Add.On != nil {
 				s := make([]TableSearchMethodWithTarget, len(r.SearchOptimizationAction.Add.On))
 				for i, v := range r.SearchOptimizationAction.Add.On {
-					// Adjusted manually: convert Args from Request to Options shape
 					s[i] = TableSearchMethodWithTarget{
 						Method: v.Method,
+						// Adjusted manually: convert Args from Request to Options shape
 						Args: TableSearchMethodArgs{
 							Targets:  v.Args.Targets,
 							Analyzer: v.Args.Analyzer,
@@ -368,8 +368,8 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			if r.SearchOptimizationAction.Drop.On != nil {
 				s := make([]TableDropSearchOptimizationOn, len(r.SearchOptimizationAction.Drop.On))
 				for i, v := range r.SearchOptimizationAction.Drop.On {
-					// Adjusted manually: polymorphic On — one of search_method_with_target | column_name | expression_id
 					s[i] = TableDropSearchOptimizationOn{
+						// Adjusted manually: polymorphic On — one of search_method_with_target | column_name | expression_id
 						ColumnName:   v.ColumnName,
 						ExpressionId: v.ExpressionId,
 					}
@@ -454,10 +454,10 @@ func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 		PrimaryKey:        r.PrimaryKey == "Y",
 		UniqueKey:         r.UniqueKey == "Y",
 	}
-	if v, err := datatypes.ParseDataType(r.Type); err == nil {
-		result.Type = v
+	if v, err := datatypes.ParseDataType(r.Type); err != nil {
+		return nil, fmt.Errorf("parsing datatypes. data type: %w", err)
 	} else {
-		return nil, fmt.Errorf("parsing data type: %w", err) // Adjusted manually
+		result.Type = v
 	}
 	mapNullString(&result.Default, r.Default)
 	mapNullString(&result.Check, r.Check)

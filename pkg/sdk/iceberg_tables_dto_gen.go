@@ -87,7 +87,7 @@ type TableColumnInlineFKRequest struct {
 	Name               *string
 	ForeignKey         *bool
 	References         SchemaObjectIdentifier // required
-	RefColumns         []Column
+	RefColumn          []Column
 	Match              *MatchType
 	On                 *ForeignKeyOnAction
 	Enforced           *bool

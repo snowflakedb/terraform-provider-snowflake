@@ -319,7 +319,7 @@ func TestInt_IcebergTables(t *testing.T) {
 						FK: &sdk.TableColumnInlineFKRequest{
 							Name:       new("fk_ref"),
 							References: fkRefTable.ID(),
-							RefColumns: []sdk.Column{{Value: "ID"}},
+							RefColumn:  []sdk.Column{{Value: "ID"}},
 						},
 					},
 					// TODO (next PRs): it looks like masking policy and projection policy cannot be created at the same time.
@@ -425,7 +425,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
 			HasAllowRowTimestamp(false).
-			HasCatalog("SNOWFLAKE").
+			HasCatalog(testClientHelper().Database.TestDatabaseCatalog().Name()).
 			HasCatalogSync("").
 			HasDataMetricSchedule("60 MINUTES").
 			HasDataRetentionTimeInDays(1).

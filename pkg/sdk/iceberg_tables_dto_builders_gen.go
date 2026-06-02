@@ -317,8 +317,8 @@ func (s *TableColumnInlineFKRequest) WithForeignKey(foreignKey bool) *TableColum
 	return s
 }
 
-func (s *TableColumnInlineFKRequest) WithRefColumns(refColumns []Column) *TableColumnInlineFKRequest {
-	s.RefColumns = refColumns
+func (s *TableColumnInlineFKRequest) WithRefColumn(refColumn []Column) *TableColumnInlineFKRequest {
+	s.RefColumn = refColumn
 	return s
 }
 

@@ -101,7 +101,7 @@ type TableColumnInlineFK struct {
 	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
 	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
-	RefColumns         []Column               `ddl:"keyword,parentheses"`
+	RefColumn          []Column               `ddl:"keyword,parentheses"`
 	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
 	On                 *ForeignKeyOnAction    `ddl:"keyword"`
 	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
