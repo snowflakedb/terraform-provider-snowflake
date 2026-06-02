@@ -38,7 +38,12 @@
             if err != nil {
                 return nil, err
             }
-            return collections.FindFirst({{ $impl }}, func(r {{ .ObjectInterface.ShowObjectName }}) bool { return {{- if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsFullID }} r.ID().FullyQualifiedName() == id.FullyQualifiedName(){{- else if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsAccountName }} r.AccountName == id.Name(){{- else if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsNameAndLocator }} r.Name == id.Name() && r.AccountLocator == v.client.GetAccountLocator(){{- else }} r.Name == id.Name(){{- end }} })
+            return collections.FindFirst({{ $impl }}, func(r {{ .ObjectInterface.ShowObjectName }}) bool { return
+                {{- if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsFullID }} r.ID().FullyQualifiedName() == id.FullyQualifiedName()
+                {{- else if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsAccountName }} r.AccountName == id.Name()
+                {{- else if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsNameAndLocator }} r.Name == id.Name() && r.AccountLocator == v.client.GetAccountLocator()
+                {{- else }} r.Name == id.Name()
+                {{- end }} })
         }
 
         func (v *{{ $impl }}) ShowByIDSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error) {
