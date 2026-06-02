@@ -16,8 +16,7 @@ var notebookPairs = g.StructPair("notebookRow", "Notebook").
 	Field("query_warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("QueryWarehouse")).
 	Text("url_id").
 	Text("owner_role_type").
-	Field("code_warehouse", "string", "AccountObjectIdentifier", g.WithPlainFieldName("CodeWarehouse")).
-	WithConvertGeneration()
+	Field("code_warehouse", "string", "AccountObjectIdentifier", g.WithPlainFieldName("CodeWarehouse"))
 
 var notebookDetailsPairs = g.StructPair("NotebookDetailsRow", "NotebookDetails").
 	OptionalText("title").
@@ -48,8 +47,7 @@ var notebookDetailsPairs = g.StructPair("NotebookDetailsRow", "NotebookDetails")
 	Text("last_version_location_uri").
 	OptionalText("last_version_source_location_uri").
 	OptionalText("last_version_git_commit_hash").
-	OptionalText("live_version_location_uri").
-	WithConvertGeneration()
+	OptionalText("live_version_location_uri")
 
 var notebooksDef = g.NewInterface(
 	"Notebooks",

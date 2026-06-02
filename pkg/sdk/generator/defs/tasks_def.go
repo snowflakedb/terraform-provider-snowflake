@@ -29,8 +29,7 @@ var taskPairs = g.StructPair("taskDBRow", "Task").
 	OptionalText("budget", g.WithRequiredInPlain()).
 	PlainField("task_relations", "TaskRelations", g.WithCustomParser("ToTaskRelations")).
 	OptionalText("last_suspended_reason", g.WithRequiredInPlain()).
-	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"), g.WithManualConvert()).
-	WithConvertGeneration()
+	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"), g.WithManualConvert())
 
 var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
 	OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).

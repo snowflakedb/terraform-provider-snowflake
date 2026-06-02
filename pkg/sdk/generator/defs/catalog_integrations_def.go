@@ -186,8 +186,7 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("type").
 			Text("category").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			Time("created_on").
-			WithConvertGeneration(),
+			Time("created_on"),
 		g.NewQueryStruct("ShowCatalogIntegration").
 			Show().
 			SQL("CATALOG INTEGRATIONS").
@@ -200,8 +199,7 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")).
-			WithConvertGeneration(),
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeCatalogIntegration").
 			Describe().
 			SQL("CATALOG INTEGRATION").

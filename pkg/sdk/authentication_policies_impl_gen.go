@@ -5,8 +5,6 @@ package sdk
 // imports adjusted manually
 import (
 	"context"
-	"errors"
-	"fmt"
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -208,24 +206,12 @@ func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) 
 		Kind:    r.Kind,
 		Options: r.Options,
 	}
-
-	// following validation logic added manually
-	var errs []error
-	if !r.DatabaseName.Valid {
-		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
-	}
-	if !r.SchemaName.Valid {
-		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
-	}
-	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
-	}
-
 	mapNullTimeToNonNullableField(&result.CreatedOn, r.CreatedOn)
-	mapNullStringToNonNullableField(&result.DatabaseName, r.DatabaseName)
-	mapNullStringToNonNullableField(&result.SchemaName, r.SchemaName)
 	mapNullStringToNonNullableField(&result.Owner, r.Owner)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 

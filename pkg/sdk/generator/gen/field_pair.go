@@ -16,6 +16,7 @@ type FieldPair struct {
 	IsEnum         bool
 	IsJson         bool
 	CustomParser   string
+	ValueAdjuster  string
 	BoolTrueValue  string
 	BoolParsed     bool
 
@@ -37,6 +38,7 @@ const (
 	AssignmentKindStringToIdentifier                 AssignmentKind = "StringToIdentifier"
 	AssignmentKindStringToIdentifierArray            AssignmentKind = "StringToIdentifierArray"
 	AssignmentKindCustom                             AssignmentKind = "Custom"
+	AssignmentKindNullableCustom                     AssignmentKind = "NullableCustom"
 	AssignmentKindNullableToNullable                 AssignmentKind = "NullableToNullable"
 	AssignmentKindNullableToRequired                 AssignmentKind = "NullableToRequired"
 	AssignmentKindNullableToIdentifier               AssignmentKind = "NullableToIdentifier"
@@ -94,6 +96,10 @@ func (fp FieldPair) AssignmentKindStringToIdentifierArray() bool {
 
 func (fp FieldPair) AssignmentKindCustom() bool {
 	return fp.AssignmentKind() == AssignmentKindCustom
+}
+
+func (fp FieldPair) AssignmentKindNullableCustom() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableCustom
 }
 
 func (fp FieldPair) AssignmentKindNullableToNullable() bool {
@@ -158,7 +164,11 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 	}
 
 	if fp.CustomParser != "" {
-		return AssignmentKindCustom
+		if fp.DbKind == "sql.NullString" {
+			return AssignmentKindNullableCustom
+		} else {
+			return AssignmentKindCustom
+		}
 	}
 
 	if fp.DbKind == fp.PlainKind {

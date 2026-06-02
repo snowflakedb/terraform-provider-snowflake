@@ -268,10 +268,10 @@ func (r taskDBRow) convert() (*Task, error) {
 	mapNullStringToNonNullableField(&result.LastSuspendedOn, r.LastSuspendedOn)
 	mapNullStringToNonNullableField(&result.Config, r.Config)
 	mapNullStringToNonNullableField(&result.Budget, r.Budget)
-	if v, err := ToTaskRelations(r.TaskRelations); err == nil {
-		result.TaskRelations = v
-	} else {
+	if v, err := ToTaskRelations(r.TaskRelations); err != nil {
 		return nil, fmt.Errorf("parsing task relations: %w", err)
+	} else {
+		result.TaskRelations = v
 	}
 	mapNullStringToNonNullableField(&result.LastSuspendedReason, r.LastSuspendedReason)
 	if err := r.additionalConvert(result); err != nil {

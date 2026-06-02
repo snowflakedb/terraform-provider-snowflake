@@ -205,8 +205,7 @@ var notificationIntegrationsDef = g.NewInterface(
 			Text("category").
 			Bool("enabled").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			Time("created_on").
-			WithConvertGeneration(),
+			Time("created_on"),
 		g.NewQueryStruct("ShowNotificationIntegrations").
 			Show().
 			SQL("NOTIFICATION INTEGRATIONS").
@@ -219,8 +218,7 @@ var notificationIntegrationsDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")).
-			WithConvertGeneration(),
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeNotificationIntegration").
 			Describe().
 			SQL("NOTIFICATION INTEGRATION").

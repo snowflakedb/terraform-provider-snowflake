@@ -57,6 +57,17 @@ func WithCustomParser(funcName string) PairedFieldOption {
 	}
 }
 
+// WithValueAdjuster sets a custom value adjustment function name to use when assigning value to field without conversion.
+// The function must have signature func(T) (T) where T matches the plain kind. There is no error returned.
+// Example:
+//
+//	Text("text", g.WithValueAdjuster("tracking.TrimMetadata")).
+func WithValueAdjuster(funcName string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.valueAdjuster = funcName
+	}
+}
+
 // WithBoolTrueValue overrides the truthy string compared against the db field for string → bool conversions.
 // The default is "Y". Use this when Snowflake returns a different truthy value, e.g. "true" or "ON".
 // Example:
@@ -111,6 +122,8 @@ type pairedField struct {
 	isJson bool
 	// customParser is the name of a custom parse function to use for conversion.
 	customParser string
+	// valueAdjuster is the name of the custom adjustment function which returns the value of the same type, no error
+	valueAdjuster string
 	// boolTrueValue overrides the default "Y" comparison for string/NullString → bool conversions.
 	boolTrueValue string
 	// boolParsed routes string/NullString → bool conversions through strconv.ParseBool.
@@ -142,16 +155,17 @@ type PairedStructs struct {
 	dbName    string
 	plainName string
 	fields    []pairedField
-	// generateConvert controls whether convert() body generation is enabled for this pair.
+	// generateConvert controls whether convert() body generation is enabled for this pair. Default: true.
 	generateConvert bool
 }
 
 // StructPair creates a new PairedStructs with the given DB row struct name and plain struct name.
 func StructPair(dbName, plainName string) *PairedStructs {
 	return &PairedStructs{
-		dbName:    dbName,
-		plainName: plainName,
-		fields:    make([]pairedField, 0),
+		dbName:          dbName,
+		plainName:       plainName,
+		fields:          make([]pairedField, 0),
+		generateConvert: true,
 	}
 }
 
@@ -436,10 +450,10 @@ func (p *PairedStructs) JsonField(dbColumnName, kind string, opts ...PairedField
 	return p
 }
 
-// WithConvertGeneration opts this PairedStructs into automatic convert() body generation.
-// By default, convert generation is disabled so existing PairedStructs usages in production defs continue to emit the placeholder.
-func (p *PairedStructs) WithConvertGeneration() *PairedStructs {
-	p.generateConvert = true
+// WithoutConvertGeneration disables automatic convert() body generation for this pair.
+// Use when the manual convert() implementation cannot yet be expressed via the generator.
+func (p *PairedStructs) WithoutConvertGeneration() *PairedStructs {
+	p.generateConvert = false
 	return p
 }
 
@@ -455,6 +469,7 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 			IsEnum:         f.isEnum,
 			IsJson:         f.isJson,
 			CustomParser:   f.customParser,
+			ValueAdjuster:  f.valueAdjuster,
 			BoolTrueValue:  f.boolTrueValue,
 			BoolParsed:     f.boolParsed,
 			manualConvert:  f.manualConvert,

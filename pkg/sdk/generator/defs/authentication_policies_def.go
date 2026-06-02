@@ -177,13 +177,12 @@ var authenticationPoliciesDef = g.NewInterface(
 			OptionalTime("created_on", g.WithRequiredInPlain()).
 			Text("name").
 			Text("comment").
-			OptionalText("database_name", g.WithRequiredInPlain()).
-			OptionalText("schema_name", g.WithRequiredInPlain()).
+			OptionalText("database_name", g.WithRequiredInPlain(), g.WithManualConvert()).
+			OptionalText("schema_name", g.WithRequiredInPlain(), g.WithManualConvert()).
 			Text("kind").
 			OptionalText("owner", g.WithRequiredInPlain()).
 			OptionalText("owner_role_type", g.WithRequiredInPlain()).
-			Text("options").
-			WithConvertGeneration(),
+			Text("options"),
 		g.NewQueryStruct("ShowAuthenticationPolicies").
 			Show().
 			SQL("AUTHENTICATION POLICIES").
@@ -202,8 +201,7 @@ var authenticationPoliciesDef = g.NewInterface(
 			Text("property").
 			Text("value").
 			Text("default").
-			Text("description").
-			WithConvertGeneration(),
+			Text("description"),
 		g.NewQueryStruct("DescribeAuthenticationPolicy").
 			Describe().
 			SQL("AUTHENTICATION POLICY").

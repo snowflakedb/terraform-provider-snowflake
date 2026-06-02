@@ -90,8 +90,7 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalText("live_version_location_uri").
 		OptionalText("comment").
 		Time("created_on").
-		Time("updated_on").
-		WithConvertGeneration(),
+		Time("updated_on"),
 	g.NewQueryStruct("ShowOpenflowConnectors").
 		Show().
 		SQL("OPENFLOW CONNECTORS").
@@ -129,8 +128,7 @@ var openflowConnectorsDef = g.NewInterface(
 		Time("created_on").
 		Time("updated_on").
 		OptionalText("error_code").
-		OptionalText("status_message").
-		WithConvertGeneration(),
+		OptionalText("status_message"),
 	g.NewQueryStruct("DescribeOpenflowConnector").
 		Describe().
 		SQL("OPENFLOW CONNECTOR").

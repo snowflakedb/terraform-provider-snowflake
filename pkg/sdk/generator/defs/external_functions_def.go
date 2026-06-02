@@ -64,13 +64,11 @@ var externalFunctionPairs = g.StructPair("externalFunctionRow", "ExternalFunctio
 	BoolFromText("is_external_function").
 	Text("language").
 	OptionalBoolFromText("is_memoizable", g.WithRequiredInPlain()).
-	OptionalBoolFromText("is_data_metric", g.WithRequiredInPlain()).
-	WithConvertGeneration()
+	OptionalBoolFromText("is_data_metric", g.WithRequiredInPlain())
 
 var externalFunctionPropertyPairs = g.StructPair("externalFunctionPropertyRow", "ExternalFunctionProperty").
 	Text("property").
-	Text("value").
-	WithConvertGeneration()
+	Text("value")
 
 // TODO [SNOW-2048276]: Add dedicated external Drop and DropSafely functions
 var externalFunctionsDef = g.NewInterface(

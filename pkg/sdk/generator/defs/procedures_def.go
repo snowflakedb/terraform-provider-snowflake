@@ -97,13 +97,11 @@ var procedurePairs = g.StructPair("procedureRow", "Procedure").
 	BoolFromText("valid_for_clustering").
 	OptionalBoolFromText("is_secure", g.WithRequiredInPlain()).
 	OptionalText("secrets").
-	OptionalText("external_access_integrations").
-	WithConvertGeneration()
+	OptionalText("external_access_integrations")
 
 var procedureDetailPairs = g.StructPair("procedureDetailRow", "ProcedureDetail").
 	Text("property").
-	OptionalText("value", g.WithManualConvert()).
-	WithConvertGeneration()
+	OptionalText("value", g.WithManualConvert())
 
 var proceduresDef = g.NewInterface(
 	"Procedures",

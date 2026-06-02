@@ -2,12 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -239,19 +235,6 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 	}
 	mapNullString(&result.Owner, r.Owner)
 	mapNullString(&result.Comment, r.Comment)
-	// manually adjusted
-	if r.TableName.Valid {
-		if strings.Contains(r.TableName.String, "No privilege or table dropped") {
-			return nil, errors.New("the source object is dropped or you don't have permission to access it")
-		}
-
-		// TODO [SNOW-3108659] Use mapNullStringWithMapping
-		tableName, err := ParseSchemaObjectIdentifier(r.TableName.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting table name in show stream: %w", err)
-		}
-		result.TableName = &tableName
-	}
 	mapNullStringWithMapping(&result.SourceType, r.SourceType, ToStreamSourceType)
 	if r.BaseTables.Valid {
 		if ids, err := ParseCommaSeparatedSchemaObjectIdentifierArray(r.BaseTables.String); err == nil {
@@ -263,6 +246,9 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 	mapNullTime(&result.StaleAfter, r.StaleAfter)
 	mapNullString(&result.InvalidReason, r.InvalidReason)
 	mapNullString(&result.OwnerRoleType, r.OwnerRoleType)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 
