@@ -60,7 +60,7 @@ func (i *IcebergTableDetailsAssert) HasNoPolicyName() *IcebergTableDetailsAssert
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
 		if o.PolicyName != nil {
-			return fmt.Errorf("expected policy name to be nil; got: %s", *o.PolicyName)
+			return fmt.Errorf("expected policy name to be nil; got: %s", o.PolicyName.FullyQualifiedName())
 		}
 		return nil
 	})

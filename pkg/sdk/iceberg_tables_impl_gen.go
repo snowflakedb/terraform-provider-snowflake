@@ -464,7 +464,7 @@ func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 	mapNullString(&result.Check, r.Check)
 	mapNullString(&result.Expression, r.Expression)
 	mapNullString(&result.Comment, r.Comment)
-	mapNullString(&result.PolicyName, r.PolicyName)
+	mapNullStringWithMapping(&result.PolicyName, r.PolicyName, ParseSchemaObjectIdentifier)
 	mapNullString(&result.PrivacyDomain, r.PrivacyDomain)
 	mapNullString(&result.NameMapping, r.NameMapping)
 	mapNullString(&result.WriteDefault, r.WriteDefault)

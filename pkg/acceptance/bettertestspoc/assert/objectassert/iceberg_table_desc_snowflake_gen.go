@@ -158,14 +158,14 @@ func (i *IcebergTableDetailsAssert) HasComment(expected string) *IcebergTableDet
 	return i
 }
 
-func (i *IcebergTableDetailsAssert) HasPolicyName(expected string) *IcebergTableDetailsAssert {
+func (i *IcebergTableDetailsAssert) HasPolicyName(expected sdk.SchemaObjectIdentifier) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
 		if o.PolicyName == nil {
 			return fmt.Errorf("expected policy name to have value; got: nil")
 		}
-		if *o.PolicyName != expected {
-			return fmt.Errorf("expected policy name: %v; got: %v", expected, *o.PolicyName)
+		if o.PolicyName.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected policy name: %v; got: %v", expected.FullyQualifiedName(), o.PolicyName.FullyQualifiedName())
 		}
 		return nil
 	})

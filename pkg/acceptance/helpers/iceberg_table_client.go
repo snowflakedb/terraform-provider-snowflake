@@ -21,7 +21,7 @@ func NewIcebergTableClient(context *TestClientContext, idsGenerator *IdsGenerato
 	}
 }
 
-func (c *IcebergTableClient) Create(t *testing.T, externalVolume sdk.AccountObjectIdentifier) (*sdk.IcebergTable, func()) {
+func (c *IcebergTableClient) Create(t *testing.T) (*sdk.IcebergTable, func()) {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifier()
 	return c.CreateWithRequest(t, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{Columns: []sdk.IcebergTableColumnRequest{{Name: "ID", ColumnType: testdatatypes.DataTypeNumber}}}))

@@ -277,7 +277,7 @@ func TableColumnInlineConstraintFromRequest(r *TableColumnInlineConstraintReques
 			Name:               r.FK.Name,
 			ForeignKey:         r.FK.ForeignKey,
 			References:         r.FK.References,
-			RefColumn:          r.FK.RefColumn,
+			RefColumns:         r.FK.RefColumns,
 			Match:              r.FK.Match,
 			On:                 r.FK.On,
 			Enforced:           r.FK.Enforced,

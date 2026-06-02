@@ -510,7 +510,7 @@ func TestIcebergTables_Create(t *testing.T) {
 							Name:       new("fk_id"),
 							ForeignKey: new(true),
 							References: refId,
-							RefColumn:  new("REF_COL"),
+							RefColumns: []Column{{Value: "REF_COL"}},
 							Match:      new(FullMatchType),
 							On: &ForeignKeyOnAction{
 								OnUpdate: new(ForeignKeySetNullAction),
@@ -1223,7 +1223,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 					Name:       new("fk_new"),
 					ForeignKey: new(true),
 					References: refId,
-					RefColumn:  new("REF_COL"),
+					RefColumns: []Column{{Value: "REF_COL"}},
 					Match:      new(PartialMatchType),
 					On: &ForeignKeyOnAction{
 						OnUpdate: new(ForeignKeySetDefaultAction),

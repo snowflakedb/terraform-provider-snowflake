@@ -3,13 +3,13 @@
 package testint
 
 import (
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -21,32 +21,28 @@ func TestInt_IcebergTables(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
+	assertPolicyReference := func(t *testing.T, policyRef sdk.PolicyReference,
+		policyId sdk.SchemaObjectIdentifier,
+		policyKind sdk.PolicyKind,
+		tableId sdk.SchemaObjectIdentifier,
+		refColumnName *string,
+	) {
+		t.Helper()
+		assert.Equal(t, policyId.Name(), policyRef.PolicyName)
+		assert.Equal(t, policyKind, policyRef.PolicyKind)
+		assert.Equal(t, tableId.Name(), policyRef.RefEntityName)
+		assert.Equal(t, "ICEBERG_TABLE", policyRef.RefEntityDomain)
+		assert.Equal(t, "ACTIVE", *policyRef.PolicyStatus)
+		if refColumnName != nil {
+			assert.NotNil(t, policyRef.RefColumnName)
+			assert.Equal(t, *refColumnName, *policyRef.RefColumnName)
+		} else {
+			assert.Nil(t, policyRef.RefColumnName)
+		}
+	}
+
 	catalog := sdk.IcebergTableCatalogSnowflake
 	snowflakeManagedExternalVolume := sdk.NewAccountObjectIdentifier("SNOWFLAKE_MANAGED")
-
-	// createExternalVolume creates a writable S3-backed external volume and registers
-	// a cleanup. It skips t if the required AWS env vars are absent — call it only in
-	// sub-tests that actually need the volume.
-	createExternalVolume := func(t *testing.T) sdk.AccountObjectIdentifier {
-		t.Helper()
-		awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
-		awsRoleArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
-		storageLocations := []sdk.ExternalVolumeStorageLocationItem{
-			{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
-				Name: "iceberg_table_test_location",
-				S3StorageLocationParams: &sdk.S3StorageLocationParams{
-					StorageProvider:   sdk.S3StorageProviderS3,
-					StorageAwsRoleArn: awsRoleArn,
-					StorageBaseUrl:    awsBucketUrl,
-				},
-			}},
-		}
-		volumeId, volumeCleanup := testClientHelper().ExternalVolume.CreateWithRequest(t,
-			sdk.NewCreateExternalVolumeRequest(testClientHelper().Ids.RandomAccountObjectIdentifier(), storageLocations),
-		)
-		t.Cleanup(volumeCleanup)
-		return volumeId
-	}
 
 	basicAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
 		t.Helper()
@@ -105,7 +101,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		)
 	}
 
-	completeAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier, _ string, _ sdk.AccountObjectIdentifier) {
+	completeAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier, policyId sdk.SchemaObjectIdentifier) {
 		t.Helper()
 
 		assertThatObject(t, objectassert.IcebergTable(t, id).
@@ -131,9 +127,8 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		details, err := client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
-		require.Len(t, details, 10)
+		require.Len(t, details, 11)
 
-		// ID — NOT NULL, PK=true, comment="id column"
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[0]).
 			HasName("ID").
 			HasType(testdatatypes.DataTypeNumber_38_0).
@@ -143,7 +138,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoDefault().
 			HasPrimaryKey(true).
 			HasUniqueKey(false).
-			HasNoCheck().
+			HasCheck("ID > 0").
 			HasNoExpression().
 			HasComment("id column").
 			HasNoPolicyName().
@@ -152,7 +147,6 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoWriteDefault(),
 		)
 
-		// FK_ID — nullable, no pk/uk
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[1]).
 			HasName("FK_ID").
 			HasType(testdatatypes.DataTypeNumber_38_0).
@@ -171,7 +165,6 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoWriteDefault(),
 		)
 
-		// EVENT_TS
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[2]).
 			HasName("EVENT_TS").
 			HasType(testdatatypes.DataTypeTimestampNTZ_6).
@@ -190,7 +183,6 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoWriteDefault(),
 		)
 
-		// REGION
 		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[3]).
 			HasName("REGION").
 			HasType(testdatatypes.DataTypeVarcharIceberg).
@@ -203,13 +195,12 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoCheck().
 			HasNoExpression().
 			HasNoComment().
-			HasNoPolicyName().
+			HasPolicyName(policyId).
 			HasNoPrivacyDomain().
 			HasNoNameMapping().
 			HasNoWriteDefault(),
 		)
 
-		// BUCKET_COL, TRUNC_COL, YEAR_COL, MONTH_COL, DAY_COL, HOUR_COL
 		colDefs := []struct {
 			name          string
 			typ           datatypes.DataType
@@ -241,7 +232,24 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasNoWriteDefault(),
 			)
 		}
-		// TODO (next PRs): add assertions for the constraints.
+		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[10]).
+			HasName("STATUS").
+			HasType(testdatatypes.DataTypeVarcharIceberg).
+			HasSourceIcebergType("STRING").
+			HasKind("COLUMN").
+			HasIsNullable(false).
+			HasDefault("'active'").
+			HasPrimaryKey(false).
+			HasUniqueKey(false).
+			HasCheck("STATUS IN ('active', 'inactive')").
+			HasNoExpression().
+			HasNoComment().
+			HasNoPolicyName().
+			HasNoPrivacyDomain().
+			HasNoNameMapping().
+			HasNoWriteDefault(),
+		)
+		// TODO (next PRs): add assertions for the out-of-line constraints.
 	}
 
 	t.Run("create Snowflake managed: basic", func(t *testing.T) {
@@ -259,16 +267,19 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("create Snowflake managed: all options", func(t *testing.T) {
-		volumeId := createExternalVolume(t)
-
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		baseLocation := random.AlphaLowerN(8)
 
 		rowAccessPolicy, rowAccessPolicyCleanup := testClientHelper().RowAccessPolicy.CreateRowAccessPolicy(t)
 		t.Cleanup(rowAccessPolicyCleanup)
 
 		aggregationPolicyId, aggregationPolicyCleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
 		t.Cleanup(aggregationPolicyCleanup)
+
+		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarcharIceberg)
+		t.Cleanup(maskingPolicyCleanup)
+
+		projectionPolicyId, projectionPolicyCleanup := testClientHelper().ProjectionPolicy.CreateProjectionPolicy(t)
+		t.Cleanup(projectionPolicyCleanup)
 
 		fkRefTable, fkRefCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForIcebergTable(t)
 		t.Cleanup(fkRefCleanup)
@@ -294,18 +305,32 @@ func TestInt_IcebergTables(t *testing.T) {
 						FK: &sdk.TableColumnInlineFKRequest{
 							Name:       new("fk_ref"),
 							References: fkRefTable.ID(),
-							RefColumn:  new("ID"),
+							RefColumns: []sdk.Column{{Value: "ID"}},
 						},
 					},
+					// TODO (next PRs): it looks like masking policy and projection policy cannot be created at the same time.
+					// Investigate this because according to the documentation, they can be created at the same time.
+					ProjectionPolicy: sdk.NewTableColumnProjectionPolicyRequest(projectionPolicyId),
 				},
 				{Name: "EVENT_TS", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
-				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg, MaskingPolicy: sdk.NewTableColumnMaskingPolicyRequest(maskingPolicy.ID()).WithUsing([]sdk.Column{{Value: "REGION"}})},
 				{Name: "BUCKET_COL", ColumnType: testdatatypes.DataTypeVarcharIceberg},
 				{Name: "TRUNC_COL", ColumnType: testdatatypes.DataTypeVarcharIceberg},
 				{Name: "YEAR_COL", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
 				{Name: "MONTH_COL", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
 				{Name: "DAY_COL", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
 				{Name: "HOUR_COL", ColumnType: testdatatypes.DataTypeTimestampNTZ_6},
+				{
+					Name:         "STATUS",
+					ColumnType:   testdatatypes.DataTypeVarcharIceberg,
+					DefaultValue: &sdk.ColumnDefaultValue{Expression: new("'active'")},
+					InlineConstraint: &sdk.TableColumnInlineConstraintRequest{
+						CH: &sdk.TableColumnInlineCHRequest{
+							Name:       new("chk_status"),
+							Expression: "STATUS IN ('active', 'inactive')",
+						},
+					},
+				},
 			},
 			OutOfLineConstraint: []sdk.TableOutOfLineConstraintRequest{
 				{
@@ -313,6 +338,20 @@ func TestInt_IcebergTables(t *testing.T) {
 						Name:    new("uq_region"),
 						Unique:  new(true),
 						Columns: []sdk.Column{{Value: "REGION"}},
+					},
+				},
+				{
+					FK: &sdk.TableOutOfLineFKRequest{
+						Name:       new("fk_out_ref"),
+						Columns:    []sdk.Column{{Value: "FK_ID"}},
+						References: fkRefTable.ID(),
+						RefColumns: []sdk.Column{{Value: "ID"}},
+					},
+				},
+				{
+					CH: &sdk.TableOutOfLineCHRequest{
+						Name:       new("chk_id_positive"),
+						Expression: "ID > 0",
 					},
 				},
 			},
@@ -324,6 +363,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			// TODO (next PRs): these are commented out for now because the current external volume is not writable.
 			// WithExternalVolume(volumeId).
 			// WithBaseLocation(baseLocation).
+			// TODO (next PRs): handle CONTACT and CATALOG_SYNC.
 			WithPartitionBy([]sdk.IcebergTablePartitionExpressionRequest{
 				{Identity: new("REGION")},
 				{Bucket: &sdk.IcebergTablePartitionBucketRequest{Args: sdk.IcebergTablePartitionBucketArgsRequest{NumBuckets: 4, Column: "BUCKET_COL"}}},
@@ -356,15 +396,37 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
-		completeAssertions(t, id, baseLocation, volumeId)
+		completeAssertions(t, id, maskingPolicy.ID())
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 4)
+		slices.SortFunc(references, func(x, y sdk.PolicyReference) int {
+			return strings.Compare(string(x.PolicyKind), string(y.PolicyKind))
+		})
+		assertPolicyReference(t, references[0], aggregationPolicyId, sdk.PolicyKindAggregationPolicy, id, nil)
+		assertPolicyReference(t, references[1], maskingPolicy.ID(), sdk.PolicyKindMaskingPolicy, id, new("REGION"))
+		assertPolicyReference(t, references[2], projectionPolicyId, sdk.PolicyKindProjectionPolicy, id, new("FK_ID"))
+		assertPolicyReference(t, references[3], rowAccessPolicy.ID(), sdk.PolicyKindRowAccessPolicy, id, nil)
 
 		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasAllowRowTimestamp(false).
+			HasCatalog("SNOWFLAKE").
+			HasCatalogSync("").
+			HasDataMetricSchedule("60 MINUTES").
 			HasDataRetentionTimeInDays(1).
-			HasMaxDataExtensionTimeInDays(8).
-			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+			HasDefaultDdlCollation("").
 			HasEnableDataCompaction(true).
-			HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
-			HasEnableIcebergMergeOnRead(true),
+			HasEnableIcebergMergeOnRead(true).
+			HasExternalVolume("SNOWFLAKE_MANAGED").
+			HasIcebergMergeOnReadBehavior("auto").
+			HasLogEventLevel("OFF").
+			HasMaxDataExtensionTimeInDays(8).
+			HasOptimizeDataLayout(true).
+			HasQuotedIdentifiersIgnoreCase(false).
+			HasReplaceInvalidCharacters(false).
+			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+			HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb),
 		)
 	})
 
@@ -391,8 +453,7 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("drop iceberg table: existing", func(t *testing.T) {
-		volumeId := createExternalVolume(t)
-		obj, _ := testClientHelper().IcebergTable.Create(t, volumeId)
+		obj, _ := testClientHelper().IcebergTable.Create(t)
 		id := obj.ID()
 
 		err := client.IcebergTables.Drop(ctx, sdk.NewDropIcebergTableRequest(id))
@@ -417,9 +478,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("show iceberg tables: default", func(t *testing.T) {
-		volumeId := createExternalVolume(t)
-		obj1, _ := testClientHelper().IcebergTable.Create(t, volumeId)
-		obj2, _ := testClientHelper().IcebergTable.Create(t, volumeId)
+		obj1, _ := testClientHelper().IcebergTable.Create(t)
+		obj2, _ := testClientHelper().IcebergTable.Create(t)
 
 		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest())
 		require.NoError(t, err)
@@ -429,9 +489,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("show iceberg tables: with like option", func(t *testing.T) {
-		volumeId := createExternalVolume(t)
-		obj1, _ := testClientHelper().IcebergTable.Create(t, volumeId)
-		obj2, _ := testClientHelper().IcebergTable.Create(t, volumeId)
+		obj1, _ := testClientHelper().IcebergTable.Create(t)
+		obj2, _ := testClientHelper().IcebergTable.Create(t)
 
 		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest().
 			WithLike(sdk.Like{Pattern: new(obj1.Name)}))
@@ -442,8 +501,7 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("show iceberg tables: with in schema option", func(t *testing.T) {
-		volumeId := createExternalVolume(t)
-		obj, _ := testClientHelper().IcebergTable.Create(t, volumeId)
+		obj, _ := testClientHelper().IcebergTable.Create(t)
 
 		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest().
 			WithIn(sdk.In{Schema: obj.ID().SchemaId()}))
@@ -453,8 +511,7 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("describe iceberg table: existing", func(t *testing.T) {
-		volumeId := createExternalVolume(t)
-		obj, _ := testClientHelper().IcebergTable.Create(t, volumeId)
+		obj, _ := testClientHelper().IcebergTable.Create(t)
 
 		details, err := client.IcebergTables.Describe(ctx, obj.ID())
 		require.NoError(t, err)

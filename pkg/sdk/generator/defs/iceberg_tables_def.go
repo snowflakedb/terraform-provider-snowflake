@@ -361,7 +361,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalText("check").
 		OptionalText("expression").
 		OptionalText("comment").
-		OptionalText("policy name", g.WithPlainFieldName("PolicyName")).
+		OptionalSchemaObjectIdentifier("policy name", g.WithPlainFieldName("PolicyName")).
 		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain")).
 		OptionalText("name mapping", g.WithPlainFieldName("NameMapping")).
 		OptionalText("write default", g.WithPlainFieldName("WriteDefault")).
