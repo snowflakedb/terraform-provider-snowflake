@@ -177,6 +177,11 @@ func (u *UserResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *UserR
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *UserResourceParametersAssert {
+	u.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.UserParameterLogEventLevel, expected))
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasMultiStatementCount(expected int) *UserResourceParametersAssert {
 	u.AddAssertion(assert.ResourceParameterIntValueSet(sdk.UserParameterMultiStatementCount, expected))
 	return u
@@ -468,6 +473,11 @@ func (u *UserResourceParametersAssert) HasLockTimeoutLevel(expected sdk.Paramete
 
 func (u *UserResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.AddAssertion(assert.ResourceParameterLevelSet(sdk.UserParameterLogLevel, expected))
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.AddAssertion(assert.ResourceParameterLevelSet(sdk.UserParameterLogEventLevel, expected))
 	return u
 }
 

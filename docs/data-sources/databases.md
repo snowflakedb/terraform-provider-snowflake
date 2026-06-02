@@ -146,6 +146,7 @@ Read-Only:
 - `default_ddl_collation` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--default_ddl_collation))
 - `enable_console_output` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--enable_console_output))
 - `external_volume` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--external_volume))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--log_level))
 - `max_data_extension_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--max_data_extension_time_in_days))
 - `quoted_identifiers_ignore_case` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--quoted_identifiers_ignore_case))
@@ -208,6 +209,18 @@ Read-Only:
 
 <a id="nestedobjatt--databases--parameters--external_volume"></a>
 ### Nested Schema for `databases.parameters.external_volume`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--databases--parameters--log_event_level"></a>
+### Nested Schema for `databases.parameters.log_event_level`
 
 Read-Only:
 

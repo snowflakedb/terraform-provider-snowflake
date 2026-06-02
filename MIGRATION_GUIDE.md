@@ -24,6 +24,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.17.0 ➞ v2.18.0
+
+### *(new feature)* `log_event_level` parameter support
+
+We added support for the [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level) parameter, following the same handling as the existing `log_level` parameter. The new `log_event_level` field is now available in the following resources:
+
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account) and [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+- [`snowflake_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/database), [`snowflake_secondary_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/secondary_database), and [`snowflake_shared_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/shared_database)
+- [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema)
+- `snowflake_function_*` (Java, JavaScript, Python, Scala, SQL)
+- `snowflake_procedure_*` (Java, JavaScript, Python, Scala, SQL)
+- [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task)
+- [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user), [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user), and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user)
+
+The `parameters` output of the related data sources (`snowflake_databases`, `snowflake_schemas`, `snowflake_functions`, `snowflake_procedures`, `snowflake_tasks`, and `snowflake_users`) now also exposes `log_event_level`. Additionally, the [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) resource now accepts `LOG_EVENT_LEVEL` as a parameter name.
+
+No changes are required for existing configurations.
+
 ## v2.16.0 ➞ v2.17.0
 
 ### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` and `snowflake_catalog_integration_open_catalog`: import fix for ForceNew fields

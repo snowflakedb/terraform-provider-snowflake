@@ -17,6 +17,7 @@ var (
 		procedureParametersProvider,
 		parameter[sdk.ProcedureParameter]{sdk.ProcedureParameterEnableConsoleOutput, valueTypeBool, sdk.ParameterTypeProcedure},
 		parameter[sdk.ProcedureParameter]{sdk.ProcedureParameterLogLevel, valueTypeString, sdk.ParameterTypeProcedure},
+		parameter[sdk.ProcedureParameter]{sdk.ProcedureParameterLogEventLevel, valueTypeString, sdk.ParameterTypeProcedure},
 		parameter[sdk.ProcedureParameter]{sdk.ProcedureParameterMetricLevel, valueTypeString, sdk.ParameterTypeProcedure},
 		parameter[sdk.ProcedureParameter]{sdk.ProcedureParameterTraceLevel, valueTypeString, sdk.ParameterTypeProcedure},
 	)
@@ -27,6 +28,7 @@ func init() {
 		// session params
 		{Name: sdk.ProcedureParameterEnableConsoleOutput, Type: schema.TypeBool, Description: "Enable stdout/stderr fast path logging for anonyous stored procs. This is a public parameter (similar to LOG_LEVEL)."},
 		{Name: sdk.ProcedureParameterLogLevel, Type: schema.TypeString, Description: "LOG_LEVEL to use when filtering events"},
+		{Name: sdk.ProcedureParameterLogEventLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToLogLevel), DiffSuppress: NormalizeAndCompare(sdk.ToLogLevel), Description: "Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. For more information, see [LOG_EVENT_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level). " + enumValuesDescription(sdk.AllLogLevels)},
 		{Name: sdk.ProcedureParameterMetricLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToMetricLevel), DiffSuppress: NormalizeAndCompare(sdk.ToMetricLevel), Description: "METRIC_LEVEL value to control whether to emit metrics to Event Table"},
 		{Name: sdk.ProcedureParameterTraceLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToTraceLevel), DiffSuppress: NormalizeAndCompare(sdk.ToTraceLevel), Description: "Trace level value to use when generating/filtering trace events"},
 	}
@@ -59,6 +61,7 @@ func handleProcedureParameterRead(d *schema.ResourceData, procedureParameters []
 		switch p.Key {
 		case
 			string(sdk.ProcedureParameterLogLevel),
+			string(sdk.ProcedureParameterLogEventLevel),
 			string(sdk.ProcedureParameterMetricLevel),
 			string(sdk.ProcedureParameterTraceLevel):
 			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
@@ -84,6 +87,7 @@ func handleProcedureParametersCreate(d *schema.ResourceData, set *sdk.ProcedureS
 	return JoinDiags(
 		handleParameterCreate(d, sdk.ProcedureParameterEnableConsoleOutput, &set.EnableConsoleOutput),
 		handleParameterCreateWithMapping(d, sdk.ProcedureParameterLogLevel, &set.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterCreateWithMapping(d, sdk.ProcedureParameterLogEventLevel, &set.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
 		handleParameterCreateWithMapping(d, sdk.ProcedureParameterMetricLevel, &set.MetricLevel, stringToStringEnumProvider(sdk.ToMetricLevel)),
 		handleParameterCreateWithMapping(d, sdk.ProcedureParameterTraceLevel, &set.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
 	)
@@ -93,6 +97,7 @@ func handleProcedureParametersUpdate(d *schema.ResourceData, set *sdk.ProcedureS
 	return JoinDiags(
 		handleParameterUpdate(d, sdk.ProcedureParameterEnableConsoleOutput, &set.EnableConsoleOutput, &unset.EnableConsoleOutput),
 		handleParameterUpdateWithMapping(d, sdk.ProcedureParameterLogLevel, &set.LogLevel, &unset.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterUpdateWithMapping(d, sdk.ProcedureParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
 		handleParameterUpdateWithMapping(d, sdk.ProcedureParameterMetricLevel, &set.MetricLevel, &unset.MetricLevel, stringToStringEnumProvider(sdk.ToMetricLevel)),
 		handleParameterUpdateWithMapping(d, sdk.ProcedureParameterTraceLevel, &set.TraceLevel, &unset.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
 	)

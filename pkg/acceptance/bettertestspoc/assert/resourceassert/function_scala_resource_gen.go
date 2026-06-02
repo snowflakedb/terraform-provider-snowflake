@@ -91,6 +91,11 @@ func (f *FunctionScalaResourceAssert) HasIsSecure(expected string) *FunctionScal
 	return f
 }
 
+func (f *FunctionScalaResourceAssert) HasLogEventLevel(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("log_event_level", expected)
+	return f
+}
+
 func (f *FunctionScalaResourceAssert) HasLogLevel(expected string) *FunctionScalaResourceAssert {
 	f.StringValueSet("log_level", expected)
 	return f
@@ -189,6 +194,11 @@ func (f *FunctionScalaResourceAssert) HasIsSecureString(expected string) *Functi
 	return f
 }
 
+func (f *FunctionScalaResourceAssert) HasLogEventLevelString(expected string) *FunctionScalaResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_event_level", expected))
+	return f
+}
+
 func (f *FunctionScalaResourceAssert) HasLogLevelString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("log_level", expected))
 	return f
@@ -278,6 +288,11 @@ func (f *FunctionScalaResourceAssert) HasNoIsSecure() *FunctionScalaResourceAsse
 	return f
 }
 
+func (f *FunctionScalaResourceAssert) HasNoLogEventLevel() *FunctionScalaResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return f
+}
+
 func (f *FunctionScalaResourceAssert) HasNoLogLevel() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("log_level"))
 	return f
@@ -359,6 +374,11 @@ func (f *FunctionScalaResourceAssert) HasImportsEmpty() *FunctionScalaResourceAs
 
 func (f *FunctionScalaResourceAssert) HasIsSecureEmpty() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("is_secure", ""))
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasLogEventLevelEmpty() *FunctionScalaResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return f
 }
 
@@ -453,6 +473,11 @@ func (f *FunctionScalaResourceAssert) HasHandlerNotEmpty() *FunctionScalaResourc
 
 func (f *FunctionScalaResourceAssert) HasIsSecureNotEmpty() *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValuePresent("is_secure"))
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasLogEventLevelNotEmpty() *FunctionScalaResourceAssert {
+	f.AddAssertion(assert.ValuePresent("log_event_level"))
 	return f
 }
 

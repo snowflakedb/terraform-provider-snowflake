@@ -299,6 +299,7 @@ func TestAcc_LegacyServiceUser_AllParameters(t *testing.T) {
 		WithJsonIndent(4).
 		WithLockTimeout(21222).
 		WithLogLevelEnum(sdk.LogLevelError).
+		WithLogEventLevelEnum(sdk.LogLevelError).
 		WithMultiStatementCount(0).
 		WithNoorderSequenceAsDefault(false).
 		WithOdbcTreatDecimalAsInt(true).
@@ -390,6 +391,7 @@ func TestAcc_LegacyServiceUser_AllParameters(t *testing.T) {
 						HasJsonIndent(4).
 						HasLockTimeout(21222).
 						HasLogLevel(sdk.LogLevelError).
+						HasLogEventLevel(sdk.LogLevelError).
 						HasMultiStatementCount(0).
 						HasNoorderSequenceAsDefault(false).
 						HasOdbcTreatDecimalAsInt(true).
@@ -449,6 +451,7 @@ func TestAcc_LegacyServiceUser_AllParameters(t *testing.T) {
 						HasJsonIndent(4).
 						HasLockTimeout(21222).
 						HasLogLevel(sdk.LogLevelError).
+						HasLogEventLevel(sdk.LogLevelError).
 						HasMultiStatementCount(0).
 						HasNoorderSequenceAsDefault(false).
 						HasOdbcTreatDecimalAsInt(true).
@@ -515,6 +518,7 @@ func TestAcc_LegacyServiceUser_AllParameters(t *testing.T) {
 						HasJsonIndent(4).
 						HasLockTimeout(21222).
 						HasLogLevel(sdk.LogLevelError).
+						HasLogEventLevel(sdk.LogLevelError).
 						HasMultiStatementCount(0).
 						HasNoorderSequenceAsDefault(false).
 						HasOdbcTreatDecimalAsInt(true).

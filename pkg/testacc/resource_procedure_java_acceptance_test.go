@@ -408,6 +408,7 @@ func TestAcc_ProcedureJava_AllParameters(t *testing.T) {
 		WithArgument(argName, dataType).
 		WithEnableConsoleOutput(true).
 		WithLogLevel(string(sdk.LogLevelWarn)).
+		WithLogEventLevel(string(sdk.LogLevelWarn)).
 		WithMetricLevel(string(sdk.MetricLevelAll)).
 		WithTraceLevel(string(sdk.TraceLevelAlways))
 
@@ -445,11 +446,13 @@ func TestAcc_ProcedureJava_AllParameters(t *testing.T) {
 					objectparametersassert.ProcedureParameters(t, id).
 						HasEnableConsoleOutput(true).
 						HasLogLevel(sdk.LogLevelWarn).
+						HasLogEventLevel(sdk.LogLevelWarn).
 						HasMetricLevel(sdk.MetricLevelAll).
 						HasTraceLevel(sdk.TraceLevelAlways),
 					resourceparametersassert.ProcedureResourceParameters(t, procedureModelWithAllParametersSet.ResourceReference()).
 						HasEnableConsoleOutput(true).
 						HasLogLevel(sdk.LogLevelWarn).
+						HasLogEventLevel(sdk.LogLevelWarn).
 						HasMetricLevel(sdk.MetricLevelAll).
 						HasTraceLevel(sdk.TraceLevelAlways),
 				),
@@ -462,6 +465,7 @@ func TestAcc_ProcedureJava_AllParameters(t *testing.T) {
 					resourceparametersassert.ImportedProcedureResourceParameters(t, helpers.EncodeResourceIdentifier(id)).
 						HasEnableConsoleOutput(true).
 						HasLogLevel(sdk.LogLevelWarn).
+						HasLogEventLevel(sdk.LogLevelWarn).
 						HasMetricLevel(sdk.MetricLevelAll).
 						HasTraceLevel(sdk.TraceLevelAlways),
 				),
@@ -489,11 +493,13 @@ func TestAcc_ProcedureJava_AllParameters(t *testing.T) {
 					objectparametersassert.ProcedureParameters(t, id).
 						HasEnableConsoleOutput(true).
 						HasLogLevel(sdk.LogLevelWarn).
+						HasLogEventLevel(sdk.LogLevelWarn).
 						HasMetricLevel(sdk.MetricLevelAll).
 						HasTraceLevel(sdk.TraceLevelAlways),
 					resourceparametersassert.ProcedureResourceParameters(t, procedureModelWithAllParametersSet.ResourceReference()).
 						HasEnableConsoleOutput(true).
 						HasLogLevel(sdk.LogLevelWarn).
+						HasLogEventLevel(sdk.LogLevelWarn).
 						HasMetricLevel(sdk.MetricLevelAll).
 						HasTraceLevel(sdk.TraceLevelAlways),
 				),

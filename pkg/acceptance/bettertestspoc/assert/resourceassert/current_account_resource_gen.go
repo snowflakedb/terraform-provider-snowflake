@@ -347,6 +347,11 @@ func (c *CurrentAccountResourceAssert) HasLockTimeout(expected int) *CurrentAcco
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasLogEventLevel(expected string) *CurrentAccountResourceAssert {
+	c.StringValueSet("log_event_level", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasLogLevel(expected string) *CurrentAccountResourceAssert {
 	c.StringValueSet("log_level", expected)
 	return c
@@ -958,6 +963,11 @@ func (c *CurrentAccountResourceAssert) HasListingAutoFulfillmentReplicationRefre
 
 func (c *CurrentAccountResourceAssert) HasLockTimeoutString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("lock_timeout", expected))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasLogEventLevelString(expected string) *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return c
 }
 
@@ -1575,6 +1585,11 @@ func (c *CurrentAccountResourceAssert) HasNoLockTimeout() *CurrentAccountResourc
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoLogEventLevel() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoLogLevel() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("log_level"))
 	return c
@@ -2189,6 +2204,11 @@ func (c *CurrentAccountResourceAssert) HasLockTimeoutEmpty() *CurrentAccountReso
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasLogEventLevelEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("log_event_level", ""))
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasLogLevelEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("log_level", ""))
 	return c
@@ -2800,6 +2820,11 @@ func (c *CurrentAccountResourceAssert) HasListingAutoFulfillmentReplicationRefre
 
 func (c *CurrentAccountResourceAssert) HasLockTimeoutNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("lock_timeout"))
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasLogEventLevelNotEmpty() *CurrentAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("log_event_level"))
 	return c
 }
 

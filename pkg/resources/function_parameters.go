@@ -17,6 +17,7 @@ var (
 		functionParametersProvider,
 		parameter[sdk.FunctionParameter]{sdk.FunctionParameterEnableConsoleOutput, valueTypeBool, sdk.ParameterTypeFunction},
 		parameter[sdk.FunctionParameter]{sdk.FunctionParameterLogLevel, valueTypeString, sdk.ParameterTypeFunction},
+		parameter[sdk.FunctionParameter]{sdk.FunctionParameterLogEventLevel, valueTypeString, sdk.ParameterTypeFunction},
 		parameter[sdk.FunctionParameter]{sdk.FunctionParameterMetricLevel, valueTypeString, sdk.ParameterTypeFunction},
 		parameter[sdk.FunctionParameter]{sdk.FunctionParameterTraceLevel, valueTypeString, sdk.ParameterTypeFunction},
 	)
@@ -27,6 +28,7 @@ func init() {
 		// session params
 		{Name: sdk.FunctionParameterEnableConsoleOutput, Type: schema.TypeBool, Description: "Enable stdout/stderr fast path logging for anonymous stored procs. This is a public parameter (similar to LOG_LEVEL)."},
 		{Name: sdk.FunctionParameterLogLevel, Type: schema.TypeString, Description: "LOG_LEVEL to use when filtering events"},
+		{Name: sdk.FunctionParameterLogEventLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToLogLevel), DiffSuppress: NormalizeAndCompare(sdk.ToLogLevel), Description: "Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. For more information, see [LOG_EVENT_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level). " + enumValuesDescription(sdk.AllLogLevels)},
 		{Name: sdk.FunctionParameterMetricLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToMetricLevel), DiffSuppress: NormalizeAndCompare(sdk.ToMetricLevel), Description: "METRIC_LEVEL value to control whether to emit metrics to Event Table"},
 		{Name: sdk.FunctionParameterTraceLevel, Type: schema.TypeString, ValidateDiag: sdkValidation(sdk.ToTraceLevel), DiffSuppress: NormalizeAndCompare(sdk.ToTraceLevel), Description: "Trace level value to use when generating/filtering trace events"},
 	}
@@ -59,6 +61,7 @@ func handleFunctionParameterRead(d *schema.ResourceData, functionParameters []*s
 		switch p.Key {
 		case
 			string(sdk.FunctionParameterLogLevel),
+			string(sdk.FunctionParameterLogEventLevel),
 			string(sdk.FunctionParameterMetricLevel),
 			string(sdk.FunctionParameterTraceLevel):
 			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
@@ -84,6 +87,7 @@ func handleFunctionParametersCreate(d *schema.ResourceData, set *sdk.FunctionSet
 	return JoinDiags(
 		handleParameterCreate(d, sdk.FunctionParameterEnableConsoleOutput, &set.EnableConsoleOutput),
 		handleParameterCreateWithMapping(d, sdk.FunctionParameterLogLevel, &set.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterCreateWithMapping(d, sdk.FunctionParameterLogEventLevel, &set.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
 		handleParameterCreateWithMapping(d, sdk.FunctionParameterMetricLevel, &set.MetricLevel, stringToStringEnumProvider(sdk.ToMetricLevel)),
 		handleParameterCreateWithMapping(d, sdk.FunctionParameterTraceLevel, &set.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
 	)
@@ -93,6 +97,7 @@ func handleFunctionParametersUpdate(d *schema.ResourceData, set *sdk.FunctionSet
 	return JoinDiags(
 		handleParameterUpdate(d, sdk.FunctionParameterEnableConsoleOutput, &set.EnableConsoleOutput, &unset.EnableConsoleOutput),
 		handleParameterUpdateWithMapping(d, sdk.FunctionParameterLogLevel, &set.LogLevel, &unset.LogLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
+		handleParameterUpdateWithMapping(d, sdk.FunctionParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, stringToStringEnumProvider(sdk.ToLogLevel)),
 		handleParameterUpdateWithMapping(d, sdk.FunctionParameterMetricLevel, &set.MetricLevel, &unset.MetricLevel, stringToStringEnumProvider(sdk.ToMetricLevel)),
 		handleParameterUpdateWithMapping(d, sdk.FunctionParameterTraceLevel, &set.TraceLevel, &unset.TraceLevel, stringToStringEnumProvider(sdk.ToTraceLevel)),
 	)

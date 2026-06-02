@@ -45,6 +45,7 @@ var (
 		sdk.TaskParameterJsonIndent,
 		sdk.TaskParameterLockTimeout,
 		sdk.TaskParameterLogLevel,
+		sdk.TaskParameterLogEventLevel,
 		sdk.TaskParameterMultiStatementCount,
 		sdk.TaskParameterNoorderSequenceAsDefault,
 		sdk.TaskParameterOdbcTreatDecimalAsInt,

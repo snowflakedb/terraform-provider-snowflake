@@ -171,6 +171,7 @@ Read-Only:
 - `default_ddl_collation` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--default_ddl_collation))
 - `enable_console_output` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--enable_console_output))
 - `external_volume` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--external_volume))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--log_level))
 - `max_data_extension_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--max_data_extension_time_in_days))
 - `pipe_execution_paused` (List of Object) (see [below for nested schema](#nestedobjatt--schemas--parameters--pipe_execution_paused))
@@ -234,6 +235,18 @@ Read-Only:
 
 <a id="nestedobjatt--schemas--parameters--external_volume"></a>
 ### Nested Schema for `schemas.parameters.external_volume`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--schemas--parameters--log_event_level"></a>
+### Nested Schema for `schemas.parameters.log_event_level`
 
 Read-Only:
 

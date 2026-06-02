@@ -182,6 +182,11 @@ func (t *TaskResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *TaskR
 	return t
 }
 
+func (t *TaskResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterLogEventLevel, expected))
+	return t
+}
+
 func (t *TaskResourceParametersAssert) HasMultiStatementCount(expected int) *TaskResourceParametersAssert {
 	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterMultiStatementCount, expected))
 	return t
@@ -483,6 +488,11 @@ func (t *TaskResourceParametersAssert) HasLockTimeoutLevel(expected sdk.Paramete
 
 func (t *TaskResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterLogLevel, expected))
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterLogEventLevel, expected))
 	return t
 }
 

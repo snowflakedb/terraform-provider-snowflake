@@ -36,6 +36,11 @@ func (u *ServiceUserModel) WithLogLevelEnum(logLevel sdk.LogLevel) *ServiceUserM
 	return u
 }
 
+func (u *ServiceUserModel) WithLogEventLevelEnum(logEventLevel sdk.LogLevel) *ServiceUserModel {
+	u.LogEventLevel = tfconfig.StringVariable(string(logEventLevel))
+	return u
+}
+
 func (u *ServiceUserModel) WithTimestampTypeMappingEnum(timestampTypeMapping sdk.TimestampTypeMapping) *ServiceUserModel {
 	u.TimestampTypeMapping = tfconfig.StringVariable(string(timestampTypeMapping))
 	return u

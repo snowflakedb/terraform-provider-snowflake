@@ -47,6 +47,11 @@ func (f *FunctionResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *F
 	return f
 }
 
+func (f *FunctionResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *FunctionResourceParametersAssert {
+	f.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.FunctionParameterLogEventLevel, expected))
+	return f
+}
+
 func (f *FunctionResourceParametersAssert) HasMetricLevel(expected sdk.MetricLevel) *FunctionResourceParametersAssert {
 	f.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.FunctionParameterMetricLevel, expected))
 	return f
@@ -68,6 +73,11 @@ func (f *FunctionResourceParametersAssert) HasEnableConsoleOutputLevel(expected 
 
 func (f *FunctionResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
 	f.AddAssertion(assert.ResourceParameterLevelSet(sdk.FunctionParameterLogLevel, expected))
+	return f
+}
+
+func (f *FunctionResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
+	f.AddAssertion(assert.ResourceParameterLevelSet(sdk.FunctionParameterLogEventLevel, expected))
 	return f
 }
 

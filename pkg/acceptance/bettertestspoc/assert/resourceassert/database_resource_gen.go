@@ -82,6 +82,11 @@ func (d *DatabaseResourceAssert) HasIsTransient(expected bool) *DatabaseResource
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasLogEventLevel(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("log_event_level", expected)
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasLogLevel(expected string) *DatabaseResourceAssert {
 	d.StringValueSet("log_level", expected)
 	return d
@@ -190,6 +195,11 @@ func (d *DatabaseResourceAssert) HasFullyQualifiedNameString(expected string) *D
 
 func (d *DatabaseResourceAssert) HasIsTransientString(expected string) *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueSet("is_transient", expected))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasLogEventLevelString(expected string) *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return d
 }
 
@@ -302,6 +312,11 @@ func (d *DatabaseResourceAssert) HasNoIsTransient() *DatabaseResourceAssert {
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasNoLogEventLevel() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasNoLogLevel() *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueNotSet("log_level"))
 	return d
@@ -403,6 +418,11 @@ func (d *DatabaseResourceAssert) HasFullyQualifiedNameEmpty() *DatabaseResourceA
 
 func (d *DatabaseResourceAssert) HasIsTransientEmpty() *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueSet("is_transient", ""))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasLogEventLevelEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return d
 }
 
@@ -517,6 +537,11 @@ func (d *DatabaseResourceAssert) HasFullyQualifiedNameNotEmpty() *DatabaseResour
 
 func (d *DatabaseResourceAssert) HasIsTransientNotEmpty() *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValuePresent("is_transient"))
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasLogEventLevelNotEmpty() *DatabaseResourceAssert {
+	d.AddAssertion(assert.ValuePresent("log_event_level"))
 	return d
 }
 

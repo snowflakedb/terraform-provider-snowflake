@@ -23,6 +23,7 @@ type ProcedureJavaModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -173,6 +174,11 @@ func (p *ProcedureJavaModel) WithIsSecure(isSecure string) *ProcedureJavaModel {
 	return p
 }
 
+func (p *ProcedureJavaModel) WithLogEventLevel(logEventLevel string) *ProcedureJavaModel {
+	p.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return p
+}
+
 func (p *ProcedureJavaModel) WithLogLevel(logLevel string) *ProcedureJavaModel {
 	p.LogLevel = tfconfig.StringVariable(logLevel)
 	return p
@@ -285,6 +291,11 @@ func (p *ProcedureJavaModel) WithImportsValue(value tfconfig.Variable) *Procedur
 
 func (p *ProcedureJavaModel) WithIsSecureValue(value tfconfig.Variable) *ProcedureJavaModel {
 	p.IsSecure = value
+	return p
+}
+
+func (p *ProcedureJavaModel) WithLogEventLevelValue(value tfconfig.Variable) *ProcedureJavaModel {
+	p.LogEventLevel = value
 	return p
 }
 

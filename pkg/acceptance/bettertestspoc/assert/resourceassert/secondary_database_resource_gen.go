@@ -82,6 +82,11 @@ func (s *SecondaryDatabaseResourceAssert) HasIsTransient(expected bool) *Seconda
 	return s
 }
 
+func (s *SecondaryDatabaseResourceAssert) HasLogEventLevel(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("log_event_level", expected)
+	return s
+}
+
 func (s *SecondaryDatabaseResourceAssert) HasLogLevel(expected string) *SecondaryDatabaseResourceAssert {
 	s.StringValueSet("log_level", expected)
 	return s
@@ -188,6 +193,11 @@ func (s *SecondaryDatabaseResourceAssert) HasFullyQualifiedNameString(expected s
 
 func (s *SecondaryDatabaseResourceAssert) HasIsTransientString(expected string) *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("is_transient", expected))
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasLogEventLevelString(expected string) *SecondaryDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return s
 }
 
@@ -300,6 +310,11 @@ func (s *SecondaryDatabaseResourceAssert) HasNoIsTransient() *SecondaryDatabaseR
 	return s
 }
 
+func (s *SecondaryDatabaseResourceAssert) HasNoLogEventLevel() *SecondaryDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return s
+}
+
 func (s *SecondaryDatabaseResourceAssert) HasNoLogLevel() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("log_level"))
 	return s
@@ -396,6 +411,11 @@ func (s *SecondaryDatabaseResourceAssert) HasFullyQualifiedNameEmpty() *Secondar
 
 func (s *SecondaryDatabaseResourceAssert) HasIsTransientEmpty() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValueSet("is_transient", ""))
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasLogEventLevelEmpty() *SecondaryDatabaseResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return s
 }
 
@@ -505,6 +525,11 @@ func (s *SecondaryDatabaseResourceAssert) HasFullyQualifiedNameNotEmpty() *Secon
 
 func (s *SecondaryDatabaseResourceAssert) HasIsTransientNotEmpty() *SecondaryDatabaseResourceAssert {
 	s.AddAssertion(assert.ValuePresent("is_transient"))
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasLogEventLevelNotEmpty() *SecondaryDatabaseResourceAssert {
+	s.AddAssertion(assert.ValuePresent("log_event_level"))
 	return s
 }
 

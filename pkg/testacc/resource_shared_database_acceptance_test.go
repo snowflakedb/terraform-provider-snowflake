@@ -159,6 +159,7 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
