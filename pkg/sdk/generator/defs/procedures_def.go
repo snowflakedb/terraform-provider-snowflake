@@ -80,6 +80,31 @@ var procedureWithClause = g.NewQueryStruct("ProcedureWithClause").
 	PredefinedQueryStructField("CteColumns", "[]string", g.KeywordOptions().Parentheses()).
 	PredefinedQueryStructField("Statement", "string", g.ParameterOptions().NoEquals().NoQuotes().SQL("AS").Required())
 
+// TODO [next PRs]: support adding a field only in plain struct (in this case: `ArgumentsOld` and `ReturnTypeOld`)
+var procedurePairs = g.StructPair("procedureRow", "Procedure").
+	Text("created_on").
+	Text("name").
+	Text("schema_name", g.WithManualConvert()).
+	BoolFromText("is_builtin").
+	BoolFromText("is_aggregate").
+	BoolFromText("is_ansi").
+	Number("min_num_arguments").
+	Number("max_num_arguments").
+	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	Text("description").
+	Text("catalog_name", g.WithManualConvert()).
+	BoolFromText("is_table_function").
+	BoolFromText("valid_for_clustering").
+	OptionalBoolFromText("is_secure", g.WithRequiredInPlain()).
+	OptionalText("secrets").
+	OptionalText("external_access_integrations").
+	WithConvertGeneration()
+
+var procedureDetailPairs = g.StructPair("procedureDetailRow", "ProcedureDetail").
+	Text("property").
+	OptionalText("value", g.WithManualConvert()).
+	WithConvertGeneration()
+
 var proceduresDef = g.NewInterface(
 	"Procedures",
 	"Procedure",
@@ -327,44 +352,9 @@ var proceduresDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-procedures",
-	g.DbStruct("procedureRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("schema_name", "string").
-		Field("is_builtin", "string").
-		Field("is_aggregate", "string").
-		Field("is_ansi", "string").
-		Field("min_num_arguments", "int").
-		Field("max_num_arguments", "int").
-		Field("arguments", "string").
-		Field("description", "string").
-		Field("catalog_name", "string").
-		Field("is_table_function", "string").
-		Field("valid_for_clustering", "string").
-		Field("is_secure", "sql.NullString").
-		OptionalText("secrets").
-		OptionalText("external_access_integrations"),
-	g.PlainStruct("Procedure").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("SchemaName", "string").
-		Field("IsBuiltin", "bool").
-		Field("IsAggregate", "bool").
-		Field("IsAnsi", "bool").
-		Field("MinNumArguments", "int").
-		Field("MaxNumArguments", "int").
-		Field("ArgumentsOld", "[]DataType").
-		Field("ReturnTypeOld", "DataType").
-		Field("ArgumentsRaw", "string").
-		Field("Description", "string").
-		Field("CatalogName", "string").
-		Field("IsTableFunction", "bool").
-		Field("ValidForClustering", "bool").
-		Field("IsSecure", "bool").
-		OptionalText("Secrets").
-		OptionalText("ExternalAccessIntegrations"),
+	procedurePairs,
 	g.NewQueryStruct("ShowProcedures").
 		Show().
 		SQL("PROCEDURES").
@@ -372,15 +362,10 @@ var proceduresDef = g.NewInterface(
 		OptionalExtendedIn(),
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-procedure",
-	g.DbStruct("procedureDetailRow").
-		Field("property", "string").
-		Field("value", "sql.NullString"),
-	g.PlainStruct("ProcedureDetail").
-		Field("Property", "string").
-		OptionalText("Value"),
+	procedureDetailPairs,
 	g.NewQueryStruct("DescribeProcedure").
 		Describe().
 		SQL("PROCEDURE").

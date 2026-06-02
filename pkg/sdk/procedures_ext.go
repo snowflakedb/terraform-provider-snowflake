@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
@@ -280,4 +281,27 @@ func (opts *CreateForScalaProcedureOptions) additionalValidations() error {
 		errs = append(errs, NewError("TARGET_PATH must be nil when AS is nil"))
 	}
 	return JoinErrors(errs...)
+}
+
+func (r procedureRow) additionalConvert(result *Procedure) error {
+	result.SchemaName = strings.Trim(r.SchemaName, `"`)
+	result.CatalogName = strings.Trim(r.CatalogName, `"`)
+	arguments := strings.TrimLeft(r.Arguments, r.Name)
+	returnIndex := strings.Index(arguments, ") RETURN ")
+	result.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
+	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
+	if err != nil {
+		return fmt.Errorf("failed to parse procedure arguments: %w", err)
+	}
+	result.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
+		return DataType(a.ArgType)
+	})
+	return nil
+}
+
+func (r procedureDetailRow) additionalConvert(result *ProcedureDetail) error {
+	if r.Value.Valid && r.Value.String != "null" {
+		result.Value = String(r.Value.String)
+	}
+	return nil
 }

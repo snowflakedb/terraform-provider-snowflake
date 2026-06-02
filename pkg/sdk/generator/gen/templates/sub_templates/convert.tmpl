@@ -10,6 +10,7 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "Y",
         {{- else if .AssignmentKindStringToBoolValue }}
             {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "{{ .BoolTrueValue }}",
+        {{- else if .AssignmentKindManual }}
         {{- end }}
     {{- end }}
     }
@@ -69,9 +70,15 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             		result.{{ .PlainFieldName }} = ids
             	}
             }
+        {{- else if .AssignmentKindManual }}
         {{- else }}
             // TODO: Mapping for {{ .PlainFieldName }} ({{ .DbKind }} -> {{ .PlainKind }})
         {{- end }}
+    {{- end }}
+    {{- if .HasManualConvert }}
+        if err := r.additionalConvert(result); err != nil {
+            return nil, err
+        }
     {{- end }}
     return result, nil
 {{- else }}

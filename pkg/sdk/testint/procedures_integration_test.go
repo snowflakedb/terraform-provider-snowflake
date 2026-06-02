@@ -96,8 +96,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, procedure.ID()).
@@ -169,10 +169,10 @@ func TestInt_Procedures(t *testing.T) {
 		t.Cleanup(testClientHelper().Procedure.DropProcedureFunc(t, id))
 		t.Cleanup(testClientHelper().Stage.RemoveFromUserStageFunc(t, jarName))
 
-		function, err := client.Procedures.ShowByID(ctx, id)
+		proc, err := client.Procedures.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ProcedureFromObject(t, function).
+		assertThatObject(t, objectassert.ProcedureFromObject(t, proc).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
 			HasSchemaName(id.SchemaName()).
@@ -183,18 +183,17 @@ func TestInt_Procedures(t *testing.T) {
 			HasMaxNumArguments(1).
 			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, proc.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			// TODO [SNOW-1850370]: apparently external access integrations and secrets are not filled out correctly for procedures
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
-		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
+		assertThatObject(t, objectassert.ProcedureDetails(t, proc.ID()).
 			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
 			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
 			HasReturnDataType(dataType).
@@ -271,8 +270,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -358,8 +357,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -507,8 +506,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -581,8 +580,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -655,8 +654,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -743,8 +742,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -820,8 +819,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -907,8 +906,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -988,8 +987,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1083,8 +1082,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1161,8 +1160,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1250,8 +1249,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1324,8 +1323,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1429,8 +1428,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1497,8 +1496,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1956,9 +1955,8 @@ def filter_by_role(session, table_name, role):
 		assertThatObject(t, objectassert.Procedure(t, id).
 			HasName(id.Name()).
 			HasDescription(sdk.DefaultProcedureComment).
-			// both nil, because they are always nil in SHOW for procedures
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations().
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, id).
