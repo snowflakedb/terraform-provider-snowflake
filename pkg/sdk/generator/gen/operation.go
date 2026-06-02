@@ -103,17 +103,6 @@ func (m *Mapping) HasManualConvert() bool {
 	return false
 }
 
-// HasManualConvert reports whether any field in this Mapping is marked as manual convert.
-// When true, the generated convert() will call r.additionalConvert(result) after all generated mappings.
-func (m *Mapping) HasManualConvert() bool {
-	for _, f := range m.FieldPairs {
-		if f.manualConvert {
-			return true
-		}
-	}
-	return false
-}
-
 func newOperation(kind string, doc string) *Operation {
 	return &Operation{
 		Name:          kind,
