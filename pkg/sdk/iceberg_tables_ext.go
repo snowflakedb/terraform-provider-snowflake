@@ -376,6 +376,13 @@ func (v *icebergTables) ShowParameters(ctx context.Context, id SchemaObjectIdent
 }
 
 type IcebergTablePartitionSpec struct {
-	SpecId int   `json:"spec-id"`
-	Fields []any `json:"fields"`
+	SpecId int                              `json:"spec-id"`
+	Fields []IcebergTablePartitionSpecField `json:"fields"`
+}
+
+type IcebergTablePartitionSpecField struct {
+	Name      string `json:"name"`
+	Transform string `json:"transform"`
+	SourceId  int    `json:"source-id"`
+	FieldId   int    `json:"field-id"`
 }

@@ -27,7 +27,7 @@ func (i *IcebergTableAssert) HasNoExternalVolumeName() *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
 		if o.ExternalVolumeName != nil {
-			return fmt.Errorf("expected external volume name to be nil; got: %s", (*o.ExternalVolumeName).Name())
+			return fmt.Errorf("expected external volume name to be nil; got: %s", o.ExternalVolumeName.Name())
 		}
 		return nil
 	})
@@ -39,7 +39,7 @@ func (i *IcebergTableAssert) HasNoCatalogName() *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
 		if o.CatalogName != nil {
-			return fmt.Errorf("expected catalog name to be nil; got: %s", (*o.CatalogName).Name())
+			return fmt.Errorf("expected catalog name to be nil; got: %s", o.CatalogName.Name())
 		}
 		return nil
 	})

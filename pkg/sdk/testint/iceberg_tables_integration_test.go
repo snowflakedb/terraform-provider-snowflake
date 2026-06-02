@@ -67,7 +67,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
 				{
 					SpecId: 0,
-					Fields: []any{},
+					Fields: []sdk.IcebergTablePartitionSpecField{},
 				},
 			}).
 			HasCurrentPartitionSpecId(0).
@@ -122,6 +122,20 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasCatalogSyncName("").
 			HasAutoRefreshStatus("").
 			HasCurrentPartitionSpecId(0).
+			HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
+				{
+					SpecId: 0,
+					Fields: []sdk.IcebergTablePartitionSpecField{
+						{FieldId: 1000, Name: "REGION", SourceId: 4, Transform: "identity"},
+						{FieldId: 1001, Name: "BUCKET_COL_bucket_4", SourceId: 5, Transform: "bucket[4]"},
+						{FieldId: 1002, Name: "TRUNC_COL_trunc_10", SourceId: 6, Transform: "truncate[10]"},
+						{FieldId: 1003, Name: "YEAR_COL_year", SourceId: 7, Transform: "year"},
+						{FieldId: 1004, Name: "MONTH_COL_month", SourceId: 8, Transform: "month"},
+						{FieldId: 1005, Name: "DAY_COL_day", SourceId: 9, Transform: "day"},
+						{FieldId: 1006, Name: "HOUR_COL_hour", SourceId: 10, Transform: "hour"},
+					},
+				},
+			}).
 			HasIcebergTableFormatVersion(2),
 		)
 
@@ -453,7 +467,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("drop iceberg table: existing", func(t *testing.T) {
-		obj, _ := testClientHelper().IcebergTable.Create(t)
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
 		id := obj.ID()
 
 		err := client.IcebergTables.Drop(ctx, sdk.NewDropIcebergTableRequest(id))
@@ -478,8 +493,10 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("show iceberg tables: default", func(t *testing.T) {
-		obj1, _ := testClientHelper().IcebergTable.Create(t)
-		obj2, _ := testClientHelper().IcebergTable.Create(t)
+		obj1, cleanup1 := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup1)
+		obj2, cleanup2 := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup2)
 
 		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest())
 		require.NoError(t, err)
@@ -489,8 +506,10 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("show iceberg tables: with like option", func(t *testing.T) {
-		obj1, _ := testClientHelper().IcebergTable.Create(t)
-		obj2, _ := testClientHelper().IcebergTable.Create(t)
+		obj1, cleanup1 := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup1)
+		obj2, cleanup2 := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup2)
 
 		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest().
 			WithLike(sdk.Like{Pattern: new(obj1.Name)}))
@@ -501,7 +520,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("show iceberg tables: with in schema option", func(t *testing.T) {
-		obj, _ := testClientHelper().IcebergTable.Create(t)
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
 
 		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest().
 			WithIn(sdk.In{Schema: obj.ID().SchemaId()}))
@@ -511,7 +531,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	})
 
 	t.Run("describe iceberg table: existing", func(t *testing.T) {
-		obj, _ := testClientHelper().IcebergTable.Create(t)
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
 
 		details, err := client.IcebergTables.Describe(ctx, obj.ID())
 		require.NoError(t, err)
