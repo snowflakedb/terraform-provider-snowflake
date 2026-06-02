@@ -423,7 +423,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).CustomOperation(
 	"CreateAndCallForScala",
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#java-and-scala",
@@ -469,7 +469,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).CustomOperation(
 	"CreateAndCallForJavaScript",
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#javascript",
@@ -501,7 +501,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).CustomOperation(
 	"CreateAndCallForPython",
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#python",
@@ -547,7 +547,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).CustomOperation(
 	"CreateAndCallForSQL",
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#snowflake-scripting",
@@ -579,7 +579,7 @@ var proceduresDef = g.NewInterface(
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).WithCustomInterfaceMethod(
 	"DescribeDetails",
 	"DescribeDetails returns aggregated describe results for the given procedure.",

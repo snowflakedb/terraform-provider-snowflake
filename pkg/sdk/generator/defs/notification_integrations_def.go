@@ -160,7 +160,7 @@ var notificationIntegrationsDef = g.NewInterface(
 						g.KeywordOptions(),
 					).
 					OptionalComment().
-					WithAdditionalValidations().
+					WithValidation(g.MoreThanOneValueSet, "SetPushParams", "SetEmailParams", "SetWebhookParams").
 					WithValidation(g.AtLeastOneValueSet, "Enabled", "SetPushParams", "SetEmailParams", "SetWebhookParams", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).

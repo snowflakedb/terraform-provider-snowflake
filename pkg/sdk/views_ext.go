@@ -5,20 +5,6 @@ import (
 	"strings"
 )
 
-func (p *ViewRowAccessPolicy) additionalValidations() error {
-	if !valueSet(p.On) {
-		return errNotSet("CreateViewOptions.RowAccessPolicy", "On")
-	}
-	return nil
-}
-
-func (p *ViewAddRowAccessPolicy) additionalValidations() error {
-	if !valueSet(p.On) {
-		return errNotSet("AlterViewOptions.AddRowAccessPolicy", "On")
-	}
-	return nil
-}
-
 func (opts *CreateViewOptions) additionalValidations() error {
 	var errs []error
 	if valueSet(opts.Columns) {

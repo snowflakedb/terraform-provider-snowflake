@@ -283,46 +283,6 @@ func (opts *CreateForScalaProcedureOptions) additionalValidations() error {
 	return JoinErrors(errs...)
 }
 
-func (opts *CreateAndCallForJavaProcedureOptions) additionalValidations() error {
-	var errs []error
-	if !ValidObjectIdentifier(opts.ProcedureName) {
-		errs = append(errs, errInvalidIdentifier("CreateAndCallForJavaProcedureOptions", "ProcedureName"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateAndCallForScalaProcedureOptions) additionalValidations() error {
-	var errs []error
-	if !ValidObjectIdentifier(opts.ProcedureName) {
-		errs = append(errs, errInvalidIdentifier("CreateAndCallForScalaProcedureOptions", "ProcedureName"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateAndCallForJavaScriptProcedureOptions) additionalValidations() error {
-	var errs []error
-	if !ValidObjectIdentifier(opts.ProcedureName) {
-		errs = append(errs, errInvalidIdentifier("CreateAndCallForJavaScriptProcedureOptions", "ProcedureName"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateAndCallForPythonProcedureOptions) additionalValidations() error {
-	var errs []error
-	if !ValidObjectIdentifier(opts.ProcedureName) {
-		errs = append(errs, errInvalidIdentifier("CreateAndCallForPythonProcedureOptions", "ProcedureName"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateAndCallForSQLProcedureOptions) additionalValidations() error {
-	var errs []error
-	if !ValidObjectIdentifier(opts.ProcedureName) {
-		errs = append(errs, errInvalidIdentifier("CreateAndCallForSQLProcedureOptions", "ProcedureName"))
-	}
-	return JoinErrors(errs...)
-}
-
 func (r procedureRow) additionalConvert(result *Procedure) error {
 	result.SchemaName = strings.Trim(r.SchemaName, `"`)
 	result.CatalogName = strings.Trim(r.CatalogName, `"`)
