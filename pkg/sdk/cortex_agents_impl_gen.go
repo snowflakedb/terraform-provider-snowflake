@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ CortexAgents = (*cortexAgents)(nil)
-
 var (
+	_ CortexAgents                       = (*cortexAgents)(nil)
 	_ convertibleRow[CortexAgent]        = new(showCortexAgentDBRow)
 	_ convertibleRow[CortexAgentDetails] = new(cortexAgentDetailsRow)
 )
@@ -132,12 +131,12 @@ func (r showCortexAgentDBRow) convert() (*CortexAgent, error) {
 		Owner:        r.Owner,
 	}
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
-	// Adjusted manually
 	if r.Profile.Valid {
-		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err == nil {
-			result.Profile = *v
+		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err != nil {
+			return nil, fmt.Errorf("parsing cortex agent profile: %w", err)
 		} else {
-			return nil, err
+			// Adjusted manually - dereference added
+			result.Profile = *v
 		}
 	}
 	return result, nil
@@ -159,18 +158,18 @@ func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
 		CreatedOn:    r.CreatedOn,
 	}
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
-	// Adjusted manually
 	if r.Profile.Valid {
-		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err == nil {
-			result.Profile = *v
+		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err != nil {
+			return nil, fmt.Errorf("parsing cortex agent profile: %w", err)
 		} else {
-			return nil, err
+			// Adjusted manually - dereference added
+			result.Profile = *v
 		}
 	}
-	if v, err := NormalizeCortexAgentSpecification(r.AgentSpec); err == nil {
-		result.AgentSpec = v
-	} else {
+	if v, err := NormalizeCortexAgentSpecification(r.AgentSpec); err != nil {
 		return nil, fmt.Errorf("parsing string: %w", err)
+	} else {
+		result.AgentSpec = v
 	}
 	mapNullString(&result.DefaultVersionName, r.DefaultVersionName)
 	mapNullString(&result.Versions, r.Versions)

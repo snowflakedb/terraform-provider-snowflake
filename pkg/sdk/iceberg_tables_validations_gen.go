@@ -22,6 +22,13 @@ func (opts *CreateIcebergTableOptions) validate() error {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.PartitionBy) {
+		for _, partitionBy := range opts.PartitionBy {
+			if !exactlyOneValueSet(partitionBy.Identity, partitionBy.Bucket, partitionBy.Truncate, partitionBy.Year, partitionBy.Month, partitionBy.Day, partitionBy.Hour) {
+				errs = append(errs, errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
+			}
+		}
+	}
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
@@ -47,6 +54,13 @@ func (opts *AlterIcebergTableOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.AlterColumnAction) {
+		for _, alterColumnAction := range opts.AlterColumnAction {
+			if !exactlyOneValueSet(alterColumnAction.SetNotNull, alterColumnAction.DropNotNull, alterColumnAction.DataType, alterColumnAction.Comment, alterColumnAction.UnsetComment, alterColumnAction.SetWriteDefault, alterColumnAction.DropWriteDefault) {
+				errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
+			}
+		}
+	}
 	if valueSet(opts.ClusteringAction) {
 		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
 			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.ClusteringAction", "ClusterBy", "ChangeReclusterState", "DropClusteringKey"))
@@ -77,7 +91,13 @@ func (opts *AlterIcebergTableOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction", "Add", "Drop"))
 		}
 		if valueSet(opts.SearchOptimizationAction.Drop) {
-			errs = append(errs, opts.SearchOptimizationAction.Drop.additionalValidations())
+			if valueSet(opts.SearchOptimizationAction.Drop.On) {
+				for _, on := range opts.SearchOptimizationAction.Drop.On {
+					if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
+						errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
+					}
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)

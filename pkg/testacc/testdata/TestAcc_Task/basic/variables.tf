@@ -195,6 +195,11 @@ variable "log_level" {
   type    = string
 }
 
+variable "log_event_level" {
+  default = null
+  type    = string
+}
+
 variable "multi_statement_count" {
   default = null
   type    = number

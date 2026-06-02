@@ -120,6 +120,14 @@ func (f *Field) IsSlice() bool {
 	return strings.HasPrefix(f.Kind, "[]")
 }
 
+// SliceElemVar returns a loop variable name derived from the field name.
+// E.g. "Arguments" -> "argument", "Columns" -> "column", "On" -> "on".
+func (f *Field) SliceElemVar() string {
+	name := strings.ToLower(f.Name[:1]) + f.Name[1:]
+	name, _ = strings.CutSuffix(name, "s")
+	return name
+}
+
 // ShouldBeInDto checks if field is not some static SQL field which should not be interacted with by SDK user
 // TODO: this is a very naive implementation, consider fixing it with DSL builder connection
 func (f *Field) ShouldBeInDto() bool {

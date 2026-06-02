@@ -15,8 +15,7 @@ var managedAccountPairs = g.StructPair("managedAccountDBRow", "ManagedAccount").
 	OptionalText("account_url", g.WithPlainFieldName("URL"), g.WithRequiredInPlain()).
 	Text("account_locator_url", g.WithPlainFieldName("AccountLocatorURL")).
 	Bool("is_reader").
-	OptionalText("comment").
-	WithConvertGeneration()
+	OptionalText("comment")
 
 var managedAccountsDef = g.NewInterface(
 	"ManagedAccounts",

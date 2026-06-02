@@ -29,6 +29,7 @@ func MapDatabaseToModel(database DatabaseRepresentation) (accconfig.ResourceMode
 	handleOptionalFieldWithBuilder(database.DefaultDDLCollation, resourceModel.WithDefaultDdlCollation)
 	handleOptionalFieldWithBuilder(database.StorageSerializationPolicy, resourceModel.WithStorageSerializationPolicy)
 	handleOptionalFieldWithBuilder(database.LogLevel, resourceModel.WithLogLevel)
+	handleOptionalFieldWithBuilder(database.LogEventLevel, resourceModel.WithLogEventLevel)
 	handleOptionalFieldWithBuilder(database.TraceLevel, resourceModel.WithTraceLevel)
 	handleOptionalFieldWithBuilder(database.SuspendTaskAfterNumFailures, resourceModel.WithSuspendTaskAfterNumFailures)
 	handleOptionalFieldWithBuilder(database.TaskAutoRetryAttempts, resourceModel.WithTaskAutoRetryAttempts)

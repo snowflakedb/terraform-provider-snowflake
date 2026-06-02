@@ -8,10 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ HybridTables = (*hybridTables)(nil)
-
-// adjusted manually
 var (
+	_ HybridTables                       = (*hybridTables)(nil)
 	_ convertibleRow[HybridTable]        = new(hybridTableRow)
 	_ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
 	_ convertibleRow[HybridTableIndex]   = new(hybridTableIndexRow)

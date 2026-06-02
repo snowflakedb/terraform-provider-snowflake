@@ -409,6 +409,7 @@ func TestAcc_User_AllParameters(t *testing.T) {
 		WithJsonIndent(4).
 		WithLockTimeout(21222).
 		WithLogLevelEnum(sdk.LogLevelError).
+		WithLogEventLevelEnum(sdk.LogLevelError).
 		WithMultiStatementCount(0).
 		WithNoorderSequenceAsDefault(false).
 		WithOdbcTreatDecimalAsInt(true).
@@ -500,6 +501,7 @@ func TestAcc_User_AllParameters(t *testing.T) {
 						HasJsonIndent(4).
 						HasLockTimeout(21222).
 						HasLogLevel(sdk.LogLevelError).
+						HasLogEventLevel(sdk.LogLevelError).
 						HasMultiStatementCount(0).
 						HasNoorderSequenceAsDefault(false).
 						HasOdbcTreatDecimalAsInt(true).
@@ -559,6 +561,7 @@ func TestAcc_User_AllParameters(t *testing.T) {
 						HasJsonIndent(4).
 						HasLockTimeout(21222).
 						HasLogLevel(sdk.LogLevelError).
+						HasLogEventLevel(sdk.LogLevelError).
 						HasMultiStatementCount(0).
 						HasNoorderSequenceAsDefault(false).
 						HasOdbcTreatDecimalAsInt(true).
@@ -625,6 +628,7 @@ func TestAcc_User_AllParameters(t *testing.T) {
 						HasJsonIndent(4).
 						HasLockTimeout(21222).
 						HasLogLevel(sdk.LogLevelError).
+						HasLogEventLevel(sdk.LogLevelError).
 						HasMultiStatementCount(0).
 						HasNoorderSequenceAsDefault(false).
 						HasOdbcTreatDecimalAsInt(true).
@@ -1260,6 +1264,7 @@ func TestAcc_User_ParameterValidationsAndDiffSuppressions(t *testing.T) {
 		WithGeographyOutputFormat(strings.ToLower(string(sdk.GeographyOutputFormatGeoJSON))).
 		WithGeometryOutputFormat(strings.ToLower(string(sdk.GeometryOutputFormatGeoJSON))).
 		WithLogLevel(strings.ToLower(string(sdk.LogLevelInfo))).
+		WithLogEventLevel(strings.ToLower(string(sdk.LogLevelInfo))).
 		WithTimestampTypeMapping(strings.ToLower(string(sdk.TimestampTypeMappingNtz))).
 		WithTraceLevel(strings.ToLower(string(sdk.TraceLevelAlways)))
 
@@ -1279,6 +1284,7 @@ func TestAcc_User_ParameterValidationsAndDiffSuppressions(t *testing.T) {
 						HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatGeoJSON)).
 						HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatGeoJSON)).
 						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasLogEventLevelString(string(sdk.LogLevelInfo)).
 						HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingNtz)).
 						HasTraceLevelString(string(sdk.TraceLevelAlways)),
 				),

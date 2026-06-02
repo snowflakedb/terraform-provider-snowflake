@@ -79,6 +79,11 @@ func (f *FunctionSqlResourceAssert) HasIsSecure(expected string) *FunctionSqlRes
 	return f
 }
 
+func (f *FunctionSqlResourceAssert) HasLogEventLevel(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("log_event_level", expected)
+	return f
+}
+
 func (f *FunctionSqlResourceAssert) HasLogLevel(expected string) *FunctionSqlResourceAssert {
 	f.StringValueSet("log_level", expected)
 	return f
@@ -150,6 +155,11 @@ func (f *FunctionSqlResourceAssert) HasFunctionLanguageString(expected string) *
 
 func (f *FunctionSqlResourceAssert) HasIsSecureString(expected string) *FunctionSqlResourceAssert {
 	f.AddAssertion(assert.ValueSet("is_secure", expected))
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasLogEventLevelString(expected string) *FunctionSqlResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return f
 }
 
@@ -227,6 +237,11 @@ func (f *FunctionSqlResourceAssert) HasNoIsSecure() *FunctionSqlResourceAssert {
 	return f
 }
 
+func (f *FunctionSqlResourceAssert) HasNoLogEventLevel() *FunctionSqlResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return f
+}
+
 func (f *FunctionSqlResourceAssert) HasNoLogLevel() *FunctionSqlResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("log_level"))
 	return f
@@ -283,6 +298,11 @@ func (f *FunctionSqlResourceAssert) HasFunctionLanguageEmpty() *FunctionSqlResou
 
 func (f *FunctionSqlResourceAssert) HasIsSecureEmpty() *FunctionSqlResourceAssert {
 	f.AddAssertion(assert.ValueSet("is_secure", ""))
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasLogEventLevelEmpty() *FunctionSqlResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return f
 }
 
@@ -352,6 +372,11 @@ func (f *FunctionSqlResourceAssert) HasFunctionLanguageNotEmpty() *FunctionSqlRe
 
 func (f *FunctionSqlResourceAssert) HasIsSecureNotEmpty() *FunctionSqlResourceAssert {
 	f.AddAssertion(assert.ValuePresent("is_secure"))
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasLogEventLevelNotEmpty() *FunctionSqlResourceAssert {
+	f.AddAssertion(assert.ValuePresent("log_event_level"))
 	return f
 }
 

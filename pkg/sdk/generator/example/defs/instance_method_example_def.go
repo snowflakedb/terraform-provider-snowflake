@@ -13,8 +13,7 @@ var addNotificationIntegrationResult = g.StructPair(
 	"addNotificationIntegrationRow",
 	"AddNotificationIntegrationResult",
 ).
-	Text("status").
-	WithConvertGeneration()
+	Text("status")
 
 var InstanceMethodExamplesDef = g.NewInterface(
 	"InstanceMethodExamples",

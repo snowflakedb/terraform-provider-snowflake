@@ -66,8 +66,7 @@ func pairedStructExampleAllOptions(dbName, plainName string) *g.PairedStructs {
 		// db sql.NullString, plain *ExampleStatus; optional enum with plain name override
 		OptionalEnum("optional_status", ExampleStatusDef, g.WithPlainFieldName("OptionalStatus")).
 		// db string, JSON-decoded into []PairedStructExampleMetadata
-		JsonField("metadata", "[]PairedStructExampleMetadata").
-		WithConvertGeneration()
+		JsonField("metadata", "[]PairedStructExampleMetadata")
 }
 
 // PairedStructExample demonstrates the PairedStructs single-definition approach.

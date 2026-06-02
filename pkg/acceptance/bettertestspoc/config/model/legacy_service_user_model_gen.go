@@ -48,6 +48,7 @@ type LegacyServiceUserModel struct {
 	JdbcUseSessionTimezone                   tfconfig.Variable `json:"jdbc_use_session_timezone,omitempty"`
 	JsonIndent                               tfconfig.Variable `json:"json_indent,omitempty"`
 	LockTimeout                              tfconfig.Variable `json:"lock_timeout,omitempty"`
+	LogEventLevel                            tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                 tfconfig.Variable `json:"log_level,omitempty"`
 	LoginName                                tfconfig.Variable `json:"login_name,omitempty"`
 	MinsToUnlock                             tfconfig.Variable `json:"mins_to_unlock,omitempty"`
@@ -330,6 +331,11 @@ func (l *LegacyServiceUserModel) WithJsonIndent(jsonIndent int) *LegacyServiceUs
 
 func (l *LegacyServiceUserModel) WithLockTimeout(lockTimeout int) *LegacyServiceUserModel {
 	l.LockTimeout = tfconfig.IntegerVariable(lockTimeout)
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithLogEventLevel(logEventLevel string) *LegacyServiceUserModel {
+	l.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return l
 }
 
@@ -719,6 +725,11 @@ func (l *LegacyServiceUserModel) WithJsonIndentValue(value tfconfig.Variable) *L
 
 func (l *LegacyServiceUserModel) WithLockTimeoutValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.LockTimeout = value
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithLogEventLevelValue(value tfconfig.Variable) *LegacyServiceUserModel {
+	l.LogEventLevel = value
 	return l
 }
 

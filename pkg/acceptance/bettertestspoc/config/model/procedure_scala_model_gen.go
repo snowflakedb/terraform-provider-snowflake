@@ -23,6 +23,7 @@ type ProcedureScalaModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -173,6 +174,11 @@ func (p *ProcedureScalaModel) WithIsSecure(isSecure string) *ProcedureScalaModel
 	return p
 }
 
+func (p *ProcedureScalaModel) WithLogEventLevel(logEventLevel string) *ProcedureScalaModel {
+	p.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return p
+}
+
 func (p *ProcedureScalaModel) WithLogLevel(logLevel string) *ProcedureScalaModel {
 	p.LogLevel = tfconfig.StringVariable(logLevel)
 	return p
@@ -285,6 +291,11 @@ func (p *ProcedureScalaModel) WithImportsValue(value tfconfig.Variable) *Procedu
 
 func (p *ProcedureScalaModel) WithIsSecureValue(value tfconfig.Variable) *ProcedureScalaModel {
 	p.IsSecure = value
+	return p
+}
+
+func (p *ProcedureScalaModel) WithLogEventLevelValue(value tfconfig.Variable) *ProcedureScalaModel {
+	p.LogEventLevel = value
 	return p
 }
 

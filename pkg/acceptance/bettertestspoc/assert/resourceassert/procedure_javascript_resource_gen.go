@@ -74,6 +74,11 @@ func (p *ProcedureJavascriptResourceAssert) HasIsSecure(expected string) *Proced
 	return p
 }
 
+func (p *ProcedureJavascriptResourceAssert) HasLogEventLevel(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("log_event_level", expected)
+	return p
+}
+
 func (p *ProcedureJavascriptResourceAssert) HasLogLevel(expected string) *ProcedureJavascriptResourceAssert {
 	p.StringValueSet("log_level", expected)
 	return p
@@ -150,6 +155,11 @@ func (p *ProcedureJavascriptResourceAssert) HasFullyQualifiedNameString(expected
 
 func (p *ProcedureJavascriptResourceAssert) HasIsSecureString(expected string) *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueSet("is_secure", expected))
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasLogEventLevelString(expected string) *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return p
 }
 
@@ -232,6 +242,11 @@ func (p *ProcedureJavascriptResourceAssert) HasNoIsSecure() *ProcedureJavascript
 	return p
 }
 
+func (p *ProcedureJavascriptResourceAssert) HasNoLogEventLevel() *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return p
+}
+
 func (p *ProcedureJavascriptResourceAssert) HasNoLogLevel() *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("log_level"))
 	return p
@@ -301,6 +316,11 @@ func (p *ProcedureJavascriptResourceAssert) HasIsSecureEmpty() *ProcedureJavascr
 	return p
 }
 
+func (p *ProcedureJavascriptResourceAssert) HasLogEventLevelEmpty() *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_event_level", ""))
+	return p
+}
+
 func (p *ProcedureJavascriptResourceAssert) HasLogLevelEmpty() *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueSet("log_level", ""))
 	return p
@@ -367,6 +387,11 @@ func (p *ProcedureJavascriptResourceAssert) HasFullyQualifiedNameNotEmpty() *Pro
 
 func (p *ProcedureJavascriptResourceAssert) HasIsSecureNotEmpty() *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValuePresent("is_secure"))
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasLogEventLevelNotEmpty() *ProcedureJavascriptResourceAssert {
+	p.AddAssertion(assert.ValuePresent("log_event_level"))
 	return p
 }
 

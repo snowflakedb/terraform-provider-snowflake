@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NotificationIntegrations = (*notificationIntegrations)(nil)
-
 var (
+	_ NotificationIntegrations                        = (*notificationIntegrations)(nil)
 	_ convertibleRow[NotificationIntegration]         = new(showNotificationIntegrationsDbRow)
 	_ convertibleRow[NotificationIntegrationProperty] = new(descNotificationIntegrationsDbRow)
 )

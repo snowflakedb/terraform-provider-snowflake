@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ SemanticViews = (*semanticViews)(nil)
-
 var (
+	_ SemanticViews                       = (*semanticViews)(nil)
 	_ convertibleRow[SemanticViewDetails] = new(semanticViewDetailsRow)
 	_ convertibleRow[SemanticView]        = new(semanticViewDBRow)
 )

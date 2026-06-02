@@ -106,8 +106,7 @@ var organizationAccountsDef = g.NewInterface(
 			OptionalText("organization_old_url_saved_on").
 			OptionalText("organization_old_url_last_used").
 			Bool("is_events_account").
-			Bool("is_organization_account").
-			WithConvertGeneration(),
+			Bool("is_organization_account"),
 		g.NewQueryStruct("ShowOrganizationAccounts").
 			Show().
 			SQL("ORGANIZATION ACCOUNTS").

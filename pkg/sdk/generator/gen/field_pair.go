@@ -16,14 +16,18 @@ type FieldPair struct {
 	IsEnum         bool
 	IsJson         bool
 	CustomParser   string
+	ValueAdjuster  string
 	BoolTrueValue  string
 	BoolParsed     bool
+
+	manualConvert bool
 }
 
 // AssignmentKind is the conversion strategy discriminator used in convert.tmpl.
 type AssignmentKind string
 
 const (
+	AssignmentKindManual                             AssignmentKind = "Manual"
 	AssignmentKindDirect                             AssignmentKind = "Direct"
 	AssignmentKindStringToBool                       AssignmentKind = "StringToBool"
 	AssignmentKindStringToBoolValue                  AssignmentKind = "StringToBoolValue"
@@ -34,6 +38,7 @@ const (
 	AssignmentKindStringToIdentifier                 AssignmentKind = "StringToIdentifier"
 	AssignmentKindStringToIdentifierArray            AssignmentKind = "StringToIdentifierArray"
 	AssignmentKindCustom                             AssignmentKind = "Custom"
+	AssignmentKindNullableCustom                     AssignmentKind = "NullableCustom"
 	AssignmentKindNullableToNullable                 AssignmentKind = "NullableToNullable"
 	AssignmentKindNullableToRequired                 AssignmentKind = "NullableToRequired"
 	AssignmentKindNullableToIdentifier               AssignmentKind = "NullableToIdentifier"
@@ -48,6 +53,10 @@ const (
 	AssignmentKindNullableStringToIdentifierArray    AssignmentKind = "NullableStringToIdentifierArray"
 	AssignmentKindUnsupported                        AssignmentKind = "Unsupported"
 )
+
+func (fp FieldPair) AssignmentKindManual() bool {
+	return fp.AssignmentKind() == AssignmentKindManual
+}
 
 func (fp FieldPair) AssignmentKindDirect() bool {
 	return fp.AssignmentKind() == AssignmentKindDirect
@@ -87,6 +96,10 @@ func (fp FieldPair) AssignmentKindStringToIdentifierArray() bool {
 
 func (fp FieldPair) AssignmentKindCustom() bool {
 	return fp.AssignmentKind() == AssignmentKindCustom
+}
+
+func (fp FieldPair) AssignmentKindNullableCustom() bool {
+	return fp.AssignmentKind() == AssignmentKindNullableCustom
 }
 
 func (fp FieldPair) AssignmentKindNullableToNullable() bool {
@@ -146,8 +159,16 @@ func (fp FieldPair) IdentifierArrayElementType() string {
 // AssignmentKind returns the conversion strategy for this field pair.
 // The returned value is used as a discriminator via the boolean predicate methods below.
 func (fp FieldPair) AssignmentKind() AssignmentKind {
+	if fp.manualConvert {
+		return AssignmentKindManual
+	}
+
 	if fp.CustomParser != "" {
-		return AssignmentKindCustom
+		if fp.DbKind == "sql.NullString" {
+			return AssignmentKindNullableCustom
+		} else {
+			return AssignmentKindCustom
+		}
 	}
 
 	if fp.DbKind == fp.PlainKind {

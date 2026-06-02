@@ -57,6 +57,17 @@ func WithCustomParser(funcName string) PairedFieldOption {
 	}
 }
 
+// WithValueAdjuster sets a custom value adjustment function name to use when assigning value to field without conversion.
+// The function must have signature func(T) (T) where T matches the plain kind. There is no error returned.
+// Example:
+//
+//	Text("text", g.WithValueAdjuster("tracking.TrimMetadata")).
+func WithValueAdjuster(funcName string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.valueAdjuster = funcName
+	}
+}
+
 // WithBoolTrueValue overrides the truthy string compared against the db field for string → bool conversions.
 // The default is "Y". Use this when Snowflake returns a different truthy value, e.g. "true" or "ON".
 // Example:
@@ -66,6 +77,18 @@ func WithCustomParser(funcName string) PairedFieldOption {
 func WithBoolTrueValue(v string) PairedFieldOption {
 	return func(f *pairedField) {
 		f.boolTrueValue = v
+	}
+}
+
+// WithManualConvert marks this field to be skipped in the generated convert() body.
+// Use this when the field's conversion requires logic that cannot be expressed by the generator
+// (e.g. row-context-dependent parsing, non-standard null exclusion strings).
+// The field must then be handled manually inside the additionalConvert() method.
+// When any field carries WithManualConvert(), the generated convert() automatically emits
+// a call to r.additionalConvert(result) — no separate WithConvertHook() is needed.
+func WithManualConvert() PairedFieldOption {
+	return func(f *pairedField) {
+		f.manualConvert = true
 	}
 }
 
@@ -99,10 +122,14 @@ type pairedField struct {
 	isJson bool
 	// customParser is the name of a custom parse function to use for conversion.
 	customParser string
+	// valueAdjuster is the name of the custom adjustment function which returns the value of the same type, no error
+	valueAdjuster string
 	// boolTrueValue overrides the default "Y" comparison for string/NullString → bool conversions.
 	boolTrueValue string
 	// boolParsed routes string/NullString → bool conversions through strconv.ParseBool.
 	boolParsed bool
+	// manualConvert marks this field to be skipped in generated convert code.
+	manualConvert bool
 }
 
 // resolvedPlainFieldName returns the explicit override or the CamelCase conversion of dbColumnName.
@@ -128,16 +155,17 @@ type PairedStructs struct {
 	dbName    string
 	plainName string
 	fields    []pairedField
-	// generateConvert controls whether convert() body generation is enabled for this pair.
+	// generateConvert controls whether convert() body generation is enabled for this pair. Default: true.
 	generateConvert bool
 }
 
 // StructPair creates a new PairedStructs with the given DB row struct name and plain struct name.
 func StructPair(dbName, plainName string) *PairedStructs {
 	return &PairedStructs{
-		dbName:    dbName,
-		plainName: plainName,
-		fields:    make([]pairedField, 0),
+		dbName:          dbName,
+		plainName:       plainName,
+		fields:          make([]pairedField, 0),
+		generateConvert: true,
 	}
 }
 
@@ -192,6 +220,22 @@ func (p *PairedStructs) Bool(dbColumnName string, opts ...PairedFieldOption) *Pa
 //	plain: <FieldName> *bool
 func (p *PairedStructs) OptionalBool(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
 	return p.addField(dbColumnName, "sql.NullBool", "*bool", opts)
+}
+
+// BoolFromText adds a non-nullable boolean field to the plain struct converted from non-nullable string value ("Y" by default).
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> bool
+func (p *PairedStructs) BoolFromText(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "string", "bool", opts)
+}
+
+// OptionalBoolFromText adds a nullable boolean field to the plain struct converted from nullable string value ("Y" by default).
+//
+//	db:    <FieldName> sql.NullString `db:"<dbColumnName>"`
+//	plain: <FieldName> *bool
+func (p *PairedStructs) OptionalBoolFromText(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "sql.NullString", "*bool", opts)
 }
 
 // Number adds a non-nullable integer field to both the db row struct and the plain struct.
@@ -406,10 +450,10 @@ func (p *PairedStructs) JsonField(dbColumnName, kind string, opts ...PairedField
 	return p
 }
 
-// WithConvertGeneration opts this PairedStructs into automatic convert() body generation.
-// By default, convert generation is disabled so existing PairedStructs usages in production defs continue to emit the placeholder.
-func (p *PairedStructs) WithConvertGeneration() *PairedStructs {
-	p.generateConvert = true
+// WithoutConvertGeneration disables automatic convert() body generation for this pair.
+// Use when the manual convert() implementation cannot yet be expressed via the generator.
+func (p *PairedStructs) WithoutConvertGeneration() *PairedStructs {
+	p.generateConvert = false
 	return p
 }
 
@@ -425,8 +469,10 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 			IsEnum:         f.isEnum,
 			IsJson:         f.isJson,
 			CustomParser:   f.customParser,
+			ValueAdjuster:  f.valueAdjuster,
 			BoolTrueValue:  f.boolTrueValue,
 			BoolParsed:     f.boolParsed,
+			manualConvert:  f.manualConvert,
 		}
 	}
 	return pairs

@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ SessionPolicies = (*sessionPolicies)(nil)
-
 var (
+	_ SessionPolicies                       = (*sessionPolicies)(nil)
 	_ convertibleRow[SessionPolicy]         = new(showSessionPolicyDBRow)
 	_ convertibleRow[SessionPolicyProperty] = new(describeSessionPolicyDBRow)
 )

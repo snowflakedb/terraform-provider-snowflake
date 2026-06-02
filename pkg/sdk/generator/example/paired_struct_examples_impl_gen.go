@@ -79,7 +79,9 @@ func (r pairedStructExampleRow) convert() (*PairedStructExample, error) {
 	mapNullIntToNonNullableField(&result.RetryLimit, r.RetryLimit)
 	mapNullTime(&result.UpdatedAt, r.UpdatedAt)
 	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
-	// TODO: Mapping for FailoverAllowedToAccounts (string -> []AccountIdentifier)
+	if ids, err := ParseCommaSeparatedAccountIdentifierArray(r.FailoverAllowedToAccounts); err == nil {
+		result.FailoverAllowedToAccounts = ids
+	}
 	result.Tags = ParseCommaSeparatedStringArray(r.Tags, false)
 	mapStringWithMapping(&result.Id, r.AccountId, ParseAccountObjectIdentifier)
 	mapStringWithMapping(&result.OverriddenSecondAccountId, r.SecondAccountId, ParseAccountObjectIdentifier)
@@ -124,7 +126,9 @@ func (r pairedStructExampleDetailRow) convert() (*PairedStructExampleDetail, err
 	mapNullIntToNonNullableField(&result.RetryLimit, r.RetryLimit)
 	mapNullTime(&result.UpdatedAt, r.UpdatedAt)
 	mapStringWithMapping(&result.Primary, r.Primary, ParseExternalObjectIdentifier)
-	// TODO: Mapping for FailoverAllowedToAccounts (string -> []AccountIdentifier)
+	if ids, err := ParseCommaSeparatedAccountIdentifierArray(r.FailoverAllowedToAccounts); err == nil {
+		result.FailoverAllowedToAccounts = ids
+	}
 	result.Tags = ParseCommaSeparatedStringArray(r.Tags, false)
 	mapStringWithMapping(&result.Id, r.AccountId, ParseAccountObjectIdentifier)
 	mapStringWithMapping(&result.OverriddenSecondAccountId, r.SecondAccountId, ParseAccountObjectIdentifier)

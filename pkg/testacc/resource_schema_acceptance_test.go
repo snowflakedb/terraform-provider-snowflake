@@ -96,6 +96,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
@@ -137,6 +138,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasDefaultDdlCollationString("en_US").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 			HasLogLevelString(string(sdk.LogLevelInfo)).
+			HasLogEventLevelString(string(sdk.LogLevelInfo)).
 			HasTraceLevelString(string(sdk.TraceLevelPropagate)).
 			HasSuspendTaskAfterNumFailuresString("20").
 			HasTaskAutoRetryAttemptsString("20").
@@ -296,6 +298,7 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
@@ -343,6 +346,7 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 						HasDefaultDdlCollationString("en_US").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasLogEventLevelString(string(sdk.LogLevelInfo)).
 						HasTraceLevelString(string(sdk.TraceLevelPropagate)).
 						HasSuspendTaskAfterNumFailuresString("20").
 						HasTaskAutoRetryAttemptsString("20").

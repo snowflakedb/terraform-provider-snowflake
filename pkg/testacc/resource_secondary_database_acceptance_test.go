@@ -87,6 +87,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelDebug)).
+		WithLogEventLevel(string(sdk.LogLevelDebug)).
 		WithTraceLevel(string(sdk.TraceLevelAlways)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
@@ -112,6 +113,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasDefaultDdlCollation("en_US").
 			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 			HasLogLevel(sdk.LogLevelDebug).
+			HasLogEventLevel(sdk.LogLevelDebug).
 			HasTraceLevel(sdk.TraceLevelAlways).
 			HasSuspendTaskAfterNumFailures(20).
 			HasTaskAutoRetryAttempts(20).
@@ -134,6 +136,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasDefaultDdlCollationString("en_US").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 			HasLogLevelString(string(sdk.LogLevelDebug)).
+			HasLogEventLevelString(string(sdk.LogLevelDebug)).
 			HasTraceLevelString(string(sdk.TraceLevelAlways)).
 			HasSuspendTaskAfterNumFailuresString("20").
 			HasTaskAutoRetryAttemptsString("20").
@@ -272,6 +275,7 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelDebug)).
+		WithLogEventLevel(string(sdk.LogLevelDebug)).
 		WithTraceLevel(string(sdk.TraceLevelAlways)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
@@ -305,6 +309,7 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 						HasDefaultDdlCollation("en_US").
 						HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 						HasLogLevel(sdk.LogLevelDebug).
+						HasLogEventLevel(sdk.LogLevelDebug).
 						HasTraceLevel(sdk.TraceLevelAlways).
 						HasSuspendTaskAfterNumFailures(20).
 						HasTaskAutoRetryAttempts(20).
@@ -327,6 +332,7 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 						HasDefaultDdlCollationString("en_US").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 						HasLogLevelString(string(sdk.LogLevelDebug)).
+						HasLogEventLevelString(string(sdk.LogLevelDebug)).
 						HasTraceLevelString(string(sdk.TraceLevelAlways)).
 						HasSuspendTaskAfterNumFailuresString("20").
 						HasTaskAutoRetryAttemptsString("20").

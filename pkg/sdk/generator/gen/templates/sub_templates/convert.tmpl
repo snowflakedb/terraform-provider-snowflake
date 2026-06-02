@@ -5,11 +5,12 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
     result := &{{ .To.KindNoPtr }}{
     {{- range .FieldPairs }}
         {{- if .AssignmentKindDirect }}
-            {{ .PlainFieldName }}: r.{{ .DbFieldName }},
+            {{ .PlainFieldName }}: {{ if .ValueAdjuster }}{{ .ValueAdjuster}}({{ end }}r.{{ .DbFieldName }}{{ if .ValueAdjuster }}){{ end }},
         {{- else if .AssignmentKindStringToBool }}
             {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "Y",
         {{- else if .AssignmentKindStringToBoolValue }}
             {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "{{ .BoolTrueValue }}",
+        {{- else if .AssignmentKindManual }}
         {{- end }}
     {{- end }}
     }
@@ -28,10 +29,18 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             	result.{{ .PlainFieldName }} = ids
             }
         {{- else if .AssignmentKindCustom }}
-            if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}); err == nil {
-            	result.{{ .PlainFieldName }} = v
-            } else {
+            if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}); err != nil {
                 return nil, fmt.Errorf("parsing {{ CamelToWords (TypeWithoutPointerAndBrackets .PlainKind) }}: %w", err)
+            } else {
+            	result.{{ .PlainFieldName }} = v
+            }
+        {{- else if .AssignmentKindNullableCustom }}
+            if r.{{ .DbFieldName }}.Valid {
+                if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}.String); err != nil {
+                    return nil, fmt.Errorf("parsing {{ CamelToWords (TypeWithoutPointerAndBrackets .PlainKind) }}: %w", err)
+                } else {
+                    result.{{ .PlainFieldName }} = v
+                }
             }
         {{- else if .AssignmentKindStringToEnum }}
             mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
@@ -42,7 +51,7 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
         {{- else if .AssignmentKindNullableToNullable }}
             {{ .NullMapFunc }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
         {{- else if .AssignmentKindNullableToRequired }}
-            {{ .NullRequiredMapFunc }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
+            {{ .NullRequiredMapFunc }}{{ if .ValueAdjuster }}WithAdjuster{{ end }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}{{ if .ValueAdjuster }}, {{ .ValueAdjuster }}{{ end }})
         {{- else if .AssignmentKindNullableToIdentifier }}
             mapNullStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, Parse{{ TypeWithoutPointer .PlainKind }})
         {{- else if .AssignmentKindNullableToEnum }}
@@ -69,9 +78,15 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             		result.{{ .PlainFieldName }} = ids
             	}
             }
+        {{- else if .AssignmentKindManual }}
         {{- else }}
             // TODO: Mapping for {{ .PlainFieldName }} ({{ .DbKind }} -> {{ .PlainKind }})
         {{- end }}
+    {{- end }}
+    {{- if .HasManualConvert }}
+        if err := r.additionalConvert(result); err != nil {
+            return nil, err
+        }
     {{- end }}
     return result, nil
 {{- else }}

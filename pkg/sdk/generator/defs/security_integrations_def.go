@@ -646,8 +646,7 @@ var securityIntegrationsDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")).
-			WithConvertGeneration(),
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescSecurityIntegration").
 			Describe().
 			SQL("SECURITY INTEGRATION").
@@ -662,8 +661,7 @@ var securityIntegrationsDef = g.NewInterface(
 			Text("category").
 			Bool("enabled").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			Time("created_on").
-			WithConvertGeneration(),
+			Time("created_on"),
 		g.NewQueryStruct("ShowSecurityIntegrations").
 			Show().
 			SQL("SECURITY INTEGRATIONS").

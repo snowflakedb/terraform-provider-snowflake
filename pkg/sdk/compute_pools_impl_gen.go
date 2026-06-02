@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ComputePools = (*computePools)(nil)
-
 var (
+	_ ComputePools                       = (*computePools)(nil)
 	_ convertibleRow[ComputePool]        = new(computePoolsRow)
 	_ convertibleRow[ComputePoolDetails] = new(computePoolDescRow)
 )
@@ -162,10 +161,10 @@ func (r computePoolsRow) convert() (*ComputePool, error) {
 		IsExclusive:     r.IsExclusive,
 	}
 	mapStringWithMapping(&result.State, r.State, ToComputePoolState)
-	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err == nil {
-		result.InstanceFamily = v
-	} else {
+	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err != nil {
 		return nil, fmt.Errorf("parsing compute pool instance family: %w", err)
+	} else {
+		result.InstanceFamily = v
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)
@@ -200,10 +199,10 @@ func (r computePoolDescRow) convert() (*ComputePoolDetails, error) {
 		StatusMessage:   r.StatusMessage,
 	}
 	mapStringWithMapping(&result.State, r.State, ToComputePoolState)
-	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err == nil {
-		result.InstanceFamily = v
-	} else {
+	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err != nil {
 		return nil, fmt.Errorf("parsing compute pool instance family: %w", err)
+	} else {
+		result.InstanceFamily = v
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)

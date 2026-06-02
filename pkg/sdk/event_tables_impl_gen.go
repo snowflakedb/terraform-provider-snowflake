@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ EventTables = (*eventTables)(nil)
-
 var (
+	_ EventTables                       = (*eventTables)(nil)
 	_ convertibleRow[EventTable]        = new(eventTableRow)
 	_ convertibleRow[EventTableDetails] = new(eventTableDetailsRow)
 )

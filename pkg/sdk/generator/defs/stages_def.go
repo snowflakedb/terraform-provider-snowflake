@@ -390,8 +390,7 @@ var stagesDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")).
-			WithConvertGeneration(),
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescStage").
 			Describe().
 			SQL("STAGE").
@@ -417,8 +416,7 @@ var stagesDef = g.NewInterface(
 			Field("storage_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("StorageIntegration")).
 			OptionalText("endpoint").
 			Field("owner_role_type", "sql.NullString", "*string").
-			Field("directory_enabled", "string", "bool").
-			WithConvertGeneration(),
+			Field("directory_enabled", "string", "bool"),
 		g.NewQueryStruct("ShowStages").
 			Show().
 			SQL("STAGES").

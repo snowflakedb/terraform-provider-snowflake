@@ -136,6 +136,7 @@ EOT
 - `external_access_integrations` (Set of String) The names of [external access integrations](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration) needed in order for this procedure’s handler code to access external networks. An external access integration specifies [network rules](https://docs.snowflake.com/en/sql-reference/sql/create-network-rule) and [secrets](https://docs.snowflake.com/en/sql-reference/sql/create-secret) that specify external locations and credentials (if any) allowed for use by handler code when making requests of an external network, such as an external REST API.
 - `imports` (Block Set) The location (stage), path, and name of the file(s) to import. You must set the IMPORTS clause to include any files that your stored procedure depends on. If you are writing an in-line stored procedure, you can omit this clause, unless your code depends on classes defined outside the stored procedure or resource files. If you are writing a stored procedure with a staged handler, you must also include a path to the JAR file containing the stored procedure’s handler code. The IMPORTS definition cannot reference variables from arguments that are passed into the stored procedure. Each file in the IMPORTS clause must have a unique name, even if the files are in different subdirectories or different stages. (see [below for nested schema](#nestedblock--imports))
 - `is_secure` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies that the procedure is secure. For more information about secure procedures, see [Protecting Sensitive Information with Secure UDFs and Stored Procedures](https://docs.snowflake.com/en/developer-guide/secure-udf-procedure). Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `log_event_level` (String) Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. For more information, see [LOG_EVENT_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level). Valid values are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. For more information, check [LOG_EVENT_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level).
 - `log_level` (String) LOG_LEVEL to use when filtering events For more information, check [LOG_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-level).
 - `metric_level` (String) METRIC_LEVEL value to control whether to emit metrics to Event Table For more information, check [METRIC_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#metric-level).
 - `null_input_behavior` (String) Specifies the behavior of the procedure when called with null inputs. Valid values are (case-insensitive): `CALLED ON NULL INPUT` | `RETURNS NULL ON NULL INPUT`.
@@ -211,12 +212,25 @@ Optional:
 Read-Only:
 
 - `enable_console_output` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--enable_console_output))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_level))
 - `metric_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--metric_level))
 - `trace_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--trace_level))
 
 <a id="nestedobjatt--parameters--enable_console_output"></a>
 ### Nested Schema for `parameters.enable_console_output`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--log_event_level"></a>
+### Nested Schema for `parameters.log_event_level`
 
 Read-Only:
 

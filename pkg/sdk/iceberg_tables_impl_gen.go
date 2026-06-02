@@ -10,9 +10,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
-var _ IcebergTables = (*icebergTables)(nil)
-
 var (
+	_ IcebergTables                       = (*icebergTables)(nil)
 	_ convertibleRow[IcebergTable]        = new(icebergTableRow)
 	_ convertibleRow[IcebergTableDetails] = new(icebergTableDetailsRow)
 )

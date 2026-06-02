@@ -32,6 +32,8 @@ type SchemaCsvRow struct {
 	ExternalVolumeLevel                          string `csv:"external_volume_level"`
 	LogLevelValue                                string `csv:"log_level_value"`
 	LogLevelLevel                                string `csv:"log_level_level"`
+	LogEventLevelValue                           string `csv:"log_event_level_value"`
+	LogEventLevelLevel                           string `csv:"log_event_level_level"`
 	MaxDataExtensionTimeInDaysValue              string `csv:"max_data_extension_time_in_days_value"`
 	MaxDataExtensionTimeInDaysLevel              string `csv:"max_data_extension_time_in_days_level"`
 	PipeExecutionPausedValue                     string `csv:"pipe_execution_paused_value"`
@@ -66,6 +68,7 @@ type SchemaRepresentation struct {
 	EnableConsoleOutput                     *bool
 	ExternalVolume                          *string
 	LogLevel                                *string
+	LogEventLevel                           *string
 	MaxDataExtensionTimeInDays              *int
 	PipeExecutionPaused                     *bool
 	QuotedIdentifiersIgnoreCase             *bool
@@ -107,6 +110,7 @@ func (row SchemaCsvRow) convert() (*SchemaRepresentation, error) {
 		handler.handleStringParameter(row.DefaultDdlCollationLevel, row.DefaultDdlCollationValue, &schemaRepresentation.DefaultDdlCollation),
 		handler.handleStringParameter(row.StorageSerializationPolicyLevel, row.StorageSerializationPolicyValue, &schemaRepresentation.StorageSerializationPolicy),
 		handler.handleStringParameter(row.LogLevelLevel, row.LogLevelValue, &schemaRepresentation.LogLevel),
+		handler.handleStringParameter(row.LogEventLevelLevel, row.LogEventLevelValue, &schemaRepresentation.LogEventLevel),
 		handler.handleStringParameter(row.TraceLevelLevel, row.TraceLevelValue, &schemaRepresentation.TraceLevel),
 		handler.handleIntegerParameter(row.SuspendTaskAfterNumFailuresLevel, row.SuspendTaskAfterNumFailuresValue, &schemaRepresentation.SuspendTaskAfterNumFailures),
 		handler.handleIntegerParameter(row.TaskAutoRetryAttemptsLevel, row.TaskAutoRetryAttemptsValue, &schemaRepresentation.TaskAutoRetryAttempts),

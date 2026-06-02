@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ StorageIntegrations = (*storageIntegrations)(nil)
-
 var (
+	_ StorageIntegrations                        = (*storageIntegrations)(nil)
 	_ convertibleRow[StorageIntegration]         = new(showStorageIntegrationsDbRow)
 	_ convertibleRow[StorageIntegrationProperty] = new(descStorageIntegrationsDbRow)
 )

@@ -100,6 +100,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 		WithListingAutoFulfillmentReplicationRefreshSchedule("2 minutes").
 		WithLockTimeout(43201).
 		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithMaxConcurrencyLevel(7).
 		WithMaxDataExtensionTimeInDays(13).
 		WithMetricLevel(string(sdk.MetricLevelAll)).
@@ -238,6 +239,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasListingAutoFulfillmentReplicationRefreshScheduleString("2 minutes").
 						HasLockTimeoutString("43201").
 						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasLogEventLevelString(string(sdk.LogLevelInfo)).
 						HasMaxConcurrencyLevelString("7").
 						HasMaxDataExtensionTimeInDaysString("13").
 						HasMetricLevelString(string(sdk.MetricLevelAll)).
@@ -357,6 +359,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasListingAutoFulfillmentReplicationRefreshScheduleString("2 minutes").
 						HasLockTimeoutString("43201").
 						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasLogEventLevelString(string(sdk.LogLevelInfo)).
 						HasMaxConcurrencyLevelString("7").
 						HasMaxDataExtensionTimeInDaysString("13").
 						HasMetricLevelString(string(sdk.MetricLevelAll)).
@@ -712,6 +715,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 		WithListingAutoFulfillmentReplicationRefreshSchedule("2 minutes").
 		WithLockTimeout(43201).
 		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithMaxConcurrencyLevel(7).
 		WithMaxDataExtensionTimeInDays(13).
 		WithMetricLevel(string(sdk.MetricLevelAll)).
@@ -839,6 +843,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasListingAutoFulfillmentReplicationRefreshScheduleString("2 minutes").
 						HasLockTimeoutString("43201").
 						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasLogEventLevelString(string(sdk.LogLevelInfo)).
 						HasMaxConcurrencyLevelString("7").
 						HasMaxDataExtensionTimeInDaysString("13").
 						HasMetricLevelString(string(sdk.MetricLevelAll)).
@@ -963,6 +968,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasListingAutoFulfillmentReplicationRefreshScheduleString("2 minutes").
 						HasLockTimeoutString("43201").
 						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasLogEventLevelString(string(sdk.LogLevelInfo)).
 						HasMaxConcurrencyLevelString("7").
 						HasMaxDataExtensionTimeInDaysString("13").
 						HasMetricLevelString(string(sdk.MetricLevelAll)).

@@ -124,6 +124,7 @@ body:
         - resource:account_authentication_policy_attachment
         - resource:account_role
         - resource:account_password_policy_attachment
+        - resource:account_session_policy_attachment
         - resource:account_parameter
         - resource:account_password_policy
         - resource:alert
@@ -134,6 +135,7 @@ body:
         - resource:authentication_policy
         - resource:catalog_integration
         - resource:compute_pool
+        - resource:cortex_agent
         - resource:cortex_search_service
         - resource:current_account
         - resource:current_organization_account
@@ -172,6 +174,7 @@ body:
         - resource:network_policy
         - resource:network_policy_attachment
         - resource:network_rule
+        - resource:notebook
         - resource:notification_integration
         - resource:oauth_integration
         - resource:oauth_integration_for_partner_application
@@ -199,6 +202,7 @@ body:
         - resource:secret_with_basic_authentication
         - resource:secret_with_client_credentials
         - resource:secret_with_generic_string
+        - resource:semantic_view
         - resource:sequence
         - resource:session_parameter
         - resource:session_policy
@@ -234,9 +238,11 @@ body:
         - data_source:accounts
         - data_source:account_roles
         - data_source:alerts
+        - data_source:authentication_policies
         - data_source:catalog_integrations
         - data_source:compute_pools
         - data_source:connections
+        - data_source:cortex_agents
         - data_source:cortex_search_services
         - data_source:current_account
         - data_source:current_role
@@ -247,16 +253,21 @@ body:
         - data_source:dynamic_tables
         - data_source:external_functions
         - data_source:external_tables
+        - data_source:external_volumes
         - data_source:failover_groups
         - data_source:file_formats
         - data_source:functions
         - data_source:git_repositories
         - data_source:grants
         - data_source:image_repositories
+        - data_source:listings
         - data_source:masking_policies
         - data_source:materialized_views
         - data_source:network_policies
+        - data_source:network_rules
+        - data_source:notebooks
         - data_source:parameters
+        - data_source:password_policies
         - data_source:pipes
         - data_source:procedures
         - data_source:resource_monitors
@@ -265,8 +276,10 @@ body:
         - data_source:schemas
         - data_source:secrets
         - data_source:security_integrations
+        - data_source:semantic_views
         - data_source:sequences
         - data_source:services
+        - data_source:session_policies
         - data_source:shares
         - data_source:stages
         - data_source:storage_integrations

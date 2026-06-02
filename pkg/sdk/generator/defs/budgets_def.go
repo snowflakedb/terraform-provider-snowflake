@@ -20,8 +20,7 @@ var getNotificationIntegrationsResult = g.StructPair(
 	"BudgetNotificationIntegration",
 ).Text("integration_name").
 	Number("last_notification_time").
-	Time("added_date").
-	WithConvertGeneration()
+	Time("added_date")
 
 // stored_procedure_reference and array_construct_statement are omitted as they are duplicated ways of setting the same input
 var setCycleStartActionArgs = g.NewQueryStruct("SetCycleStartActionArgs").
@@ -37,8 +36,7 @@ var getCycleStartActionResult = g.StructPair(
 	SchemaObjectIdentifierWithArguments("PROCEDURE_FQN", g.WithPlainFieldName("ProcedureId")).
 	StringList("PROCEDURE_ARGS").
 	Time("ADDED_TIMESTAMP").
-	Time("LAST_TRIGGERED_TIMESTAMP").
-	WithConvertGeneration()
+	Time("LAST_TRIGGERED_TIMESTAMP")
 
 var budgetsDef = g.NewInterface(
 	"Budgets",

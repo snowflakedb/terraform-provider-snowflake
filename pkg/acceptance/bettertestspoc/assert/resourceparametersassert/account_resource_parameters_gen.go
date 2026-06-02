@@ -497,6 +497,11 @@ func (a *AccountResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *Ac
 	return a
 }
 
+func (a *AccountResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *AccountResourceParametersAssert {
+	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterLogEventLevel, expected))
+	return a
+}
+
 func (a *AccountResourceParametersAssert) HasMetricLevel(expected sdk.MetricLevel) *AccountResourceParametersAssert {
 	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterMetricLevel, expected))
 	return a
@@ -1078,6 +1083,11 @@ func (a *AccountResourceParametersAssert) HasListingAutoFulfillmentReplicationRe
 
 func (a *AccountResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
 	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterLogLevel, expected))
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterLogEventLevel, expected))
 	return a
 }
 

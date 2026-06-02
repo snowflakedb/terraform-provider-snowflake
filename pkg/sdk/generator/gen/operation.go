@@ -89,6 +89,20 @@ type Mapping struct {
 	// The mapping needs to be built from a PairedStructs definition with WithConvertGeneration() enabled.
 	// Otherwise, the old placeholder is used.
 	FieldPairs []FieldPair
+	// SkipConvert is set by preprocessDefinition when another Mapping with the same From.Name has
+	// already been scheduled for emission in the same interface. Guards and convert bodies are suppressed.
+	SkipConvert bool
+}
+
+// HasManualConvert reports whether any field in this Mapping is marked as manual convert.
+// When true, the generated convert() will call r.additionalConvert(result) after all generated mappings.
+func (m *Mapping) HasManualConvert() bool {
+	for _, f := range m.FieldPairs {
+		if f.manualConvert {
+			return true
+		}
+	}
+	return false
 }
 
 func newOperation(kind string, doc string) *Operation {

@@ -2,18 +2,14 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Procedures = (*procedures)(nil)
-
 var (
+	_ Procedures                      = (*procedures)(nil)
 	_ convertibleRow[Procedure]       = new(procedureRow)
 	_ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
 )
@@ -487,11 +483,9 @@ func (r *ShowProcedureRequest) toOpts() *ShowProcedureOptions {
 }
 
 func (r procedureRow) convert() (*Procedure, error) {
-	// adjusted manually
-	e := &Procedure{
+	result := &Procedure{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
-		SchemaName:         strings.Trim(r.SchemaName, `"`),
 		IsBuiltin:          r.IsBuiltin == "Y",
 		IsAggregate:        r.IsAggregate == "Y",
 		IsAnsi:             r.IsAnsi == "Y",
@@ -499,25 +493,16 @@ func (r procedureRow) convert() (*Procedure, error) {
 		MaxNumArguments:    r.MaxNumArguments,
 		ArgumentsRaw:       r.Arguments,
 		Description:        r.Description,
-		CatalogName:        strings.Trim(r.CatalogName, `"`),
 		IsTableFunction:    r.IsTableFunction == "Y",
 		ValidForClustering: r.ValidForClustering == "Y",
 	}
-	arguments := strings.TrimLeft(r.Arguments, r.Name)
-	returnIndex := strings.Index(arguments, ") RETURN ")
-	e.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
-	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse procedure arguments: %w", err)
-	} else {
-		e.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
-			return DataType(a.ArgType)
-		})
+	mapNullStringToRequiredBool(&result.IsSecure, r.IsSecure)
+	mapNullString(&result.Secrets, r.Secrets)
+	mapNullString(&result.ExternalAccessIntegrations, r.ExternalAccessIntegrations)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	if r.IsSecure.Valid {
-		e.IsSecure = r.IsSecure.String == "Y"
-	}
-	return e, nil
+	return result, nil
 }
 
 func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
@@ -528,14 +513,13 @@ func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
 }
 
 func (r procedureDetailRow) convert() (*ProcedureDetail, error) {
-	// adjusted manually
-	e := &ProcedureDetail{
+	result := &ProcedureDetail{
 		Property: r.Property,
 	}
-	if r.Value.Valid && r.Value.String != "null" {
-		e.Value = String(r.Value.String)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	return e, nil
+	return result, nil
 }
 
 func (r *CallProcedureRequest) toOpts() *CallProcedureOptions {

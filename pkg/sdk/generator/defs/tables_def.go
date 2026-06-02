@@ -83,15 +83,12 @@ var tableAddSearchOptimization = g.NewQueryStruct("TableAddSearchOptimization").
 var tableDropSearchOptimizationOn = g.NewQueryStruct("TableDropSearchOptimizationOn").
 	OptionalQueryStructField("SearchMethodWithTarget", newTableSearchMethodWithTarget(), g.KeywordOptions()).
 	OptionalText("ColumnName", g.KeywordOptions()).
-	OptionalText("ExpressionId", g.KeywordOptions())
-
-// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-// .WithValidation(g.ExactlyOneValueSet, "SearchMethodWithTarget", "ColumnName", "ExpressionId")
+	OptionalText("ExpressionId", g.KeywordOptions()).
+	WithValidation(g.ExactlyOneValueSet, "SearchMethodWithTarget", "ColumnName", "ExpressionId")
 
 var tableDropSearchOptimization = g.NewQueryStruct("TableDropSearchOptimization").
 	SQL("DROP SEARCH OPTIMIZATION").
-	ListQueryStructField("On", tableDropSearchOptimizationOn, g.KeywordOptions().SQL("ON")).
-	WithAdditionalValidations()
+	ListQueryStructField("On", tableDropSearchOptimizationOn, g.KeywordOptions().SQL("ON"))
 
 var tableSearchOptimizationAction = g.NewQueryStruct("TableSearchOptimizationAction").
 	OptionalQueryStructField(
