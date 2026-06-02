@@ -12,6 +12,7 @@ import (
 
 type IcebergTables interface {
 	Create(ctx context.Context, request *CreateIcebergTableRequest) error
+	CreateFromIcebergFiles(ctx context.Context, request *CreateFromIcebergFilesIcebergTableRequest) error
 	Alter(ctx context.Context, request *AlterIcebergTableRequest) error
 	Drop(ctx context.Context, request *DropIcebergTableRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
@@ -257,6 +258,24 @@ type IcebergTableRowAccessPolicy struct {
 
 type IcebergTableAggregationPolicy struct {
 	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
+}
+
+// CreateFromIcebergFilesIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files.
+type CreateFromIcebergFilesIcebergTableOptions struct {
+	create       bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace    *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	icebergTable bool                   `ddl:"static" sql:"ICEBERG TABLE"`
+	IfNotExists  *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name         SchemaObjectIdentifier `ddl:"identifier"`
+	// Adjusted manually
+	ExternalVolume *string `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
+	// Adjusted manually
+	Catalog                  *string          `ddl:"parameter" sql:"CATALOG"`
+	MetadataFilePath         string           `ddl:"parameter,single_quotes" sql:"METADATA_FILE_PATH"`
+	ReplaceInvalidCharacters *bool            `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	Comment                  *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                      []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
+	Contact                  []TableContact   `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
 }
 
 // AlterIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table.

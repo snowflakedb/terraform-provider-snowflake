@@ -813,6 +813,56 @@ func NewIcebergTableAggregationPolicyRequest(
 	return &s
 }
 
+func NewCreateFromIcebergFilesIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	metadataFilePath string,
+) *CreateFromIcebergFilesIcebergTableRequest {
+	s := CreateFromIcebergFilesIcebergTableRequest{}
+	s.name = name
+	s.MetadataFilePath = metadataFilePath
+	return &s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromIcebergFilesIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithComment(comment string) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithContact(contact []TableContact) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
 func NewAlterIcebergTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterIcebergTableRequest {

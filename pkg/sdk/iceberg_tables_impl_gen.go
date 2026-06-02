@@ -25,6 +25,11 @@ func (v *icebergTables) Create(ctx context.Context, request *CreateIcebergTableR
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *icebergTables) CreateFromIcebergFiles(ctx context.Context, request *CreateFromIcebergFilesIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *icebergTables) Alter(ctx context.Context, request *AlterIcebergTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -83,7 +88,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		PathLayout:  r.PathLayout,
 		ClusterBy:   r.ClusterBy,
 		// Adjusted manually
-		ExternalVolume:             icebergTableExternalVolumeQuoted(r.ExternalVolume),
+		ExternalVolume:             icebergTableIdentifierQuoted(r.ExternalVolume),
 		Catalog:                    r.Catalog,
 		BaseLocation:               r.BaseLocation,
 		TargetFileSize:             r.TargetFileSize,
@@ -179,6 +184,22 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
 			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
 		}
+	}
+	return opts
+}
+
+func (r *CreateFromIcebergFilesIcebergTableRequest) toOpts() *CreateFromIcebergFilesIcebergTableOptions {
+	opts := &CreateFromIcebergFilesIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           icebergTableIdentifierQuoted(r.ExternalVolume),
+		Catalog:                  icebergTableIdentifierQuoted(r.Catalog),
+		MetadataFilePath:         r.MetadataFilePath,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
 	}
 	return opts
 }

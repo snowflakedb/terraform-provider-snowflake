@@ -156,29 +156,6 @@ func (row databaseRow) convert() (*Database, error) {
 	return database, nil
 }
 
-type StorageSerializationPolicy string
-
-const (
-	StorageSerializationPolicyCompatible StorageSerializationPolicy = "COMPATIBLE"
-	StorageSerializationPolicyOptimized  StorageSerializationPolicy = "OPTIMIZED"
-)
-
-func ToStorageSerializationPolicy(value string) (StorageSerializationPolicy, error) {
-	switch strings.ToUpper(value) {
-	case string(StorageSerializationPolicyCompatible):
-		return StorageSerializationPolicyCompatible, nil
-	case string(StorageSerializationPolicyOptimized):
-		return StorageSerializationPolicyOptimized, nil
-	default:
-		return "", fmt.Errorf("unknown storage serialization policy: %s", value)
-	}
-}
-
-var AllStorageSerializationPolicies = []StorageSerializationPolicy{
-	StorageSerializationPolicyCompatible,
-	StorageSerializationPolicyOptimized,
-}
-
 // CreateDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-database.
 type CreateDatabaseOptions struct {
 	create      bool                    `ddl:"static" sql:"CREATE"`
