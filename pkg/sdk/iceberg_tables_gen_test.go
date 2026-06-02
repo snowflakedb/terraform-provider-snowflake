@@ -508,7 +508,7 @@ func TestIcebergTables_Create(t *testing.T) {
 							Name:       new("fk_id"),
 							ForeignKey: new(true),
 							References: refId,
-							RefColumn:  new("REF_COL"),
+							RefColumn:  []Column{{Value: "REF_COL"}},
 							Match:      new(FullMatchType),
 							On: &ForeignKeyOnAction{
 								OnUpdate: new(ForeignKeySetNullAction),
@@ -527,7 +527,7 @@ func TestIcebergTables_Create(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(
 			t, opts,
-			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0) CONSTRAINT "fk_id" FOREIGN KEY REFERENCES %s "REF_COL" MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY)`,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0) CONSTRAINT "fk_id" FOREIGN KEY REFERENCES %s ("REF_COL") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY)`,
 			id.FullyQualifiedName(),
 			refId.FullyQualifiedName(),
 		)
@@ -1219,7 +1219,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 					Name:       new("fk_new"),
 					ForeignKey: new(true),
 					References: refId,
-					RefColumn:  new("REF_COL"),
+					RefColumn:  []Column{{Value: "REF_COL"}},
 					Match:      new(PartialMatchType),
 					On: &ForeignKeyOnAction{
 						OnUpdate: new(ForeignKeySetDefaultAction),
@@ -1236,7 +1236,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(
 			t, opts,
-			`ALTER ICEBERG TABLE %s ADD COLUMN "NEW_COL" VARCHAR(16777216) CONSTRAINT "fk_new" FOREIGN KEY REFERENCES %s "REF_COL" MATCH PARTIAL ON UPDATE SET DEFAULT ON DELETE CASCADE NOT ENFORCED NOT DEFERRABLE INITIALLY IMMEDIATE DISABLE NOVALIDATE NORELY`,
+			`ALTER ICEBERG TABLE %s ADD COLUMN "NEW_COL" VARCHAR(16777216) CONSTRAINT "fk_new" FOREIGN KEY REFERENCES %s ("REF_COL") MATCH PARTIAL ON UPDATE SET DEFAULT ON DELETE CASCADE NOT ENFORCED NOT DEFERRABLE INITIALLY IMMEDIATE DISABLE NOVALIDATE NORELY`,
 			id.FullyQualifiedName(),
 			refId.FullyQualifiedName(),
 		)

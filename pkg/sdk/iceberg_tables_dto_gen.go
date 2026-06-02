@@ -16,8 +16,8 @@ type CreateIcebergTableRequest struct {
 	OrReplace                  *bool
 	Transient                  *bool
 	IfNotExists                *bool
-	name                       SchemaObjectIdentifier // required
-	ColumnsAndConstraints      IcebergTableColumnsAndConstraintsRequest
+	name                       SchemaObjectIdentifier                   // required
+	ColumnsAndConstraints      IcebergTableColumnsAndConstraintsRequest // required
 	PartitionBy                []IcebergTablePartitionExpressionRequest
 	PathLayout                 *IcebergTablePathLayout
 	ClusterBy                  []string
@@ -87,7 +87,7 @@ type TableColumnInlineFKRequest struct {
 	Name               *string
 	ForeignKey         *bool
 	References         SchemaObjectIdentifier // required
-	RefColumn          *string
+	RefColumn          []Column
 	Match              *MatchType
 	On                 *ForeignKeyOnAction
 	Enforced           *bool

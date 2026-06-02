@@ -1,6 +1,9 @@
 package sdk
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 // TODO [next PRs]: define these validations too (adjust generator if needed)
 func (opts *CreateIcebergTableOptions) additionalValidations() error {
@@ -204,6 +207,10 @@ func (opts *AlterIcebergTableOptions) additionalValidations() error {
 	return JoinErrors(errs...)
 }
 
+func (r *CreateIcebergTableRequest) GetName() SchemaObjectIdentifier {
+	return r.name
+}
+
 // icebergTableExternalVolumeQuoted formats an AccountObjectIdentifier for the
 // EXTERNAL_VOLUME clause of CREATE ICEBERG TABLE, which expects a single-quoted
 // string literal whose content is the double-quoted volume name (e.g. '"vol1"').
@@ -336,4 +343,24 @@ func TableOutOfLineConstraintFromRequest(r *TableOutOfLineConstraintRequest) *Ta
 		}
 	}
 	return out
+}
+
+func (v *icebergTables) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
+	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
+		In: &ParametersIn{
+			Table: id,
+		},
+	})
+}
+
+type IcebergTablePartitionSpec struct {
+	SpecId int                              `json:"spec-id"`
+	Fields []IcebergTablePartitionSpecField `json:"fields"`
+}
+
+type IcebergTablePartitionSpecField struct {
+	Name      string `json:"name"`
+	Transform string `json:"transform"`
+	SourceId  int    `json:"source-id"`
+	FieldId   int    `json:"field-id"`
 }

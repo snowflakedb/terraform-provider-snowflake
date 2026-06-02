@@ -99,6 +99,22 @@ func (c *ParameterClient) ShowHybridTableParameters(t *testing.T, id sdk.SchemaO
 	return params
 }
 
+func (c *ParameterClient) ShowTableParameters(t *testing.T, id sdk.SchemaObjectIdentifier) []*sdk.Parameter {
+	t.Helper()
+	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{
+		In: &sdk.ParametersIn{
+			Table: id,
+		},
+	})
+	require.NoError(t, err)
+	return params
+}
+
+func (c *ParameterClient) ShowIcebergTableParameters(t *testing.T, id sdk.SchemaObjectIdentifier) []*sdk.Parameter {
+	t.Helper()
+	return c.ShowTableParameters(t, id)
+}
+
 func (c *ParameterClient) ShowTaskParameters(t *testing.T, id sdk.SchemaObjectIdentifier) []*sdk.Parameter {
 	t.Helper()
 	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{
