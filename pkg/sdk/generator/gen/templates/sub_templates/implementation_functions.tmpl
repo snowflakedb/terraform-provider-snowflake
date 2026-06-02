@@ -21,6 +21,9 @@
                     if err != nil {
                         return nil, err
                     }
+                    {{- if .ShowResultFilterHook }}
+                    dbRows = slices.DeleteFunc(dbRows, func(row {{ .ShowMapping.From.Name }}) bool { return row.excludeFromShow() })
+                    {{- end }}
                     return convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
                 }
             {{ end }}

@@ -2,7 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"slices"
@@ -45,10 +44,7 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
-	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool {
-		return !row.DatabaseName.Valid || !row.SchemaName.Valid
-	})
+	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool { return row.excludeFromShow() })
 	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 

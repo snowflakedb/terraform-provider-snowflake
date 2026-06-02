@@ -67,6 +67,10 @@ type Operation struct {
 	InstanceMethodScalarReturnType string
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
+	// ShowResultFilterHook, when true, inserts a hook call in the generated Show implementation.
+	// It allows filtering the rows by implementing excludeFromShow() method on the given row type.
+	// The implementation should be provided in the _ext.go file.
+	ShowResultFilterHook bool
 
 	// TODO [SNOW-2324252]: Consider splitting the Operation into definition and generation model
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
