@@ -42,6 +42,18 @@ The `parameters` output of the related data sources (`snowflake_databases`, `sno
 
 No changes are required for existing configurations.
 
+### *(bugfix)* Fixed MODEL MONITOR object type in grant resources (non-empty plan)
+
+Grants on future `MODEL MONITORS` in privilege grant resources (e.g. `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`)
+produced perpetual non-empty plans because the provider did not match the object type Snowflake returns in SHOW GRANTS / SHOW FUTURE GRANTS
+(for model monitors, Snowflake returns `QUALITY_MONITOR` instead of `MODEL MONITOR`).
+
+This is the same class of object type name mismatch bug previously fixed for `AGENT` / `CORTEX_AGENT` and `MCP SERVER` / `CORTEX_AGENT_SERVER` in v2.15.0.
+
+This has been fixed: grant resources can now be used with the `MODEL MONITOR` object type without any unexpected plans.
+
+No changes in the configuration are required.
+
 ## v2.16.0 ➞ v2.17.0
 
 ### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` and `snowflake_catalog_integration_open_catalog`: import fix for ForceNew fields
