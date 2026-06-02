@@ -358,7 +358,7 @@ var proceduresDef = g.NewInterface(
 		SQL("PROCEDURES").
 		OptionalLike().
 		OptionalExtendedIn(),
-	g.ShowByIDInFiltering,
+	g.ShowByIDExtendedInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,

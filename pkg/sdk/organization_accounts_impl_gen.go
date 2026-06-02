@@ -43,7 +43,6 @@ func (v *organizationAccounts) ShowByID(ctx context.Context, id AccountObjectIde
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
 	return collections.FindFirst(organizationAccounts, func(r OrganizationAccount) bool { return r.AccountName == id.Name() })
 }
 

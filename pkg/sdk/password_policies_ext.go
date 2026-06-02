@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+func (r passwordPolicyDBRow) excludeFromShow() bool {
+	return !r.DatabaseName.Valid || !r.SchemaName.Valid
+}
+
 func (r passwordPolicyDBRow) additionalConvert(result *PasswordPolicy) error {
 	var errs []error
 	if !r.DatabaseName.Valid {

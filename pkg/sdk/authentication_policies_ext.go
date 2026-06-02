@@ -7,6 +7,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+func (r showAuthenticationPolicyDBRow) excludeFromShow() bool {
+	return !r.DatabaseName.Valid || !r.SchemaName.Valid
+}
+
 func (r showAuthenticationPolicyDBRow) additionalConvert(result *AuthenticationPolicy) error {
 	var errs []error
 	if !r.DatabaseName.Valid {

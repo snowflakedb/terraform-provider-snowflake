@@ -45,7 +45,6 @@ func (v *externalFunctions) ShowByID(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
 	return collections.FindFirst(externalFunctions, func(r ExternalFunction) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
 }
 

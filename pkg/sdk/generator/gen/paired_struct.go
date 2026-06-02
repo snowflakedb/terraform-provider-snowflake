@@ -157,6 +157,8 @@ type PairedStructs struct {
 	fields    []pairedField
 	// generateConvert controls whether convert() body generation is enabled for this pair. Default: true.
 	generateConvert bool
+	// showResultFilterHook, when true, causes the generated Show() to call hook allowing rows exclusion
+	showResultFilterHook bool
 }
 
 // StructPair creates a new PairedStructs with the given DB row struct name and plain struct name.
@@ -466,6 +468,13 @@ func (p *PairedStructs) WithoutConvertGeneration() *PairedStructs {
 	return p
 }
 
+// WithShowResultFilterHook enables client-side row filtering in the generated Show implementation.
+// Method `func (r <dbRowType>) excludeFromShow() bool` should be implemented in the _ext.go file.
+func (p *PairedStructs) WithShowResultFilterHook() *PairedStructs {
+	p.showResultFilterHook = true
+	return p
+}
+
 // toFieldPairs converts the paired field definitions into a slice of FieldPair values used in conversion generation.
 func (p *PairedStructs) toFieldPairs() []FieldPair {
 	pairs := make([]FieldPair, len(p.fields))
@@ -511,6 +520,7 @@ func (p *PairedStructs) addMappingFunc() func(op *Operation, from, to *Field) {
 		if p.generateConvert {
 			op.ShowMapping.FieldPairs = p.toFieldPairs()
 		}
+		op.ShowResultFilterHook = p.showResultFilterHook
 	}
 }
 

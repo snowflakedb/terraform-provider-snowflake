@@ -11,12 +11,12 @@ func TestUnmarshalCortexAgentProfile(t *testing.T) {
 	validCases := []struct {
 		name     string
 		json     string
-		expected *CortexAgentProfile
+		expected CortexAgentProfile
 	}{
 		{
 			name: "all fields present",
 			json: `{"display_name":"My Assistant","avatar":"assistant.png","color":"blue"}`,
-			expected: &CortexAgentProfile{
+			expected: CortexAgentProfile{
 				DisplayName: String("My Assistant"),
 				Avatar:      String("assistant.png"),
 				Color:       String("blue"),
@@ -25,14 +25,14 @@ func TestUnmarshalCortexAgentProfile(t *testing.T) {
 		{
 			name: "single field present",
 			json: `{"color":"green"}`,
-			expected: &CortexAgentProfile{
+			expected: CortexAgentProfile{
 				Color: String("green"),
 			},
 		},
 		{
 			name:     "empty object",
 			json:     `{}`,
-			expected: &CortexAgentProfile{},
+			expected: CortexAgentProfile{},
 		},
 	}
 
@@ -40,7 +40,6 @@ func TestUnmarshalCortexAgentProfile(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			profile, err := UnmarshalCortexAgentProfile(tc.json)
 			require.NoError(t, err)
-			require.NotNil(t, profile)
 			require.True(t, reflect.DeepEqual(tc.expected, profile), "expected %#v; got %#v", tc.expected, profile)
 		})
 	}
@@ -55,7 +54,7 @@ func TestUnmarshalCortexAgentProfile(t *testing.T) {
 		t.Run(profile, func(t *testing.T) {
 			p, err := UnmarshalCortexAgentProfile(profile)
 			require.Error(t, err)
-			require.Nil(t, p)
+			require.Equal(t, CortexAgentProfile{}, p)
 		})
 	}
 }
