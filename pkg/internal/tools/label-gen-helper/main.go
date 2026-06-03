@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/format"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -16,7 +17,6 @@ import (
 	"github.com/goccy/go-yaml/parser"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/issues"
 )
 
 // This generator keeps the GitHub labels in sync with the resources and data sources
@@ -29,7 +29,6 @@ const (
 	maxLabelLength   = 50
 	resourcePrefix   = "resource:"
 	dataSourcePrefix = "data_source:"
-	categoryPrefix   = "category:"
 	snowflakePrefix  = "snowflake_"
 	objectTypeID     = "object_type"
 )
@@ -41,20 +40,54 @@ var manualShortLabels = map[string]string{
 	"snowflake_oauth_integration_for_partner_applications":                   "oauth_integration_for_partner_application",
 } // #nosec G101
 
+// categoryLabels are the static category labels. They are not derived from the provider; edit this
+// list by hand when categories are added or removed.
+var categoryLabels = []string{
+	"category:data_source",
+	"category:data_type",
+	"category:grants",
+	"category:identifiers",
+	"category:import",
+	"category:migration",
+	"category:open-tofu",
+	"category:other",
+	"category:preview",
+	"category:provider_config",
+	"category:resource",
+	"category:show_output",
+	"category:snowflake",
+	"category:stable",
+}
+
+// legacyLabels are resource and data source labels for objects that the provider no longer registers
+// under these exact names (renamed or removed). They are preserved so existing issues keep their
+// labels. Remove an entry by hand once its label is no longer needed.
+var legacyLabels = []string{
+	"data_source:roles",
+	"resource:account_password_policy",
+	"resource:catalog_integration",
+	"resource:function",
+	"resource:oauth_integration",
+	"resource:procedure",
+	"resource:role",
+	"resource:saml_integration",
+	"resource:session_parameter",
+	"resource:stream",
+	"resource:tag_masking_policy_association",
+	"resource:unsafe_execute",
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Panic("Requires the repository root path as the first arg")
 	}
 	repoRoot := os.Args[1]
 
-	resourceKeys := keys(provider.Provider().ResourcesMap)
-	dataSourceKeys := keys(provider.Provider().DataSourcesMap)
-
-	resourceLabels, err := buildLabels(resourceKeys, resourcePrefix)
+	resourceLabels, err := buildLabels(keys(provider.Provider().ResourcesMap), resourcePrefix)
 	if err != nil {
 		log.Fatal(err)
 	}
-	dataSourceLabels, err := buildLabels(dataSourceKeys, dataSourcePrefix)
+	dataSourceLabels, err := buildLabels(keys(provider.Provider().DataSourcesMap), dataSourcePrefix)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,15 +97,11 @@ func main() {
 		generated[l] = true
 	}
 
-	// Preserve every existing label: categories and any legacy resource/data source label that the
-	// provider no longer registers under that exact name.
-	var categoryLabels []string
-	for _, label := range issues.RepositoryLabels {
+	// Preserve legacy labels that the provider no longer registers under these exact names. Skip any
+	// that the provider produces again, so they are not duplicated.
+	for _, label := range legacyLabels {
 		switch {
-		case strings.HasPrefix(label, categoryPrefix):
-			categoryLabels = append(categoryLabels, label)
 		case generated[label]:
-			// Already produced from a current resource/data source.
 		case strings.HasPrefix(label, resourcePrefix):
 			resourceLabels = append(resourceLabels, label)
 		case strings.HasPrefix(label, dataSourcePrefix):
@@ -80,12 +109,14 @@ func main() {
 		}
 	}
 
+	categories := slices.Clone(categoryLabels)
+	slices.Sort(categories)
 	slices.Sort(resourceLabels)
 	slices.Sort(dataSourceLabels)
 
 	if err := writeLabelsGo(
 		filepath.Join(repoRoot, "pkg", "scripts", "issues", "labels_gen.go"),
-		LabelsFileModel{Categories: categoryLabels, Resources: resourceLabels, DataSources: dataSourceLabels},
+		LabelsFileModel{Categories: categories, Resources: resourceLabels, DataSources: dataSourceLabels},
 	); err != nil {
 		log.Fatal(err)
 	}
@@ -102,11 +133,7 @@ func main() {
 }
 
 func keys[V any](m map[string]V) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
+	return slices.Collect(maps.Keys(m))
 }
 
 func buildLabels(keys []string, prefix string) (labels []string, err error) {

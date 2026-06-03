@@ -176,7 +176,7 @@ generate-docs-additional-files-check: generate-docs-additional-files ## check th
 	$(call GIT_DIFF_CHECK,examples/additional)
 
 generate-issue-labels: ## generate GitHub issue labels for resources and data sources
-	go run ./pkg/internal/tools/label-gen-helper/ $$PWD
+	REPO_ROOT=$$PWD go generate ./pkg/internal/tools/label-gen-helper/generate.go
 
 generate-issue-labels-check: generate-issue-labels ## check that issue labels have been generated
 	$(call GIT_DIFF_CHECK,.github/ISSUE_TEMPLATE pkg/scripts/issues/labels_gen.go)
