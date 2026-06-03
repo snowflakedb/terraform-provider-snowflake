@@ -398,12 +398,9 @@ func (r *CreateForSQLProcedureRequest) toOpts() *CreateForSQLProcedureOptions {
 		NotNull: r.Returns.NotNull,
 	}
 	if r.Returns.ResultDataType != nil {
-		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
+		opts.Returns.ResultDataType = &ProcedureSQLReturnsResultDataType{
 			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
 			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			// adjusted manually
-			Null:    r.Returns.ResultDataType.Null,
-			NotNull: r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
