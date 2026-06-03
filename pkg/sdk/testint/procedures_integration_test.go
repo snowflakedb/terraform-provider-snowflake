@@ -1433,9 +1433,9 @@ func TestInt_Procedures(t *testing.T) {
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
 			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+			HasReturns(dataType.ToSql()).
 			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
+			HasReturnNotNull(false).
 			HasLanguage("SQL").
 			HasBody(definition).
 			// TODO [SNOW-1348103]: null handling and volatility are not returned and is present in create syntax
