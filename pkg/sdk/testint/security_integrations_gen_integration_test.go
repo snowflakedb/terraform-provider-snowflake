@@ -552,8 +552,12 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		req := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypeOptionPublic, "https://example.com").WithNetworkPolicy(networkPolicy.ID())
 		err := client.SecurityIntegrations.CreateOauthForCustomClients(ctx, req)
 		require.NoError(t, err)
-
 		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
+
+		details, err := client.SecurityIntegrations.Describe(ctx, id)
+		require.NoError(t, err)
+
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "NETWORK_POLICY", Type: "String", Value: networkPolicy.Name, Default: ""})
 	})
 
 	t.Run("CreateSaml2", func(t *testing.T) {
