@@ -522,8 +522,6 @@ func (r procedureDetailRow) convert() (*ProcedureDetail, error) {
 
 func (r *CallProcedureRequest) toOpts() *CallProcedureOptions {
 	opts := &CallProcedureOptions{
-		// adjusted manually
-		call:              false,
 		name:              r.name,
 		CallArguments:     r.CallArguments,
 		ScriptingVariable: r.ScriptingVariable,
@@ -673,7 +671,6 @@ func (r *CreateAndCallForScalaProcedureRequest) toOpts() *CreateAndCallForScalaP
 		s := make([]ProcedureWithClause, len(r.WithClauses))
 		for i, v := range r.WithClauses {
 			s[i] = ProcedureWithClause{
-				// prefix removed manually
 				CteName:    v.CteName,
 				CteColumns: v.CteColumns,
 				Statement:  v.Statement,
@@ -712,7 +709,6 @@ func (r *CreateAndCallForJavaScriptProcedureRequest) toOpts() *CreateAndCallForJ
 		s := make([]ProcedureWithClause, len(r.WithClauses))
 		for i, v := range r.WithClauses {
 			s[i] = ProcedureWithClause{
-				// prefix removed manually
 				CteName:    v.CteName,
 				CteColumns: v.CteColumns,
 				Statement:  v.Statement,
@@ -791,7 +787,6 @@ func (r *CreateAndCallForPythonProcedureRequest) toOpts() *CreateAndCallForPytho
 		s := make([]ProcedureWithClause, len(r.WithClauses))
 		for i, v := range r.WithClauses {
 			s[i] = ProcedureWithClause{
-				// prefix removed manually
 				CteName:    v.CteName,
 				CteColumns: v.CteColumns,
 				Statement:  v.Statement,
@@ -850,7 +845,6 @@ func (r *CreateAndCallForSQLProcedureRequest) toOpts() *CreateAndCallForSQLProce
 		s := make([]ProcedureWithClause, len(r.WithClauses))
 		for i, v := range r.WithClauses {
 			s[i] = ProcedureWithClause{
-				// prefix removed manually
 				CteName:    v.CteName,
 				CteColumns: v.CteColumns,
 				Statement:  v.Statement,
