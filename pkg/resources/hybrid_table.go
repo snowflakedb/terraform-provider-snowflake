@@ -253,7 +253,6 @@ func HybridTable() *schema.Resource {
 			ComputedIfAnyAttributeChanged(hybridTableSchema, ShowOutputAttributeName, "name", "comment"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, DescribeOutputAttributeName, "name", "comment", "column"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
-			suppressNullableForPrimaryKeyColumns(),
 			forceNewIfColumnCollateChanged(),
 			forceNewIfColumnNullableChanged(),
 		)),
@@ -834,15 +833,53 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) ([]any, error) {
 	flattened := make([]any, 0)
 
-	// Reconciliation between the raw DESCRIBE values and user config is now done
-	// in CustomizeDiff and DiffSuppressFunc, not here:
-	// - column.<idx>.nullable: PK columns always come back as NOT NULL; the
-	//   spurious old=false -> new=true diff is cleared by
-	//   suppressNullableForPrimaryKeyColumns.
-	// - column.<idx>.collate: case-only drift is absorbed by
-	//   ignoreCaseSuppressFunc on the field.
+	// Reconciliation strategy:
 	// - column.<idx>.type: format normalization (e.g. INTEGER vs NUMBER(38,0))
-	//   is absorbed by DiffSuppressDataTypes on the field.
+	//   absorbed by DiffSuppressDataTypes on the field.
+	// - column.<idx>.collate: case-only drift absorbed by ignoreCaseSuppressFunc
+	//   on the field.
+	// - column.<idx>.nullable: Snowflake silently enforces NOT NULL on PK columns,
+	//   so DESCRIBE returns null="N" even when the user configured nullable=true.
+	//   Plan-time diff suppression via CustomizeDiff/DiffSuppressFunc is not
+	//   feasible here: diff.Clear requires Computed (incompatible with Default:
+	//   true), and per-field DiffSuppressFunc cannot reliably resolve sibling
+	//   primary_key.0.keys at every diff site. We therefore preserve the
+	//   user's config value on Read for PK columns. Hybrid tables do not support
+	//   ALTER SET/DROP NOT NULL, so external drift cannot legitimately occur on
+	//   this attribute — the substitution is safe.
+	pkKeys := make(map[string]struct{})
+	if pkRaw, ok := d.GetOk("primary_key"); ok {
+		if pkList, ok := pkRaw.([]any); ok && len(pkList) > 0 {
+			if pkMap, ok := pkList[0].(map[string]any); ok {
+				if keysRaw, ok := pkMap["keys"].([]any); ok {
+					for _, k := range keysRaw {
+						if s, ok := k.(string); ok {
+							pkKeys[strings.ToUpper(s)] = struct{}{}
+						}
+					}
+				}
+			}
+		}
+	}
+	configNullableByName := make(map[string]bool)
+	if configCols, ok := d.GetOk("column"); ok {
+		for _, rawCol := range configCols.([]any) {
+			colMap, ok := rawCol.(map[string]any)
+			if !ok {
+				continue
+			}
+			colName, ok := colMap["name"].(string)
+			if !ok {
+				continue
+			}
+			n := true
+			if v, ok := colMap["nullable"].(bool); ok {
+				n = v
+			}
+			configNullableByName[strings.ToUpper(colName)] = n
+		}
+	}
+
 	for _, td := range details {
 		if td.Kind != "COLUMN" {
 			continue
@@ -852,10 +889,19 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 		if td.Collation != nil {
 			collate = *td.Collation
 		}
+		nullable := td.IsNullable
+		if _, isPK := pkKeys[strings.ToUpper(td.Name)]; isPK {
+			if cfgNullable, found := configNullableByName[strings.ToUpper(td.Name)]; found {
+				nullable = cfgNullable
+			} else {
+				// Externally added PK column not in config: schema default is true.
+				nullable = true
+			}
+		}
 		flat := map[string]any{
 			"name":     td.Name,
 			"type":     td.Type,
-			"nullable": td.IsNullable,
+			"nullable": nullable,
 			"comment":  td.Comment,
 			"collate":  collate,
 		}
@@ -997,63 +1043,6 @@ func forceNewIfColumnFieldChanged(fieldName string, changed func(old, new hybrid
 				if o.name == n.name && changed(o, n) {
 					return diff.ForceNew(fmt.Sprintf("column.%d.%s", newIdx, fieldName))
 				}
-			}
-		}
-		return nil
-	}
-}
-
-// suppressNullableForPrimaryKeyColumns clears the planned diff on
-// `column.<idx>.nullable` when the column is part of `primary_key.0.keys`
-// and the only change is from old=false (DESCRIBE-derived) to new=true
-// (the schema default). Snowflake silently enforces NOT NULL on PK columns,
-// so DESCRIBE always returns null="N" for them — the diff is spurious and
-// has no corresponding ALTER (hybrid tables do not support SET/DROP NOT NULL).
-//
-// This sits in CustomizeDiff rather than DiffSuppressFunc because resolving
-// the diff requires looking at sibling fields (primary_key.0.keys), which a
-// per-field DiffSuppressFunc cannot access.
-func suppressNullableForPrimaryKeyColumns() schema.CustomizeDiffFunc {
-	return func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
-		if !diff.HasChange("column") {
-			return nil
-		}
-		pkRaw, ok := diff.Get("primary_key").([]any)
-		if !ok || len(pkRaw) == 0 {
-			return nil
-		}
-		pkMap, ok := pkRaw[0].(map[string]any)
-		if !ok {
-			return nil
-		}
-		pkKeysRaw, ok := pkMap["keys"].([]any)
-		if !ok {
-			return nil
-		}
-		pkKeys := make(map[string]struct{}, len(pkKeysRaw))
-		for _, k := range pkKeysRaw {
-			if s, ok := k.(string); ok {
-				pkKeys[strings.ToUpper(s)] = struct{}{}
-			}
-		}
-
-		oldRaw, newRaw := diff.GetChange("column")
-		oldCols := parseHybridColumns(oldRaw)
-		newCols := parseHybridColumns(newRaw)
-		for newIdx, n := range newCols {
-			if _, isPK := pkKeys[strings.ToUpper(n.name)]; !isPK {
-				continue
-			}
-			for _, o := range oldCols {
-				if o.name != n.name {
-					continue
-				}
-				if !o.nullable && n.nullable {
-					if err := diff.Clear(fmt.Sprintf("column.%d.nullable", newIdx)); err != nil {
-						return err
-					}
-				}
-				break
 			}
 		}
 		return nil
