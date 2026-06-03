@@ -833,20 +833,54 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) ([]any, error) {
 	flattened := make([]any, 0)
 
-	// Reconciliation strategy:
-	// - column.<idx>.type: format normalization (e.g. INTEGER vs NUMBER(38,0))
-	//   absorbed by DiffSuppressDataTypes on the field.
-	// - column.<idx>.collate: case-only drift absorbed by ignoreCaseSuppressFunc
-	//   on the field.
-	// - column.<idx>.nullable: Snowflake silently enforces NOT NULL on PK columns,
-	//   so DESCRIBE returns null="N" even when the user configured nullable=true.
-	//   Plan-time diff suppression via CustomizeDiff/DiffSuppressFunc is not
-	//   feasible here: diff.Clear requires Computed (incompatible with Default:
-	//   true), and per-field DiffSuppressFunc cannot reliably resolve sibling
-	//   primary_key.0.keys at every diff site. We therefore preserve the
-	//   user's config value on Read for PK columns. Hybrid tables do not support
-	//   ALTER SET/DROP NOT NULL, so external drift cannot legitimately occur on
-	//   this attribute — the substitution is safe.
+	// Reconciliation strategy: preserve the user's config spelling on Read
+	// whenever the DESCRIBE value is equivalent (modulo the relevant
+	// suppression). Field-level DiffSuppressFunc hides drift in the displayed
+	// plan but does NOT prevent HasChange("column") from returning true at the
+	// block level (TypeList HasChange does a DeepEqual on raw values). That
+	// flips ComputedIfAnyAttributeChanged → describe_output Computed → plan
+	// shows describe_output going to (known after apply) → "non-empty plan
+	// after apply".
+	//
+	// - column.<idx>.type: substitute config spelling when canonically equal
+	//   (uses datatypes.AreTheSame, the same comparator behind
+	//   DiffSuppressDataTypes). Real type changes still surface as drift.
+	// - column.<idx>.collate: substitute config spelling when case-equal
+	//   (mirrors ignoreCaseSuppressFunc on the field).
+	// - column.<idx>.nullable: PK columns silently come back as NOT NULL.
+	//   Substitute the config value. Hybrid tables do not support ALTER
+	//   SET/DROP NOT NULL, so external drift on this attribute cannot occur
+	//   — the substitution is safe.
+	type configColumnInfo struct {
+		typeStr  string
+		collate  string
+		nullable bool
+		found    bool
+	}
+	configByName := make(map[string]configColumnInfo)
+	if configCols, ok := d.GetOk("column"); ok {
+		for _, rawCol := range configCols.([]any) {
+			colMap, ok := rawCol.(map[string]any)
+			if !ok {
+				continue
+			}
+			colName, ok := colMap["name"].(string)
+			if !ok {
+				continue
+			}
+			info := configColumnInfo{nullable: true, found: true}
+			if t, ok := colMap["type"].(string); ok {
+				info.typeStr = t
+			}
+			if c, ok := colMap["collate"].(string); ok {
+				info.collate = c
+			}
+			if n, ok := colMap["nullable"].(bool); ok {
+				info.nullable = n
+			}
+			configByName[strings.ToUpper(colName)] = info
+		}
+	}
 	pkKeys := make(map[string]struct{})
 	if pkRaw, ok := d.GetOk("primary_key"); ok {
 		if pkList, ok := pkRaw.([]any); ok && len(pkList) > 0 {
@@ -861,38 +895,35 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			}
 		}
 	}
-	configNullableByName := make(map[string]bool)
-	if configCols, ok := d.GetOk("column"); ok {
-		for _, rawCol := range configCols.([]any) {
-			colMap, ok := rawCol.(map[string]any)
-			if !ok {
-				continue
-			}
-			colName, ok := colMap["name"].(string)
-			if !ok {
-				continue
-			}
-			n := true
-			if v, ok := colMap["nullable"].(bool); ok {
-				n = v
-			}
-			configNullableByName[strings.ToUpper(colName)] = n
-		}
-	}
 
 	for _, td := range details {
 		if td.Kind != "COLUMN" {
 			continue
 		}
 
+		cfg := configByName[strings.ToUpper(td.Name)]
+
+		typeOut := td.Type
+		if cfg.found && cfg.typeStr != "" {
+			cfgParsed, errCfg := datatypes.ParseDataType(cfg.typeStr)
+			descParsed, errDesc := datatypes.ParseDataType(td.Type)
+			if errCfg == nil && errDesc == nil && datatypes.AreTheSame(cfgParsed, descParsed) {
+				typeOut = cfg.typeStr
+			}
+		}
+
 		collate := ""
 		if td.Collation != nil {
 			collate = *td.Collation
 		}
+		if cfg.found && cfg.collate != "" && strings.EqualFold(cfg.collate, collate) {
+			collate = cfg.collate
+		}
+
 		nullable := td.IsNullable
 		if _, isPK := pkKeys[strings.ToUpper(td.Name)]; isPK {
-			if cfgNullable, found := configNullableByName[strings.ToUpper(td.Name)]; found {
-				nullable = cfgNullable
+			if cfg.found {
+				nullable = cfg.nullable
 			} else {
 				// Externally added PK column not in config: schema default is true.
 				nullable = true
@@ -900,7 +931,7 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 		}
 		flat := map[string]any{
 			"name":     td.Name,
-			"type":     td.Type,
+			"type":     typeOut,
 			"nullable": nullable,
 			"comment":  td.Comment,
 			"collate":  collate,

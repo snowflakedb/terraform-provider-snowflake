@@ -1321,8 +1321,8 @@ func TestAcc_HybridTable_Rename(t *testing.T) {
 // TestAcc_HybridTable_PKNullableNoSpurious verifies that a primary-key column
 // declared as nullable=true (the schema default) does not produce a spurious
 // diff after Read, even though Snowflake silently enforces NOT NULL on PK
-// columns and DESCRIBE reports null="N". The reconciliation must happen in
-// CustomizeDiff, not via Read-time substitution.
+// columns and DESCRIBE reports null="N". The reconciliation happens via
+// Read-time substitution in buildHybridColumnStateFromDescribe.
 func TestAcc_HybridTable_PKNullableNoSpurious(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -1360,8 +1360,9 @@ func TestAcc_HybridTable_PKNullableNoSpurious(t *testing.T) {
 
 // TestAcc_HybridTable_CollateCaseInsensitive verifies that a config-supplied
 // collate of "en-ci" produces no spurious diff even if DESCRIBE returns it
-// as "EN-CI" or some other case variant. Reconciliation must come from the
-// DiffSuppressFunc on the field, not from Read-time substitution.
+// as "EN-CI" or some other case variant. Reconciliation comes from
+// ignoreCaseSuppressFunc on the field plus Read-time substitution that
+// preserves the user's spelling when DESCRIBE is case-equivalent.
 func TestAcc_HybridTable_CollateCaseInsensitive(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
