@@ -25,4 +25,7 @@ jobs:
           cache: false
 
       - name: Run unit tests
-        run: make test-unit
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
+        run: set -o pipefail && make test-unit | make save-test-results
+        env:
+          TEST_SF_TF_TEST_TYPE: "unit"
