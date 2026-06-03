@@ -124,12 +124,15 @@ func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationInteg
 			WebhookSecret:       r.WebhookParams.WebhookSecret,
 			WebhookBodyTemplate: r.WebhookParams.WebhookBodyTemplate,
 		}
-		// adjusted manually
-		for _, h := range r.WebhookParams.WebhookHeaders {
-			opts.WebhookParams.WebhookHeaders = append(opts.WebhookParams.WebhookHeaders, WebhookHeader{
-				Header: h.Header,
-				Value:  h.Value,
-			})
+		if r.WebhookParams.WebhookHeaders != nil {
+			s := make([]WebhookHeader, len(r.WebhookParams.WebhookHeaders))
+			for i, v := range r.WebhookParams.WebhookHeaders {
+				s[i] = WebhookHeader{
+					Header: v.Header,
+					Value:  v.Value,
+				}
+			}
+			opts.WebhookParams.WebhookHeaders = s
 		}
 	}
 	return opts
@@ -178,12 +181,15 @@ func (r *AlterNotificationIntegrationRequest) toOpts() *AlterNotificationIntegra
 				WebhookSecret:       r.Set.SetWebhookParams.WebhookSecret,
 				WebhookBodyTemplate: r.Set.SetWebhookParams.WebhookBodyTemplate,
 			}
-			// adjusted manually
-			for _, h := range r.Set.SetWebhookParams.WebhookHeaders {
-				opts.Set.SetWebhookParams.WebhookHeaders = append(opts.Set.SetWebhookParams.WebhookHeaders, WebhookHeader{
-					Header: h.Header,
-					Value:  h.Value,
-				})
+			if r.Set.SetWebhookParams.WebhookHeaders != nil {
+				s := make([]WebhookHeader, len(r.Set.SetWebhookParams.WebhookHeaders))
+				for i, v := range r.Set.SetWebhookParams.WebhookHeaders {
+					s[i] = WebhookHeader{
+						Header: v.Header,
+						Value:  v.Value,
+					}
+				}
+				opts.Set.SetWebhookParams.WebhookHeaders = s
 			}
 		}
 	}
