@@ -203,8 +203,8 @@ func TestToStorageSerializationPolicy(t *testing.T) {
 	}{
 		{Input: string(StorageSerializationPolicyOptimized), Expected: StorageSerializationPolicyOptimized},
 		{Input: string(StorageSerializationPolicyCompatible), Expected: StorageSerializationPolicyCompatible},
-		{Name: "validation: incorrect storage serialization policy", Input: "incorrect", Error: "unknown storage serialization policy: incorrect"},
-		{Name: "validation: empty input", Input: "", Error: "unknown storage serialization policy: "},
+		{Name: "validation: incorrect storage serialization policy", Input: "incorrect", Error: "invalid storage serialization policy: INCORRECT"},
+		{Name: "validation: empty input", Input: "", Error: "invalid storage serialization policy: "},
 		{Name: "validation: lower case input", Input: "optimized", Expected: StorageSerializationPolicyOptimized},
 	}
 

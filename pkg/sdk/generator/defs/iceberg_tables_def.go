@@ -31,6 +31,10 @@ var (
 		"IcebergTableCatalog", "IcebergTableCatalogs",
 		"SNOWFLAKE",
 	)
+	StorageSerializationPolicyEnumDef = g.NewEnum(
+		"StorageSerializationPolicy", "StorageSerializationPolicies",
+		"COMPATIBLE", "OPTIMIZED",
+	)
 )
 
 var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
@@ -187,7 +191,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalTextAssignment("BASE_LOCATION", g.ParameterOptions().SingleQuotes()).
 		OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("CATALOG_SYNC", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("StorageSerializationPolicy", "*StorageSerializationPolicy", g.ParameterOptions().SQL("STORAGE_SERIALIZATION_POLICY")).
+		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", StorageSerializationPolicyEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
@@ -204,6 +208,24 @@ var icebergTablesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
 		WithAdditionalValidations(),
+).CustomOperation(
+	"CreateFromIcebergFiles",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files",
+	g.NewQueryStruct("CreateFromIcebergFiles").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME")).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG")).
+		TextAssignment("METADATA_FILE_PATH", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalComment().
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table",
 	g.NewQueryStruct("AlterIcebergTable").
@@ -374,4 +396,5 @@ var icebergTablesDef = g.NewInterface(
 	IcebergTableLogEventLevelEnumDef,
 	IcebergTableTypeEnumDef,
 	IcebergTableCatalogEnumDef,
+	StorageSerializationPolicyEnumDef,
 )

@@ -194,3 +194,27 @@ func ToIcebergTableCatalog(s string) (IcebergTableCatalog, error) {
 		return "", fmt.Errorf("invalid iceberg table catalog: %s", s)
 	}
 }
+
+type StorageSerializationPolicy string
+
+const (
+	StorageSerializationPolicyCompatible StorageSerializationPolicy = "COMPATIBLE"
+	StorageSerializationPolicyOptimized  StorageSerializationPolicy = "OPTIMIZED"
+)
+
+var AllStorageSerializationPolicies = []StorageSerializationPolicy{
+	StorageSerializationPolicyCompatible,
+	StorageSerializationPolicyOptimized,
+}
+
+func ToStorageSerializationPolicy(s string) (StorageSerializationPolicy, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(StorageSerializationPolicyCompatible):
+		return StorageSerializationPolicyCompatible, nil
+	case string(StorageSerializationPolicyOptimized):
+		return StorageSerializationPolicyOptimized, nil
+	default:
+		return "", fmt.Errorf("invalid storage serialization policy: %s", s)
+	}
+}
