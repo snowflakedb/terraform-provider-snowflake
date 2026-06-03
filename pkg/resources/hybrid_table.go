@@ -293,7 +293,7 @@ func parseHybridColumn(from any) hybridTableColumn {
 	var cd *columnDefault
 
 	if defaultList, ok := c["default"].([]any); ok && len(defaultList) == 1 {
-		cd = getColumnDefault(defaultList[0].(map[string]any))
+		cd = getHybridColumnDefault(defaultList[0].(map[string]any))
 	}
 
 	return hybridTableColumn{
@@ -304,6 +304,35 @@ func parseHybridColumn(from any) hybridTableColumn {
 		collate:  c["collate"].(string),
 		comment:  c["comment"].(string),
 	}
+}
+
+// getHybridColumnDefault fills every non-empty default sub-field present in
+// the schema, unlike table.go's getColumnDefault which short-circuits on the
+// first match. The build helper (buildHybridColumnDefaultValue) requires
+// visibility into all set fields to enforce mutual exclusivity — short-
+// circuiting at parse time would silently drop the conflict and let apply
+// proceed with whichever field was checked first.
+func getHybridColumnDefault(def map[string]any) *columnDefault {
+	cd := &columnDefault{}
+	hasAny := false
+
+	if v, ok := def["constant"].(string); ok && len(v) > 0 {
+		cd.constant = &v
+		hasAny = true
+	}
+	if v, ok := def["expression"].(string); ok && len(v) > 0 {
+		cd.expression = &v
+		hasAny = true
+	}
+	if v, ok := def["sequence"].(string); ok && len(v) > 0 {
+		cd.sequence = &v
+		hasAny = true
+	}
+
+	if !hasAny {
+		return nil
+	}
+	return cd
 }
 
 func parseHybridColumns(from any) hybridTableColumns {
