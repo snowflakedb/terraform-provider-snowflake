@@ -844,7 +844,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			WithSet(
 				*sdk.NewOauthForPartnerApplicationsIntegrationSetRequest().
 					WithBlockedRolesList(sdk.BlockedRolesListRequest{BlockedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
-					WithComment("a").
+					WithComment(sdk.StringAllowEmpty{Value: "a"}).
 					WithEnabled(true).
 					WithOauthIssueRefreshTokens(true).
 					WithOauthRedirectUri("http://example2.com").

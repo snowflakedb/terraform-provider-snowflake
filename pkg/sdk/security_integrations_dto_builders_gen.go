@@ -1080,8 +1080,7 @@ func (s *OauthForPartnerApplicationsIntegrationSetRequest) WithBlockedRolesList(
 	return s
 }
 
-// adjusted manually
-func (s *OauthForPartnerApplicationsIntegrationSetRequest) WithComment(comment string) *OauthForPartnerApplicationsIntegrationSetRequest {
+func (s *OauthForPartnerApplicationsIntegrationSetRequest) WithComment(comment StringAllowEmpty) *OauthForPartnerApplicationsIntegrationSetRequest {
 	s.Comment = &comment
 	return s
 }

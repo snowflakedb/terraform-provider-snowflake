@@ -486,10 +486,7 @@ func (r *AlterOauthForPartnerApplicationsSecurityIntegrationRequest) toOpts() *A
 			OauthRedirectUri:          r.Set.OauthRedirectUri,
 			OauthRefreshTokenValidity: r.Set.OauthRefreshTokenValidity,
 			OauthUseSecondaryRoles:    r.Set.OauthUseSecondaryRoles,
-			// Comment adjusted manually below
-		}
-		if r.Set.Comment != nil {
-			opts.Set.Comment = &StringAllowEmpty{*r.Set.Comment}
+			Comment:                   r.Set.Comment,
 		}
 		if r.Set.BlockedRolesList != nil {
 			opts.Set.BlockedRolesList = &BlockedRolesList{

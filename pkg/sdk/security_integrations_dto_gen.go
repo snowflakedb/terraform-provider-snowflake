@@ -312,8 +312,7 @@ type OauthForPartnerApplicationsIntegrationSetRequest struct {
 	OauthRefreshTokenValidity *int
 	OauthUseSecondaryRoles    *OauthSecurityIntegrationUseSecondaryRolesOption
 	BlockedRolesList          *BlockedRolesListRequest
-	// adjusted manually
-	Comment *string
+	Comment                   *StringAllowEmpty
 }
 
 type OauthForPartnerApplicationsIntegrationUnsetRequest struct {
