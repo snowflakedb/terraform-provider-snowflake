@@ -372,7 +372,7 @@ func TestIcebergTables_Create(t *testing.T) {
 		}
 		opts.PathLayout = new(IcebergTablePathLayoutHierarchical)
 		opts.ClusterBy = []string{`"col1"`, `"col2"`}
-		opts.ExternalVolume = icebergTableIdentifierQuoted(new(NewAccountObjectIdentifier("vol1")))
+		opts.ExternalVolume = new(NewAccountObjectIdentifier("vol1"))
 		opts.Catalog = new(IcebergTableCatalogSnowflake)
 		opts.BaseLocation = new("base/loc")
 		opts.TargetFileSize = new(IcebergTableTargetFileSize64mb)
@@ -410,7 +410,7 @@ func TestIcebergTables_Create(t *testing.T) {
 				`PARTITION BY ("ID", BUCKET (4, "NAME"), TRUNCATE (10, "C1"), YEAR ("C2"), MONTH ("C3"), DAY ("C4"), HOUR ("C5")) `+
 				`PATH_LAYOUT = HIERARCHICAL `+
 				`CLUSTER BY ("col1", "col2") `+
-				`EXTERNAL_VOLUME = '"vol1"' `+
+				`EXTERNAL_VOLUME = '\"vol1\"' `+
 				`CATALOG = 'SNOWFLAKE' `+
 				`BASE_LOCATION = 'base/loc' `+
 				`TARGET_FILE_SIZE = '64MB' `+
@@ -964,8 +964,8 @@ func TestIcebergTables_CreateFromIcebergFiles(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = new(true)
-		opts.ExternalVolume = icebergTableIdentifierQuoted(&externalVolumeId)
-		opts.Catalog = icebergTableIdentifierQuoted(&catalogId)
+		opts.ExternalVolume = &externalVolumeId
+		opts.Catalog = &catalogId
 		opts.ReplaceInvalidCharacters = new(true)
 		opts.Comment = new("some comment")
 		opts.Tag = []TagAssociation{
@@ -977,16 +977,16 @@ func TestIcebergTables_CreateFromIcebergFiles(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`CREATE OR REPLACE ICEBERG TABLE %s `+
-				`EXTERNAL_VOLUME = '%s' `+
-				`CATALOG = '%s' `+
+				`EXTERNAL_VOLUME = '\"%s\"' `+
+				`CATALOG = '\"%s\"' `+
 				`METADATA_FILE_PATH = 'metadata/v1.metadata.json' `+
 				`REPLACE_INVALID_CHARACTERS = true `+
 				`COMMENT = 'some comment' `+
 				`TAG (%s = 'v1', %s = 'v2') `+
 				`WITH CONTACT (SUPPORT = 'support_team')`,
 			id.FullyQualifiedName(),
-			externalVolumeId.FullyQualifiedName(),
-			catalogId.FullyQualifiedName(),
+			externalVolumeId.Name(),
+			catalogId.Name(),
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
 		)
 	})
