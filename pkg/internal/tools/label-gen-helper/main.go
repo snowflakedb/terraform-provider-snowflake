@@ -92,16 +92,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	generated := make(map[string]bool)
-	for _, l := range append(slices.Clone(resourceLabels), dataSourceLabels...) {
-		generated[l] = true
-	}
-
-	// Preserve legacy labels that the provider no longer registers under these exact names. Skip any
-	// that the provider produces again, so they are not duplicated.
 	for _, label := range legacyLabels {
 		switch {
-		case generated[label]:
 		case strings.HasPrefix(label, resourcePrefix):
 			resourceLabels = append(resourceLabels, label)
 		case strings.HasPrefix(label, dataSourcePrefix):
@@ -112,7 +104,9 @@ func main() {
 	categories := slices.Clone(categoryLabels)
 	slices.Sort(categories)
 	slices.Sort(resourceLabels)
+	resourceLabels = slices.Compact(resourceLabels)
 	slices.Sort(dataSourceLabels)
+	dataSourceLabels = slices.Compact(dataSourceLabels)
 
 	if err := writeLabelsGo(
 		filepath.Join(repoRoot, "pkg", "scripts", "issues", "labels_gen.go"),
