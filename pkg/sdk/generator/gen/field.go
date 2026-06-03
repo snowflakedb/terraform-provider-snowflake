@@ -24,51 +24,6 @@ type Field struct {
 	Required bool
 	// IsEmptyStruct marks fields created via QueryStruct composition which are empty structs
 	IsEmptyStruct bool
-
-	// scopedRoot, scopedPath, and scopedOptsRef are set during template rendering for slice element context.
-	// This allows template logic (e.g. toOpts for slice elements or sub-structs) to benefit from scoped access.
-	scopedRoot    string
-	scopedPath    string
-	scopedOptsRef string
-}
-
-// EffectiveRoot returns the source variable to use in to opts template source expressions.
-func (f *Field) EffectiveRoot() string {
-	if f.scopedRoot != "" {
-		return f.scopedRoot
-	}
-	return "r"
-}
-
-// EffectivePath returns the source path to use in to opts template source expressions.
-func (f *Field) EffectivePath() string {
-	if f.scopedPath != "" {
-		return f.scopedPath
-	}
-	return f.Path()
-}
-
-// EffectiveOptsRef returns the opts variable to use for opts assignments in templates.
-func (f *Field) EffectiveOptsRef() string {
-	if f.scopedOptsRef != "" {
-		return f.scopedOptsRef
-	}
-	return "opts"
-}
-
-// withSliceElemContext returns a deep copy of f with all descendants patched for slice element context.
-func (f *Field) withSliceElemContext(root, prefix string) *Field {
-	cp := *f
-	newFields := make([]Field, len(f.Fields))
-	for i, child := range f.Fields {
-		patched := child.withSliceElemContext(root, prefix)
-		patched.scopedRoot = root
-		patched.scopedPath = strings.TrimPrefix(child.Path(), prefix)
-		patched.scopedOptsRef = "s[i]"
-		newFields[i] = *patched
-	}
-	cp.Fields = newFields
-	return &cp
 }
 
 func NewField(name string, kind string, tagBuilder *TagBuilder, transformer FieldTransformer) *Field {

@@ -114,9 +114,8 @@ func init() {
 		"instance_method_kind_deref":    deref[InstanceMethodKind],
 		"TypeWithoutPointer":            genhelpers.TypeWithoutPointer,
 		"TypeWithoutPointerAndBrackets": genhelpers.TypeWithoutPointerAndBrackets,
-		"sliceElemCtx": func(f *Field) *Field {
-			return f.withSliceElemContext("v", f.Path())
-		},
+		"toOptsSliceElemVar":            func() string { return toOptsSliceElemVar },
+		"toOptsSliceVar":                func() string { return toOptsSliceVar },
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
 	subTemplates, _ = subTemplates.New("convert").Funcs(genhelpers.BuildTemplateFuncMap(

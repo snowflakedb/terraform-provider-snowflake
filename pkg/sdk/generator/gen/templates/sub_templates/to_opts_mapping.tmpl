@@ -3,7 +3,7 @@
 {{ .KindNoPtr }}{
 {{- range .Fields }}
     {{- if and .ShouldBeInDto (not .IsStruct) }}
-        {{ .Name }}: {{ .EffectiveRoot }}{{ .EffectivePath }},
+        {{ .Name }}: {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }},
     {{- end -}}
 {{- end }}
 }
@@ -11,16 +11,16 @@
     {{- if .ShouldBeInDto }}
         {{- if .HasAnyFields }}
             {{- if or .IsPointer .IsSlice }}
-                if {{ .EffectiveRoot }}{{ .EffectivePath }} != nil {
+                if {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} != nil {
             {{- end }}
             {{ if not .IsSlice -}}
-                {{ .EffectiveOptsRef }}{{ .EffectivePath }} = {{ if .IsPointer }}&{{end}}{{ template "toOptsMapping" . -}}{{/* Recursive call */}}
+                {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ if .IsPointer }}&{{end}}{{ template "toOptsMapping" . -}}{{/* Recursive call */}}
             {{- else -}}
-                s := make({{ .Kind }}, len({{ .EffectiveRoot }}{{ .EffectivePath }}))
-                for i, v := range {{ .EffectiveRoot }}{{ .EffectivePath }} {
-                    s[i] = {{ template "toOptsMapping" (sliceElemCtx .) -}}{{/* Recursive call */}}
+                {{ toOptsSliceVar }} := make({{ .Kind }}, len({{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }}))
+                for i, {{ toOptsSliceElemVar }} := range {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} {
+                    {{ toOptsSliceVar }}[i] = {{ template "toOptsMapping" . -}}{{/* Recursive call */}}
                 }
-                {{ .EffectiveOptsRef }}{{ .EffectivePath }} = s
+                {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ toOptsSliceVar }}
             {{- end -}}
 
             {{- if or .IsPointer .IsSlice -}}
