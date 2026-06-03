@@ -578,15 +578,15 @@ func TestAcc_HybridTable_ColumnDefault(t *testing.T) {
 // TestAcc_HybridTable_ColumnDefaultVariants exercises each mutually-exclusive variant
 // of the column `default` block with its own model. The `default` block has three
 // sub-variants (constant, expression, sequence) and exactly one must be set per
-// column. Mutual exclusivity is enforced via a CustomizeDiff in the resource
-// (see validateColumnDefaultExactlyOneOf in pkg/resources/hybrid_table.go) — the
-// declarative ExactlyOneOf/ConflictsWith options on schema fields cannot be used
-// inside a multi-element TypeList because terraform-plugin-sdk/v2 rejects paths
-// with non-zero indices at provider boot.
+// column. Mutual exclusivity is enforced inside buildHybridColumnDefaultValue
+// in pkg/resources/hybrid_table.go (the declarative ExactlyOneOf/ConflictsWith
+// options on schema fields cannot be used inside a multi-element TypeList
+// because terraform-plugin-sdk/v2 rejects paths with non-zero indices at
+// provider boot). Validation fires at apply time before any Snowflake call.
 //
 // One subtest per variant per jmichalak's review comment (thread 3188827027):
 // separate models for mutually-exclusive field sets. The "conflicting fields"
-// subtest asserts the CustomizeDiff validation fires when more than one of
+// subtest asserts the build-helper validation fires when more than one of
 // {constant, expression, sequence} is set in the same default block.
 func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 	t.Run("constant", func(t *testing.T) {
@@ -666,7 +666,9 @@ func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 	})
 
 	// Negative test: setting more than one of {constant, expression, sequence}
-	// in the same default block must be rejected by validateColumnDefaultExactlyOneOf.
+	// in the same default block must be rejected by buildHybridColumnDefaultValue.
+	// Validation fires at apply time (Create runs the build helper before any
+	// Snowflake call), so the apply errors out before any resource is created.
 	t.Run("conflicting fields", func(t *testing.T) {
 		id := testClient().Ids.RandomSchemaObjectIdentifier()
 		pk := []sdk.TableColumnSignature{{Name: "ID"}}
@@ -697,8 +699,7 @@ func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config:      accconfig.FromModels(t, m),
-					PlanOnly:    true,
-					ExpectError: regexp.MustCompile(`only one of "constant", "expression", or "sequence" may be set`),
+					ExpectError: regexp.MustCompile(`default block must have exactly one of "constant", "expression", or "sequence" set`),
 				},
 			},
 		})
