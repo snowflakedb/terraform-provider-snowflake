@@ -144,7 +144,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		t.Helper()
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		scimReq := sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientOptionGeneric, snowflakeroles.GenericScimProvisioner.FullyQualifiedName())
+		scimReq := sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientOptionGeneric, snowflakeroles.GenericScimProvisioner)
 		if with != nil {
 			with(scimReq)
 		}

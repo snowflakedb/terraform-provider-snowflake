@@ -405,7 +405,6 @@ func (s *CreateOauthForCustomClientsSecurityIntegrationRequest) WithOauthRefresh
 	return s
 }
 
-// adjusted manually
 func (s *CreateOauthForCustomClientsSecurityIntegrationRequest) WithNetworkPolicy(networkPolicy AccountObjectIdentifier) *CreateOauthForCustomClientsSecurityIntegrationRequest {
 	s.NetworkPolicy = &networkPolicy
 	return s
@@ -530,7 +529,7 @@ func (s *CreateSaml2SecurityIntegrationRequest) WithComment(comment string) *Cre
 func NewCreateScimSecurityIntegrationRequest(
 	name AccountObjectIdentifier,
 	scimClient ScimSecurityIntegrationScimClientOption,
-	runAsRole string,
+	runAsRole AccountObjectIdentifier,
 ) *CreateScimSecurityIntegrationRequest {
 	s := CreateScimSecurityIntegrationRequest{}
 	s.name = name
@@ -554,7 +553,6 @@ func (s *CreateScimSecurityIntegrationRequest) WithEnabled(enabled bool) *Create
 	return s
 }
 
-// adjusted manually
 func (s *CreateScimSecurityIntegrationRequest) WithNetworkPolicy(networkPolicy AccountObjectIdentifier) *CreateScimSecurityIntegrationRequest {
 	s.NetworkPolicy = &networkPolicy
 	return s
@@ -1183,7 +1181,6 @@ func (s *OauthForCustomClientsIntegrationSetRequest) WithOauthUseSecondaryRoles(
 	return s
 }
 
-// adjusted manually
 func (s *OauthForCustomClientsIntegrationSetRequest) WithNetworkPolicy(networkPolicy AccountObjectIdentifier) *OauthForCustomClientsIntegrationSetRequest {
 	s.NetworkPolicy = &networkPolicy
 	return s
@@ -1430,7 +1427,6 @@ func (s *ScimIntegrationSetRequest) WithEnabled(enabled bool) *ScimIntegrationSe
 	return s
 }
 
-// adjusted manually
 func (s *ScimIntegrationSetRequest) WithNetworkPolicy(networkPolicy AccountObjectIdentifier) *ScimIntegrationSetRequest {
 	s.NetworkPolicy = &networkPolicy
 	return s

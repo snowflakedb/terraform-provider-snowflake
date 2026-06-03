@@ -135,11 +135,10 @@ type CreateOauthForCustomClientsSecurityIntegrationRequest struct {
 	BlockedRolesList            *BlockedRolesListRequest
 	OauthIssueRefreshTokens     *bool
 	OauthRefreshTokenValidity   *int
-	// adjusted manually
-	NetworkPolicy            *AccountObjectIdentifier
-	OauthClientRsaPublicKey  *string
-	OauthClientRsaPublicKey2 *string
-	Comment                  *string
+	NetworkPolicy               *AccountObjectIdentifier
+	OauthClientRsaPublicKey     *string
+	OauthClientRsaPublicKey2    *string
+	Comment                     *string
 }
 
 type PreAuthorizedRolesListRequest struct {
@@ -170,13 +169,12 @@ type CreateSaml2SecurityIntegrationRequest struct {
 }
 
 type CreateScimSecurityIntegrationRequest struct {
-	OrReplace   *bool
-	IfNotExists *bool
-	name        AccountObjectIdentifier // required
-	Enabled     *bool
-	ScimClient  ScimSecurityIntegrationScimClientOption // required
-	RunAsRole   string                                  // required
-	// adjusted manually
+	OrReplace     *bool
+	IfNotExists   *bool
+	name          AccountObjectIdentifier // required
+	Enabled       *bool
+	ScimClient    ScimSecurityIntegrationScimClientOption // required
+	RunAsRole     AccountObjectIdentifier                 // required
 	NetworkPolicy *AccountObjectIdentifier
 	SyncPassword  *bool
 	Comment       *string
@@ -339,11 +337,10 @@ type OauthForCustomClientsIntegrationSetRequest struct {
 	OauthIssueRefreshTokens     *bool
 	OauthRefreshTokenValidity   *int
 	OauthUseSecondaryRoles      *OauthSecurityIntegrationUseSecondaryRolesOption
-	// adjusted manually
-	NetworkPolicy            *AccountObjectIdentifier
-	OauthClientRsaPublicKey  *string
-	OauthClientRsaPublicKey2 *string
-	Comment                  *string
+	NetworkPolicy               *AccountObjectIdentifier
+	OauthClientRsaPublicKey     *string
+	OauthClientRsaPublicKey2    *string
+	Comment                     *string
 }
 
 type OauthForCustomClientsIntegrationUnsetRequest struct {
@@ -401,8 +398,7 @@ type AlterScimSecurityIntegrationRequest struct {
 }
 
 type ScimIntegrationSetRequest struct {
-	Enabled *bool
-	// adjusted manually
+	Enabled       *bool
 	NetworkPolicy *AccountObjectIdentifier
 	SyncPassword  *bool
 	Comment       *StringAllowEmpty
