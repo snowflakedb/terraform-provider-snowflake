@@ -32,11 +32,11 @@ body:
       options:
         - resource:account
         - resource:account_authentication_policy_attachment
-        - resource:account_role
-        - resource:account_password_policy_attachment
-        - resource:account_session_policy_attachment
         - resource:account_parameter
         - resource:account_password_policy
+        - resource:account_password_policy_attachment
+        - resource:account_role
+        - resource:account_session_policy_attachment
         - resource:alert
         - resource:api_authn_integration_authz_code_grant
         - resource:api_authn_integration_client_credentials
@@ -44,6 +44,10 @@ body:
         - resource:api_integration
         - resource:authentication_policy
         - resource:catalog_integration
+        - resource:catalog_integration_aws_glue
+        - resource:catalog_integration_iceberg_rest
+        - resource:catalog_integration_object_storage
+        - resource:catalog_integration_open_catalog
         - resource:compute_pool
         - resource:cortex_agent
         - resource:cortex_search_service
@@ -87,8 +91,8 @@ body:
         - resource:notebook
         - resource:notification_integration
         - resource:oauth_integration
-        - resource:oauth_integration_for_partner_application
         - resource:oauth_integration_for_custom_clients
+        - resource:oauth_integration_for_partner_application
         - resource:object_parameter
         - resource:password_policy
         - resource:pipe
@@ -102,8 +106,8 @@ body:
         - resource:resource_monitor
         - resource:role
         - resource:row_access_policy
-        - resource:saml_integration
         - resource:saml2_integration
+        - resource:saml_integration
         - resource:schema
         - resource:scim_integration
         - resource:secondary_connection
@@ -114,14 +118,22 @@ body:
         - resource:secret_with_generic_string
         - resource:semantic_view
         - resource:sequence
-        - resource:session_parameter
-        - resource:session_policy
         - resource:service
         - resource:service_user
+        - resource:session_parameter
+        - resource:session_policy
         - resource:share
         - resource:shared_database
         - resource:stage
+        - resource:stage_external_azure
+        - resource:stage_external_gcs
+        - resource:stage_external_s3
+        - resource:stage_external_s3_compatible
+        - resource:stage_internal
         - resource:storage_integration
+        - resource:storage_integration_aws
+        - resource:storage_integration_azure
+        - resource:storage_integration_gcs
         - resource:stream
         - resource:stream_on_directory_table
         - resource:stream_on_external_table
@@ -144,9 +156,9 @@ body:
         - resource:user_session_policy_attachment
         - resource:view
         - resource:warehouse
-
-        - data_source:accounts
+        - resource:warehouse_adaptive
         - data_source:account_roles
+        - data_source:accounts
         - data_source:alerts
         - data_source:authentication_policies
         - data_source:catalog_integrations
@@ -193,8 +205,8 @@ body:
         - data_source:shares
         - data_source:stages
         - data_source:storage_integrations
-        - data_source:streams
         - data_source:streamlits
+        - data_source:streams
         - data_source:system_generate_scim_access_token
         - data_source:system_get_aws_sns_iam_policy
         - data_source:system_get_privatelink_config
