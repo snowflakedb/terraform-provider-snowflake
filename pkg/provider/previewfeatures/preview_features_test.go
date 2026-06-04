@@ -127,6 +127,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_user_programmatic_access_tokens_datasource", want: UserProgrammaticAccessTokensDatasource},
 		{input: "snowflake_warehouse_adaptive_resource", want: WarehouseAdaptiveResource},
 		{input: "snowflake_webhook_notification_integration_resource", want: WebhookNotificationIntegrationResource},
+		{input: "snowflake_webhook_notification_integration_datasource", want: WebhookNotificationIntegrationDatasource},
 	}
 
 	invalid := []test{

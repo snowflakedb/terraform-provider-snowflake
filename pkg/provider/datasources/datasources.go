@@ -62,6 +62,7 @@ const (
 	UserProgrammaticAccessTokens   datasource = "snowflake_user_programmatic_access_tokens"
 	Views                          datasource = "snowflake_views"
 	Warehouses                     datasource = "snowflake_warehouses"
+	WebhookNotificationIntegration datasource = "snowflake_webhook_notification_integration"
 )
 
 type Datasource interface {

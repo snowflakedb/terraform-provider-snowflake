@@ -759,6 +759,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_user_programmatic_access_tokens":    datasources.UserProgrammaticAccessTokens(),
 		"snowflake_views":                              datasources.Views(),
 		"snowflake_warehouses":                         datasources.Warehouses(),
+		"snowflake_webhook_notification_integration":   datasources.WebhookNotificationIntegration(),
 	}
 }
 
