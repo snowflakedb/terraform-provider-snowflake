@@ -123,6 +123,7 @@ const (
 	View                                                   resource = "snowflake_view"
 	Warehouse                                              resource = "snowflake_warehouse"
 	WarehouseAdaptive                                      resource = "snowflake_warehouse_adaptive"
+	WebhookNotificationIntegration                         resource = "snowflake_webhook_notification_integration"
 )
 
 type Resource interface {

@@ -63,3 +63,4 @@
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
 - [snowflake_user_session_policy_attachment](./docs/resources/user_session_policy_attachment)
 - [snowflake_warehouse_adaptive](./docs/resources/warehouse_adaptive)
+- [snowflake_webhook_notification_integration](./docs/resources/webhook_notification_integration)

@@ -694,6 +694,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
 		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
+		"snowflake_webhook_notification_integration":                             resources.WebhookNotificationIntegration(),
 	}
 }
 

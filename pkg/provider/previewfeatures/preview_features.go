@@ -119,6 +119,7 @@ const (
 	UserSessionPolicyAttachmentResource           feature = "snowflake_user_session_policy_attachment_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
 	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
+	WebhookNotificationIntegrationResource        feature = "snowflake_webhook_notification_integration_resource"
 )
 
 var allPreviewFeatures = []feature{
@@ -177,6 +178,7 @@ var allPreviewFeatures = []feature{
 	NotebooksDatasource,
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
+	WebhookNotificationIntegrationResource,
 	ObjectParameterResource,
 	PasswordPoliciesDatasource,
 	PasswordPolicyResource,
