@@ -32,7 +32,7 @@ func (c *ApiIntegrationClient) CreateApiIntegration(t *testing.T) (*sdk.ApiInteg
 	id := c.ids.RandomAccountObjectIdentifier()
 	apiAllowedPrefixes := []sdk.ApiIntegrationEndpointPrefix{{Path: "https://xyz.execute-api.us-west-2.amazonaws.com/production"}}
 	req := sdk.NewCreateApiIntegrationRequest(id, apiAllowedPrefixes, true)
-	req.WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiGateway, "arn:aws:iam::123456789012:role/hello_cloud_account_role"))
+	req.WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway, "arn:aws:iam::123456789012:role/hello_cloud_account_role"))
 
 	err := c.client().Create(ctx, req)
 	require.NoError(t, err)
