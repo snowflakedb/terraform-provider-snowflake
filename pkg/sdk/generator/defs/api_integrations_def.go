@@ -19,6 +19,12 @@ var (
 		"CLIENT_SECRET_BASIC",
 		"CLIENT_SECRET_POST",
 	)
+	ApiIntegrationOauthAllowedScopeEnum = g.NewEnum(
+		"ApiIntegrationOauthAllowedScope", "ApiIntegrationOauthAllowedScopes",
+		"read_api",
+		"read_repository",
+		"write_repository",
+	)
 )
 
 var apiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
@@ -29,6 +35,9 @@ var apiIntegrationAllowedAuthSecretsDef = g.NewQueryStruct("ApiIntegrationAllowe
 	List("AllowedList", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ListOptions().Parentheses()).
 	WithValidation(g.ExactlyOneValueSet, "AllSecrets", "NoSecrets", "AllowedList")
 
+var apiIntegrationOauthAllowedScopeItemDef = g.NewQueryStruct("ApiIntegrationOauthAllowedScopeItem").
+	Enum("Scope", ApiIntegrationOauthAllowedScopeEnum, g.KeywordOptions().SingleQuotes().Required())
+
 var apiIntegrationOauth2GitAuthDef = g.NewQueryStruct("OAuth2GitUserAuthentication").
 	SQLWithCustomFieldName("authType", "TYPE = OAUTH2").
 	TextAssignment("OAUTH_AUTHORIZATION_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
@@ -37,7 +46,7 @@ var apiIntegrationOauth2GitAuthDef = g.NewQueryStruct("OAuth2GitUserAuthenticati
 	TextAssignment("OAUTH_CLIENT_SECRET", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalNumberAssignment("OAUTH_ACCESS_TOKEN_VALIDITY", g.ParameterOptions().NoQuotes()).
 	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions().NoQuotes()).
-	ListAssignment("OAUTH_ALLOWED_SCOPES", "ApiIntegrationScope", g.ParameterOptions().Parentheses()).
+	ListAssignment("OAUTH_ALLOWED_SCOPES", "ApiIntegrationOauthAllowedScopeItem", g.ParameterOptions().Parentheses()).
 	OptionalTextAssignment("OAUTH_USERNAME", g.ParameterOptions().SingleQuotes())
 
 var apiIntegrationOauth2McpAuthDef = g.NewQueryStruct("OAuth2McpUserAuthentication").
@@ -54,13 +63,16 @@ var apiIntegrationDynamicClientMcpAuthDef = g.NewQueryStruct("DynamicClientMcpUs
 	SQLWithCustomFieldName("authType", "TYPE = OAUTH_DYNAMIC_CLIENT").
 	TextAssignment("OAUTH_RESOURCE_URL", g.ParameterOptions().SingleQuotes().Required())
 
+var apiIntegrationGithubAppAuthDef = g.NewQueryStruct("GithubAppUserAuthentication").
+	SQLWithCustomFieldName("authType", "TYPE = SNOWFLAKE_GITHUB_APP")
+
 // TODO(SNOW-1016561): all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
 var apiIntegrationsDef = g.NewInterface(
 	"ApiIntegrations",
 	"ApiIntegration",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
-	WithEnums(ApiIntegrationAwsApiProviderTypeEnum, ApiIntegrationOauthClientAuthMethodEnum).
+	WithEnums(ApiIntegrationAwsApiProviderTypeEnum, ApiIntegrationOauthClientAuthMethodEnum, ApiIntegrationOauthAllowedScopeEnum).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-api-integration",
 		g.NewQueryStruct("CreateApiIntegration").
@@ -108,7 +120,11 @@ var apiIntegrationsDef = g.NewInterface(
 				"GitHttpsApiGithubAppProviderParams",
 				g.NewQueryStruct("GitHttpsApiGithubAppParams").
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
-					SQLWithCustomFieldName("apiUserAuthentication", "API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"),
+					QueryStructField(
+						"ApiUserAuthentication",
+						apiIntegrationGithubAppAuthDef,
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+					),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
@@ -179,9 +195,11 @@ var apiIntegrationsDef = g.NewInterface(
 			),
 		apiIntegrationEndpointPrefixDef,
 		apiIntegrationAllowedAuthSecretsDef,
+		apiIntegrationOauthAllowedScopeItemDef,
 		apiIntegrationOauth2GitAuthDef,
 		apiIntegrationOauth2McpAuthDef,
 		apiIntegrationDynamicClientMcpAuthDef,
+		apiIntegrationGithubAppAuthDef,
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-api-integration",
@@ -281,15 +299,48 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("ApiIntegrationUnset").
-					OptionalSQL("API_KEY").
+					OptionalQueryStructField(
+						"AwsParams",
+						g.NewQueryStruct("UnsetAwsApiParams").
+							OptionalSQL("API_KEY").
+							WithValidation(g.AtLeastOneValueSet, "ApiKey"),
+						g.ListOptions().NoParentheses(),
+					).
+					OptionalQueryStructField(
+						"AzureParams",
+						g.NewQueryStruct("UnsetAzureApiParams").
+							OptionalSQL("API_KEY").
+							WithValidation(g.AtLeastOneValueSet, "ApiKey"),
+						g.ListOptions().NoParentheses(),
+					).
+					OptionalQueryStructField(
+						"GitHttpsApiTokenBasedParams",
+						g.NewQueryStruct("UnsetGitHttpsApiTokenBasedParams").
+							OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
+							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets"),
+						g.ListOptions().NoParentheses(),
+					).
+					OptionalQueryStructField(
+						"GitHttpsApiPrivateLinkParams",
+						g.NewQueryStruct("UnsetGitHttpsApiPrivateLinkParams").
+							OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
+							OptionalSQL("TLS_TRUSTED_CERTIFICATES").
+							OptionalSQL("USE_PRIVATELINK_ENDPOINT").
+							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets", "TlsTrustedCertificates", "UsePrivatelinkEndpoint"),
+						g.ListOptions().NoParentheses(),
+					).
 					OptionalSQL("ENABLED").
 					OptionalSQL("API_BLOCKED_PREFIXES").
-					OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
-					OptionalSQL("TLS_TRUSTED_CERTIFICATES").
-					// TODO(next pr): Make unset params for each type? The unset private link should most likely be defined only for types using it
-					OptionalSQL("USE_PRIVATELINK_ENDPOINT").
 					OptionalSQL("COMMENT").
-					WithValidation(g.AtLeastOneValueSet, "ApiKey", "Enabled", "ApiBlockedPrefixes", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "Comment"),
+					WithValidation(
+						g.MoreThanOneValueSet,
+						"AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams",
+					).
+					WithValidation(
+						g.AtLeastOneValueSet,
+						"AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams",
+						"Enabled", "ApiBlockedPrefixes", "Comment",
+					),
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			OptionalSetTags().

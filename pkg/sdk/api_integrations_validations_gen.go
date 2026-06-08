@@ -100,8 +100,31 @@ func (opts *AlterApiIntegrationOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.ApiKey, opts.Unset.Enabled, opts.Unset.ApiBlockedPrefixes, opts.Unset.AllowedAuthenticationSecrets, opts.Unset.UsePrivatelinkEndpoint, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Unset", "ApiKey", "Enabled", "ApiBlockedPrefixes", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "Comment"))
+		if moreThanOneValueSet(opts.Unset.AwsParams, opts.Unset.AzureParams, opts.Unset.GitHttpsApiTokenBasedParams, opts.Unset.GitHttpsApiPrivateLinkParams) {
+			errs = append(errs, errMoreThanOneOf("AlterApiIntegrationOptions.Unset", "AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams"))
+		}
+		if !anyValueSet(opts.Unset.AwsParams, opts.Unset.AzureParams, opts.Unset.GitHttpsApiTokenBasedParams, opts.Unset.GitHttpsApiPrivateLinkParams, opts.Unset.Enabled, opts.Unset.ApiBlockedPrefixes, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Unset", "AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "Enabled", "ApiBlockedPrefixes", "Comment"))
+		}
+		if valueSet(opts.Unset.AwsParams) {
+			if !anyValueSet(opts.Unset.AwsParams.ApiKey) {
+				errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Unset.AwsParams", "ApiKey"))
+			}
+		}
+		if valueSet(opts.Unset.AzureParams) {
+			if !anyValueSet(opts.Unset.AzureParams.ApiKey) {
+				errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Unset.AzureParams", "ApiKey"))
+			}
+		}
+		if valueSet(opts.Unset.GitHttpsApiTokenBasedParams) {
+			if !anyValueSet(opts.Unset.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets) {
+				errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Unset.GitHttpsApiTokenBasedParams", "AllowedAuthenticationSecrets"))
+			}
+		}
+		if valueSet(opts.Unset.GitHttpsApiPrivateLinkParams) {
+			if !anyValueSet(opts.Unset.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets, opts.Unset.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates, opts.Unset.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint) {
+				errs = append(errs, errAtLeastOneOf("AlterApiIntegrationOptions.Unset.GitHttpsApiPrivateLinkParams", "AllowedAuthenticationSecrets", "TlsTrustedCertificates", "UsePrivatelinkEndpoint"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

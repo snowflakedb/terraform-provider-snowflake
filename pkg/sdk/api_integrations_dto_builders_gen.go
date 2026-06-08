@@ -152,6 +152,16 @@ func NewGitHttpsApiGithubAppParamsRequest() *GitHttpsApiGithubAppParamsRequest {
 	return &s
 }
 
+func (s *GitHttpsApiGithubAppParamsRequest) WithApiUserAuthentication(apiUserAuthentication GithubAppUserAuthenticationRequest) *GitHttpsApiGithubAppParamsRequest {
+	s.ApiUserAuthentication = apiUserAuthentication
+	return s
+}
+
+func NewGithubAppUserAuthenticationRequest() *GithubAppUserAuthenticationRequest {
+	s := GithubAppUserAuthenticationRequest{}
+	return &s
+}
+
 func NewGitHttpsApiOAuth2ParamsRequest() *GitHttpsApiOAuth2ParamsRequest {
 	s := GitHttpsApiOAuth2ParamsRequest{}
 	return &s
@@ -186,7 +196,7 @@ func (s *OAuth2GitUserAuthenticationRequest) WithOauthRefreshTokenValidity(oauth
 	return s
 }
 
-func (s *OAuth2GitUserAuthenticationRequest) WithOauthAllowedScopes(oauthAllowedScopes []ApiIntegrationScope) *OAuth2GitUserAuthenticationRequest {
+func (s *OAuth2GitUserAuthenticationRequest) WithOauthAllowedScopes(oauthAllowedScopes []ApiIntegrationOauthAllowedScopeItem) *OAuth2GitUserAuthenticationRequest {
 	s.OauthAllowedScopes = oauthAllowedScopes
 	return s
 }
@@ -447,8 +457,23 @@ func NewApiIntegrationUnsetRequest() *ApiIntegrationUnsetRequest {
 	return &s
 }
 
-func (s *ApiIntegrationUnsetRequest) WithApiKey(apiKey bool) *ApiIntegrationUnsetRequest {
-	s.ApiKey = &apiKey
+func (s *ApiIntegrationUnsetRequest) WithAwsParams(awsParams UnsetAwsApiParamsRequest) *ApiIntegrationUnsetRequest {
+	s.AwsParams = &awsParams
+	return s
+}
+
+func (s *ApiIntegrationUnsetRequest) WithAzureParams(azureParams UnsetAzureApiParamsRequest) *ApiIntegrationUnsetRequest {
+	s.AzureParams = &azureParams
+	return s
+}
+
+func (s *ApiIntegrationUnsetRequest) WithGitHttpsApiTokenBasedParams(gitHttpsApiTokenBasedParams UnsetGitHttpsApiTokenBasedParamsRequest) *ApiIntegrationUnsetRequest {
+	s.GitHttpsApiTokenBasedParams = &gitHttpsApiTokenBasedParams
+	return s
+}
+
+func (s *ApiIntegrationUnsetRequest) WithGitHttpsApiPrivateLinkParams(gitHttpsApiPrivateLinkParams UnsetGitHttpsApiPrivateLinkParamsRequest) *ApiIntegrationUnsetRequest {
+	s.GitHttpsApiPrivateLinkParams = &gitHttpsApiPrivateLinkParams
 	return s
 }
 
@@ -462,23 +487,58 @@ func (s *ApiIntegrationUnsetRequest) WithApiBlockedPrefixes(apiBlockedPrefixes b
 	return s
 }
 
-func (s *ApiIntegrationUnsetRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets bool) *ApiIntegrationUnsetRequest {
+func (s *ApiIntegrationUnsetRequest) WithComment(comment bool) *ApiIntegrationUnsetRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewUnsetAwsApiParamsRequest() *UnsetAwsApiParamsRequest {
+	s := UnsetAwsApiParamsRequest{}
+	return &s
+}
+
+func (s *UnsetAwsApiParamsRequest) WithApiKey(apiKey bool) *UnsetAwsApiParamsRequest {
+	s.ApiKey = &apiKey
+	return s
+}
+
+func NewUnsetAzureApiParamsRequest() *UnsetAzureApiParamsRequest {
+	s := UnsetAzureApiParamsRequest{}
+	return &s
+}
+
+func (s *UnsetAzureApiParamsRequest) WithApiKey(apiKey bool) *UnsetAzureApiParamsRequest {
+	s.ApiKey = &apiKey
+	return s
+}
+
+func NewUnsetGitHttpsApiTokenBasedParamsRequest() *UnsetGitHttpsApiTokenBasedParamsRequest {
+	s := UnsetGitHttpsApiTokenBasedParamsRequest{}
+	return &s
+}
+
+func (s *UnsetGitHttpsApiTokenBasedParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets bool) *UnsetGitHttpsApiTokenBasedParamsRequest {
 	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
 	return s
 }
 
-func (s *ApiIntegrationUnsetRequest) WithTlsTrustedCertificates(tlsTrustedCertificates bool) *ApiIntegrationUnsetRequest {
+func NewUnsetGitHttpsApiPrivateLinkParamsRequest() *UnsetGitHttpsApiPrivateLinkParamsRequest {
+	s := UnsetGitHttpsApiPrivateLinkParamsRequest{}
+	return &s
+}
+
+func (s *UnsetGitHttpsApiPrivateLinkParamsRequest) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets bool) *UnsetGitHttpsApiPrivateLinkParamsRequest {
+	s.AllowedAuthenticationSecrets = &allowedAuthenticationSecrets
+	return s
+}
+
+func (s *UnsetGitHttpsApiPrivateLinkParamsRequest) WithTlsTrustedCertificates(tlsTrustedCertificates bool) *UnsetGitHttpsApiPrivateLinkParamsRequest {
 	s.TlsTrustedCertificates = &tlsTrustedCertificates
 	return s
 }
 
-func (s *ApiIntegrationUnsetRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ApiIntegrationUnsetRequest {
+func (s *UnsetGitHttpsApiPrivateLinkParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *UnsetGitHttpsApiPrivateLinkParamsRequest {
 	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
-	return s
-}
-
-func (s *ApiIntegrationUnsetRequest) WithComment(comment bool) *ApiIntegrationUnsetRequest {
-	s.Comment = &comment
 	return s
 }
 
