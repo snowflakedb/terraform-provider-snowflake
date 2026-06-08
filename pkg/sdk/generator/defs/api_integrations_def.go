@@ -41,6 +41,12 @@ var (
 		"ApiIntegrationMcpApiProviderType", "ApiIntegrationMcpApiProviderTypes",
 		"external_mcp",
 	)
+	ApiIntegrationUserAuthTypeEnum = g.NewEnum(
+		"ApiIntegrationUserAuthType", "ApiIntegrationUserAuthTypes",
+		"OAUTH2",
+		"OAUTH_DYNAMIC_CLIENT",
+		"SNOWFLAKE_GITHUB_APP",
+	)
 )
 
 var apiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
@@ -96,6 +102,7 @@ var apiIntegrationsDef = g.NewInterface(
 		ApiIntegrationGoogleApiProviderTypeEnum,
 		ApiIntegrationGitApiProviderTypeEnum,
 		ApiIntegrationMcpApiProviderTypeEnum,
+		ApiIntegrationUserAuthTypeEnum,
 	).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-api-integration",

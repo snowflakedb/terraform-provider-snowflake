@@ -170,3 +170,31 @@ func ToApiIntegrationMcpApiProviderType(s string) (ApiIntegrationMcpApiProviderT
 		return "", fmt.Errorf("invalid api integration mcp api provider type: %s", s)
 	}
 }
+
+type ApiIntegrationUserAuthType string
+
+const (
+	ApiIntegrationUserAuthTypeOauth2             ApiIntegrationUserAuthType = "OAUTH2"
+	ApiIntegrationUserAuthTypeOauthDynamicClient ApiIntegrationUserAuthType = "OAUTH_DYNAMIC_CLIENT"
+	ApiIntegrationUserAuthTypeSnowflakeGithubApp ApiIntegrationUserAuthType = "SNOWFLAKE_GITHUB_APP"
+)
+
+var AllApiIntegrationUserAuthTypes = []ApiIntegrationUserAuthType{
+	ApiIntegrationUserAuthTypeOauth2,
+	ApiIntegrationUserAuthTypeOauthDynamicClient,
+	ApiIntegrationUserAuthTypeSnowflakeGithubApp,
+}
+
+func ToApiIntegrationUserAuthType(s string) (ApiIntegrationUserAuthType, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(ApiIntegrationUserAuthTypeOauth2):
+		return ApiIntegrationUserAuthTypeOauth2, nil
+	case string(ApiIntegrationUserAuthTypeOauthDynamicClient):
+		return ApiIntegrationUserAuthTypeOauthDynamicClient, nil
+	case string(ApiIntegrationUserAuthTypeSnowflakeGithubApp):
+		return ApiIntegrationUserAuthTypeSnowflakeGithubApp, nil
+	default:
+		return "", fmt.Errorf("invalid api integration user auth type: %s", s)
+	}
+}

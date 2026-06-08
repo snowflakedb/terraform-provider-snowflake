@@ -76,11 +76,22 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasAllowedAuthenticationSecrets
 	return a
 }
 
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasUserAuthType(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasUserAuthType(expected sdk.ApiIntegrationUserAuthType) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
-		if o.UserAuthType != expected {
+		if o.UserAuthType != string(expected) {
 			return fmt.Errorf("expected user auth type: %v; got: %v", expected, o.UserAuthType)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoUserAuthType() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.UserAuthType != "" {
+			return fmt.Errorf("expected no user auth type; got: %v", o.UserAuthType)
 		}
 		return nil
 	})
@@ -167,8 +178,8 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthRefreshTokenValidity(ex
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAllowedScopes(expected ...sdk.ApiIntegrationOauthAllowedScope) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
-		mapped := collections.Map(o.OauthAllowedScopes, func(item string) any { return item })
-		mappedExpected := collections.Map(expected, func(item sdk.ApiIntegrationOauthAllowedScope) any { return item })
+		mapped := collections.Map(o.OauthAllowedScopes, func(item string) string { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.ApiIntegrationOauthAllowedScope) string { return string(item) })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected oauth allowed scopes: %v; got: %v", expected, o.OauthAllowedScopes)
 		}
@@ -265,6 +276,17 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasComment(expected string) *Ap
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoTlsTrustedCertificates() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if len(o.TlsTrustedCertificates) != 0 {
+			return fmt.Errorf("expected no tls trusted certificates; got: %v", o.TlsTrustedCertificates)
 		}
 		return nil
 	})
