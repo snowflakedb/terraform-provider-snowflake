@@ -98,28 +98,6 @@ func (a *ApiIntegrationAzureDetailsAssert) HasAzureAdApplicationId(expected stri
 	return a
 }
 
-func (a *ApiIntegrationAzureDetailsAssert) HasAzureMultiTenantAppName(expected string) *ApiIntegrationAzureDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
-		t.Helper()
-		if o.AzureMultiTenantAppName != expected {
-			return fmt.Errorf("expected azure multi tenant app name: %v; got: %v", expected, o.AzureMultiTenantAppName)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationAzureDetailsAssert) HasAzureConsentUrl(expected string) *ApiIntegrationAzureDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
-		t.Helper()
-		if o.AzureConsentUrl != expected {
-			return fmt.Errorf("expected azure consent url: %v; got: %v", expected, o.AzureConsentUrl)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *ApiIntegrationAzureDetailsAssert) HasAllowedPrefixes(expected ...string) *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()

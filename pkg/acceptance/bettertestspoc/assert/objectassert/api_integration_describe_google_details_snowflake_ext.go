@@ -54,17 +54,6 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasEnabled(expected bool) *ApiIntegr
 	return a
 }
 
-func (a *ApiIntegrationGoogleDetailsAssert) HasApiKey(expected string) *ApiIntegrationGoogleDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
-		t.Helper()
-		if o.ApiKey != expected {
-			return fmt.Errorf("expected api key: %v; got: %v", expected, o.ApiKey)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *ApiIntegrationGoogleDetailsAssert) HasApiProvider(expected sdk.ApiIntegrationGoogleApiProviderType) *ApiIntegrationGoogleDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
 		t.Helper()
@@ -81,17 +70,6 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleAudience(expected string) *
 		t.Helper()
 		if o.GoogleAudience != expected {
 			return fmt.Errorf("expected google audience: %v; got: %v", expected, o.GoogleAudience)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleApiServiceAccount(expected string) *ApiIntegrationGoogleDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
-		t.Helper()
-		if o.GoogleApiServiceAccount != expected {
-			return fmt.Errorf("expected google api service account: %v; got: %v", expected, o.GoogleApiServiceAccount)
 		}
 		return nil
 	})

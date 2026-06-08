@@ -199,28 +199,6 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthUsername(expected strin
 	return a
 }
 
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAssertionIssuer(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
-		t.Helper()
-		if o.OauthAssertionIssuer != expected {
-			return fmt.Errorf("expected oauth assertion issuer: %v; got: %v", expected, o.OauthAssertionIssuer)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthResourceUrl(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
-		t.Helper()
-		if o.OauthResourceUrl != expected {
-			return fmt.Errorf("expected oauth resource url: %v; got: %v", expected, o.OauthResourceUrl)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasUsePrivatelinkEndpoint(expected bool) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()

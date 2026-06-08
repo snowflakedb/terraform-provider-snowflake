@@ -76,17 +76,6 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasUserAuthType(expected sdk.Ap
 	return a
 }
 
-func (a *ApiIntegrationExternalMcpDetailsAssert) HasNoUserAuthType() *ApiIntegrationExternalMcpDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
-		t.Helper()
-		if o.UserAuthType != "" {
-			return fmt.Errorf("expected no user auth type; got: %v", o.UserAuthType)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthGrant(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
@@ -158,52 +147,6 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthRefreshTokenValidity(ex
 		t.Helper()
 		if o.OauthRefreshTokenValidity != expected {
 			return fmt.Errorf("expected oauth refresh token validity: %v; got: %v", expected, o.OauthRefreshTokenValidity)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthAllowedScopes(expected ...string) *ApiIntegrationExternalMcpDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
-		t.Helper()
-		mapped := collections.Map(o.OauthAllowedScopes, func(item string) any { return item })
-		mappedExpected := collections.Map(expected, func(item string) any { return item })
-		if !slices.Equal(mapped, mappedExpected) {
-			return fmt.Errorf("expected oauth allowed scopes: %v; got: %v", expected, o.OauthAllowedScopes)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthUsername(expected string) *ApiIntegrationExternalMcpDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
-		t.Helper()
-		if o.OauthUsername != expected {
-			return fmt.Errorf("expected oauth username: %v; got: %v", expected, o.OauthUsername)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthAssertionIssuer(expected string) *ApiIntegrationExternalMcpDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
-		t.Helper()
-		if o.OauthAssertionIssuer != expected {
-			return fmt.Errorf("expected oauth assertion issuer: %v; got: %v", expected, o.OauthAssertionIssuer)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthResourceUrl(expected string) *ApiIntegrationExternalMcpDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
-		t.Helper()
-		if o.OauthResourceUrl != expected {
-			return fmt.Errorf("expected oauth resource url: %v; got: %v", expected, o.OauthResourceUrl)
 		}
 		return nil
 	})
