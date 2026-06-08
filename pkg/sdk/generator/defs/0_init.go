@@ -54,6 +54,7 @@ func init() {
 		sessionPoliciesDef,
 		stagesDef,
 		storageIntegrationsDef,
+		storageLifecyclePoliciesDef,
 		streamlitsDef,
 		streamsDef,
 		tagReferencesDef,
