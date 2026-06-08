@@ -99,11 +99,11 @@ var openflowRuntimesDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowRuntimeRow", "OpenflowRuntime").
 		Text("name").
-		PlainField("status", OpenflowRuntimeStatusEnumDef.Kind()).
+		Enum("status", OpenflowRuntimeStatusEnumDef).
 		Text("deployment").
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("node_type", OpenflowRuntimeNodeTypeEnumDef.Kind()).
+		Enum("node_type", OpenflowRuntimeNodeTypeEnumDef).
 		OptionalText("display_name").
 		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Bool("initially_suspended").
@@ -124,11 +124,11 @@ var openflowRuntimesDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowRuntimeDetailsRow", "OpenflowRuntimeDetails").
 		Text("name").
-		PlainField("status", OpenflowRuntimeStatusEnumDef.Kind()).
+		Enum("status", OpenflowRuntimeStatusEnumDef).
 		Text("deployment").
 		Number("min_nodes").
 		Number("max_nodes").
-		PlainField("node_type", OpenflowRuntimeNodeTypeEnumDef.Kind()).
+		Enum("node_type", OpenflowRuntimeNodeTypeEnumDef).
 		OptionalText("display_name").
 		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier").
 		Bool("initially_suspended").

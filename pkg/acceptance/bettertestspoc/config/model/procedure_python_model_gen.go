@@ -23,6 +23,7 @@ type ProcedurePythonModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -172,6 +173,11 @@ func (p *ProcedurePythonModel) WithIsSecure(isSecure string) *ProcedurePythonMod
 	return p
 }
 
+func (p *ProcedurePythonModel) WithLogEventLevel(logEventLevel string) *ProcedurePythonModel {
+	p.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return p
+}
+
 func (p *ProcedurePythonModel) WithLogLevel(logLevel string) *ProcedurePythonModel {
 	p.LogLevel = tfconfig.StringVariable(logLevel)
 	return p
@@ -282,6 +288,11 @@ func (p *ProcedurePythonModel) WithImportsValue(value tfconfig.Variable) *Proced
 
 func (p *ProcedurePythonModel) WithIsSecureValue(value tfconfig.Variable) *ProcedurePythonModel {
 	p.IsSecure = value
+	return p
+}
+
+func (p *ProcedurePythonModel) WithLogEventLevelValue(value tfconfig.Variable) *ProcedurePythonModel {
+	p.LogEventLevel = value
 	return p
 }
 

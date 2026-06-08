@@ -24,6 +24,7 @@ type FunctionScalaModel struct {
 	Handler                    tfconfig.Variable `json:"handler,omitempty"`
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -173,6 +174,11 @@ func (f *FunctionScalaModel) WithIsSecure(isSecure string) *FunctionScalaModel {
 	return f
 }
 
+func (f *FunctionScalaModel) WithLogEventLevel(logEventLevel string) *FunctionScalaModel {
+	f.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return f
+}
+
 func (f *FunctionScalaModel) WithLogLevel(logLevel string) *FunctionScalaModel {
 	f.LogLevel = tfconfig.StringVariable(logLevel)
 	return f
@@ -280,6 +286,11 @@ func (f *FunctionScalaModel) WithImportsValue(value tfconfig.Variable) *Function
 
 func (f *FunctionScalaModel) WithIsSecureValue(value tfconfig.Variable) *FunctionScalaModel {
 	f.IsSecure = value
+	return f
+}
+
+func (f *FunctionScalaModel) WithLogEventLevelValue(value tfconfig.Variable) *FunctionScalaModel {
+	f.LogEventLevel = value
 	return f
 }
 

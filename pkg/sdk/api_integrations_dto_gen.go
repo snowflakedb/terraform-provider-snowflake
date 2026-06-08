@@ -55,7 +55,11 @@ type ApiIntegrationAllowedAuthenticationSecretsRequest struct {
 	AllowedList []SchemaObjectIdentifier
 }
 
-type GitHttpsApiGithubAppParamsRequest struct{}
+type GitHttpsApiGithubAppParamsRequest struct {
+	ApiUserAuthentication GithubAppUserAuthenticationRequest
+}
+
+type GithubAppUserAuthenticationRequest struct{}
 
 type GitHttpsApiOAuth2ParamsRequest struct {
 	ApiUserAuthentication OAuth2GitUserAuthenticationRequest
@@ -68,7 +72,7 @@ type OAuth2GitUserAuthenticationRequest struct {
 	OauthClientSecret          string // required
 	OauthAccessTokenValidity   *int
 	OauthRefreshTokenValidity  *int
-	OauthAllowedScopes         []ApiIntegrationScope
+	OauthAllowedScopes         []ApiIntegrationOauthAllowedScopeItem
 	OauthUsername              *string
 }
 
@@ -152,13 +156,31 @@ type SetExternalMcpOAuth2ParamsRequest struct {
 }
 
 type ApiIntegrationUnsetRequest struct {
-	ApiKey                       *bool
+	AwsParams                    *UnsetAwsApiParamsRequest
+	AzureParams                  *UnsetAzureApiParamsRequest
+	GitHttpsApiTokenBasedParams  *UnsetGitHttpsApiTokenBasedParamsRequest
+	GitHttpsApiPrivateLinkParams *UnsetGitHttpsApiPrivateLinkParamsRequest
 	Enabled                      *bool
 	ApiBlockedPrefixes           *bool
+	Comment                      *bool
+}
+
+type UnsetAwsApiParamsRequest struct {
+	ApiKey *bool
+}
+
+type UnsetAzureApiParamsRequest struct {
+	ApiKey *bool
+}
+
+type UnsetGitHttpsApiTokenBasedParamsRequest struct {
+	AllowedAuthenticationSecrets *bool
+}
+
+type UnsetGitHttpsApiPrivateLinkParamsRequest struct {
 	AllowedAuthenticationSecrets *bool
 	TlsTrustedCertificates       *bool
 	UsePrivatelinkEndpoint       *bool
-	Comment                      *bool
 }
 
 type DropApiIntegrationRequest struct {

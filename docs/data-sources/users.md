@@ -199,6 +199,7 @@ Read-Only:
 - `jdbc_use_session_timezone` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--jdbc_use_session_timezone))
 - `json_indent` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--json_indent))
 - `lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--lock_timeout))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--log_level))
 - `multi_statement_count` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--multi_statement_count))
 - `network_policy` (List of Object) (see [below for nested schema](#nestedobjatt--users--parameters--network_policy))
@@ -523,6 +524,18 @@ Read-Only:
 
 <a id="nestedobjatt--users--parameters--lock_timeout"></a>
 ### Nested Schema for `users.parameters.lock_timeout`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--users--parameters--log_event_level"></a>
+### Nested Schema for `users.parameters.log_event_level`
 
 Read-Only:
 

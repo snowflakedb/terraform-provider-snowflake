@@ -210,6 +210,7 @@ type ProcedureSet struct {
 	AutoEventLogging           *AutoEventLogging         `ddl:"parameter,single_quotes" sql:"AUTO_EVENT_LOGGING"`
 	EnableConsoleOutput        *bool                     `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
 	LogLevel                   *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	LogEventLevel              *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	MetricLevel                *MetricLevel              `ddl:"parameter,single_quotes" sql:"METRIC_LEVEL"`
 	TraceLevel                 *TraceLevel               `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 }
@@ -222,6 +223,7 @@ type ProcedureUnset struct {
 	AutoEventLogging           *bool `ddl:"keyword" sql:"AUTO_EVENT_LOGGING"`
 	EnableConsoleOutput        *bool `ddl:"keyword" sql:"ENABLE_CONSOLE_OUTPUT"`
 	LogLevel                   *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	LogEventLevel              *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	MetricLevel                *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
 	TraceLevel                 *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
 }
@@ -270,8 +272,8 @@ type Procedure struct {
 	IsAnsi                     bool
 	MinNumArguments            int
 	MaxNumArguments            int
-	ArgumentsOld               []DataType
-	ReturnTypeOld              DataType
+	ArgumentsOld               []DataType // added manually
+	ReturnTypeOld              DataType   // added manually
 	ArgumentsRaw               string
 	Description                string
 	CatalogName                string

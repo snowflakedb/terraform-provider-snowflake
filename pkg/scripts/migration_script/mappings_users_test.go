@@ -229,13 +229,14 @@ import {
 		{
 			name: "service user with parameters",
 			inputRows: [][]string{
-				{"name", "type", "autocommit_level", "autocommit_value", "log_level_level", "log_level_value"},
-				{"SVC_USER", "SERVICE", "USER", "false", "USER", "INFO"},
+				{"name", "type", "autocommit_level", "autocommit_value", "log_level_level", "log_level_value", "log_event_level_level", "log_event_level_value"},
+				{"SVC_USER", "SERVICE", "USER", "false", "USER", "INFO", "USER", "WARN"},
 			},
 			expectedOutput: `
 resource "snowflake_service_user" "snowflake_generated_service_user_SVC_USER" {
   name = "SVC_USER"
   autocommit = false
+  log_event_level = "WARN"
   log_level = "INFO"
 }
 import {
@@ -336,12 +337,13 @@ import {
 		{
 			name: "legacy service user with parameters",
 			inputRows: [][]string{
-				{"name", "type", "statement_timeout_in_seconds_level", "statement_timeout_in_seconds_value", "trace_level_level", "trace_level_value"},
-				{"LEGACY_SVC_USER", "LEGACY_SERVICE", "USER", "3600", "USER", "ON_EVENT"},
+				{"name", "type", "statement_timeout_in_seconds_level", "statement_timeout_in_seconds_value", "trace_level_level", "trace_level_value", "log_event_level_level", "log_event_level_value"},
+				{"LEGACY_SVC_USER", "LEGACY_SERVICE", "USER", "3600", "USER", "ON_EVENT", "USER", "WARN"},
 			},
 			expectedOutput: `
 resource "snowflake_legacy_service_user" "snowflake_generated_legacy_service_user_LEGACY_SVC_USER" {
   name = "LEGACY_SVC_USER"
+  log_event_level = "WARN"
   statement_timeout_in_seconds = 3600
   trace_level = "ON_EVENT"
 }
@@ -487,6 +489,7 @@ func TestHandleUserWithAllParameters(t *testing.T) {
 			"json_indent_level", "json_indent_value",
 			"lock_timeout_level", "lock_timeout_value",
 			"log_level_level", "log_level_value",
+			"log_event_level_level", "log_event_level_value",
 			"multi_statement_count_level", "multi_statement_count_value",
 			"network_policy_level", "network_policy_value",
 			"noorder_sequence_as_default_level", "noorder_sequence_as_default_value",
@@ -548,6 +551,7 @@ func TestHandleUserWithAllParameters(t *testing.T) {
 			"USER", "4", // json_indent
 			"USER", "43200", // lock_timeout
 			"USER", "INFO", // log_level
+			"USER", "WARN", // log_event_level
 			"USER", "0", // multi_statement_count
 			"USER", "NETWORK_POLICY_1", // network_policy
 			"USER", "true", // noorder_sequence_as_default
@@ -610,6 +614,7 @@ func TestHandleUserWithAllParameters(t *testing.T) {
   jdbc_use_session_timezone = true
   json_indent = 4
   lock_timeout = 43200
+  log_event_level = "WARN"
   log_level = "INFO"
   multi_statement_count = 0
   network_policy = "NETWORK_POLICY_1"

@@ -91,6 +91,11 @@ func (f *FunctionJavaResourceAssert) HasIsSecure(expected string) *FunctionJavaR
 	return f
 }
 
+func (f *FunctionJavaResourceAssert) HasLogEventLevel(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("log_event_level", expected)
+	return f
+}
+
 func (f *FunctionJavaResourceAssert) HasLogLevel(expected string) *FunctionJavaResourceAssert {
 	f.StringValueSet("log_level", expected)
 	return f
@@ -189,6 +194,11 @@ func (f *FunctionJavaResourceAssert) HasIsSecureString(expected string) *Functio
 	return f
 }
 
+func (f *FunctionJavaResourceAssert) HasLogEventLevelString(expected string) *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_event_level", expected))
+	return f
+}
+
 func (f *FunctionJavaResourceAssert) HasLogLevelString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("log_level", expected))
 	return f
@@ -278,6 +288,11 @@ func (f *FunctionJavaResourceAssert) HasNoIsSecure() *FunctionJavaResourceAssert
 	return f
 }
 
+func (f *FunctionJavaResourceAssert) HasNoLogEventLevel() *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return f
+}
+
 func (f *FunctionJavaResourceAssert) HasNoLogLevel() *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueNotSet("log_level"))
 	return f
@@ -359,6 +374,11 @@ func (f *FunctionJavaResourceAssert) HasImportsEmpty() *FunctionJavaResourceAsse
 
 func (f *FunctionJavaResourceAssert) HasIsSecureEmpty() *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("is_secure", ""))
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasLogEventLevelEmpty() *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return f
 }
 
@@ -458,6 +478,11 @@ func (f *FunctionJavaResourceAssert) HasHandlerNotEmpty() *FunctionJavaResourceA
 
 func (f *FunctionJavaResourceAssert) HasIsSecureNotEmpty() *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValuePresent("is_secure"))
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasLogEventLevelNotEmpty() *FunctionJavaResourceAssert {
+	f.AddAssertion(assert.ValuePresent("log_event_level"))
 	return f
 }
 

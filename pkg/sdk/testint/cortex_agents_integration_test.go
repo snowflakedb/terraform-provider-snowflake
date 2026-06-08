@@ -35,7 +35,8 @@ func TestInt_CortexAgents(t *testing.T) {
 		profile := `{"display_name":"My Business Assistant","avatar":"business-icon.png","color":"blue"}`
 		response := "Complete integration test"
 		yamlSpec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, response)
-		descSpec := testClientHelper().CortexAgent.SampleSpecAsJson(t, response)
+		descSpec, err := sdk.NormalizeCortexAgentSpecification(yamlSpec)
+		require.NoError(t, err)
 
 		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, yamlSpec).
 			WithIfNotExists(true).
@@ -64,7 +65,7 @@ func TestInt_CortexAgents(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasCortexAgentProfile(expectedProfile).
-			HasCortexAgentSpec(descSpec).
+			HasAgentSpec(descSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).
@@ -76,7 +77,8 @@ func TestInt_CortexAgents(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		response := "Without optionals"
 		yamlSpec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, response)
-		descSpec := testClientHelper().CortexAgent.SampleSpecAsJson(t, response)
+		descSpec, err := sdk.NormalizeCortexAgentSpecification(yamlSpec)
+		require.NoError(t, err)
 
 		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, yamlSpec))
 		t.Cleanup(cleanup)
@@ -87,17 +89,17 @@ func TestInt_CortexAgents(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasNoComment().
-			HasNoProfile(),
+			HasComment("").
+			HasCortexAgentProfile(sdk.CortexAgentProfile{}),
 		)
 		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasNoComment().
-			HasNoProfile().
-			HasCortexAgentSpec(descSpec).
+			HasComment("").
+			HasCortexAgentProfile(sdk.CortexAgentProfile{}).
+			HasAgentSpec(descSpec).
 			HasCreatedOnNotEmpty().
 			HasDefaultVersionName("LAST").
 			HasVersions(`["VERSION$1"]`).
@@ -147,14 +149,15 @@ func TestInt_CortexAgents(t *testing.T) {
 		id := createCortexAgent(t)
 		newResponse := "Updated live version"
 		newYamlSpec := testClientHelper().CortexAgent.SampleSpecWithResponse(t, newResponse)
-		newDescSpec := testClientHelper().CortexAgent.SampleSpecAsJson(t, newResponse)
+		newDescSpec, err := sdk.NormalizeCortexAgentSpecification(newYamlSpec)
+		require.NoError(t, err)
 
-		err := client.CortexAgents.Alter(ctx, sdk.NewAlterCortexAgentRequest(id).
+		err = client.CortexAgents.Alter(ctx, sdk.NewAlterCortexAgentRequest(id).
 			WithModifyLiveVersionSet(*sdk.NewCortexAgentModifyLiveVersionSetRequest(newYamlSpec)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
-			HasCortexAgentSpec(newDescSpec))
+			HasAgentSpec(newDescSpec))
 	})
 
 	t.Run("drop cortex agent: existing", func(t *testing.T) {

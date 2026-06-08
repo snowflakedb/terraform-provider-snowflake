@@ -13,6 +13,50 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+func (opts *CreateTaskOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.SessionParameters) {
+		if err := opts.SessionParameters.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if valueSet(opts.Warehouse) {
+		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
+			errs = append(errs, errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateOrAlterTaskOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.SessionParameters) {
+		if err := opts.SessionParameters.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if valueSet(opts.Warehouse) {
+		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
+			errs = append(errs, errExactlyOneOf("CreateOrAlterTaskOptions.CreateTaskWarehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (s *TaskSet) additionalValidations() error {
+	if valueSet(s.SessionParameters) {
+		return s.SessionParameters.validate()
+	}
+	return nil
+}
+
+func (s *TaskUnset) additionalValidations() error {
+	if valueSet(s.SessionParametersUnset) {
+		return s.SessionParametersUnset.validate()
+	}
+	return nil
+}
+
 type TaskRelationsRepresentation struct {
 	Predecessors      []string `json:"Predecessors"`
 	FinalizerTask     string   `json:"FinalizerTask"`
@@ -268,4 +312,76 @@ func parseTargetCompletionInterval(interval string) (*TaskTargetCompletionInterv
 	default:
 		return nil, fmt.Errorf("invalid task target completion interval unit: %s", unit)
 	}
+}
+
+// getPredecessors parses the JSON-encoded predecessors string returned by Snowflake.
+// Since 2022_03, Snowflake returns this as a JSON array (even when empty).
+// The list is formatted, e.g.:
+// `[\n  \"\\\"qgb)Z1KcNWJ(\\\".\\\"glN@JtR=7dzP$7\\\".\\\"_XEL(7N_F?@frgT5>dQS>V|vSy,J\\\"\"\n]`.
+func getPredecessors(predecessors string) ([]string, error) {
+	predecessorNames := make([]string, 0)
+	err := json.Unmarshal([]byte(predecessors), &predecessorNames)
+	if err == nil {
+		for i, predecessorName := range predecessorNames {
+			formattedName := strings.Trim(predecessorName, "\\\"")
+			idx := strings.LastIndex(formattedName, "\"") + 1
+			// -1 because of not found +1 is 0
+			if idx == 0 {
+				idx = strings.LastIndex(formattedName, ".") + 1
+			} else if strings.LastIndex(formattedName, ".\"")+2 < idx {
+				idx++
+			}
+			formattedName = formattedName[idx:]
+			predecessorNames[i] = formattedName
+		}
+	}
+	return predecessorNames, err
+}
+
+// additionalConvert handles the four fields in taskDBRow that cannot be expressed
+// by the generator: predecessors (JSON + row context), warehouse / error_integration
+// ("null" string exclusion), and target_completion_interval (custom parser).
+func (r taskDBRow) additionalConvert(result *Task) error {
+	if r.Warehouse.Valid && r.Warehouse.String != "null" {
+		id, err := ParseAccountObjectIdentifier(r.Warehouse.String)
+		if err != nil {
+			return fmt.Errorf("failed to parse warehouse: %w", err)
+		}
+		result.Warehouse = &id
+	}
+	if len(r.State) > 0 {
+		taskState, err := ToTaskState(r.State)
+		if err != nil {
+			return fmt.Errorf("failed to convert to task state: %w", err)
+		} else {
+			result.State = taskState
+		}
+	}
+	if len(r.Predecessors) > 0 {
+		names, err := getPredecessors(r.Predecessors)
+		ids := make([]SchemaObjectIdentifier, len(names))
+		if err == nil {
+			for i, name := range names {
+				ids[i] = NewSchemaObjectIdentifier(r.DatabaseName, r.SchemaName, name)
+			}
+		}
+		result.Predecessors = ids
+	} else {
+		result.Predecessors = make([]SchemaObjectIdentifier, 0)
+	}
+	if r.ErrorIntegration.Valid && r.ErrorIntegration.String != "null" {
+		id, err := ParseAccountObjectIdentifier(r.ErrorIntegration.String)
+		if err != nil {
+			return fmt.Errorf("failed to parse error_integration: %w", err)
+		}
+		result.ErrorIntegration = &id
+	}
+	if r.TargetCompletionInterval.Valid {
+		targetCompletionInterval, err := parseTargetCompletionInterval(r.TargetCompletionInterval.String)
+		if err != nil {
+			return fmt.Errorf("failed to parse target completion interval: %w", err)
+		}
+		result.TargetCompletionInterval = targetCompletionInterval
+	}
+	return nil
 }

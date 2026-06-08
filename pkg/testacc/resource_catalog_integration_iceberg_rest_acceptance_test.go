@@ -500,14 +500,6 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, basicAssertions...),
 			},
-			// Import
-			{
-				Config:                  config.FromModels(t, basic),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"rest_config", "oauth_rest_authentication"},
-			},
 			// Change alterable props
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -547,14 +539,6 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				},
 				Config: config.FromModels(t, allAttributes),
 				Check:  assertThat(t, completeAssertions...),
-			},
-			// Import
-			{
-				Config:                  config.FromModels(t, allAttributes),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"refresh_interval_seconds", "rest_config", "oauth_rest_authentication"},
 			},
 			// Change alterable props externally
 			{
@@ -718,6 +702,229 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				},
 				Config: config.FromModels(t, withBearerToken),
 				Check:  assertThat(t, withBearerTokenAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationIcebergRest_ImportOAuth(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	catalogUri := "https://api.tabular.io/ws"
+	catalogName := random.AlphanumericN(15)
+	prefix := "prefix"
+	catalogNamespace := random.AlphanumericN(15)
+
+	oAuthTokenUri := catalogUri + "/v2/oauth/tokens"
+	oAuthClientId := random.AlphanumericN(15)
+	oAuthClientSecret := random.AlphanumericN(15)
+	oAuthAllowedScope := "PRINCIPAL_ROLE:ALL"
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	completeRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+		WithOauthTokenUri(oAuthTokenUri)
+
+	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithPrefix(prefix).
+		WithCatalogName(catalogName).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+		WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)
+
+	allAttributes := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, completeRestConfig, completeRestAuth).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds).
+		WithCatalogNamespace(catalogNamespace)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationIcebergRest),
+		Steps: []resource.TestStep{
+			// Import the externally created resource
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithRefreshIntervalSeconds(refreshIntervalSeconds).
+						WithComment(comment).
+						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
+							WithRestConfig(completeRestConfig).
+							WithOAuthRestAuthentication(completeRestAuth).
+							WithCatalogNamespace(catalogNamespace))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				Config:             config.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			// After import, only oauth_client_secret is unset in state (write-only field Snowflake never returns).
+			// All ForceNew fields (rest_config, oauth_client_id, oauth_allowed_scopes, etc.) must already match
+			// the config — only an in-place update for oauth_client_secret should be planned.
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.PrintPlanDetails(ref, "rest_config", "oauth_rest_authentication", "refresh_interval_seconds"),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "oauth_rest_authentication.0.oauth_client_secret", tfjson.ActionUpdate, sdk.String(""), sdk.String(oAuthClientSecret)),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationIcebergRest_ImportBearer(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	catalogUri := "https://api.tabular.io/ws"
+	catalogName := random.AlphanumericN(15)
+	prefix := "prefix"
+	catalogNamespace := random.AlphanumericN(15)
+
+	bearerToken := random.AlphanumericN(32)
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	completeRestAuth := *sdk.NewBearerRestAuthenticationRequest(bearerToken)
+
+	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithPrefix(prefix).
+		WithCatalogName(catalogName).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+		WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)
+
+	allAttributes := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, completeRestConfig, completeRestAuth).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds).
+		WithCatalogNamespace(catalogNamespace)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationIcebergRest),
+		Steps: []resource.TestStep{
+			// Import the externally created resource
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithRefreshIntervalSeconds(refreshIntervalSeconds).
+						WithComment(comment).
+						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
+							WithRestConfig(completeRestConfig).
+							WithBearerRestAuthentication(completeRestAuth).
+							WithCatalogNamespace(catalogNamespace))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				Config:             config.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			// After import, only bearer_token is unset in state (write-only field Snowflake never returns).
+			// All ForceNew fields (rest_config, etc.) must already match the config — only an in-place
+			// update for bearer_token should be planned.
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.PrintPlanDetails(ref, "rest_config", "bearer_rest_authentication", "refresh_interval_seconds"),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationIcebergRest_ImportSigV4(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	catalogUri := "https://api.tabular.io/ws"
+	catalogName := random.AlphanumericN(15)
+	prefix := "prefix"
+	catalogNamespace := random.AlphanumericN(15)
+
+	sigV4IamRole := "arn:aws:iam::123456789012:role/sigv4-role"
+	sigV4SigningRegion := "us-west-2"
+	sigV4ExternalId := random.AlphanumericN(15)
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	completeRestAuth := *sdk.NewSigV4RestAuthenticationRequest(sigV4IamRole).
+		WithSigv4SigningRegion(sigV4SigningRegion).
+		WithSigv4ExternalId(sigV4ExternalId)
+
+	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithPrefix(prefix).
+		WithCatalogName(catalogName).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
+		WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)
+
+	allAttributes := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, completeRestConfig, completeRestAuth).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds).
+		WithCatalogNamespace(catalogNamespace)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationIcebergRest),
+		Steps: []resource.TestStep{
+			// Import the externally created resource
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithRefreshIntervalSeconds(refreshIntervalSeconds).
+						WithComment(comment).
+						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
+							WithRestConfig(completeRestConfig).
+							WithSigV4RestAuthentication(completeRestAuth).
+							WithCatalogNamespace(catalogNamespace))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				Config:             config.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			// After import, all ForceNew fields (rest_config, sigv4_rest_authentication, etc.) must already
+			// match the config. sigv4_external_id is copied from configuration into state during import because
+			// Snowflake does not return it — no recreation plan should be produced.
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.PrintPlanDetails(ref, "rest_config", "sigv4_rest_authentication", "refresh_interval_seconds"),
+						// SIGV4_EXTERNAL_ID is ForceNew and is not returned from Snowflake, so we need to destroy and create the resource.
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
 			},
 		},
 	})

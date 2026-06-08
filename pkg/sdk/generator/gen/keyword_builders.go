@@ -64,16 +64,6 @@ func (v *QueryStruct) OptionalLimitFrom() *QueryStruct {
 	return v.PredefinedQueryStructField("Limit", "*LimitFrom", KeywordOptions().SQL("LIMIT"))
 }
 
-func (v *QueryStruct) OptionalSessionParameters() *QueryStruct {
-	return v.PredefinedQueryStructField("SessionParameters", "*SessionParameters", ListOptions().NoParentheses()).
-		WithValidation(ValidateValue, "SessionParameters")
-}
-
-func (v *QueryStruct) OptionalSessionParametersUnset() *QueryStruct {
-	return v.PredefinedQueryStructField("SessionParametersUnset", "*SessionParametersUnset", ListOptions().NoParentheses()).
-		WithValidation(ValidateValue, "SessionParametersUnset")
-}
-
 func (v *QueryStruct) NamedListWithParens(sqlPrefix string, listItemKind string, transformer *KeywordTransformer) *QueryStruct {
 	if transformer != nil {
 		transformer = transformer.Parentheses().SQL(sqlPrefix)

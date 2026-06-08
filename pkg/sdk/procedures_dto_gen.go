@@ -175,6 +175,7 @@ type ProcedureSetRequest struct {
 	AutoEventLogging           *AutoEventLogging
 	EnableConsoleOutput        *bool
 	LogLevel                   *LogLevel
+	LogEventLevel              *LogLevel
 	MetricLevel                *MetricLevel
 	TraceLevel                 *TraceLevel
 }
@@ -187,6 +188,7 @@ type ProcedureUnsetRequest struct {
 	AutoEventLogging           *bool
 	EnableConsoleOutput        *bool
 	LogLevel                   *bool
+	LogEventLevel              *bool
 	MetricLevel                *bool
 	TraceLevel                 *bool
 }

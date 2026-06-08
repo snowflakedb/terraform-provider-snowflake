@@ -69,8 +69,7 @@ var imageRepositoriesDef = g.NewInterface(
 		Text("owner_role_type").
 		Text("comment").
 		Enum("encryption", ImageRepositoryEncryptionTypeDef).
-		Text("privatelink_repository_url").
-		WithConvertGeneration(),
+		Text("privatelink_repository_url"),
 	g.NewQueryStruct("ShowImageRepositories").
 		Show().
 		SQL("IMAGE REPOSITORIES").

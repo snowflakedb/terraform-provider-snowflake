@@ -159,6 +159,7 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithTraceLevel(string(sdk.TraceLevelPropagate)).
 		WithSuspendTaskAfterNumFailures(20).
 		WithTaskAutoRetryAttempts(20).
@@ -231,7 +232,7 @@ func TestAcc_CreateSharedDatabase_InvalidValues(t *testing.T) {
 				Config: accconfig.FromModels(t, sharedDatabaseModelInvalid),
 				ExpectError: regexp.MustCompile(`(unknown log level: invalid_value)|` +
 					`(unknown trace level: invalid_value)|` +
-					`(unknown storage serialization policy: invalid_value)|` +
+					`(invalid storage serialization policy: INVALID_VALUE)|` +
 					`(invalid warehouse size:)`),
 			},
 		},

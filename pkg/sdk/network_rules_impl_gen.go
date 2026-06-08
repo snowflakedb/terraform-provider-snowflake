@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ NetworkRules = (*networkRules)(nil)
-
 var (
+	_ NetworkRules                       = (*networkRules)(nil)
 	_ convertibleRow[NetworkRule]        = new(ShowNetworkRulesRow)
 	_ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
 )

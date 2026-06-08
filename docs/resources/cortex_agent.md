@@ -119,9 +119,19 @@ Read-Only:
 - `default_version_name` (String)
 - `name` (String)
 - `owner` (String)
-- `profile` (String)
+- `profile` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--profile))
 - `schema_name` (String)
 - `versions` (String)
+
+<a id="nestedobjatt--describe_output--profile"></a>
+### Nested Schema for `describe_output.profile`
+
+Read-Only:
+
+- `avatar` (String)
+- `color` (String)
+- `display_name` (String)
+
 
 
 <a id="nestedatt--show_output"></a>
@@ -134,8 +144,17 @@ Read-Only:
 - `database_name` (String)
 - `name` (String)
 - `owner` (String)
-- `profile` (String)
+- `profile` (List of Object) (see [below for nested schema](#nestedobjatt--show_output--profile))
 - `schema_name` (String)
+
+<a id="nestedobjatt--show_output--profile"></a>
+### Nested Schema for `show_output.profile`
+
+Read-Only:
+
+- `avatar` (String)
+- `color` (String)
+- `display_name` (String)
 
 ## Import
 

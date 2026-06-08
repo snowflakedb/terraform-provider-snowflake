@@ -119,7 +119,6 @@ func TestInt_Secrets(t *testing.T) {
 		})
 	})
 
-	// TODO [SNOW-1678756]: oauth_copes not inherited or not displayed correctly when not provided
 	t.Run("Create: SecretWithOAuthClientCredentialsFlow - Empty Scopes List", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateWithOAuthClientCredentialsFlowSecretRequest(id, integrationId).WithOauthScopes(sdk.OauthScopesListRequest{})
@@ -145,6 +144,61 @@ func TestInt_Secrets(t *testing.T) {
 		assert.NotContains(t, details.OauthScopes, "foo")
 		assert.NotContains(t, details.OauthScopes, "bar")
 		assert.Equal(t, []string{}, details.OauthScopes)
+	})
+
+	// Verifies that oauth_scopes are not inherited from the security integration when not set on the secret.
+	// DESC SECRET returns null (empty) for oauth_scopes regardless of what the integration has configured.
+	// Inheritance is internal to Snowflake's OAuth flow and not surfaced in describe output.
+	t.Run("OauthScopes: null when not set, visible when set, null after clearing", func(t *testing.T) {
+		scopedIntegrationId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		_, scopedIntegrationCleanup := testClientHelper().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+			sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(scopedIntegrationId, true, "foo", "foo").
+				WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}, {Scope: "scope3"}}),
+		)
+		t.Cleanup(scopedIntegrationCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.Secrets.CreateWithOAuthClientCredentialsFlow(ctx,
+			sdk.NewCreateWithOAuthClientCredentialsFlowSecretRequest(id, scopedIntegrationId),
+		)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Secret.DropFunc(t, id))
+
+		// DESC returns null (empty) when oauth_scopes are not set — inheritance is not surfaced
+		details, err := client.Secrets.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Empty(t, details.OauthScopes)
+
+		// Set 2 out of 3 available scopes on the secret
+		err = client.Secrets.Alter(ctx, sdk.NewAlterSecretRequest(id).WithSet(
+			*sdk.NewSecretSetRequest().WithSetForFlow(*sdk.NewSetForFlowRequest().
+				WithSetForOAuthClientCredentials(*sdk.NewSetForOAuthClientCredentialsRequest().
+					WithOauthScopes(sdk.OauthScopesListRequest{OauthScopesList: []sdk.ApiIntegrationScope{
+						{Scope: "scope1"}, {Scope: "scope2"},
+					}}),
+				),
+			),
+		))
+		require.NoError(t, err)
+
+		// DESC now shows exactly the scopes that were set
+		details, err = client.Secrets.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.ElementsMatch(t, []string{"scope1", "scope2"}, details.OauthScopes)
+
+		// Clear scopes by setting an empty list — DESC returns null (empty) again
+		err = client.Secrets.Alter(ctx, sdk.NewAlterSecretRequest(id).WithSet(
+			*sdk.NewSecretSetRequest().WithSetForFlow(*sdk.NewSetForFlowRequest().
+				WithSetForOAuthClientCredentials(*sdk.NewSetForOAuthClientCredentialsRequest().
+					WithOauthScopes(sdk.OauthScopesListRequest{}),
+				),
+			),
+		))
+		require.NoError(t, err)
+
+		details, err = client.Secrets.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Empty(t, details.OauthScopes)
 	})
 
 	t.Run("Create: SecretWithOAuthAuthorizationCodeFlow - refreshTokenExpiry date format", func(t *testing.T) {

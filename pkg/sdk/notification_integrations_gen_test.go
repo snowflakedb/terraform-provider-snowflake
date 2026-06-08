@@ -259,13 +259,13 @@ func TestNotificationIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.Set.SetPushParams opts.Set.SetEmailParams opts.Set.SetWebhookParams]", func(t *testing.T) {
+	t.Run("validation: more than one field from [opts.Set.SetPushParams opts.Set.SetEmailParams opts.Set.SetWebhookParams] cannot be set at the same time", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &NotificationIntegrationSet{
 			SetPushParams:  &SetPushParams{},
 			SetEmailParams: &SetEmailParams{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams", "SetWebhookParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams", "SetWebhookParams"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.SetPushParams opts.Set.SetEmailParams opts.Set.SetWebhookParams opts.Set.Comment] should be set", func(t *testing.T) {

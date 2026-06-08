@@ -7,14 +7,15 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+!> **Known limitation for SigV4 authentication:** `sigv4_rest_authentication.sigv4_external_id` is not returned by Snowflake, cannot be altered after creation, and is marked as `ForceNew` in the provider. If your configuration specifies this field after import, Terraform may still produce a destroy-before-create plan because the value cannot be populated in state during import and cannot be synced via an in-place update. To avoid recreation after import for `sigv4_rest_authentication` you can omit `sigv4_external_id` if you don't need to track its changes within the configuration, adjust the state manually for this field, or accept a one-time recreation plan. We plan to address this limitation in a future release; for now, this behavior is expected. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#bug-fix-snowflake_catalog_integration_iceberg_rest-import-fix-for-forcenew-fields) for details.
+
+~> **Note on import behavior** After import, the first `terraform plan` may show an in-place **update** (not recreation) for write-only authentication secrets that Snowflake does not return: `oauth_rest_authentication.oauth_client_secret` and `bearer_rest_authentication.bearer_token`. Run `terraform apply` once to sync these values into state.
+
 # snowflake_catalog_integration_iceberg_rest (Resource)
 
 Resource used to manage catalog integration objects for Apache Iceberg™ tables managed in a remote catalog that complies with the open source Apache Iceberg™ REST OpenAPI specification. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-rest).
 
 ## Example Usage
-
--> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
-<!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
 # Basic + OAuth
@@ -87,6 +88,9 @@ resource "snowflake_catalog_integration_iceberg_rest" "sigv4" {
   }
 }
 ```
+
+-> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
+<!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 

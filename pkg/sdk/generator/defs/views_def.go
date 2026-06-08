@@ -20,7 +20,7 @@ var viewPairs = g.StructPair("viewDBRow", "View").
 	Text("schema_name").
 	OptionalText("owner", g.WithRequiredInPlain()).
 	OptionalText("comment", g.WithRequiredInPlain()).
-	OptionalText("text", g.WithRequiredInPlain()).
+	OptionalText("text", g.WithRequiredInPlain(), g.WithValueAdjuster("tracking.TrimMetadata")).
 	OptionalBool("is_secure", g.WithRequiredInPlain()).
 	OptionalBool("is_materialized", g.WithRequiredInPlain()).
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).
@@ -80,7 +80,8 @@ var viewColumnProjectionPolicy = g.NewQueryStruct("ViewColumnProjectionPolicy").
 var viewRowAccessPolicy = g.NewQueryStruct("ViewRowAccessPolicy").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
-	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
+	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
+	WithValidation(g.ValidateValueSet, "On")
 
 var viewAggregationPolicy = g.NewQueryStruct("ViewAggregationPolicy").
 	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
@@ -110,7 +111,8 @@ var viewAddRowAccessPolicy = g.NewQueryStruct("ViewAddRowAccessPolicy").
 	SQL("ADD").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
-	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
+	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
+	WithValidation(g.ValidateValueSet, "On")
 
 var viewDropRowAccessPolicy = g.NewQueryStruct("ViewDropRowAccessPolicy").
 	SQL("DROP").
@@ -209,7 +211,8 @@ var viewsDef = g.NewInterface(
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+			WithAdditionalValidations(),
 	).
 	CustomOperation(
 		"Alter",

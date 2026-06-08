@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ApiIntegrations = (*apiIntegrations)(nil)
-
 var (
+	_ ApiIntegrations                        = (*apiIntegrations)(nil)
 	_ convertibleRow[ApiIntegration]         = new(showApiIntegrationsDbRow)
 	_ convertibleRow[ApiIntegrationProperty] = new(descApiIntegrationsDbRow)
 )
@@ -113,6 +112,7 @@ func (r *CreateApiIntegrationRequest) toOpts() *CreateApiIntegrationOptions {
 	}
 	if r.GitHttpsApiGithubAppProviderParams != nil {
 		opts.GitHttpsApiGithubAppProviderParams = &GitHttpsApiGithubAppParams{}
+		opts.GitHttpsApiGithubAppProviderParams.ApiUserAuthentication = GithubAppUserAuthentication{}
 	}
 	if r.GitHttpsApiOAuth2ProviderParams != nil {
 		opts.GitHttpsApiOAuth2ProviderParams = &GitHttpsApiOAuth2Params{}
@@ -231,13 +231,31 @@ func (r *AlterApiIntegrationRequest) toOpts() *AlterApiIntegrationOptions {
 	}
 	if r.Unset != nil {
 		opts.Unset = &ApiIntegrationUnset{
-			ApiKey:                       r.Unset.ApiKey,
-			Enabled:                      r.Unset.Enabled,
-			ApiBlockedPrefixes:           r.Unset.ApiBlockedPrefixes,
-			AllowedAuthenticationSecrets: r.Unset.AllowedAuthenticationSecrets,
-			TlsTrustedCertificates:       r.Unset.TlsTrustedCertificates,
-			UsePrivatelinkEndpoint:       r.Unset.UsePrivatelinkEndpoint,
-			Comment:                      r.Unset.Comment,
+			Enabled:            r.Unset.Enabled,
+			ApiBlockedPrefixes: r.Unset.ApiBlockedPrefixes,
+			Comment:            r.Unset.Comment,
+		}
+		if r.Unset.AwsParams != nil {
+			opts.Unset.AwsParams = &UnsetAwsApiParams{
+				ApiKey: r.Unset.AwsParams.ApiKey,
+			}
+		}
+		if r.Unset.AzureParams != nil {
+			opts.Unset.AzureParams = &UnsetAzureApiParams{
+				ApiKey: r.Unset.AzureParams.ApiKey,
+			}
+		}
+		if r.Unset.GitHttpsApiTokenBasedParams != nil {
+			opts.Unset.GitHttpsApiTokenBasedParams = &UnsetGitHttpsApiTokenBasedParams{
+				AllowedAuthenticationSecrets: r.Unset.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets,
+			}
+		}
+		if r.Unset.GitHttpsApiPrivateLinkParams != nil {
+			opts.Unset.GitHttpsApiPrivateLinkParams = &UnsetGitHttpsApiPrivateLinkParams{
+				AllowedAuthenticationSecrets: r.Unset.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets,
+				TlsTrustedCertificates:       r.Unset.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates,
+				UsePrivatelinkEndpoint:       r.Unset.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint,
+			}
 		}
 	}
 	return opts

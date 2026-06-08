@@ -9,41 +9,41 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (a *ProcedureAssert) HasCreatedOnNotEmpty() *ProcedureAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+func (p *ProcedureAssert) HasCreatedOnNotEmpty() *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
 		if o.CreatedOn == "" {
 			return fmt.Errorf("expected created_on to be not empty")
 		}
 		return nil
 	})
-	return a
+	return p
 }
 
-func (a *ProcedureAssert) HasExternalAccessIntegrationsNil() *ProcedureAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+func (p *ProcedureAssert) HasExternalAccessIntegrationsNil() *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
 		if o.ExternalAccessIntegrations != nil {
 			return fmt.Errorf("expected external_access_integrations to be nil but was: %v", *o.ExternalAccessIntegrations)
 		}
 		return nil
 	})
-	return a
+	return p
 }
 
-func (a *ProcedureAssert) HasSecretsNil() *ProcedureAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+func (p *ProcedureAssert) HasSecretsNil() *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
 		if o.Secrets != nil {
 			return fmt.Errorf("expected secrets to be nil but was: %v", *o.Secrets)
 		}
 		return nil
 	})
-	return a
+	return p
 }
 
-func (f *ProcedureAssert) HasExactlyExternalAccessIntegrations(integrations ...sdk.AccountObjectIdentifier) *ProcedureAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+func (p *ProcedureAssert) HasExactlyExternalAccessIntegrations(integrations ...sdk.AccountObjectIdentifier) *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
 		if o.ExternalAccessIntegrations == nil {
 			return fmt.Errorf("expected external access integrations to have value; got: nil")
@@ -55,7 +55,26 @@ func (f *ProcedureAssert) HasExactlyExternalAccessIntegrations(integrations ...s
 		}
 		return nil
 	})
-	return f
+	return p
+}
+
+func (p *ProcedureAssert) HasExactlySecrets(expectedSecrets map[string]sdk.SchemaObjectIdentifier) *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.Secrets == nil {
+			return fmt.Errorf("expected secrets to have value; got: nil")
+		}
+		var parts []string
+		for k, v := range expectedSecrets {
+			parts = append(parts, fmt.Sprintf(`"%s":"\"%s\".\"%s\".%s"`, k, v.DatabaseName(), v.SchemaName(), v.Name()))
+		}
+		expected := fmt.Sprintf(`{%s}`, strings.Join(parts, ","))
+		if *o.Secrets != expected {
+			return fmt.Errorf("expected secrets: %v; got: %v", expected, *o.Secrets)
+		}
+		return nil
+	})
+	return p
 }
 
 func (p *ProcedureAssert) HasArgumentsRawContains(substring string) *ProcedureAssert {

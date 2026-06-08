@@ -46,6 +46,7 @@ func TestSessionParameters_setParam(t *testing.T) {
 		{parameter: SessionParameterJsTreatIntegerAsBigInt, value: "true", expectedValue: true, accessor: func(sp *SessionParameters) any { return *sp.JsTreatIntegerAsBigInt }},
 		{parameter: SessionParameterLockTimeout, value: "1", expectedValue: 1, accessor: func(sp *SessionParameters) any { return *sp.LockTimeout }},
 		{parameter: SessionParameterLogLevel, value: "some", expectedValue: LogLevel("some"), accessor: func(sp *SessionParameters) any { return *sp.LogLevel }},
+		{parameter: SessionParameterLogEventLevel, value: "some", expectedValue: LogLevel("some"), accessor: func(sp *SessionParameters) any { return *sp.LogEventLevel }},
 		{parameter: SessionParameterMultiStatementCount, value: "1", expectedValue: 1, accessor: func(sp *SessionParameters) any { return *sp.MultiStatementCount }},
 		{parameter: SessionParameterNoorderSequenceAsDefault, value: "true", expectedValue: true, accessor: func(sp *SessionParameters) any { return *sp.NoorderSequenceAsDefault }},
 		{parameter: SessionParameterOdbcTreatDecimalAsInt, value: "true", expectedValue: true, accessor: func(sp *SessionParameters) any { return *sp.OdbcTreatDecimalAsInt }},

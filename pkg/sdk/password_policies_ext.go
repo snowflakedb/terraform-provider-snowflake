@@ -3,8 +3,29 @@ package sdk
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 )
+
+func (r passwordPolicyDBRow) excludeFromShow() bool {
+	return !r.DatabaseName.Valid || !r.SchemaName.Valid
+}
+
+func (r passwordPolicyDBRow) additionalConvert(result *PasswordPolicy) error {
+	var errs []error
+	if !r.DatabaseName.Valid {
+		errs = append(errs, fmt.Errorf("missing database name for password policy with name: %s", r.Name))
+	}
+	if !r.SchemaName.Valid {
+		errs = append(errs, fmt.Errorf("missing schema name for password policy with name: %s", r.Name))
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+	mapNullStringToNonNullableField(&result.DatabaseName, r.DatabaseName)
+	mapNullStringToNonNullableField(&result.SchemaName, r.SchemaName)
+	return nil
+}
 
 func (v *passwordPolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicyDetails, error) {
 	properties, err := v.Describe(ctx, id)

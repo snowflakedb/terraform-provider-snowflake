@@ -25,6 +25,7 @@ type FunctionPythonModel struct {
 	Imports                    tfconfig.Variable `json:"imports,omitempty"`
 	IsAggregate                tfconfig.Variable `json:"is_aggregate,omitempty"`
 	IsSecure                   tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel              tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                   tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel                tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior          tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -178,6 +179,11 @@ func (f *FunctionPythonModel) WithIsSecure(isSecure string) *FunctionPythonModel
 	return f
 }
 
+func (f *FunctionPythonModel) WithLogEventLevel(logEventLevel string) *FunctionPythonModel {
+	f.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return f
+}
+
 func (f *FunctionPythonModel) WithLogLevel(logLevel string) *FunctionPythonModel {
 	f.LogLevel = tfconfig.StringVariable(logLevel)
 	return f
@@ -288,6 +294,11 @@ func (f *FunctionPythonModel) WithIsAggregateValue(value tfconfig.Variable) *Fun
 
 func (f *FunctionPythonModel) WithIsSecureValue(value tfconfig.Variable) *FunctionPythonModel {
 	f.IsSecure = value
+	return f
+}
+
+func (f *FunctionPythonModel) WithLogEventLevelValue(value tfconfig.Variable) *FunctionPythonModel {
+	f.LogEventLevel = value
 	return f
 }
 

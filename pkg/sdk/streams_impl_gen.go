@@ -2,20 +2,16 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Streams = (*streams)(nil)
-
-// second type assert removed manually
-var _ convertibleRow[Stream] = new(showStreamsDbRow)
+var (
+	_ Streams                = (*streams)(nil)
+	_ convertibleRow[Stream] = new(showStreamsDbRow)
+)
 
 type streams struct {
 	client *Client
@@ -230,63 +226,30 @@ func (r *ShowStreamRequest) toOpts() *ShowStreamOptions {
 }
 
 func (r showStreamsDbRow) convert() (*Stream, error) {
-	// adjusted manually
-	s := &Stream{
+	result := &Stream{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Stale:        r.Stale == "true",
 	}
-	mapNullTime(&s.StaleAfter, r.StaleAfter)
-	mapNullString(&s.Owner, r.Owner)
-	mapNullString(&s.Comment, r.Comment)
-	mapNullString(&s.Type, r.Type)
-	mapNullString(&s.InvalidReason, r.InvalidReason)
-	mapNullString(&s.OwnerRoleType, r.OwnerRoleType)
-
-	if r.TableName.Valid {
-		if strings.Contains(r.TableName.String, "No privilege or table dropped") {
-			return nil, errors.New("the source object is dropped or you don't have permission to access it")
-		}
-
-		// TODO [SNOW-3108659] Use mapNullStringWithMapping
-		tableName, err := ParseSchemaObjectIdentifier(r.TableName.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting table name in show stream: %w", err)
-		}
-		s.TableName = &tableName
-	}
-
-	// TODO [SNOW-3108659] Use mapNullStringWithMapping
-	if r.SourceType.Valid {
-		sourceType, err := ToStreamSourceType(r.SourceType.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting source type in show stream: %w", err)
-		} else {
-			s.SourceType = &sourceType
-		}
-	}
-
+	mapNullString(&result.Owner, r.Owner)
+	mapNullString(&result.Comment, r.Comment)
+	mapNullStringWithMapping(&result.SourceType, r.SourceType, ToStreamSourceType)
 	if r.BaseTables.Valid {
-		baseTables, err := ParseCommaSeparatedSchemaObjectIdentifierArray(r.BaseTables.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting base tables in show stream: %w", err)
-		}
-		s.BaseTables = baseTables
-	}
-
-	// TODO [SNOW-3108659] Use mapNullStringWithMapping
-	if r.Mode.Valid {
-		mode, err := ToStreamMode(r.Mode.String)
-		if err != nil {
-			return nil, fmt.Errorf("error converting mode in show stream: %w", err)
-		} else {
-			s.Mode = &mode
+		if ids, err := ParseCommaSeparatedSchemaObjectIdentifierArray(r.BaseTables.String); err == nil {
+			result.BaseTables = ids
 		}
 	}
-
-	return s, nil
+	mapNullString(&result.Type, r.Type)
+	mapNullStringWithMapping(&result.Mode, r.Mode, ToStreamMode)
+	mapNullTime(&result.StaleAfter, r.StaleAfter)
+	mapNullString(&result.InvalidReason, r.InvalidReason)
+	mapNullString(&result.OwnerRoleType, r.OwnerRoleType)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (r *DescribeStreamRequest) toOpts() *DescribeStreamOptions {
@@ -295,5 +258,3 @@ func (r *DescribeStreamRequest) toOpts() *DescribeStreamOptions {
 	}
 	return opts
 }
-
-// second convert removed manually

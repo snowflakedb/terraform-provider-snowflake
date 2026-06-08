@@ -61,16 +61,20 @@ type ApiIntegrationAllowedAuthenticationSecrets struct {
 	AllowedList []SchemaObjectIdentifier `ddl:"list,parentheses"`
 }
 
+type ApiIntegrationOauthAllowedScopeItem struct {
+	Scope ApiIntegrationOauthAllowedScope `ddl:"keyword,single_quotes"`
+}
+
 type OAuth2GitUserAuthentication struct {
-	authType                   bool                  `ddl:"static" sql:"TYPE = OAUTH2"`
-	OauthAuthorizationEndpoint string                `ddl:"parameter,single_quotes" sql:"OAUTH_AUTHORIZATION_ENDPOINT"`
-	OauthTokenEndpoint         string                `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_ENDPOINT"`
-	OauthClientId              string                `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_ID"`
-	OauthClientSecret          string                `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
-	OauthAccessTokenValidity   *int                  `ddl:"parameter,no_quotes" sql:"OAUTH_ACCESS_TOKEN_VALIDITY"`
-	OauthRefreshTokenValidity  *int                  `ddl:"parameter,no_quotes" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
-	OauthAllowedScopes         []ApiIntegrationScope `ddl:"parameter,parentheses" sql:"OAUTH_ALLOWED_SCOPES"`
-	OauthUsername              *string               `ddl:"parameter,single_quotes" sql:"OAUTH_USERNAME"`
+	authType                   bool                                  `ddl:"static" sql:"TYPE = OAUTH2"`
+	OauthAuthorizationEndpoint string                                `ddl:"parameter,single_quotes" sql:"OAUTH_AUTHORIZATION_ENDPOINT"`
+	OauthTokenEndpoint         string                                `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_ENDPOINT"`
+	OauthClientId              string                                `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_ID"`
+	OauthClientSecret          string                                `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
+	OauthAccessTokenValidity   *int                                  `ddl:"parameter,no_quotes" sql:"OAUTH_ACCESS_TOKEN_VALIDITY"`
+	OauthRefreshTokenValidity  *int                                  `ddl:"parameter,no_quotes" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
+	OauthAllowedScopes         []ApiIntegrationOauthAllowedScopeItem `ddl:"parameter,parentheses" sql:"OAUTH_ALLOWED_SCOPES"`
+	OauthUsername              *string                               `ddl:"parameter,single_quotes" sql:"OAUTH_USERNAME"`
 }
 
 type OAuth2McpUserAuthentication struct {
@@ -87,6 +91,10 @@ type OAuth2McpUserAuthentication struct {
 type DynamicClientMcpUserAuthentication struct {
 	authType         bool   `ddl:"static" sql:"TYPE = OAUTH_DYNAMIC_CLIENT"`
 	OauthResourceUrl string `ddl:"parameter,single_quotes" sql:"OAUTH_RESOURCE_URL"`
+}
+
+type GithubAppUserAuthentication struct {
+	authType bool `ddl:"static" sql:"TYPE = SNOWFLAKE_GITHUB_APP"`
 }
 
 type AwsApiParams struct {
@@ -113,8 +121,8 @@ type GitHttpsApiTokenBasedParams struct {
 }
 
 type GitHttpsApiGithubAppParams struct {
-	apiProvider           bool `ddl:"static" sql:"API_PROVIDER = git_https_api"`
-	apiUserAuthentication bool `ddl:"static" sql:"API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"`
+	apiProvider           bool                        `ddl:"static" sql:"API_PROVIDER = git_https_api"`
+	ApiUserAuthentication GithubAppUserAuthentication `ddl:"list,parentheses,no_comma" sql:"API_USER_AUTHENTICATION ="`
 }
 
 type GitHttpsApiOAuth2Params struct {
@@ -194,13 +202,31 @@ type SetExternalMcpOAuth2Params struct {
 }
 
 type ApiIntegrationUnset struct {
-	ApiKey                       *bool `ddl:"keyword" sql:"API_KEY"`
-	Enabled                      *bool `ddl:"keyword" sql:"ENABLED"`
-	ApiBlockedPrefixes           *bool `ddl:"keyword" sql:"API_BLOCKED_PREFIXES"`
+	AwsParams                    *UnsetAwsApiParams                 `ddl:"list,no_parentheses"`
+	AzureParams                  *UnsetAzureApiParams               `ddl:"list,no_parentheses"`
+	GitHttpsApiTokenBasedParams  *UnsetGitHttpsApiTokenBasedParams  `ddl:"list,no_parentheses"`
+	GitHttpsApiPrivateLinkParams *UnsetGitHttpsApiPrivateLinkParams `ddl:"list,no_parentheses"`
+	Enabled                      *bool                              `ddl:"keyword" sql:"ENABLED"`
+	ApiBlockedPrefixes           *bool                              `ddl:"keyword" sql:"API_BLOCKED_PREFIXES"`
+	Comment                      *bool                              `ddl:"keyword" sql:"COMMENT"`
+}
+
+type UnsetAwsApiParams struct {
+	ApiKey *bool `ddl:"keyword" sql:"API_KEY"`
+}
+
+type UnsetAzureApiParams struct {
+	ApiKey *bool `ddl:"keyword" sql:"API_KEY"`
+}
+
+type UnsetGitHttpsApiTokenBasedParams struct {
+	AllowedAuthenticationSecrets *bool `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
+}
+
+type UnsetGitHttpsApiPrivateLinkParams struct {
 	AllowedAuthenticationSecrets *bool `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
 	TlsTrustedCertificates       *bool `ddl:"keyword" sql:"TLS_TRUSTED_CERTIFICATES"`
 	UsePrivatelinkEndpoint       *bool `ddl:"keyword" sql:"USE_PRIVATELINK_ENDPOINT"`
-	Comment                      *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropApiIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-integration.

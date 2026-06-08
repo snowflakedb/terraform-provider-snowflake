@@ -26,8 +26,7 @@ func sequenceFields(dbName, plainName string) *g.PairedStructs {
 		Text("owner").
 		Text("owner_role_type").
 		Text("comment").
-		Field("ordered", "string", "bool").
-		WithConvertGeneration()
+		Field("ordered", "string", "bool")
 }
 
 var SequencesDef = g.NewInterface(

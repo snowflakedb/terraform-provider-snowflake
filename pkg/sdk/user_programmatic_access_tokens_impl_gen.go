@@ -8,7 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-// whitespace adjusted manually
 var (
 	_ UserProgrammaticAccessTokens                        = (*userProgrammaticAccessTokens)(nil)
 	_ convertibleRow[AddProgrammaticAccessTokenResult]    = new(addProgrammaticAccessTokenResultDBRow)

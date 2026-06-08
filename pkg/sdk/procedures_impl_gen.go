@@ -2,18 +2,14 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Procedures = (*procedures)(nil)
-
 var (
+	_ Procedures                      = (*procedures)(nil)
 	_ convertibleRow[Procedure]       = new(procedureRow)
 	_ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
 )
@@ -73,13 +69,11 @@ func (v *procedures) Show(ctx context.Context, request *ShowProcedureRequest) ([
 func (v *procedures) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Procedure, error) {
 	request := NewShowProcedureRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		// adjusted manually
 		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
 	procedures, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
 	return collections.FindFirst(procedures, func(r Procedure) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
 }
 
@@ -445,6 +439,7 @@ func (r *AlterProcedureRequest) toOpts() *AlterProcedureOptions {
 			AutoEventLogging:           r.Set.AutoEventLogging,
 			EnableConsoleOutput:        r.Set.EnableConsoleOutput,
 			LogLevel:                   r.Set.LogLevel,
+			LogEventLevel:              r.Set.LogEventLevel,
 			MetricLevel:                r.Set.MetricLevel,
 			TraceLevel:                 r.Set.TraceLevel,
 		}
@@ -461,6 +456,7 @@ func (r *AlterProcedureRequest) toOpts() *AlterProcedureOptions {
 			AutoEventLogging:           r.Unset.AutoEventLogging,
 			EnableConsoleOutput:        r.Unset.EnableConsoleOutput,
 			LogLevel:                   r.Unset.LogLevel,
+			LogEventLevel:              r.Unset.LogEventLevel,
 			MetricLevel:                r.Unset.MetricLevel,
 			TraceLevel:                 r.Unset.TraceLevel,
 		}
@@ -485,11 +481,9 @@ func (r *ShowProcedureRequest) toOpts() *ShowProcedureOptions {
 }
 
 func (r procedureRow) convert() (*Procedure, error) {
-	// adjusted manually
-	e := &Procedure{
+	result := &Procedure{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
-		SchemaName:         strings.Trim(r.SchemaName, `"`),
 		IsBuiltin:          r.IsBuiltin == "Y",
 		IsAggregate:        r.IsAggregate == "Y",
 		IsAnsi:             r.IsAnsi == "Y",
@@ -497,25 +491,16 @@ func (r procedureRow) convert() (*Procedure, error) {
 		MaxNumArguments:    r.MaxNumArguments,
 		ArgumentsRaw:       r.Arguments,
 		Description:        r.Description,
-		CatalogName:        strings.Trim(r.CatalogName, `"`),
 		IsTableFunction:    r.IsTableFunction == "Y",
 		ValidForClustering: r.ValidForClustering == "Y",
 	}
-	arguments := strings.TrimLeft(r.Arguments, r.Name)
-	returnIndex := strings.Index(arguments, ") RETURN ")
-	e.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
-	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse procedure arguments: %w", err)
-	} else {
-		e.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
-			return DataType(a.ArgType)
-		})
+	mapNullStringToRequiredBool(&result.IsSecure, r.IsSecure)
+	mapNullString(&result.Secrets, r.Secrets)
+	mapNullString(&result.ExternalAccessIntegrations, r.ExternalAccessIntegrations)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	if r.IsSecure.Valid {
-		e.IsSecure = r.IsSecure.String == "Y"
-	}
-	return e, nil
+	return result, nil
 }
 
 func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
@@ -526,14 +511,13 @@ func (r *DescribeProcedureRequest) toOpts() *DescribeProcedureOptions {
 }
 
 func (r procedureDetailRow) convert() (*ProcedureDetail, error) {
-	// adjusted manually
-	e := &ProcedureDetail{
+	result := &ProcedureDetail{
 		Property: r.Property,
 	}
-	if r.Value.Valid && r.Value.String != "null" {
-		e.Value = String(r.Value.String)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	return e, nil
+	return result, nil
 }
 
 func (r *CallProcedureRequest) toOpts() *CallProcedureOptions {

@@ -14,6 +14,7 @@ var (
 	ProcedureParameters           = []sdk.ProcedureParameter{
 		sdk.ProcedureParameterEnableConsoleOutput,
 		sdk.ProcedureParameterLogLevel,
+		sdk.ProcedureParameterLogEventLevel,
 		sdk.ProcedureParameterMetricLevel,
 		sdk.ProcedureParameterTraceLevel,
 	}

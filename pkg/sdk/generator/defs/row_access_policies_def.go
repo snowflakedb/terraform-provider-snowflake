@@ -85,7 +85,7 @@ var rowAccessPoliciesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-row-access-policy",
 		g.StructPair("describeRowAccessPolicyDBRow", "RowAccessPolicyDescription").
 			Text("name").
-			Field("signature", "string", "[]TableColumnSignature").
+			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
 			Text("return_type").
 			Text("body"),
 		g.NewQueryStruct("DescribeRowAccessPolicy").

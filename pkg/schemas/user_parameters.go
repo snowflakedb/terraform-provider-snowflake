@@ -40,6 +40,7 @@ var (
 		sdk.UserParameterJsonIndent,
 		sdk.UserParameterLockTimeout,
 		sdk.UserParameterLogLevel,
+		sdk.UserParameterLogEventLevel,
 		sdk.UserParameterMultiStatementCount,
 		sdk.UserParameterNoorderSequenceAsDefault,
 		sdk.UserParameterOdbcTreatDecimalAsInt,

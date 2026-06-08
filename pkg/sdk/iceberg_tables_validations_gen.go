@@ -2,10 +2,9 @@
 
 package sdk
 
-import "fmt"
-
 var (
 	_ validatable = new(CreateIcebergTableOptions)
+	_ validatable = new(CreateFromIcebergFilesIcebergTableOptions)
 	_ validatable = new(AlterIcebergTableOptions)
 	_ validatable = new(DropIcebergTableOptions)
 	_ validatable = new(ShowIcebergTableOptions)
@@ -23,10 +22,12 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
-	// Adjusted manually: PartitionBy is a slice, validate each element
-	for i, p := range opts.PartitionBy {
-		if !exactlyOneValueSet(p.Identity, p.Bucket, p.Truncate, p.Year, p.Month, p.Day, p.Hour) {
-			errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.PartitionBy[%d]", i), "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
+	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.PartitionBy) {
+		for _, partitionBy := range opts.PartitionBy {
+			if !exactlyOneValueSet(partitionBy.Identity, partitionBy.Bucket, partitionBy.Truncate, partitionBy.Year, partitionBy.Month, partitionBy.Day, partitionBy.Hour) {
+				errs = append(errs, errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
+			}
 		}
 	}
 	if valueSet(opts.RowAccessPolicy) {
@@ -42,6 +43,20 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
+func (opts *CreateFromIcebergFilesIcebergTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateFromIcebergFilesIcebergTableOptions", "OrReplace", "IfNotExists"))
+	}
+	return JoinErrors(errs...)
+}
+
 func (opts *AlterIcebergTableOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -53,10 +68,12 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if !exactlyOneValueSet(opts.AddColumnAction, opts.DropColumnAction, opts.RenameColumnAction, opts.AlterColumnAction, opts.SetMaskingPolicyOnColumn, opts.UnsetMaskingPolicyOnColumn, opts.SetProjectionPolicyOnColumn, opts.UnsetProjectionPolicyOnColumn, opts.SetTagsOnColumn, opts.UnsetTagsOnColumn, opts.ClusteringAction, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy, opts.SearchOptimizationAction) {
 		errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
 	}
-	// Adjusted manually: AlterColumnAction is a slice, validate each element
-	for i, col := range opts.AlterColumnAction {
-		if !exactlyOneValueSet(col.SetNotNull, col.DropNotNull, col.DataType, col.Comment, col.UnsetComment, col.SetWriteDefault, col.DropWriteDefault) {
-			errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterIcebergTableOptions.AlterColumnAction[%d]", i), "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
+	errs = append(errs, opts.additionalValidations())
+	if valueSet(opts.AlterColumnAction) {
+		for _, alterColumnAction := range opts.AlterColumnAction {
+			if !exactlyOneValueSet(alterColumnAction.SetNotNull, alterColumnAction.DropNotNull, alterColumnAction.DataType, alterColumnAction.Comment, alterColumnAction.UnsetComment, alterColumnAction.SetWriteDefault, alterColumnAction.DropWriteDefault) {
+				errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
+			}
 		}
 	}
 	if valueSet(opts.ClusteringAction) {
@@ -88,11 +105,12 @@ func (opts *AlterIcebergTableOptions) validate() error {
 		if !exactlyOneValueSet(opts.SearchOptimizationAction.Add, opts.SearchOptimizationAction.Drop) {
 			errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction", "Add", "Drop"))
 		}
-		// Adjusted manually: each Drop.On entry must have exactly one of SearchMethodWithTarget, ColumnName, or ExpressionId set.
 		if valueSet(opts.SearchOptimizationAction.Drop) {
-			for _, on := range opts.SearchOptimizationAction.Drop.On {
-				if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
-					errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
+			if valueSet(opts.SearchOptimizationAction.Drop.On) {
+				for _, on := range opts.SearchOptimizationAction.Drop.On {
+					if !exactlyOneValueSet(on.SearchMethodWithTarget, on.ColumnName, on.ExpressionId) {
+						errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
+					}
 				}
 			}
 		}

@@ -1,5 +1,7 @@
 package gen
 
+import "fmt"
+
 type OperationKind string
 
 const (
@@ -65,6 +67,10 @@ type Operation struct {
 	InstanceMethodScalarReturnType string
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
+	// ShowResultFilterHook, when true, inserts a hook call in the generated Show implementation.
+	// It allows filtering the rows by implementing excludeFromShow() method on the given row type.
+	// The implementation should be provided in the _ext.go file.
+	ShowResultFilterHook bool
 
 	// TODO [SNOW-2324252]: Consider splitting the Operation into definition and generation model
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
@@ -87,6 +93,20 @@ type Mapping struct {
 	// The mapping needs to be built from a PairedStructs definition with WithConvertGeneration() enabled.
 	// Otherwise, the old placeholder is used.
 	FieldPairs []FieldPair
+	// SkipConvert is set by preprocessDefinition when another Mapping with the same From.Name has
+	// already been scheduled for emission in the same interface. Guards and convert bodies are suppressed.
+	SkipConvert bool
+}
+
+// HasManualConvert reports whether any field in this Mapping is marked as manual convert.
+// When true, the generated convert() will call r.additionalConvert(result) after all generated mappings.
+func (m *Mapping) HasManualConvert() bool {
+	for _, f := range m.FieldPairs {
+		if f.manualConvert {
+			return true
+		}
+	}
+	return false
 }
 
 func newOperation(kind string, doc string) *Operation {
@@ -294,4 +314,17 @@ func (i *Interface) describeOperation(describeKind DescriptionMappingKind, doc s
 
 func (i *Interface) CustomOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	return i.newSimpleOperation(kind, doc, queryStruct, helperStructs...)
+}
+
+func (i *Interface) ShowParameters(identifierKind string) *Interface {
+	objectIdentifierKind, err := ToObjectIdentifierKind(identifierKind)
+	if err != nil {
+		panic(fmt.Errorf("invalid identifier kind: %s", identifierKind))
+	}
+	return i.WithCustomInterfaceMethod(
+		"ShowParameters",
+		"",
+		[]*MethodParameter{NewMethodParameter("id", string(objectIdentifierKind))},
+		"[]*Parameter", "error",
+	)
 }
