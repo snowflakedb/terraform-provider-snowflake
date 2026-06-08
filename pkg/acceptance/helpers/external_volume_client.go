@@ -64,6 +64,26 @@ func (c *ExternalVolumeClient) CreateWithRequest(t *testing.T, req *sdk.CreateEx
 	return req.GetName(), c.DropFunc(t, req.GetName())
 }
 
+func (c *ExternalVolumeClient) CreateS3Compat(t *testing.T, s3CompatBaseUrl string, s3CompatEndpoint string, awsKeyId string, awsSecretKey string) (sdk.AccountObjectIdentifier, func()) {
+	t.Helper()
+	id := c.ids.RandomAccountObjectIdentifier()
+	storageLocations := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "my-s3compat-loc",
+			S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParams{
+				StorageBaseUrl:  s3CompatBaseUrl,
+				StorageEndpoint: s3CompatEndpoint,
+				Credentials: sdk.ExternalVolumeS3CompatCredentials{
+					AwsKeyId:     awsKeyId,
+					AwsSecretKey: awsSecretKey,
+				},
+			},
+		}},
+	}
+	req := sdk.NewCreateExternalVolumeRequest(id, storageLocations)
+	return c.CreateWithRequest(t, req)
+}
+
 func (c *ExternalVolumeClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ExternalVolume, error) {
 	t.Helper()
 	ctx := context.Background()

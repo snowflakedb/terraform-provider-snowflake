@@ -438,7 +438,6 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		Name:                      r.Name,
 		DatabaseName:              r.DatabaseName,
 		SchemaName:                r.SchemaName,
-		BaseLocation:              r.BaseLocation,
 		CanWriteMetadata:          r.CanWriteMetadata == "Y",
 		OwnerRoleType:             r.OwnerRoleType,
 		CatalogSyncName:           r.CatalogSyncName,
@@ -453,6 +452,7 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 	mapStringWithMapping(&result.IcebergTableType, r.IcebergTableType, ToIcebergTableType)
 	mapNullString(&result.CatalogTableName, r.CatalogTableName)
 	mapNullString(&result.CatalogNamespace, r.CatalogNamespace)
+	mapNullString(&result.BaseLocation, r.BaseLocation)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.NameMapping, r.NameMapping)
 	return result, nil

@@ -160,8 +160,11 @@ func (i *IcebergTableAssert) HasCatalogNamespace(expected string) *IcebergTableA
 func (i *IcebergTableAssert) HasBaseLocation(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
-		if o.BaseLocation != expected {
-			return fmt.Errorf("expected base location: %v; got: %v", expected, o.BaseLocation)
+		if o.BaseLocation == nil {
+			return fmt.Errorf("expected base location to have value; got: nil")
+		}
+		if *o.BaseLocation != expected {
+			return fmt.Errorf("expected base location: %v; got: %v", expected, *o.BaseLocation)
 		}
 		return nil
 	})
