@@ -11,6 +11,10 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationAwsApiProviderType]{"ApiIntegrationAwsApiProviderType", AllApiIntegrationAwsApiProviderTypes, ToApiIntegrationAwsApiProviderType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationOauthClientAuthMethod]{"ApiIntegrationOauthClientAuthMethod", AllApiIntegrationOauthClientAuthMethods, ToApiIntegrationOauthClientAuthMethod})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationOauthAllowedScope]{"ApiIntegrationOauthAllowedScope", AllApiIntegrationOauthAllowedScopes, ToApiIntegrationOauthAllowedScope})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationAzureApiProviderType]{"ApiIntegrationAzureApiProviderType", AllApiIntegrationAzureApiProviderTypes, ToApiIntegrationAzureApiProviderType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationGoogleApiProviderType]{"ApiIntegrationGoogleApiProviderType", AllApiIntegrationGoogleApiProviderTypes, ToApiIntegrationGoogleApiProviderType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationGitApiProviderType]{"ApiIntegrationGitApiProviderType", AllApiIntegrationGitApiProviderTypes, ToApiIntegrationGitApiProviderType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationMcpApiProviderType]{"ApiIntegrationMcpApiProviderType", AllApiIntegrationMcpApiProviderTypes, ToApiIntegrationMcpApiProviderType})
 }
 
 func TestApiIntegrations_Create(t *testing.T) {

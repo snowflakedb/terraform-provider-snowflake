@@ -25,6 +25,22 @@ var (
 		"read_repository",
 		"write_repository",
 	)
+	ApiIntegrationAzureApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationAzureApiProviderType", "ApiIntegrationAzureApiProviderTypes",
+		"azure_api_management",
+	)
+	ApiIntegrationGoogleApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationGoogleApiProviderType", "ApiIntegrationGoogleApiProviderTypes",
+		"google_api_gateway",
+	)
+	ApiIntegrationGitApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationGitApiProviderType", "ApiIntegrationGitApiProviderTypes",
+		"git_https_api",
+	)
+	ApiIntegrationMcpApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationMcpApiProviderType", "ApiIntegrationMcpApiProviderTypes",
+		"external_mcp",
+	)
 )
 
 var apiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
@@ -72,7 +88,15 @@ var apiIntegrationsDef = g.NewInterface(
 	"ApiIntegration",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
-	WithEnums(ApiIntegrationAwsApiProviderTypeEnum, ApiIntegrationOauthClientAuthMethodEnum, ApiIntegrationOauthAllowedScopeEnum).
+	WithEnums(
+		ApiIntegrationAwsApiProviderTypeEnum,
+		ApiIntegrationOauthClientAuthMethodEnum,
+		ApiIntegrationOauthAllowedScopeEnum,
+		ApiIntegrationAzureApiProviderTypeEnum,
+		ApiIntegrationGoogleApiProviderTypeEnum,
+		ApiIntegrationGitApiProviderTypeEnum,
+		ApiIntegrationMcpApiProviderTypeEnum,
+	).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-api-integration",
 		g.NewQueryStruct("CreateApiIntegration").

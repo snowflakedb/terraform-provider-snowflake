@@ -3,6 +3,7 @@ package objectassert
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -64,10 +65,10 @@ func (a *ApiIntegrationAzureDetailsAssert) HasApiKey(expected string) *ApiIntegr
 	return a
 }
 
-func (a *ApiIntegrationAzureDetailsAssert) HasApiProvider(expected string) *ApiIntegrationAzureDetailsAssert {
+func (a *ApiIntegrationAzureDetailsAssert) HasApiProvider(expected sdk.ApiIntegrationAzureApiProviderType) *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()
-		if o.ApiProvider != expected {
+		if o.ApiProvider != strings.ToUpper(string(expected)) {
 			return fmt.Errorf("expected api provider: %v; got: %v", expected, o.ApiProvider)
 		}
 		return nil
@@ -172,17 +173,6 @@ func (a *ApiIntegrationAzureDetailsAssert) HasAzureConsentUrlNotEmpty() *ApiInte
 		t.Helper()
 		if o.AzureConsentUrl == "" {
 			return fmt.Errorf("expected azure consent url not empty; got empty")
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationAzureDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationAzureDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
-		t.Helper()
-		if o.ApiProvider == "" {
-			return fmt.Errorf("expected api provider not empty; got empty")
 		}
 		return nil
 	})

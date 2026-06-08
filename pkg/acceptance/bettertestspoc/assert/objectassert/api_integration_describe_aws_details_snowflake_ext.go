@@ -3,6 +3,7 @@ package objectassert
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -31,17 +32,6 @@ func ApiIntegrationAwsDetailsFromObject(t *testing.T, apiIntegrationAwsDetails *
 	}
 }
 
-func (a *ApiIntegrationAwsDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *ApiIntegrationAwsDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
-		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *ApiIntegrationAwsDetailsAssert) HasEnabled(expected bool) *ApiIntegrationAwsDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
 		t.Helper()
@@ -64,10 +54,10 @@ func (a *ApiIntegrationAwsDetailsAssert) HasApiKey(expected string) *ApiIntegrat
 	return a
 }
 
-func (a *ApiIntegrationAwsDetailsAssert) HasApiProvider(expected string) *ApiIntegrationAwsDetailsAssert {
+func (a *ApiIntegrationAwsDetailsAssert) HasApiProvider(expected sdk.ApiIntegrationAwsApiProviderType) *ApiIntegrationAwsDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
 		t.Helper()
-		if o.ApiProvider != expected {
+		if o.ApiProvider != strings.ToUpper(string(expected)) {
 			return fmt.Errorf("expected api provider: %v; got: %v", expected, o.ApiProvider)
 		}
 		return nil
@@ -80,28 +70,6 @@ func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsRoleArn(expected string) *ApiI
 		t.Helper()
 		if o.ApiAwsRoleArn != expected {
 			return fmt.Errorf("expected api aws role arn: %v; got: %v", expected, o.ApiAwsRoleArn)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsIamUserArn(expected string) *ApiIntegrationAwsDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
-		t.Helper()
-		if o.ApiAwsIamUserArn != expected {
-			return fmt.Errorf("expected api aws iam user arn: %v; got: %v", expected, o.ApiAwsIamUserArn)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsExternalId(expected string) *ApiIntegrationAwsDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
-		t.Helper()
-		if o.ApiAwsExternalId != expected {
-			return fmt.Errorf("expected api aws external id: %v; got: %v", expected, o.ApiAwsExternalId)
 		}
 		return nil
 	})
@@ -161,17 +129,6 @@ func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsExternalIdNotEmpty() *ApiInteg
 		t.Helper()
 		if o.ApiAwsExternalId == "" {
 			return fmt.Errorf("expected api aws external id not empty; got empty")
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationAwsDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationAwsDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
-		t.Helper()
-		if o.ApiProvider == "" {
-			return fmt.Errorf("expected api provider not empty; got empty")
 		}
 		return nil
 	})

@@ -60,7 +60,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationAwsDetails(t, id).
 			HasEnabled(true).
 			HasApiKey("").
-			HasApiProvider(strings.ToUpper(string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway))).
+			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(apiAwsRoleArn).
 			HasApiAwsIamUserArnNotEmpty().
 			HasApiAwsExternalIdNotEmpty().
@@ -93,7 +93,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationAwsDetails(t, id).
 			HasEnabled(true).
 			HasApiKey("☺☺☺").
-			HasApiProvider(strings.ToUpper(string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway))).
+			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(apiAwsRoleArn).
 			HasApiAwsIamUserArnNotEmpty().
 			HasApiAwsExternalIdNotEmpty().
@@ -119,7 +119,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 
 				assertThatObject(t, objectassert.ApiIntegrationAwsDetails(t, id).
-					HasApiProvider(strings.ToUpper(string(providerType))),
+					HasApiProvider(providerType),
 				)
 			})
 		}
@@ -143,7 +143,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationAzureDetails(t, id).
 			HasEnabled(true).
 			HasApiKey("").
-			HasApiProvider("AZURE_API_MANAGEMENT").
+			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
 			HasAzureMultiTenantAppNameNotEmpty().
@@ -177,7 +177,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationAzureDetails(t, id).
 			HasEnabled(true).
 			HasApiKey("☺☺☺").
-			HasApiProvider("AZURE_API_MANAGEMENT").
+			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
 			HasAzureMultiTenantAppNameNotEmpty().
@@ -205,7 +205,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationGoogleDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider("GOOGLE_API_GATEWAY").
+			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
 			HasGoogleApiServiceAccountNotEmpty().
 			HasAllowedPrefixes(googlePrefix).
@@ -233,7 +233,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationGoogleDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider("GOOGLE_API_GATEWAY").
+			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
 			HasGoogleApiServiceAccountNotEmpty().
 			HasAllowedPrefixes(googlePrefix).
@@ -265,7 +265,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasAllowedPrefixes(gitPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -289,7 +289,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasAllowedPrefixes(gitPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -323,7 +323,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasAllowedPrefixes(gitPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -347,7 +347,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasAllowedPrefixes(gitPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -375,7 +375,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasAllowedPrefixes(gitPrefix).
 			HasNoBlockedPrefixes().
 			HasComment("").
@@ -392,7 +392,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		auth := sdk.NewOAuth2GitUserAuthenticationRequest(oauthAuthorizationEndpoint, oauthTokenEndpoint, oauthClientId, oauthClientSecret).
 			WithOauthAccessTokenValidity(3600).
 			WithOauthRefreshTokenValidity(86400).
-			WithOauthAllowedScopes([]sdk.ApiIntegrationScope{{Scope: "read"}, {Scope: "write"}}).
+			WithOauthAllowedScopes([]sdk.ApiIntegrationOauthAllowedScopeItem{{Scope: sdk.ApiIntegrationOauthAllowedScopeReadApi}, {Scope: sdk.ApiIntegrationOauthAllowedScopeWriteRepository}}).
 			WithOauthUsername("user@example.com")
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
@@ -408,7 +408,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasAllowedPrefixes(gitPrefix).
 			HasBlockedPrefixes(gitOtherPrefix).
 			HasComment("git oauth2 comment").
@@ -419,7 +419,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 			HasOauthAccessTokenValidity(3600).
 			HasOauthRefreshTokenValidity(86400).
-			HasOauthAllowedScopes("read", "write").
+			HasOauthAllowedScopes(sdk.ApiIntegrationOauthAllowedScopeReadApi, sdk.ApiIntegrationOauthAllowedScopeWriteRepository).
 			HasOauthUsername("user@example.com"),
 		)
 	})
@@ -447,7 +447,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasUsePrivatelinkEndpoint(true).
 			HasAllowedPrefixes(gitPrefix).
 			HasNoBlockedPrefixes().
@@ -489,7 +489,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasUsePrivatelinkEndpoint(true).
 			HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())).
 			HasAllowedPrefixes(gitPrefix).
@@ -519,7 +519,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasAllowedPrefixes(mcpPrefix).
 			HasNoBlockedPrefixes().
 			HasComment("").
@@ -553,7 +553,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasAllowedPrefixes(mcpPrefix).
 			HasComment("mcp oauth2 comment").
 			HasUserAuthType("OAUTH2").
@@ -590,7 +590,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasAllowedPrefixes(mcpPrefix),
 		)
 	})
@@ -618,7 +618,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationAwsDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiKey("☺☺☺").
-			HasApiProvider(strings.ToUpper(string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway))).
+			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(otherRoleArn).
 			HasApiAwsIamUserArnNotEmpty().
 			HasApiAwsExternalIdNotEmpty().
@@ -652,7 +652,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationAzureDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiKey("☺☺☺").
-			HasApiProvider("AZURE_API_MANAGEMENT").
+			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureOtherTenantId).
 			HasAzureAdApplicationId(otherAdApplicationId).
 			HasAzureMultiTenantAppNameNotEmpty().
@@ -679,7 +679,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationGoogleDetails(t, integration.ID()).
 			HasEnabled(true).
-			HasApiProvider("GOOGLE_API_GATEWAY").
+			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleOtherAudience).
 			HasGoogleApiServiceAccountNotEmpty().
 			HasAllowedPrefixes(googleOtherPrefix).
@@ -813,7 +813,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, integration.ID()).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasAllowedPrefixes(mcpOtherPrefix).
 			HasBlockedPrefixes(mcpPrefix).
 			HasComment("changed comment").
@@ -843,7 +843,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err = client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
 			WithUnset(*sdk.NewApiIntegrationUnsetRequest().
-				WithApiKey(true).
+				WithAwsParams(*sdk.NewUnsetAwsApiParamsRequest().WithApiKey(true)).
 				WithEnabled(true).
 				WithApiBlockedPrefixes(true).
 				WithComment(true)),
@@ -873,7 +873,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err = client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
 			WithUnset(*sdk.NewApiIntegrationUnsetRequest().
-				WithApiKey(true).
+				WithAzureParams(*sdk.NewUnsetAzureApiParamsRequest().WithApiKey(true)).
 				WithEnabled(true).
 				WithApiBlockedPrefixes(true).
 				WithComment(true)),
@@ -918,7 +918,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithUnset(*sdk.NewApiIntegrationUnsetRequest().
-				WithAllowedAuthenticationSecrets(true)),
+				WithGitHttpsApiTokenBasedParams(*sdk.NewUnsetGitHttpsApiTokenBasedParamsRequest().WithAllowedAuthenticationSecrets(true))),
 		)
 		require.NoError(t, err)
 
@@ -934,7 +934,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithUnset(*sdk.NewApiIntegrationUnsetRequest().
-				WithUsePrivatelinkEndpoint(true)),
+				WithGitHttpsApiPrivateLinkParams(*sdk.NewUnsetGitHttpsApiPrivateLinkParamsRequest().WithUsePrivatelinkEndpoint(true))),
 		)
 		require.NoError(t, err)
 
@@ -1101,7 +1101,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationAwsDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiKey("").
-			HasApiProvider(strings.ToUpper(string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway))).
+			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(apiAwsRoleArn).
 			HasApiAwsIamUserArnNotEmpty().
 			HasApiAwsExternalIdNotEmpty().
@@ -1118,7 +1118,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(t, objectassert.ApiIntegrationAzureDetails(t, integration.ID()).
 			HasEnabled(true).
 			HasApiKey("").
-			HasApiProvider("AZURE_API_MANAGEMENT").
+			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
 			HasAzureMultiTenantAppNameNotEmpty().
@@ -1135,7 +1135,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationGoogleDetails(t, integration.ID()).
 			HasEnabled(true).
-			HasApiProvider("GOOGLE_API_GATEWAY").
+			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
 			HasGoogleApiServiceAccountNotEmpty().
 			HasAllowedPrefixes(googlePrefix).
@@ -1150,7 +1150,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, integration.ID()).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(gitPrefix).
 			HasNoBlockedPrefixes().
@@ -1164,7 +1164,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, integration.ID()).
 			HasEnabled(true).
-			HasApiProviderNotEmpty().
+			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasAllowedPrefixes(mcpPrefix).
 			HasComment("").
 			HasUserAuthType("OAUTH2").

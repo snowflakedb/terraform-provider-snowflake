@@ -3,6 +3,7 @@ package objectassert
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -53,10 +54,10 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasEnabled(expected bool) *ApiI
 	return a
 }
 
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasApiProvider(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasApiProvider(expected sdk.ApiIntegrationGitApiProviderType) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
-		if o.ApiProvider != expected {
+		if o.ApiProvider != strings.ToUpper(string(expected)) {
 			return fmt.Errorf("expected api provider: %v; got: %v", expected, o.ApiProvider)
 		}
 		return nil
@@ -163,11 +164,11 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthRefreshTokenValidity(ex
 	return a
 }
 
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAllowedScopes(expected ...string) *ApiIntegrationGitHttpsApiDetailsAssert {
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAllowedScopes(expected ...sdk.ApiIntegrationOauthAllowedScope) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
 		mapped := collections.Map(o.OauthAllowedScopes, func(item string) any { return item })
-		mappedExpected := collections.Map(expected, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.ApiIntegrationOauthAllowedScope) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected oauth allowed scopes: %v; got: %v", expected, o.OauthAllowedScopes)
 		}
@@ -264,17 +265,6 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasComment(expected string) *Ap
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
-		t.Helper()
-		if o.ApiProvider == "" {
-			return fmt.Errorf("expected api provider not empty; got empty")
 		}
 		return nil
 	})

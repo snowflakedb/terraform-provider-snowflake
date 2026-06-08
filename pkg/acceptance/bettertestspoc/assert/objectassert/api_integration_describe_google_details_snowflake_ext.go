@@ -3,6 +3,7 @@ package objectassert
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -64,10 +65,10 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasApiKey(expected string) *ApiInteg
 	return a
 }
 
-func (a *ApiIntegrationGoogleDetailsAssert) HasApiProvider(expected string) *ApiIntegrationGoogleDetailsAssert {
+func (a *ApiIntegrationGoogleDetailsAssert) HasApiProvider(expected sdk.ApiIntegrationGoogleApiProviderType) *ApiIntegrationGoogleDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
 		t.Helper()
-		if o.ApiProvider != expected {
+		if o.ApiProvider != strings.ToUpper(string(expected)) {
 			return fmt.Errorf("expected api provider: %v; got: %v", expected, o.ApiProvider)
 		}
 		return nil
@@ -139,17 +140,6 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleApiServiceAccountNotEmpty()
 		t.Helper()
 		if o.GoogleApiServiceAccount == "" {
 			return fmt.Errorf("expected google api service account not empty; got empty")
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationGoogleDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationGoogleDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
-		t.Helper()
-		if o.ApiProvider == "" {
-			return fmt.Errorf("expected api provider not empty; got empty")
 		}
 		return nil
 	})
