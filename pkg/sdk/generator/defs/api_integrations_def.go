@@ -120,70 +120,6 @@ var apiIntegrationsDef = g.NewInterface(
 				"GitHttpsApiGithubAppProviderParams",
 				g.NewQueryStruct("GitHttpsApiGithubAppParams").
 					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
-					SQLWithCustomFieldName("apiUserAuthentication", "API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)"),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"GitHttpsApiOAuth2ProviderParams",
-				g.NewQueryStruct("GitHttpsApiOAuth2Params").
-					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
-					QueryStructField(
-						"ApiUserAuthentication",
-						apiIntegrationOauth2GitAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
-					),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"GitHttpsApiPrivateLinkProviderParams",
-				g.NewQueryStruct("GitHttpsApiPrivateLinkParams").
-					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
-					OptionalQueryStructField(
-						"AllowedAuthenticationSecrets",
-						apiIntegrationAllowedAuthSecretsDef,
-						g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
-					).
-					BooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions().Required()).
-					ListAssignment("TLS_TRUSTED_CERTIFICATES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses()),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"ExternalMcpOAuth2ProviderParams",
-				g.NewQueryStruct("ExternalMcpOAuth2Params").
-					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = external_mcp").
-					QueryStructField(
-						"ApiUserAuthentication",
-						apiIntegrationOauth2McpAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
-					),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"ExternalMcpDynamicClientProviderParams",
-				g.NewQueryStruct("ExternalMcpDynamicClientParams").
-					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = external_mcp").
-					QueryStructField(
-						"ApiUserAuthentication",
-						apiIntegrationDynamicClientMcpAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
-					),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"GitHttpsApiTokenBasedProviderParams",
-				g.NewQueryStruct("GitHttpsApiTokenBasedParams").
-					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
-					OptionalQueryStructField(
-						"AllowedAuthenticationSecrets",
-						apiIntegrationAllowedAuthSecretsDef,
-						g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
-					),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"GitHttpsApiGithubAppProviderParams",
-				g.NewQueryStruct("GitHttpsApiGithubAppParams").
-					SQLWithCustomFieldName("apiProvider", "API_PROVIDER = git_https_api").
 					QueryStructField(
 						"ApiUserAuthentication",
 						apiIntegrationGithubAppAuthDef,
@@ -332,40 +268,6 @@ var apiIntegrationsDef = g.NewInterface(
 							),
 						g.KeywordOptions(),
 					).
-					OptionalQueryStructField(
-						"GitHttpsApiTokenBasedParams",
-						g.NewQueryStruct("SetGitHttpsApiTokenBasedParams").
-							OptionalQueryStructField(
-								"AllowedAuthenticationSecrets",
-								apiIntegrationAllowedAuthSecretsDef,
-								g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
-							).
-							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets"),
-						g.KeywordOptions(),
-					).
-					OptionalQueryStructField(
-						"GitHttpsApiPrivateLinkParams", // TODO(next pr): For private link only ? Validate with integration tests
-						g.NewQueryStruct("SetGitHttpsApiPrivateLinkParams").
-							OptionalQueryStructField(
-								"AllowedAuthenticationSecrets",
-								apiIntegrationAllowedAuthSecretsDef,
-								g.KeywordOptions().SQL("ALLOWED_AUTHENTICATION_SECRETS ="),
-							).
-							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
-							ListAssignment("TLS_TRUSTED_CERTIFICATES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses()).
-							WithValidation(g.AtLeastOneValueSet, "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "TlsTrustedCertificates"),
-						g.KeywordOptions(),
-					).
-					OptionalQueryStructField(
-						"ExternalMcpOAuth2Params",
-						g.NewQueryStruct("SetExternalMcpOAuth2Params").
-							QueryStructField(
-								"ApiUserAuthentication",
-								apiIntegrationOauth2McpAuthDef,
-								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
-							),
-						g.KeywordOptions(),
-					).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 					ListAssignment("API_ALLOWED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
@@ -429,20 +331,9 @@ var apiIntegrationsDef = g.NewInterface(
 					).
 					OptionalSQL("ENABLED").
 					OptionalSQL("API_BLOCKED_PREFIXES").
-					OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
-					OptionalSQL("TLS_TRUSTED_CERTIFICATES").
-					// TODO(next pr): Make unset params for each type? The unset private link should most likely be defined only for types using it
-					OptionalSQL("USE_PRIVATELINK_ENDPOINT").
 					OptionalSQL("COMMENT").
-					WithValidation(
-						g.MoreThanOneValueSet,
-						"AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams",
-					).
-					WithValidation(
-						g.AtLeastOneValueSet,
-						"AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams",
-						"Enabled", "ApiBlockedPrefixes", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "Comment",
-					),
+					WithValidation(g.MoreThanOneValueSet, "AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams").
+					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "Enabled", "ApiBlockedPrefixes", "Comment"),
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			OptionalSetTags().
@@ -471,8 +362,7 @@ var apiIntegrationsDef = g.NewInterface(
 			Text("category").
 			Bool("enabled").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			Time("created_on").
-			WithConvertGeneration(),
+			Time("created_on"),
 		g.NewQueryStruct("ShowApiIntegrations").
 			Show().
 			SQL("API INTEGRATIONS").
@@ -486,8 +376,7 @@ var apiIntegrationsDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")).
-			WithConvertGeneration(),
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescribeApiIntegration").
 			Describe().
 			SQL("API INTEGRATION").
