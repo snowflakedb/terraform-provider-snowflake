@@ -1,5 +1,11 @@
 package sdk
 
+import "context"
+
+func (v *computePools) dropSafelyHook(ctx context.Context, id AccountObjectIdentifier) error {
+	return v.client.ComputePools.Alter(ctx, NewAlterComputePoolRequest(id).WithIfExists(true).WithStopAll(true))
+}
+
 func (opts *CreateComputePoolOptions) additionalValidations() error {
 	var errs []error
 	if !validateIntGreaterThan(opts.MinNodes, 0) {

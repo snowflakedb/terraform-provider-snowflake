@@ -202,6 +202,7 @@ var listingsDef = g.NewInterface(
 			IfExists().
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		g.WithDropSafelyHook(),
 	).
 	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-listings",
