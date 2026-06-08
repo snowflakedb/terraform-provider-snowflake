@@ -58,6 +58,7 @@ func TestInt_Functions(t *testing.T) {
 		assertThatObject(t, functionParametersAssert.
 			HasEnableConsoleOutput(true).
 			HasLogLevel(sdk.LogLevelWarn).
+			HasLogEventLevel(sdk.LogLevelWarn).
 			HasMetricLevel(sdk.MetricLevelAll).
 			HasTraceLevel(sdk.TraceLevelAlways),
 		)
@@ -1651,6 +1652,7 @@ func TestInt_Functions(t *testing.T) {
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
 			WithSecretsList(*sdk.NewSecretsListRequest([]sdk.SecretReference{{VariableName: "abc", Name: secretId}})).
 			WithLogLevel(sdk.LogLevelWarn).
+			WithLogEventLevel(sdk.LogLevelWarn).
 			WithMetricLevel(sdk.MetricLevelAll).
 			WithTraceLevel(sdk.TraceLevelAlways).
 			WithComment("new comment"),
@@ -1678,6 +1680,7 @@ func TestInt_Functions(t *testing.T) {
 			WithExternalAccessIntegrations(true).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(true).
+			WithLogEventLevel(true).
 			WithMetricLevel(true).
 			WithTraceLevel(true).
 			WithComment(true),
@@ -1730,6 +1733,7 @@ func TestInt_Functions(t *testing.T) {
 		request := sdk.NewAlterFunctionRequest(id).WithSet(*sdk.NewFunctionSetRequest().
 			WithEnableConsoleOutput(true).
 			WithLogLevel(sdk.LogLevelWarn).
+			WithLogEventLevel(sdk.LogLevelWarn).
 			WithMetricLevel(sdk.MetricLevelAll).
 			WithTraceLevel(sdk.TraceLevelAlways).
 			WithComment("new comment"),
@@ -1748,6 +1752,7 @@ func TestInt_Functions(t *testing.T) {
 		unsetRequest := sdk.NewAlterFunctionRequest(id).WithUnset(*sdk.NewFunctionUnsetRequest().
 			WithEnableConsoleOutput(true).
 			WithLogLevel(true).
+			WithLogEventLevel(true).
 			WithMetricLevel(true).
 			WithTraceLevel(true).
 			WithComment(true),

@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Listings = (*listings)(nil)
-
 var (
+	_ Listings                       = (*listings)(nil)
 	_ convertibleRow[Listing]        = new(listingDBRow)
 	_ convertibleRow[ListingDetails] = new(listingDetailsDBRow)
 	_ convertibleRow[ListingVersion] = new(listingVersionDBRow)

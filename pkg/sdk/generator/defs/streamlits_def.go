@@ -94,7 +94,8 @@ var streamlitsDef = g.NewInterface(
 		SQL("STREAMLITS").
 		OptionalLike().
 		OptionalIn().
-		OptionalLimit(),
+		OptionalLimit().
+		WithAdditionalValidations(),
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).DescribeOperationWithPairedStructs(
@@ -110,7 +111,7 @@ var streamlitsDef = g.NewInterface(
 		Text("default_packages").
 		StringList("user_packages").
 		StringList("import_urls").
-		StringList("external_access_integrations").
+		StringList("external_access_integrations", g.WithManualConvert()).
 		Text("external_access_secrets"),
 	g.NewQueryStruct("DescribeStreamlit").
 		Describe().

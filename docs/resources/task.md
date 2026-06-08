@@ -258,6 +258,7 @@ resource "snowflake_task" "test" {
 - `jdbc_use_session_timezone` (Boolean) Specifies whether the JDBC Driver uses the time zone of the JVM or the time zone of the session (specified by the [TIMEZONE](https://docs.snowflake.com/en/sql-reference/parameters#label-timezone) parameter) for the getDate(), getTime(), and getTimestamp() methods of the ResultSet class. For more information, check [JDBC_USE_SESSION_TIMEZONE docs](https://docs.snowflake.com/en/sql-reference/parameters#jdbc-use-session-timezone).
 - `json_indent` (Number) Specifies the number of blank spaces to indent each new element in JSON output in the session. Also specifies whether to insert newline characters after each element. For more information, check [JSON_INDENT docs](https://docs.snowflake.com/en/sql-reference/parameters#json-indent).
 - `lock_timeout` (Number) Number of seconds to wait while trying to lock a resource, before timing out and aborting the statement. For more information, check [LOCK_TIMEOUT docs](https://docs.snowflake.com/en/sql-reference/parameters#lock-timeout).
+- `log_event_level` (String) Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. For more information, see [LOG_EVENT_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level). Valid values are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. For more information, check [LOG_EVENT_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level).
 - `log_level` (String) Specifies the severity level of messages that should be ingested and made available in the active event table. Messages at the specified level (and at more severe levels) are ingested. For more information about log levels, see [Setting log level](https://docs.snowflake.com/en/developer-guide/logging-tracing/logging-log-level). For more information, check [LOG_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-level).
 - `multi_statement_count` (Number) Number of statements to execute when using the multi-statement capability. For more information, check [MULTI_STATEMENT_COUNT docs](https://docs.snowflake.com/en/sql-reference/parameters#multi-statement-count).
 - `noorder_sequence_as_default` (Boolean) Specifies whether the ORDER or NOORDER property is set by default when you create a new sequence or add a new table column. The ORDER and NOORDER properties determine whether or not the values are generated for the sequence or auto-incremented column in [increasing or decreasing order](https://docs.snowflake.com/en/user-guide/querying-sequences.html#label-querying-sequences-increasing-values). For more information, check [NOORDER_SEQUENCE_AS_DEFAULT docs](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default).
@@ -368,6 +369,7 @@ Read-Only:
 - `jdbc_use_session_timezone` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--jdbc_use_session_timezone))
 - `json_indent` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--json_indent))
 - `lock_timeout` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--lock_timeout))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_level))
 - `multi_statement_count` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--multi_statement_count))
 - `noorder_sequence_as_default` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--noorder_sequence_as_default))
@@ -672,6 +674,18 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--lock_timeout"></a>
 ### Nested Schema for `parameters.lock_timeout`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--log_event_level"></a>
+### Nested Schema for `parameters.log_event_level`
 
 Read-Only:
 

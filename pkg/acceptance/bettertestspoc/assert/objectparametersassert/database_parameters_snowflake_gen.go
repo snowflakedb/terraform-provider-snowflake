@@ -76,6 +76,7 @@ func (d *DatabaseParametersAssert) HasAllDefaults() *DatabaseParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterStorageSerializationPolicy, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
@@ -96,6 +97,7 @@ func (d *DatabaseParametersAssert) HasAllDefaultsExplicit() *DatabaseParametersA
 		HasDefaultDefaultDdlCollationValueExplicit().
 		HasDefaultStorageSerializationPolicyValueExplicit().
 		HasDefaultLogLevelValueExplicit().
+		HasDefaultLogEventLevelValueExplicit().
 		HasDefaultTraceLevelValueExplicit().
 		HasDefaultSuspendTaskAfterNumFailuresValueExplicit().
 		HasDefaultTaskAutoRetryAttemptsValueExplicit().
@@ -147,6 +149,11 @@ func (d *DatabaseParametersAssert) HasStorageSerializationPolicy(expected sdk.St
 
 func (d *DatabaseParametersAssert) HasLogLevel(expected sdk.LogLevel) *DatabaseParametersAssert {
 	d.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.DatabaseParameterLogLevel, expected))
+	return d
+}
+
+func (d *DatabaseParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *DatabaseParametersAssert {
+	d.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.DatabaseParameterLogEventLevel, expected))
 	return d
 }
 
@@ -234,6 +241,11 @@ func (d *DatabaseParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) 
 	return d
 }
 
+func (d *DatabaseParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
+	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterLogEventLevel, expected))
+	return d
+}
+
 func (d *DatabaseParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
 	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterTraceLevel, expected))
 	return d
@@ -310,6 +322,10 @@ func (d *DatabaseParametersAssert) HasDefaultLogLevelValue() *DatabaseParameters
 	return d.HasDefaultParameterValue(sdk.DatabaseParameterLogLevel)
 }
 
+func (d *DatabaseParametersAssert) HasDefaultLogEventLevelValue() *DatabaseParametersAssert {
+	return d.HasDefaultParameterValue(sdk.DatabaseParameterLogEventLevel)
+}
+
 func (d *DatabaseParametersAssert) HasDefaultTraceLevelValue() *DatabaseParametersAssert {
 	return d.HasDefaultParameterValue(sdk.DatabaseParameterTraceLevel)
 }
@@ -376,6 +392,10 @@ func (d *DatabaseParametersAssert) HasDefaultStorageSerializationPolicyValueExpl
 
 func (d *DatabaseParametersAssert) HasDefaultLogLevelValueExplicit() *DatabaseParametersAssert {
 	return d.HasLogLevel(sdk.LogLevelOff)
+}
+
+func (d *DatabaseParametersAssert) HasDefaultLogEventLevelValueExplicit() *DatabaseParametersAssert {
+	return d.HasLogEventLevel(sdk.LogLevelOff)
 }
 
 func (d *DatabaseParametersAssert) HasDefaultTraceLevelValueExplicit() *DatabaseParametersAssert {

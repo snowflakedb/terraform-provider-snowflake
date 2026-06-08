@@ -227,7 +227,7 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-	g.ShowByIDInFiltering,
+	g.ShowByIDTableInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
@@ -236,10 +236,10 @@ var hybridTablesDef = g.NewInterface(
 		Text("name").
 		Text("type").
 		Text("kind").
-		Text("null", g.WithPlainFieldName("IsNullable")).
+		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 		OptionalText("default", g.WithRequiredInPlain()).
-		Text("primary key", g.WithPlainFieldName("PrimaryKey")).
-		Text("unique key", g.WithPlainFieldName("UniqueKey")).
+		Field("primary key", "string", "bool").
+		Field("unique key", "string", "bool").
 		OptionalText("check", g.WithRequiredInPlain()).
 		OptionalText("expression", g.WithRequiredInPlain()).
 		OptionalText("comment", g.WithRequiredInPlain()).

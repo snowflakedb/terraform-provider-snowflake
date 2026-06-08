@@ -294,6 +294,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.SharedDatabase().Schema,
 	},
 	{
+		name:   "Share",
+		schema: resources.Share().Schema,
+	},
+	{
 		name:   "Streamlit",
 		schema: resources.Streamlit().Schema,
 	},

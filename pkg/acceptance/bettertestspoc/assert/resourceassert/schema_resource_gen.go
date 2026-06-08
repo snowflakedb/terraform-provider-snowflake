@@ -82,6 +82,11 @@ func (s *SchemaResourceAssert) HasIsTransient(expected string) *SchemaResourceAs
 	return s
 }
 
+func (s *SchemaResourceAssert) HasLogEventLevel(expected string) *SchemaResourceAssert {
+	s.StringValueSet("log_event_level", expected)
+	return s
+}
+
 func (s *SchemaResourceAssert) HasLogLevel(expected string) *SchemaResourceAssert {
 	s.StringValueSet("log_level", expected)
 	return s
@@ -198,6 +203,11 @@ func (s *SchemaResourceAssert) HasFullyQualifiedNameString(expected string) *Sch
 
 func (s *SchemaResourceAssert) HasIsTransientString(expected string) *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("is_transient", expected))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasLogEventLevelString(expected string) *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return s
 }
 
@@ -320,6 +330,11 @@ func (s *SchemaResourceAssert) HasNoIsTransient() *SchemaResourceAssert {
 	return s
 }
 
+func (s *SchemaResourceAssert) HasNoLogEventLevel() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return s
+}
+
 func (s *SchemaResourceAssert) HasNoLogLevel() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("log_level"))
 	return s
@@ -426,6 +441,11 @@ func (s *SchemaResourceAssert) HasFullyQualifiedNameEmpty() *SchemaResourceAsser
 
 func (s *SchemaResourceAssert) HasIsTransientEmpty() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValueSet("is_transient", ""))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasLogEventLevelEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return s
 }
 
@@ -545,6 +565,11 @@ func (s *SchemaResourceAssert) HasFullyQualifiedNameNotEmpty() *SchemaResourceAs
 
 func (s *SchemaResourceAssert) HasIsTransientNotEmpty() *SchemaResourceAssert {
 	s.AddAssertion(assert.ValuePresent("is_transient"))
+	return s
+}
+
+func (s *SchemaResourceAssert) HasLogEventLevelNotEmpty() *SchemaResourceAssert {
+	s.AddAssertion(assert.ValuePresent("log_event_level"))
 	return s
 }
 

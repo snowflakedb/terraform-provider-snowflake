@@ -5,11 +5,49 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 const DefaultFunctionComment = "user-defined function"
+
+func (opts *CreateForJavaFunctionOptions) additionalValidations() error {
+	var errs []error
+	if opts.FunctionDefinition == nil {
+		if opts.TargetPath != nil {
+			errs = append(errs, NewError("TARGET_PATH must be nil when AS is nil"))
+		}
+		if len(opts.Imports) == 0 {
+			errs = append(errs, NewError("IMPORTS must not be empty when AS is nil"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateForPythonFunctionOptions) additionalValidations() error {
+	var errs []error
+	if opts.FunctionDefinition == nil {
+		if len(opts.Imports) == 0 {
+			errs = append(errs, NewError("IMPORTS must not be empty when AS is nil"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateForScalaFunctionOptions) additionalValidations() error {
+	var errs []error
+	if opts.FunctionDefinition == nil {
+		if opts.TargetPath != nil {
+			errs = append(errs, NewError("TARGET_PATH must be nil when AS is nil"))
+		}
+		if len(opts.Imports) == 0 {
+			errs = append(errs, NewError("IMPORTS must not be empty when AS is nil"))
+		}
+	}
+	return JoinErrors(errs...)
+}
 
 func (v *Function) ID() SchemaObjectIdentifierWithArguments {
 	return NewSchemaObjectIdentifierWithArguments(v.CatalogName, v.SchemaName, v.Name, v.ArgumentsOld...)
@@ -218,4 +256,27 @@ func NewCreateForJavascriptFunctionRequestDefinitionWrapped(
 	s.Returns = returns
 	s.FunctionDefinition = fmt.Sprintf(`$$%s$$`, functionDefinition)
 	return &s
+}
+
+func (r functionRow) additionalConvert(result *Function) error {
+	result.SchemaName = strings.Trim(r.SchemaName, `"`)
+	result.CatalogName = strings.Trim(r.CatalogName, `"`)
+	arguments := strings.TrimLeft(r.Arguments, r.Name)
+	returnIndex := strings.Index(arguments, ") RETURN ")
+	result.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
+	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
+	if err != nil {
+		return fmt.Errorf("failed to parse function arguments: %w", err)
+	}
+	result.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
+		return DataType(a.ArgType)
+	})
+	return nil
+}
+
+func (r functionDetailRow) additionalConvert(result *FunctionDetail) error {
+	if r.Value.Valid && r.Value.String != "null" {
+		result.Value = String(r.Value.String)
+	}
+	return nil
 }

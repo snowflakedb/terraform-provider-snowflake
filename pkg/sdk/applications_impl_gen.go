@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Applications = (*applications)(nil)
-
 var (
+	_ Applications                        = (*applications)(nil)
 	_ convertibleRow[Application]         = new(applicationRow)
 	_ convertibleRow[ApplicationProperty] = new(applicationPropertyRow)
 )
@@ -141,8 +140,9 @@ func (r *AlterApplicationRequest) toOpts() *AlterApplicationOptions {
 		if r.UnsetReferences.References != nil {
 			s := make([]ApplicationReference, len(r.UnsetReferences.References))
 			for i, v := range r.UnsetReferences.References {
-				// Manually changed to ApplicationReference(v)
-				s[i] = ApplicationReference(v)
+				s[i] = ApplicationReference{
+					Reference: v.Reference,
+				}
 			}
 			opts.UnsetReferences.References = s
 		}
@@ -160,8 +160,7 @@ func (r *ShowApplicationRequest) toOpts() *ShowApplicationOptions {
 }
 
 func (r applicationRow) convert() (*Application, error) {
-	// Added manually
-	return &Application{
+	result := &Application{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		IsDefault:     r.IsDefault == "Y",
@@ -175,7 +174,8 @@ func (r applicationRow) convert() (*Application, error) {
 		Patch:         r.Patch,
 		Options:       r.Options,
 		RetentionTime: r.RetentionTime,
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *DescribeApplicationRequest) toOpts() *DescribeApplicationOptions {
@@ -186,12 +186,9 @@ func (r *DescribeApplicationRequest) toOpts() *DescribeApplicationOptions {
 }
 
 func (r applicationPropertyRow) convert() (*ApplicationProperty, error) {
-	// Added manually
-	e := &ApplicationProperty{
+	result := &ApplicationProperty{
 		Property: r.Property,
 	}
-	if r.Value.Valid {
-		e.Value = r.Value.String
-	}
-	return e, nil
+	mapNullStringToNonNullableField(&result.Value, r.Value)
+	return result, nil
 }

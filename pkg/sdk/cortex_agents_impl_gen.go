@@ -4,13 +4,13 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ CortexAgents = (*cortexAgents)(nil)
-
 var (
+	_ CortexAgents                       = (*cortexAgents)(nil)
 	_ convertibleRow[CortexAgent]        = new(showCortexAgentDBRow)
 	_ convertibleRow[CortexAgentDetails] = new(cortexAgentDetailsRow)
 )
@@ -123,17 +123,22 @@ func (r *ShowCortexAgentRequest) toOpts() *ShowCortexAgentOptions {
 }
 
 func (r showCortexAgentDBRow) convert() (*CortexAgent, error) {
-	// adjusted manually
-	cortexAgent := &CortexAgent{
+	result := &CortexAgent{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
 	}
-	mapNullString(&cortexAgent.Comment, r.Comment)
-	mapNullString(&cortexAgent.Profile, r.Profile)
-	return cortexAgent, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	if r.Profile.Valid {
+		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err != nil {
+			return nil, fmt.Errorf("parsing cortex agent profile: %w", err)
+		} else {
+			result.Profile = v
+		}
+	}
+	return result, nil
 }
 
 func (r *DescribeCortexAgentRequest) toOpts() *DescribeCortexAgentOptions {
@@ -144,19 +149,28 @@ func (r *DescribeCortexAgentRequest) toOpts() *DescribeCortexAgentOptions {
 }
 
 func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
-	// adjusted manually
-	details := &CortexAgentDetails{
+	result := &CortexAgentDetails{
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		AgentSpec:    r.AgentSpec,
 		CreatedOn:    r.CreatedOn,
 	}
-	mapNullString(&details.Comment, r.Comment)
-	mapNullString(&details.Profile, r.Profile)
-	mapNullString(&details.DefaultVersionName, r.DefaultVersionName)
-	mapNullString(&details.Versions, r.Versions)
-	mapNullString(&details.Aliases, r.Aliases)
-	return details, nil
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	if r.Profile.Valid {
+		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err != nil {
+			return nil, fmt.Errorf("parsing cortex agent profile: %w", err)
+		} else {
+			result.Profile = v
+		}
+	}
+	if v, err := NormalizeCortexAgentSpecification(r.AgentSpec); err != nil {
+		return nil, fmt.Errorf("parsing string: %w", err)
+	} else {
+		result.AgentSpec = v
+	}
+	mapNullString(&result.DefaultVersionName, r.DefaultVersionName)
+	mapNullString(&result.Versions, r.Versions)
+	mapNullString(&result.Aliases, r.Aliases)
+	return result, nil
 }

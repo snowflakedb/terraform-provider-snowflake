@@ -8,9 +8,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ManagedAccounts = (*managedAccounts)(nil)
-
-var _ convertibleRow[ManagedAccount] = new(managedAccountDBRow)
+var (
+	_ ManagedAccounts                = (*managedAccounts)(nil)
+	_ convertibleRow[ManagedAccount] = new(managedAccountDBRow)
+)
 
 type managedAccounts struct {
 	client *Client
@@ -81,30 +82,16 @@ func (r *ShowManagedAccountRequest) toOpts() *ShowManagedAccountOptions {
 }
 
 func (r managedAccountDBRow) convert() (*ManagedAccount, error) {
-	// added manually
-	managedAccount := &ManagedAccount{
+	result := &ManagedAccount{
 		Cloud:             r.Cloud,
 		Region:            r.Region,
 		CreatedOn:         r.CreatedOn,
 		AccountLocatorURL: r.AccountLocatorUrl,
 		IsReader:          r.IsReader,
 	}
-
-	if r.AccountName.Valid {
-		managedAccount.Name = r.AccountName.String
-	}
-
-	if r.AccountLocator.Valid {
-		managedAccount.Locator = r.AccountLocator.String
-	}
-
-	if r.AccountUrl.Valid {
-		managedAccount.URL = r.AccountUrl.String
-	}
-
-	if r.Comment.Valid {
-		managedAccount.Comment = &r.Comment.String
-	}
-
-	return managedAccount, nil
+	mapNullStringToNonNullableField(&result.Name, r.AccountName)
+	mapNullStringToNonNullableField(&result.Locator, r.AccountLocator)
+	mapNullStringToNonNullableField(&result.URL, r.AccountUrl)
+	mapNullString(&result.Comment, r.Comment)
+	return result, nil
 }

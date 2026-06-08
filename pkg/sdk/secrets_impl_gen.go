@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Secrets = (*secrets)(nil)
-
 var (
+	_ Secrets                       = (*secrets)(nil)
 	_ convertibleRow[Secret]        = new(secretDBRow)
 	_ convertibleRow[SecretDetails] = new(secretDetailsDBRow)
 )
@@ -203,8 +202,7 @@ func (r *ShowSecretRequest) toOpts() *ShowSecretOptions {
 }
 
 func (r secretDBRow) convert() (*Secret, error) {
-	// adjusted manually
-	s := &Secret{
+	result := &Secret{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		SchemaName:    r.SchemaName,
@@ -213,13 +211,11 @@ func (r secretDBRow) convert() (*Secret, error) {
 		SecretType:    r.SecretType,
 		OwnerRoleType: r.OwnerRoleType,
 	}
-	if r.Comment.Valid {
-		s.Comment = String(r.Comment.String)
-	}
+	mapNullString(&result.Comment, r.Comment)
 	if r.OauthScopes.Valid {
-		s.OauthScopes = ParseCommaSeparatedStringArray(r.OauthScopes.String, false)
+		result.OauthScopes = ParseCommaSeparatedStringArray(r.OauthScopes.String, false)
 	}
-	return s, nil
+	return result, nil
 }
 
 func (r *DescribeSecretRequest) toOpts() *DescribeSecretOptions {
@@ -230,8 +226,7 @@ func (r *DescribeSecretRequest) toOpts() *DescribeSecretOptions {
 }
 
 func (r secretDetailsDBRow) convert() (*SecretDetails, error) {
-	// adjusted manually
-	s := &SecretDetails{
+	result := &SecretDetails{
 		CreatedOn:                   r.CreatedOn,
 		Name:                        r.Name,
 		SchemaName:                  r.SchemaName,
@@ -241,17 +236,11 @@ func (r secretDetailsDBRow) convert() (*SecretDetails, error) {
 		OauthAccessTokenExpiryTime:  r.OauthAccessTokenExpiryTime,
 		OauthRefreshTokenExpiryTime: r.OauthRefreshTokenExpiryTime,
 	}
-	if r.Username.Valid {
-		s.Username = String(r.Username.String)
-	}
-	if r.Comment.Valid {
-		s.Comment = String(r.Comment.String)
-	}
+	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.Username, r.Username)
 	if r.OauthScopes.Valid {
-		s.OauthScopes = ParseCommaSeparatedStringArray(r.OauthScopes.String, false)
+		result.OauthScopes = ParseCommaSeparatedStringArray(r.OauthScopes.String, false)
 	}
-	if r.IntegrationName.Valid {
-		s.IntegrationName = String(r.IntegrationName.String)
-	}
-	return s, nil
+	mapNullString(&result.IntegrationName, r.IntegrationName)
+	return result, nil
 }

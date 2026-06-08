@@ -52,7 +52,8 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 			g.NewQueryStruct("StageFileFormat").
 				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
 				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
-				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
+				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions").
+				WithAdditionalValidations(),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
 		OptionalComment().
@@ -74,7 +75,8 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 			g.NewQueryStruct("StageFileFormat").
 				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
 				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
-				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
+				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions").
+				WithAdditionalValidations(),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
 		// TODO(SNOW-3035788): use COMMENT in unset and here use OptionalComment
@@ -388,8 +390,7 @@ var stagesDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")).
-			WithConvertGeneration(),
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescStage").
 			Describe().
 			SQL("STAGE").
@@ -415,8 +416,7 @@ var stagesDef = g.NewInterface(
 			Field("storage_integration", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("StorageIntegration")).
 			OptionalText("endpoint").
 			Field("owner_role_type", "sql.NullString", "*string").
-			Field("directory_enabled", "string", "bool").
-			WithConvertGeneration(),
+			Field("directory_enabled", "string", "bool"),
 		g.NewQueryStruct("ShowStages").
 			Show().
 			SQL("STAGES").

@@ -816,3 +816,76 @@ func TestAcc_CatalogIntegrationOpenCatalog_ImportValidation(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	catalogUri := "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
+	catalogName := random.AlphanumericN(15)
+	catalogNamespace := random.AlphanumericN(15)
+
+	oAuthTokenUri := catalogUri + "/v2/oauth/tokens"
+	oAuthClientId := random.AlphanumericN(15)
+	oAuthClientSecret := random.AlphanumericN(15)
+	oAuthAllowedScope := "PRINCIPAL_ROLE:ALL"
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	completeRestAuth := []sdk.OAuthRestAuthenticationRequest{
+		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+			WithOauthTokenUri(oAuthTokenUri),
+	}
+
+	completeRestConfig := []sdk.OpenCatalogRestConfigRequest{
+		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
+	}
+
+	allAttributes := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, completeRestAuth, completeRestConfig).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds).
+		WithCatalogNamespace(catalogNamespace)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationOpenCatalog),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithRefreshIntervalSeconds(refreshIntervalSeconds).
+						WithComment(comment).
+						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
+							WithRestConfig(completeRestConfig[0]).
+							WithRestAuthentication(completeRestAuth[0]).
+							WithCatalogNamespace(catalogNamespace))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				Config:             config.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "rest_authentication.0.oauth_client_secret", tfjson.ActionUpdate, sdk.String(""), sdk.String(oAuthClientSecret)),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}

@@ -75,7 +75,7 @@ var openflowConnectorsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowConnectorRow", "OpenflowConnector").
 		Text("name").
-		PlainField("status", OpenflowConnectorStatusEnumDef.Kind()).
+		Enum("status", OpenflowConnectorStatusEnumDef).
 		Text("runtime").
 		OptionalText("connector_definition").
 		OptionalText("display_name").
@@ -103,7 +103,7 @@ var openflowConnectorsDef = g.NewInterface(
 	"TODO: add link when public docs are available",
 	g.StructPair("openflowConnectorDetailsRow", "OpenflowConnectorDetails").
 		Text("name").
-		PlainField("status", OpenflowConnectorStatusEnumDef.Kind()).
+		Enum("status", OpenflowConnectorStatusEnumDef).
 		Text("runtime").
 		OptionalText("connector_definition").
 		OptionalText("definition_version_name").

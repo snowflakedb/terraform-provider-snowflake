@@ -214,6 +214,11 @@ func (l *LegacyServiceUserResourceAssert) HasLockTimeout(expected int) *LegacySe
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasLogEventLevel(expected string) *LegacyServiceUserResourceAssert {
+	l.StringValueSet("log_event_level", expected)
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasLogLevel(expected string) *LegacyServiceUserResourceAssert {
 	l.StringValueSet("log_level", expected)
 	return l
@@ -595,6 +600,11 @@ func (l *LegacyServiceUserResourceAssert) HasJsonIndentString(expected string) *
 
 func (l *LegacyServiceUserResourceAssert) HasLockTimeoutString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("lock_timeout", expected))
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasLogEventLevelString(expected string) *LegacyServiceUserResourceAssert {
+	l.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return l
 }
 
@@ -982,6 +992,11 @@ func (l *LegacyServiceUserResourceAssert) HasNoLockTimeout() *LegacyServiceUserR
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasNoLogEventLevel() *LegacyServiceUserResourceAssert {
+	l.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasNoLogLevel() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueNotSet("log_level"))
 	return l
@@ -1366,6 +1381,11 @@ func (l *LegacyServiceUserResourceAssert) HasLockTimeoutEmpty() *LegacyServiceUs
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasLogEventLevelEmpty() *LegacyServiceUserResourceAssert {
+	l.AddAssertion(assert.ValueSet("log_event_level", ""))
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasLogLevelEmpty() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("log_level", ""))
 	return l
@@ -1747,6 +1767,11 @@ func (l *LegacyServiceUserResourceAssert) HasJsonIndentNotEmpty() *LegacyService
 
 func (l *LegacyServiceUserResourceAssert) HasLockTimeoutNotEmpty() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValuePresent("lock_timeout"))
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasLogEventLevelNotEmpty() *LegacyServiceUserResourceAssert {
+	l.AddAssertion(assert.ValuePresent("log_event_level"))
 	return l
 }
 

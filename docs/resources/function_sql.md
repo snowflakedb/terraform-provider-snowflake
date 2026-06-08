@@ -87,6 +87,7 @@ EOT
 - `comment` (String) (Default: `user-defined function`) Specifies a comment for the function.
 - `enable_console_output` (Boolean) Enable stdout/stderr fast path logging for anonymous stored procs. This is a public parameter (similar to LOG_LEVEL). For more information, check [ENABLE_CONSOLE_OUTPUT docs](https://docs.snowflake.com/en/sql-reference/parameters#enable-console-output).
 - `is_secure` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies that the function is secure. By design, the Snowflake's `SHOW FUNCTIONS` command does not provide information about secure functions (consult [function docs](https://docs.snowflake.com/en/sql-reference/sql/create-function#id1) and [Protecting Sensitive Information with Secure UDFs and Stored Procedures](https://docs.snowflake.com/en/developer-guide/secure-udf-procedure)) which is essential to manage/import function with Terraform. Use the role owning the function while managing secure functions. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `log_event_level` (String) Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. For more information, see [LOG_EVENT_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level). Valid values are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. For more information, check [LOG_EVENT_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level).
 - `log_level` (String) LOG_LEVEL to use when filtering events For more information, check [LOG_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-level).
 - `metric_level` (String) METRIC_LEVEL value to control whether to emit metrics to Event Table For more information, check [METRIC_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#metric-level).
 - `return_results_behavior` (String) Specifies the behavior of the function when returning results. Valid values are (case-insensitive): `VOLATILE` | `IMMUTABLE`.
@@ -131,12 +132,25 @@ Optional:
 Read-Only:
 
 - `enable_console_output` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--enable_console_output))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_level))
 - `metric_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--metric_level))
 - `trace_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--trace_level))
 
 <a id="nestedobjatt--parameters--enable_console_output"></a>
 ### Nested Schema for `parameters.enable_console_output`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--log_event_level"></a>
+### Nested Schema for `parameters.log_event_level`
 
 Read-Only:
 

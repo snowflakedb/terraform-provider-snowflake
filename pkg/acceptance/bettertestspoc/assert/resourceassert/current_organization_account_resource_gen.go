@@ -347,6 +347,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasLockTimeout(expected int) 
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasLogEventLevel(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("log_event_level", expected)
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasLogLevel(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.StringValueSet("log_level", expected)
 	return c
@@ -953,6 +958,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasListingAutoFulfillmentRepl
 
 func (c *CurrentOrganizationAccountResourceAssert) HasLockTimeoutString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("lock_timeout", expected))
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasLogEventLevelString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return c
 }
 
@@ -1565,6 +1575,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasNoLockTimeout() *CurrentOr
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNoLogEventLevel() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasNoLogLevel() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("log_level"))
 	return c
@@ -2166,6 +2181,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasListingAutoFulfillmentRepl
 
 func (c *CurrentOrganizationAccountResourceAssert) HasLockTimeoutEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("lock_timeout", ""))
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasLogEventLevelEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return c
 }
 
@@ -2775,6 +2795,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasListingAutoFulfillmentRepl
 
 func (c *CurrentOrganizationAccountResourceAssert) HasLockTimeoutNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("lock_timeout"))
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasLogEventLevelNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.AddAssertion(assert.ValuePresent("log_event_level"))
 	return c
 }
 

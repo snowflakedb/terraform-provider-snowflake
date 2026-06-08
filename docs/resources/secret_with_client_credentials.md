@@ -12,8 +12,16 @@ Resource used to manage secret objects with OAuth Client Credentials. For more i
 ## Example Usage
 
 ```terraform
-# basic resource
-resource "snowflake_secret_with_client_credentials" "test" {
+# basic resource (without oauth_scopes — scopes are inherited from the security integration)
+resource "snowflake_secret_with_client_credentials" "basic" {
+  name               = "EXAMPLE_SECRET"
+  database           = "EXAMPLE_DB"
+  schema             = "EXAMPLE_SCHEMA"
+  api_authentication = snowflake_api_authentication_integration_with_client_credentials.example.fully_qualified_name
+}
+
+# resource with explicit oauth_scopes
+resource "snowflake_secret_with_client_credentials" "with_scopes" {
   name               = "EXAMPLE_SECRET"
   database           = "EXAMPLE_DB"
   schema             = "EXAMPLE_SCHEMA"
@@ -22,7 +30,7 @@ resource "snowflake_secret_with_client_credentials" "test" {
 }
 
 # resource with all fields set
-resource "snowflake_secret_with_client_credentials" "test" {
+resource "snowflake_secret_with_client_credentials" "complete" {
   name               = "EXAMPLE_SECRET"
   database           = "EXAMPLE_DB"
   schema             = "EXAMPLE_SCHEMA"
@@ -44,12 +52,12 @@ resource "snowflake_secret_with_client_credentials" "test" {
 - `api_authentication` (String) Specifies the name value of the Snowflake security integration that connects Snowflake to an external service. For more information about this resource, see [docs](./api_authentication_integration_with_client_credentials).
 - `database` (String) The database in which to create the secret Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) String that specifies the identifier (i.e. name) for the secret, must be unique in your schema. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `oauth_scopes` (Set of String) Specifies a list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow.
 - `schema` (String) The schema in which to create the secret. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the secret.
+- `oauth_scopes` (Set of String) Specifies a list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow. If not specified, no scopes are set on the secret; the effective scopes during the OAuth flow are inherited from the security integration.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

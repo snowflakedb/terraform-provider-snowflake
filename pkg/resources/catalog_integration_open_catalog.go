@@ -152,6 +152,13 @@ func ImportCatalogIntegrationOpenCatalog(ctx context.Context, d *schema.Resource
 		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypePolaris, details.CatalogSource)
 	}
 
+	if err := setOpenCatalogRestConfigInState(d, details); err != nil {
+		return nil, err
+	}
+	if err := setOpenCatalogRestAuthInState(d, details); err != nil {
+		return nil, err
+	}
+
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -332,4 +339,22 @@ func handleExternalChangesToRestAuthentication(d *schema.ResourceData, details *
 		details.RestAuthentication.OauthClientId,
 		details.RestAuthentication.OauthAllowedScopes,
 	)
+}
+
+func setOpenCatalogRestConfigInState(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
+	return d.Set("rest_config", []any{map[string]any{
+		"catalog_uri":            details.RestConfig.CatalogUri,
+		"catalog_name":           details.RestConfig.CatalogName,
+		"catalog_api_type":       string(details.RestConfig.CatalogApiType),
+		"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
+	}})
+}
+
+func setOpenCatalogRestAuthInState(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
+	return d.Set("rest_authentication", []any{map[string]any{
+		"oauth_token_uri": details.RestAuthentication.OauthTokenUri,
+		"oauth_client_id": details.RestAuthentication.OauthClientId,
+		// oauth_client_secret not returned from Snowflake
+		"oauth_allowed_scopes": details.RestAuthentication.OauthAllowedScopes,
+	}})
 }

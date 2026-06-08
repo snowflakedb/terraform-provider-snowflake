@@ -255,7 +255,7 @@ var apiIntegrationsDef = g.NewInterface(
 					ListAssignment("API_BLOCKED_PREFIXES", "ApiIntegrationEndpointPrefix", g.ParameterOptions().Parentheses()).
 					OptionalComment().
 					WithValidation(
-						g.ConflictingFields,
+						g.MoreThanOneValueSet,
 						"AwsParams",
 						"AzureParams",
 						"GoogleParams",

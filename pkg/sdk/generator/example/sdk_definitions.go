@@ -192,6 +192,9 @@ func mapNullIntToNonNullableField(_ *int, _ sql.NullInt64)                      
 func mapNullTime(_ **time.Time, _ sql.NullTime)                                          {}
 func mapNullTimeToNonNullableField(_ *time.Time, _ sql.NullTime)                         {}
 func mapStringWithMapping[T any](_ *T, _ string, _ func(string) (T, error))              {}
+func ParseCommaSeparatedAccountIdentifierArray(value string) ([]AccountIdentifier, error) {
+	return nil, nil
+}
 
 func ParseCommaSeparatedStringArray(_ string, _ bool) []string {
 	return nil

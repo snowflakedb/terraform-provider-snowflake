@@ -64,6 +64,7 @@ func (c *CurrentOrganizationAccountModel) WithAllParametersSetToPredefinedValues
 		WithJsTreatIntegerAsBigint(true).
 		WithListingAutoFulfillmentReplicationRefreshSchedule("2 minutes").
 		WithLockTimeout(43201).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
 		WithMaxConcurrencyLevel(7).
 		WithMaxDataExtensionTimeInDays(13).

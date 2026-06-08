@@ -9,9 +9,6 @@ func (opts *DummyOperationFileFormatOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	// adjusted manually
-	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
-	}
+	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }

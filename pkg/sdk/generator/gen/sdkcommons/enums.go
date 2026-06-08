@@ -7,6 +7,7 @@ type (
 	DataType                                                 string
 	ImageRepositoryEncryptionType                            string
 	LogLevel                                                 string
+	MatchType                                                string
 	MetricLevel                                              string
 	NullInputBehavior                                        string
 	ReclusterState                                           string

@@ -21,6 +21,7 @@ type DatabaseModel struct {
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
 	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsTransient                             tfconfig.Variable `json:"is_transient,omitempty"`
+	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
@@ -146,6 +147,11 @@ func (d *DatabaseModel) WithIsTransient(isTransient bool) *DatabaseModel {
 	return d
 }
 
+func (d *DatabaseModel) WithLogEventLevel(logEventLevel string) *DatabaseModel {
+	d.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return d
+}
+
 func (d *DatabaseModel) WithLogLevel(logLevel string) *DatabaseModel {
 	d.LogLevel = tfconfig.StringVariable(logLevel)
 	return d
@@ -254,6 +260,11 @@ func (d *DatabaseModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *Da
 
 func (d *DatabaseModel) WithIsTransientValue(value tfconfig.Variable) *DatabaseModel {
 	d.IsTransient = value
+	return d
+}
+
+func (d *DatabaseModel) WithLogEventLevelValue(value tfconfig.Variable) *DatabaseModel {
+	d.LogEventLevel = value
 	return d
 }
 

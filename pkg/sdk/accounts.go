@@ -723,6 +723,7 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 			ListingAutoFulfillmentReplicationRefreshSchedule:         Bool(true),
 			LockTimeout:                                              Bool(true),
 			LogLevel:                                                 Bool(true),
+			LogEventLevel:                                            Bool(true),
 			MaxConcurrencyLevel:                                      Bool(true),
 			MaxDataExtensionTimeInDays:                               Bool(true),
 			MetricLevel:                                              Bool(true),

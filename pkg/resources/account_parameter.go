@@ -110,6 +110,7 @@ var accountParameterSupportedParameters = []sdk.AccountParameter{
 	sdk.AccountParameterDefaultDDLCollation,
 	sdk.AccountParameterExternalVolume,
 	sdk.AccountParameterLogLevel,
+	sdk.AccountParameterLogEventLevel,
 	sdk.AccountParameterMaxConcurrencyLevel,
 	sdk.AccountParameterMaxDataExtensionTimeInDays,
 	sdk.AccountParameterPipeExecutionPaused,

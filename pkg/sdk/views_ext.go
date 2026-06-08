@@ -1,6 +1,28 @@
 package sdk
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
+
+func (opts *CreateViewOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.Columns) {
+		for i, columnOption := range opts.Columns {
+			if valueSet(columnOption.MaskingPolicy) {
+				if !ValidObjectIdentifier(columnOption.MaskingPolicy.MaskingPolicy) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateViewOptions.Columns[%d]", i), "MaskingPolicy"))
+				}
+			}
+			if valueSet(columnOption.ProjectionPolicy) {
+				if !ValidObjectIdentifier(columnOption.ProjectionPolicy.ProjectionPolicy) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateViewOptions.Columns[%d]", i), "ProjectionPolicy"))
+				}
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
 
 var AllViewDataMetricScheduleMinutes = []int{5, 15, 30, 60, 720, 1440}
 

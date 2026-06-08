@@ -135,7 +135,8 @@ var externalVolumesDef = g.NewInterface(
 			OptionalBooleanAssignment("ALLOW_WRITES", nil).
 			OptionalComment().
 			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-			WithValidation(g.ValidIdentifier, "name"),
+			WithValidation(g.ValidIdentifier, "name").
+			WithAdditionalValidations(),
 		storageLocationItemDef,
 	).
 	AlterOperation(

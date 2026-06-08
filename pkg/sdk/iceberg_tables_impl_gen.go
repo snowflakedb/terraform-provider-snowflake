@@ -4,13 +4,14 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
-var _ IcebergTables = (*icebergTables)(nil)
-
 var (
+	_ IcebergTables                       = (*icebergTables)(nil)
 	_ convertibleRow[IcebergTable]        = new(icebergTableRow)
 	_ convertibleRow[IcebergTableDetails] = new(icebergTableDetailsRow)
 )
@@ -20,6 +21,11 @@ type icebergTables struct {
 }
 
 func (v *icebergTables) Create(ctx context.Context, request *CreateIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *icebergTables) CreateFromIcebergFiles(ctx context.Context, request *CreateFromIcebergFilesIcebergTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -82,7 +88,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		PathLayout:  r.PathLayout,
 		ClusterBy:   r.ClusterBy,
 		// Adjusted manually
-		ExternalVolume:             icebergTableExternalVolumeQuoted(r.ExternalVolume),
+		ExternalVolume:             icebergTableIdentifierQuoted(r.ExternalVolume),
 		Catalog:                    r.Catalog,
 		BaseLocation:               r.BaseLocation,
 		TargetFileSize:             r.TargetFileSize,
@@ -113,6 +119,9 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				Comment:      v.Comment,
 			}
 			// Adjusted manually: convert *Request sub-structs to *Options
+			if v.InlineConstraint != nil {
+				s[i].InlineConstraint = TableColumnInlineConstraintFromRequest(v.InlineConstraint)
+			}
 			if v.MaskingPolicy != nil {
 				s[i].MaskingPolicy = &TableColumnMaskingPolicy{
 					MaskingPolicy: v.MaskingPolicy.MaskingPolicy,
@@ -126,6 +135,16 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 			}
 		}
 		opts.ColumnsAndConstraints.Columns = s
+	}
+	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
+		s := make([]TableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
+			// Adjusted manually: convert *Request sub-structs to *Options
+			if c := TableOutOfLineConstraintFromRequest(&v); c != nil {
+				s[i] = *c
+			}
+		}
+		opts.ColumnsAndConstraints.OutOfLineConstraint = s
 	}
 	if r.PartitionBy != nil {
 		s := make([]IcebergTablePartitionExpression, len(r.PartitionBy))
@@ -169,6 +188,22 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 	return opts
 }
 
+func (r *CreateFromIcebergFilesIcebergTableRequest) toOpts() *CreateFromIcebergFilesIcebergTableOptions {
+	opts := &CreateFromIcebergFilesIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           icebergTableIdentifierQuoted(r.ExternalVolume),
+		Catalog:                  icebergTableIdentifierQuoted(r.Catalog),
+		MetadataFilePath:         r.MetadataFilePath,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
+	}
+	return opts
+}
+
 func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 	opts := &AlterIcebergTableOptions{
 		IfExists:                  r.IfExists,
@@ -187,6 +222,10 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			ColumnType:   r.AddColumnAction.ColumnType,
 			DefaultValue: r.AddColumnAction.DefaultValue,
 			Tag:          r.AddColumnAction.Tag,
+		}
+		if r.AddColumnAction.InlineConstraint != nil {
+			// Adjusted manually: convert *Request sub-struct to *Options
+			opts.AddColumnAction.InlineConstraint = TableColumnInlineConstraintFromRequest(r.AddColumnAction.InlineConstraint)
 		}
 		if r.AddColumnAction.MaskingPolicy != nil {
 			opts.AddColumnAction.MaskingPolicy = &TableColumnMaskingPolicy{
@@ -213,10 +252,10 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		}
 	}
 	if r.AlterColumnAction != nil {
-		// Adjusted manually: drop generated alterColumn static field copy (Request type lacks it)
 		s := make([]IcebergTableAlterColumnAction, len(r.AlterColumnAction))
 		for i, v := range r.AlterColumnAction {
 			s[i] = IcebergTableAlterColumnAction{
+				// Adjusted manually: drop generated alterColumn static field copy (Request type lacks it)
 				ColumnName:       v.ColumnName,
 				SetNotNull:       v.SetNotNull,
 				DropNotNull:      v.DropNotNull,
@@ -333,9 +372,9 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			if r.SearchOptimizationAction.Add.On != nil {
 				s := make([]TableSearchMethodWithTarget, len(r.SearchOptimizationAction.Add.On))
 				for i, v := range r.SearchOptimizationAction.Add.On {
-					// Adjusted manually: convert Args from Request to Options shape
 					s[i] = TableSearchMethodWithTarget{
 						Method: v.Method,
+						// Adjusted manually: convert Args from Request to Options shape
 						Args: TableSearchMethodArgs{
 							Targets:  v.Args.Targets,
 							Analyzer: v.Args.Analyzer,
@@ -350,8 +389,8 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			if r.SearchOptimizationAction.Drop.On != nil {
 				s := make([]TableDropSearchOptimizationOn, len(r.SearchOptimizationAction.Drop.On))
 				for i, v := range r.SearchOptimizationAction.Drop.On {
-					// Adjusted manually: polymorphic On — one of search_method_with_target | column_name | expression_id
 					s[i] = TableDropSearchOptimizationOn{
+						// Adjusted manually: polymorphic On — one of search_method_with_target | column_name | expression_id
 						ColumnName:   v.ColumnName,
 						ExpressionId: v.ExpressionId,
 					}
@@ -411,7 +450,7 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 	mapNullString(&result.Owner, r.Owner)
 	mapNullStringWithMapping(&result.ExternalVolumeName, r.ExternalVolumeName, ParseAccountObjectIdentifier)
 	mapNullStringWithMapping(&result.CatalogName, r.CatalogName, ParseAccountObjectIdentifier)
-	// TODO: Mapping for IcebergTableType (string -> IcebergTableType)
+	mapStringWithMapping(&result.IcebergTableType, r.IcebergTableType, ToIcebergTableType)
 	mapNullString(&result.CatalogTableName, r.CatalogTableName)
 	mapNullString(&result.CatalogNamespace, r.CatalogNamespace)
 	mapNullString(&result.Comment, r.Comment)
@@ -430,18 +469,22 @@ func (r *DescribeIcebergTableRequest) toOpts() *DescribeIcebergTableOptions {
 func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 	result := &IcebergTableDetails{
 		Name:              r.Name,
-		Type:              r.Type,
 		SourceIcebergType: r.SourceIcebergType,
 		Kind:              r.Kind,
 		IsNullable:        r.Null == "Y",
 		PrimaryKey:        r.PrimaryKey == "Y",
 		UniqueKey:         r.UniqueKey == "Y",
 	}
+	if v, err := datatypes.ParseDataType(r.Type); err != nil {
+		return nil, fmt.Errorf("parsing datatypes. data type: %w", err)
+	} else {
+		result.Type = v
+	}
 	mapNullString(&result.Default, r.Default)
 	mapNullString(&result.Check, r.Check)
 	mapNullString(&result.Expression, r.Expression)
 	mapNullString(&result.Comment, r.Comment)
-	mapNullString(&result.PolicyName, r.PolicyName)
+	mapNullStringWithMapping(&result.PolicyName, r.PolicyName, ParseSchemaObjectIdentifier)
 	mapNullString(&result.PrivacyDomain, r.PrivacyDomain)
 	mapNullString(&result.NameMapping, r.NameMapping)
 	mapNullString(&result.WriteDefault, r.WriteDefault)

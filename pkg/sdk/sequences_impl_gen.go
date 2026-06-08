@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Sequences = (*sequences)(nil)
-
 var (
+	_ Sequences                      = (*sequences)(nil)
 	_ convertibleRow[Sequence]       = new(sequenceRow)
 	_ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
 )
@@ -112,8 +111,7 @@ func (r *ShowSequenceRequest) toOpts() *ShowSequenceOptions {
 }
 
 func (r sequenceRow) convert() (*Sequence, error) {
-	// edited manually
-	return &Sequence{
+	result := &Sequence{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		SchemaName:    r.SchemaName,
@@ -124,7 +122,8 @@ func (r sequenceRow) convert() (*Sequence, error) {
 		OwnerRoleType: r.OwnerRoleType,
 		Comment:       r.Comment,
 		Ordered:       r.Ordered == "Y",
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
@@ -135,8 +134,7 @@ func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
 }
 
 func (r sequenceDetailRow) convert() (*SequenceDetail, error) {
-	// edited manually
-	return &SequenceDetail{
+	result := &SequenceDetail{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
 		SchemaName:    r.SchemaName,
@@ -147,7 +145,8 @@ func (r sequenceDetailRow) convert() (*SequenceDetail, error) {
 		OwnerRoleType: r.OwnerRoleType,
 		Comment:       r.Comment,
 		Ordered:       r.Ordered == "Y",
-	}, nil
+	}
+	return result, nil
 }
 
 func (r *DropSequenceRequest) toOpts() *DropSequenceOptions {

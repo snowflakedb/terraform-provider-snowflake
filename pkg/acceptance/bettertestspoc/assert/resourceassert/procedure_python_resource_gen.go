@@ -86,6 +86,11 @@ func (p *ProcedurePythonResourceAssert) HasIsSecure(expected string) *ProcedureP
 	return p
 }
 
+func (p *ProcedurePythonResourceAssert) HasLogEventLevel(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("log_event_level", expected)
+	return p
+}
+
 func (p *ProcedurePythonResourceAssert) HasLogLevel(expected string) *ProcedurePythonResourceAssert {
 	p.StringValueSet("log_level", expected)
 	return p
@@ -187,6 +192,11 @@ func (p *ProcedurePythonResourceAssert) HasIsSecureString(expected string) *Proc
 	return p
 }
 
+func (p *ProcedurePythonResourceAssert) HasLogEventLevelString(expected string) *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_event_level", expected))
+	return p
+}
+
 func (p *ProcedurePythonResourceAssert) HasLogLevelString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("log_level", expected))
 	return p
@@ -281,6 +291,11 @@ func (p *ProcedurePythonResourceAssert) HasNoIsSecure() *ProcedurePythonResource
 	return p
 }
 
+func (p *ProcedurePythonResourceAssert) HasNoLogEventLevel() *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return p
+}
+
 func (p *ProcedurePythonResourceAssert) HasNoLogLevel() *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueNotSet("log_level"))
 	return p
@@ -370,6 +385,11 @@ func (p *ProcedurePythonResourceAssert) HasIsSecureEmpty() *ProcedurePythonResou
 	return p
 }
 
+func (p *ProcedurePythonResourceAssert) HasLogEventLevelEmpty() *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValueSet("log_event_level", ""))
+	return p
+}
+
 func (p *ProcedurePythonResourceAssert) HasLogLevelEmpty() *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("log_level", ""))
 	return p
@@ -456,6 +476,11 @@ func (p *ProcedurePythonResourceAssert) HasHandlerNotEmpty() *ProcedurePythonRes
 
 func (p *ProcedurePythonResourceAssert) HasIsSecureNotEmpty() *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValuePresent("is_secure"))
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasLogEventLevelNotEmpty() *ProcedurePythonResourceAssert {
+	p.AddAssertion(assert.ValuePresent("log_event_level"))
 	return p
 }
 

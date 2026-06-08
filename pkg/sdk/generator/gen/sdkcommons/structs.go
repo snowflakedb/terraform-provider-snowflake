@@ -6,6 +6,7 @@ type (
 
 	ColumnDefaultValue     struct{}
 	ColumnInlineConstraint struct{}
+	ForeignKeyOnAction     struct{}
 	InlineForeignKey       struct{}
 	OutOfLineForeignKey    struct{}
 	TableContact           struct{}

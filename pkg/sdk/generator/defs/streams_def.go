@@ -40,11 +40,11 @@ var (
 			Text("schema_name").
 			OptionalText("owner").
 			OptionalText("comment").
-			OptionalText("table_name").
+			OptionalSchemaObjectIdentifier("table_name", g.WithPlainFieldName("TableName"), g.WithManualConvert()).
 			OptionalEnum("source_type", StreamSourceTypeEnumDef).
-			Field("base_tables", "sql.NullString", "[]string").
+			NullableSchemaObjectIdentifierArray("base_tables").
 			OptionalText("type").
-			Field("stale", "string", "bool").
+			Field("stale", "string", "bool", g.WithBoolTrueValue("true")).
 			OptionalEnum("mode", StreamModeEnumDef).
 			OptionalTime("stale_after").
 			OptionalText("invalid_reason").

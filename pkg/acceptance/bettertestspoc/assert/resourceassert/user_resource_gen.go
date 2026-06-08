@@ -227,6 +227,11 @@ func (u *UserResourceAssert) HasLockTimeout(expected int) *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasLogEventLevel(expected string) *UserResourceAssert {
+	u.StringValueSet("log_event_level", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasLogLevel(expected string) *UserResourceAssert {
 	u.StringValueSet("log_level", expected)
 	return u
@@ -633,6 +638,11 @@ func (u *UserResourceAssert) HasLastNameString(expected string) *UserResourceAss
 
 func (u *UserResourceAssert) HasLockTimeoutString(expected string) *UserResourceAssert {
 	u.AddAssertion(assert.ValueSet("lock_timeout", expected))
+	return u
+}
+
+func (u *UserResourceAssert) HasLogEventLevelString(expected string) *UserResourceAssert {
+	u.AddAssertion(assert.ValueSet("log_event_level", expected))
 	return u
 }
 
@@ -1045,6 +1055,11 @@ func (u *UserResourceAssert) HasNoLockTimeout() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasNoLogEventLevel() *UserResourceAssert {
+	u.AddAssertion(assert.ValueNotSet("log_event_level"))
+	return u
+}
+
 func (u *UserResourceAssert) HasNoLogLevel() *UserResourceAssert {
 	u.AddAssertion(assert.ValueNotSet("log_level"))
 	return u
@@ -1446,6 +1461,11 @@ func (u *UserResourceAssert) HasLastNameEmpty() *UserResourceAssert {
 
 func (u *UserResourceAssert) HasLockTimeoutEmpty() *UserResourceAssert {
 	u.AddAssertion(assert.ValueSet("lock_timeout", ""))
+	return u
+}
+
+func (u *UserResourceAssert) HasLogEventLevelEmpty() *UserResourceAssert {
+	u.AddAssertion(assert.ValueSet("log_event_level", ""))
 	return u
 }
 
@@ -1855,6 +1875,11 @@ func (u *UserResourceAssert) HasLastNameNotEmpty() *UserResourceAssert {
 
 func (u *UserResourceAssert) HasLockTimeoutNotEmpty() *UserResourceAssert {
 	u.AddAssertion(assert.ValuePresent("lock_timeout"))
+	return u
+}
+
+func (u *UserResourceAssert) HasLogEventLevelNotEmpty() *UserResourceAssert {
+	u.AddAssertion(assert.ValuePresent("log_event_level"))
 	return u
 }
 

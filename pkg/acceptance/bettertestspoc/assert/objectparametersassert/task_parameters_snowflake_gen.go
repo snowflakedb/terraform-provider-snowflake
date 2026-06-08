@@ -98,6 +98,7 @@ func (t *TaskParametersAssert) HasAllDefaults() *TaskParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterMultiStatementCount, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
@@ -162,6 +163,7 @@ func (t *TaskParametersAssert) HasAllDefaultsExplicit() *TaskParametersAssert {
 		HasDefaultJsonIndentValueExplicit().
 		HasDefaultLockTimeoutValueExplicit().
 		HasDefaultLogLevelValueExplicit().
+		HasDefaultLogEventLevelValueExplicit().
 		HasDefaultMultiStatementCountValueExplicit().
 		HasDefaultNoorderSequenceAsDefaultValueExplicit().
 		HasDefaultOdbcTreatDecimalAsIntValueExplicit().
@@ -341,6 +343,11 @@ func (t *TaskParametersAssert) HasLockTimeout(expected int) *TaskParametersAsser
 
 func (t *TaskParametersAssert) HasLogLevel(expected sdk.LogLevel) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterLogLevel, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterLogEventLevel, expected))
 	return t
 }
 
@@ -648,6 +655,11 @@ func (t *TaskParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *Tas
 	return t
 }
 
+func (t *TaskParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterLogEventLevel, expected))
+	return t
+}
+
 func (t *TaskParametersAssert) HasMultiStatementCountLevel(expected sdk.ParameterType) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterMultiStatementCount, expected))
 	return t
@@ -923,6 +935,10 @@ func (t *TaskParametersAssert) HasDefaultLogLevelValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterLogLevel)
 }
 
+func (t *TaskParametersAssert) HasDefaultLogEventLevelValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterLogEventLevel)
+}
+
 func (t *TaskParametersAssert) HasDefaultMultiStatementCountValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterMultiStatementCount)
 }
@@ -1165,6 +1181,10 @@ func (t *TaskParametersAssert) HasDefaultLockTimeoutValueExplicit() *TaskParamet
 
 func (t *TaskParametersAssert) HasDefaultLogLevelValueExplicit() *TaskParametersAssert {
 	return t.HasLogLevel(sdk.LogLevelOff)
+}
+
+func (t *TaskParametersAssert) HasDefaultLogEventLevelValueExplicit() *TaskParametersAssert {
+	return t.HasLogEventLevel(sdk.LogLevelOff)
 }
 
 func (t *TaskParametersAssert) HasDefaultMultiStatementCountValueExplicit() *TaskParametersAssert {
