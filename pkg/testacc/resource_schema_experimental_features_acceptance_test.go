@@ -3,7 +3,6 @@
 package testacc
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -19,12 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
-
-func schemaWithImplicitDatabaseDependency(resourceName string, databaseModel *model.DatabaseModel, schemaName string) *model.SchemaModel {
-	return model.Schema(resourceName, "", schemaName).
-		WithDatabaseValue(accconfig.UnquotedWrapperVariable(fmt.Sprintf("%s.name", databaseModel.ResourceReference()))).
-		WithDependsOn(databaseModel.ResourceReference())
-}
 
 // Database A is renamed to B in config. The schema resource detects the rename
 // and updates its ID without performing any Snowflake modification.
@@ -37,7 +31,7 @@ func TestAcc_Experimental_Schema_HierarchyRenames_DatabaseRenamed(t *testing.T) 
 	databaseModel := model.DatabaseWithParametersSet("db", databaseId.Name())
 	databaseModelRenamed := model.DatabaseWithParametersSet("db", newDatabaseId.Name())
 
-	schemaModel := schemaWithImplicitDatabaseDependency("test", databaseModel, schemaName)
+	schemaModel := model.SchemaWithImplicitDatabaseDependency("test", schemaName, databaseModel)
 
 	expectedNewSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseId.Name(), schemaName)
 
@@ -87,8 +81,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_SchemaMove(t *testing.T) {
 	databaseModelA := model.DatabaseWithParametersSet("dbA", databaseAId.Name())
 	databaseModelB := model.DatabaseWithParametersSet("dbB", databaseBId.Name())
 
-	schemaModelBefore := schemaWithImplicitDatabaseDependency("test", databaseModelA, schemaName)
-	schemaModelAfter := schemaWithImplicitDatabaseDependency("test", databaseModelB, schemaName)
+	schemaModelBefore := model.SchemaWithImplicitDatabaseDependency("test", schemaName, databaseModelA)
+	schemaModelAfter := model.SchemaWithImplicitDatabaseDependency("test", schemaName, databaseModelB)
 
 	expectedNewSchemaId := sdk.NewDatabaseObjectIdentifier(databaseBId.Name(), schemaName)
 
@@ -138,8 +132,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_DatabaseRenamed_WithNameChange
 	databaseModel := model.DatabaseWithParametersSet("db", databaseId.Name())
 	databaseModelRenamed := model.DatabaseWithParametersSet("db", newDatabaseId.Name())
 
-	schemaModelBefore := schemaWithImplicitDatabaseDependency("test", databaseModel, schemaName)
-	schemaModelAfter := schemaWithImplicitDatabaseDependency("test", databaseModel, newSchemaName)
+	schemaModelBefore := model.SchemaWithImplicitDatabaseDependency("test", schemaName, databaseModel)
+	schemaModelAfter := model.SchemaWithImplicitDatabaseDependency("test", newSchemaName, databaseModel)
 
 	expectedNewSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseId.Name(), newSchemaName)
 
@@ -190,8 +184,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_SchemaMove_WithNameChange(t *t
 	databaseModelA := model.DatabaseWithParametersSet("dbA", databaseAId.Name())
 	databaseModelB := model.DatabaseWithParametersSet("dbB", databaseBId.Name())
 
-	schemaModelBefore := schemaWithImplicitDatabaseDependency("test", databaseModelA, schemaName)
-	schemaModelAfter := schemaWithImplicitDatabaseDependency("test", databaseModelB, newSchemaName)
+	schemaModelBefore := model.SchemaWithImplicitDatabaseDependency("test", schemaName, databaseModelA)
+	schemaModelAfter := model.SchemaWithImplicitDatabaseDependency("test", newSchemaName, databaseModelB)
 
 	expectedNewSchemaId := sdk.NewDatabaseObjectIdentifier(databaseBId.Name(), newSchemaName)
 
@@ -230,7 +224,7 @@ func TestAcc_Experimental_Schema_HierarchyRenames_SchemaMove_WithNameChange(t *t
 	})
 }
 
-// Rename when the new database does not exist.
+// Move to the database which does not exist.
 func TestAcc_Experimental_Schema_HierarchyRenames_Error_NewDatabaseDoesNotExist(t *testing.T) {
 	dbA, cleanupDbA := testClient().Database.CreateDatabase(t)
 	t.Cleanup(cleanupDbA)
@@ -299,10 +293,15 @@ func TestAcc_Experimental_Schema_HierarchyRenames_Error_SchemaNotFoundForMove(t 
 			},
 			// Drop schema externally, then try to move
 			{
-				PreConfig: func() {
-					testClient().Schema.Alter(t, schemaId, &sdk.AlterSchemaOptions{
-						NewName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier(dbA.ID().Name(), testClient().Ids.Alpha())),
-					})
+				// Drop schema externally, after reading
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(func() {
+							testClient().Schema.Alter(t, schemaId, &sdk.AlterSchemaOptions{
+								NewName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier(dbA.ID().Name(), testClient().Ids.Alpha())),
+							})
+						}),
+					},
 				},
 				Config:      accconfig.FromModels(t, providerModel, schemaModelAfter),
 				ExpectError: regexp.MustCompile(`unknown rename use case.*object_renaming_guide`),
@@ -321,8 +320,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_Disabled_ForceRecreation(t *te
 	databaseModelB := model.DatabaseWithParametersSet("dbB", databaseBId.Name())
 
 	// No experiment enabled — use default provider
-	schemaModelBefore := schemaWithImplicitDatabaseDependency("test", databaseModelA, schemaName)
-	schemaModelAfter := schemaWithImplicitDatabaseDependency("test", databaseModelB, schemaName)
+	schemaModelBefore := model.SchemaWithImplicitDatabaseDependency("test", schemaName, databaseModelA)
+	schemaModelAfter := model.SchemaWithImplicitDatabaseDependency("test", schemaName, databaseModelB)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
