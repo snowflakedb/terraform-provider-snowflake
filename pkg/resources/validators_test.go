@@ -162,6 +162,9 @@ func Test_IsValidListingName(t *testing.T) {
 		{"listing_name"},
 		{"listing_name_123"},
 		{"LISTING_NAME_123"},
+		{"listing-name"},
+		{"listing_name-123"},
+		{"\"listing-name\""},
 	}
 
 	invalidCases := []struct {
