@@ -222,6 +222,15 @@ func ForceNewIfAllKeysAreNotSet(key string, keys ...string) schema.CustomizeDiff
 	})
 }
 
+// ForceNewIfExperimentNotEnabled applies ForceNew on the given key only when the specified experiment is NOT enabled.
+// This allows preserving the default ForceNew behavior while allowing an experiment to override it.
+func ForceNewIfExperimentNotEnabled(key string, experiment experimentalfeatures.ExperimentalFeature) schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIf(key, func(ctx context.Context, d *schema.ResourceDiff, meta any) bool {
+		providerCtx := meta.(*provider.Context)
+		return !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments)
+	})
+}
+
 func RecreateWhenUserTypeChangedExternally(userType sdk.UserType) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get("user_type"); n != nil {
