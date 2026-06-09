@@ -169,10 +169,9 @@ generate-sdk-impl-check: generate-sdk-impl ## Check that SDK impl files are up-t
 	$(call GIT_DIFF_CHECK,pkg/sdk/*_impl_gen.go)
 
 # Objects excluded from dto generation because their dto files contain manual changes:
-# EventTables (ClusterBy builder bug),
-# Notebooks (shared SecretsListRequest), PostgresInstances (imports.Process tooling issue with 'for' keyword),
+# EventTables (ClusterBy builder bug), Notebooks (shared SecretsListRequest),
 # Procedures (shared SecretsListRequest), SemanticViews (nested Request types), Tasks (nested Request types)
-SDK_DTO_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,DataMetricFunctionReferences,ExternalFunctions,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,StorageLifecyclePolicies,Streamlits,Streams,TagReferences,UserProgrammaticAccessTokens,Views
+SDK_DTO_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,DataMetricFunctionReferences,ExternalFunctions,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,StorageLifecyclePolicies,Streamlits,Streams,TagReferences,UserProgrammaticAccessTokens,Views
 
 generate-sdk-dto: ## Generate SDK dto and dto_builders for objects without manual changes
 	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=dto,dto_builders --filter-object-names=$(SDK_DTO_OBJECTS)'

@@ -154,7 +154,7 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"ResetAccess",
 			g.NewQueryStruct("PostgresInstanceResetAccess").
-				EnumAssignmentWithFieldName("FOR", PostgresInstanceResetAccessRoleEnumDef, g.ParameterOptions().NoEquals().SingleQuotes().Required(), "For"),
+				EnumAssignmentWithFieldName("FOR", PostgresInstanceResetAccessRoleEnumDef, g.ParameterOptions().NoEquals().SingleQuotes().Required(), "ForRole"),
 			g.KeywordOptions().SQL("RESET ACCESS"),
 		).
 		OptionalSetTags().
