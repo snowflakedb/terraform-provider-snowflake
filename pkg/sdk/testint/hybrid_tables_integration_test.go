@@ -35,7 +35,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 		t.Run("complete - all column and constraint options", func(t *testing.T) {
 			refId, refCleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
-				{Name: "REF_ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				{Name: "REF_ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 			})
 			t.Cleanup(refCleanup)
 
@@ -50,47 +50,47 @@ func TestInt_HybridTables(t *testing.T) {
 				Columns: []sdk.HybridTableColumnRequest{
 					{
 						Name:             "ID",
-						Type:             sdk.DataType("NUMBER(38,0)"),
+						DataType:         sdk.DataType("NUMBER(38,0)"),
 						InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey},
 						Comment:          &columnComment,
 					},
 					{
-						Name:    "NAME",
-						Type:    sdk.DataType("VARCHAR(100)"),
-						NotNull: &notNull,
+						Name:     "NAME",
+						DataType: sdk.DataType("VARCHAR(100)"),
+						NotNull:  &notNull,
 					},
 					{
 						Name:         "STATUS",
-						Type:         sdk.DataType("VARCHAR(50)"),
+						DataType:     sdk.DataType("VARCHAR(50)"),
 						DefaultValue: &sdk.ColumnDefaultValue{Expression: &defaultExpr},
 					},
 					{
-						Name: "COUNTER",
-						Type: sdk.DataType("NUMBER(38,0)"),
+						Name:     "COUNTER",
+						DataType: sdk.DataType("NUMBER(38,0)"),
 						DefaultValue: &sdk.ColumnDefaultValue{
 							Identity: &sdk.ColumnIdentity{Start: 100, Increment: 5, Order: sdk.Bool(true)},
 						},
 					},
 					{
-						Name:    "NOTES",
-						Type:    sdk.DataType("VARCHAR(200)"),
-						Collate: &collation,
+						Name:     "NOTES",
+						DataType: sdk.DataType("VARCHAR(200)"),
+						Collate:  &collation,
 					},
 					{
-						Name: "REF_FK_COL",
-						Type: sdk.DataType("NUMBER(38,0)"),
+						Name:     "REF_FK_COL",
+						DataType: sdk.DataType("NUMBER(38,0)"),
 					},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
 					{
-						Name:    sdk.String("uq_name"),
-						Type:    sdk.ColumnConstraintTypeUnique,
-						Columns: []string{"NAME"},
+						Name:                 sdk.String("uq_name"),
+						ColumnConstraintType: sdk.ColumnConstraintTypeUnique,
+						Columns:              []string{"NAME"},
 					},
 					{
-						Type:       sdk.ColumnConstraintTypeForeignKey,
-						Columns:    []string{"REF_FK_COL"},
-						ForeignKey: &sdk.OutOfLineForeignKey{TableName: refId, ColumnNames: []string{"REF_ID"}},
+						ColumnConstraintType: sdk.ColumnConstraintTypeForeignKey,
+						Columns:              []string{"REF_FK_COL"},
+						ForeignKey:           &sdk.OutOfLineForeignKey{TableName: refId, ColumnNames: []string{"REF_ID"}},
 					},
 				},
 				OutOfLineIndex: []sdk.HybridTableOutOfLineIndexRequest{
@@ -186,12 +186,12 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "PART_A", Type: sdk.DataType("NUMBER(38,0)")},
-					{Name: "PART_B", Type: sdk.DataType("NUMBER(38,0)")},
-					{Name: "DATA", Type: sdk.DataType("VARCHAR(100)")},
+					{Name: "PART_A", DataType: sdk.DataType("NUMBER(38,0)")},
+					{Name: "PART_B", DataType: sdk.DataType("NUMBER(38,0)")},
+					{Name: "DATA", DataType: sdk.DataType("VARCHAR(100)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{Type: sdk.ColumnConstraintTypePrimaryKey, Columns: []string{"PART_A", "PART_B"}},
+					{ColumnConstraintType: sdk.ColumnConstraintTypePrimaryKey, Columns: []string{"PART_A", "PART_B"}},
 				},
 			}
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns))
@@ -210,7 +210,7 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns).WithComment("original"))
@@ -228,7 +228,7 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns).WithIfNotExists(true))
@@ -245,7 +245,7 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)")},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)")},
 				},
 			}
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns))
@@ -272,8 +272,8 @@ func TestInt_HybridTables(t *testing.T) {
 
 		t.Run("add and drop column", func(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
-				{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-				{Name: "NAME", Type: sdk.DataType("VARCHAR(100)")},
+				{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				{Name: "NAME", DataType: sdk.DataType("VARCHAR(100)")},
 			})
 			t.Cleanup(cleanup)
 
@@ -318,14 +318,14 @@ func TestInt_HybridTables(t *testing.T) {
 
 		t.Run("alter column - set data type and comment", func(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
-				{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-				{Name: "NAME", Type: sdk.DataType("VARCHAR(100)")},
+				{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				{Name: "NAME", DataType: sdk.DataType("VARCHAR(100)")},
 			})
 			t.Cleanup(cleanup)
 
 			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{
-					*sdk.NewHybridTableAlterColumnActionRequest("NAME").WithType(sdk.DataType("VARCHAR(500)")),
+					*sdk.NewHybridTableAlterColumnActionRequest("NAME").WithDataType(sdk.DataType("VARCHAR(500)")),
 				}))
 			require.NoError(t, err)
 
@@ -402,11 +402,11 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-					{Name: "CODE", Type: sdk.DataType("VARCHAR(50)")},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "CODE", DataType: sdk.DataType("VARCHAR(50)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{Name: sdk.String("uq_code"), Type: sdk.ColumnConstraintTypeUnique, Columns: []string{"CODE"}},
+					{Name: sdk.String("uq_code"), ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []string{"CODE"}},
 				},
 			}
 			_, cleanup := testClientHelper().HybridTable.CreateWithRequest(t, id, columns)
@@ -436,8 +436,8 @@ func TestInt_HybridTables(t *testing.T) {
 				testClientHelper().Ids.RandomSchemaObjectIdentifier(),
 				sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 					Columns: []sdk.HybridTableColumnRequest{
-						{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-						{Name: "STATUS", Type: sdk.DataType("VARCHAR(50)"), DefaultValue: &sdk.ColumnDefaultValue{Expression: sdk.String("'ACTIVE'")}},
+						{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+						{Name: "STATUS", DataType: sdk.DataType("VARCHAR(50)"), DefaultValue: &sdk.ColumnDefaultValue{Expression: sdk.String("'ACTIVE'")}},
 					},
 				})
 			t.Cleanup(cleanup)
@@ -462,11 +462,11 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-					{Name: "EMAIL", Type: sdk.DataType("VARCHAR(255)")},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "EMAIL", DataType: sdk.DataType("VARCHAR(255)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{Type: sdk.ColumnConstraintTypeUnique, Columns: []string{"EMAIL"}},
+					{ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []string{"EMAIL"}},
 				},
 			}
 			_, cleanup := testClientHelper().HybridTable.CreateWithRequest(t, id, columns)
@@ -483,19 +483,19 @@ func TestInt_HybridTables(t *testing.T) {
 
 			// Drop FOREIGN KEY by type
 			parentId, parentCleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
-				{Name: "PID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				{Name: "PID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 			})
 			t.Cleanup(parentCleanup)
 
 			childId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			_, childCleanup := testClientHelper().HybridTable.CreateWithRequest(t, childId, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "CID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-					{Name: "PARENT_REF", Type: sdk.DataType("NUMBER(38,0)")},
+					{Name: "CID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "PARENT_REF", DataType: sdk.DataType("NUMBER(38,0)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
 					{
-						Type: sdk.ColumnConstraintTypeForeignKey, Columns: []string{"PARENT_REF"},
+						ColumnConstraintType: sdk.ColumnConstraintTypeForeignKey, Columns: []string{"PARENT_REF"},
 						ForeignKey: &sdk.OutOfLineForeignKey{TableName: parentId, ColumnNames: []string{"PID"}},
 					},
 				},
@@ -512,8 +512,8 @@ func TestInt_HybridTables(t *testing.T) {
 			// Snowflake currently rejects CLUSTER BY on hybrid tables (error 391407).
 			// We verify the SDK generates valid SQL and Snowflake returns the expected error.
 			id, cleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
-				{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-				{Name: "CATEGORY", Type: sdk.DataType("VARCHAR(50)")},
+				{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				{Name: "CATEGORY", DataType: sdk.DataType("VARCHAR(50)")},
 			})
 			t.Cleanup(cleanup)
 
@@ -574,7 +574,7 @@ func TestInt_HybridTables(t *testing.T) {
 			id2InOtherSchema := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(id1.Name(), schema.ID())
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 			_, cleanup2 := testClientHelper().HybridTable.CreateWithRequest(t, id2InOtherSchema, columns)
@@ -594,7 +594,7 @@ func TestInt_HybridTables(t *testing.T) {
 			otherPrefix := "XOTHER"
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 
@@ -626,7 +626,7 @@ func TestInt_HybridTables(t *testing.T) {
 			prefix := "HTLIMTEST"
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 			id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
@@ -664,11 +664,11 @@ func TestInt_HybridTables(t *testing.T) {
 				testClientHelper().Ids.RandomSchemaObjectIdentifier(),
 				sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 					Columns: []sdk.HybridTableColumnRequest{
-						{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-						{Name: "EMAIL", Type: sdk.DataType("VARCHAR(255)"), NotNull: &notNull},
+						{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+						{Name: "EMAIL", DataType: sdk.DataType("VARCHAR(255)"), NotNull: &notNull},
 					},
 					OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-						{Type: sdk.ColumnConstraintTypeUnique, Columns: []string{"EMAIL"}},
+						{ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []string{"EMAIL"}},
 					},
 				})
 			t.Cleanup(cleanup)

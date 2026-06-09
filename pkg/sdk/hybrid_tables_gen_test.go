@@ -44,23 +44,23 @@ func TestHybridTables_Create(t *testing.T) {
 		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{
 			Columns: []HybridTableColumn{
 				{
-					Name: "ID",
-					Type: DataTypeNumber,
+					Name:     "ID",
+					DataType: DataTypeNumber,
 					InlineConstraint: &ColumnInlineConstraint{
 						Name: String("pk_id"),
 						Type: ColumnConstraintTypePrimaryKey,
 					},
 				},
 				{
-					Name:    "NAME",
-					Type:    DataTypeVARCHAR,
-					NotNull: Bool(true),
-					Collate: String("en-ci"),
-					Comment: String("the name"),
+					Name:     "NAME",
+					DataType: DataTypeVARCHAR,
+					NotNull:  Bool(true),
+					Collate:  String("en-ci"),
+					Comment:  String("the name"),
 				},
 				{
-					Name: "REF_ID",
-					Type: DataTypeNumber,
+					Name:     "REF_ID",
+					DataType: DataTypeNumber,
 					InlineConstraint: &ColumnInlineConstraint{
 						Type: ColumnConstraintTypeForeignKey,
 						ForeignKey: &InlineForeignKey{
@@ -72,8 +72,8 @@ func TestHybridTables_Create(t *testing.T) {
 			},
 			OutOfLineConstraint: []HybridTableOutOfLineConstraint{
 				{
-					Type:    ColumnConstraintTypeUnique,
-					Columns: []string{"NAME"},
+					ColumnConstraintType: ColumnConstraintTypeUnique,
+					Columns:              []string{"NAME"},
 				},
 			},
 			OutOfLineIndex: []HybridTableOutOfLineIndex{
@@ -93,23 +93,23 @@ func TestHybridTables_Create(t *testing.T) {
 		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{
 			Columns: []HybridTableColumn{
 				{
-					Name: "ID",
-					Type: DataTypeNumber,
+					Name:     "ID",
+					DataType: DataTypeNumber,
 					InlineConstraint: &ColumnInlineConstraint{
 						Type: ColumnConstraintTypePrimaryKey,
 					},
 				},
 				{
-					Name:    "NAME",
-					Type:    DataTypeVARCHAR,
-					NotNull: Bool(true),
-					Comment: String("the name"),
+					Name:     "NAME",
+					DataType: DataTypeVARCHAR,
+					NotNull:  Bool(true),
+					Comment:  String("the name"),
 				},
 			},
 			OutOfLineConstraint: []HybridTableOutOfLineConstraint{
 				{
-					Type:    ColumnConstraintTypeUnique,
-					Columns: []string{"NAME"},
+					ColumnConstraintType: ColumnConstraintTypeUnique,
+					Columns:              []string{"NAME"},
 				},
 			},
 			OutOfLineIndex: []HybridTableOutOfLineIndex{
@@ -173,14 +173,14 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "Cascade", "Restrict"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AlterColumnAction.DropDefault opts.AlterColumnAction.SetDefault opts.AlterColumnAction.Type opts.AlterColumnAction.Comment opts.AlterColumnAction.UnsetComment] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AlterColumnAction.DropDefault opts.AlterColumnAction.SetDefault opts.AlterColumnAction.DataType opts.AlterColumnAction.Comment opts.AlterColumnAction.UnsetComment] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AlterColumnAction = []HybridTableAlterColumnAction{
 			{
 				ColumnName: "col1",
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"))
 	})
 
 	t.Run("validation: clustering action - exactly one", func(t *testing.T) {
@@ -247,7 +247,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.AlterColumnAction = []HybridTableAlterColumnAction{
 			{
 				ColumnName: "column1",
-				Type:       &dt,
+				DataType:   &dt,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN "column1" SET DATA TYPE VARCHAR(200)`, id.FullyQualifiedName())
@@ -330,8 +330,8 @@ func TestHybridTables_Alter(t *testing.T) {
 	t.Run("alter: add column", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AddColumnAction = &HybridTableAddColumnAction{
-			Name: "NEW_COLUMN",
-			Type: DataTypeVARCHAR,
+			Name:     "NEW_COLUMN",
+			DataType: DataTypeVARCHAR,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD COLUMN "NEW_COLUMN" VARCHAR`, id.FullyQualifiedName())
 	})
@@ -342,7 +342,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.AddColumnAction = &HybridTableAddColumnAction{
 			IfNotExists: Bool(true),
 			Name:        "NEW_COLUMN",
-			Type:        DataTypeVARCHAR,
+			DataType:    DataTypeVARCHAR,
 			Collate:     String("utf8"),
 			InlineConstraint: &ColumnInlineConstraint{
 				Name: String("uq_new"),
@@ -668,16 +668,16 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
 				Columns: []HybridTableColumn{
 					{
-						Name: "id",
-						Type: DataType("NUMBER(38,0)"),
+						Name:     "id",
+						DataType: DataType("NUMBER(38,0)"),
 						InlineConstraint: &ColumnInlineConstraint{
 							Type: ColumnConstraintTypePrimaryKey,
 						},
 					},
 					{
-						Name:    "name",
-						Type:    DataType("VARCHAR(100)"),
-						NotNull: Bool(true),
+						Name:     "name",
+						DataType: DataType("VARCHAR(100)"),
+						NotNull:  Bool(true),
 					},
 				},
 			},
@@ -691,21 +691,21 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
 				Columns: []HybridTableColumn{
 					{
-						Name: "id",
-						Type: DataType("NUMBER(38,0)"),
+						Name:     "id",
+						DataType: DataType("NUMBER(38,0)"),
 						InlineConstraint: &ColumnInlineConstraint{
 							Type: ColumnConstraintTypePrimaryKey,
 						},
 					},
 					{
-						Name: "email",
-						Type: DataType("VARCHAR(200)"),
+						Name:     "email",
+						DataType: DataType("VARCHAR(200)"),
 					},
 				},
 				OutOfLineConstraint: []HybridTableOutOfLineConstraint{
 					{
-						Type:    ColumnConstraintTypeUnique,
-						Columns: []string{"email"},
+						ColumnConstraintType: ColumnConstraintTypeUnique,
+						Columns:              []string{"email"},
 					},
 				},
 				OutOfLineIndex: []HybridTableOutOfLineIndex{
@@ -727,8 +727,8 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
 				Columns: []HybridTableColumn{
 					{
-						Name: "id",
-						Type: DataType("NUMBER(38,0)"),
+						Name:     "id",
+						DataType: DataType("NUMBER(38,0)"),
 						InlineConstraint: &ColumnInlineConstraint{
 							Name: String("pk_id"),
 							Type: ColumnConstraintTypePrimaryKey,
@@ -746,18 +746,18 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
 				Columns: []HybridTableColumn{
 					{
-						Name: "id",
-						Type: DataType("NUMBER(38,0)"),
+						Name:     "id",
+						DataType: DataType("NUMBER(38,0)"),
 						InlineConstraint: &ColumnInlineConstraint{
 							Type: ColumnConstraintTypePrimaryKey,
 						},
 					},
 					{
-						Name:    "name",
-						Type:    DataType("VARCHAR(100)"),
-						NotNull: Bool(true),
-						Collate: String("en-ci"),
-						Comment: String("name column"),
+						Name:     "name",
+						DataType: DataType("VARCHAR(100)"),
+						NotNull:  Bool(true),
+						Collate:  String("en-ci"),
+						Comment:  String("name column"),
 					},
 				},
 			},
