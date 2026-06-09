@@ -589,6 +589,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_api_authentication_integration_with_client_credentials":       resources.ApiAuthenticationIntegrationWithClientCredentials(),
 		"snowflake_api_authentication_integration_with_jwt_bearer":               resources.ApiAuthenticationIntegrationWithJwtBearer(),
 		"snowflake_api_integration":                                              resources.APIIntegration(),
+		"snowflake_api_integration_amazon_api_gateway":                           resources.ApiIntegrationAmazonApiGateway(),
 		"snowflake_authentication_policy":                                        resources.AuthenticationPolicy(),
 		"snowflake_catalog_integration_aws_glue":                                 resources.CatalogIntegrationAwsGlue(),
 		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
