@@ -131,7 +131,6 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 		s := make([]HybridTableOutOfLineIndex, len(r.ColumnsAndConstraints.OutOfLineIndex))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineIndex {
 			s[i] = HybridTableOutOfLineIndex{
-				// adjusted manually
 				Name:           v.Name,
 				Columns:        v.Columns,
 				IncludeColumns: v.IncludeColumns,
@@ -182,7 +181,6 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		s := make([]HybridTableAlterColumnAction, len(r.AlterColumnAction))
 		for i, v := range r.AlterColumnAction {
 			s[i] = HybridTableAlterColumnAction{
-				// adjusted manually
 				ColumnName:   v.ColumnName,
 				DropDefault:  v.DropDefault,
 				SetDefault:   v.SetDefault,
