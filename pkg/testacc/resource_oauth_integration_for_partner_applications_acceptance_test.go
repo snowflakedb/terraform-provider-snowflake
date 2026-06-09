@@ -202,7 +202,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 					testClient().SecurityIntegration.UpdateOauthForPartnerApplications(t, sdk.NewAlterOauthForPartnerApplicationsSecurityIntegrationRequest(id).WithSet(
 						*sdk.NewOauthForPartnerApplicationsIntegrationSetRequest().
 							WithEnabled(true).
-							WithComment(comment).
+							WithComment(sdk.StringAllowEmpty{Value: comment}).
 							WithOauthIssueRefreshTokens(true).
 							WithOauthRefreshTokenValidity(3600).
 							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit),
@@ -472,7 +472,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 					testClient().SecurityIntegration.UpdateOauthForPartnerApplications(t, sdk.NewAlterOauthForPartnerApplicationsSecurityIntegrationRequest(id).WithSet(
 						*sdk.NewOauthForPartnerApplicationsIntegrationSetRequest().
 							WithBlockedRolesList(*sdk.NewBlockedRolesListRequest([]sdk.AccountObjectIdentifier{})).
-							WithComment("").
+							WithComment(sdk.StringAllowEmpty{Value: ""}).
 							WithOauthIssueRefreshTokens(true).
 							WithOauthRefreshTokenValidity(3600),
 					))

@@ -1293,7 +1293,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -1363,7 +1363,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType).WithDefaultValue("3.123")
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -1391,8 +1391,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType).
-			WithNotNull(true)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -1434,9 +1433,9 @@ func TestInt_Procedures(t *testing.T) {
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
 			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+			HasReturns(dataType.ToSql()).
 			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
+			HasReturnNotNull(false).
 			HasLanguage("SQL").
 			HasBody(definition).
 			// TODO [SNOW-1348103]: null handling and volatility are not returned and is present in create syntax
@@ -1468,7 +1467,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments()
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition)
 
@@ -1777,7 +1776,7 @@ def filter_by_role(session, table_name, role):
 			RETURN message;
 		END;`
 
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt).WithNotNull(true)
 		argument := sdk.NewProcedureArgumentRequest("message", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -2493,7 +2492,7 @@ func TestInt_CallProcedure(t *testing.T) {
 			RETURN MESSAGE;
 		END;`
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeVARCHAR)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt).WithNotNull(true)
 		argument := sdk.NewProcedureArgumentRequest("MESSAGE", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -2880,7 +2879,7 @@ def filter_by_role(session, name, role):
 
 		err = client.Procedures.CreateForSQL(ctx, sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(
 			idWithArguments.SchemaObjectId(),
-			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(dataType)),
+			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)),
 			testClientHelper().Procedure.SampleSqlDefinitionWithArgument(t),
 		).
 			WithArguments(args),

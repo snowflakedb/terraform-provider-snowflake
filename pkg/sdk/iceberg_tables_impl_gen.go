@@ -81,14 +81,13 @@ func (v *icebergTables) Describe(ctx context.Context, id SchemaObjectIdentifier)
 
 func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 	opts := &CreateIcebergTableOptions{
-		OrReplace:   r.OrReplace,
-		Transient:   r.Transient,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		PathLayout:  r.PathLayout,
-		ClusterBy:   r.ClusterBy,
-		// Adjusted manually
-		ExternalVolume:             icebergTableIdentifierQuoted(r.ExternalVolume),
+		OrReplace:                  r.OrReplace,
+		Transient:                  r.Transient,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		PathLayout:                 r.PathLayout,
+		ClusterBy:                  r.ClusterBy,
+		ExternalVolume:             r.ExternalVolume,
 		Catalog:                    r.Catalog,
 		BaseLocation:               r.BaseLocation,
 		TargetFileSize:             r.TargetFileSize,
@@ -309,8 +308,8 @@ func (r *CreateFromIcebergFilesIcebergTableRequest) toOpts() *CreateFromIcebergF
 		OrReplace:                r.OrReplace,
 		IfNotExists:              r.IfNotExists,
 		name:                     r.name,
-		ExternalVolume:           icebergTableIdentifierQuoted(r.ExternalVolume),
-		Catalog:                  icebergTableIdentifierQuoted(r.Catalog),
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
 		MetadataFilePath:         r.MetadataFilePath,
 		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
 		Comment:                  r.Comment,
