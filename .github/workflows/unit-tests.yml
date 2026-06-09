@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   unit-tests:
+    env:
+      ADDITIONAL_TEST_FLAGS: "-json"
     name: Run unit tests
     runs-on: ubuntu-latest
     steps:
