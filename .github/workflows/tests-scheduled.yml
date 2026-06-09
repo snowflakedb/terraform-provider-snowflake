@@ -1,0 +1,132 @@
+# Scheduled copy of tests.yml.
+# Runs the full test suite against the dev branch on a daily schedule.
+name: Scheduled Tests
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+on:
+  schedule:
+    - cron: '0 6 * * 1-5'
+
+jobs:
+  all-tests:
+    environment: test
+    env:
+      TEST_SF_TF_TEST_OBJECT_SUFFIX: ${{ github.run_id }}
+      TEST_SF_TF_TEST_WORKFLOW_ID: "${{ github.run_id }}_${{ github.run_attempt }}"
+      ADDITIONAL_TEST_FLAGS: "-json"
+    name: Run All
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          persist-credentials: false
+
+      - uses: actions/setup-go@v4
+        id: setup_go
+        if: ${{ !cancelled() && steps.checkout.conclusion == 'success' }}
+        with:
+          go-version-file: ./go.mod
+          cache: false
+
+      - name: Apply masking
+        if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
+        run: |
+          while IFS= read -r line || [[ -n $line ]]; do
+            echo "::add-mask::$line"
+          done < <(printf '%s' "$SF_TF_GH_MASKING")
+        env:
+          SF_TF_GH_MASKING: ${{ secrets.SF_TF_GH_MASKING }}
+
+      - name: Generate random secret
+        if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
+        run: |
+          random=$(openssl rand -hex 15)
+          final_random="${TEST_SF_TF_RANDOM}${random}"
+          echo "::add-mask::${final_random}"
+          echo "TEST_SF_TF_GENERATED_RANDOM_VALUE=${final_random}" >> $GITHUB_ENV
+        env:
+          TEST_SF_TF_RANDOM: ${{ secrets.TEST_SF_TF_RANDOM }}
+
+      - name: Install dependencies
+        if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
+        run: make dev-setup
+
+      - name: Create and populate configuration files
+        if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
+        id: create_config
+        run: |
+          mkdir -p $HOME/.snowflake
+          cd $HOME/.snowflake
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE_WITH_SERVICE_USER }}" > ./config_v097_compatible_with_service_user
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible_with_service_user
+
+      - name: Run unit tests
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
+        run: set -o pipefail && make test-unit | make save-test-results
+        if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
+        env:
+          TEST_SF_TF_TEST_TYPE: "unit"
+
+      - name: Run integration tests
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
+        run: set -o pipefail && make test-integration | make save-test-results
+        if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
+        env:
+          TEST_SF_TF_TEST_TYPE: "integration"
+          SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT: ${{ secrets.SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT }}
+          TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL }}
+          TEST_SF_TF_AWS_EXTERNAL_KEY_ID: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_KEY_ID }}
+          TEST_SF_TF_AWS_EXTERNAL_ROLE_ARN: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_ROLE_ARN }}
+          TEST_SF_TF_AWS_EXTERNAL_SECRET_KEY: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_SECRET_KEY }}
+          TEST_SF_TF_AZURE_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_BUCKET_URL }}
+          TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN }}
+          TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID }}
+          TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL }}
+
+      - name: Setup Terraform
+        if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        id: setup_terraform
+        with:
+          terraform_version: 1.7.4
+          terraform_wrapper: false
+
+      - name: Run functional tests of the underlying terraform libraries
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
+        run: set -o pipefail && make test-functional | make save-test-results
+        if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
+        env:
+          TEST_SF_TF_TEST_TYPE: "functional"
+
+      - name: Run acceptance tests
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
+        run: set -o pipefail && make test-acceptance | make save-test-results
+        if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
+        env:
+          TEST_SF_TF_TEST_TYPE: "acceptance"
+          SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT: ${{ secrets.SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT }}
+          TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL }}
+          TEST_SF_TF_AWS_EXTERNAL_KEY_ID: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_KEY_ID }}
+          TEST_SF_TF_AWS_EXTERNAL_ROLE_ARN: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_ROLE_ARN }}
+          TEST_SF_TF_AWS_EXTERNAL_SECRET_KEY: ${{ secrets.TEST_SF_TF_AWS_EXTERNAL_SECRET_KEY }}
+          TEST_SF_TF_AZURE_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_BUCKET_URL }}
+          TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN }}
+          TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID }}
+          TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE }}
+
+      - name: Sweepers cleanup
+        if: ${{ always() && steps.setup_go.conclusion == 'success' }}
+        run: echo y | make sweep
