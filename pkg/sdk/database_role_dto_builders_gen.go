@@ -2,8 +2,6 @@
 
 package sdk
 
-import ()
-
 func NewCreateDatabaseRoleRequest(
 	name DatabaseObjectIdentifier,
 ) *CreateDatabaseRoleRequest {
