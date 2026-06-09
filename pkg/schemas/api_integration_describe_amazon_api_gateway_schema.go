@@ -1,6 +1,8 @@
 package schemas
 
 import (
+	"strings"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -51,7 +53,7 @@ func ApiIntegrationAmazonApiGatewayDetailsToSchema(d *sdk.ApiIntegrationAwsDetai
 	result := make(map[string]any)
 	result["enabled"] = d.Enabled
 	result["api_key"] = d.ApiKey
-	result["api_provider"] = d.ApiProvider
+	result["api_provider"] = strings.ToLower(d.ApiProvider)
 	result["api_aws_role_arn"] = d.ApiAwsRoleArn
 	result["api_aws_iam_user_arn"] = d.ApiAwsIamUserArn
 	result["api_aws_external_id"] = d.ApiAwsExternalId

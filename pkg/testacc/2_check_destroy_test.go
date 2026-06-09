@@ -184,6 +184,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ApiIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},
+	resources.ApiIntegrationAmazonApiGateway: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
 	resources.AuthenticationPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.AuthenticationPolicies.ShowByID)
 	},

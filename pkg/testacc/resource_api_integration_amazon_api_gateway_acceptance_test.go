@@ -50,7 +50,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 			HasApiAllowedPrefixes(allowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty().
-			HasApiKeyEmpty(),
+			HasNoApiKey(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
 			HasEnabled(true).
@@ -81,7 +81,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 			HasApiAllowedPrefixes(allowedPrefix).
 			HasApiBlockedPrefixes(blockedPrefix).
 			HasCommentString(comment).
-			HasApiKeyEmpty(),
+			HasNoApiKey(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
 			HasEnabled(true).
@@ -197,7 +197,6 @@ func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 
 	comment := random.Comment()
 	apiKey := random.AlphanumericN(10)
-	externalApiKey := random.AlphanumericN(10)
 
 	allAttributes := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, apiProvider, true).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
@@ -223,7 +222,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 		resourceshowoutputassert.ApiIntegrationAwsDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasApiAwsRoleArn(awsRoleArn).
-			HasApiKey(apiKey).
+			HasApiKeyNotEmpty().
 			HasComment(comment),
 		objectassert.ApiIntegrationAwsDetails(t, id).
 			HasEnabled(true).
@@ -231,7 +230,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 			HasApiAwsRoleArn(awsRoleArn).
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
-			HasApiKey(apiKey).
+			HasApiKeyNotEmpty().
 			HasComment(comment).
 			HasApiAwsIamUserArnNotEmpty().
 			HasApiAwsExternalIdNotEmpty(),
@@ -264,21 +263,20 @@ func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedApiIntegrationAmazonApiGatewayResource(t, id.Name()).
 						HasNameString(id.Name()).
-						HasApiKeyEmpty(),
+						HasNoApiKey(),
 				),
 			},
-			// Change api_key externally — plan detects drift and updates
+			// Unset api_key externally — describe_output changes from masked to "", handleExternalChanges detects drift and updates
 			{
 				PreConfig: func() {
-					testClient().ApiIntegration.Alter(t, sdk.NewAlterApiIntegrationRequest(id).WithSet(
-						*sdk.NewApiIntegrationSetRequest().WithAwsParams(
-							*sdk.NewSetAwsApiParamsRequest().WithApiKey(externalApiKey),
+					testClient().ApiIntegration.Alter(t, sdk.NewAlterApiIntegrationRequest(id).WithUnset(
+						*sdk.NewApiIntegrationUnsetRequest().WithAwsParams(
+							*sdk.NewUnsetAwsApiParamsRequest().WithApiKey(true),
 						),
 					))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						// NOTE: planchecks.ExpectDrift cannot check api_key value — Sensitive field is redacted in plan JSON
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
@@ -324,7 +322,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, invalidProvider),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid ApiIntegrationAwsApiProviderType: INVALID_PROVIDER`),
+				ExpectError: regexp.MustCompile("invalid api integration aws api provider type: invalid_provider"),
 			},
 		},
 	})
@@ -368,7 +366,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedApiIntegrationAmazonApiGatewayResource(t, id.Name()).
 						HasNameString(id.Name()).
-						HasApiKeyEmpty(),
+						HasNoApiKey(),
 				),
 			},
 		},

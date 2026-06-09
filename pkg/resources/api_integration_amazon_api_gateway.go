@@ -144,9 +144,14 @@ func GetReadApiIntegrationAmazonApiGatewayFunc(withExternalChangesMarking bool) 
 			}
 		}
 
+		normalizedProvider, err := sdk.ToApiIntegrationAwsApiProviderType(awsDetails.ApiProvider)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("could not normalize api_provider value (%s): %w", awsDetails.ApiProvider, err))
+		}
+
 		errs := errors.Join(
 			handleApiIntegrationCommonRead(d, id, s, awsDetails.AllowedPrefixes, awsDetails.BlockedPrefixes),
-			d.Set("api_provider", awsDetails.ApiProvider),
+			d.Set("api_provider", string(normalizedProvider)),
 			d.Set("api_aws_role_arn", awsDetails.ApiAwsRoleArn),
 			// api_key intentionally omitted — handled by external changes marking above
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationAmazonApiGatewayDetailsToSchema(awsDetails)}),
