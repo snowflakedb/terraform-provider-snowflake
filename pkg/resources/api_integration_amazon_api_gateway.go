@@ -42,16 +42,6 @@ var apiIntegrationAmazonApiGatewaySchema = func() map[string]*schema.Schema {
 			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("api_key"),
 			Description:      "Specifies the API key (secret) that Snowflake uses to authenticate when making calls to the proxy service.",
 		},
-		"api_aws_iam_user_arn": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The Snowflake-created IAM user ARN used for the AWS integration. Grant this ARN permissions in the IAM role policy.",
-		},
-		"api_aws_external_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The external ID used by Snowflake to establish a trust relationship with the AWS IAM role.",
-		},
 		DescribeOutputAttributeName: {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -158,8 +148,6 @@ func GetReadApiIntegrationAmazonApiGatewayFunc(withExternalChangesMarking bool) 
 			handleApiIntegrationCommonRead(d, id, s, awsDetails.AllowedPrefixes, awsDetails.BlockedPrefixes),
 			d.Set("api_provider", awsDetails.ApiProvider),
 			d.Set("api_aws_role_arn", awsDetails.ApiAwsRoleArn),
-			d.Set("api_aws_iam_user_arn", awsDetails.ApiAwsIamUserArn),
-			d.Set("api_aws_external_id", awsDetails.ApiAwsExternalId),
 			// api_key intentionally omitted — handled by external changes marking above
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationAmazonApiGatewayDetailsToSchema(awsDetails)}),
 		)
