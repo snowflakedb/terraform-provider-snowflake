@@ -16,7 +16,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 
 	defaultDataTypes := []sdk.DataType{sdk.DataTypeVARCHAR}
 
-	integration, integrationCleanup := testClientHelper().ApiIntegration.CreateApiIntegration(t)
+	integration, integrationCleanup := testClientHelper().ApiIntegration.Create(t)
 	t.Cleanup(integrationCleanup)
 
 	cleanupExternalFunctionHandle := func(id sdk.SchemaObjectIdentifierWithArguments) func() {

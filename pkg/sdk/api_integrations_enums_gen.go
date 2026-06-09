@@ -90,3 +90,111 @@ func ToApiIntegrationOauthAllowedScope(s string) (ApiIntegrationOauthAllowedScop
 		return "", fmt.Errorf("invalid api integration oauth allowed scope: %s", s)
 	}
 }
+
+type ApiIntegrationAzureApiProviderType string
+
+const (
+	ApiIntegrationAzureApiProviderTypeAzureApiManagement ApiIntegrationAzureApiProviderType = "azure_api_management"
+)
+
+var AllApiIntegrationAzureApiProviderTypes = []ApiIntegrationAzureApiProviderType{
+	ApiIntegrationAzureApiProviderTypeAzureApiManagement,
+}
+
+func ToApiIntegrationAzureApiProviderType(s string) (ApiIntegrationAzureApiProviderType, error) {
+	s = strings.ToLower(s)
+	switch s {
+	case string(ApiIntegrationAzureApiProviderTypeAzureApiManagement):
+		return ApiIntegrationAzureApiProviderTypeAzureApiManagement, nil
+	default:
+		return "", fmt.Errorf("invalid api integration azure api provider type: %s", s)
+	}
+}
+
+type ApiIntegrationGoogleApiProviderType string
+
+const (
+	ApiIntegrationGoogleApiProviderTypeGoogleApiGateway ApiIntegrationGoogleApiProviderType = "google_api_gateway"
+)
+
+var AllApiIntegrationGoogleApiProviderTypes = []ApiIntegrationGoogleApiProviderType{
+	ApiIntegrationGoogleApiProviderTypeGoogleApiGateway,
+}
+
+func ToApiIntegrationGoogleApiProviderType(s string) (ApiIntegrationGoogleApiProviderType, error) {
+	s = strings.ToLower(s)
+	switch s {
+	case string(ApiIntegrationGoogleApiProviderTypeGoogleApiGateway):
+		return ApiIntegrationGoogleApiProviderTypeGoogleApiGateway, nil
+	default:
+		return "", fmt.Errorf("invalid api integration google api provider type: %s", s)
+	}
+}
+
+type ApiIntegrationGitApiProviderType string
+
+const (
+	ApiIntegrationGitApiProviderTypeGitHttpsApi ApiIntegrationGitApiProviderType = "git_https_api"
+)
+
+var AllApiIntegrationGitApiProviderTypes = []ApiIntegrationGitApiProviderType{
+	ApiIntegrationGitApiProviderTypeGitHttpsApi,
+}
+
+func ToApiIntegrationGitApiProviderType(s string) (ApiIntegrationGitApiProviderType, error) {
+	s = strings.ToLower(s)
+	switch s {
+	case string(ApiIntegrationGitApiProviderTypeGitHttpsApi):
+		return ApiIntegrationGitApiProviderTypeGitHttpsApi, nil
+	default:
+		return "", fmt.Errorf("invalid api integration git api provider type: %s", s)
+	}
+}
+
+type ApiIntegrationMcpApiProviderType string
+
+const (
+	ApiIntegrationMcpApiProviderTypeExternalMcp ApiIntegrationMcpApiProviderType = "external_mcp"
+)
+
+var AllApiIntegrationMcpApiProviderTypes = []ApiIntegrationMcpApiProviderType{
+	ApiIntegrationMcpApiProviderTypeExternalMcp,
+}
+
+func ToApiIntegrationMcpApiProviderType(s string) (ApiIntegrationMcpApiProviderType, error) {
+	s = strings.ToLower(s)
+	switch s {
+	case string(ApiIntegrationMcpApiProviderTypeExternalMcp):
+		return ApiIntegrationMcpApiProviderTypeExternalMcp, nil
+	default:
+		return "", fmt.Errorf("invalid api integration mcp api provider type: %s", s)
+	}
+}
+
+type ApiIntegrationUserAuthType string
+
+const (
+	ApiIntegrationUserAuthTypeOauth2             ApiIntegrationUserAuthType = "OAUTH2"
+	ApiIntegrationUserAuthTypeOauthDynamicClient ApiIntegrationUserAuthType = "OAUTH_DYNAMIC_CLIENT"
+	ApiIntegrationUserAuthTypeSnowflakeGithubApp ApiIntegrationUserAuthType = "SNOWFLAKE_GITHUB_APP"
+)
+
+var AllApiIntegrationUserAuthTypes = []ApiIntegrationUserAuthType{
+	ApiIntegrationUserAuthTypeOauth2,
+	ApiIntegrationUserAuthTypeOauthDynamicClient,
+	ApiIntegrationUserAuthTypeSnowflakeGithubApp,
+}
+
+func ToApiIntegrationUserAuthType(s string) (ApiIntegrationUserAuthType, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(ApiIntegrationUserAuthTypeOauth2):
+		return ApiIntegrationUserAuthTypeOauth2, nil
+	case string(ApiIntegrationUserAuthTypeOauthDynamicClient):
+		return ApiIntegrationUserAuthTypeOauthDynamicClient, nil
+	case string(ApiIntegrationUserAuthTypeSnowflakeGithubApp):
+		return ApiIntegrationUserAuthTypeSnowflakeGithubApp, nil
+	default:
+		return "", fmt.Errorf("invalid api integration user auth type: %s", s)
+	}
+}

@@ -25,6 +25,28 @@ var (
 		"read_repository",
 		"write_repository",
 	)
+	ApiIntegrationAzureApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationAzureApiProviderType", "ApiIntegrationAzureApiProviderTypes",
+		"azure_api_management",
+	)
+	ApiIntegrationGoogleApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationGoogleApiProviderType", "ApiIntegrationGoogleApiProviderTypes",
+		"google_api_gateway",
+	)
+	ApiIntegrationGitApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationGitApiProviderType", "ApiIntegrationGitApiProviderTypes",
+		"git_https_api",
+	)
+	ApiIntegrationMcpApiProviderTypeEnum = g.NewEnum(
+		"ApiIntegrationMcpApiProviderType", "ApiIntegrationMcpApiProviderTypes",
+		"external_mcp",
+	)
+	ApiIntegrationUserAuthTypeEnum = g.NewEnum(
+		"ApiIntegrationUserAuthType", "ApiIntegrationUserAuthTypes",
+		"OAUTH2",
+		"OAUTH_DYNAMIC_CLIENT",
+		"SNOWFLAKE_GITHUB_APP",
+	)
 )
 
 var apiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
@@ -72,7 +94,16 @@ var apiIntegrationsDef = g.NewInterface(
 	"ApiIntegration",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
-	WithEnums(ApiIntegrationAwsApiProviderTypeEnum, ApiIntegrationOauthClientAuthMethodEnum, ApiIntegrationOauthAllowedScopeEnum).
+	WithEnums(
+		ApiIntegrationAwsApiProviderTypeEnum,
+		ApiIntegrationOauthClientAuthMethodEnum,
+		ApiIntegrationOauthAllowedScopeEnum,
+		ApiIntegrationAzureApiProviderTypeEnum,
+		ApiIntegrationGoogleApiProviderTypeEnum,
+		ApiIntegrationGitApiProviderTypeEnum,
+		ApiIntegrationMcpApiProviderTypeEnum,
+		ApiIntegrationUserAuthTypeEnum,
+	).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-api-integration",
 		g.NewQueryStruct("CreateApiIntegration").
@@ -246,7 +277,7 @@ var apiIntegrationsDef = g.NewInterface(
 						g.KeywordOptions(),
 					).
 					OptionalQueryStructField(
-						"GitHttpsApiPrivateLinkParams", // TODO(next pr): For private link only ? Validate with integration tests
+						"GitHttpsApiPrivateLinkParams",
 						g.NewQueryStruct("SetGitHttpsApiPrivateLinkParams").
 							OptionalQueryStructField(
 								"AllowedAuthenticationSecrets",
@@ -332,15 +363,8 @@ var apiIntegrationsDef = g.NewInterface(
 					OptionalSQL("ENABLED").
 					OptionalSQL("API_BLOCKED_PREFIXES").
 					OptionalSQL("COMMENT").
-					WithValidation(
-						g.MoreThanOneValueSet,
-						"AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams",
-					).
-					WithValidation(
-						g.AtLeastOneValueSet,
-						"AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams",
-						"Enabled", "ApiBlockedPrefixes", "Comment",
-					),
+					WithValidation(g.MoreThanOneValueSet, "AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams").
+					WithValidation(g.AtLeastOneValueSet, "AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "Enabled", "ApiBlockedPrefixes", "Comment"),
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			OptionalSetTags().
