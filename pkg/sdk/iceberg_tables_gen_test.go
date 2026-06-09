@@ -303,6 +303,7 @@ func TestIcebergTables_Create(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = new(true)
 		opts.Transient = new(true)
@@ -399,8 +400,8 @@ func TestIcebergTables_Create(t *testing.T) {
 		}
 		opts.EnableDataCompaction = new(true)
 		opts.Contact = []TableContact{
-			{Purpose: "SUPPORT", Contact: "support_team"},
-			{Purpose: "ACCESS_APPROVAL", Contact: "access_team"},
+			{Purpose: "SUPPORT", Contact: contactId},
+			{Purpose: "ACCESS_APPROVAL", Contact: contactId},
 		}
 		assertOptsValidAndSQLEquals(
 			t, opts,
@@ -428,7 +429,7 @@ func TestIcebergTables_Create(t *testing.T) {
 				`AGGREGATION POLICY %s `+
 				`TAG (%s = 'v1', %s = 'v2') `+
 				`ENABLE_DATA_COMPACTION = true `+
-				`WITH CONTACT (SUPPORT = 'support_team', ACCESS_APPROVAL = 'access_team')`,
+				`WITH CONTACT (SUPPORT = %s, ACCESS_APPROVAL = %s)`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			projectionPolicyId.FullyQualifiedName(),
@@ -436,6 +437,7 @@ func TestIcebergTables_Create(t *testing.T) {
 			rowAccessPolicyId.FullyQualifiedName(),
 			aggregationPolicyId.FullyQualifiedName(),
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(), contactId.FullyQualifiedName(),
 		)
 	})
 
@@ -962,6 +964,7 @@ func TestIcebergTables_CreateFromIcebergFiles(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = new(true)
 		opts.ExternalVolume = icebergTableIdentifierQuoted(&externalVolumeId)
@@ -973,7 +976,7 @@ func TestIcebergTables_CreateFromIcebergFiles(t *testing.T) {
 			{Name: tagId2, Value: "v2"},
 		}
 		opts.Contact = []TableContact{
-			{Purpose: "SUPPORT", Contact: "support_team"},
+			{Purpose: "SUPPORT", Contact: contactId},
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`CREATE OR REPLACE ICEBERG TABLE %s `+
@@ -983,11 +986,12 @@ func TestIcebergTables_CreateFromIcebergFiles(t *testing.T) {
 				`REPLACE_INVALID_CHARACTERS = true `+
 				`COMMENT = 'some comment' `+
 				`TAG (%s = 'v1', %s = 'v2') `+
-				`WITH CONTACT (SUPPORT = 'support_team')`,
+				`WITH CONTACT (SUPPORT = %s)`,
 			id.FullyQualifiedName(),
 			externalVolumeId.FullyQualifiedName(),
 			catalogId.FullyQualifiedName(),
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(),
 		)
 	})
 }
@@ -1500,6 +1504,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 	})
 
 	t.Run("alter: set - all properties", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = new(true)
 		opts.Set = &IcebergTableSetProperties{
@@ -1510,8 +1515,8 @@ func TestIcebergTables_Alter(t *testing.T) {
 			AutoRefresh:                new(true),
 			TargetFileSize:             new(IcebergTableTargetFileSize128mb),
 			Contact: []TableContact{
-				{Purpose: "SUPPORT", Contact: "support_team"},
-				{Purpose: "ACCESS_APPROVAL", Contact: "access_team"},
+				{Purpose: "SUPPORT", Contact: contactId},
+				{Purpose: "ACCESS_APPROVAL", Contact: contactId},
 			},
 			LogEventLevel:            new(IcebergTableLogEventLevelError),
 			ErrorLogging:             new(true),
@@ -1528,13 +1533,14 @@ func TestIcebergTables_Alter(t *testing.T) {
 				`MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 `+
 				`AUTO_REFRESH = true `+
 				`TARGET_FILE_SIZE = '128MB' `+
-				`CONTACT (SUPPORT = 'support_team', ACCESS_APPROVAL = 'access_team') `+
+				`CONTACT (SUPPORT = %s, ACCESS_APPROVAL = %s) `+
 				`LOG_EVENT_LEVEL = ERROR `+
 				`ERROR_LOGGING = true `+
 				`ENABLE_DATA_COMPACTION = true `+
 				`ENABLE_ICEBERG_MERGE_ON_READ = true `+
 				`COMMENT = 'updated comment'`,
 			id.FullyQualifiedName(),
+			contactId.FullyQualifiedName(), contactId.FullyQualifiedName(),
 		)
 	})
 

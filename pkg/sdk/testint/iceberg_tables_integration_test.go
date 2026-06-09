@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -20,6 +21,31 @@ import (
 func TestInt_IcebergTables(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
+
+	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
+	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
+
+	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
+	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
+	baseLocationPrefix := "iceberg_test_table"
+	metadataFilePath := baseLocationPrefix + "/metadata/v1.metadata.json"
+
+	externalVolumeId, externalVolumeCleanup := testClientHelper().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
+	t.Cleanup(externalVolumeCleanup)
+
+	catalogForIcebergFilesId, catalogForIcebergFilesCleanup := testClientHelper().CatalogIntegration.Create(t)
+	t.Cleanup(catalogForIcebergFilesCleanup)
+
+	dbForIcebergFiles, dbForIcebergFilesCleanup := testClientHelper().Database.CreateDatabaseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
+		Catalog:        new(catalogForIcebergFilesId),
+		ExternalVolume: new(externalVolumeId),
+	})
+	t.Cleanup(dbForIcebergFilesCleanup)
+	schemaIdForIcebergFiles := sdk.NewDatabaseObjectIdentifier(dbForIcebergFiles.ID().Name(), "PUBLIC")
+
+	contactId, contactCleanup := testClientHelper().Contact.Create(t)
+	t.Cleanup(contactCleanup)
 
 	assertPolicyReference := func(t *testing.T, policyRef sdk.PolicyReference,
 		policyId sdk.SchemaObjectIdentifier,
@@ -41,7 +67,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		}
 	}
 
-	catalog := sdk.IcebergTableCatalogSnowflake
+	snowflakeCatalog := sdk.IcebergTableCatalogSnowflake
 	snowflakeManagedExternalVolume := sdk.NewAccountObjectIdentifier("SNOWFLAKE_MANAGED")
 
 	basicAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
@@ -57,7 +83,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasIcebergTableType(sdk.IcebergTableTypeManaged).
 			HasNoCatalogTableName().
 			HasNoCatalogNamespace().
-			HasBaseLocationPrefix(id).
+			HasBaseLocationIdPrefix(id).
 			HasCanWriteMetadata(true).
 			HasComment("").
 			HasNoNameMapping().
@@ -109,12 +135,12 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasOwner("ACCOUNTADMIN").
-			HasExternalVolumeName(snowflakeManagedExternalVolume).
+			HasExternalVolumeName(externalVolumeId).
 			HasCatalogName(sdk.NewAccountObjectIdentifier("SNOWFLAKE")).
 			HasIcebergTableType(sdk.IcebergTableTypeManaged).
 			HasNoCatalogTableName().
 			HasNoCatalogNamespace().
-			HasBaseLocationPrefix(id).
+			HasBaseLocationPrefix(baseLocationPrefix).
 			HasCanWriteMetadata(true).
 			HasComment("integration test").
 			HasNoNameMapping().
@@ -373,11 +399,10 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		req := sdk.NewCreateIcebergTableRequest(id, colDef).
 			WithIfNotExists(true).
-			WithCatalog(catalog).
-			// TODO (next PRs): these are commented out for now because the current external volume is not writable.
-			// WithExternalVolume(volumeId).
-			// WithBaseLocation(baseLocation).
-			// TODO (next PRs): handle CONTACT and CATALOG_SYNC.
+			WithCatalog(snowflakeCatalog).
+			WithExternalVolume(externalVolumeId).
+			WithBaseLocation(baseLocationPrefix).
+			// TODO (next PRs): handle CATALOG_SYNC
 			WithPartitionBy([]sdk.IcebergTablePartitionExpressionRequest{
 				{Identity: new("REGION")},
 				{Bucket: &sdk.IcebergTablePartitionBucketRequest{Args: sdk.IcebergTablePartitionBucketArgsRequest{NumBuckets: 4, Column: "BUCKET_COL"}}},
@@ -404,6 +429,9 @@ func TestInt_IcebergTables(t *testing.T) {
 			}).
 			WithAggregationPolicy(sdk.IcebergTableAggregationPolicyRequest{
 				AggregationPolicy: aggregationPolicyId,
+			}).
+			WithContact([]sdk.TableContact{
+				{Purpose: "SUPPORT", Contact: contactId},
 			})
 
 		err := client.IcebergTables.Create(ctx, req)
@@ -432,7 +460,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasDefaultDdlCollation("").
 			HasEnableDataCompaction(true).
 			HasEnableIcebergMergeOnRead(true).
-			HasExternalVolume("SNOWFLAKE_MANAGED").
+			HasExternalVolume(externalVolumeId.FullyQualifiedName()).
 			HasIcebergMergeOnReadBehavior("auto").
 			HasLogEventLevel("OFF").
 			HasMaxDataExtensionTimeInDays(8).
@@ -465,6 +493,150 @@ func TestInt_IcebergTables(t *testing.T) {
 		_, err = client.IcebergTables.ShowByID(ctx, id)
 		require.NoError(t, err)
 	})
+	t.Run("create from iceberg files: basic", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
+
+		err := client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner("ACCOUNTADMIN").
+			HasExternalVolumeName(externalVolumeId).
+			HasCatalogName(catalogForIcebergFilesId).
+			HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+			HasNoCatalogTableName().
+			HasNoCatalogNamespace().
+			HasCanWriteMetadata(true).
+			HasComment("").
+			HasNoNameMapping().
+			HasOwnerRoleType("ROLE").
+			HasCatalogSyncName("").
+			HasAutoRefreshStatus(""),
+		)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasAllowRowTimestamp(false).
+			HasCatalog(catalogForIcebergFilesId.Name()).
+			HasCatalogSync("").
+			HasDataMetricSchedule("60 MINUTES").
+			HasDataRetentionTimeInDays(1).
+			HasDefaultDdlCollation("").
+			HasEnableDataCompaction(true).
+			HasEnableIcebergMergeOnRead(true).
+			HasExternalVolume(externalVolumeId.Name()).
+			HasIcebergMergeOnReadBehavior("auto").
+			HasLogEventLevel("OFF").
+			HasMaxDataExtensionTimeInDays(14).
+			HasOptimizeDataLayout(true).
+			HasQuotedIdentifiersIgnoreCase(false).
+			HasReplaceInvalidCharacters(false).
+			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+			HasTargetFileSize(sdk.IcebergTableTargetFileSizeAuto),
+		)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 2)
+
+		// With this type, we cannot manage table columns. These assertions are basic and assert the values of the precreated file in the external volume.
+		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[0]).
+			HasKind("COLUMN").
+			HasName("ID").
+			HasType(testdatatypes.DataTypeNumber_19_0),
+		)
+		assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &details[1]).
+			HasKind("COLUMN").
+			HasName("NAME").
+			HasType(testdatatypes.DataTypeVarcharIceberg),
+		)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Empty(t, references)
+	})
+
+	t.Run("create from iceberg files: all options", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath).
+			WithOrReplace(true).
+			WithExternalVolume(externalVolumeId).
+			WithCatalog(catalogForIcebergFilesId).
+			WithReplaceInvalidCharacters(true).
+			WithComment("integration test").
+			WithContact([]sdk.TableContact{
+				{Purpose: "SUPPORT", Contact: contactId},
+			}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner("ACCOUNTADMIN").
+			HasExternalVolumeName(externalVolumeId).
+			HasCatalogName(catalogForIcebergFilesId).
+			HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+			HasNoCatalogTableName().
+			HasNoCatalogNamespace().
+			HasCanWriteMetadata(true).
+			HasComment("integration test").
+			HasNoNameMapping().
+			HasOwnerRoleType("ROLE").
+			HasCatalogSyncName("").
+			HasAutoRefreshStatus(""),
+		)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasAllowRowTimestamp(false).
+			HasCatalog(catalogForIcebergFilesId.FullyQualifiedName()).
+			HasCatalogSync("").
+			HasDataMetricSchedule("60 MINUTES").
+			HasDataRetentionTimeInDays(1).
+			HasDefaultDdlCollation("").
+			HasEnableDataCompaction(true).
+			HasEnableIcebergMergeOnRead(true).
+			HasExternalVolume(externalVolumeId.FullyQualifiedName()).
+			HasIcebergMergeOnReadBehavior("auto").
+			HasLogEventLevel("OFF").
+			HasMaxDataExtensionTimeInDays(1).
+			HasOptimizeDataLayout(true).
+			HasQuotedIdentifiersIgnoreCase(false).
+			HasReplaceInvalidCharacters(true).
+			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+			HasTargetFileSize(sdk.IcebergTableTargetFileSizeAuto),
+		)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, details)
+		for _, col := range details {
+			assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &col).
+				HasKind("COLUMN").
+				HasNoPolicyName().
+				HasNoPrivacyDomain().
+				HasNoWriteDefault(),
+			)
+		}
+	})
+
+	t.Run("create from iceberg files: if not exists", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
+
+		err := client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// IF NOT EXISTS should not error when the table already exists.
+		err = client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath).
+			WithIfNotExists(true))
+		require.NoError(t, err)
+	})
 
 	t.Run("drop iceberg table: existing", func(t *testing.T) {
 		obj, cleanup := testClientHelper().IcebergTable.Create(t)
@@ -492,13 +664,13 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("show iceberg tables: default", func(t *testing.T) {
+	t.Run("show iceberg tables: in account", func(t *testing.T) {
 		obj1, cleanup1 := testClientHelper().IcebergTable.Create(t)
 		t.Cleanup(cleanup1)
 		obj2, cleanup2 := testClientHelper().IcebergTable.Create(t)
 		t.Cleanup(cleanup2)
 
-		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest())
+		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest().WithIn(sdk.In{Account: new(true)}))
 		require.NoError(t, err)
 
 		assert.Contains(t, returned, *obj1)
@@ -512,7 +684,9 @@ func TestInt_IcebergTables(t *testing.T) {
 		t.Cleanup(cleanup2)
 
 		returned, err := client.IcebergTables.Show(ctx, sdk.NewShowIcebergTableRequest().
-			WithLike(sdk.Like{Pattern: new(obj1.Name)}))
+			WithLike(sdk.Like{Pattern: new(obj1.Name)}).
+			// The test setup creates a new database which changes the connection context, so we need to specify the schema explicitly.
+			WithIn(sdk.In{Schema: obj1.ID().SchemaId()}))
 		require.NoError(t, err)
 
 		assert.Contains(t, returned, *obj1)

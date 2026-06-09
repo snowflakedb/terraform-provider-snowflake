@@ -512,7 +512,7 @@ type icebergTableRow struct {
 	IcebergTableType          string         `db:"iceberg_table_type"`
 	CatalogTableName          sql.NullString `db:"catalog_table_name"`
 	CatalogNamespace          sql.NullString `db:"catalog_namespace"`
-	BaseLocation              string         `db:"base_location"`
+	BaseLocation              sql.NullString `db:"base_location"`
 	CanWriteMetadata          string         `db:"can_write_metadata"`
 	Comment                   sql.NullString `db:"comment"`
 	NameMapping               sql.NullString `db:"name_mapping"`
@@ -535,7 +535,7 @@ type IcebergTable struct {
 	IcebergTableType          IcebergTableType
 	CatalogTableName          *string
 	CatalogNamespace          *string
-	BaseLocation              string
+	BaseLocation              *string
 	CanWriteMetadata          bool
 	Comment                   *string
 	NameMapping               *string

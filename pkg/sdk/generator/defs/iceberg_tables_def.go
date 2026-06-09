@@ -341,7 +341,7 @@ var icebergTablesDef = g.NewInterface(
 		Enum("iceberg_table_type", IcebergTableTypeEnumDef).
 		OptionalText("catalog_table_name").
 		OptionalText("catalog_namespace").
-		Text("base_location").
+		OptionalText("base_location").
 		Field("can_write_metadata", "string", "bool").
 		OptionalText("comment").
 		OptionalText("name_mapping").
