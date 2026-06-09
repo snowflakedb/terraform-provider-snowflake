@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Sequences = (*sequences)(nil)
-
 var (
+	_ Sequences                      = (*sequences)(nil)
 	_ convertibleRow[Sequence]       = new(sequenceRow)
 	_ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
 )
