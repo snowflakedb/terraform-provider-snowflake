@@ -700,7 +700,7 @@ func TestParseTaskSchedule(t *testing.T) {
 				assert.Nil(t, taskSchedule)
 				assert.ErrorContains(t, err, tc.Error)
 			} else {
-				assert.Equal(t, tc.ExpectedTaskSchedule, taskSchedule)
+				assert.EqualValues(t, tc.ExpectedTaskSchedule, taskSchedule)
 				assert.NoError(t, err)
 			}
 		})

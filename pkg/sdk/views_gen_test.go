@@ -525,6 +525,7 @@ func TestViews_Show(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "SHOW VIEWS")
+
 	})
 
 	// variants added manually

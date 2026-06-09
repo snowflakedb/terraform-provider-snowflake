@@ -2,6 +2,8 @@
 
 package sdk
 
+import ()
+
 func NewSetTagRequest(
 	objectType ObjectType,
 	objectName ObjectIdentifier,

@@ -228,6 +228,7 @@ func TestCortexSearchServices_Describe(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE CORTEX SEARCH SERVICE %s`, id.FullyQualifiedName())
+
 	})
 
 	// all options test removed
