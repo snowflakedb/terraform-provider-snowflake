@@ -211,7 +211,8 @@ var apiIntegrationsDef = g.NewInterface(
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
-			WithValidation(g.ConflictingFields, "OrReplace", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams").
+			WithValidation(g.ConflictingFields, "OrReplace", "ExternalMcpOAuth2ProviderParams").
+			WithValidation(g.ConflictingFields, "OrReplace", "ExternalMcpDynamicClientProviderParams").
 			WithValidation(
 				g.ExactlyOneValueSet,
 				"AwsApiProviderParams",
