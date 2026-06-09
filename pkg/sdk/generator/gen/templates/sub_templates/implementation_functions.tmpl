@@ -82,7 +82,12 @@
         }
 
         func (v *{{ $impl }}) DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error {
-            return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDrop{{ .ObjectInterface.NameSingular }}Request(id).WithIfExists(true)) }, ctx, id)
+            {{- if .DropSafelyHook }}
+            if err := v.dropSafelyHook(ctx, id); err != nil {
+                return err
+            }
+            {{- end }}
+            return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDrop{{ .ObjectInterface.NameSingular }}Request(id).WithIfExists(true){{ if .DropSafelyForce }}.WithForce(true){{ end }}) }, ctx, id)
         }
     {{ else if .InstanceMethodMapping }}
         {{ if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}

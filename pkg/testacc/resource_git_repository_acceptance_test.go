@@ -30,9 +30,9 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 	comment, changedComment := random.Comment(), random.Comment()
 	origin := testvars.ExampleGitRepositoryOrigin
 
-	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, origin)
 	t.Cleanup(apiIntegrationCleanup)
-	changedApiIntegrationId, changedApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	changedApiIntegrationId, changedApiIntegrationCleanup := testClient().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, origin)
 	t.Cleanup(changedApiIntegrationCleanup)
 
 	secretId, secretCleanup := testClient().Secret.CreateRandomPasswordSecret(t)
@@ -258,7 +258,7 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 			{
 				PreConfig: func() {
 					newOrigin := "https://github.com/octocat/git-consortium"
-					newApiIntegrationId, newApiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, newOrigin)
+					newApiIntegrationId, newApiIntegrationCleanup := testClient().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, newOrigin)
 					t.Cleanup(newApiIntegrationCleanup)
 					testClient().GitRepository.CreateWithRequest(t, sdk.NewCreateGitRepositoryRequest(id, newOrigin, newApiIntegrationId).
 						WithGitCredentials(secretId).WithComment(comment).WithOrReplace(true))
@@ -332,7 +332,7 @@ func TestAcc_GitRepository_complete(t *testing.T) {
 	comment := random.Comment()
 	origin := testvars.ExampleGitRepositoryOrigin
 
-	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	apiIntegrationId, apiIntegrationCleanup := testClient().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, origin)
 	t.Cleanup(apiIntegrationCleanup)
 
 	secretId, secretCleanup := testClient().Secret.CreateRandomPasswordSecret(t)

@@ -26,6 +26,7 @@ type TestClient struct {
 	Budget                       *BudgetClient
 	ComputePool                  *ComputePoolClient
 	Connection                   *ConnectionClient
+	Contact                      *ContactClient
 	Context                      *ContextClient
 	CortexAgent                  *AgentClient
 	CortexSearchService          *CortexSearchServiceClient
@@ -127,6 +128,7 @@ func NewTestClient(
 		Budget:                       NewBudgetClient(context, idsGenerator),
 		ComputePool:                  NewComputePoolClient(context, idsGenerator),
 		Connection:                   NewConnectionClient(context, idsGenerator),
+		Contact:                      NewContactClient(context, idsGenerator),
 		Context:                      NewContextClient(context),
 		CortexAgent:                  NewAgentClient(context, idsGenerator),
 		CortexSearchService:          NewCortexSearchServiceClient(context, idsGenerator),

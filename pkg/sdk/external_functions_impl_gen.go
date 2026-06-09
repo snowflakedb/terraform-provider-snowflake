@@ -53,8 +53,7 @@ func (v *externalFunctions) ShowByIDSafely(ctx context.Context, id SchemaObjectI
 }
 
 func (v *externalFunctions) Describe(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]ExternalFunctionProperty, error) {
-	// adjusted manually
-	opts := &DescribeFunctionOptions{
+	opts := &DescribeExternalFunctionOptions{
 		name: id,
 	}
 	rows, err := validateAndQuery[externalFunctionPropertyRow](v.client, ctx, opts)

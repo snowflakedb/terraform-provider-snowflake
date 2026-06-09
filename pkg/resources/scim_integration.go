@@ -200,7 +200,7 @@ func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 	runAsRoleRaw := d.Get("run_as_role").(string)
 
 	runAsRole, _ := scimIntegrationRunAsRoleToAccountObjectIdentifier(runAsRoleRaw)
-	req := sdk.NewCreateScimSecurityIntegrationRequest(id, scimClient, runAsRole.FullyQualifiedName()).WithEnabled(d.Get("enabled").(bool))
+	req := sdk.NewCreateScimSecurityIntegrationRequest(id, scimClient, runAsRole).WithEnabled(d.Get("enabled").(bool))
 
 	if v, ok := d.GetOk("network_policy"); ok {
 		req.WithNetworkPolicy(sdk.NewAccountObjectIdentifier(v.(string)))

@@ -186,7 +186,7 @@ var icebergTablesDef = g.NewInterface(
 		ListQueryStructField("PartitionBy", icebergTablePartitionExpression, g.KeywordOptions().Parentheses().SQL("PARTITION BY")).
 		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
-		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME")).
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
 		OptionalAssignment("CATALOG", IcebergTableCatalogEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("BASE_LOCATION", g.ParameterOptions().SingleQuotes()).
 		OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
@@ -217,8 +217,8 @@ var icebergTablesDef = g.NewInterface(
 		SQL("ICEBERG TABLE").
 		IfNotExists().
 		Name().
-		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME")).
-		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG")).
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
 		TextAssignment("METADATA_FILE_PATH", g.ParameterOptions().SingleQuotes().Required()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 		OptionalComment().
@@ -341,7 +341,7 @@ var icebergTablesDef = g.NewInterface(
 		Enum("iceberg_table_type", IcebergTableTypeEnumDef).
 		OptionalText("catalog_table_name").
 		OptionalText("catalog_namespace").
-		Text("base_location").
+		OptionalText("base_location").
 		Field("can_write_metadata", "string", "bool").
 		OptionalText("comment").
 		OptionalText("name_mapping").

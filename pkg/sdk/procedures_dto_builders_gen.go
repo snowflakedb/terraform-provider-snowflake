@@ -460,7 +460,7 @@ func NewProcedureSQLReturnsRequest() *ProcedureSQLReturnsRequest {
 	return &s
 }
 
-func (s *ProcedureSQLReturnsRequest) WithResultDataType(resultDataType ProcedureReturnsResultDataTypeRequest) *ProcedureSQLReturnsRequest {
+func (s *ProcedureSQLReturnsRequest) WithResultDataType(resultDataType ProcedureSQLReturnsResultDataTypeRequest) *ProcedureSQLReturnsRequest {
 	s.ResultDataType = &resultDataType
 	return s
 }
@@ -472,6 +472,19 @@ func (s *ProcedureSQLReturnsRequest) WithTable(table ProcedureReturnsTableReques
 
 func (s *ProcedureSQLReturnsRequest) WithNotNull(notNull bool) *ProcedureSQLReturnsRequest {
 	s.NotNull = &notNull
+	return s
+}
+
+func NewProcedureSQLReturnsResultDataTypeRequest(
+	resultDataType datatypes.DataType,
+) *ProcedureSQLReturnsResultDataTypeRequest {
+	s := ProcedureSQLReturnsResultDataTypeRequest{}
+	s.ResultDataType = resultDataType
+	return &s
+}
+
+func (s *ProcedureSQLReturnsResultDataTypeRequest) WithResultDataTypeOld(resultDataTypeOld DataType) *ProcedureSQLReturnsResultDataTypeRequest {
+	s.ResultDataTypeOld = resultDataTypeOld
 	return s
 }
 

@@ -148,6 +148,7 @@ var servicesDef = g.NewInterface(
 		Name().
 		OptionalSQL("FORCE").
 		WithValidation(g.ValidIdentifier, "name"),
+	g.WithDropSafelyForce(),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-services",
 	g.StructPair("servicesRow", "Service").

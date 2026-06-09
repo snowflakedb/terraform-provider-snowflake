@@ -21,6 +21,7 @@ var (
 	DataTypeNumber, _         = datatypes.ParseDataType("NUMBER")
 	DataTypeDecimal_38_0, _   = datatypes.ParseDataType("DECIMAL(38, 0)")
 	DataTypeNumber_38_0, _    = datatypes.ParseDataType("NUMBER(38, 0)")
+	DataTypeNumber_19_0, _    = datatypes.ParseDataType("NUMBER(19, 0)")
 	DataTypeInteger, _        = datatypes.ParseDataType("INTEGER")
 	DataTypeDecimal, _        = datatypes.ParseDataType("DECIMAL")
 	DataTypeFloat, _          = datatypes.ParseDataType("FLOAT")

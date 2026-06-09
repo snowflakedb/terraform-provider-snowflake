@@ -672,7 +672,7 @@ func TestAcc_ScimIntegration_RunAsRole(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().SecurityIntegration.DropSecurityIntegrationFunc(t, id)()
-					testClient().SecurityIntegration.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientOptionGeneric, uppercaseRole.ID().FullyQualifiedName()).WithEnabled(false))
+					testClient().SecurityIntegration.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientOptionGeneric, uppercaseRole.ID()).WithEnabled(false))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

@@ -71,6 +71,12 @@ type Operation struct {
 	// It allows filtering the rows by implementing excludeFromShow() method on the given row type.
 	// The implementation should be provided in the _ext.go file.
 	ShowResultFilterHook bool
+	// DropSafelyHook, when true, inserts a hook call in the generated DropSafely implementation.
+	// It allows running operation before dropping the object safely by implementing dropSafelyHook() method on the given object interface implementation.
+	// The implementation should be provided in the _ext.go file.
+	DropSafelyHook bool
+	// DropSafelyForce, when true, appends .WithForce(true) to the Drop request in the generated DropSafely implementation.
+	DropSafelyForce bool
 
 	// TODO [SNOW-2324252]: Consider splitting the Operation into definition and generation model
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
@@ -242,8 +248,27 @@ func (i *Interface) AlterOperation(doc string, queryStruct *QueryStruct) *Interf
 	return i.newSimpleOperation(string(OperationKindAlter), doc, queryStruct)
 }
 
-func (i *Interface) DropOperation(doc string, queryStruct *QueryStruct) *Interface {
-	return i.newSimpleOperation(string(OperationKindDrop), doc, queryStruct)
+// DropOperationOption is a functional option for configuring DropSafely behavior.
+type DropOperationOption func(*Operation)
+
+// WithDropSafelyHook enables running action before dropping the objects safely.
+func WithDropSafelyHook() DropOperationOption {
+	return func(op *Operation) { op.DropSafelyHook = true }
+}
+
+// WithDropSafelyForce adds .WithForce(true) to the Drop request in the generated DropSafely implementation.
+func WithDropSafelyForce() DropOperationOption {
+	return func(op *Operation) { op.DropSafelyForce = true }
+}
+
+func (i *Interface) DropOperation(doc string, queryStruct *QueryStruct, opts ...DropOperationOption) *Interface {
+	i.newSimpleOperation(string(OperationKindDrop), doc, queryStruct)
+	// TODO [next PRs]: the operation is obtained in an ugly way; the new operation provate helpers should be made consistent and return operation instead of an interface
+	op := i.Operations[len(i.Operations)-1]
+	for _, opt := range opts {
+		opt(op)
+	}
+	return i
 }
 
 func (i *Interface) GrantOperation(doc string, queryStruct *QueryStruct) *Interface {

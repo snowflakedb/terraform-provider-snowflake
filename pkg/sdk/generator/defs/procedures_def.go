@@ -30,7 +30,8 @@ var procedureReturns = func() *g.QueryStruct {
 			g.NewQueryStruct("ProcedureReturnsResultDataType").
 				PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 				PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-				OptionalSQL("NULL").OptionalSQL("NOT NULL").
+				OptionalSQL("NULL").
+				OptionalSQL("NOT NULL").
 				WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
 			g.KeywordOptions(),
 		).
@@ -46,10 +47,11 @@ var procedureReturns = func() *g.QueryStruct {
 		).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 }
 
+// TODO [SNOW-1850370]: docs (https://docs.snowflake.com/en/sql-reference/sql/create-procedure#snowflake-scripting-handler) do not include null/not null; verify it during stabilization
 var procedureSQLReturns = g.NewQueryStruct("ProcedureSQLReturns").
 	OptionalQueryStructField(
 		"ResultDataType",
-		g.NewQueryStruct("ProcedureReturnsResultDataType").
+		g.NewQueryStruct("ProcedureSQLReturnsResultDataType").
 			PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 			PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 			WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),

@@ -17,6 +17,11 @@ const (
 )
 
 func TestNotificationIntegrations_Create(t *testing.T) {
+	const (
+		apiAwsRoleArn = "arn:aws:iam::000000000001:/role/test"
+		azureTenantId = "00000000-0000-0000-0000-000000000000"
+	)
+
 	id := randomAccountObjectIdentifier()
 
 	// minimal option for each variant added manually
@@ -214,6 +219,11 @@ func TestNotificationIntegrations_Create(t *testing.T) {
 }
 
 func TestNotificationIntegrations_Alter(t *testing.T) {
+	const (
+		apiAwsRoleArn = "arn:aws:iam::000000000001:/role/test"
+		azureTenantId = "00000000-0000-0000-0000-000000000000"
+	)
+
 	id := randomAccountObjectIdentifier()
 	// Minimal valid AlterNotificationIntegrationOptions
 	defaultOpts := func() *AlterNotificationIntegrationOptions {

@@ -1,0 +1,20 @@
+{
+  "format-version": 1,
+  "table-uuid": "9c12d441-03fe-4693-9a96-a0705ddf69c1",
+  "location": "s3://sfc-eng-tf-provider-ext-test/iceberg_test_table",
+  "last-updated-ms": 1715000000000,
+  "last-column-id": 2,
+  "schema": {
+    "type": "struct",
+    "fields": [
+      {"id": 1, "name": "id", "required": false, "type": "long"},
+      {"id": 2, "name": "name", "required": false, "type": "string"}
+    ]
+  },
+  "partition-spec": [],
+  "properties": {},
+  "current-snapshot-id": -1,
+  "snapshots": [],
+  "snapshot-log": [],
+  "metadata-log": []
+}
