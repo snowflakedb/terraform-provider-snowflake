@@ -24,13 +24,12 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			SQL("STORAGE LIFECYCLE POLICY").
 			IfNotExists().
 			Name().
-			SQL("AS").
 			ListQueryStructField(
 				"args",
 				g.NewQueryStruct("CreateStorageLifecyclePolicyArgs").
 					Text("Name", g.KeywordOptions().DoubleQuotes().Required()).
 					PredefinedQueryStructField("DataType", "datatypes.DataType", g.ParameterOptions().NoEquals().Required()),
-				g.ParameterOptions().Parentheses().NoEquals().Required(),
+				g.ParameterOptions().Parentheses().SQL("AS").NoEquals().Required(),
 			).
 			SQL("RETURNS BOOLEAN").
 			BodyWithPrecedingArrow().
@@ -105,7 +104,7 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 	DescribeOperationWithPairedStructs(
 		g.DescriptionMappingKindSingleValue,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-storage-lifecycle-policy",
-		g.StructPair("describeStorageLifecyclePolicyDBRow", "StorageLifecyclePolicyDescription").
+		g.StructPair("describeStorageLifecyclePolicyDBRow", "StorageLifecyclePolicyDetails").
 			Text("name").
 			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
 			Text("return_type").

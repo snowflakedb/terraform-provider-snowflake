@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	_ StorageLifecyclePolicies                          = (*storageLifecyclePolicies)(nil)
-	_ convertibleRow[StorageLifecyclePolicy]            = new(storageLifecyclePolicyDBRow)
-	_ convertibleRow[StorageLifecyclePolicyDescription] = new(describeStorageLifecyclePolicyDBRow)
+	_ StorageLifecyclePolicies                      = (*storageLifecyclePolicies)(nil)
+	_ convertibleRow[StorageLifecyclePolicy]        = new(storageLifecyclePolicyDBRow)
+	_ convertibleRow[StorageLifecyclePolicyDetails] = new(describeStorageLifecyclePolicyDBRow)
 )
 
 type storageLifecyclePolicies struct {
@@ -62,7 +62,7 @@ func (v *storageLifecyclePolicies) ShowByIDSafely(ctx context.Context, id Schema
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *storageLifecyclePolicies) Describe(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDescription, error) {
+func (v *storageLifecyclePolicies) Describe(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDetails, error) {
 	opts := &DescribeStorageLifecyclePolicyOptions{
 		name: id,
 	}
@@ -159,8 +159,8 @@ func (r *DescribeStorageLifecyclePolicyRequest) toOpts() *DescribeStorageLifecyc
 	return opts
 }
 
-func (r describeStorageLifecyclePolicyDBRow) convert() (*StorageLifecyclePolicyDescription, error) {
-	result := &StorageLifecyclePolicyDescription{
+func (r describeStorageLifecyclePolicyDBRow) convert() (*StorageLifecyclePolicyDetails, error) {
+	result := &StorageLifecyclePolicyDetails{
 		Name:        r.Name,
 		ReturnType:  r.ReturnType,
 		Body:        r.Body,
