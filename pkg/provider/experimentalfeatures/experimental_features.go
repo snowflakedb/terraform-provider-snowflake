@@ -24,6 +24,7 @@ const (
 	GrantsSafeDestroy              ExperimentalFeature = "GRANTS_SAFE_DESTROY"
 	TagAssociationSafeDestroy      ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
 	GrantAccountRoleSafePublicRole ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
+	HierarchyRenames               ExperimentalFeature = "HIERARCHY_RENAMES"
 )
 
 type experimentalFeatureState string
@@ -146,6 +147,16 @@ var allExperiments = []Experiment{
 			"When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.",
 			"Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.",
 			"With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.",
+		),
+	},
+	{
+		HierarchyRenames,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"When enabled, allows in-place handling of hierarchy renames and moves for supported resources.",
+			"Currently supported by: `snowflake_schema`.",
+			"Without this experiment, changing the `database` field on `snowflake_schema` forces resource recreation. With this experiment, the provider detects whether the parent database was renamed or the schema should be moved to a different database, and handles it without recreation.",
+			"For more information, see the [object renaming guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).",
 		),
 	},
 }
