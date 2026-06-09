@@ -189,6 +189,11 @@ func ParametersCustomDiff[T ~string](parametersProvider func(context.Context, Re
 
 		params, err := parametersProvider(ctx, d, meta)
 		if err != nil {
+			// TODO [next PRs]: should it be a default behavior?
+			providerCtx := meta.(*provider.Context)
+			if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) {
+				return nil
+			}
 			return err
 		}
 
