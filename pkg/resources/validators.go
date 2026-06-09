@@ -122,9 +122,10 @@ func isValidSecondaryRole() func(value any, path cty.Path) diag.Diagnostics {
 	}
 }
 
-// ListingNameRegex matches names that are starting with an alphabetic character, followed by any combination of alphanumeric characters and underscores.
+// ListingNameRegex matches names that are starting with an alphabetic character, followed by any combination of alphanumeric characters, underscores, and hyphens.
 // The name can optionally be enclosed in double quotes.
-var ListingNameRegex = regexp.MustCompile("^\"?[a-zA-Z][a-zA-Z_0-9]*\"?$")
+// Hyphens are allowed because Snowflake auto-generates listing names with hyphenated suffixes (e.g. LISTING_NAME__GBWZ-G6).
+var ListingNameRegex = regexp.MustCompile("^\"?[a-zA-Z][a-zA-Z_0-9-]*\"?$")
 
 func IsValidListingName(i any, path cty.Path) diag.Diagnostics {
 	v, ok := i.(string)
@@ -133,7 +134,7 @@ func IsValidListingName(i any, path cty.Path) diag.Diagnostics {
 	}
 
 	if !ListingNameRegex.MatchString(v) {
-		return diag.Errorf("Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores.")
+		return diag.Errorf("Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores and hyphens.")
 	}
 
 	return nil

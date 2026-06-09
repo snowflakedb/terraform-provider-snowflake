@@ -20,7 +20,7 @@ var listingSchema = map[string]*schema.Schema{
 		Required:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 		ValidateDiagFunc: IsValidListingName,
-		Description:      "Specifies the listing identifier (name). It must be unique within the organization, regardless of which Snowflake region the account is located in. Must start with an alphabetic character and cannot contain spaces or special characters except for underscores.",
+		Description:      "Specifies the listing identifier (name). It must be unique within the organization, regardless of which Snowflake region the account is located in. Must start with an alphabetic character and cannot contain spaces or special characters except for underscores and hyphens.",
 	},
 	"manifest": {
 		Type:        schema.TypeList,
