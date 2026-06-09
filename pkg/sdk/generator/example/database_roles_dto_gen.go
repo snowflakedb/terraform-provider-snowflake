@@ -29,6 +29,7 @@ type DatabaseRoleRenameRequest struct {
 type DatabaseRoleSetRequest struct {
 	Comment          string // required
 	NestedThirdLevel *NestedThirdLevelRequest
+	NetworkPolicy    *AccountObjectIdentifier
 }
 
 type NestedThirdLevelRequest struct {

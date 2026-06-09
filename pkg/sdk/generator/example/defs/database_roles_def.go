@@ -22,7 +22,9 @@ var (
 	dbRoleSet = g.NewQueryStruct("DatabaseRoleSet").
 		// Fields
 		TextAssignment("COMMENT", g.ParameterOptions().SingleQuotes().Required()).
-		OptionalQueryStructField("NestedThirdLevel", nestedThirdLevel, g.ListOptions().NoParentheses().SQL("NESTED"))
+		OptionalQueryStructField("NestedThirdLevel", nestedThirdLevel, g.ListOptions().NoParentheses().SQL("NESTED")).
+		// Demonstrates IdentifierOptions().Equals().SingleQuotes() — emits: NETWORK_POLICY = '"name"'
+		OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("NETWORK_POLICY").Equals().SingleQuotes())
 
 	dbRoleUnset = g.NewQueryStruct("DatabaseRoleUnset").
 		// Fields
