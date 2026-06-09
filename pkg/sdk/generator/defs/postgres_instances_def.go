@@ -57,7 +57,7 @@ var postgresInstancesDef = g.NewInterface(
 		SQL("POSTGRES INSTANCE").
 		Name().
 		TextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
-		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
+		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions().Required()).
 		EnumAssignment(
 			"AUTHENTICATION_AUTHORITY", PostgresInstanceAuthenticationAuthorityEnumDef,
 			g.ParameterOptions().NoQuotes().Required(),
@@ -154,7 +154,7 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"ResetAccess",
 			g.NewQueryStruct("PostgresInstanceResetAccess").
-				OptionalTextAssignment("FOR", g.ParameterOptions().NoEquals().SingleQuotes()),
+				EnumAssignmentWithFieldName("FOR", PostgresInstanceResetAccessRoleEnumDef, g.ParameterOptions().NoEquals().SingleQuotes().Required(), "For"),
 			g.KeywordOptions().SQL("RESET ACCESS"),
 		).
 		OptionalSetTags().
