@@ -277,7 +277,7 @@ var apiIntegrationsDef = g.NewInterface(
 						g.KeywordOptions(),
 					).
 					OptionalQueryStructField(
-						"GitHttpsApiPrivateLinkParams", // TODO(next pr): For private link only ? Validate with integration tests
+						"GitHttpsApiPrivateLinkParams",
 						g.NewQueryStruct("SetGitHttpsApiPrivateLinkParams").
 							OptionalQueryStructField(
 								"AllowedAuthenticationSecrets",

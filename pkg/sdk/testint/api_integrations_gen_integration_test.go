@@ -551,12 +551,13 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("create: external mcp with OAuth2 auth all options", func(t *testing.T) {
-		t.Skip("TODO(next prs): Validate invalid parameter 'API_USER_AUTHENTICATION.OAUTH_DISCOVERY_URL' error")
+		t.Skip("TODO(next prs): fix invalid parameter 'API_USER_AUTHENTICATION.OAUTH_DISCOVERY_URL' error when setting OAUTH_DISCOVERY_URL")
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		authMethod := sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost
 		auth := sdk.NewOAuth2McpUserAuthenticationRequest(oauthClientId, oauthClientSecret, oauthTokenEndpoint, oauthAuthorizationEndpoint).
 			WithOauthClientAuthMethod(authMethod).
+			// TODO(next prs): fix invalid parameter 'API_USER_AUTHENTICATION.OAUTH_DISCOVERY_URL' error when setting OAUTH_DISCOVERY_URL
 			// WithOauthDiscoveryUrl("https://auth.example.com/.well-known/openid-configuration").
 			WithOauthRefreshTokenValidity(86400)
 
@@ -578,7 +579,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthGrant("AUTHORIZATION_CODE").
 			HasOauthClientId(oauthClientId).
-			HasOauthClientAuthMethod(string(authMethod)).
+			HasOauthClientAuthMethod(authMethod).
 			HasOauthTokenEndpoint(oauthTokenEndpoint).
 			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 			HasOauthRefreshTokenValidity(86400),
@@ -810,7 +811,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter set: external mcp oauth2", func(t *testing.T) {
-		t.Skip("TODO(next prs): Validate invalid parameter 'API_USER_AUTHENTICATION.OAUTH_DISCOVERY_URL' error")
+		t.Skip("TODO(next prs): fix invalid parameter 'API_USER_AUTHENTICATION.OAUTH_DISCOVERY_URL' error when setting OAUTH_DISCOVERY_URL")
 
 		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateMcpOAuth2(t)
 		t.Cleanup(integrationCleanup)
@@ -818,6 +819,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		authMethod := sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost
 		newAuth := sdk.NewOAuth2McpUserAuthenticationRequest("new-id", "new-secret", oauthTokenEndpoint, oauthAuthorizationEndpoint).
 			WithOauthClientAuthMethod(authMethod).
+			// TODO(next prs): fix invalid parameter 'API_USER_AUTHENTICATION.OAUTH_DISCOVERY_URL' error when setting OAUTH_DISCOVERY_URL
 			// WithOauthDiscoveryUrl("https://auth.example.com/.well-known/openid-configuration").
 			WithOauthRefreshTokenValidity(3600)
 
@@ -843,7 +845,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthGrant("AUTHORIZATION_CODE").
 			HasOauthClientId("new-id").
-			HasOauthClientAuthMethod(string(authMethod)).
+			HasOauthClientAuthMethod(authMethod).
 			HasOauthTokenEndpoint(oauthTokenEndpoint).
 			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 			HasOauthRefreshTokenValidity(3600),
@@ -954,13 +956,33 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		)
 	})
 
-	t.Run("alter unset: git private link - use_privatelink_endpoint", func(t *testing.T) {
+	t.Run("alter unset: git private link - use_privatelink_endpoint, tls_trusted_certificates", func(t *testing.T) {
+		certSecretId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, certSecretCleanup := testClientHelper().Secret.CreateWithGenericString(t, certSecretId, random.GenerateX509(t))
+		t.Cleanup(certSecretCleanup)
+
 		integration, integrationCleanup := testClientHelper().ApiIntegration.CreateGitPrivateLink(t)
 		t.Cleanup(integrationCleanup)
 
 		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
+			WithSet(*sdk.NewApiIntegrationSetRequest().
+				WithGitHttpsApiPrivateLinkParams(
+					*sdk.NewSetGitHttpsApiPrivateLinkParamsRequest().
+						WithTlsTrustedCertificates([]sdk.SchemaObjectIdentifier{certSecretId}),
+				)),
+		)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ApiIntegrationGitHttpsApiDetails(t, integration.ID()).
+			HasUsePrivatelinkEndpoint(true).
+			HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())),
+		)
+
+		err = client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithUnset(*sdk.NewApiIntegrationUnsetRequest().
-				WithGitHttpsApiPrivateLinkParams(*sdk.NewUnsetGitHttpsApiPrivateLinkParamsRequest().WithUsePrivatelinkEndpoint(true))),
+				WithGitHttpsApiPrivateLinkParams(*sdk.NewUnsetGitHttpsApiPrivateLinkParamsRequest().
+					WithUsePrivatelinkEndpoint(true).
+					WithTlsTrustedCertificates(true))),
 		)
 		require.NoError(t, err)
 

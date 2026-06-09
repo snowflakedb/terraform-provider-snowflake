@@ -98,10 +98,10 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthClientId(expected strin
 	return a
 }
 
-func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthClientAuthMethod(expected string) *ApiIntegrationExternalMcpDetailsAssert {
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthClientAuthMethod(expected sdk.ApiIntegrationOauthClientAuthMethod) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
-		if o.OauthClientAuthMethod != expected {
+		if o.OauthClientAuthMethod != string(expected) {
 			return fmt.Errorf("expected oauth client auth method: %v; got: %v", expected, o.OauthClientAuthMethod)
 		}
 		return nil
