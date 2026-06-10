@@ -97,6 +97,7 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 					PrimaryKey: v.PrimaryKeys.PrimaryKey,
 				}
 			}
+			// adjusted manually
 			if v.UniqueKeys != nil {
 				uniqueKeys := make([]UniqueKeys, len(v.UniqueKeys))
 				for i, v := range v.UniqueKeys {
@@ -129,6 +130,7 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 					RelationshipTableAlias: v.TableNameOrAlias.RelationshipTableAlias,
 				}
 			}
+			// adjusted manually
 			if v.RelationshipColumnNames != nil {
 				relationshipColumnNames := make([]SemanticViewColumn, len(v.RelationshipColumnNames))
 				for i, v := range v.RelationshipColumnNames {
@@ -144,6 +146,7 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 					RelationshipTableAlias: v.RefTableNameOrAlias.RelationshipTableAlias,
 				}
 			}
+			// adjusted manually
 			if v.RelationshipRefColumnNames != nil {
 				relationshipRefColumnNames := make([]SemanticViewColumn, len(v.RelationshipRefColumnNames))
 				for i, v := range v.RelationshipRefColumnNames {
