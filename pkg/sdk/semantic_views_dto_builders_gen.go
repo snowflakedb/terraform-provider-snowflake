@@ -4,12 +4,11 @@ package sdk
 
 func NewCreateSemanticViewRequest(
 	name SchemaObjectIdentifier,
-	// adjusted manually
 	logicalTables []LogicalTableRequest,
 ) *CreateSemanticViewRequest {
 	s := CreateSemanticViewRequest{}
 	s.name = name
-	s.logicalTables = logicalTables
+	s.LogicalTables = logicalTables
 	return &s
 }
 
@@ -23,27 +22,23 @@ func (s *CreateSemanticViewRequest) WithIfNotExists(ifNotExists bool) *CreateSem
 	return s
 }
 
-// adjusted manually
 func (s *CreateSemanticViewRequest) WithSemanticViewRelationships(semanticViewRelationships []SemanticViewRelationshipRequest) *CreateSemanticViewRequest {
-	s.semanticViewRelationships = semanticViewRelationships
+	s.SemanticViewRelationships = semanticViewRelationships
 	return s
 }
 
-// adjusted manually
 func (s *CreateSemanticViewRequest) WithSemanticViewFacts(semanticViewFacts []FactDefinitionRequest) *CreateSemanticViewRequest {
-	s.semanticViewFacts = semanticViewFacts
+	s.SemanticViewFacts = semanticViewFacts
 	return s
 }
 
-// adjusted manually
 func (s *CreateSemanticViewRequest) WithSemanticViewDimensions(semanticViewDimensions []DimensionDefinitionRequest) *CreateSemanticViewRequest {
-	s.semanticViewDimensions = semanticViewDimensions
+	s.SemanticViewDimensions = semanticViewDimensions
 	return s
 }
 
-// adjusted manually
 func (s *CreateSemanticViewRequest) WithSemanticViewMetrics(semanticViewMetrics []MetricDefinitionRequest) *CreateSemanticViewRequest {
-	s.semanticViewMetrics = semanticViewMetrics
+	s.SemanticViewMetrics = semanticViewMetrics
 	return s
 }
 
@@ -54,6 +49,240 @@ func (s *CreateSemanticViewRequest) WithComment(comment string) *CreateSemanticV
 
 func (s *CreateSemanticViewRequest) WithCopyGrants(copyGrants bool) *CreateSemanticViewRequest {
 	s.CopyGrants = &copyGrants
+	return s
+}
+
+func NewLogicalTableRequest(
+	tableName SchemaObjectIdentifier,
+) *LogicalTableRequest {
+	s := LogicalTableRequest{}
+	s.TableName = tableName
+	return &s
+}
+
+func (s *LogicalTableRequest) WithLogicalTableAlias(logicalTableAlias LogicalTableAliasRequest) *LogicalTableRequest {
+	s.LogicalTableAlias = &logicalTableAlias
+	return s
+}
+
+func (s *LogicalTableRequest) WithPrimaryKeys(primaryKeys PrimaryKeysRequest) *LogicalTableRequest {
+	s.PrimaryKeys = &primaryKeys
+	return s
+}
+
+func (s *LogicalTableRequest) WithUniqueKeys(uniqueKeys []UniqueKeysRequest) *LogicalTableRequest {
+	s.UniqueKeys = uniqueKeys
+	return s
+}
+
+func (s *LogicalTableRequest) WithSynonyms(synonyms SynonymsRequest) *LogicalTableRequest {
+	s.Synonyms = &synonyms
+	return s
+}
+
+func (s *LogicalTableRequest) WithComment(comment string) *LogicalTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewLogicalTableAliasRequest(
+	logicalTableAlias string,
+) *LogicalTableAliasRequest {
+	s := LogicalTableAliasRequest{}
+	s.LogicalTableAlias = logicalTableAlias
+	return &s
+}
+
+func NewPrimaryKeysRequest(
+	primaryKey []SemanticViewColumn,
+) *PrimaryKeysRequest {
+	s := PrimaryKeysRequest{}
+	s.PrimaryKey = primaryKey
+	return &s
+}
+
+func NewUniqueKeysRequest(
+	unique []SemanticViewColumn,
+) *UniqueKeysRequest {
+	s := UniqueKeysRequest{}
+	s.Unique = unique
+	return &s
+}
+
+func NewSynonymsRequest(
+	withSynonyms []Synonym,
+) *SynonymsRequest {
+	s := SynonymsRequest{}
+	s.WithSynonyms = withSynonyms
+	return &s
+}
+
+func NewSemanticViewRelationshipRequest(
+	tableNameOrAlias *RelationshipTableAliasRequest,
+	relationshipColumnNames []SemanticViewColumnRequest,
+	refTableNameOrAlias *RelationshipTableAliasRequest,
+) *SemanticViewRelationshipRequest {
+	s := SemanticViewRelationshipRequest{}
+	s.TableNameOrAlias = tableNameOrAlias
+	s.RelationshipColumnNames = relationshipColumnNames
+	s.RefTableNameOrAlias = refTableNameOrAlias
+	return &s
+}
+
+func (s *SemanticViewRelationshipRequest) WithRelationshipAlias(relationshipAlias RelationshipAliasRequest) *SemanticViewRelationshipRequest {
+	s.RelationshipAlias = &relationshipAlias
+	return s
+}
+
+func (s *SemanticViewRelationshipRequest) WithRelationshipRefColumnNames(relationshipRefColumnNames []SemanticViewColumnRequest) *SemanticViewRelationshipRequest {
+	s.RelationshipRefColumnNames = relationshipRefColumnNames
+	return s
+}
+
+func NewRelationshipAliasRequest(
+	relationshipAlias string,
+) *RelationshipAliasRequest {
+	s := RelationshipAliasRequest{}
+	s.RelationshipAlias = relationshipAlias
+	return &s
+}
+
+func NewRelationshipTableAliasRequest() *RelationshipTableAliasRequest {
+	s := RelationshipTableAliasRequest{}
+	return &s
+}
+
+func (s *RelationshipTableAliasRequest) WithRelationshipTableName(relationshipTableName SchemaObjectIdentifier) *RelationshipTableAliasRequest {
+	s.RelationshipTableName = &relationshipTableName
+	return s
+}
+
+func (s *RelationshipTableAliasRequest) WithRelationshipTableAlias(relationshipTableAlias string) *RelationshipTableAliasRequest {
+	s.RelationshipTableAlias = &relationshipTableAlias
+	return s
+}
+
+func NewSemanticViewColumnRequest(
+	name string,
+) *SemanticViewColumnRequest {
+	s := SemanticViewColumnRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewFactDefinitionRequest() *FactDefinitionRequest {
+	s := FactDefinitionRequest{}
+	return &s
+}
+
+func (s *FactDefinitionRequest) WithIsPrivate(isPrivate bool) *FactDefinitionRequest {
+	s.IsPrivate = &isPrivate
+	return s
+}
+
+func (s *FactDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *FactDefinitionRequest {
+	s.SemanticExpression = &semanticExpression
+	return s
+}
+
+func NewSemanticExpressionRequest(
+	qualifiedExpressionName *QualifiedExpressionNameRequest,
+	sqlExpression *SemanticSqlExpressionRequest,
+) *SemanticExpressionRequest {
+	s := SemanticExpressionRequest{}
+	s.QualifiedExpressionName = qualifiedExpressionName
+	s.SqlExpression = sqlExpression
+	return &s
+}
+
+func (s *SemanticExpressionRequest) WithSynonyms(synonyms SynonymsRequest) *SemanticExpressionRequest {
+	s.Synonyms = &synonyms
+	return s
+}
+
+func (s *SemanticExpressionRequest) WithComment(comment string) *SemanticExpressionRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewQualifiedExpressionNameRequest(
+	qualifiedExpressionName string,
+) *QualifiedExpressionNameRequest {
+	s := QualifiedExpressionNameRequest{}
+	s.QualifiedExpressionName = qualifiedExpressionName
+	return &s
+}
+
+func NewSemanticSqlExpressionRequest(
+	sqlExpression string,
+) *SemanticSqlExpressionRequest {
+	s := SemanticSqlExpressionRequest{}
+	s.SqlExpression = sqlExpression
+	return &s
+}
+
+func NewDimensionDefinitionRequest() *DimensionDefinitionRequest {
+	s := DimensionDefinitionRequest{}
+	return &s
+}
+
+func (s *DimensionDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *DimensionDefinitionRequest {
+	s.SemanticExpression = &semanticExpression
+	return s
+}
+
+func NewMetricDefinitionRequest() *MetricDefinitionRequest {
+	s := MetricDefinitionRequest{}
+	return &s
+}
+
+func (s *MetricDefinitionRequest) WithIsPrivate(isPrivate bool) *MetricDefinitionRequest {
+	s.IsPrivate = &isPrivate
+	return s
+}
+
+func (s *MetricDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *MetricDefinitionRequest {
+	s.SemanticExpression = &semanticExpression
+	return s
+}
+
+func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunctionMetricDefinition WindowFunctionMetricDefinitionRequest) *MetricDefinitionRequest {
+	s.WindowFunctionMetricDefinition = &windowFunctionMetricDefinition
+	return s
+}
+
+func NewWindowFunctionMetricDefinitionRequest(
+	qualifiedExpressionName *QualifiedExpressionNameRequest,
+	sqlExpression *SemanticSqlExpressionRequest,
+) *WindowFunctionMetricDefinitionRequest {
+	s := WindowFunctionMetricDefinitionRequest{}
+	s.QualifiedExpressionName = qualifiedExpressionName
+	s.SqlExpression = sqlExpression
+	return &s
+}
+
+func (s *WindowFunctionMetricDefinitionRequest) WithOverClause(overClause WindowFunctionOverClauseRequest) *WindowFunctionMetricDefinitionRequest {
+	s.OverClause = &overClause
+	return s
+}
+
+func NewWindowFunctionOverClauseRequest() *WindowFunctionOverClauseRequest {
+	s := WindowFunctionOverClauseRequest{}
+	return &s
+}
+
+func (s *WindowFunctionOverClauseRequest) WithPartitionBy(partitionBy string) *WindowFunctionOverClauseRequest {
+	s.PartitionBy = &partitionBy
+	return s
+}
+
+func (s *WindowFunctionOverClauseRequest) WithOrderBy(orderBy string) *WindowFunctionOverClauseRequest {
+	s.OrderBy = &orderBy
+	return s
+}
+
+func (s *WindowFunctionOverClauseRequest) WithWindowFrameClause(windowFrameClause string) *WindowFunctionOverClauseRequest {
+	s.WindowFrameClause = &windowFrameClause
 	return s
 }
 
@@ -133,242 +362,5 @@ func (s *ShowSemanticViewRequest) WithStartsWith(startsWith string) *ShowSemanti
 
 func (s *ShowSemanticViewRequest) WithLimit(limit LimitFrom) *ShowSemanticViewRequest {
 	s.Limit = &limit
-	return s
-}
-
-// All below added manually
-func NewLogicalTableRequest(
-	TableName SchemaObjectIdentifier,
-) *LogicalTableRequest {
-	s := LogicalTableRequest{}
-	s.TableName = TableName
-	return &s
-}
-
-func (s *LogicalTableRequest) WithLogicalTableAlias(logicalTableAlias LogicalTableAliasRequest) *LogicalTableRequest {
-	s.logicalTableAlias = &logicalTableAlias
-	return s
-}
-
-func (s *LogicalTableRequest) WithPrimaryKeys(primaryKeys PrimaryKeysRequest) *LogicalTableRequest {
-	s.primaryKeys = &primaryKeys
-	return s
-}
-
-func (s *LogicalTableRequest) WithUniqueKeys(uniqueKeys []UniqueKeysRequest) *LogicalTableRequest {
-	s.uniqueKeys = uniqueKeys
-	return s
-}
-
-func (s *LogicalTableRequest) WithSynonyms(synonyms SynonymsRequest) *LogicalTableRequest {
-	s.synonyms = &synonyms
-	return s
-}
-
-func (s *LogicalTableRequest) WithComment(Comment string) *LogicalTableRequest {
-	s.Comment = &Comment
-	return s
-}
-
-func NewLogicalTableAliasRequest() *LogicalTableAliasRequest {
-	return &LogicalTableAliasRequest{}
-}
-
-func (s *LogicalTableAliasRequest) WithLogicalTableAlias(LogicalTableAlias string) *LogicalTableAliasRequest {
-	s.LogicalTableAlias = LogicalTableAlias
-	return s
-}
-
-func NewPrimaryKeysRequest() *PrimaryKeysRequest {
-	return &PrimaryKeysRequest{}
-}
-
-func (s *PrimaryKeysRequest) WithPrimaryKey(PrimaryKey []SemanticViewColumn) *PrimaryKeysRequest {
-	s.PrimaryKey = PrimaryKey
-	return s
-}
-
-func NewUniqueKeysRequest() *UniqueKeysRequest {
-	return &UniqueKeysRequest{}
-}
-
-func (s *UniqueKeysRequest) WithUnique(Unique []SemanticViewColumn) *UniqueKeysRequest {
-	s.Unique = Unique
-	return s
-}
-
-func NewSynonymsRequest() *SynonymsRequest {
-	return &SynonymsRequest{}
-}
-
-func (s *SynonymsRequest) WithWithSynonyms(WithSynonyms []Synonym) *SynonymsRequest {
-	s.WithSynonyms = WithSynonyms
-	return s
-}
-
-func NewSemanticViewRelationshipRequest(
-	tableNameOrAlias *RelationshipTableAliasRequest,
-	relationshipColumnNames []SemanticViewColumnRequest,
-	refTableNameOrAlias *RelationshipTableAliasRequest,
-) *SemanticViewRelationshipRequest {
-	s := SemanticViewRelationshipRequest{}
-	s.tableNameOrAlias = tableNameOrAlias
-	s.relationshipColumnNames = relationshipColumnNames
-	s.refTableNameOrAlias = refTableNameOrAlias
-	return &s
-}
-
-func (s *SemanticViewRelationshipRequest) WithRelationshipAlias(relationshipAlias RelationshipAliasRequest) *SemanticViewRelationshipRequest {
-	s.relationshipAlias = &relationshipAlias
-	return s
-}
-
-func (s *SemanticViewRelationshipRequest) WithRelationshipRefColumnNames(relationshipRefColumnNames []SemanticViewColumnRequest) *SemanticViewRelationshipRequest {
-	s.relationshipRefColumnNames = relationshipRefColumnNames
-	return s
-}
-
-func NewRelationshipAliasRequest() *RelationshipAliasRequest {
-	return &RelationshipAliasRequest{}
-}
-
-func (s *RelationshipAliasRequest) WithRelationshipAlias(RelationshipAlias string) *RelationshipAliasRequest {
-	s.RelationshipAlias = RelationshipAlias
-	return s
-}
-
-func NewRelationshipTableAliasRequest() *RelationshipTableAliasRequest {
-	return &RelationshipTableAliasRequest{}
-}
-
-func (s *RelationshipTableAliasRequest) WithRelationshipTableName(RelationshipTableName SchemaObjectIdentifier) *RelationshipTableAliasRequest {
-	s.RelationshipTableName = &RelationshipTableName
-	return s
-}
-
-func (s *RelationshipTableAliasRequest) WithRelationshipTableAlias(RelationshipTableAlias string) *RelationshipTableAliasRequest {
-	s.RelationshipTableAlias = &RelationshipTableAlias
-	return s
-}
-
-func NewSemanticViewColumnRequest(
-	Name string,
-) *SemanticViewColumnRequest {
-	s := SemanticViewColumnRequest{}
-	s.Name = Name
-	return &s
-}
-
-func NewSemanticExpressionRequest(
-	qualifiedExpressionName *QualifiedExpressionNameRequest,
-	sqlExpression *SemanticSqlExpressionRequest,
-) *SemanticExpressionRequest {
-	s := SemanticExpressionRequest{}
-	s.qualifiedExpressionName = qualifiedExpressionName
-	s.sqlExpression = sqlExpression
-	return &s
-}
-
-func (s *SemanticExpressionRequest) WithSynonyms(synonyms SynonymsRequest) *SemanticExpressionRequest {
-	s.synonyms = &synonyms
-	return s
-}
-
-func (s *SemanticExpressionRequest) WithComment(Comment string) *SemanticExpressionRequest {
-	s.Comment = &Comment
-	return s
-}
-
-func NewQualifiedExpressionNameRequest() *QualifiedExpressionNameRequest {
-	return &QualifiedExpressionNameRequest{}
-}
-
-func (s *QualifiedExpressionNameRequest) WithQualifiedExpressionName(QualifiedExpressionName string) *QualifiedExpressionNameRequest {
-	s.QualifiedExpressionName = QualifiedExpressionName
-	return s
-}
-
-func NewSemanticSqlExpressionRequest() *SemanticSqlExpressionRequest {
-	return &SemanticSqlExpressionRequest{}
-}
-
-func (s *SemanticSqlExpressionRequest) WithSqlExpression(SqlExpression string) *SemanticSqlExpressionRequest {
-	s.SqlExpression = SqlExpression
-	return s
-}
-
-func NewFactDefinitionRequest() *FactDefinitionRequest {
-	return &FactDefinitionRequest{}
-}
-
-func (f *FactDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *FactDefinitionRequest {
-	f.semanticExpression = &semanticExpression
-	return f
-}
-
-func (f *FactDefinitionRequest) WithIsPrivate(isPrivate bool) *FactDefinitionRequest {
-	f.isPrivate = &isPrivate
-	return f
-}
-
-func NewMetricDefinitionRequest() *MetricDefinitionRequest {
-	return &MetricDefinitionRequest{}
-}
-
-func (s *MetricDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *MetricDefinitionRequest {
-	s.semanticExpression = &semanticExpression
-	return s
-}
-
-func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunctionMetricDefinition WindowFunctionMetricDefinitionRequest) *MetricDefinitionRequest {
-	s.windowFunctionMetricDefinition = &windowFunctionMetricDefinition
-	return s
-}
-
-func (s *MetricDefinitionRequest) WithIsPrivate(isPrivate bool) *MetricDefinitionRequest {
-	s.isPrivate = &isPrivate
-	return s
-}
-
-func NewDimensionDefinitionRequest() *DimensionDefinitionRequest {
-	return &DimensionDefinitionRequest{}
-}
-
-func (d *DimensionDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *DimensionDefinitionRequest {
-	d.semanticExpression = &semanticExpression
-	return d
-}
-
-func NewWindowFunctionMetricDefinitionRequest(
-	qualifiedExpressionName *QualifiedExpressionNameRequest,
-	sqlExpression *SemanticSqlExpressionRequest,
-) *WindowFunctionMetricDefinitionRequest {
-	s := WindowFunctionMetricDefinitionRequest{}
-	s.qualifiedExpressionName = qualifiedExpressionName
-	s.sqlExpression = sqlExpression
-	return &s
-}
-
-func (s *WindowFunctionMetricDefinitionRequest) WithOverClause(OverClause WindowFunctionOverClauseRequest) *WindowFunctionMetricDefinitionRequest {
-	s.OverClause = &OverClause
-	return s
-}
-
-func NewWindowFunctionOverClauseRequest() *WindowFunctionOverClauseRequest {
-	return &WindowFunctionOverClauseRequest{}
-}
-
-func (s *WindowFunctionOverClauseRequest) WithPartitionBy(PartitionBy string) *WindowFunctionOverClauseRequest {
-	s.PartitionBy = &PartitionBy
-	return s
-}
-
-func (s *WindowFunctionOverClauseRequest) WithOrderBy(OrderBy string) *WindowFunctionOverClauseRequest {
-	s.OrderBy = &OrderBy
-	return s
-}
-
-func (s *WindowFunctionOverClauseRequest) WithWindowFrameClause(WindowFrameClause string) *WindowFunctionOverClauseRequest {
-	s.WindowFrameClause = &WindowFrameClause
 	return s
 }

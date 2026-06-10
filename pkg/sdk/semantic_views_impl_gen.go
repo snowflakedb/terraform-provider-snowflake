@@ -77,154 +77,189 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 		OrReplace:   r.OrReplace,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		// below attributes changed manually in dto, so conversion adjusted manually below
-		// logicalTables handled manually below
-		// semanticViewRelationships handled manually below
-		// semanticViewFacts handled manually below
-		// semanticViewDimensions handled manually below
-		// semanticViewMetrics handled manually below
-		Comment:    r.Comment,
-		CopyGrants: r.CopyGrants,
+		Comment:     r.Comment,
+		CopyGrants:  r.CopyGrants,
 	}
-	if r.logicalTables != nil {
-		s := make([]LogicalTable, len(r.logicalTables))
-		for i, v := range r.logicalTables {
+	if r.LogicalTables != nil {
+		s := make([]LogicalTable, len(r.LogicalTables))
+		for i, v := range r.LogicalTables {
 			s[i] = LogicalTable{
 				TableName: v.TableName,
 				Comment:   v.Comment,
 			}
-			if v.logicalTableAlias != nil {
-				s[i].logicalTableAlias = &LogicalTableAlias{
-					LogicalTableAlias: v.logicalTableAlias.LogicalTableAlias,
+			if v.LogicalTableAlias != nil {
+				s[i].LogicalTableAlias = &LogicalTableAlias{
+					LogicalTableAlias: v.LogicalTableAlias.LogicalTableAlias,
 				}
 			}
-			if v.primaryKeys != nil {
-				s[i].primaryKeys = &PrimaryKeys{
-					PrimaryKey: v.primaryKeys.PrimaryKey,
+			if v.PrimaryKeys != nil {
+				s[i].PrimaryKeys = &PrimaryKeys{
+					PrimaryKey: v.PrimaryKeys.PrimaryKey,
 				}
 			}
-			if v.synonyms != nil {
-				s[i].synonyms = &Synonyms{
-					WithSynonyms: v.synonyms.WithSynonyms,
-				}
-			}
-			if v.uniqueKeys != nil {
-				u := make([]UniqueKeys, len(v.uniqueKeys))
-				for j, w := range v.uniqueKeys {
-					u[j] = UniqueKeys{
-						Unique: w.Unique,
+			if v.UniqueKeys != nil {
+				uniqueKeys := make([]UniqueKeys, len(v.UniqueKeys))
+				for i, v := range v.UniqueKeys {
+					uniqueKeys[i] = UniqueKeys{
+						Unique: v.Unique,
 					}
 				}
-				s[i].uniqueKeys = u
+				s[i].UniqueKeys = uniqueKeys
+			}
+			if v.Synonyms != nil {
+				s[i].Synonyms = &Synonyms{
+					WithSynonyms: v.Synonyms.WithSynonyms,
+				}
 			}
 		}
-		opts.logicalTables = s
+		opts.LogicalTables = s
 	}
-	if r.semanticViewRelationships != nil {
-		s := make([]SemanticViewRelationship, len(r.semanticViewRelationships))
-		for i, v := range r.semanticViewRelationships {
-			s[i] = SemanticViewRelationship{
-				tableNameOrAlias:    &RelationshipTableAlias{RelationshipTableAlias: v.tableNameOrAlias.RelationshipTableAlias},
-				refTableNameOrAlias: &RelationshipTableAlias{RelationshipTableAlias: v.refTableNameOrAlias.RelationshipTableAlias},
-			}
-			if v.relationshipAlias != nil {
-				s[i].relationshipAlias = &RelationshipAlias{
-					RelationshipAlias: v.relationshipAlias.RelationshipAlias,
+	if r.SemanticViewRelationships != nil {
+		s := make([]SemanticViewRelationship, len(r.SemanticViewRelationships))
+		for i, v := range r.SemanticViewRelationships {
+			s[i] = SemanticViewRelationship{}
+			if v.RelationshipAlias != nil {
+				s[i].RelationshipAlias = &RelationshipAlias{
+					RelationshipAlias: v.RelationshipAlias.RelationshipAlias,
 				}
 			}
-			if v.relationshipColumnNames != nil {
-				u := make([]SemanticViewColumn, len(v.relationshipColumnNames))
-				for j, w := range v.relationshipColumnNames {
-					u[j] = SemanticViewColumn{
-						Name: w.Name,
+			if v.TableNameOrAlias != nil {
+				s[i].TableNameOrAlias = &RelationshipTableAlias{
+					RelationshipTableName:  v.TableNameOrAlias.RelationshipTableName,
+					RelationshipTableAlias: v.TableNameOrAlias.RelationshipTableAlias,
+				}
+			}
+			if v.RelationshipColumnNames != nil {
+				relationshipColumnNames := make([]SemanticViewColumn, len(v.RelationshipColumnNames))
+				for i, v := range v.RelationshipColumnNames {
+					relationshipColumnNames[i] = SemanticViewColumn{
+						Name: v.Name,
 					}
 				}
-				s[i].relationshipColumnNames = u
+				s[i].RelationshipColumnNames = relationshipColumnNames
 			}
-			if v.relationshipRefColumnNames != nil {
-				u := make([]SemanticViewColumn, len(v.relationshipRefColumnNames))
-				for j, w := range v.relationshipRefColumnNames {
-					u[j] = SemanticViewColumn{
-						Name: w.Name,
+			if v.RefTableNameOrAlias != nil {
+				s[i].RefTableNameOrAlias = &RelationshipTableAlias{
+					RelationshipTableName:  v.RefTableNameOrAlias.RelationshipTableName,
+					RelationshipTableAlias: v.RefTableNameOrAlias.RelationshipTableAlias,
+				}
+			}
+			if v.RelationshipRefColumnNames != nil {
+				relationshipRefColumnNames := make([]SemanticViewColumn, len(v.RelationshipRefColumnNames))
+				for i, v := range v.RelationshipRefColumnNames {
+					relationshipRefColumnNames[i] = SemanticViewColumn{
+						Name: v.Name,
 					}
 				}
-				s[i].relationshipRefColumnNames = u
+				s[i].RelationshipRefColumnNames = relationshipRefColumnNames
 			}
 		}
-		opts.semanticViewRelationships = s
+		opts.SemanticViewRelationships = s
 	}
-	if r.semanticViewFacts != nil {
-		s := make([]FactDefinition, len(r.semanticViewFacts))
-		for i, v := range r.semanticViewFacts {
-			exp := SemanticExpression{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.semanticExpression.qualifiedExpressionName.QualifiedExpressionName},
-				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.semanticExpression.sqlExpression.SqlExpression},
-				Comment:                 v.semanticExpression.Comment,
+	if r.SemanticViewFacts != nil {
+		s := make([]FactDefinition, len(r.SemanticViewFacts))
+		for i, v := range r.SemanticViewFacts {
+			s[i] = FactDefinition{
+				IsPrivate: v.IsPrivate,
 			}
-			if v.semanticExpression.synonyms != nil {
-				exp.synonyms = &Synonyms{
-					WithSynonyms: v.semanticExpression.synonyms.WithSynonyms,
+			if v.SemanticExpression != nil {
+				s[i].SemanticExpression = &SemanticExpression{
+					Comment: v.SemanticExpression.Comment,
+				}
+				if v.SemanticExpression.QualifiedExpressionName != nil {
+					s[i].SemanticExpression.QualifiedExpressionName = &QualifiedExpressionName{
+						QualifiedExpressionName: v.SemanticExpression.QualifiedExpressionName.QualifiedExpressionName,
+					}
+				}
+				if v.SemanticExpression.SqlExpression != nil {
+					s[i].SemanticExpression.SqlExpression = &SemanticSqlExpression{
+						SqlExpression: v.SemanticExpression.SqlExpression.SqlExpression,
+					}
+				}
+				if v.SemanticExpression.Synonyms != nil {
+					s[i].SemanticExpression.Synonyms = &Synonyms{
+						WithSynonyms: v.SemanticExpression.Synonyms.WithSynonyms,
+					}
 				}
 			}
-			s[i].semanticExpression = &exp
-			s[i].isPrivate = v.isPrivate
 		}
-		opts.semanticViewFacts = s
+		opts.SemanticViewFacts = s
 	}
-	if r.semanticViewDimensions != nil {
-		s := make([]DimensionDefinition, len(r.semanticViewDimensions))
-		for i, v := range r.semanticViewDimensions {
-			exp := SemanticExpression{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.semanticExpression.qualifiedExpressionName.QualifiedExpressionName},
-				sqlExpression:           &SemanticSqlExpression{SqlExpression: v.semanticExpression.sqlExpression.SqlExpression},
-				Comment:                 v.semanticExpression.Comment,
-			}
-			if v.semanticExpression.synonyms != nil {
-				exp.synonyms = &Synonyms{
-					WithSynonyms: v.semanticExpression.synonyms.WithSynonyms,
+	if r.SemanticViewDimensions != nil {
+		s := make([]DimensionDefinition, len(r.SemanticViewDimensions))
+		for i, v := range r.SemanticViewDimensions {
+			s[i] = DimensionDefinition{}
+			if v.SemanticExpression != nil {
+				s[i].SemanticExpression = &SemanticExpression{
+					Comment: v.SemanticExpression.Comment,
+				}
+				if v.SemanticExpression.QualifiedExpressionName != nil {
+					s[i].SemanticExpression.QualifiedExpressionName = &QualifiedExpressionName{
+						QualifiedExpressionName: v.SemanticExpression.QualifiedExpressionName.QualifiedExpressionName,
+					}
+				}
+				if v.SemanticExpression.SqlExpression != nil {
+					s[i].SemanticExpression.SqlExpression = &SemanticSqlExpression{
+						SqlExpression: v.SemanticExpression.SqlExpression.SqlExpression,
+					}
+				}
+				if v.SemanticExpression.Synonyms != nil {
+					s[i].SemanticExpression.Synonyms = &Synonyms{
+						WithSynonyms: v.SemanticExpression.Synonyms.WithSynonyms,
+					}
 				}
 			}
-			s[i].semanticExpression = &exp
 		}
-		opts.semanticViewDimensions = s
+		opts.SemanticViewDimensions = s
 	}
-	if r.semanticViewMetrics != nil {
-		s := make([]MetricDefinition, len(r.semanticViewMetrics))
-		for i, v := range r.semanticViewMetrics {
-			s[i] = MetricDefinition{}
-			if v.semanticExpression != nil {
-				s[i].semanticExpression = &SemanticExpression{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.semanticExpression.qualifiedExpressionName.QualifiedExpressionName},
-					sqlExpression:           &SemanticSqlExpression{SqlExpression: v.semanticExpression.sqlExpression.SqlExpression},
-					Comment:                 v.semanticExpression.Comment,
+	if r.SemanticViewMetrics != nil {
+		s := make([]MetricDefinition, len(r.SemanticViewMetrics))
+		for i, v := range r.SemanticViewMetrics {
+			s[i] = MetricDefinition{
+				IsPrivate: v.IsPrivate,
+			}
+			if v.SemanticExpression != nil {
+				s[i].SemanticExpression = &SemanticExpression{
+					Comment: v.SemanticExpression.Comment,
 				}
-				if v.semanticExpression.synonyms != nil {
-					s[i].semanticExpression.synonyms = &Synonyms{
-						WithSynonyms: v.semanticExpression.synonyms.WithSynonyms,
+				if v.SemanticExpression.QualifiedExpressionName != nil {
+					s[i].SemanticExpression.QualifiedExpressionName = &QualifiedExpressionName{
+						QualifiedExpressionName: v.SemanticExpression.QualifiedExpressionName.QualifiedExpressionName,
+					}
+				}
+				if v.SemanticExpression.SqlExpression != nil {
+					s[i].SemanticExpression.SqlExpression = &SemanticSqlExpression{
+						SqlExpression: v.SemanticExpression.SqlExpression.SqlExpression,
+					}
+				}
+				if v.SemanticExpression.Synonyms != nil {
+					s[i].SemanticExpression.Synonyms = &Synonyms{
+						WithSynonyms: v.SemanticExpression.Synonyms.WithSynonyms,
 					}
 				}
 			}
-			if v.windowFunctionMetricDefinition != nil {
-				s[i].windowFunctionMetricDefinition = &WindowFunctionMetricDefinition{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.windowFunctionMetricDefinition.qualifiedExpressionName.QualifiedExpressionName},
-					sqlExpression:           &SemanticSqlExpression{SqlExpression: v.windowFunctionMetricDefinition.sqlExpression.SqlExpression},
+			if v.WindowFunctionMetricDefinition != nil {
+				s[i].WindowFunctionMetricDefinition = &WindowFunctionMetricDefinition{}
+				if v.WindowFunctionMetricDefinition.QualifiedExpressionName != nil {
+					s[i].WindowFunctionMetricDefinition.QualifiedExpressionName = &QualifiedExpressionName{
+						QualifiedExpressionName: v.WindowFunctionMetricDefinition.QualifiedExpressionName.QualifiedExpressionName,
+					}
 				}
-				if v.windowFunctionMetricDefinition.OverClause != nil {
-					s[i].windowFunctionMetricDefinition.OverClause = &WindowFunctionOverClause{}
-					if v.windowFunctionMetricDefinition.OverClause.PartitionBy != nil {
-						s[i].windowFunctionMetricDefinition.OverClause.PartitionBy = v.windowFunctionMetricDefinition.OverClause.PartitionBy
+				if v.WindowFunctionMetricDefinition.SqlExpression != nil {
+					s[i].WindowFunctionMetricDefinition.SqlExpression = &SemanticSqlExpression{
+						SqlExpression: v.WindowFunctionMetricDefinition.SqlExpression.SqlExpression,
 					}
-					if v.windowFunctionMetricDefinition.OverClause.OrderBy != nil {
-						s[i].windowFunctionMetricDefinition.OverClause.OrderBy = v.windowFunctionMetricDefinition.OverClause.OrderBy
-					}
-					if v.windowFunctionMetricDefinition.OverClause.WindowFrameClause != nil {
-						s[i].windowFunctionMetricDefinition.OverClause.WindowFrameClause = v.windowFunctionMetricDefinition.OverClause.WindowFrameClause
+				}
+				if v.WindowFunctionMetricDefinition.OverClause != nil {
+					s[i].WindowFunctionMetricDefinition.OverClause = &WindowFunctionOverClause{
+						PartitionBy:       v.WindowFunctionMetricDefinition.OverClause.PartitionBy,
+						OrderBy:           v.WindowFunctionMetricDefinition.OverClause.OrderBy,
+						WindowFrameClause: v.WindowFunctionMetricDefinition.OverClause.WindowFrameClause,
 					}
 				}
 			}
-			s[i].isPrivate = v.isPrivate
 		}
-		opts.semanticViewMetrics = s
+		opts.SemanticViewMetrics = s
 	}
 	return opts
 }
