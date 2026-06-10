@@ -74,7 +74,7 @@ var eventTablesDef = g.NewInterface(
 		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
 		OptionalSQL("COPY GRANTS").
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
+		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicyLegacy", g.KeywordOptions()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
