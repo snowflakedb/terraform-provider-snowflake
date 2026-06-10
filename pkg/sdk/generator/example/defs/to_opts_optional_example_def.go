@@ -6,6 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var toOptsSliceItemDef = g.NewQueryStruct("ToOptsOptionalExampleSliceItem").
+	Text("NAME", g.KeywordOptions()).
+	OptionalIdentifier("Parent", g.KindOfT[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions())
+
 var ToOptsOptionalExample = g.NewInterface(
 	"ToOptsOptionalExamples",
 	"ToOptsOptionalExample",
@@ -31,5 +35,7 @@ var ToOptsOptionalExample = g.NewInterface(
 			g.NewQueryStruct("RequiredField").
 				List("SomeRequiredList", "DatabaseObjectIdentifier", g.ListOptions().Required()),
 			g.KeywordOptions().Required(),
-		),
+		).
+		// Demonstrates ListQueryStructField — generates a for-loop in toOpts using v/s[i] pattern.
+		ListQueryStructField("ItemList", toOptsSliceItemDef, g.KeywordOptions().SQL("ITEMS")),
 )

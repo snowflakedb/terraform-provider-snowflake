@@ -633,6 +633,16 @@ func TestBuilder_singleQuotedIdentifier(t *testing.T) {
 		assert.Equal(t, id.FullyQualifiedName(), sql)
 	})
 
+	t.Run("account object identifier with single_quotes and equals emits parameter assignment", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"NETWORK_POLICY"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "NETWORK_POLICY = '\\\""+id.Name()+"\\\"'", sql)
+	})
+
 	t.Run("standalone account object identifier with single_quotes is wrapped", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		s := &struct {

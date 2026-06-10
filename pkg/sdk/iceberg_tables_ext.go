@@ -211,19 +211,6 @@ func (r *CreateIcebergTableRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }
 
-// icebergTableIdentifierQuoted formats an AccountObjectIdentifier for the
-// EXTERNAL_VOLUME and CATALOG clauses of CREATE ICEBERG TABLE, which expects a single-quoted
-// string literal whose content is the double-quoted volume name (e.g. '"vol1"').
-//
-// TODO(SNOW-2236323): Use a proper generation option instead.
-// We need to use a custom parsing here, see SNOW-1833593 for more details.
-func icebergTableIdentifierQuoted(id *AccountObjectIdentifier) *string {
-	if id == nil {
-		return nil
-	}
-	return new(fmt.Sprintf("'%s'", id.FullyQualifiedName()))
-}
-
 func (v *icebergTables) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
 	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
 		In: &ParametersIn{

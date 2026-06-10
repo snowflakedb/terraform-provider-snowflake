@@ -95,6 +95,20 @@ func TestApiIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiIntegrationOptions", "IfNotExists", "OrReplace"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.OrReplace opts.ExternalMcpOAuth2ProviderParams]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = Bool(true)
+		opts.ExternalMcpOAuth2ProviderParams = &ExternalMcpOAuth2Params{}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpOAuth2ProviderParams"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.OrReplace opts.ExternalMcpDynamicClientProviderParams]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = Bool(true)
+		opts.ExternalMcpDynamicClientProviderParams = &ExternalMcpDynamicClientParams{}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpDynamicClientProviderParams"))
+	})
+
 	t.Run("validation: exactly one field from [opts.AwsApiProviderParams opts.AzureApiProviderParams opts.GoogleApiProviderParams opts.GitHttpsApiTokenBasedProviderParams opts.GitHttpsApiGithubAppProviderParams opts.GitHttpsApiOAuth2ProviderParams opts.GitHttpsApiPrivateLinkProviderParams opts.ExternalMcpOAuth2ProviderParams opts.ExternalMcpDynamicClientProviderParams] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AwsApiProviderParams = nil

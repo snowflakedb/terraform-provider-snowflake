@@ -109,12 +109,18 @@ func (c *IcebergTableAssert) HasPartitionSpecsJson(expected []sdk.IcebergTablePa
 	return c
 }
 
-func (i *IcebergTableAssert) HasBaseLocationPrefix(id sdk.SchemaObjectIdentifier) *IcebergTableAssert {
+func (i *IcebergTableAssert) HasBaseLocationIdPrefix(id sdk.SchemaObjectIdentifier) *IcebergTableAssert {
+	return i.HasBaseLocationPrefix(fmt.Sprintf("%s/%s/%s", id.DatabaseName(), id.SchemaName(), id.Name()))
+}
+
+func (i *IcebergTableAssert) HasBaseLocationPrefix(prefix string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
-		expected := fmt.Sprintf("%s/%s/%s", id.DatabaseName(), id.SchemaName(), id.Name())
-		if !strings.HasPrefix(o.BaseLocation, expected) {
-			return fmt.Errorf("expected base location to have prefix: %v; got: %v", expected, o.BaseLocation)
+		if o.BaseLocation == nil {
+			return fmt.Errorf("expected base location to have value; got: nil")
+		}
+		if !strings.HasPrefix(*o.BaseLocation, prefix) {
+			return fmt.Errorf("expected base location to have prefix: %v; got: %v", prefix, *o.BaseLocation)
 		}
 		return nil
 	})

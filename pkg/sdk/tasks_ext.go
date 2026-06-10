@@ -342,6 +342,13 @@ func getPredecessors(predecessors string) ([]string, error) {
 // by the generator: predecessors (JSON + row context), warehouse / error_integration
 // ("null" string exclusion), and target_completion_interval (custom parser).
 func (r taskDBRow) additionalConvert(result *Task) error {
+	if r.TaskRelations != "" {
+		if v, err := ToTaskRelations(r.TaskRelations); err != nil {
+			return fmt.Errorf("parsing task relations: %w", err)
+		} else {
+			result.TaskRelations = v
+		}
+	}
 	if r.Warehouse.Valid && r.Warehouse.String != "null" {
 		id, err := ParseAccountObjectIdentifier(r.Warehouse.String)
 		if err != nil {

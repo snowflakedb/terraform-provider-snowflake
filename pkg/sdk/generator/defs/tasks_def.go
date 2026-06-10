@@ -27,7 +27,7 @@ var taskPairs = g.StructPair("taskDBRow", "Task").
 	Text("owner_role_type").
 	OptionalText("config", g.WithRequiredInPlain()).
 	OptionalText("budget", g.WithRequiredInPlain()).
-	PlainField("task_relations", "TaskRelations", g.WithCustomParser("ToTaskRelations")).
+	PlainField("task_relations", "TaskRelations", g.WithManualConvert()).
 	OptionalText("last_suspended_reason", g.WithRequiredInPlain()).
 	Field("target_completion_interval", "sql.NullString", "*TaskTargetCompletionInterval", g.WithPlainFieldName("TargetCompletionInterval"), g.WithManualConvert())
 

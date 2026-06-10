@@ -89,7 +89,7 @@ type PostgresInstanceUnsetRequest struct {
 }
 
 type PostgresInstanceResetAccessRequest struct {
-	For PostgresInstanceResetAccessRole // required
+	ForRole PostgresInstanceResetAccessRole // required
 }
 
 type DropPostgresInstanceRequest struct {

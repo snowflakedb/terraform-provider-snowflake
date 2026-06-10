@@ -192,7 +192,7 @@ type CreateOauthForCustomClientsSecurityIntegrationOptions struct {
 	BlockedRolesList            *BlockedRolesList                                `ddl:"parameter,parentheses" sql:"BLOCKED_ROLES_LIST"`
 	OauthIssueRefreshTokens     *bool                                            `ddl:"parameter" sql:"OAUTH_ISSUE_REFRESH_TOKENS"`
 	OauthRefreshTokenValidity   *int                                             `ddl:"parameter" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
-	NetworkPolicy               *string                                          `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY"`
+	NetworkPolicy               *AccountObjectIdentifier                         `ddl:"identifier,single_quotes,equals" sql:"NETWORK_POLICY"`
 	OauthClientRsaPublicKey     *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY"`
 	OauthClientRsaPublicKey2    *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY_2"`
 	Comment                     *string                                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -243,8 +243,8 @@ type CreateScimSecurityIntegrationOptions struct {
 	integrationType     bool                                    `ddl:"static" sql:"TYPE = SCIM"`
 	Enabled             *bool                                   `ddl:"parameter" sql:"ENABLED"`
 	ScimClient          ScimSecurityIntegrationScimClientOption `ddl:"parameter,single_quotes" sql:"SCIM_CLIENT"`
-	RunAsRole           string                                  `ddl:"parameter,no_quotes" sql:"RUN_AS_ROLE"`
-	NetworkPolicy       *string                                 `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY"`
+	RunAsRole           AccountObjectIdentifier                 `ddl:"identifier,single_quotes,equals" sql:"RUN_AS_ROLE"`
+	NetworkPolicy       *AccountObjectIdentifier                `ddl:"identifier,single_quotes,equals" sql:"NETWORK_POLICY"`
 	SyncPassword        *bool                                   `ddl:"parameter" sql:"SYNC_PASSWORD"`
 	Comment             *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -424,7 +424,7 @@ type OauthForCustomClientsIntegrationSet struct {
 	OauthIssueRefreshTokens     *bool                                            `ddl:"parameter" sql:"OAUTH_ISSUE_REFRESH_TOKENS"`
 	OauthRefreshTokenValidity   *int                                             `ddl:"parameter" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
 	OauthUseSecondaryRoles      *OauthSecurityIntegrationUseSecondaryRolesOption `ddl:"parameter" sql:"OAUTH_USE_SECONDARY_ROLES"`
-	NetworkPolicy               *string                                          `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY"`
+	NetworkPolicy               *AccountObjectIdentifier                         `ddl:"identifier,single_quotes,equals" sql:"NETWORK_POLICY"`
 	OauthClientRsaPublicKey     *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY"`
 	OauthClientRsaPublicKey2    *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY_2"`
 	Comment                     *string                                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -491,10 +491,10 @@ type AlterScimSecurityIntegrationOptions struct {
 }
 
 type ScimIntegrationSet struct {
-	Enabled       *bool             `ddl:"parameter" sql:"ENABLED"`
-	NetworkPolicy *string           `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY"`
-	SyncPassword  *bool             `ddl:"parameter" sql:"SYNC_PASSWORD"`
-	Comment       *StringAllowEmpty `ddl:"parameter" sql:"COMMENT"`
+	Enabled       *bool                    `ddl:"parameter" sql:"ENABLED"`
+	NetworkPolicy *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"NETWORK_POLICY"`
+	SyncPassword  *bool                    `ddl:"parameter" sql:"SYNC_PASSWORD"`
+	Comment       *StringAllowEmpty        `ddl:"parameter" sql:"COMMENT"`
 }
 
 type ScimIntegrationUnset struct {

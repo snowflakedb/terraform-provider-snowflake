@@ -30,6 +30,11 @@ func (v *icebergTables) CreateFromIcebergFiles(ctx context.Context, request *Cre
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *icebergTables) CreateFromDeltaLake(ctx context.Context, request *CreateFromDeltaLakeIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *icebergTables) Alter(ctx context.Context, request *AlterIcebergTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -81,14 +86,13 @@ func (v *icebergTables) Describe(ctx context.Context, id SchemaObjectIdentifier)
 
 func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 	opts := &CreateIcebergTableOptions{
-		OrReplace:   r.OrReplace,
-		Transient:   r.Transient,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		PathLayout:  r.PathLayout,
-		ClusterBy:   r.ClusterBy,
-		// Adjusted manually
-		ExternalVolume:             icebergTableIdentifierQuoted(r.ExternalVolume),
+		OrReplace:                  r.OrReplace,
+		Transient:                  r.Transient,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		PathLayout:                 r.PathLayout,
+		ClusterBy:                  r.ClusterBy,
+		ExternalVolume:             r.ExternalVolume,
 		Catalog:                    r.Catalog,
 		BaseLocation:               r.BaseLocation,
 		TargetFileSize:             r.TargetFileSize,
@@ -309,10 +313,27 @@ func (r *CreateFromIcebergFilesIcebergTableRequest) toOpts() *CreateFromIcebergF
 		OrReplace:                r.OrReplace,
 		IfNotExists:              r.IfNotExists,
 		name:                     r.name,
-		ExternalVolume:           icebergTableIdentifierQuoted(r.ExternalVolume),
-		Catalog:                  icebergTableIdentifierQuoted(r.Catalog),
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
 		MetadataFilePath:         r.MetadataFilePath,
 		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
+	}
+	return opts
+}
+
+func (r *CreateFromDeltaLakeIcebergTableRequest) toOpts() *CreateFromDeltaLakeIcebergTableOptions {
+	opts := &CreateFromDeltaLakeIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
+		BaseLocation:             r.BaseLocation,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		AutoRefresh:              r.AutoRefresh,
 		Comment:                  r.Comment,
 		Tag:                      r.Tag,
 		Contact:                  r.Contact,
@@ -599,7 +620,6 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		Name:                      r.Name,
 		DatabaseName:              r.DatabaseName,
 		SchemaName:                r.SchemaName,
-		BaseLocation:              r.BaseLocation,
 		CanWriteMetadata:          r.CanWriteMetadata == "Y",
 		OwnerRoleType:             r.OwnerRoleType,
 		CatalogSyncName:           r.CatalogSyncName,
@@ -614,6 +634,7 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 	mapStringWithMapping(&result.IcebergTableType, r.IcebergTableType, ToIcebergTableType)
 	mapNullString(&result.CatalogTableName, r.CatalogTableName)
 	mapNullString(&result.CatalogNamespace, r.CatalogNamespace)
+	mapNullString(&result.BaseLocation, r.BaseLocation)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.NameMapping, r.NameMapping)
 	return result, nil

@@ -13,6 +13,7 @@ import (
 type IcebergTables interface {
 	Create(ctx context.Context, request *CreateIcebergTableRequest) error
 	CreateFromIcebergFiles(ctx context.Context, request *CreateFromIcebergFilesIcebergTableRequest) error
+	CreateFromDeltaLake(ctx context.Context, request *CreateFromDeltaLakeIcebergTableRequest) error
 	Alter(ctx context.Context, request *AlterIcebergTableRequest) error
 	Drop(ctx context.Context, request *DropIcebergTableRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
@@ -25,36 +26,35 @@ type IcebergTables interface {
 
 // CreateIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake.
 type CreateIcebergTableOptions struct {
-	create                bool                              `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                             `ddl:"keyword" sql:"OR REPLACE"`
-	Transient             *bool                             `ddl:"keyword" sql:"TRANSIENT"`
-	icebergTable          bool                              `ddl:"static" sql:"ICEBERG TABLE"`
-	IfNotExists           *bool                             `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier            `ddl:"identifier"`
-	ColumnsAndConstraints IcebergTableColumnsAndConstraints `ddl:"list,parentheses"`
-	PartitionBy           []IcebergTablePartitionExpression `ddl:"keyword,parentheses" sql:"PARTITION BY"`
-	PathLayout            *IcebergTablePathLayout           `ddl:"parameter,no_quotes" sql:"PATH_LAYOUT"`
-	ClusterBy             []string                          `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	// Adjusted manually
-	ExternalVolume             *string                        `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
-	Catalog                    *IcebergTableCatalog           `ddl:"parameter,single_quotes" sql:"CATALOG"`
-	BaseLocation               *string                        `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
-	TargetFileSize             *IcebergTableTargetFileSize    `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
-	CatalogSync                *string                        `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
-	StorageSerializationPolicy *StorageSerializationPolicy    `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
-	DataRetentionTimeInDays    *int                           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int                           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool                          `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	CopyGrants                 *bool                          `ddl:"keyword" sql:"COPY GRANTS"`
-	ErrorLogging               *bool                          `ddl:"parameter" sql:"ERROR_LOGGING"`
-	Comment                    *string                        `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	IcebergVersion             *int                           `ddl:"parameter" sql:"ICEBERG_VERSION"`
-	EnableIcebergMergeOnRead   *bool                          `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
-	RowAccessPolicy            *IcebergTableRowAccessPolicy   `ddl:"keyword"`
-	AggregationPolicy          *IcebergTableAggregationPolicy `ddl:"keyword"`
-	Tag                        []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
-	EnableDataCompaction       *bool                          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
-	Contact                    []TableContact                 `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
+	create                     bool                              `ddl:"static" sql:"CREATE"`
+	OrReplace                  *bool                             `ddl:"keyword" sql:"OR REPLACE"`
+	Transient                  *bool                             `ddl:"keyword" sql:"TRANSIENT"`
+	icebergTable               bool                              `ddl:"static" sql:"ICEBERG TABLE"`
+	IfNotExists                *bool                             `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                       SchemaObjectIdentifier            `ddl:"identifier"`
+	ColumnsAndConstraints      IcebergTableColumnsAndConstraints `ddl:"list,parentheses"`
+	PartitionBy                []IcebergTablePartitionExpression `ddl:"keyword,parentheses" sql:"PARTITION BY"`
+	PathLayout                 *IcebergTablePathLayout           `ddl:"parameter,no_quotes" sql:"PATH_LAYOUT"`
+	ClusterBy                  []string                          `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	ExternalVolume             *AccountObjectIdentifier          `ddl:"identifier,single_quotes,equals" sql:"EXTERNAL_VOLUME"`
+	Catalog                    *IcebergTableCatalog              `ddl:"parameter,single_quotes" sql:"CATALOG"`
+	BaseLocation               *string                           `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
+	TargetFileSize             *IcebergTableTargetFileSize       `ddl:"parameter,single_quotes" sql:"TARGET_FILE_SIZE"`
+	CatalogSync                *string                           `ddl:"parameter,single_quotes" sql:"CATALOG_SYNC"`
+	StorageSerializationPolicy *StorageSerializationPolicy       `ddl:"parameter,no_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
+	DataRetentionTimeInDays    *int                              `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                              `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool                             `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	CopyGrants                 *bool                             `ddl:"keyword" sql:"COPY GRANTS"`
+	ErrorLogging               *bool                             `ddl:"parameter" sql:"ERROR_LOGGING"`
+	Comment                    *string                           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	IcebergVersion             *int                              `ddl:"parameter" sql:"ICEBERG_VERSION"`
+	EnableIcebergMergeOnRead   *bool                             `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	RowAccessPolicy            *IcebergTableRowAccessPolicy      `ddl:"keyword"`
+	AggregationPolicy          *IcebergTableAggregationPolicy    `ddl:"keyword"`
+	Tag                        []TagAssociation                  `ddl:"keyword,parentheses" sql:"TAG"`
+	EnableDataCompaction       *bool                             `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
+	Contact                    []TableContact                    `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
 }
 
 type IcebergTableColumnsAndConstraints struct {
@@ -262,20 +262,35 @@ type IcebergTableAggregationPolicy struct {
 
 // CreateFromIcebergFilesIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files.
 type CreateFromIcebergFilesIcebergTableOptions struct {
-	create       bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace    *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	icebergTable bool                   `ddl:"static" sql:"ICEBERG TABLE"`
-	IfNotExists  *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name         SchemaObjectIdentifier `ddl:"identifier"`
-	// Adjusted manually
-	ExternalVolume *string `ddl:"parameter" sql:"EXTERNAL_VOLUME"`
-	// Adjusted manually
-	Catalog                  *string          `ddl:"parameter" sql:"CATALOG"`
-	MetadataFilePath         string           `ddl:"parameter,single_quotes" sql:"METADATA_FILE_PATH"`
-	ReplaceInvalidCharacters *bool            `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	Comment                  *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Tag                      []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
-	Contact                  []TableContact   `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
+	create                   bool                     `ddl:"static" sql:"CREATE"`
+	OrReplace                *bool                    `ddl:"keyword" sql:"OR REPLACE"`
+	icebergTable             bool                     `ddl:"static" sql:"ICEBERG TABLE"`
+	IfNotExists              *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                     SchemaObjectIdentifier   `ddl:"identifier"`
+	ExternalVolume           *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"EXTERNAL_VOLUME"`
+	Catalog                  *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"CATALOG"`
+	MetadataFilePath         string                   `ddl:"parameter,single_quotes" sql:"METADATA_FILE_PATH"`
+	ReplaceInvalidCharacters *bool                    `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	Comment                  *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                      []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
+	Contact                  []TableContact           `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
+}
+
+// CreateFromDeltaLakeIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-delta.
+type CreateFromDeltaLakeIcebergTableOptions struct {
+	create                   bool                     `ddl:"static" sql:"CREATE"`
+	OrReplace                *bool                    `ddl:"keyword" sql:"OR REPLACE"`
+	icebergTable             bool                     `ddl:"static" sql:"ICEBERG TABLE"`
+	IfNotExists              *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                     SchemaObjectIdentifier   `ddl:"identifier"`
+	ExternalVolume           *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"EXTERNAL_VOLUME"`
+	Catalog                  *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"CATALOG"`
+	BaseLocation             string                   `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
+	ReplaceInvalidCharacters *bool                    `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	AutoRefresh              *bool                    `ddl:"parameter" sql:"AUTO_REFRESH"`
+	Comment                  *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                      []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
+	Contact                  []TableContact           `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
 }
 
 // AlterIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table.
@@ -512,7 +527,7 @@ type icebergTableRow struct {
 	IcebergTableType          string         `db:"iceberg_table_type"`
 	CatalogTableName          sql.NullString `db:"catalog_table_name"`
 	CatalogNamespace          sql.NullString `db:"catalog_namespace"`
-	BaseLocation              string         `db:"base_location"`
+	BaseLocation              sql.NullString `db:"base_location"`
 	CanWriteMetadata          string         `db:"can_write_metadata"`
 	Comment                   sql.NullString `db:"comment"`
 	NameMapping               sql.NullString `db:"name_mapping"`
@@ -535,7 +550,7 @@ type IcebergTable struct {
 	IcebergTableType          IcebergTableType
 	CatalogTableName          *string
 	CatalogNamespace          *string
-	BaseLocation              string
+	BaseLocation              *string
 	CanWriteMetadata          bool
 	Comment                   *string
 	NameMapping               *string

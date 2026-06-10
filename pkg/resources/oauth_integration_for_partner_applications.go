@@ -456,7 +456,7 @@ func UpdateContextOauthIntegrationForPartnerApplications(ctx context.Context, d 
 	}
 
 	if d.HasChange("comment") {
-		set.WithComment(d.Get("comment").(string))
+		set.WithComment(sdk.StringAllowEmpty{Value: d.Get("comment").(string)})
 		// TODO(SNOW-1515781): No UNSET
 	}
 
