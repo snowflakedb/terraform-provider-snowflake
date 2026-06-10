@@ -57,10 +57,11 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasSignature(expected ...sdk.Table
 	return s
 }
 
-func (s *StorageLifecyclePolicyDetailsAssert) HasReturnType(expected string) *StorageLifecyclePolicyDetailsAssert {
+// Adjusted manually: uses datatypes.AreTheSame for semantic comparison instead of direct equality.
+func (s *StorageLifecyclePolicyDetailsAssert) HasReturnType(expected datatypes.DataType) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
-		if o.ReturnType != expected {
+		if !datatypes.AreTheSame(o.ReturnType, expected) {
 			return fmt.Errorf("expected return type: %v; got: %v", expected, o.ReturnType)
 		}
 		return nil

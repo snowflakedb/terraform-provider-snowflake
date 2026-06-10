@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 var (
@@ -162,7 +163,6 @@ func (r *DescribeStorageLifecyclePolicyRequest) toOpts() *DescribeStorageLifecyc
 func (r describeStorageLifecyclePolicyDBRow) convert() (*StorageLifecyclePolicyDetails, error) {
 	result := &StorageLifecyclePolicyDetails{
 		Name:        r.Name,
-		ReturnType:  r.ReturnType,
 		Body:        r.Body,
 		ArchiveTier: r.ArchiveTier,
 	}
@@ -170,6 +170,11 @@ func (r describeStorageLifecyclePolicyDBRow) convert() (*StorageLifecyclePolicyD
 		return nil, fmt.Errorf("parsing table column signature: %w", err)
 	} else {
 		result.Signature = v
+	}
+	if v, err := datatypes.ParseDataType(r.ReturnType); err != nil {
+		return nil, fmt.Errorf("parsing datatypes. data type: %w", err)
+	} else {
+		result.ReturnType = v
 	}
 	mapNullInt(&result.ArchiveForDays, r.ArchiveForDays)
 	return result, nil

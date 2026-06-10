@@ -38,6 +38,19 @@ func (c *StorageLifecyclePolicyClient) DefaultBody() string {
 	return "LENGTH(VAL) > 0"
 }
 
+func (c *StorageLifecyclePolicyClient) Create(t *testing.T) (*sdk.StorageLifecyclePolicy, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+	cleanup := c.CreateWithId(t, id)
+
+	policy, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return policy, cleanup
+}
+
 func (c *StorageLifecyclePolicyClient) CreateWithId(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	return c.CreateWithRequest(t, id, sdk.NewCreateStorageLifecyclePolicyRequest(id, c.DefaultArgs(), c.DefaultBody()))

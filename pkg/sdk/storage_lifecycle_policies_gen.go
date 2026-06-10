@@ -133,7 +133,7 @@ type describeStorageLifecyclePolicyDBRow struct {
 type StorageLifecyclePolicyDetails struct {
 	Name           string
 	Signature      []TableColumnSignature
-	ReturnType     string
+	ReturnType     datatypes.DataType
 	Body           string
 	ArchiveForDays *int
 	ArchiveTier    string

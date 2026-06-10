@@ -107,7 +107,7 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 		g.StructPair("describeStorageLifecyclePolicyDBRow", "StorageLifecyclePolicyDetails").
 			Text("name").
 			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
-			Text("return_type").
+			DataType("return_type").
 			Text("body").
 			OptionalNumber("archive_for_days").
 			Text("archive_tier"),

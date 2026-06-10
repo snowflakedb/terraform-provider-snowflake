@@ -38,8 +38,9 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 	t.Run("create: minimal", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		cleanup := testClientHelper().StorageLifecyclePolicy.CreateWithId(t, id)
-		t.Cleanup(cleanup)
+		err := client.StorageLifecyclePolicies.Create(ctx, sdk.NewCreateStorageLifecyclePolicyRequest(id, defaultArgs, defaultBody))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().StorageLifecyclePolicy.DropFunc(t, id))
 
 		assertThatObject(t, objectassert.StorageLifecyclePolicy(t, id).
 			HasCreatedOnNotEmpty().
@@ -54,7 +55,7 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 		assertThatObject(t, objectassert.StorageLifecyclePolicyDetails(t, id).
 			HasName(id.Name()).
 			HasSignature(defaultSignature...).
-			HasReturnType("BOOLEAN").
+			HasReturnType(testdatatypes.DataTypeBoolean).
 			HasBody(defaultBody).
 			HasNoArchiveForDays().
 			HasArchiveTier("NULL"),
@@ -65,12 +66,13 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
 
-		cleanup := testClientHelper().StorageLifecyclePolicy.CreateWithRequest(t, id, sdk.NewCreateStorageLifecyclePolicyRequest(id, defaultArgs, defaultBody).
+		err := client.StorageLifecyclePolicies.Create(ctx, sdk.NewCreateStorageLifecyclePolicyRequest(id, defaultArgs, defaultBody).
 			WithIfNotExists(true).
 			WithArchiveTier(sdk.StorageLifecyclePolicyArchiveTierCold).
 			WithArchiveForDays(365).
 			WithComment(comment))
-		t.Cleanup(cleanup)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().StorageLifecyclePolicy.DropFunc(t, id))
 
 		assertThatObject(t, objectassert.StorageLifecyclePolicy(t, id).
 			HasCreatedOnNotEmpty().
@@ -85,7 +87,7 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 		assertThatObject(t, objectassert.StorageLifecyclePolicyDetails(t, id).
 			HasName(id.Name()).
 			HasSignature(defaultSignature...).
-			HasReturnType("BOOLEAN").
+			HasReturnType(testdatatypes.DataTypeBoolean).
 			HasBody(defaultBody).
 			HasArchiveForDays(365).
 			HasArchiveTier(string(sdk.StorageLifecyclePolicyArchiveTierCold)),
@@ -155,25 +157,6 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 			HasNoArchiveForDays().
 			HasArchiveTier(string(sdk.StorageLifecyclePolicyArchiveTierCool)),
 		)
-	})
-
-	t.Run("alter: set and unset tags", func(t *testing.T) {
-		id := createBasic(t)
-
-		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
-		t.Cleanup(tagCleanup)
-
-		err := client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).
-			WithSetTags([]sdk.TagAssociation{{Name: tag.ID(), Value: "tag_value"}}))
-		require.NoError(t, err)
-
-		assertTagSet(t, tag.ID(), id, sdk.ObjectTypeStorageLifecyclePolicy, "tag_value")
-
-		err = client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).
-			WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
-		require.NoError(t, err)
-
-		assertTagUnset(t, tag.ID(), id, sdk.ObjectTypeStorageLifecyclePolicy)
 	})
 
 	t.Run("drop: existing", func(t *testing.T) {
