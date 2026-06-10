@@ -272,6 +272,51 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 	})
 }
 
+func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *testing.T) {
+	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifier()
+
+	withAllowedValues := model.TagBase("test", id).
+		WithOrderedAllowedValues("confidential", "internal", "public").
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOnConflictAllowedValuesSequence()
+
+	withPropagateOnly := model.TagBase("test", id).
+		WithPropagateEnum(sdk.TagPropagationOnDependency)
+
+	resourceRef := withAllowedValues.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Step 1: create a tag with allowed_values + allowed_values_sequence on_conflict.
+			{
+				Config: config.FromModels(t, withAllowedValues),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, resourceRef).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasOnConflictAllowedValuesSequence(),
+				),
+			},
+			// Step 2: drop on_conflict; the value is cleared.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withPropagateOnly.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withPropagateOnly),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, withPropagateOnly.ResourceReference()).
+						HasOnConflictEmpty(),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
