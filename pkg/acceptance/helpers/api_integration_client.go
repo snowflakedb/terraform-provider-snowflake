@@ -178,6 +178,12 @@ func (c *ApiIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier
 	return c.client().ShowByIDSafely(ctx, id)
 }
 
+func (c *ApiIntegrationClient) Alter(t *testing.T, request *sdk.AlterApiIntegrationRequest) {
+	t.Helper()
+	err := c.client().Alter(context.Background(), request)
+	require.NoError(t, err)
+}
+
 func (c *ApiIntegrationClient) DescribeAws(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAwsDetails, error) {
 	t.Helper()
 	return c.context.client.ApiIntegrations.DescribeAwsDetails(context.Background(), id)

@@ -76,6 +76,17 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasUserAuthType(expected sdk.Ap
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasNoUserAuthType() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.UserAuthType != "" {
+			return fmt.Errorf("expected no user auth type; got: %v", o.UserAuthType)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthGrant(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
