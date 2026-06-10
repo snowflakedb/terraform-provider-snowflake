@@ -42,6 +42,7 @@ var (
 		ObjectTypePasswordPolicy,
 		ObjectTypeRowAccessPolicy,
 		ObjectTypeSessionPolicy,
+		ObjectTypeStorageLifecyclePolicy,
 		ObjectTypePrivacyPolicy,
 		ObjectTypeProcedure,
 		ObjectTypeService,

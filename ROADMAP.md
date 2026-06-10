@@ -5,6 +5,62 @@ We usually create new entries in quarterly cycles, so expect an entry in the fir
 We may add more entries when we have some bigger announcements.
 These should be treated as projections and not strict commitments. Keep in mind that the plan can be subject to change.
 
+## (2026-06-09) Roadmap update
+
+Recent efforts concentrated on:
+
+* Continuing migration support from legacy `0.x.x` versions to GA+ (`v2.x.x`) versions of the provider.
+* Stabilizing the `snowflake_password_policy`, `snowflake_network_rule`, and `snowflake_external_volume` resources and adding the missing data sources.
+* Adding support for the new DECFLOAT data type.
+* Enhancing stable resources with frequently requested missing attributes, including new fields in `snowflake_authentication_policy`, tag propagation in `snowflake_tag`, and missing parameters in `snowflake_account_parameter`.
+* Adding support for [catalog integrations](https://docs.snowflake.com/en/user-guide/tables-iceberg#label-tables-iceberg-catalog-integration-def), [session policies](https://docs.snowflake.com/en/user-guide/session-policies), and [adaptive warehouses](https://docs.snowflake.com/en/user-guide/warehouses-adaptive).
+* Improving destructive behavior for association and grant resources with new experimental behaviors.
+
+In the upcoming months, our focus will be on the following topics:
+
+* [Migration](#migration)
+* [Feature gap](#feature-gap)
+* [Reliability and development improvements](#reliability-and-development-improvements)
+* [Stability improvements](#stability-improvements)
+
+If you have any questions, please open an issue or comment on the roadmap discussion. Enterprise customers can also contact their Snowflake account team.
+
+### Migration
+
+We are continuing the migration to GA+ versions of the provider.
+
+* We prioritize support for issues directly blocking upgrades from `0.x.x` to `v1.x.x`/`v2.x.x`.
+* We strongly recommend prioritizing this migration. You can find more information in [\#4039](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4039). Feel free to reach out to us with any questions through GitHub or the Snowflake account team if you are an enterprise customer.
+
+### Feature gap
+
+We continue closing the most impactful feature gaps, guided by user demand. The list below reflects the main feature-related efforts planned for this quarter.
+We plan to:
+
+* Add new resources and data sources:
+  * Iceberg Tables — add full support for managing [Iceberg tables](https://docs.snowflake.com/en/user-guide/tables-iceberg), including lifecycle operations and integration with external catalogs.
+  * Cortex Agents — add support for [Cortex Agent](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents) resources.
+  * MCP Servers — add support for managing Snowflake [MCP servers](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-mcp).
+  * Storage lifecycle policy - add support for [managing data lifecycle](https://docs.snowflake.com/en/user-guide/storage-management/storage-lifecycle-policies) for tables.
+* Stabilize preview resources and data sources:
+  * API integrations — address missing features in the `snowflake_api_integration` by introducing new resources for each integration type.
+  * File formats - potentially by deprecating the current `snowflake_file_format` resource and introducing new resources for each file format type.
+  * Cortex Search Service.
+  * Authentication policy attachments.
+
+### Reliability and development improvements
+
+We are investing in tooling and process improvements to accelerate development and improve provider reliability:
+
+* **Generator stability** — improve the stability of our code generators to enable more consistent and reliable contributions, including better support for AI-assisted development.
+* **Contributing guide extension** — extend the contributing guide with additional examples, patterns, and best practices to help new contributors get up to speed faster.
+* **Comprehensive preprod coverage** — systematically test all stable objects and recently reworked preview objects against Snowflake's preproduction environment to catch breaking changes before they reach users.
+* **Test speed up** — reduce development time by shortening the PR lifecycle through faster and more targeted integration test runs.
+
+### Stability improvements
+
+Ongoing stability work continues in parallel: critical bugfixes, customer support, release management, Snowflake BCR handling, and provider adjustments following Snowflake releases. We are also continuing to address technical debt and project maintenance.
+
 ## (2026-03-12) Roadmap update
 
 Recent efforts concentrated on:
@@ -13,7 +69,7 @@ Recent efforts concentrated on:
 * Helping users migrate from legacy `0.x.x` versions to GA+ (`v2.x.x`) versions of the provider.
 * Adding support for additional Snowflake regions, like GOV ([#4011](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4011)), by validating provider behavior and auth flows, documenting region-specific requirements, and adding targeted tests.
 * Improving the security, stability, and maintainability of the provider.
-* Stabilizing the `snowflake_network_rule` resource and adding a new  `snowflake_network_rules` data source ([#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956)).
+* Stabilizing the `snowflake_network_rule` resource and adding a new `snowflake_network_rules` data source ([#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956)).
 * Extend data type support by introducing and thoroughly testing the [`DECFLOAT`](https://docs.snowflake.com/en/sql-reference/data-types-numeric#decfloat) (or equivalent high‑precision numeric) type across all relevant resources and data sources, ensuring objects using this type can be managed consistently.
 
 In the upcoming months, our focus will be on the following topics:

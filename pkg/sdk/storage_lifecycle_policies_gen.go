@@ -18,7 +18,7 @@ type StorageLifecyclePolicies interface {
 	Show(ctx context.Context, request *ShowStorageLifecyclePolicyRequest) ([]StorageLifecyclePolicy, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicy, error)
-	Describe(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDescription, error)
+	Describe(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDetails, error)
 }
 
 // CreateStorageLifecyclePolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-storage-lifecycle-policy.
@@ -28,8 +28,7 @@ type CreateStorageLifecyclePolicyOptions struct {
 	storageLifecyclePolicy bool                               `ddl:"static" sql:"STORAGE LIFECYCLE POLICY"`
 	IfNotExists            *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                   SchemaObjectIdentifier             `ddl:"identifier"`
-	as                     bool                               `ddl:"static" sql:"AS"`
-	args                   []CreateStorageLifecyclePolicyArgs `ddl:"parameter,parentheses,no_equals"`
+	args                   []CreateStorageLifecyclePolicyArgs `ddl:"parameter,parentheses,no_equals" sql:"AS"`
 	returnsBoolean         bool                               `ddl:"static" sql:"RETURNS BOOLEAN"`
 	body                   string                             `ddl:"parameter,no_quotes,no_equals" sql:"->"`
 	ArchiveTier            *StorageLifecyclePolicyArchiveTier `ddl:"parameter" sql:"ARCHIVE_TIER"`
@@ -131,10 +130,10 @@ type describeStorageLifecyclePolicyDBRow struct {
 	ArchiveTier    string        `db:"archive_tier"`
 }
 
-type StorageLifecyclePolicyDescription struct {
+type StorageLifecyclePolicyDetails struct {
 	Name           string
 	Signature      []TableColumnSignature
-	ReturnType     string
+	ReturnType     datatypes.DataType
 	Body           string
 	ArchiveForDays *int
 	ArchiveTier    string

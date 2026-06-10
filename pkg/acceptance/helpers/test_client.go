@@ -83,6 +83,7 @@ type TestClient struct {
 	SnowflakeDefaults            *SnowflakeDefaultsClient
 	Stage                        *StageClient
 	StorageIntegration           *StorageIntegrationClient
+	StorageLifecyclePolicy       *StorageLifecyclePolicyClient
 	Stream                       *StreamClient
 	Streamlit                    *StreamlitClient
 	Table                        *TableClient
@@ -185,6 +186,7 @@ func NewTestClient(
 		Share:                        NewShareClient(context, idsGenerator),
 		Stage:                        NewStageClient(context, idsGenerator),
 		StorageIntegration:           NewStorageIntegrationClient(context, idsGenerator),
+		StorageLifecyclePolicy:       NewStorageLifecyclePolicyClient(context, idsGenerator),
 		Stream:                       NewStreamClient(context, idsGenerator),
 		Streamlit:                    NewStreamlitClient(context, idsGenerator),
 		Table:                        NewTableClient(context, idsGenerator),

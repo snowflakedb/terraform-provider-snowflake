@@ -863,6 +863,61 @@ func (s *CreateFromIcebergFilesIcebergTableRequest) WithContact(contact []TableC
 	return s
 }
 
+func NewCreateFromDeltaLakeIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	baseLocation string,
+) *CreateFromDeltaLakeIcebergTableRequest {
+	s := CreateFromDeltaLakeIcebergTableRequest{}
+	s.name = name
+	s.BaseLocation = baseLocation
+	return &s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromDeltaLakeIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithAutoRefresh(autoRefresh bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.AutoRefresh = &autoRefresh
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithComment(comment string) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithContact(contact []TableContact) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
 func NewAlterIcebergTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterIcebergTableRequest {

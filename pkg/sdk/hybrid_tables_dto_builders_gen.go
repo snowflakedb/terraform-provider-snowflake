@@ -49,11 +49,11 @@ func (s *HybridTableColumnsConstraintsAndIndexesRequest) WithOutOfLineIndex(outO
 
 func NewHybridTableColumnRequest(
 	name string,
-	columnType DataType,
+	dataType DataType,
 ) *HybridTableColumnRequest {
 	s := HybridTableColumnRequest{}
 	s.Name = name
-	s.Type = columnType
+	s.DataType = dataType
 	return &s
 }
 
@@ -83,10 +83,10 @@ func (s *HybridTableColumnRequest) WithComment(comment string) *HybridTableColum
 }
 
 func NewHybridTableOutOfLineConstraintRequest(
-	constraintType ColumnConstraintType,
+	columnConstraintType ColumnConstraintType,
 ) *HybridTableOutOfLineConstraintRequest {
 	s := HybridTableOutOfLineConstraintRequest{}
-	s.Type = constraintType
+	s.ColumnConstraintType = columnConstraintType
 	return &s
 }
 
@@ -175,11 +175,11 @@ func (s *AlterHybridTableRequest) WithSet(set HybridTableSetPropertiesRequest) *
 
 func NewHybridTableAddColumnActionRequest(
 	name string,
-	columnType DataType,
+	dataType DataType,
 ) *HybridTableAddColumnActionRequest {
 	s := HybridTableAddColumnActionRequest{}
 	s.Name = name
-	s.Type = columnType
+	s.DataType = dataType
 	return &s
 }
 
@@ -286,8 +286,8 @@ func (s *HybridTableAlterColumnActionRequest) WithSetDefault(setDefault Sequence
 	return s
 }
 
-func (s *HybridTableAlterColumnActionRequest) WithType(dataType DataType) *HybridTableAlterColumnActionRequest {
-	s.Type = &dataType
+func (s *HybridTableAlterColumnActionRequest) WithDataType(dataType DataType) *HybridTableAlterColumnActionRequest {
+	s.DataType = &dataType
 	return s
 }
 

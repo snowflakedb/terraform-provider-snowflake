@@ -210,3 +210,85 @@ func TestInt_Client_AdditionalMetadata(t *testing.T) {
 		assertQueryMetadata(t, <-queryIdChan)
 	})
 }
+
+func TestInt_Client(t *testing.T) {
+	t.Run("ping", func(t *testing.T) {
+		client := defaultTestClient(t)
+		err := client.Ping()
+		require.NoError(t, err)
+	})
+
+	t.Run("close", func(t *testing.T) {
+		client := defaultTestClient(t)
+		err := client.Close()
+		require.NoError(t, err)
+	})
+
+	t.Run("exec", func(t *testing.T) {
+		client := defaultTestClient(t)
+		ctx := context.Background()
+		_, err := client.ExecForTests(ctx, "SELECT 1")
+		require.NoError(t, err)
+	})
+
+	t.Run("query", func(t *testing.T) {
+		client := defaultTestClient(t)
+		ctx := context.Background()
+		rows := []struct {
+			One int `db:"ONE"`
+		}{}
+		err := client.QueryForTests(ctx, &rows, "SELECT 1 AS ONE")
+		require.NoError(t, err)
+		require.NotNil(t, rows)
+		require.Len(t, rows, 1)
+		require.Equal(t, 1, rows[0].One)
+	})
+
+	t.Run("queryOne", func(t *testing.T) {
+		client := defaultTestClient(t)
+		ctx := context.Background()
+		row := struct {
+			One int `db:"ONE"`
+		}{}
+		err := client.QueryOneForTests(ctx, &row, "SELECT 1 AS ONE")
+		require.NoError(t, err)
+		require.Equal(t, 1, row.One)
+	})
+
+	// TODO [SNOW-2054366]: Use dedicated users for these tests.
+	t.Run("newCLientDriverLoggingLevel", func(t *testing.T) {
+		t.Run("get default gosnowflake driver logging level", func(t *testing.T) {
+			config := sdk.DefaultConfig()
+			_, err := sdk.NewClient(config)
+			require.NoError(t, err)
+
+			var expected string
+			if os.Getenv("GITHUB_ACTIONS") != "" {
+				expected = "FATAL"
+			} else {
+				expected = "ERROR"
+			}
+			assert.Equal(t, expected, gosnowflake.GetLogger().GetLogLevel())
+		})
+
+		t.Run("set gosnowflake driver logging level with config", func(t *testing.T) {
+			config := sdk.DefaultConfig()
+			config.Tracing = "trace"
+			_, err := sdk.NewClient(config)
+			require.NoError(t, err)
+
+			assert.Equal(t, "TRACE", gosnowflake.GetLogger().GetLogLevel())
+		})
+	})
+}
+
+func defaultTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+
+	client, err := sdk.NewDefaultClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return client
+}

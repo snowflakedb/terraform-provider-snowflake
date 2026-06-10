@@ -21,8 +21,11 @@ func (opts *CreateApiIntegrationOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "IfNotExists", "OrReplace"))
 	}
-	if everyValueSet(opts.OrReplace, opts.ExternalMcpOAuth2ProviderParams, opts.ExternalMcpDynamicClientProviderParams) {
-		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"))
+	if everyValueSet(opts.OrReplace, opts.ExternalMcpOAuth2ProviderParams) {
+		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpOAuth2ProviderParams"))
+	}
+	if everyValueSet(opts.OrReplace, opts.ExternalMcpDynamicClientProviderParams) {
+		errs = append(errs, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpDynamicClientProviderParams"))
 	}
 	if !exactlyOneValueSet(opts.AwsApiProviderParams, opts.AzureApiProviderParams, opts.GoogleApiProviderParams, opts.GitHttpsApiTokenBasedProviderParams, opts.GitHttpsApiGithubAppProviderParams, opts.GitHttpsApiOAuth2ProviderParams, opts.GitHttpsApiPrivateLinkProviderParams, opts.ExternalMcpOAuth2ProviderParams, opts.ExternalMcpDynamicClientProviderParams) {
 		errs = append(errs, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitHttpsApiTokenBasedProviderParams", "GitHttpsApiGithubAppProviderParams", "GitHttpsApiOAuth2ProviderParams", "GitHttpsApiPrivateLinkProviderParams", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"))

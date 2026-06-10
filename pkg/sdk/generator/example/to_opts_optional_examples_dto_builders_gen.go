@@ -35,6 +35,11 @@ func (s *AlterToOptsOptionalExampleRequest) WithOptionalField(optionalField Opti
 	return s
 }
 
+func (s *AlterToOptsOptionalExampleRequest) WithItemList(itemList []ToOptsOptionalExampleSliceItemRequest) *AlterToOptsOptionalExampleRequest {
+	s.ItemList = itemList
+	return s
+}
+
 func NewOptionalFieldRequest() *OptionalFieldRequest {
 	s := OptionalFieldRequest{}
 	return &s
@@ -51,4 +56,19 @@ func NewRequiredFieldRequest(
 	s := RequiredFieldRequest{}
 	s.SomeRequiredList = someRequiredList
 	return &s
+}
+
+func NewToOptsOptionalExampleSliceItemRequest() *ToOptsOptionalExampleSliceItemRequest {
+	s := ToOptsOptionalExampleSliceItemRequest{}
+	return &s
+}
+
+func (s *ToOptsOptionalExampleSliceItemRequest) WithNAME(nAME string) *ToOptsOptionalExampleSliceItemRequest {
+	s.NAME = nAME
+	return s
+}
+
+func (s *ToOptsOptionalExampleSliceItemRequest) WithParent(parent DatabaseObjectIdentifier) *ToOptsOptionalExampleSliceItemRequest {
+	s.Parent = &parent
+	return s
 }

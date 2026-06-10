@@ -44,7 +44,8 @@ func (r *AlterDatabaseRoleRequest) toOpts() *AlterDatabaseRoleOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &DatabaseRoleSet{
-			Comment: r.Set.Comment,
+			Comment:       r.Set.Comment,
+			NetworkPolicy: r.Set.NetworkPolicy,
 		}
 		if r.Set.NestedThirdLevel != nil {
 			opts.Set.NestedThirdLevel = &NestedThirdLevel{

@@ -943,6 +943,19 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 		},
 		{
+			name:       "StorageLifecyclePolicy",
+			objectType: sdk.ObjectTypeStorageLifecyclePolicy,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				return testClientHelper().StorageLifecyclePolicy.Create(t)
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
 			name:       "EventTable",
 			objectType: sdk.ObjectTypeEventTable,
 			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
