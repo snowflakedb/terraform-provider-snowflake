@@ -152,9 +152,14 @@ type CreateForSQLProcedureRequest struct {
 }
 
 type ProcedureSQLReturnsRequest struct {
-	ResultDataType *ProcedureReturnsResultDataTypeRequest
+	ResultDataType *ProcedureSQLReturnsResultDataTypeRequest
 	Table          *ProcedureReturnsTableRequest
 	NotNull        *bool
+}
+
+type ProcedureSQLReturnsResultDataTypeRequest struct {
+	ResultDataTypeOld DataType
+	ResultDataType    datatypes.DataType // required
 }
 
 type AlterProcedureRequest struct {

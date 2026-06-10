@@ -88,12 +88,11 @@ func (r *CreateViewRequest) toOpts() *CreateViewOptions {
 	}
 	if r.Columns != nil {
 		s := make([]ViewColumn, len(r.Columns))
-		// adjusted manually
 		for i, v := range r.Columns {
 			s[i] = ViewColumn{
 				Name:    v.Name,
-				Tag:     v.Tag,
 				Comment: v.Comment,
+				Tag:     v.Tag,
 			}
 			if v.ProjectionPolicy != nil {
 				s[i].ProjectionPolicy = &ViewColumnProjectionPolicy{

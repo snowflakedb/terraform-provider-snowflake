@@ -24,8 +24,8 @@ func (c *HybridTableClient) Create(t *testing.T) (sdk.SchemaObjectIdentifier, fu
 	t.Helper()
 	return c.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
 		{
-			Name: "id",
-			Type: sdk.DataType("INT"),
+			Name:     "id",
+			DataType: sdk.DataType("INT"),
 			InlineConstraint: &sdk.ColumnInlineConstraint{
 				Type: sdk.ColumnConstraintTypePrimaryKey,
 			},

@@ -160,7 +160,7 @@ func (r *AlterPostgresInstanceRequest) toOpts() *AlterPostgresInstanceOptions {
 	}
 	if r.ResetAccess != nil {
 		opts.ResetAccess = &PostgresInstanceResetAccess{
-			For: r.ResetAccess.For,
+			ForRole: r.ResetAccess.ForRole,
 		}
 	}
 	return opts

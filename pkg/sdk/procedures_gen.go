@@ -184,9 +184,14 @@ type CreateForSQLProcedureOptions struct {
 }
 
 type ProcedureSQLReturns struct {
-	ResultDataType *ProcedureReturnsResultDataType `ddl:"keyword"`
-	Table          *ProcedureReturnsTable          `ddl:"keyword" sql:"TABLE"`
-	NotNull        *bool                           `ddl:"keyword" sql:"NOT NULL"`
+	ResultDataType *ProcedureSQLReturnsResultDataType `ddl:"keyword"`
+	Table          *ProcedureReturnsTable             `ddl:"keyword" sql:"TABLE"`
+	NotNull        *bool                              `ddl:"keyword" sql:"NOT NULL"`
+}
+
+type ProcedureSQLReturnsResultDataType struct {
+	ResultDataTypeOld DataType           `ddl:"keyword,no_quotes"`
+	ResultDataType    datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
 }
 
 // AlterProcedureOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-procedure.

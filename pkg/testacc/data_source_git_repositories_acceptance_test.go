@@ -26,7 +26,7 @@ func TestAcc_GitRepositories(t *testing.T) {
 	origin := testvars.ExampleGitRepositoryOrigin
 	comment := random.Comment()
 
-	apiIntegrationId, apiCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	apiIntegrationId, apiCleanup := testClient().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, origin)
 	t.Cleanup(apiCleanup)
 
 	secretId, secretCleanup := testClient().Secret.CreateRandomPasswordSecret(t)
@@ -107,7 +107,7 @@ func TestAcc_GitRepositories_Filtering(t *testing.T) {
 	id3 := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	origin := testvars.ExampleGitRepositoryOrigin
-	apiIntegrationId, apiCleanup := testClient().ApiIntegration.CreateApiIntegrationForGitRepository(t, origin)
+	apiIntegrationId, apiCleanup := testClient().ApiIntegration.CreateGitTokenWithAllowedOrigin(t, origin)
 	t.Cleanup(apiCleanup)
 
 	secretID := testClient().Ids.RandomSchemaObjectIdentifier()

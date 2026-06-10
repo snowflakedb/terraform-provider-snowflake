@@ -49,7 +49,7 @@ type HybridTableColumnsConstraintsAndIndexes struct {
 
 type HybridTableColumn struct {
 	Name             string                  `ddl:"keyword,double_quotes"`
-	Type             DataType                `ddl:"keyword"`
+	DataType         DataType                `ddl:"keyword"`
 	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
 	NotNull          *bool                   `ddl:"keyword" sql:"NOT NULL"`
 	DefaultValue     *ColumnDefaultValue     `ddl:"keyword"`
@@ -58,10 +58,10 @@ type HybridTableColumn struct {
 }
 
 type HybridTableOutOfLineConstraint struct {
-	Name       *string              `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	Type       ColumnConstraintType `ddl:"keyword"`
-	Columns    []string             `ddl:"keyword,parentheses"`
-	ForeignKey *OutOfLineForeignKey `ddl:"keyword"`
+	Name                 *string              `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	ColumnConstraintType ColumnConstraintType `ddl:"keyword"`
+	Columns              []string             `ddl:"keyword,parentheses"`
+	ForeignKey           *OutOfLineForeignKey `ddl:"keyword"`
 }
 
 type HybridTableOutOfLineIndex struct {
@@ -98,7 +98,7 @@ type HybridTableAddColumnAction struct {
 	column           bool                    `ddl:"static" sql:"COLUMN"`
 	IfNotExists      *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	Name             string                  `ddl:"keyword,double_quotes"`
-	Type             DataType                `ddl:"keyword"`
+	DataType         DataType                `ddl:"keyword"`
 	Collate          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 	DefaultValue     *ColumnDefaultValue     `ddl:"keyword"`
 	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
@@ -132,7 +132,7 @@ type HybridTableAlterColumnAction struct {
 	ColumnName   string        `ddl:"keyword,double_quotes"`
 	DropDefault  *bool         `ddl:"keyword" sql:"DROP DEFAULT"`
 	SetDefault   *SequenceName `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
-	Type         *DataType     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
+	DataType     *DataType     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
 	Comment      *string       `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 	UnsetComment *bool         `ddl:"keyword" sql:"UNSET COMMENT"`
 }

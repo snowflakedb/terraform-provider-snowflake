@@ -3,31 +3,48 @@
 package sdk
 
 import (
+	"strings"
 	"testing"
 )
 
-// Added manually
-const (
-	awsAllowedPrefix    = "https://123456.execute-api.us-west-2.amazonaws.com/prod/"
-	azureAllowedPrefix  = "https://apim-hello-world.azure-api.net/"
-	googleAllowedPrefix = "https://gateway-id-123456.uc.gateway.dev/"
-
-	apiAwsRoleArn        = "arn:aws:iam::000000000001:/role/test"
-	azureTenantId        = "00000000-0000-0000-0000-000000000000"
-	azureAdApplicationId = "11111111-1111-1111-1111-111111111111"
-	googleAudience       = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
-)
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationAwsApiProviderType]{"ApiIntegrationAwsApiProviderType", AllApiIntegrationAwsApiProviderTypes, ToApiIntegrationAwsApiProviderType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationOauthClientAuthMethod]{"ApiIntegrationOauthClientAuthMethod", AllApiIntegrationOauthClientAuthMethods, ToApiIntegrationOauthClientAuthMethod})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationOauthAllowedScope]{"ApiIntegrationOauthAllowedScope", AllApiIntegrationOauthAllowedScopes, ToApiIntegrationOauthAllowedScope})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationAzureApiProviderType]{"ApiIntegrationAzureApiProviderType", AllApiIntegrationAzureApiProviderTypes, ToApiIntegrationAzureApiProviderType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationGoogleApiProviderType]{"ApiIntegrationGoogleApiProviderType", AllApiIntegrationGoogleApiProviderTypes, ToApiIntegrationGoogleApiProviderType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationGitApiProviderType]{"ApiIntegrationGitApiProviderType", AllApiIntegrationGitApiProviderTypes, ToApiIntegrationGitApiProviderType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationMcpApiProviderType]{"ApiIntegrationMcpApiProviderType", AllApiIntegrationMcpApiProviderTypes, ToApiIntegrationMcpApiProviderType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationUserAuthType]{"ApiIntegrationUserAuthType", AllApiIntegrationUserAuthTypes, ToApiIntegrationUserAuthType})
+}
 
 func TestApiIntegrations_Create(t *testing.T) {
+	const (
+		awsAllowedPrefix    = "https://123456.execute-api.us-west-2.amazonaws.com/prod/"
+		azureAllowedPrefix  = "https://apim-hello-world.azure-api.net/"
+		googleAllowedPrefix = "https://gateway-id-123456.uc.gateway.dev/"
+		gitAllowedPrefix    = "https://github.com/my-org/"
+		mcpAllowedPrefix    = "https://mcp.example.com/"
+
+		apiAwsRoleArn              = "arn:aws:iam::000000000001:/role/test"
+		azureTenantId              = "00000000-0000-0000-0000-000000000000"
+		azureAdApplicationId       = "11111111-1111-1111-1111-111111111111"
+		googleAudience             = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
+		oauthAuthorizationEndpoint = "https://auth.example.com/authorize"
+		oauthTokenEndpoint         = "https://auth.example.com/token"
+		oauthClientId              = "oauth-client-id-123"
+		oauthClientSecret          = "oauth-client-secret-456"
+		oauthResourceUrl           = "https://resource.example.com"
+	)
+
 	id := randomAccountObjectIdentifier()
 
 	// Manually added default options for each type
-	// Minimal valid CreateApiIntegrationOptions for AWS
 	defaultOptsAws := func() *CreateApiIntegrationOptions {
 		return &CreateApiIntegrationOptions{
 			name: id,
 			AwsApiProviderParams: &AwsApiParams{
-				ApiProvider:   ApiIntegrationAwsApiGateway,
+				ApiProvider:   ApiIntegrationAwsApiProviderTypeAwsApiGateway,
 				ApiAwsRoleArn: apiAwsRoleArn,
 			},
 			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
@@ -35,7 +52,6 @@ func TestApiIntegrations_Create(t *testing.T) {
 		}
 	}
 
-	// Minimal valid CreateApiIntegrationOptions for Azure
 	defaultOptsAzure := func() *CreateApiIntegrationOptions {
 		return &CreateApiIntegrationOptions{
 			name: id,
@@ -48,7 +64,6 @@ func TestApiIntegrations_Create(t *testing.T) {
 		}
 	}
 
-	// Minimal valid CreateApiIntegrationOptions for Google
 	defaultOptsGoogle := func() *CreateApiIntegrationOptions {
 		return &CreateApiIntegrationOptions{
 			name: id,
@@ -80,33 +95,80 @@ func TestApiIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiIntegrationOptions", "IfNotExists", "OrReplace"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AwsApiProviderParams opts.AzureApiProviderParams opts.GoogleApiProviderParams] should be present", func(t *testing.T) {
+	t.Run("validation: conflicting fields for [opts.OrReplace opts.ExternalMcpOAuth2ProviderParams]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AwsApiProviderParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams"))
+		opts.OrReplace = Bool(true)
+		opts.ExternalMcpOAuth2ProviderParams = &ExternalMcpOAuth2Params{}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpOAuth2ProviderParams"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AwsApiProviderParams opts.AzureApiProviderParams opts.GoogleApiProviderParams] should be present - more present", func(t *testing.T) {
+	t.Run("validation: conflicting fields for [opts.OrReplace opts.ExternalMcpDynamicClientProviderParams]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AzureApiProviderParams = new(AzureApiParams)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams"))
+		opts.OrReplace = Bool(true)
+		opts.ExternalMcpDynamicClientProviderParams = &ExternalMcpDynamicClientParams{}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiIntegrationOptions", "OrReplace", "ExternalMcpDynamicClientProviderParams"))
+	})
+
+	t.Run("validation: exactly one field from [opts.AwsApiProviderParams opts.AzureApiProviderParams opts.GoogleApiProviderParams opts.GitHttpsApiTokenBasedProviderParams opts.GitHttpsApiGithubAppProviderParams opts.GitHttpsApiOAuth2ProviderParams opts.GitHttpsApiPrivateLinkProviderParams opts.ExternalMcpOAuth2ProviderParams opts.ExternalMcpDynamicClientProviderParams] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AwsApiProviderParams = nil
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions", "AwsApiProviderParams", "AzureApiProviderParams", "GoogleApiProviderParams", "GitHttpsApiTokenBasedProviderParams", "GitHttpsApiGithubAppProviderParams", "GitHttpsApiOAuth2ProviderParams", "GitHttpsApiPrivateLinkProviderParams", "ExternalMcpOAuth2ProviderParams", "ExternalMcpDynamicClientProviderParams"))
+	})
+
+	t.Run("validation: exactly one field from [opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllSecrets opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.NoSecrets opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList] should be present", func(t *testing.T) {
+		opts := &CreateApiIntegrationOptions{
+			name: id,
+			GitHttpsApiTokenBasedProviderParams: &GitHttpsApiTokenBasedParams{
+				AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{},
+			},
+			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
+			Enabled:            true,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+	})
+
+	t.Run("validation: exactly one field from [opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllSecrets opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.NoSecrets opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList] should be present", func(t *testing.T) {
+		opts := &CreateApiIntegrationOptions{
+			name: id,
+			GitHttpsApiPrivateLinkProviderParams: &GitHttpsApiPrivateLinkParams{
+				AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{},
+				UsePrivatelinkEndpoint:       true,
+			},
+			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
+			Enabled:            true,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateApiIntegrationOptions.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE API INTEGRATION %s API_PROVIDER = aws_api_gateway API_AWS_ROLE_ARN = '%s' API_ALLOWED_PREFIXES = ('%s') ENABLED = true`, id.FullyQualifiedName(), apiAwsRoleArn, awsAllowedPrefix)
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION %s",
+			"API_PROVIDER = aws_api_gateway",
+			"API_AWS_ROLE_ARN = '%s'",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"ENABLED = true",
+		}, " "), id.FullyQualifiedName(), apiAwsRoleArn, awsAllowedPrefix)
 	})
 
-	// Manually added all options for each variant
 	t.Run("all options - aws", func(t *testing.T) {
 		opts := defaultOptsAws()
 		opts.IfNotExists = Bool(true)
-		opts.AwsApiProviderParams.ApiProvider = ApiIntegrationAwsPrivateApiGateway
+		opts.AwsApiProviderParams.ApiProvider = ApiIntegrationAwsApiProviderTypeAwsPrivateApiGateway
 		opts.AwsApiProviderParams.ApiKey = String("key")
 		opts.ApiBlockedPrefixes = []ApiIntegrationEndpointPrefix{{Path: googleAllowedPrefix}, {Path: azureAllowedPrefix}}
 		opts.Enabled = false
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE API INTEGRATION IF NOT EXISTS %s API_PROVIDER = aws_private_api_gateway API_AWS_ROLE_ARN = '%s' API_KEY = 'key' API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') ENABLED = false COMMENT = 'some comment'`, id.FullyQualifiedName(), apiAwsRoleArn, awsAllowedPrefix, googleAllowedPrefix, azureAllowedPrefix)
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = aws_private_api_gateway",
+			"API_AWS_ROLE_ARN = '%s'",
+			"API_KEY = 'key'",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s', '%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), apiAwsRoleArn, awsAllowedPrefix, googleAllowedPrefix, azureAllowedPrefix)
 	})
 
 	t.Run("all options - azure", func(t *testing.T) {
@@ -116,7 +178,17 @@ func TestApiIntegrations_Create(t *testing.T) {
 		opts.ApiBlockedPrefixes = []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}, {Path: googleAllowedPrefix}}
 		opts.Enabled = false
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE API INTEGRATION IF NOT EXISTS %s API_PROVIDER = azure_api_management AZURE_TENANT_ID = '%s' AZURE_AD_APPLICATION_ID = '%s' API_KEY = 'key' API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') ENABLED = false COMMENT = 'some comment'`, id.FullyQualifiedName(), azureTenantId, azureAdApplicationId, azureAllowedPrefix, awsAllowedPrefix, googleAllowedPrefix)
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = azure_api_management",
+			"AZURE_TENANT_ID = '%s'",
+			"AZURE_AD_APPLICATION_ID = '%s'",
+			"API_KEY = 'key'",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s', '%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), azureTenantId, azureAdApplicationId, azureAllowedPrefix, awsAllowedPrefix, googleAllowedPrefix)
 	})
 
 	t.Run("all options - google", func(t *testing.T) {
@@ -125,13 +197,220 @@ func TestApiIntegrations_Create(t *testing.T) {
 		opts.ApiBlockedPrefixes = []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}, {Path: azureAllowedPrefix}}
 		opts.Enabled = false
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE API INTEGRATION IF NOT EXISTS %s API_PROVIDER = google_api_gateway GOOGLE_AUDIENCE = '%s' API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') ENABLED = false COMMENT = 'some comment'`, id.FullyQualifiedName(), googleAudience, googleAllowedPrefix, awsAllowedPrefix, azureAllowedPrefix)
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = google_api_gateway",
+			"GOOGLE_AUDIENCE = '%s'",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s', '%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), googleAudience, googleAllowedPrefix, awsAllowedPrefix, azureAllowedPrefix)
+	})
+
+	t.Run("all options - git_https_api with token", func(t *testing.T) {
+		opts := &CreateApiIntegrationOptions{
+			name:        id,
+			IfNotExists: Bool(true),
+			GitHttpsApiTokenBasedProviderParams: &GitHttpsApiTokenBasedParams{
+				AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{
+					AllSecrets: Bool(true),
+				},
+			},
+			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}},
+			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
+			Enabled:            false,
+			Comment:            String("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = git_https_api",
+			"ALLOWED_AUTHENTICATION_SECRETS = ALL",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), gitAllowedPrefix, awsAllowedPrefix)
+	})
+
+	t.Run("all options - git_https_api with GitHub App", func(t *testing.T) {
+		opts := &CreateApiIntegrationOptions{
+			name:                               id,
+			IfNotExists:                        Bool(true),
+			GitHttpsApiGithubAppProviderParams: &GitHttpsApiGithubAppParams{},
+			ApiAllowedPrefixes:                 []ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}},
+			ApiBlockedPrefixes:                 []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
+			Enabled:                            false,
+			Comment:                            String("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = git_https_api",
+			"API_USER_AUTHENTICATION = (TYPE = SNOWFLAKE_GITHUB_APP)",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), gitAllowedPrefix, awsAllowedPrefix)
+	})
+
+	t.Run("all options - git_https_api with OAuth2", func(t *testing.T) {
+		opts := &CreateApiIntegrationOptions{
+			name:        id,
+			IfNotExists: Bool(true),
+			GitHttpsApiOAuth2ProviderParams: &GitHttpsApiOAuth2Params{
+				ApiUserAuthentication: OAuth2GitUserAuthentication{
+					OauthAuthorizationEndpoint: oauthAuthorizationEndpoint,
+					OauthTokenEndpoint:         oauthTokenEndpoint,
+					OauthClientId:              oauthClientId,
+					OauthClientSecret:          oauthClientSecret,
+					OauthAccessTokenValidity:   Int(3600),
+					OauthRefreshTokenValidity:  Int(86400),
+					OauthAllowedScopes: []ApiIntegrationOauthAllowedScopeItem{
+						{Scope: ApiIntegrationOauthAllowedScopeReadApi},
+						{Scope: ApiIntegrationOauthAllowedScopeReadRepository},
+					},
+					OauthUsername: String("user@example.com"),
+				},
+			},
+			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}},
+			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
+			Enabled:            false,
+			Comment:            String("some comment"),
+		}
+		authSQL := strings.Join([]string{
+			"TYPE = OAUTH2",
+			"OAUTH_AUTHORIZATION_ENDPOINT = '%s'",
+			"OAUTH_TOKEN_ENDPOINT = '%s'",
+			"OAUTH_CLIENT_ID = '%s'",
+			"OAUTH_CLIENT_SECRET = '%s'",
+			"OAUTH_ACCESS_TOKEN_VALIDITY = 3600",
+			"OAUTH_REFRESH_TOKEN_VALIDITY = 86400",
+			"OAUTH_ALLOWED_SCOPES = ('read_api', 'read_repository')",
+			"OAUTH_USERNAME = 'user@example.com'",
+		}, " ")
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = git_https_api",
+			"API_USER_AUTHENTICATION = (" + authSQL + ")",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), oauthAuthorizationEndpoint, oauthTokenEndpoint, oauthClientId, oauthClientSecret, gitAllowedPrefix, awsAllowedPrefix)
+	})
+
+	t.Run("all options - git_https_api with private link", func(t *testing.T) {
+		allowedSecret := NewSchemaObjectIdentifier("db", "schema", "secret")
+		cert := NewSchemaObjectIdentifier("db", "schema", "cert")
+		opts := &CreateApiIntegrationOptions{
+			name:        id,
+			IfNotExists: Bool(true),
+			GitHttpsApiPrivateLinkProviderParams: &GitHttpsApiPrivateLinkParams{
+				AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{
+					AllowedList: []SchemaObjectIdentifier{allowedSecret},
+				},
+				UsePrivatelinkEndpoint: true,
+				TlsTrustedCertificates: []SchemaObjectIdentifier{cert},
+			},
+			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}},
+			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
+			Enabled:            false,
+			Comment:            String("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = git_https_api",
+			"ALLOWED_AUTHENTICATION_SECRETS = (%s)",
+			"USE_PRIVATELINK_ENDPOINT = true",
+			"TLS_TRUSTED_CERTIFICATES = (%s)",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), allowedSecret.FullyQualifiedName(), cert.FullyQualifiedName(), gitAllowedPrefix, awsAllowedPrefix)
+	})
+
+	t.Run("all options - external_mcp with OAuth2", func(t *testing.T) {
+		opts := &CreateApiIntegrationOptions{
+			name:        id,
+			IfNotExists: Bool(true),
+			ExternalMcpOAuth2ProviderParams: &ExternalMcpOAuth2Params{
+				ApiUserAuthentication: OAuth2McpUserAuthentication{
+					OauthClientId:              oauthClientId,
+					OauthClientSecret:          oauthClientSecret,
+					OauthTokenEndpoint:         oauthTokenEndpoint,
+					OauthAuthorizationEndpoint: oauthAuthorizationEndpoint,
+					OauthClientAuthMethod:      Pointer(ApiIntegrationOauthClientAuthMethodClientSecretPost),
+					OauthDiscoveryUrl:          String("https://auth.example.com/.well-known/openid-configuration"),
+					OauthRefreshTokenValidity:  Int(86400),
+				},
+			},
+			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: mcpAllowedPrefix}},
+			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
+			Enabled:            false,
+			Comment:            String("some comment"),
+		}
+		authSQL := strings.Join([]string{
+			"TYPE = OAUTH2",
+			"OAUTH_CLIENT_ID = '%s'",
+			"OAUTH_CLIENT_SECRET = '%s'",
+			"OAUTH_TOKEN_ENDPOINT = '%s'",
+			"OAUTH_AUTHORIZATION_ENDPOINT = '%s'",
+			"OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST",
+			"OAUTH_DISCOVERY_URL = 'https://auth.example.com/.well-known/openid-configuration'",
+			"OAUTH_REFRESH_TOKEN_VALIDITY = 86400",
+		}, " ")
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = external_mcp",
+			"API_USER_AUTHENTICATION = (" + authSQL + ")",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), oauthClientId, oauthClientSecret, oauthTokenEndpoint, oauthAuthorizationEndpoint, mcpAllowedPrefix, awsAllowedPrefix)
+	})
+
+	t.Run("all options - external_mcp with dynamic client", func(t *testing.T) {
+		opts := &CreateApiIntegrationOptions{
+			name:        id,
+			IfNotExists: Bool(true),
+			ExternalMcpDynamicClientProviderParams: &ExternalMcpDynamicClientParams{
+				ApiUserAuthentication: DynamicClientMcpUserAuthentication{
+					OauthResourceUrl: oauthResourceUrl,
+				},
+			},
+			ApiAllowedPrefixes: []ApiIntegrationEndpointPrefix{{Path: mcpAllowedPrefix}},
+			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}},
+			Enabled:            false,
+			Comment:            String("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"CREATE API INTEGRATION IF NOT EXISTS %s",
+			"API_PROVIDER = external_mcp",
+			"API_USER_AUTHENTICATION = (TYPE = OAUTH_DYNAMIC_CLIENT OAUTH_RESOURCE_URL = '%s')",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s')",
+			"ENABLED = false",
+			"COMMENT = 'some comment'",
+		}, " "), id.FullyQualifiedName(), oauthResourceUrl, mcpAllowedPrefix, awsAllowedPrefix)
 	})
 }
 
 func TestApiIntegrations_Alter(t *testing.T) {
+	const (
+		awsAllowedPrefix    = "https://123456.execute-api.us-west-2.amazonaws.com/prod/"
+		azureAllowedPrefix  = "https://apim-hello-world.azure-api.net/"
+		googleAllowedPrefix = "https://gateway-id-123456.uc.gateway.dev/"
+
+		oauthAuthorizationEndpoint = "https://auth.example.com/authorize"
+		oauthTokenEndpoint         = "https://auth.example.com/token"
+		oauthClientId              = "oauth-client-id-123"
+		oauthClientSecret          = "oauth-client-secret-456"
+	)
+
 	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterApiIntegrationOptions
 	defaultOpts := func() *AlterApiIntegrationOptions {
 		return &AlterApiIntegrationOptions{
 			name: id,
@@ -152,21 +431,14 @@ func TestApiIntegrations_Alter(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.IfExists opts.SetTags]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-		}
+		opts.SetTags = []TagAssociation{{Name: NewAccountObjectIdentifier("name"), Value: "value"}}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterApiIntegrationOptions", "IfExists", "SetTags"))
 	})
 
 	t.Run("validation: conflicting fields for [opts.IfExists opts.UnsetTags]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("one"),
-		}
+		opts.UnsetTags = []ObjectIdentifier{NewAccountObjectIdentifier("one")}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterApiIntegrationOptions", "IfExists", "UnsetTags"))
 	})
 
@@ -177,53 +449,105 @@ func TestApiIntegrations_Alter(t *testing.T) {
 
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Set = &ApiIntegrationSet{
-			Enabled: Bool(true),
-		}
-		opts.Unset = &ApiIntegrationUnset{
-			Enabled: Bool(true),
-		}
+		opts.Set = &ApiIntegrationSet{Enabled: Bool(true)}
+		opts.Unset = &ApiIntegrationUnset{Enabled: Bool(true)}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.Set.AwsParams opts.Set.AzureParams opts.Set.GoogleParams]", func(t *testing.T) {
+	t.Run("validation: more than one field from [opts.Set.AwsParams opts.Set.AzureParams opts.Set.GoogleParams opts.Set.GitHttpsApiTokenBasedParams opts.Set.GitHttpsApiPrivateLinkParams opts.Set.ExternalMcpOAuth2Params] cannot be set at the same time", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ApiIntegrationSet{
-			AwsParams:   &SetAwsApiParams{ApiKey: String("key")},
-			AzureParams: &SetAzureApiParams{ApiKey: String("key")},
+			AwsParams:                    &SetAwsApiParams{ApiAwsRoleArn: String("a")},
+			AzureParams:                  &SetAzureApiParams{AzureTenantId: String("a")},
+			GoogleParams:                 &SetGoogleApiParams{GoogleAudience: "a"},
+			GitHttpsApiTokenBasedParams:  &SetGitHttpsApiTokenBasedParams{AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{AllSecrets: Bool(true)}},
+			GitHttpsApiPrivateLinkParams: &SetGitHttpsApiPrivateLinkParams{UsePrivatelinkEndpoint: Bool(true)},
+			ExternalMcpOAuth2Params:      &SetExternalMcpOAuth2Params{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.AwsParams opts.Set.AzureParams opts.Set.GoogleParams opts.Set.Enabled opts.Set.ApiAllowedPrefixes opts.Set.ApiBlockedPrefixes opts.Set.Comment] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.AwsParams opts.Set.AzureParams opts.Set.GoogleParams opts.Set.GitHttpsApiTokenBasedParams opts.Set.GitHttpsApiPrivateLinkParams opts.Set.ExternalMcpOAuth2Params opts.Set.Enabled opts.Set.ApiAllowedPrefixes opts.Set.ApiBlockedPrefixes opts.Set.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ApiIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set", "AwsParams", "AzureParams", "GoogleParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "ExternalMcpOAuth2Params", "Enabled", "ApiAllowedPrefixes", "ApiBlockedPrefixes", "Comment"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.AwsParams.ApiAwsRoleArn opts.Set.AwsParams.ApiKey] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Set = &ApiIntegrationSet{
-			AwsParams: &SetAwsApiParams{},
-		}
+		opts.Set = &ApiIntegrationSet{AwsParams: &SetAwsApiParams{}}
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set.AwsParams", "ApiAwsRoleArn", "ApiKey"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.AzureParams.AzureTenantId opts.Set.AzureParams.AzureAdApplicationId opts.Set.AzureParams.ApiKey] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Set = &ApiIntegrationSet{
-			AzureParams: &SetAzureApiParams{},
-		}
+		opts.Set = &ApiIntegrationSet{AzureParams: &SetAzureApiParams{}}
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set.AzureParams", "AzureTenantId", "AzureAdApplicationId", "ApiKey"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.ApiKey opts.Unset.Enabled opts.Unset.ApiBlockedPrefixes opts.Unset.Comment] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Unset = &ApiIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Unset", "ApiKey", "Enabled", "ApiBlockedPrefixes", "Comment"))
+		opts.Set = &ApiIntegrationSet{GitHttpsApiTokenBasedParams: &SetGitHttpsApiTokenBasedParams{}}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiTokenBasedParams", "AllowedAuthenticationSecrets"))
 	})
 
-	// Manually added set for each variant
+	t.Run("validation: exactly one field from [opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllSecrets opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.NoSecrets opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ApiIntegrationSet{GitHttpsApiTokenBasedParams: &SetGitHttpsApiTokenBasedParams{AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{}}}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets opts.Set.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint opts.Set.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ApiIntegrationSet{GitHttpsApiPrivateLinkParams: &SetGitHttpsApiPrivateLinkParams{}}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams", "AllowedAuthenticationSecrets", "UsePrivatelinkEndpoint", "TlsTrustedCertificates"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllSecrets opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.NoSecrets opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ApiIntegrationSet{GitHttpsApiPrivateLinkParams: &SetGitHttpsApiPrivateLinkParams{AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{}}}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiIntegrationOptions.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets", "AllSecrets", "NoSecrets", "AllowedList"))
+	})
+
+	t.Run("validation: more than one field from [opts.Unset.AwsParams opts.Unset.AzureParams opts.Unset.GitHttpsApiTokenBasedParams opts.Unset.GitHttpsApiPrivateLinkParams] cannot be set at the same time", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{
+			AwsParams:                    &UnsetAwsApiParams{ApiKey: Bool(true)},
+			GitHttpsApiPrivateLinkParams: &UnsetGitHttpsApiPrivateLinkParams{TlsTrustedCertificates: Bool(true)},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("AlterApiIntegrationOptions.Unset", "AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.AwsParams opts.Unset.AzureParams opts.Unset.GitHttpsApiTokenBasedParams opts.Unset.GitHttpsApiPrivateLinkParams opts.Unset.Enabled opts.Unset.ApiBlockedPrefixes opts.Unset.Comment] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Unset", "AwsParams", "AzureParams", "GitHttpsApiTokenBasedParams", "GitHttpsApiPrivateLinkParams", "Enabled", "ApiBlockedPrefixes", "Comment"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.AwsParams.ApiKey] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{AwsParams: &UnsetAwsApiParams{}}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Unset.AwsParams", "ApiKey"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.AzureParams.ApiKey] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{AzureParams: &UnsetAzureApiParams{}}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Unset.AzureParams", "ApiKey"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{GitHttpsApiTokenBasedParams: &UnsetGitHttpsApiTokenBasedParams{}}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Unset.GitHttpsApiTokenBasedParams", "AllowedAuthenticationSecrets"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets opts.Unset.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates opts.Unset.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{GitHttpsApiPrivateLinkParams: &UnsetGitHttpsApiPrivateLinkParams{}}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiIntegrationOptions.Unset.GitHttpsApiPrivateLinkParams", "AllowedAuthenticationSecrets", "TlsTrustedCertificates", "UsePrivatelinkEndpoint"))
+	})
+
 	t.Run("set - aws", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ApiIntegrationSet{
@@ -236,7 +560,15 @@ func TestApiIntegrations_Alter(t *testing.T) {
 			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}, {Path: googleAllowedPrefix}},
 			Comment:            String("comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s SET API_AWS_ROLE_ARN = 'new-aws-role-arn' API_KEY = 'key' ENABLED = true API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') COMMENT = 'comment'", id.FullyQualifiedName(), awsAllowedPrefix, azureAllowedPrefix, googleAllowedPrefix)
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"ALTER API INTEGRATION %s SET",
+			"API_AWS_ROLE_ARN = 'new-aws-role-arn'",
+			"API_KEY = 'key'",
+			"ENABLED = true",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s', '%s')",
+			"COMMENT = 'comment'",
+		}, " "), id.FullyQualifiedName(), awsAllowedPrefix, azureAllowedPrefix, googleAllowedPrefix)
 	})
 
 	t.Run("set - azure", func(t *testing.T) {
@@ -251,7 +583,15 @@ func TestApiIntegrations_Alter(t *testing.T) {
 			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}, {Path: googleAllowedPrefix}},
 			Comment:            String("comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s SET AZURE_AD_APPLICATION_ID = 'new-azure-ad-application-id' API_KEY = 'key' ENABLED = true API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') COMMENT = 'comment'", id.FullyQualifiedName(), azureAllowedPrefix, awsAllowedPrefix, googleAllowedPrefix)
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"ALTER API INTEGRATION %s SET",
+			"AZURE_AD_APPLICATION_ID = 'new-azure-ad-application-id'",
+			"API_KEY = 'key'",
+			"ENABLED = true",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s', '%s')",
+			"COMMENT = 'comment'",
+		}, " "), id.FullyQualifiedName(), azureAllowedPrefix, awsAllowedPrefix, googleAllowedPrefix)
 	})
 
 	t.Run("set - google", func(t *testing.T) {
@@ -262,41 +602,123 @@ func TestApiIntegrations_Alter(t *testing.T) {
 			ApiBlockedPrefixes: []ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}, {Path: azureAllowedPrefix}},
 			Comment:            String("comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s SET ENABLED = true API_ALLOWED_PREFIXES = ('%s') API_BLOCKED_PREFIXES = ('%s', '%s') COMMENT = 'comment'", id.FullyQualifiedName(), googleAllowedPrefix, awsAllowedPrefix, azureAllowedPrefix)
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"ALTER API INTEGRATION %s SET",
+			"ENABLED = true",
+			"API_ALLOWED_PREFIXES = ('%s')",
+			"API_BLOCKED_PREFIXES = ('%s', '%s')",
+			"COMMENT = 'comment'",
+		}, " "), id.FullyQualifiedName(), googleAllowedPrefix, awsAllowedPrefix, azureAllowedPrefix)
 	})
 
-	// Manually added unset tests
-	t.Run("unset single", func(t *testing.T) {
+	t.Run("set - git_https_api with token", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Unset = &ApiIntegrationUnset{
-			Comment: Bool(true),
+		opts.Set = &ApiIntegrationSet{
+			GitHttpsApiTokenBasedParams: &SetGitHttpsApiTokenBasedParams{
+				AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{
+					NoSecrets: Bool(true),
+				},
+			},
 		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s SET ALLOWED_AUTHENTICATION_SECRETS = NONE", id.FullyQualifiedName())
+	})
+
+	t.Run("set - git_https_api with private link", func(t *testing.T) {
+		cert := NewSchemaObjectIdentifier("db", "schema", "cert")
+		opts := defaultOpts()
+		opts.Set = &ApiIntegrationSet{
+			GitHttpsApiPrivateLinkParams: &SetGitHttpsApiPrivateLinkParams{
+				AllowedAuthenticationSecrets: &ApiIntegrationAllowedAuthenticationSecrets{
+					AllSecrets: Bool(true),
+				},
+				UsePrivatelinkEndpoint: Bool(true),
+				TlsTrustedCertificates: []SchemaObjectIdentifier{cert},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"ALTER API INTEGRATION %s SET",
+			"ALLOWED_AUTHENTICATION_SECRETS = ALL",
+			"USE_PRIVATELINK_ENDPOINT = true",
+			"TLS_TRUSTED_CERTIFICATES = (%s)",
+		}, " "), id.FullyQualifiedName(), cert.FullyQualifiedName())
+	})
+
+	t.Run("set - external_mcp with OAuth2", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ApiIntegrationSet{
+			ExternalMcpOAuth2Params: &SetExternalMcpOAuth2Params{
+				ApiUserAuthentication: OAuth2McpUserAuthentication{
+					OauthClientId:              oauthClientId,
+					OauthClientSecret:          oauthClientSecret,
+					OauthTokenEndpoint:         oauthTokenEndpoint,
+					OauthAuthorizationEndpoint: oauthAuthorizationEndpoint,
+				},
+			},
+		}
+		authSQL := strings.Join([]string{
+			"TYPE = OAUTH2",
+			"OAUTH_CLIENT_ID = '%s'",
+			"OAUTH_CLIENT_SECRET = '%s'",
+			"OAUTH_TOKEN_ENDPOINT = '%s'",
+			"OAUTH_AUTHORIZATION_ENDPOINT = '%s'",
+		}, " ")
+		assertOptsValidAndSQLEquals(t, opts, strings.Join([]string{
+			"ALTER API INTEGRATION %s SET",
+			"API_USER_AUTHENTICATION = (" + authSQL + ")",
+		}, " "), id.FullyQualifiedName(), oauthClientId, oauthClientSecret, oauthTokenEndpoint, oauthAuthorizationEndpoint)
+	})
+
+	t.Run("unset - single common", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{Comment: Bool(true)}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET COMMENT", id.FullyQualifiedName())
 	})
 
-	t.Run("unset multiple", func(t *testing.T) {
+	t.Run("unset - aws", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{AwsParams: &UnsetAwsApiParams{ApiKey: Bool(true)}}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET API_KEY", id.FullyQualifiedName())
+	})
+
+	t.Run("unset - azure", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{AzureParams: &UnsetAzureApiParams{ApiKey: Bool(true)}}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET API_KEY", id.FullyQualifiedName())
+	})
+
+	t.Run("unset - git_https_api with token", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{GitHttpsApiTokenBasedParams: &UnsetGitHttpsApiTokenBasedParams{AllowedAuthenticationSecrets: Bool(true)}}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET ALLOWED_AUTHENTICATION_SECRETS", id.FullyQualifiedName())
+	})
+
+	t.Run("unset - git_https_api with private link", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &ApiIntegrationUnset{
-			ApiKey:             Bool(true),
+			GitHttpsApiPrivateLinkParams: &UnsetGitHttpsApiPrivateLinkParams{
+				AllowedAuthenticationSecrets: Bool(true),
+				TlsTrustedCertificates:       Bool(true),
+				UsePrivatelinkEndpoint:       Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET ALLOWED_AUTHENTICATION_SECRETS, TLS_TRUSTED_CERTIFICATES, USE_PRIVATELINK_ENDPOINT", id.FullyQualifiedName())
+	})
+
+	t.Run("unset - common params", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ApiIntegrationUnset{
 			Enabled:            Bool(true),
 			ApiBlockedPrefixes: Bool(true),
 			Comment:            Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET API_KEY, ENABLED, API_BLOCKED_PREFIXES, COMMENT", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER API INTEGRATION %s UNSET ENABLED, API_BLOCKED_PREFIXES, COMMENT", id.FullyQualifiedName())
 	})
 
-	// Manually added tags tests
 	t.Run("set tags", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
+			{Name: NewAccountObjectIdentifier("name"), Value: "value"},
+			{Name: NewAccountObjectIdentifier("second-name"), Value: "second-value"},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER API INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
 	})
@@ -313,11 +735,8 @@ func TestApiIntegrations_Alter(t *testing.T) {
 
 func TestApiIntegrations_Drop(t *testing.T) {
 	id := randomAccountObjectIdentifier()
-	// Minimal valid DropApiIntegrationOptions
 	defaultOpts := func() *DropApiIntegrationOptions {
-		return &DropApiIntegrationOptions{
-			name: id,
-		}
+		return &DropApiIntegrationOptions{name: id}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
@@ -331,6 +750,11 @@ func TestApiIntegrations_Drop(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "DROP API INTEGRATION %s", id.FullyQualifiedName())
+	})
+
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
@@ -340,7 +764,6 @@ func TestApiIntegrations_Drop(t *testing.T) {
 
 func TestApiIntegrations_Show(t *testing.T) {
 	id := randomAccountObjectIdentifier()
-	// Minimal valid ShowApiIntegrationOptions
 	defaultOpts := func() *ShowApiIntegrationOptions {
 		return &ShowApiIntegrationOptions{}
 	}
@@ -357,20 +780,15 @@ func TestApiIntegrations_Show(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String(id.Name()),
-		}
+		opts.Like = &Like{Pattern: String(id.Name())}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW API INTEGRATIONS LIKE '%s'", id.Name())
 	})
 }
 
 func TestApiIntegrations_Describe(t *testing.T) {
 	id := randomAccountObjectIdentifier()
-	// Minimal valid DescribeApiIntegrationOptions
 	defaultOpts := func() *DescribeApiIntegrationOptions {
-		return &DescribeApiIntegrationOptions{
-			name: id,
-		}
+		return &DescribeApiIntegrationOptions{name: id}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
@@ -382,6 +800,11 @@ func TestApiIntegrations_Describe(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE API INTEGRATION %s", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {

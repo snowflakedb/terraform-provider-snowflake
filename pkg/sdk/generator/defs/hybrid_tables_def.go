@@ -8,7 +8,7 @@ import (
 
 var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+	PredefinedQueryStructField("DataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
 	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
 	OptionalSQL("NOT NULL").
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
@@ -17,7 +17,7 @@ var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
 	OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-	WithField(g.EnumLegacy[sdkcommons.ColumnConstraintType]("Type", g.KeywordOptions().Required())).
+	WithField(g.EnumLegacy[sdkcommons.ColumnConstraintType]("ColumnConstraintType", g.KeywordOptions().Required())).
 	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
 	// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
 	// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
@@ -41,7 +41,7 @@ var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	SQL("COLUMN").
 	OptionalSQL("IF NOT EXISTS").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+	PredefinedQueryStructField("DataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
 	OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
 	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
@@ -56,7 +56,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 		g.NewQueryStruct("HybridTableConstraintActionRename").
 			SQL("RENAME CONSTRAINT").
 			Text("OldName", g.KeywordOptions().Required().DoubleQuotes()).
-			AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().DoubleQuotes(), "NewName"),
+			AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().DoubleQuotes().Required(), "NewName"),
 		g.KeywordOptions(),
 	).
 	OptionalQueryStructField(
@@ -84,10 +84,10 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("DROP DEFAULT").
 	WithField(g.OptionalEnumLegacy[sdkcommons.SequenceName]("SetDefault", g.ParameterOptions().NoEquals().SQL("SET DEFAULT"))).
-	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
+	PredefinedQueryStructField("DataType", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
 	OptionalSQL("UNSET COMMENT").
-	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment")
+	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment")
 
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
@@ -164,7 +164,7 @@ var hybridTablesDef = g.NewInterface(
 		SQL("HYBRID TABLE").
 		IfNotExists().
 		Name().
-		QueryStructField("ColumnsAndConstraints", hybridTableColumnsConstraintsAndIndexes, g.ListOptions().Parentheses()).
+		QueryStructField("ColumnsAndConstraints", hybridTableColumnsConstraintsAndIndexes, g.ListOptions().Parentheses().Required()).
 		// NOTE: DATA_RETENTION_TIME_IN_DAYS and MAX_DATA_EXTENSION_TIME_IN_DAYS are
 		// accepted at CREATE HYBRID TABLE time even though the public docs omit them
 		// from the syntax diagram. Verified against production via SHOW PARAMETERS.
@@ -254,7 +254,7 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-	g.ShowByIDInFiltering,
+	g.ShowByIDTableInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,

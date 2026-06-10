@@ -43,7 +43,7 @@ func (c *ProcedureClient) CreateSqlWithIdentifierAndArgument(t *testing.T, id sd
 
 	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
 	argName := "x"
-	dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
+	dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 	returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 	argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 
@@ -162,7 +162,7 @@ func (c *ProcedureClient) CreateWithIdentifier(t *testing.T, id sdk.SchemaObject
 	err := c.client().CreateForSQL(ctx,
 		sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(
 			id.SchemaObjectId(),
-			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeInt)),
+			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureSQLReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeInt)),
 			`BEGIN RETURN 1; END`).WithArguments(argumentRequests),
 	)
 	require.NoError(t, err)

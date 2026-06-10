@@ -144,7 +144,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		t.Helper()
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		scimReq := sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientOptionGeneric, snowflakeroles.GenericScimProvisioner.FullyQualifiedName())
+		scimReq := sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientOptionGeneric, snowflakeroles.GenericScimProvisioner)
 		if with != nil {
 			with(scimReq)
 		}
@@ -552,8 +552,12 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		req := sdk.NewCreateOauthForCustomClientsSecurityIntegrationRequest(id, sdk.OauthSecurityIntegrationClientTypeOptionPublic, "https://example.com").WithNetworkPolicy(networkPolicy.ID())
 		err := client.SecurityIntegrations.CreateOauthForCustomClients(ctx, req)
 		require.NoError(t, err)
-
 		t.Cleanup(testClientHelper().SecurityIntegration.DropSecurityIntegrationFunc(t, id))
+
+		details, err := client.SecurityIntegrations.Describe(ctx, id)
+		require.NoError(t, err)
+
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "NETWORK_POLICY", Type: "String", Value: networkPolicy.Name, Default: ""})
 	})
 
 	t.Run("CreateSaml2", func(t *testing.T) {
@@ -844,7 +848,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			WithSet(
 				*sdk.NewOauthForPartnerApplicationsIntegrationSetRequest().
 					WithBlockedRolesList(sdk.BlockedRolesListRequest{BlockedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
-					WithComment("a").
+					WithComment(sdk.StringAllowEmpty{Value: "a"}).
 					WithEnabled(true).
 					WithOauthIssueRefreshTokens(true).
 					WithOauthRedirectUri("http://example2.com").

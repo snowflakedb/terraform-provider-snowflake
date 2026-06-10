@@ -69,13 +69,11 @@ func (v *procedures) Show(ctx context.Context, request *ShowProcedureRequest) ([
 func (v *procedures) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Procedure, error) {
 	request := NewShowProcedureRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		// adjusted manually
 		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
 	procedures, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
 	return collections.FindFirst(procedures, func(r Procedure) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
 }
 
@@ -400,12 +398,9 @@ func (r *CreateForSQLProcedureRequest) toOpts() *CreateForSQLProcedureOptions {
 		NotNull: r.Returns.NotNull,
 	}
 	if r.Returns.ResultDataType != nil {
-		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
+		opts.Returns.ResultDataType = &ProcedureSQLReturnsResultDataType{
 			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
 			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			// adjusted manually
-			Null:    r.Returns.ResultDataType.Null,
-			NotNull: r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -524,8 +519,6 @@ func (r procedureDetailRow) convert() (*ProcedureDetail, error) {
 
 func (r *CallProcedureRequest) toOpts() *CallProcedureOptions {
 	opts := &CallProcedureOptions{
-		// adjusted manually
-		call:              false,
 		name:              r.name,
 		CallArguments:     r.CallArguments,
 		ScriptingVariable: r.ScriptingVariable,
@@ -675,7 +668,6 @@ func (r *CreateAndCallForScalaProcedureRequest) toOpts() *CreateAndCallForScalaP
 		s := make([]ProcedureWithClause, len(r.WithClauses))
 		for i, v := range r.WithClauses {
 			s[i] = ProcedureWithClause{
-				// prefix removed manually
 				CteName:    v.CteName,
 				CteColumns: v.CteColumns,
 				Statement:  v.Statement,
@@ -714,7 +706,6 @@ func (r *CreateAndCallForJavaScriptProcedureRequest) toOpts() *CreateAndCallForJ
 		s := make([]ProcedureWithClause, len(r.WithClauses))
 		for i, v := range r.WithClauses {
 			s[i] = ProcedureWithClause{
-				// prefix removed manually
 				CteName:    v.CteName,
 				CteColumns: v.CteColumns,
 				Statement:  v.Statement,
@@ -793,7 +784,6 @@ func (r *CreateAndCallForPythonProcedureRequest) toOpts() *CreateAndCallForPytho
 		s := make([]ProcedureWithClause, len(r.WithClauses))
 		for i, v := range r.WithClauses {
 			s[i] = ProcedureWithClause{
-				// prefix removed manually
 				CteName:    v.CteName,
 				CteColumns: v.CteColumns,
 				Statement:  v.Statement,
@@ -852,7 +842,6 @@ func (r *CreateAndCallForSQLProcedureRequest) toOpts() *CreateAndCallForSQLProce
 		s := make([]ProcedureWithClause, len(r.WithClauses))
 		for i, v := range r.WithClauses {
 			s[i] = ProcedureWithClause{
-				// prefix removed manually
 				CteName:    v.CteName,
 				CteColumns: v.CteColumns,
 				Statement:  v.Statement,

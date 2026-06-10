@@ -133,4 +133,5 @@ var organizationAccountsDef = g.NewInterface(
 	WithEnums(
 		OrganizationAccountEditionEnumDef,
 	).
-	WithShowObjectType("Account")
+	WithShowObjectType("Account").
+	WithShowByIDFindPredicateKind(g.ShowByIDFindPredicateAccountName)

@@ -913,7 +913,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 			name:                id,
 			ProcedureDefinition: "3.141592654::FLOAT",
 			Returns: ProcedureSQLReturns{
-				ResultDataType: &ProcedureReturnsResultDataType{
+				ResultDataType: &ProcedureSQLReturnsResultDataType{
 					ResultDataType: dataTypeVarchar_100,
 				},
 			},
@@ -971,7 +971,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present - two present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = ProcedureSQLReturns{
-			ResultDataType: &ProcedureReturnsResultDataType{},
+			ResultDataType: &ProcedureSQLReturnsResultDataType{},
 			Table:          &ProcedureReturnsTable{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLProcedureOptions.Returns", "ResultDataType", "Table"))
@@ -980,7 +980,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = ProcedureSQLReturns{
-			ResultDataType: &ProcedureReturnsResultDataType{},
+			ResultDataType: &ProcedureSQLReturnsResultDataType{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
 	})
@@ -988,7 +988,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - two present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = ProcedureSQLReturns{
-			ResultDataType: &ProcedureReturnsResultDataType{
+			ResultDataType: &ProcedureSQLReturnsResultDataType{
 				ResultDataTypeOld: DataTypeFloat,
 				ResultDataType:    dataTypeFloat,
 			},
@@ -1048,7 +1048,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 		}
 		opts.CopyGrants = Bool(true)
 		opts.Returns = ProcedureSQLReturns{
-			ResultDataType: &ProcedureReturnsResultDataType{
+			ResultDataType: &ProcedureSQLReturnsResultDataType{
 				ResultDataTypeOld: "VARCHAR",
 			},
 			NotNull: Bool(true),
@@ -1074,7 +1074,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 		}
 		opts.CopyGrants = Bool(true)
 		opts.Returns = ProcedureSQLReturns{
-			ResultDataType: &ProcedureReturnsResultDataType{
+			ResultDataType: &ProcedureSQLReturnsResultDataType{
 				ResultDataType: dataTypeVarchar_100,
 			},
 			NotNull: Bool(true),
@@ -1090,7 +1090,7 @@ func TestProcedures_CreateForSQL(t *testing.T) {
 	t.Run("create with no arguments", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Returns = ProcedureSQLReturns{
-			ResultDataType: &ProcedureReturnsResultDataType{
+			ResultDataType: &ProcedureSQLReturnsResultDataType{
 				ResultDataType: dataTypeFloat,
 			},
 		}

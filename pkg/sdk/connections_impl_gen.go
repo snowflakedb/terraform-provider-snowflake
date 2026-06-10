@@ -53,7 +53,6 @@ func (v *connections) ShowByID(ctx context.Context, id AccountObjectIdentifier) 
 		return nil, err
 	}
 	return collections.FindFirst(connections, func(r Connection) bool {
-		// manually adjusted
 		return r.Name == id.Name() && r.AccountLocator == v.client.GetAccountLocator()
 	})
 }

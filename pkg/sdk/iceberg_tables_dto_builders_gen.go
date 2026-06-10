@@ -813,6 +813,111 @@ func NewIcebergTableAggregationPolicyRequest(
 	return &s
 }
 
+func NewCreateFromIcebergFilesIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	metadataFilePath string,
+) *CreateFromIcebergFilesIcebergTableRequest {
+	s := CreateFromIcebergFilesIcebergTableRequest{}
+	s.name = name
+	s.MetadataFilePath = metadataFilePath
+	return &s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromIcebergFilesIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithComment(comment string) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithContact(contact []TableContact) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
+func NewCreateFromDeltaLakeIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	baseLocation string,
+) *CreateFromDeltaLakeIcebergTableRequest {
+	s := CreateFromDeltaLakeIcebergTableRequest{}
+	s.name = name
+	s.BaseLocation = baseLocation
+	return &s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromDeltaLakeIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithAutoRefresh(autoRefresh bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.AutoRefresh = &autoRefresh
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithComment(comment string) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithContact(contact []TableContact) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
 func NewAlterIcebergTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterIcebergTableRequest {

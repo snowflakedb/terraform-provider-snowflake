@@ -142,6 +142,15 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.StorageIntegration{},
 	},
 	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.StorageLifecyclePolicy{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.StorageLifecyclePolicyDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.StorageIntegrationAwsDetails{},
 		IsDataSourceOutput: true,
@@ -207,6 +216,10 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.StorageLocationS3CompatDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.ApiIntegration{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",

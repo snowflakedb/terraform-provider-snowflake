@@ -20,11 +20,12 @@ type CreateToOptsOptionalExampleOptions struct {
 
 // AlterToOptsOptionalExampleOptions is based on https://example.com.
 type AlterToOptsOptionalExampleOptions struct {
-	alter         bool                     `ddl:"static" sql:"ALTER"`
-	IfExists      *bool                    `ddl:"keyword" sql:"IF EXISTS"`
-	name          DatabaseObjectIdentifier `ddl:"identifier"`
-	OptionalField *OptionalField           `ddl:"keyword"`
-	RequiredField RequiredField            `ddl:"keyword"`
+	alter         bool                             `ddl:"static" sql:"ALTER"`
+	IfExists      *bool                            `ddl:"keyword" sql:"IF EXISTS"`
+	name          DatabaseObjectIdentifier         `ddl:"identifier"`
+	OptionalField *OptionalField                   `ddl:"keyword"`
+	RequiredField RequiredField                    `ddl:"keyword"`
+	ItemList      []ToOptsOptionalExampleSliceItem `ddl:"keyword" sql:"ITEMS"`
 }
 
 type OptionalField struct {
@@ -33,4 +34,9 @@ type OptionalField struct {
 
 type RequiredField struct {
 	SomeRequiredList []DatabaseObjectIdentifier `ddl:"list"`
+}
+
+type ToOptsOptionalExampleSliceItem struct {
+	NAME   string                    `ddl:"keyword"`
+	Parent *DatabaseObjectIdentifier `ddl:"identifier"`
 }

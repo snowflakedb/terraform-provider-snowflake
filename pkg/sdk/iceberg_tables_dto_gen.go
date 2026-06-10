@@ -5,11 +5,13 @@ package sdk
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 
 var (
-	_ optionsProvider[CreateIcebergTableOptions]   = new(CreateIcebergTableRequest)
-	_ optionsProvider[AlterIcebergTableOptions]    = new(AlterIcebergTableRequest)
-	_ optionsProvider[DropIcebergTableOptions]     = new(DropIcebergTableRequest)
-	_ optionsProvider[ShowIcebergTableOptions]     = new(ShowIcebergTableRequest)
-	_ optionsProvider[DescribeIcebergTableOptions] = new(DescribeIcebergTableRequest)
+	_ optionsProvider[CreateIcebergTableOptions]                 = new(CreateIcebergTableRequest)
+	_ optionsProvider[CreateFromIcebergFilesIcebergTableOptions] = new(CreateFromIcebergFilesIcebergTableRequest)
+	_ optionsProvider[CreateFromDeltaLakeIcebergTableOptions]    = new(CreateFromDeltaLakeIcebergTableRequest)
+	_ optionsProvider[AlterIcebergTableOptions]                  = new(AlterIcebergTableRequest)
+	_ optionsProvider[DropIcebergTableOptions]                   = new(DropIcebergTableRequest)
+	_ optionsProvider[ShowIcebergTableOptions]                   = new(ShowIcebergTableRequest)
+	_ optionsProvider[DescribeIcebergTableOptions]               = new(DescribeIcebergTableRequest)
 )
 
 type CreateIcebergTableRequest struct {
@@ -230,6 +232,33 @@ type IcebergTableRowAccessPolicyRequest struct {
 
 type IcebergTableAggregationPolicyRequest struct {
 	AggregationPolicy SchemaObjectIdentifier // required
+}
+
+type CreateFromIcebergFilesIcebergTableRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
+	ExternalVolume           *AccountObjectIdentifier
+	Catalog                  *AccountObjectIdentifier
+	MetadataFilePath         string // required
+	ReplaceInvalidCharacters *bool
+	Comment                  *string
+	Tag                      []TagAssociation
+	Contact                  []TableContact
+}
+
+type CreateFromDeltaLakeIcebergTableRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
+	ExternalVolume           *AccountObjectIdentifier
+	Catalog                  *AccountObjectIdentifier
+	BaseLocation             string // required
+	ReplaceInvalidCharacters *bool
+	AutoRefresh              *bool
+	Comment                  *string
+	Tag                      []TagAssociation
+	Contact                  []TableContact
 }
 
 type AlterIcebergTableRequest struct {

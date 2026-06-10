@@ -135,8 +135,7 @@ func (r showCortexAgentDBRow) convert() (*CortexAgent, error) {
 		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err != nil {
 			return nil, fmt.Errorf("parsing cortex agent profile: %w", err)
 		} else {
-			// Adjusted manually - dereference added
-			result.Profile = *v
+			result.Profile = v
 		}
 	}
 	return result, nil
@@ -162,8 +161,7 @@ func (r cortexAgentDetailsRow) convert() (*CortexAgentDetails, error) {
 		if v, err := UnmarshalCortexAgentProfile(r.Profile.String); err != nil {
 			return nil, fmt.Errorf("parsing cortex agent profile: %w", err)
 		} else {
-			// Adjusted manually - dereference added
-			result.Profile = *v
+			result.Profile = v
 		}
 	}
 	if v, err := NormalizeCortexAgentSpecification(r.AgentSpec); err != nil {

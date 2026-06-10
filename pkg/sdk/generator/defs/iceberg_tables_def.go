@@ -31,6 +31,10 @@ var (
 		"IcebergTableCatalog", "IcebergTableCatalogs",
 		"SNOWFLAKE",
 	)
+	StorageSerializationPolicyEnumDef = g.NewEnum(
+		"StorageSerializationPolicy", "StorageSerializationPolicies",
+		"COMPATIBLE", "OPTIMIZED",
+	)
 )
 
 var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
@@ -182,12 +186,12 @@ var icebergTablesDef = g.NewInterface(
 		ListQueryStructField("PartitionBy", icebergTablePartitionExpression, g.KeywordOptions().Parentheses().SQL("PARTITION BY")).
 		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
-		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME")).
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
 		OptionalAssignment("CATALOG", IcebergTableCatalogEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("BASE_LOCATION", g.ParameterOptions().SingleQuotes()).
 		OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("CATALOG_SYNC", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("StorageSerializationPolicy", "*StorageSerializationPolicy", g.ParameterOptions().SQL("STORAGE_SERIALIZATION_POLICY")).
+		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", StorageSerializationPolicyEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
@@ -204,6 +208,43 @@ var icebergTablesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
 		WithAdditionalValidations(),
+).CustomOperation(
+	"CreateFromIcebergFiles",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files",
+	g.NewQueryStruct("CreateFromIcebergFiles").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+		TextAssignment("METADATA_FILE_PATH", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalComment().
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).CustomOperation(
+	"CreateFromDeltaLake",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-delta",
+	g.NewQueryStruct("CreateFromDeltaLake").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+		TextAssignment("BASE_LOCATION", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
+		OptionalComment().
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table",
 	g.NewQueryStruct("AlterIcebergTable").
@@ -319,7 +360,7 @@ var icebergTablesDef = g.NewInterface(
 		Enum("iceberg_table_type", IcebergTableTypeEnumDef).
 		OptionalText("catalog_table_name").
 		OptionalText("catalog_namespace").
-		Text("base_location").
+		OptionalText("base_location").
 		Field("can_write_metadata", "string", "bool").
 		OptionalText("comment").
 		OptionalText("name_mapping").
@@ -374,4 +415,5 @@ var icebergTablesDef = g.NewInterface(
 	IcebergTableLogEventLevelEnumDef,
 	IcebergTableTypeEnumDef,
 	IcebergTableCatalogEnumDef,
+	StorageSerializationPolicyEnumDef,
 )
