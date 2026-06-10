@@ -13,6 +13,7 @@ import (
 type IcebergTables interface {
 	Create(ctx context.Context, request *CreateIcebergTableRequest) error
 	CreateFromIcebergFiles(ctx context.Context, request *CreateFromIcebergFilesIcebergTableRequest) error
+	CreateFromDeltaLake(ctx context.Context, request *CreateFromDeltaLakeIcebergTableRequest) error
 	Alter(ctx context.Context, request *AlterIcebergTableRequest) error
 	Drop(ctx context.Context, request *DropIcebergTableRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
@@ -270,6 +271,23 @@ type CreateFromIcebergFilesIcebergTableOptions struct {
 	Catalog                  *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"CATALOG"`
 	MetadataFilePath         string                   `ddl:"parameter,single_quotes" sql:"METADATA_FILE_PATH"`
 	ReplaceInvalidCharacters *bool                    `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	Comment                  *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                      []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
+	Contact                  []TableContact           `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
+}
+
+// CreateFromDeltaLakeIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-delta.
+type CreateFromDeltaLakeIcebergTableOptions struct {
+	create                   bool                     `ddl:"static" sql:"CREATE"`
+	OrReplace                *bool                    `ddl:"keyword" sql:"OR REPLACE"`
+	icebergTable             bool                     `ddl:"static" sql:"ICEBERG TABLE"`
+	IfNotExists              *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                     SchemaObjectIdentifier   `ddl:"identifier"`
+	ExternalVolume           *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"EXTERNAL_VOLUME"`
+	Catalog                  *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"CATALOG"`
+	BaseLocation             string                   `ddl:"parameter,single_quotes" sql:"BASE_LOCATION"`
+	ReplaceInvalidCharacters *bool                    `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	AutoRefresh              *bool                    `ddl:"parameter" sql:"AUTO_REFRESH"`
 	Comment                  *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                      []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
 	Contact                  []TableContact           `ddl:"keyword,parentheses" sql:"WITH CONTACT"`

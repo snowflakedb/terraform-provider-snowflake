@@ -30,6 +30,11 @@ func (v *icebergTables) CreateFromIcebergFiles(ctx context.Context, request *Cre
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *icebergTables) CreateFromDeltaLake(ctx context.Context, request *CreateFromDeltaLakeIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *icebergTables) Alter(ctx context.Context, request *AlterIcebergTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -312,6 +317,23 @@ func (r *CreateFromIcebergFilesIcebergTableRequest) toOpts() *CreateFromIcebergF
 		Catalog:                  r.Catalog,
 		MetadataFilePath:         r.MetadataFilePath,
 		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
+	}
+	return opts
+}
+
+func (r *CreateFromDeltaLakeIcebergTableRequest) toOpts() *CreateFromDeltaLakeIcebergTableOptions {
+	opts := &CreateFromDeltaLakeIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
+		BaseLocation:             r.BaseLocation,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		AutoRefresh:              r.AutoRefresh,
 		Comment:                  r.Comment,
 		Tag:                      r.Tag,
 		Contact:                  r.Contact,

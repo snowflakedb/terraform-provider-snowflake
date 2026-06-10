@@ -226,6 +226,25 @@ var icebergTablesDef = g.NewInterface(
 		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).CustomOperation(
+	"CreateFromDeltaLake",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-delta",
+	g.NewQueryStruct("CreateFromDeltaLake").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+		TextAssignment("BASE_LOCATION", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
+		OptionalComment().
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table",
 	g.NewQueryStruct("AlterIcebergTable").
