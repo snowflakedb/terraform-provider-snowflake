@@ -21,6 +21,8 @@ on:
   repository_dispatch:
     types: [ ok-to-test-command ]
   pull_request:
+    branches:
+      - main
 
 jobs:
   account-level-tests:
@@ -156,10 +158,6 @@ jobs:
           TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL }}
           TF_VAR_V097_COMPATIBLE_PRIVATE_KEY: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY }}
           TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE }}
-
-      - name: Sweepers cleanup
-        if: ${{ always() && steps.setup_go.conclusion == 'success' }}
-        run: echo y | make sweep
 
       - name: Create or update comment
         if: ${{ always() }}
