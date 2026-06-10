@@ -64,6 +64,14 @@ There are example files ready for generation, e.g. [database_role_def.go](exampl
 - [database_role_impl_gen.go](example/database_roles_impl_gen.go) - SDK interface implementation
 - [database_role_gen_test.go](example/database_roles_gen_test.go) - unit tests placeholders with guidance comments (at least for now)
 
+Additional example definitions covering specific generator features:
+- [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`
+- [paired_struct_def.go](example/defs/paired_struct_def.go) — all `PairedStructs` field methods and options (see [PairedStructs](#pairedstructs) below)
+- [to_opts_optional_example_def.go](example/defs/to_opts_optional_example_def.go) — `ListQueryStructField` with slice-of-structs toOpts, optional nested fields
+- [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()` and `WithDropSafelyForce()` options
+- [instance_method_example_def.go](example/defs/instance_method_example_def.go) — `InstanceMethodOperation` and `InstanceMethodOperationScalar`
+- [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
+
 The commands follow the same format as the official SDK ones:
 
 ```shell
@@ -102,58 +110,12 @@ This section aims mostly at reducing the manual labor when using the generator i
 
 - Generate `ID()` methods for `Request` structs as already done for the `Opts` structs.
 - Allow overriding the `ObjectType()` method returned `ObjectType`.
-- Generate `convert` function body.
-  - General implementation considerations:
-    - For simpler generation implementation, consider always initiating an empty struct and setting all the fields using mappers.
-    - There are existing helpers for convert mappings like `mapNullString`. There is also a separate file with `handleNullableBoolString`. Consider unifying and reusing them in the generated code for more compactness.
-    - Optional trimming (e.g. `strings.Trim(row.MetricDatabaseName, "\"")`); this should probably be a setting for each mapping.
-  - Simple conversions (required with no type change). Use this as default.
-  - Additional predefined conversions, like:
-    - string to bool `r.IsDefault == "Y"`
-    - additional checks for string value (e.g. `r.Value.String != "null"`)
-    - optional with `.Valid` for different types
-    - enum conversion
-    - identifier parsing
-    - datatype parsing (e.g. `datatypes.ParseDataType(row.Type)`); remember about `LegacyDataTypeFrom`.
-    - type conversions (e.g. `ParseBool`)
-    - list with simple type (e.g. `strings.Split(r.AttributeColumns.String, ",")` or `ParseCommaSeparatedStringArray`)
-    - list with complex type conversion (e.g. `ParseCommaSeparatedAccountIdentifierArray`)
-    - json unmarshaling (e.g. `json.Unmarshal([]byte(row.RefArguments), &x.RefArguments)`)
-  - (optionally - if needed) Custom conversion/custom conversion hooks, like:
-    - function and procedure argument parsing
-    - custom checks for string value (e.g. `r.AutomaticClustering == "ON"` or `row.Origin.String != "<revoked>"`)
-    - additional adjustment with list conversion (e.g. in `DescNetworkRulesRow`)
-    - tracking the metadata (e.g. `tracking.TrimMetadata(r.Text)`)
-    - analyze conversions for `failoverGroupDBRow`
-    - analyze conversions for `grantRow`
-    - analyze conversions for `shareRow`
-    - analyze conversions for `userWorkloadIdentityAuthenticationMethodsDBRow`
-    - warehouse generation custom logic
-    - task predecessors custom logic
 
 [//]: # (TODO [next PRs]: update next sections)
 
 > ⚠️ **Disclaimer**: The following sections may contain the deprecated information. They will be cleaned up shortly.
 
 ##### Old High-priority improvements/changes
-
-- Improve lists handling
-  - wrong generated validations for `validIdentifierIfSet` for cases like
-    ```go
-    A := QueryStruct("A").
-        Identifier("Name").
-        Validation(ValidIdentifierIfSet, "Name")
-    B := QueryStruct("B")
-        .ListQueryStructField(A) // A []A - validations will be wrong because this is array
-    ```
-  - generation for lists is not recursive, so we're only supporting one-level mapping
-    ```go
-    []Request1{ foo Request2, bar int } // won't be converted
-    []Request1{ foo string, bar int } // will
-    ```
-  - optional structs inside slices are not being checked for nil in the toOpts() methods in the implementation file
-  - pointer fields are not being handled correctly in lists
-- Refresh the example
 
 ##### Essentials
 - generate each branch of alter in tests (instead of basic and all options)
@@ -217,5 +179,87 @@ find a better solution to solve the issue (add more logic to the templates ?)
   - Add a possibility to generate a non-sql method with a custom implementation. Currently, it is done only in `ShowById...` functions with `newNoSqlOperation`.
 - improve handling operations that return one row
 - add more context to validated identifiers, so that error contains the affected field
-- add custom identifier wrapping, like it's used in security integrations' network policies
 - Generate nested Request structs for fields that use slices of Opt objects (see the following fields Create operation in semantic_view.def: LogicalTables, semanticViewRelationships, etc.)
+
+---
+
+### DropSafely options
+
+`DropOperation` accepts optional functional options that configure how the generated `DropSafely` method behaves:
+
+- **`WithDropSafelyHook()`** — the generated `DropSafely` calls `v.dropSafelyHook(ctx, id)` before issuing the drop. Useful when a pre-drop side-effect is needed (e.g. revoking grants). The hook function must be implemented manually in a `_ext.go` file.
+
+- **`WithDropSafelyForce()`** — the generated `DropSafely` appends `.WithForce(true)` to the Drop request, so dependent objects are also removed.
+
+Example usage:
+```go
+// Calls v.dropSafelyHook(ctx, id) before dropping.
+).DropOperation("https://...", dropStruct, g.WithDropSafelyHook())
+
+// Appends .WithForce(true) to the Drop request.
+).DropOperation("https://...", dropStruct, g.WithDropSafelyForce())
+```
+
+See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for complete examples.
+
+---
+
+### PairedStructs
+
+`PairedStructs` is a single-definition approach for declaring both the database row struct (`dbStruct`) and the plain SDK struct (`plainStruct`) in one field-by-field chain. It replaces the older pattern of calling `ShowOperation`/`DescribeOperation` with separate `DbStruct` and `PlainStruct` builders.
+
+See [paired_struct_def.go](example/defs/paired_struct_def.go) for a complete usage example covering all supported field methods and options.
+
+#### Constructor
+
+**`StructPair(dbName, plainName string)`** — creates a new `PairedStructs` builder. `dbName` is the Go name for the database row struct (used in SQL scanning); `plainName` is the plain SDK struct name (returned by `Show`/`Describe`).
+
+#### Field methods
+
+Each method accepts zero or more `PairedFieldOption`s (see below).
+
+| Method | db struct type | plain struct type |
+|---|---|---|
+| `Text(col)` | `string` | `string` |
+| `OptionalText(col)` | `sql.NullString` | `*string` |
+| `Bool(col)` | `bool` | `bool` |
+| `OptionalBool(col)` | `sql.NullBool` | `*bool` |
+| `BoolFromText(col)` | `string` | `bool` (compared to `"Y"`) |
+| `OptionalBoolFromText(col)` | `sql.NullString` | `*bool` |
+| `Number(col)` | `int` | `int` |
+| `OptionalNumber(col)` | `sql.NullInt64` | `*int` |
+| `Time(col)` | `time.Time` | `time.Time` |
+| `OptionalTime(col)` | `sql.NullTime` | `*time.Time` |
+| `PlainField(col, plainKind)` | `string` | `<plainKind>` |
+| `OptionalPlainField(col, plainKind)` | `sql.NullString` | `<plainKind>` |
+| `DataType(col)` | `string` | `datatypes.DataType` (via `ParseDataType`) |
+| `StringList(col)` | `string` | `[]string` |
+| `AccountObjectIdentifier(col)` | `string` | `AccountObjectIdentifier` (plain defaults to `"Id"`) |
+| `OptionalAccountObjectIdentifier(col)` | `sql.NullString` | `*AccountObjectIdentifier` |
+| `DatabaseObjectIdentifier(col)` | `string` | `DatabaseObjectIdentifier` (plain defaults to `"Id"`) |
+| `SchemaObjectIdentifier(col)` | `string` | `SchemaObjectIdentifier` (plain defaults to `"Id"`) |
+| `OptionalSchemaObjectIdentifier(col)` | `sql.NullString` | `*SchemaObjectIdentifier` |
+| `NullableSchemaObjectIdentifierArray(col)` | `sql.NullString` | `[]SchemaObjectIdentifier` |
+| `AccountIdentifierArray(col)` | `string` | `[]AccountIdentifier` |
+| `SchemaObjectIdentifierWithArguments(col)` | `string` | `SchemaObjectIdentifierWithArguments` |
+| `OptionalSchemaObjectIdentifierWithArguments(col)` | `sql.NullString` | `*SchemaObjectIdentifierWithArguments` |
+| `Enum(col, enumDef)` | `string` | `<enumType>` |
+| `OptionalEnum(col, enumDef)` | `sql.NullString` | `*<enumType>` |
+| `JsonField(col, kind)` | `string` | `<kind>` (via `json.Unmarshal`) |
+| `Field(col, dbKind, plainKind)` | explicit | explicit |
+
+#### PairedFieldOption options
+
+- **`WithDbFieldName(name)`** — override the Go field name in the db row struct (default: derived from `col` via `ToSnakeCase` → `ToCamelCase`).
+- **`WithPlainFieldName(name)`** — override the plain struct field name.
+- **`WithRequiredInPlain()`** — strip the pointer from the plain kind (e.g. `sql.NullString` db → `string` plain instead of `*string`).
+- **`WithCustomParser(funcName)`** — use a custom parse function `func(string) (T, error)` to convert the db value.
+- **`WithValueAdjuster(funcName)`** — apply an adjustment function `func(T) T` to the converted value after assignment.
+- **`WithBoolTrueValue(v)`** — override the truthy string for `BoolFromText`/`OptionalBoolFromText` (default `"Y"`).
+- **`WithBoolParsed()`** — use `strconv.ParseBool` instead of a fixed string comparison for bool fields.
+- **`WithManualConvert()`** — skip this field in the generated `convert()` body; handle it manually in `additionalConvert()` in a `_ext.go` file.
+
+#### PairedStructs modifiers
+
+- **`WithoutConvertGeneration()`** — disable `convert()` body generation for this pair entirely.
+- **`WithShowResultFilterHook()`** — enable row filtering; the generated code calls `excludeFromShow()` which must be implemented in a `_ext.go` file.

@@ -53,8 +53,8 @@ func (opts *AlterHybridTableOptions) validate() error {
 	}
 	if valueSet(opts.AlterColumnAction) {
 		for _, alterColumnAction := range opts.AlterColumnAction {
-			if !exactlyOneValueSet(alterColumnAction.DropDefault, alterColumnAction.SetDefault, alterColumnAction.Type, alterColumnAction.Comment, alterColumnAction.UnsetComment) {
-				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment"))
+			if !exactlyOneValueSet(alterColumnAction.DropDefault, alterColumnAction.SetDefault, alterColumnAction.DataType, alterColumnAction.Comment, alterColumnAction.UnsetComment) {
+				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment"))
 			}
 		}
 	}

@@ -57,7 +57,7 @@ var postgresInstancesDef = g.NewInterface(
 		SQL("POSTGRES INSTANCE").
 		Name().
 		TextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
-		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
+		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions().Required()).
 		EnumAssignment(
 			"AUTHENTICATION_AUTHORITY", PostgresInstanceAuthenticationAuthorityEnumDef,
 			g.ParameterOptions().NoQuotes().Required(),
@@ -84,7 +84,7 @@ var postgresInstancesDef = g.NewInterface(
 				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().SingleQuotes().ArrowEquals()).
 				OptionalTextAssignment("OFFSET", g.ParameterOptions().NoQuotes().ArrowEquals()).
 				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset"),
-			g.KeywordOptions().SQL("AT").MustParentheses(),
+			g.ListOptions().SQL("AT").Parentheses().NoComma(),
 		).
 		OptionalQueryStructField(
 			"Before",
@@ -92,7 +92,7 @@ var postgresInstancesDef = g.NewInterface(
 				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().SingleQuotes().ArrowEquals()).
 				OptionalTextAssignment("OFFSET", g.ParameterOptions().NoQuotes().ArrowEquals()).
 				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset"),
-			g.KeywordOptions().SQL("BEFORE").MustParentheses(),
+			g.ListOptions().SQL("BEFORE").Parentheses().NoComma(),
 		).
 		OptionalTextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
 		OptionalNumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
@@ -131,7 +131,7 @@ var postgresInstancesDef = g.NewInterface(
 					"Apply",
 					g.NewQueryStruct("PostgresInstanceApply").
 						OptionalSQL("IMMEDIATELY").
-						OptionalTextAssignment("ON", g.ParameterOptions().SingleQuotes()).
+						OptionalTextAssignment("ON", g.ParameterOptions().SingleQuotes().NoEquals()).
 						WithValidation(g.ExactlyOneValueSet, "Immediately", "On"),
 					g.KeywordOptions().SQL("APPLY"),
 				).
@@ -154,7 +154,7 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"ResetAccess",
 			g.NewQueryStruct("PostgresInstanceResetAccess").
-				OptionalTextAssignment("FOR", g.ParameterOptions().NoEquals().SingleQuotes()),
+				EnumAssignmentWithFieldName("FOR", PostgresInstanceResetAccessRoleEnumDef, g.ParameterOptions().NoEquals().SingleQuotes().Required(), "ForRole"),
 			g.KeywordOptions().SQL("RESET ACCESS"),
 		).
 		OptionalSetTags().

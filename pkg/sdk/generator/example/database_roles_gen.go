@@ -37,8 +37,9 @@ type DatabaseRoleRename struct {
 }
 
 type DatabaseRoleSet struct {
-	Comment          string            `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	NestedThirdLevel *NestedThirdLevel `ddl:"list,no_parentheses" sql:"NESTED"`
+	Comment          string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	NestedThirdLevel *NestedThirdLevel        `ddl:"list,no_parentheses" sql:"NESTED"`
+	NetworkPolicy    *AccountObjectIdentifier `ddl:"identifier,single_quotes,equals" sql:"NETWORK_POLICY"`
 }
 
 type NestedThirdLevel struct {

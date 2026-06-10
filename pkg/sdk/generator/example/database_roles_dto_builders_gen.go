@@ -74,6 +74,11 @@ func (s *DatabaseRoleSetRequest) WithNestedThirdLevel(nestedThirdLevel NestedThi
 	return s
 }
 
+func (s *DatabaseRoleSetRequest) WithNetworkPolicy(networkPolicy AccountObjectIdentifier) *DatabaseRoleSetRequest {
+	s.NetworkPolicy = &networkPolicy
+	return s
+}
+
 func NewNestedThirdLevelRequest(
 	field DatabaseObjectIdentifier,
 ) *NestedThirdLevelRequest {

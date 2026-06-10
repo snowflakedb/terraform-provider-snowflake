@@ -318,7 +318,7 @@ func TestPostgresInstances_Alter(t *testing.T) {
 	t.Run("reset access for snowflake_admin", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ResetAccess = &PostgresInstanceResetAccess{
-			For: PostgresInstanceResetAccessRoleSnowflakeAdmin,
+			ForRole: PostgresInstanceResetAccessRoleSnowflakeAdmin,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE %s RESET ACCESS FOR 'snowflake_admin'`, id.FullyQualifiedName())
 	})
@@ -326,7 +326,7 @@ func TestPostgresInstances_Alter(t *testing.T) {
 	t.Run("reset access for application", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ResetAccess = &PostgresInstanceResetAccess{
-			For: PostgresInstanceResetAccessRoleApplication,
+			ForRole: PostgresInstanceResetAccessRoleApplication,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE %s RESET ACCESS FOR 'application'`, id.FullyQualifiedName())
 	})

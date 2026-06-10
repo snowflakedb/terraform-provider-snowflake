@@ -105,7 +105,7 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 		for i, v := range r.ColumnsAndConstraints.Columns {
 			s[i] = HybridTableColumn{
 				Name:             v.Name,
-				Type:             v.Type,
+				DataType:         v.DataType,
 				InlineConstraint: v.InlineConstraint,
 				NotNull:          v.NotNull,
 				DefaultValue:     v.DefaultValue,
@@ -119,10 +119,10 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 		s := make([]HybridTableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
 			s[i] = HybridTableOutOfLineConstraint{
-				Name:       v.Name,
-				Type:       v.Type,
-				Columns:    v.Columns,
-				ForeignKey: v.ForeignKey,
+				Name:                 v.Name,
+				ColumnConstraintType: v.ColumnConstraintType,
+				Columns:              v.Columns,
+				ForeignKey:           v.ForeignKey,
 			}
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = s
@@ -151,7 +151,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		opts.AddColumnAction = &HybridTableAddColumnAction{
 			IfNotExists:      r.AddColumnAction.IfNotExists,
 			Name:             r.AddColumnAction.Name,
-			Type:             r.AddColumnAction.Type,
+			DataType:         r.AddColumnAction.DataType,
 			Collate:          r.AddColumnAction.Collate,
 			DefaultValue:     r.AddColumnAction.DefaultValue,
 			InlineConstraint: r.AddColumnAction.InlineConstraint,
@@ -184,7 +184,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 				ColumnName:   v.ColumnName,
 				DropDefault:  v.DropDefault,
 				SetDefault:   v.SetDefault,
-				Type:         v.Type,
+				DataType:     v.DataType,
 				Comment:      v.Comment,
 				UnsetComment: v.UnsetComment,
 			}
