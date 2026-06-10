@@ -179,13 +179,13 @@ var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefin
 	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ListOptions().Parentheses().NoComma().SQL("OVER"))
 
 var metricDefinition = g.NewQueryStruct("MetricDefinition").
-	OptionalText("IsPrivate", g.KeywordOptions()).
+	OptionalSQLWithCustomFieldName("isPrivate", "PRIVATE").
 	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions()).
 	OptionalQueryStructField("windowFunctionMetricDefinition", windowFunctionMetricDefinition, g.KeywordOptions()).
 	WithValidation(g.ExactlyOneValueSet, "semanticExpression", "windowFunctionMetricDefinition")
 
 var factDefinition = g.NewQueryStruct("FactDefinition").
-	OptionalText("IsPrivate", g.KeywordOptions()).
+	OptionalSQLWithCustomFieldName("isPrivate", "PRIVATE").
 	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions())
 
 var dimensionDefinition = g.NewQueryStruct("DimensionDefinition").

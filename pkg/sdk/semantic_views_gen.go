@@ -107,7 +107,6 @@ type SemanticSqlExpression struct {
 }
 
 type FactDefinition struct {
-	// adjusted manually
 	isPrivate          *bool               `ddl:"keyword" sql:"PRIVATE"`
 	semanticExpression *SemanticExpression `ddl:"keyword"`
 }
@@ -117,7 +116,6 @@ type DimensionDefinition struct {
 }
 
 type MetricDefinition struct {
-	// adjusted manually
 	isPrivate                      *bool                           `ddl:"keyword" sql:"PRIVATE"`
 	semanticExpression             *SemanticExpression             `ddl:"keyword"`
 	windowFunctionMetricDefinition *WindowFunctionMetricDefinition `ddl:"keyword"`
