@@ -1011,4 +1011,4 @@ Currently supported by: `snowflake_schema`.
 
 Without this experiment, changing the `database` field on `snowflake_schema` forces resource recreation. With this experiment, the provider detects whether the parent database was renamed or the schema should be moved to a different database, and handles it without recreation.
 
-For more information, see the [object renaming guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).
+For more information, see the [object renaming guide](./guides/object_renaming_guide).
