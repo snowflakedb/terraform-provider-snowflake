@@ -273,7 +273,7 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 }
 
 func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *testing.T) {
-	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifier()
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	withAllowedValues := model.TagBase("test", id).
 		WithOrderedAllowedValues("confidential", "internal", "public").
