@@ -407,17 +407,6 @@ func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarkin
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, oauthIntegrationForPartnerApplicationsSchema, []string{
-			"enabled",
-			"oauth_issue_refresh_tokens",
-			"oauth_refresh_token_validity",
-			"oauth_use_secondary_roles",
-			"blocked_roles_list",
-			"oauth_redirect_uri",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.SecurityIntegrationToSchema(integration)}); err != nil {
 			return diag.FromErr(err)
 		}

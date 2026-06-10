@@ -185,14 +185,6 @@ func ReadContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(withExter
 		}); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := setStateToValuesFromConfig(d, apiAuthAuthorizationCodeGrantSchema, []string{
-			"oauth_authorization_endpoint",
-			"oauth_allowed_scopes",
-			"oauth_client_auth_method",
-			"oauth_token_endpoint",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
 		return nil
 	}
 }

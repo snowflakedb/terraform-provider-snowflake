@@ -248,12 +248,6 @@ func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.Rea
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, userProgrammaticAccessTokenSchema, []string{
-			"disabled",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		roleRestriction := ""
 		if token.RoleRestriction != nil {
 			roleRestriction = token.RoleRestriction.Name()
