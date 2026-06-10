@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -242,10 +241,11 @@ func HybridTable() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.HybridTableResource), TrackingCreateWrapper(resources.HybridTable, CreateHybridTable)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.HybridTableResource), TrackingReadWrapper(resources.HybridTable, GetReadHybridTableFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.HybridTableResource), TrackingUpdateWrapper(resources.HybridTable, UpdateHybridTable)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.HybridTableResource), TrackingDeleteWrapper(resources.HybridTable, deleteFunc)),
+		// TODO(SNOW-3637521): Add PreviewFeatureCreateContextWrapper when the hybrid table resource is moved to the production provider.
+		CreateContext: TrackingCreateWrapper(resources.HybridTable, CreateHybridTable),
+		ReadContext:   TrackingReadWrapper(resources.HybridTable, GetReadHybridTableFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.HybridTable, UpdateHybridTable),
+		DeleteContext: TrackingDeleteWrapper(resources.HybridTable, deleteFunc),
 		Description:   "Resource used to manage hybrid tables. For more information, check [hybrid tables documentation](https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.HybridTable, customdiff.All(
