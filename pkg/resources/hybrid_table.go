@@ -499,7 +499,7 @@ func buildHybridAlterColumnTypeAction(col hybridTableColumn) (*sdk.HybridTableAl
 		return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
 	}
 	return sdk.NewHybridTableAlterColumnActionRequest(col.name).
-		WithType(sdk.LegacyDataTypeWithAttrs(dataType)), nil
+		WithDataType(sdk.LegacyDataTypeWithAttrs(dataType)), nil
 }
 
 // buildHybridColumnDefaultFromParsed converts the resource-level columnDefault

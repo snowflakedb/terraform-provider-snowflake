@@ -66,12 +66,6 @@ type AlterHybridTableRequest struct {
 	Unset             *HybridTableUnsetPropertiesRequest
 }
 
-type HybridTableUnsetPropertiesRequest struct {
-	Comment                    *bool
-	DataRetentionTimeInDays    *bool
-	MaxDataExtensionTimeInDays *bool
-}
-
 type HybridTableAddColumnActionRequest struct {
 	IfNotExists      *bool
 	Name             string   // required
@@ -140,6 +134,12 @@ type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	Comment                    *string
+}
+
+type HybridTableUnsetPropertiesRequest struct {
+	Comment                    *bool
+	DataRetentionTimeInDays    *bool
+	MaxDataExtensionTimeInDays *bool
 }
 
 type DropHybridTableRequest struct {

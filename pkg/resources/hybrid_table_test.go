@@ -20,8 +20,8 @@ func Test_buildHybridAlterColumnTypeAction(t *testing.T) {
 		require.NotNil(t, req)
 
 		assert.Equal(t, "AGE", req.ColumnName)
-		require.NotNil(t, req.Type)
-		assert.Equal(t, sdk.DataType("NUMBER(20, 5)"), *req.Type)
+		require.NotNil(t, req.DataType)
+		assert.Equal(t, sdk.DataType("NUMBER(20, 5)"), *req.DataType)
 	})
 
 	t.Run("invalid type returns error mentioning column name", func(t *testing.T) {

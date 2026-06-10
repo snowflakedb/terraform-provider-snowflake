@@ -796,8 +796,8 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
 				Columns: []HybridTableColumn{
 					{
-						Name: "id",
-						Type: DataType("NUMBER(38,0)"),
+						Name:     "id",
+						DataType: DataType("NUMBER(38,0)"),
 						InlineConstraint: &ColumnInlineConstraint{
 							Type: ColumnConstraintTypePrimaryKey,
 						},

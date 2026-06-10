@@ -245,7 +245,7 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
-					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns).
@@ -446,8 +446,8 @@ func TestInt_HybridTables(t *testing.T) {
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
 					{
-						Name: "id",
-						Type: sdk.DataType("INT"),
+						Name:     "id",
+						DataType: sdk.DataType("INT"),
 						InlineConstraint: &sdk.ColumnInlineConstraint{
 							Type: sdk.ColumnConstraintTypePrimaryKey,
 						},
