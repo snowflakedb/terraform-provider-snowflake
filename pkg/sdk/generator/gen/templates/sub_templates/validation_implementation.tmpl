@@ -16,7 +16,7 @@
     {{- if .HasAnyValidationInSubtree }}
         {{- if and .IsSlice (not .Validations) }}
             // nested validation in {{ .Name }} collection is not supported
-        {{ else -}}
+        {{- else }}
             if valueSet(opts{{ .Path }}) {
                 {{- template "validationImplementation" . }}{{/* Recursive call */}}
             }
