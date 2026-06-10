@@ -106,7 +106,7 @@ func Schema() *schema.Resource {
 		Description:   "Resource used to manage schema objects. For more information, check [schema documentation](https://docs.snowflake.com/en/sql-reference/sql/create-schema).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Schema, customdiff.All(
-			ForceNewIfExperimentNotEnabled("database", experimentalfeatures.HierarchyRenames),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
 			ComputedIfAnyAttributeChanged(schemaSchema, ShowOutputAttributeName, "name", "database", "comment", "with_managed_access", "is_transient"),
 			ComputedIfAnyAttributeChanged(schemaSchema, DescribeOutputAttributeName, "name", "database"),
 			ComputedIfAnyAttributeChanged(schemaSchema, FullyQualifiedNameAttributeName, "name", "database"),
@@ -316,12 +316,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("database") {
-		if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) {
-			// Should not reach here due to ForceNew in custom diff, but safety guard
-			return diag.FromErr(fmt.Errorf("database change without experiment enabled"))
-		}
-
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && d.HasChange("database") {
 		oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
 		oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
 		oldSchemaName := id.Name()
@@ -352,11 +347,13 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		switch {
 		// Case 1: "Rename of the given level in the hierarchy"
 		case isRenameOfTheGivenLevelInTheHierarchy():
+			log.Printf("[DEBUG] Database was renamed for schema - no Snowflake modification needed, updating the id...")
 			// Just update the ID — no Snowflake modification needed
 			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
 			id = newSchemaId
 		// Case 2: "Move to a different object on the given level in the hierarchy"
 		case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
+			log.Printf("[DEBUG] Moving schema to different database - executing ALTER RENAME...")
 			// Perform the rename in Snowflake: ALTER SCHEMA A.X RENAME TO B.X
 			if renameErr := client.Schemas.Alter(ctx, oldSchemaId, &sdk.AlterSchemaOptions{NewName: &newSchemaId}); renameErr != nil {
 				d.Partial(true)

@@ -227,12 +227,18 @@ func ForceNewIfAllKeysAreNotSet(key string, keys ...string) schema.CustomizeDiff
 	})
 }
 
-// ForceNewIfExperimentNotEnabled applies ForceNew on the given key only when the specified experiment is NOT enabled.
+// TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled applies ForceNew on the given identifier part only when the specified experiment is NOT enabled.
+// It should be used only for identifier parts and has identifier quoting suppression included.
 // This allows preserving the default ForceNew behavior while allowing an experiment to override it.
-func ForceNewIfExperimentNotEnabled(key string, experiment experimentalfeatures.ExperimentalFeature) schema.CustomizeDiffFunc {
+func TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled(key string) schema.CustomizeDiffFunc {
 	return customdiff.ForceNewIf(key, func(ctx context.Context, d *schema.ResourceDiff, meta any) bool {
 		providerCtx := meta.(*provider.Context)
-		return !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments)
+		if !d.HasChange(key) {
+			return false
+		}
+		o, n := d.GetChange(key)
+		suppressed := suppressIdentifierQuoting("", o.(string), n.(string), nil)
+		return !suppressed && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments)
 	})
 }
 
