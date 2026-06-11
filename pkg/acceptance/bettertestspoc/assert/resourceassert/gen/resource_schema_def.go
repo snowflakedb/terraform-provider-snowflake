@@ -42,6 +42,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AccountSessionPolicyAttachment().Schema,
 	},
 	{
+		name:   "Alert",
+		schema: resources.Alert().Schema,
+	},
+	{
 		name:   "ApiAuthenticationIntegrationWithAuthorizationCodeGrant",
 		schema: resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant().Schema,
 	},
@@ -86,6 +90,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CortexAgent().Schema,
 	},
 	{
+		name:   "CortexSearchService",
+		schema: resources.CortexSearchService().Schema,
+	},
+	{
 		name:   "CurrentAccount",
 		schema: resources.CurrentAccount().Schema,
 	},
@@ -100,6 +108,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "DatabaseRole",
 		schema: resources.DatabaseRole().Schema,
+	},
+	{
+		name:   "EmailNotificationIntegration",
+		schema: resources.EmailNotificationIntegration().Schema,
 	},
 	{
 		name:   "Execute",

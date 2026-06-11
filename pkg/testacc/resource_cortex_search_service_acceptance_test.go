@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/hashicorp/terraform-plugin-testing/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -18,24 +22,37 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 	newWarehouse, newWarehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
 	t.Cleanup(newWarehouseCleanup)
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"name":       config.StringVariable(id.Name()),
-			"on":         config.StringVariable("SOME_TEXT"),
-			"database":   config.StringVariable(TestDatabaseName),
-			"schema":     config.StringVariable(TestSchemaName),
-			"warehouse":  config.StringVariable(TestWarehouseName),
-			"query":      config.StringVariable(fmt.Sprintf("select SOME_TEXT from %s", tableId.FullyQualifiedName())),
-			"comment":    config.StringVariable("Terraform acceptance test"),
-			"table_name": config.StringVariable(tableId.Name()),
-		}
-	}
-	variableSet2 := m()
-	variableSet2["attributes"] = config.SetVariable(config.StringVariable("SOME_OTHER_TEXT"))
-	variableSet2["warehouse"] = config.StringVariable(newWarehouse.ID().Name())
-	variableSet2["comment"] = config.StringVariable("Terraform acceptance test - updated")
-	variableSet2["query"] = config.StringVariable(fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()))
-	variableSet2["embedding_model"] = config.StringVariable("snowflake-arctic-embed-m-v1.5")
+
+	dataTypeVarchar32, _ := datatypes.ParseDataType("VARCHAR(32)")
+
+	tableModelBasic := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "SOME_TEXT", Type: testdatatypes.DataTypeVarchar},
+	}).WithChangeTracking(true)
+
+	tableModelComplete := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "SOME_TEXT", Type: testdatatypes.DataTypeVarchar},
+		{Name: "SOME_OTHER_TEXT", Type: dataTypeVarchar32},
+	}).WithChangeTracking(true)
+
+	cssModel := model.CortexSearchService("css", TestDatabaseName, TestSchemaName, id.Name(), "SOME_TEXT",
+		fmt.Sprintf("select SOME_TEXT from %s", tableId.FullyQualifiedName()), "2 minutes", TestWarehouseName).
+		WithComment("Terraform acceptance test").
+		WithDependsOn(tableModelBasic.ResourceReference())
+
+	cssModelWithAttributes := model.CortexSearchService("css", TestDatabaseName, TestSchemaName, id.Name(), "SOME_TEXT",
+		fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()), "2 minutes", newWarehouse.ID().Name()).
+		WithAttributes("SOME_OTHER_TEXT").
+		WithComment("Terraform acceptance test - updated").
+		WithEmbeddingModel("snowflake-arctic-embed-m-v1.5").
+		WithDependsOn(tableModelComplete.ResourceReference())
+
+	cssModelForImport := model.CortexSearchService("css", TestDatabaseName, TestSchemaName, id.Name(), "SOME_TEXT",
+		fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()), "2 minutes", newWarehouse.ID().Name()).
+		WithAttributes("SOME_OTHER_TEXT").
+		WithComment("Terraform acceptance test - updated").
+		WithDependsOn(tableModelComplete.ResourceReference())
 
 	resourceName := "snowflake_cortex_search_service.css"
 	resource.Test(t, resource.TestCase{
@@ -46,8 +63,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.CortexSearchService),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, tableModelBasic, cssModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -88,8 +104,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: variableSet2,
+				Config: accconfig.FromModels(t, tableModelComplete, cssModelWithAttributes),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -134,8 +149,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 			},
 			// test import
 			{
-				ConfigDirectory:   config.TestStepDirectory(),
-				ConfigVariables:   variableSet2,
+				Config:            accconfig.FromModels(t, tableModelComplete, cssModelForImport),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
