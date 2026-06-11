@@ -743,13 +743,6 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		)
 
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithNewName(newId)); err != nil {
-			// d.Partial(true) preserves the resource's previous state on error. Without it, SDKv2 writes
-			// the proposed config into state when Update returns an error — even without any d.Set calls —
-			// replacing known-good state with unverified config values.
-			// See terraform-plugin-sdk/v2 (helper/schema/resource_data.go: Partial).
-			// Computed-only fields (show_output, describe_output) are also preserved by this mechanism:
-			// because they are never sourced from config, their prior values survive any early return
-			// without requiring explicit d.Set calls before the error path.
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error renaming hybrid table from %v to %v: %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))
 		}
