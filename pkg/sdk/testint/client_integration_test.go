@@ -26,6 +26,15 @@ import (
 // TODO [SNOW-1827310]: use generated config for these tests
 // TODO [SNOW-2054366]: Use dedicated users for these tests.
 func TestInt_Client_NewClient(t *testing.T) {
+	// gosnowflake.GetLogger() is a single global logger for the whole test binary. The driver sets the global logger
+	// level in its init. Every time a connection is opened with a non‑empty Tracing, the driver overwrites that
+	// global level. We reset it with the following cleanup function.
+	defaultLogLevel := gosnowflake.GetLogger().GetLogLevel()
+	t.Cleanup(func() {
+		err := gosnowflake.GetLogger().SetLogLevel(defaultLogLevel)
+		require.NoError(t, err)
+	})
+
 	t.Run("with default config (legacy)", func(t *testing.T) {
 		tmpServiceUser := testClientHelper().SetUpTemporaryServiceUser(t)
 		tmpServiceUserConfig := testClientHelper().StoreTempTomlConfigWithProfile(t, testprofiles.Default, func(profile string) string {
