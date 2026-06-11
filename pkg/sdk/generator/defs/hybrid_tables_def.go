@@ -128,9 +128,9 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 
 // NOTE: Multi-property `ALTER TABLE ... UNSET` on hybrid tables requires comma-separated
 // property names (`UNSET A, B, C`); the generator's default `keyword` rendering emits the
-// bare-keyword form, which the parser rejects. Applying `g.ListOptions().NoParentheses()
-// .SQL("UNSET")` on the parent field causes the SQL builder to comma-join the children —
-// mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74.
+// bare-keyword form, which the parser rejects. Applying
+// `g.ListOptions().NoParentheses().SQL("UNSET")` on the parent field causes the SQL builder
+// to comma-join the children — mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74.
 var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
 	OptionalSQL("COMMENT").
 	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
