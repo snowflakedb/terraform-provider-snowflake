@@ -164,7 +164,7 @@ func (r describeStorageLifecyclePolicyDBRow) convert() (*StorageLifecyclePolicyD
 	result := &StorageLifecyclePolicyDetails{
 		Name:        r.Name,
 		Body:        r.Body,
-		ArchiveTier: r.ArchiveTier,
+		ArchiveTier: normalizeStorageLifecyclePolicyArchiveTier(r.ArchiveTier),
 	}
 	if v, err := ParseTableColumnSignature(r.Signature); err != nil {
 		return nil, fmt.Errorf("parsing table column signature: %w", err)

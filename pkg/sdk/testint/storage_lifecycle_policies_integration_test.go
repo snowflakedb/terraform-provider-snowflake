@@ -58,7 +58,7 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 			HasReturnType(testdatatypes.DataTypeBoolean).
 			HasBody(defaultBody).
 			HasNoArchiveForDays().
-			HasArchiveTier("NULL"),
+			HasArchiveTier(""),
 		)
 	})
 

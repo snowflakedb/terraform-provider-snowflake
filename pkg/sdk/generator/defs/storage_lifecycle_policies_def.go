@@ -110,7 +110,7 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			DataType("return_type").
 			Text("body").
 			OptionalNumber("archive_for_days").
-			Text("archive_tier"),
+			Text("archive_tier", g.WithValueAdjuster("normalizeStorageLifecyclePolicyArchiveTier")),
 		g.NewQueryStruct("DescribeStorageLifecyclePolicy").
 			Describe().
 			SQL("STORAGE LIFECYCLE POLICY").

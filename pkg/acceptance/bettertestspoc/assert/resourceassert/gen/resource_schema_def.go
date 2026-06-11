@@ -318,6 +318,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.StorageIntegrationGcs().Schema,
 	},
 	{
+		name:   "StorageLifecyclePolicy",
+		schema: resources.StorageLifecyclePolicy().Schema,
+	},
+	{
 		name:   "StreamOnDirectoryTable",
 		schema: resources.StreamOnDirectoryTable().Schema,
 	},
