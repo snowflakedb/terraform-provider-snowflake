@@ -103,9 +103,9 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 	}
 	opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
 	if r.ColumnsAndConstraints.Columns != nil {
-		s := make([]HybridTableColumn, len(r.ColumnsAndConstraints.Columns))
+		columns := make([]HybridTableColumn, len(r.ColumnsAndConstraints.Columns))
 		for i, v := range r.ColumnsAndConstraints.Columns {
-			s[i] = HybridTableColumn{
+			columns[i] = HybridTableColumn{
 				Name:             v.Name,
 				DataType:         v.DataType,
 				InlineConstraint: v.InlineConstraint,
@@ -115,30 +115,30 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 				Comment:          v.Comment,
 			}
 		}
-		opts.ColumnsAndConstraints.Columns = s
+		opts.ColumnsAndConstraints.Columns = columns
 	}
 	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
-		s := make([]HybridTableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		outOfLineConstraint := make([]HybridTableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
-			s[i] = HybridTableOutOfLineConstraint{
+			outOfLineConstraint[i] = HybridTableOutOfLineConstraint{
 				Name:                 v.Name,
 				ColumnConstraintType: v.ColumnConstraintType,
 				Columns:              v.Columns,
 				ForeignKey:           v.ForeignKey,
 			}
 		}
-		opts.ColumnsAndConstraints.OutOfLineConstraint = s
+		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
 	if r.ColumnsAndConstraints.OutOfLineIndex != nil {
-		s := make([]HybridTableOutOfLineIndex, len(r.ColumnsAndConstraints.OutOfLineIndex))
+		outOfLineIndex := make([]HybridTableOutOfLineIndex, len(r.ColumnsAndConstraints.OutOfLineIndex))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineIndex {
-			s[i] = HybridTableOutOfLineIndex{
+			outOfLineIndex[i] = HybridTableOutOfLineIndex{
 				Name:           v.Name,
 				Columns:        v.Columns,
 				IncludeColumns: v.IncludeColumns,
 			}
 		}
-		opts.ColumnsAndConstraints.OutOfLineIndex = s
+		opts.ColumnsAndConstraints.OutOfLineIndex = outOfLineIndex
 	}
 	return opts
 }
@@ -180,9 +180,9 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		}
 	}
 	if r.AlterColumnAction != nil {
-		s := make([]HybridTableAlterColumnAction, len(r.AlterColumnAction))
+		alterColumnAction := make([]HybridTableAlterColumnAction, len(r.AlterColumnAction))
 		for i, v := range r.AlterColumnAction {
-			s[i] = HybridTableAlterColumnAction{
+			alterColumnAction[i] = HybridTableAlterColumnAction{
 				ColumnName:   v.ColumnName,
 				DropDefault:  v.DropDefault,
 				SetDefault:   v.SetDefault,
@@ -191,7 +191,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 				UnsetComment: v.UnsetComment,
 			}
 		}
-		opts.AlterColumnAction = s
+		opts.AlterColumnAction = alterColumnAction
 	}
 	if r.DropColumnAction != nil {
 		opts.DropColumnAction = &HybridTableDropColumnAction{

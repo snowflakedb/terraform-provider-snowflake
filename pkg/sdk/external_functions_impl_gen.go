@@ -81,33 +81,33 @@ func (r *CreateExternalFunctionRequest) toOpts() *CreateExternalFunctionOptions 
 		As:                    r.As,
 	}
 	if r.Arguments != nil {
-		s := make([]ExternalFunctionArgument, len(r.Arguments))
+		arguments := make([]ExternalFunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
-			s[i] = ExternalFunctionArgument{
+			arguments[i] = ExternalFunctionArgument{
 				ArgName:     v.ArgName,
 				ArgDataType: v.ArgDataType,
 			}
 		}
-		opts.Arguments = s
+		opts.Arguments = arguments
 	}
 	if r.Headers != nil {
-		s := make([]ExternalFunctionHeader, len(r.Headers))
+		headers := make([]ExternalFunctionHeader, len(r.Headers))
 		for i, v := range r.Headers {
-			s[i] = ExternalFunctionHeader{
+			headers[i] = ExternalFunctionHeader{
 				Name:  v.Name,
 				Value: v.Value,
 			}
 		}
-		opts.Headers = s
+		opts.Headers = headers
 	}
 	if r.ContextHeaders != nil {
-		s := make([]ExternalFunctionContextHeader, len(r.ContextHeaders))
+		contextHeaders := make([]ExternalFunctionContextHeader, len(r.ContextHeaders))
 		for i, v := range r.ContextHeaders {
-			s[i] = ExternalFunctionContextHeader{
+			contextHeaders[i] = ExternalFunctionContextHeader{
 				ContextFunction: v.ContextFunction,
 			}
 		}
-		opts.ContextHeaders = s
+		opts.ContextHeaders = contextHeaders
 	}
 	return opts
 }
@@ -126,23 +126,23 @@ func (r *AlterExternalFunctionRequest) toOpts() *AlterExternalFunctionOptions {
 			ResponseTranslator: r.Set.ResponseTranslator,
 		}
 		if r.Set.Headers != nil {
-			s := make([]ExternalFunctionHeader, len(r.Set.Headers))
+			headers := make([]ExternalFunctionHeader, len(r.Set.Headers))
 			for i, v := range r.Set.Headers {
-				s[i] = ExternalFunctionHeader{
+				headers[i] = ExternalFunctionHeader{
 					Name:  v.Name,
 					Value: v.Value,
 				}
 			}
-			opts.Set.Headers = s
+			opts.Set.Headers = headers
 		}
 		if r.Set.ContextHeaders != nil {
-			s := make([]ExternalFunctionContextHeader, len(r.Set.ContextHeaders))
+			contextHeaders := make([]ExternalFunctionContextHeader, len(r.Set.ContextHeaders))
 			for i, v := range r.Set.ContextHeaders {
-				s[i] = ExternalFunctionContextHeader{
+				contextHeaders[i] = ExternalFunctionContextHeader{
 					ContextFunction: v.ContextFunction,
 				}
 			}
-			opts.Set.ContextHeaders = s
+			opts.Set.ContextHeaders = contextHeaders
 		}
 	}
 	if r.Unset != nil {

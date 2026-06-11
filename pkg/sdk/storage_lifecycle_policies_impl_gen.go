@@ -86,14 +86,14 @@ func (r *CreateStorageLifecyclePolicyRequest) toOpts() *CreateStorageLifecyclePo
 		Tag:            r.Tag,
 	}
 	if r.args != nil {
-		s := make([]CreateStorageLifecyclePolicyArgs, len(r.args))
+		args := make([]CreateStorageLifecyclePolicyArgs, len(r.args))
 		for i, v := range r.args {
-			s[i] = CreateStorageLifecyclePolicyArgs{
+			args[i] = CreateStorageLifecyclePolicyArgs{
 				Name:     v.Name,
 				DataType: v.DataType,
 			}
 		}
-		opts.args = s
+		opts.args = args
 	}
 	return opts
 }
