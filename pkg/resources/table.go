@@ -9,13 +9,13 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -404,7 +404,9 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 		return nil, err
 	}
 
-	nameInQuotes := fmt.Sprintf(`"%v"`, snowflake.EscapeString(c["name"].(string)))
+	escapedName := strings.ReplaceAll(c["name"].(string), `\`, `\\`)
+	escapedName = strings.ReplaceAll(escapedName, `'`, `\'`)
+	nameInQuotes := fmt.Sprintf(`"%v"`, escapedName)
 	request := sdk.NewTableColumnRequest(nameInQuotes, sdk.DataType(_type))
 
 	_default := c["default"].([]interface{})
@@ -613,7 +615,7 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		keysList := v.([]any)
 		if len(keysList) > 0 {
 			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]interface{}))
-			constraintRequest := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(snowflake.QuoteStringList(keys))
+			constraintRequest := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(collections.Map(keys, func(s string) string { return fmt.Sprintf(`"%s"`, s) }))
 
 			keyName, isPresent := keysList[0].(map[string]any)["name"]
 			if isPresent && keyName != "" {
@@ -810,7 +812,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			for i, r := range removed {
 				removedColumnNames[i] = r.name
 			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithDropColumns(snowflake.QuoteStringList(removedColumnNames))))
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithDropColumns(collections.Map(removedColumnNames, func(s string) string { return fmt.Sprintf(`"%s"`, s) }))))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 			}
@@ -929,7 +931,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		}
 
 		if len(newKey.keys) > 0 {
-			constraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(snowflake.QuoteStringList(newKey.keys))
+			constraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(collections.Map(newKey.keys, func(s string) string { return fmt.Sprintf(`"%s"`, s) }))
 			if newKey.name != "" {
 				constraint.WithName(sdk.String(newKey.name))
 			}
