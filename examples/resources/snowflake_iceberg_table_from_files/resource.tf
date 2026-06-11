@@ -1,6 +1,6 @@
 # Basic - only required fields
 resource "snowflake_iceberg_table_from_files" "basic" {
-  database           = "DATABSE"
+  database           = "DATABASE"
   schema             = "SCHEMA"
   name               = "TABLE"
   metadata_file_path = "path/to/metadata/v1.metadata.json"
