@@ -49,7 +49,8 @@ var (
 	functionImports            = g.NewQueryStruct("FunctionImport").Text("FunctionImport", g.KeywordOptions().SingleQuotes())
 	functionPackages           = g.NewQueryStruct("FunctionPackage").Text("FunctionPackage", g.KeywordOptions().SingleQuotes())
 	functionSecretsListWrapper = g.NewQueryStruct("SecretsList").
-					List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses())
+					List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses()).
+					WithSharedToOpts()
 )
 
 var functionPairs = g.StructPair("functionRow", "Function").

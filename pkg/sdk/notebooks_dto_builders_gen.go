@@ -85,8 +85,6 @@ func (s *CreateNotebookRequest) WithSecrets(secrets SecretsListRequest) *CreateN
 	return s
 }
 
-// NewSecretsListRequest removed manually (redefined)
-
 func NewAlterNotebookRequest(
 	name SchemaObjectIdentifier,
 ) *AlterNotebookRequest {

@@ -21,12 +21,16 @@ func (f *Field) ToOptsSliceVar() string {
 
 // ToOptsSourcePath returns the source-access path for use in the toOpts template.
 // When a slice ancestor exists, the path is relative to that slice element (stops at the first slice).
+// When a shared-toOpts ancestor exists, the path is relative to that struct (stops there).
 // Otherwise it equals Path() — the full path from root.
 func (f *Field) ToOptsSourcePath() string {
 	if f.IsRoot() {
 		return ""
 	}
 	if f.Parent.IsSlice() {
+		return "." + f.Name
+	}
+	if f.Parent.GenerateSharedToOpts {
 		return "." + f.Name
 	}
 	if f.Parent.IsRoot() {

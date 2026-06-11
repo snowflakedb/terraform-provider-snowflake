@@ -431,9 +431,7 @@ func (r *AlterFunctionRequest) toOpts() *AlterFunctionOptions {
 			TraceLevel:                 r.Set.TraceLevel,
 		}
 		if r.Set.SecretsList != nil {
-			opts.Set.SecretsList = &SecretsList{
-				SecretsList: r.Set.SecretsList.SecretsList,
-			}
+			opts.Set.SecretsList = r.Set.SecretsList.toOpts()
 		}
 	}
 	if r.Unset != nil {
@@ -508,4 +506,10 @@ func (r functionDetailRow) convert() (*FunctionDetail, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func (r *SecretsListRequest) toOpts() *SecretsList {
+	return &SecretsList{
+		SecretsList: r.SecretsList,
+	}
 }

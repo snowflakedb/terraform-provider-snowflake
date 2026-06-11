@@ -441,9 +441,7 @@ func (r *AlterProcedureRequest) toOpts() *AlterProcedureOptions {
 			TraceLevel:                 r.Set.TraceLevel,
 		}
 		if r.Set.SecretsList != nil {
-			opts.Set.SecretsList = &SecretsList{
-				SecretsList: r.Set.SecretsList.SecretsList,
-			}
+			opts.Set.SecretsList = r.Set.SecretsList.toOpts()
 		}
 	}
 	if r.Unset != nil {
