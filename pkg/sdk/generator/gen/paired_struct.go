@@ -130,6 +130,8 @@ type pairedField struct {
 	boolParsed bool
 	// manualConvert marks this field to be skipped in generated convert code.
 	manualConvert bool
+	// plainOnly marks that this field only appears in the plain struct, not in the db row struct.
+	plainOnly bool
 }
 
 // resolvedPlainFieldName returns the explicit override or the CamelCase conversion of dbColumnName.
@@ -475,11 +477,33 @@ func (p *PairedStructs) WithShowResultFilterHook() *PairedStructs {
 	return p
 }
 
+// PlainOnlyField adds a field that only appears in the plain struct (not in the db row struct).
+// These fields are always skipped in generated convert() code — they must be populated manually
+// in additionalConvert(). No dbColumnName is needed since there is no db column.
+//
+//	db:    (nothing)
+//	plain: <fieldName> <plainKind>
+func (p *PairedStructs) PlainOnlyField(fieldName, plainKind string) *PairedStructs {
+	f := pairedField{
+		dbColumnName:   "",
+		plainFieldName: fieldName,
+		dbKind:         "",
+		plainKind:      plainKind,
+		plainOnly:      true,
+		manualConvert:  true,
+	}
+	p.fields = append(p.fields, f)
+	return p
+}
+
 // toFieldPairs converts the paired field definitions into a slice of FieldPair values used in conversion generation.
 func (p *PairedStructs) toFieldPairs() []FieldPair {
-	pairs := make([]FieldPair, len(p.fields))
-	for i, f := range p.fields {
-		pairs[i] = FieldPair{
+	pairs := make([]FieldPair, 0, len(p.fields))
+	for _, f := range p.fields {
+		if f.plainOnly {
+			continue
+		}
+		pairs = append(pairs, FieldPair{
 			DbFieldName:    f.resolvedDbFieldName(),
 			PlainFieldName: f.resolvedPlainFieldName(),
 			DbKind:         f.dbKind,
@@ -491,7 +515,7 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 			BoolTrueValue:  f.boolTrueValue,
 			BoolParsed:     f.boolParsed,
 			manualConvert:  f.manualConvert,
-		}
+		})
 	}
 	return pairs
 }
@@ -500,6 +524,9 @@ func (p *PairedStructs) toFieldPairs() []FieldPair {
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
 	for _, f := range p.fields {
+		if f.plainOnly {
+			continue
+		}
 		s.FieldWithName(f.dbColumnName, f.dbKind, f.resolvedDbFieldName())
 	}
 	return s

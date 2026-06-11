@@ -247,6 +247,7 @@ Each method accepts zero or more `PairedFieldOption`s (see below).
 | `OptionalEnum(col, enumDef)` | `sql.NullString` | `*<enumType>` |
 | `JsonField(col, kind)` | `string` | `<kind>` (via `json.Unmarshal`) |
 | `Field(col, dbKind, plainKind)` | explicit | explicit |
+| `PlainOnlyField(fieldName, plainKind)` | _(none)_ | `<plainKind>` (must be populated in `additionalConvert()`) |
 
 #### PairedFieldOption options
 

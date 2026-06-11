@@ -82,7 +82,6 @@ var procedureWithClause = g.NewQueryStruct("ProcedureWithClause").
 	PredefinedQueryStructField("CteColumns", "[]string", g.KeywordOptions().Parentheses()).
 	PredefinedQueryStructField("Statement", "string", g.ParameterOptions().NoEquals().NoQuotes().SQL("AS").Required())
 
-// TODO [next PRs]: support adding a field only in plain struct (in this case: `ArgumentsOld` and `ReturnTypeOld`)
 var procedurePairs = g.StructPair("procedureRow", "Procedure").
 	Text("created_on").
 	Text("name").
@@ -93,6 +92,8 @@ var procedurePairs = g.StructPair("procedureRow", "Procedure").
 	Number("min_num_arguments").
 	Number("max_num_arguments").
 	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	PlainOnlyField("ArgumentsOld", "[]DataType").
+	PlainOnlyField("ReturnTypeOld", "DataType").
 	Text("description").
 	Text("catalog_name", g.WithManualConvert()).
 	BoolFromText("is_table_function").
