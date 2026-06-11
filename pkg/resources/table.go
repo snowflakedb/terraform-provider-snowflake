@@ -413,7 +413,7 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 		if c, ok := _default[0].(map[string]interface{})["constant"]; ok {
 			if constant, ok := c.(string); ok && len(constant) > 0 {
 				if datatypes.IsTextDataType(dataType) {
-					expression = snowflake.EscapeSnowflakeString(constant)
+					expression = "'" + strings.ReplaceAll(constant, "'", "''") + "'"
 				} else {
 					expression = constant
 				}
@@ -550,7 +550,8 @@ func toColumnDefaultConfig(td sdk.TableColumnDetails) map[string]any {
 	}
 
 	if sdk.IsStringType(string(td.Type)) {
-		def["constant"] = snowflake.UnescapeSnowflakeString(defaultRaw)
+		unquoted := strings.TrimSuffix(strings.TrimPrefix(defaultRaw, "'"), "'")
+		def["constant"] = strings.ReplaceAll(unquoted, "''", "'")
 		return def
 	}
 
@@ -825,7 +826,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				}
 				var expression string
 				if sdk.IsStringType(cA.dataType) {
-					expression = snowflake.EscapeSnowflakeString(*cA._default.constant)
+					expression = "'" + strings.ReplaceAll(*cA._default.constant, "'", "''") + "'"
 				} else {
 					expression = *cA._default.constant
 				}
