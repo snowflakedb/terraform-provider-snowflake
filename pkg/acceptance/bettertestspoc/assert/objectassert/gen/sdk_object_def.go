@@ -223,6 +223,11 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationAzureDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.CatalogIntegration{},
 	},

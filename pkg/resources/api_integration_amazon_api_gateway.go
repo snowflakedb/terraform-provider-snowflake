@@ -36,11 +36,10 @@ var apiIntegrationAmazonApiGatewaySchema = func() map[string]*schema.Schema {
 			Description:  "The Amazon Resource Name (ARN) of the IAM role that grants Snowflake permission to call the API endpoint.",
 		},
 		"api_key": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Sensitive:        true,
-			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("api_key"),
-			Description:      "Specifies the API key (secret) that Snowflake uses to authenticate when making calls to the proxy service.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			Description: externalChangesNotDetectedFieldDescription("Specifies the API key (secret) that Snowflake uses to authenticate when making calls to the proxy service."),
 		},
 		DescribeOutputAttributeName: {
 			Type:        schema.TypeList,
@@ -64,14 +63,14 @@ func ApiIntegrationAmazonApiGateway() *schema.Resource {
 
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingCreateWrapper(resources.ApiIntegrationAmazonApiGateway, CreateApiIntegrationAmazonApiGateway)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingReadWrapper(resources.ApiIntegrationAmazonApiGateway, GetReadApiIntegrationAmazonApiGatewayFunc(true))),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingReadWrapper(resources.ApiIntegrationAmazonApiGateway, ReadApiIntegrationAmazonApiGateway)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingUpdateWrapper(resources.ApiIntegrationAmazonApiGateway, UpdateApiIntegrationAmazonApiGateway)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingDeleteWrapper(resources.ApiIntegrationAmazonApiGateway, deleteFunc)),
 		Description:   "Resource used to manage API integration Amazon API Gateway objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationAmazonApiGatewaySchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.ApiIntegrationAmazonApiGateway, ImportName[sdk.AccountObjectIdentifier]),
+			StateContext: TrackingImportWrapper(resources.ApiIntegrationAmazonApiGateway, ImportApiIntegrationAmazonApiGateway),
 		},
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: customdiff.All(
@@ -105,59 +104,73 @@ func CreateApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.Resourc
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
-	return GetReadApiIntegrationAmazonApiGatewayFunc(false)(ctx, d, meta)
+	return ReadApiIntegrationAmazonApiGateway(ctx, d, meta)
 }
 
-func GetReadApiIntegrationAmazonApiGatewayFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
-		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		s, err := client.ApiIntegrations.ShowByIDSafely(ctx, id)
-		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query API integration Amazon API Gateway. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("API integration Amazon API Gateway id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
-		}
-
-		awsDetails, err := client.ApiIntegrations.DescribeAwsDetails(ctx, id)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not describe API integration Amazon API Gateway (%s): %w", d.Id(), err))
-		}
-
-		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
-				outputMapping{"api_key", "api_key", awsDetails.ApiKey, awsDetails.ApiKey, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		normalizedProvider, err := sdk.ToApiIntegrationAwsApiProviderType(awsDetails.ApiProvider)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not normalize api_provider value (%s): %w", awsDetails.ApiProvider, err))
-		}
-
-		errs := errors.Join(
-			handleApiIntegrationCommonRead(d, id, s, awsDetails.AllowedPrefixes, awsDetails.BlockedPrefixes),
-			d.Set("api_provider", string(normalizedProvider)),
-			d.Set("api_aws_role_arn", awsDetails.ApiAwsRoleArn),
-			// api_key intentionally omitted — handled by external changes marking above
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationAmazonApiGatewayDetailsToSchema(awsDetails)}),
-		)
-		return diag.FromErr(errs)
+func ImportApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	client := meta.(*provider.Context).Client
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
 	}
+
+	details, err := client.ApiIntegrations.DescribeAwsDetails(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
+	}
+
+	if _, err := sdk.ToApiIntegrationAwsApiProviderType(details.ApiProvider); err != nil {
+		return nil, fmt.Errorf(
+			"api integration %s has api_provider %s, not compatible with snowflake_api_integration_amazon_api_gateway (expected one of %s); use the appropriate resource type",
+			id.FullyQualifiedName(),
+			details.ApiProvider,
+			possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationAwsApiProviderTypes)),
+		)
+	}
+
+	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+}
+
+func ReadApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	s, err := client.ApiIntegrations.ShowByIDSafely(ctx, id)
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query API integration Amazon API Gateway. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("API integration Amazon API Gateway id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
+	}
+
+	awsDetails, err := client.ApiIntegrations.DescribeAwsDetails(ctx, id)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("could not describe API integration Amazon API Gateway (%s): %w", d.Id(), err))
+	}
+
+	normalizedProvider, err := sdk.ToApiIntegrationAwsApiProviderType(awsDetails.ApiProvider)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("could not normalize api_provider value (%s): %w", awsDetails.ApiProvider, err))
+	}
+
+	errs := errors.Join(
+		handleApiIntegrationCommonRead(d, id, s, awsDetails.AllowedPrefixes, awsDetails.BlockedPrefixes),
+		d.Set("api_provider", string(normalizedProvider)),
+		d.Set("api_aws_role_arn", awsDetails.ApiAwsRoleArn),
+		// api_key intentionally omitted as it is not returned by Snowflake
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationAmazonApiGatewayDetailsToSchema(awsDetails)}),
+	)
+	return diag.FromErr(errs)
 }
 
 func UpdateApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -201,5 +214,5 @@ func UpdateApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.Resourc
 		}
 	}
 
-	return GetReadApiIntegrationAmazonApiGatewayFunc(false)(ctx, d, meta)
+	return ReadApiIntegrationAmazonApiGateway(ctx, d, meta)
 }
