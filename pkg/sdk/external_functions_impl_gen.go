@@ -65,10 +65,9 @@ func (v *externalFunctions) Describe(ctx context.Context, id SchemaObjectIdentif
 
 func (r *CreateExternalFunctionRequest) toOpts() *CreateExternalFunctionOptions {
 	opts := &CreateExternalFunctionOptions{
-		OrReplace: r.OrReplace,
-		Secure:    r.Secure,
-		// adjusted manually
-		name:                  r.name.WithoutArguments(),
+		OrReplace:             r.OrReplace,
+		Secure:                r.Secure,
+		name:                  r.name,
 		ResultDataType:        r.ResultDataType,
 		ReturnNullValues:      r.ReturnNullValues,
 		NullInputBehavior:     r.NullInputBehavior,

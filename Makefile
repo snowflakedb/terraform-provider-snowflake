@@ -159,8 +159,8 @@ generate-sdk-validations-check: generate-sdk-validations ## check that SDK valid
 	$(call GIT_DIFF_CHECK,pkg/sdk/*_validations_gen.go)
 
 # Objects excluded from impl generation because their impl files contain manual changes:
-# ExternalFunctions, SemanticViews
-SDK_IMPL_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,DataMetricFunctionReferences,EventTables,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,Notebooks,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,Procedures,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,Streamlits,Streams,TagReferences,Tasks,UserProgrammaticAccessTokens,Views
+# SemanticViews
+SDK_IMPL_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,DataMetricFunctionReferences,EventTables,ExternalFunctions,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,Notebooks,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,Procedures,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,Streamlits,Streams,TagReferences,Tasks,UserProgrammaticAccessTokens,Views
 
 generate-sdk-impl: ## Generate SDK impl for objects without manual changes
 	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=impl --filter-object-names=$(SDK_IMPL_OBJECTS)'
