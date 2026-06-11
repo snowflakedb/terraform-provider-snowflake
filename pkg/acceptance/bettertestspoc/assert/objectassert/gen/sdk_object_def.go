@@ -98,6 +98,10 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.HybridTable{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.ImageRepository{},
 	},
 	{

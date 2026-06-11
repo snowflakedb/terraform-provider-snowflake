@@ -22,6 +22,16 @@ func (s *CreateHybridTableRequest) WithIfNotExists(ifNotExists bool) *CreateHybr
 	return s
 }
 
+func (s *CreateHybridTableRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateHybridTableRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *CreateHybridTableRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateHybridTableRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
 func (s *CreateHybridTableRequest) WithComment(comment string) *CreateHybridTableRequest {
 	s.Comment = &comment
 	return s
@@ -170,6 +180,11 @@ func (s *AlterHybridTableRequest) WithClusteringAction(clusteringAction HybridTa
 
 func (s *AlterHybridTableRequest) WithSet(set HybridTableSetPropertiesRequest) *AlterHybridTableRequest {
 	s.Set = &set
+	return s
+}
+
+func (s *AlterHybridTableRequest) WithUnset(unset HybridTableUnsetPropertiesRequest) *AlterHybridTableRequest {
+	s.Unset = &unset
 	return s
 }
 
@@ -394,6 +409,26 @@ func (s *HybridTableSetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxData
 
 func (s *HybridTableSetPropertiesRequest) WithComment(comment string) *HybridTableSetPropertiesRequest {
 	s.Comment = &comment
+	return s
+}
+
+func NewHybridTableUnsetPropertiesRequest() *HybridTableUnsetPropertiesRequest {
+	s := HybridTableUnsetPropertiesRequest{}
+	return &s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithComment(comment bool) *HybridTableUnsetPropertiesRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
 	return s
 }
 
