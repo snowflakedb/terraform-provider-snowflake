@@ -20,11 +20,6 @@ func (opts *CreateTaskOptions) additionalValidations() error {
 			errs = append(errs, err)
 		}
 	}
-	if valueSet(opts.Warehouse) {
-		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
-			errs = append(errs, errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
-		}
-	}
 	return JoinErrors(errs...)
 }
 
@@ -33,11 +28,6 @@ func (opts *CreateOrAlterTaskOptions) additionalValidations() error {
 	if valueSet(opts.SessionParameters) {
 		if err := opts.SessionParameters.validate(); err != nil {
 			errs = append(errs, err)
-		}
-	}
-	if valueSet(opts.Warehouse) {
-		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
-			errs = append(errs, errExactlyOneOf("CreateOrAlterTaskOptions.CreateTaskWarehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -156,25 +146,6 @@ func ParseTaskSchedule(schedule string) (*TaskSchedule, error) {
 	default:
 		return nil, fmt.Errorf("invalid schedule format: %s", schedule)
 	}
-}
-
-type CreateTaskWarehouseRequest struct {
-	Warehouse                           *AccountObjectIdentifier
-	UserTaskManagedInitialWarehouseSize *WarehouseSize
-}
-
-func NewCreateTaskWarehouseRequest() *CreateTaskWarehouseRequest {
-	return &CreateTaskWarehouseRequest{}
-}
-
-func (s *CreateTaskWarehouseRequest) WithWarehouse(warehouse AccountObjectIdentifier) *CreateTaskWarehouseRequest {
-	s.Warehouse = &warehouse
-	return s
-}
-
-func (s *CreateTaskWarehouseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateTaskWarehouseRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
-	return s
 }
 
 func (r *CreateTaskRequest) GetName() SchemaObjectIdentifier {
