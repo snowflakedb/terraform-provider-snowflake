@@ -674,17 +674,27 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasComment("").
 			HasNoNameMapping().
 			HasOwnerRoleType("ROLE").
-			HasCatalogSyncName(""),
+			HasCatalogSyncName("").
+			HasAutoRefreshStatus(""),
 		)
 
 		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
 			HasCatalog(catalogForDeltaLakeId.Name()).
-			HasExternalVolume(externalVolumeId.Name()),
+			HasExternalVolume(externalVolumeId.Name()).
+			HasReplaceInvalidCharacters(false),
 		)
 
 		details, err := client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
 		require.NotEmpty(t, details)
+		for _, col := range details {
+			assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &col).
+				HasKind("COLUMN").
+				HasNoPolicyName().
+				HasNoPrivacyDomain().
+				HasNoWriteDefault(),
+			)
+		}
 	})
 
 	t.Run("create from delta lake: all options", func(t *testing.T) {
