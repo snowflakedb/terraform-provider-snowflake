@@ -261,7 +261,8 @@ var hybridTablesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
 	g.StructPair("hybridTableDetailsRow", "HybridTableDetails").
 		Text("name").
-		Text("type").
+		Text("type", g.WithManualConvert()).
+		PlainOnlyField("Collation", "*string").
 		Text("kind").
 		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 		OptionalText("default", g.WithRequiredInPlain()).

@@ -6,6 +6,13 @@ import (
 	"strings"
 )
 
+func (r hybridTableDetailsRow) additionalConvert(result *HybridTableDetails) error {
+	type_, collation := r.splitTypeAndCollation()
+	result.Type = type_
+	result.Collation = collation
+	return nil
+}
+
 // ShowParameters returns the parameters visible at the TABLE level for the given hybrid table.
 // Mirrors pkg/sdk/functions_ext.go:155 (ParametersIn.Function) with ParametersIn.Table.
 func (v *hybridTables) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {

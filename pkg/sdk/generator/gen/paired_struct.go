@@ -483,14 +483,17 @@ func (p *PairedStructs) WithShowResultFilterHook() *PairedStructs {
 //
 //	db:    (nothing)
 //	plain: <fieldName> <plainKind>
-func (p *PairedStructs) PlainOnlyField(fieldName, plainKind string) *PairedStructs {
+func (p *PairedStructs) PlainOnlyField(fieldName, plainKind string, opts ...PairedFieldOption) *PairedStructs {
+	allOpts := append([]PairedFieldOption{WithManualConvert()}, opts...)
 	f := pairedField{
 		dbColumnName:   "",
 		plainFieldName: fieldName,
 		dbKind:         "",
 		plainKind:      plainKind,
 		plainOnly:      true,
-		manualConvert:  true,
+	}
+	for _, opt := range allOpts {
+		opt(&f)
 	}
 	p.fields = append(p.fields, f)
 	return p
