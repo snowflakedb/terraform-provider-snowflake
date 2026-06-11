@@ -64,3 +64,23 @@ func (g *GrantPrivilegesToAccountRoleModel) WithOnFutureSchemaObjectsInSchema(pl
 	}))
 	return g
 }
+
+func (g *GrantPrivilegesToAccountRoleModel) WithObjectPrivileges(privileges ...sdk.ObjectPrivilege) *GrantPrivilegesToAccountRoleModel {
+	return g.WithPrivileges(collections.Map(privileges, func(p sdk.ObjectPrivilege) string { return string(p) })...)
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithAccountObjectPrivileges(privileges ...sdk.AccountObjectPrivilege) *GrantPrivilegesToAccountRoleModel {
+	return g.WithPrivileges(collections.Map(privileges, func(p sdk.AccountObjectPrivilege) string { return string(p) })...)
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithGlobalPrivileges(privileges ...sdk.GlobalPrivilege) *GrantPrivilegesToAccountRoleModel {
+	return g.WithPrivileges(collections.Map(privileges, func(p sdk.GlobalPrivilege) string { return string(p) })...)
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithSchemaPrivileges(privileges ...sdk.SchemaPrivilege) *GrantPrivilegesToAccountRoleModel {
+	return g.WithPrivileges(collections.Map(privileges, func(p sdk.SchemaPrivilege) string { return string(p) })...)
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithSchemaObjectPrivileges(privileges ...sdk.SchemaObjectPrivilege) *GrantPrivilegesToAccountRoleModel {
+	return g.WithPrivileges(collections.Map(privileges, func(p sdk.SchemaObjectPrivilege) string { return string(p) })...)
+}

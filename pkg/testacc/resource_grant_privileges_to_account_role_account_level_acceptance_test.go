@@ -4,10 +4,10 @@ package testacc
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -23,6 +23,10 @@ func TestAcc_GrantPrivilegesToAccountRole_OnDatabase_WithPrivilegesGrantedOnData
 
 	databaseId := testClient().Ids.DatabaseId()
 
+	grantModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithAccountObjectPrivileges(sdk.AccountObjectPrivilegeCreateDatabaseRole, sdk.AccountObjectPrivilegeCreateSchema).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, databaseId)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -33,7 +37,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnDatabase_WithPrivilegesGrantedOnData
 				PreConfig: func() {
 					testClient().Grant.GrantPrivilegesOnDatabaseToUser(t, databaseId, user.ID(), sdk.AccountObjectPrivilegeUsage, sdk.AccountObjectPrivilegeMonitor)
 				},
-				Config: grantPrivilegesToAccountRoleOnDatabaseConfig(role.ID(), databaseId, sdk.AccountObjectPrivilegeCreateDatabaseRole, sdk.AccountObjectPrivilegeCreateSchema),
+				Config: accconfig.FromModels(t, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.test", "account_role_name", role.ID().Name()),
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.test", "privileges.#", "2"),
@@ -47,18 +51,4 @@ func TestAcc_GrantPrivilegesToAccountRole_OnDatabase_WithPrivilegesGrantedOnData
 			},
 		},
 	})
-}
-
-func grantPrivilegesToAccountRoleOnDatabaseConfig(accountRoleId sdk.AccountObjectIdentifier, databaseId sdk.AccountObjectIdentifier, privileges ...sdk.AccountObjectPrivilege) string {
-	quotedPrivileges := collections.Map(privileges, func(privilege sdk.AccountObjectPrivilege) string { return fmt.Sprintf("%q", privilege) })
-	return fmt.Sprintf(`
-resource "snowflake_grant_privileges_to_account_role" "test" {
-  account_role_name = "%[1]s"
-  privileges        = [%[2]s]
-  on_account_object {
-    object_type = "DATABASE"
-    object_name = "%[3]s"
-  }
-}
-`, accountRoleId.Name(), strings.Join(quotedPrivileges, ","), databaseId.Name())
 }

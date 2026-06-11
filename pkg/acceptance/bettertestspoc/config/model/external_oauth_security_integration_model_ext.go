@@ -18,6 +18,15 @@ func (e *ExternalOauthSecurityIntegrationModel) WithExternalOauthTokenUserMappin
 	return e
 }
 
+func (e *ExternalOauthSecurityIntegrationModel) WithExternalOauthBlockedRoles(roles ...sdk.AccountObjectIdentifier) *ExternalOauthSecurityIntegrationModel {
+	e.ExternalOauthBlockedRolesList = tfconfig.SetVariable(
+		collections.Map(roles, func(role sdk.AccountObjectIdentifier) tfconfig.Variable {
+			return tfconfig.StringVariable(role.Name())
+		})...,
+	)
+	return e
+}
+
 func (e *ExternalOauthSecurityIntegrationModel) WithExternalOauthAllowedRoles(roles ...sdk.AccountObjectIdentifier) *ExternalOauthSecurityIntegrationModel {
 	e.ExternalOauthAllowedRolesList = tfconfig.SetVariable(
 		collections.Map(roles, func(role sdk.AccountObjectIdentifier) tfconfig.Variable {

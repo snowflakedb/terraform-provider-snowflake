@@ -9,11 +9,12 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -31,24 +32,20 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 	issuer := random.String()
 	rsaKey, _ := random.GenerateRSAPublicKey(t)
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"comment":                                         config.StringVariable("foo"),
-			"enabled":                                         config.BoolVariable(true),
-			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable(role.ID().Name())),
-			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
-			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_issuer":                           config.StringVariable(issuer),
-			"external_oauth_rsa_public_key":                   config.StringVariable(rsaKey),
-			"external_oauth_rsa_public_key_2":                 config.StringVariable(rsaKey),
-			"external_oauth_scope_delimiter":                  config.StringVariable("."),
-			"external_oauth_scope_mapping_attribute":          config.StringVariable("foo"),
-			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)),
-			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
-			"name":                config.StringVariable(id.Name()),
-			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
-		}
-	}
+	integrationModel := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
+	).
+		WithComment("foo").
+		WithExternalOauthBlockedRoles(role.ID()).
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
+		WithExternalOauthAudiences("foo").
+		WithExternalOauthRsaPublicKeyValue(accconfig.MultilineWrapperVariable(rsaKey)).
+		WithExternalOauthRsaPublicKey2Value(accconfig.MultilineWrapperVariable(rsaKey)).
+		WithExternalOauthScopeDelimiter(".").
+		WithExternalOauthScopeMappingAttribute("foo")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -56,8 +53,7 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithRsaPublicKeysAndBlockedRolesList"),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, integrationModel),
 				Check: assertThat(t,
 					resourceassert.ExternalOauthSecurityIntegrationResource(t, "snowflake_external_oauth_integration.test").
 						HasComment("foo").
@@ -97,10 +93,9 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithRsaPublicKeysAndBlockedRolesList"),
-				ConfigVariables: m(),
-				ResourceName:    "snowflake_external_oauth_integration.test",
-				ImportState:     true,
+				Config:        accconfig.FromModels(t, integrationModel),
+				ResourceName:  "snowflake_external_oauth_integration.test",
+				ImportState:   true,
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedExternalOauthSecurityIntegrationResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
 						HasCommentString("foo").
@@ -132,24 +127,20 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 	issuer := random.String()
 	rsaKey, _ := random.GenerateRSAPublicKey(t)
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"comment":                                         config.StringVariable("foo"),
-			"enabled":                                         config.BoolVariable(true),
-			"external_oauth_blocked_roles_list":               config.SetVariable(config.StringVariable(role.ID().Name())),
-			"external_oauth_any_role_mode":                    config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)),
-			"external_oauth_audience_list":                    config.SetVariable(config.StringVariable("foo")),
-			"external_oauth_issuer":                           config.StringVariable(issuer),
-			"external_oauth_rsa_public_key":                   config.StringVariable(rsaKey),
-			"external_oauth_rsa_public_key_2":                 config.StringVariable(rsaKey),
-			"external_oauth_scope_delimiter":                  config.StringVariable("."),
-			"external_oauth_scope_mapping_attribute":          config.StringVariable("foo"),
-			"external_oauth_snowflake_user_mapping_attribute": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)),
-			"external_oauth_token_user_mapping_claim":         config.SetVariable(config.StringVariable("foo")),
-			"name":                config.StringVariable(id.Name()),
-			"external_oauth_type": config.StringVariable(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)),
-		}
-	}
+	integrationModel := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
+	).
+		WithComment("foo").
+		WithExternalOauthBlockedRoles(role.ID()).
+		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
+		WithExternalOauthAudiences("foo").
+		WithExternalOauthRsaPublicKeyValue(accconfig.MultilineWrapperVariable(rsaKey)).
+		WithExternalOauthRsaPublicKey2Value(accconfig.MultilineWrapperVariable(rsaKey)).
+		WithExternalOauthScopeDelimiter(".").
+		WithExternalOauthScopeMappingAttribute("foo")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -157,8 +148,7 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithRsaPublicKeysAndBlockedRolesList"),
-				ConfigVariables: m(),
+				Config: accconfig.FromModels(t, integrationModel),
 				Check: assertThat(t,
 					resourceassert.ExternalOauthSecurityIntegrationResource(t, "snowflake_external_oauth_integration.test").
 						HasComment("foo").
@@ -198,8 +188,7 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 				),
 			},
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithRsaPublicKeysAndBlockedRolesList"),
-				ConfigVariables:         m(),
+				Config:                  accconfig.FromModels(t, integrationModel),
 				ResourceName:            "snowflake_external_oauth_integration.test",
 				ImportState:             true,
 				ImportStateVerify:       true,
