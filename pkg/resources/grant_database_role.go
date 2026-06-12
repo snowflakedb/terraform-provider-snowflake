@@ -160,7 +160,7 @@ func CreateGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta i
 			return diag.FromErr(err)
 		}
 		snowflakeResourceID = helpers.EncodeResourceIdentifier(databaseRoleIdentifier.FullyQualifiedName(), sdk.ObjectTypeShare.String(), shareIdentifier.FullyQualifiedName())
-		req := sdk.NewGrantDatabaseRoleToShareRequest(databaseRoleIdentifier, shareIdentifier)
+		req := sdk.NewGrantToShareDatabaseRoleRequest(databaseRoleIdentifier).WithShare(shareIdentifier)
 		if err := client.DatabaseRoles.GrantToShare(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
@@ -247,7 +247,7 @@ func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta i
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = revokeFromShareFunc(ctx, sdk.NewRevokeDatabaseRoleFromShareRequest(id, sharedId)); err != nil {
+		if err = revokeFromShareFunc(ctx, sdk.NewRevokeFromShareDatabaseRoleRequest(id).WithShare(sharedId)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
