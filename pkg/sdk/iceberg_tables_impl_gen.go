@@ -112,9 +112,9 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 	}
 	opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{}
 	if r.ColumnsAndConstraints.Columns != nil {
-		s := make([]IcebergTableColumn, len(r.ColumnsAndConstraints.Columns))
+		columns := make([]IcebergTableColumn, len(r.ColumnsAndConstraints.Columns))
 		for i, v := range r.ColumnsAndConstraints.Columns {
-			s[i] = IcebergTableColumn{
+			columns[i] = IcebergTableColumn{
 				Name:         v.Name,
 				ColumnType:   v.ColumnType,
 				DefaultValue: v.DefaultValue,
@@ -123,9 +123,9 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				Comment:      v.Comment,
 			}
 			if v.InlineConstraint != nil {
-				s[i].InlineConstraint = &TableColumnInlineConstraint{}
+				columns[i].InlineConstraint = &TableColumnInlineConstraint{}
 				if v.InlineConstraint.UniquePK != nil {
-					s[i].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{
+					columns[i].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{
 						Name:               v.InlineConstraint.UniquePK.Name,
 						Unique:             v.InlineConstraint.UniquePK.Unique,
 						PrimaryKey:         v.InlineConstraint.UniquePK.PrimaryKey,
@@ -144,7 +144,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 					}
 				}
 				if v.InlineConstraint.FK != nil {
-					s[i].InlineConstraint.FK = &TableColumnInlineFK{
+					columns[i].InlineConstraint.FK = &TableColumnInlineFK{
 						Name:               v.InlineConstraint.FK.Name,
 						ForeignKey:         v.InlineConstraint.FK.ForeignKey,
 						References:         v.InlineConstraint.FK.References,
@@ -166,7 +166,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 					}
 				}
 				if v.InlineConstraint.CH != nil {
-					s[i].InlineConstraint.CH = &TableColumnInlineCH{
+					columns[i].InlineConstraint.CH = &TableColumnInlineCH{
 						Name:             v.InlineConstraint.CH.Name,
 						Expression:       v.InlineConstraint.CH.Expression,
 						EnableValidate:   v.InlineConstraint.CH.EnableValidate,
@@ -175,25 +175,25 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				}
 			}
 			if v.MaskingPolicy != nil {
-				s[i].MaskingPolicy = &TableColumnMaskingPolicy{
+				columns[i].MaskingPolicy = &TableColumnMaskingPolicy{
 					MaskingPolicy: v.MaskingPolicy.MaskingPolicy,
 					Using:         v.MaskingPolicy.Using,
 				}
 			}
 			if v.ProjectionPolicy != nil {
-				s[i].ProjectionPolicy = &TableColumnProjectionPolicy{
+				columns[i].ProjectionPolicy = &TableColumnProjectionPolicy{
 					ProjectionPolicy: v.ProjectionPolicy.ProjectionPolicy,
 				}
 			}
 		}
-		opts.ColumnsAndConstraints.Columns = s
+		opts.ColumnsAndConstraints.Columns = columns
 	}
 	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
-		s := make([]TableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		outOfLineConstraint := make([]TableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
-			s[i] = TableOutOfLineConstraint{}
+			outOfLineConstraint[i] = TableOutOfLineConstraint{}
 			if v.UniquePK != nil {
-				s[i].UniquePK = &TableOutOfLineUniquePK{
+				outOfLineConstraint[i].UniquePK = &TableOutOfLineUniquePK{
 					Name:               v.UniquePK.Name,
 					Unique:             v.UniquePK.Unique,
 					PrimaryKey:         v.UniquePK.PrimaryKey,
@@ -214,7 +214,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				}
 			}
 			if v.FK != nil {
-				s[i].FK = &TableOutOfLineFK{
+				outOfLineConstraint[i].FK = &TableOutOfLineFK{
 					Name:               v.FK.Name,
 					Columns:            v.FK.Columns,
 					References:         v.FK.References,
@@ -237,7 +237,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				}
 			}
 			if v.CH != nil {
-				s[i].CH = &TableOutOfLineCH{
+				outOfLineConstraint[i].CH = &TableOutOfLineCH{
 					Name:             v.CH.Name,
 					Expression:       v.CH.Expression,
 					EnableValidate:   v.CH.EnableValidate,
@@ -245,54 +245,54 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				}
 			}
 		}
-		opts.ColumnsAndConstraints.OutOfLineConstraint = s
+		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
 	if r.PartitionBy != nil {
-		s := make([]IcebergTablePartitionExpression, len(r.PartitionBy))
+		partitionBy := make([]IcebergTablePartitionExpression, len(r.PartitionBy))
 		for i, v := range r.PartitionBy {
-			s[i] = IcebergTablePartitionExpression{
+			partitionBy[i] = IcebergTablePartitionExpression{
 				Identity: v.Identity,
 			}
 			if v.Bucket != nil {
-				s[i].Bucket = &IcebergTablePartitionBucket{}
-				s[i].Bucket.Args = IcebergTablePartitionBucketArgs{
+				partitionBy[i].Bucket = &IcebergTablePartitionBucket{}
+				partitionBy[i].Bucket.Args = IcebergTablePartitionBucketArgs{
 					NumBuckets: v.Bucket.Args.NumBuckets,
 					Column:     v.Bucket.Args.Column,
 				}
 			}
 			if v.Truncate != nil {
-				s[i].Truncate = &IcebergTablePartitionTruncate{}
-				s[i].Truncate.Args = IcebergTablePartitionTruncateArgs{
+				partitionBy[i].Truncate = &IcebergTablePartitionTruncate{}
+				partitionBy[i].Truncate.Args = IcebergTablePartitionTruncateArgs{
 					Width:  v.Truncate.Args.Width,
 					Column: v.Truncate.Args.Column,
 				}
 			}
 			if v.Year != nil {
-				s[i].Year = &IcebergTablePartitionYear{}
-				s[i].Year.Args = IcebergTablePartitionTimeArgs{
+				partitionBy[i].Year = &IcebergTablePartitionYear{}
+				partitionBy[i].Year.Args = IcebergTablePartitionTimeArgs{
 					Column: v.Year.Args.Column,
 				}
 			}
 			if v.Month != nil {
-				s[i].Month = &IcebergTablePartitionMonth{}
-				s[i].Month.Args = IcebergTablePartitionTimeArgs{
+				partitionBy[i].Month = &IcebergTablePartitionMonth{}
+				partitionBy[i].Month.Args = IcebergTablePartitionTimeArgs{
 					Column: v.Month.Args.Column,
 				}
 			}
 			if v.Day != nil {
-				s[i].Day = &IcebergTablePartitionDay{}
-				s[i].Day.Args = IcebergTablePartitionTimeArgs{
+				partitionBy[i].Day = &IcebergTablePartitionDay{}
+				partitionBy[i].Day.Args = IcebergTablePartitionTimeArgs{
 					Column: v.Day.Args.Column,
 				}
 			}
 			if v.Hour != nil {
-				s[i].Hour = &IcebergTablePartitionHour{}
-				s[i].Hour.Args = IcebergTablePartitionTimeArgs{
+				partitionBy[i].Hour = &IcebergTablePartitionHour{}
+				partitionBy[i].Hour.Args = IcebergTablePartitionTimeArgs{
 					Column: v.Hour.Args.Column,
 				}
 			}
 		}
-		opts.PartitionBy = s
+		opts.PartitionBy = partitionBy
 	}
 	if r.RowAccessPolicy != nil {
 		opts.RowAccessPolicy = &IcebergTableRowAccessPolicy{
@@ -437,9 +437,9 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		}
 	}
 	if r.AlterColumnAction != nil {
-		s := make([]IcebergTableAlterColumnAction, len(r.AlterColumnAction))
+		alterColumnAction := make([]IcebergTableAlterColumnAction, len(r.AlterColumnAction))
 		for i, v := range r.AlterColumnAction {
-			s[i] = IcebergTableAlterColumnAction{
+			alterColumnAction[i] = IcebergTableAlterColumnAction{
 				ColumnName:       v.ColumnName,
 				SetNotNull:       v.SetNotNull,
 				DropNotNull:      v.DropNotNull,
@@ -450,7 +450,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 				DropWriteDefault: v.DropWriteDefault,
 			}
 		}
-		opts.AlterColumnAction = s
+		opts.AlterColumnAction = alterColumnAction
 	}
 	if r.SetMaskingPolicyOnColumn != nil {
 		opts.SetMaskingPolicyOnColumn = &TableSetColumnMaskingPolicy{
@@ -554,39 +554,39 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		if r.SearchOptimizationAction.Add != nil {
 			opts.SearchOptimizationAction.Add = &TableAddSearchOptimization{}
 			if r.SearchOptimizationAction.Add.On != nil {
-				s := make([]TableSearchMethodWithTarget, len(r.SearchOptimizationAction.Add.On))
+				on := make([]TableSearchMethodWithTarget, len(r.SearchOptimizationAction.Add.On))
 				for i, v := range r.SearchOptimizationAction.Add.On {
-					s[i] = TableSearchMethodWithTarget{
+					on[i] = TableSearchMethodWithTarget{
 						Method: v.Method,
 					}
-					s[i].Args = TableSearchMethodArgs{
+					on[i].Args = TableSearchMethodArgs{
 						Targets:  v.Args.Targets,
 						Analyzer: v.Args.Analyzer,
 					}
 				}
-				opts.SearchOptimizationAction.Add.On = s
+				opts.SearchOptimizationAction.Add.On = on
 			}
 		}
 		if r.SearchOptimizationAction.Drop != nil {
 			opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
 			if r.SearchOptimizationAction.Drop.On != nil {
-				s := make([]TableDropSearchOptimizationOn, len(r.SearchOptimizationAction.Drop.On))
+				on := make([]TableDropSearchOptimizationOn, len(r.SearchOptimizationAction.Drop.On))
 				for i, v := range r.SearchOptimizationAction.Drop.On {
-					s[i] = TableDropSearchOptimizationOn{
+					on[i] = TableDropSearchOptimizationOn{
 						ColumnName:   v.ColumnName,
 						ExpressionId: v.ExpressionId,
 					}
 					if v.SearchMethodWithTarget != nil {
-						s[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
+						on[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
 							Method: v.SearchMethodWithTarget.Method,
 						}
-						s[i].SearchMethodWithTarget.Args = TableSearchMethodArgs{
+						on[i].SearchMethodWithTarget.Args = TableSearchMethodArgs{
 							Targets:  v.SearchMethodWithTarget.Args.Targets,
 							Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
 						}
 					}
 				}
-				opts.SearchOptimizationAction.Drop.On = s
+				opts.SearchOptimizationAction.Drop.On = on
 			}
 		}
 	}

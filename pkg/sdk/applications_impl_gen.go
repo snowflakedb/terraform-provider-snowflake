@@ -138,13 +138,13 @@ func (r *AlterApplicationRequest) toOpts() *AlterApplicationOptions {
 	if r.UnsetReferences != nil {
 		opts.UnsetReferences = &ApplicationReferences{}
 		if r.UnsetReferences.References != nil {
-			s := make([]ApplicationReference, len(r.UnsetReferences.References))
+			references := make([]ApplicationReference, len(r.UnsetReferences.References))
 			for i, v := range r.UnsetReferences.References {
-				s[i] = ApplicationReference{
+				references[i] = ApplicationReference{
 					Reference: v.Reference,
 				}
 			}
-			opts.UnsetReferences.References = s
+			opts.UnsetReferences.References = references
 		}
 	}
 	return opts

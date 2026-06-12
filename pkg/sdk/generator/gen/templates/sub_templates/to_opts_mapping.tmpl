@@ -10,21 +10,27 @@
 {{- range .Fields }}
     {{- if .ShouldBeInDto }}
         {{- if .HasAnyFields }}
+            {{- if or .IsShared .GenerateSharedToOpts }}
+                if {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} != nil {
+                {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }}.toOpts()
+                }
+            {{- else }}
             {{- if or .IsPointer .IsSlice }}
                 if {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} != nil {
             {{- end }}
             {{ if not .IsSlice -}}
                 {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ if .IsPointer }}&{{end}}{{ template "toOptsMapping" . -}}{{/* Recursive call */}}
             {{- else -}}
-                {{ toOptsSliceVar }} := make({{ .Kind }}, len({{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }}))
+                {{ .ToOptsSliceVar }} := make({{ .Kind }}, len({{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }}))
                 for i, {{ toOptsSliceElemVar }} := range {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} {
-                    {{ toOptsSliceVar }}[i] = {{ template "toOptsMapping" . -}}{{/* Recursive call */}}
+                    {{ .ToOptsSliceVar }}[i] = {{ template "toOptsMapping" . -}}{{/* Recursive call */}}
                 }
-                {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ toOptsSliceVar }}
+                {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ .ToOptsSliceVar }}
             {{- end -}}
 
             {{- if or .IsPointer .IsSlice -}}
                 }
+            {{- end -}}
             {{- end -}}
         {{- end -}}
     {{- end }}

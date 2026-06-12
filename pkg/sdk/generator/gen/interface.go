@@ -103,6 +103,28 @@ func (i *Interface) NameLowerCased() string {
 	return startingWithLowerCase(i.Name)
 }
 
+// SharedToOptsFields returns all nested struct fields marked with GenerateSharedToOpts
+// across all operations. Used by the impl template to emit standalone toOpts() methods.
+func (i *Interface) SharedToOptsFields() []*Field {
+	var result []*Field
+	for _, op := range i.Operations {
+		if op.OptsField == nil {
+			continue
+		}
+		collectSharedToOpts(op.OptsField, &result)
+	}
+	return result
+}
+
+func collectSharedToOpts(f *Field, result *[]*Field) {
+	if f.GenerateSharedToOpts && !f.IsShared {
+		*result = append(*result, f)
+	}
+	for idx := range f.Fields {
+		collectSharedToOpts(&f.Fields[idx], result)
+	}
+}
+
 // ObjectIdentifierKind returns the level of the object identifier (e.g. for DatabaseObjectIdentifier, it returns the prefix "Database")
 func (i *Interface) ObjectIdentifierPrefix() idPrefix {
 	return identifierStringToPrefix(i.IdentifierKind)

@@ -315,7 +315,7 @@ var proceduresDef = g.NewInterface(
 			g.NewQueryStruct("ProcedureSet").
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
-				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
+				OptionalSharedQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 				OptionalAssignment("AUTO_EVENT_LOGGING", g.KindOfTPointer[sdkcommons.AutoEventLogging](), g.ParameterOptions().SingleQuotes()).
 				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
 				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).

@@ -33,22 +33,7 @@ func TestInt_HybridTables(t *testing.T) {
 				HasOwnerRoleType("ROLE"))
 		})
 
-		// TODO(SNOW-3643759): Investigate and unskip:
-		//hybrid_tables_integration_test.go:170:
-		//           Error Trace:    /home/runner/work/terraform-provider-snowflake/terraform-provider-snowflake/pkg/sdk/testint/hybrid_tables_integration_test.go:170
-		//           Error:          Not equal:
-		//                           expected: "VARCHAR(200)"
-		//                           actual  : "VARCHAR(200) COLLATE 'en-ci'"
-		//
-		//                           Diff:
-		//                           --- Expected
-		//                           +++ Actual
-		//                           @@ -1 +1 @@
-		//                           -VARCHAR(200)
-		//                           +VARCHAR(200) COLLATE 'en-ci'
-		//           Test:           TestInt_HybridTables/create_operations/complete_-_all_column_and_constraint_options
 		t.Run("complete - all column and constraint options", func(t *testing.T) {
-			t.Skip("TODO(SNOW-3643759): Investigate and unskip")
 			refId, refCleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
 				{Name: "REF_ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 			})
