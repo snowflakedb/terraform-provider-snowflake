@@ -1,10 +1,6 @@
 package sdk
 
-import (
-	"context"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-)
+import "context"
 
 var (
 	_ DatabaseRoles                = (*databaseRoles)(nil)
@@ -53,20 +49,6 @@ func (v *databaseRoles) Show(ctx context.Context, request *ShowDatabaseRoleReque
 	return resultList, nil
 }
 
-func (v *databaseRoles) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error) {
-	request := NewShowDatabaseRoleRequest(id.DatabaseId()).WithLike(Like{Pointer(id.Name())})
-	databaseRoles, err := v.Show(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-
-	return collections.FindFirst(databaseRoles, func(r DatabaseRole) bool { return r.Name == id.Name() })
-}
-
-func (v *databaseRoles) ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error) {
-	return SafeShowById(v.client, v.ShowByID, ctx, id)
-}
-
 func (v *databaseRoles) Grant(ctx context.Context, request *GrantDatabaseRoleRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -77,10 +59,6 @@ func (v *databaseRoles) Revoke(ctx context.Context, request *RevokeDatabaseRoleR
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *databaseRoles) RevokeSafely(ctx context.Context, request *RevokeDatabaseRoleRequest) error {
-	return SafeRevokePrivileges(func() error { return v.Revoke(ctx, request) })
-}
-
 func (v *databaseRoles) GrantToShare(ctx context.Context, request *GrantDatabaseRoleToShareRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -89,10 +67,6 @@ func (v *databaseRoles) GrantToShare(ctx context.Context, request *GrantDatabase
 func (v *databaseRoles) RevokeFromShare(ctx context.Context, request *RevokeDatabaseRoleFromShareRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *databaseRoles) RevokeFromShareSafely(ctx context.Context, request *RevokeDatabaseRoleFromShareRequest) error {
-	return SafeRevokePrivileges(func() error { return v.RevokeFromShare(ctx, request) })
 }
 
 func (s *CreateDatabaseRoleRequest) toOpts() *createDatabaseRoleOptions {

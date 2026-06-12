@@ -1,7 +1,5 @@
 package sdk
 
-//go:generate go run ./dto-builder-generator/main.go
-
 var (
 	_ optionsProvider[createDatabaseRoleOptions] = new(CreateDatabaseRoleRequest)
 	_ optionsProvider[alterDatabaseRoleOptions]  = new(AlterDatabaseRoleRequest)
