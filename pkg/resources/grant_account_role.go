@@ -124,6 +124,9 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleSafePublicRole)
 		return nil
 	}
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		providerCtx.GrantShowOfRoleCache.Invalidate(roleIdentifier.FullyQualifiedName())
+	}
 	return ReadGrantAccountRole(ctx, d, meta)
 }
 
@@ -146,11 +149,21 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 
 	objectType := parts[1]
 	targetIdentifier := parts[2]
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-		Of: &sdk.ShowGrantsOf{
-			Role: roleIdentifier,
-		},
-	})
+
+	var grants []sdk.Grant
+	var err error
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		cacheKey := roleIdentifier.FullyQualifiedName()
+		grants, err = providerCtx.GrantShowOfRoleCache.GetOrLoad(cacheKey, func() ([]sdk.Grant, error) {
+			return client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+				Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+			})
+		})
+	} else {
+		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+		})
+	}
 	if err != nil {
 		log.Printf("[DEBUG] role (%s) not found", roleIdentifier.FullyQualifiedName())
 		d.SetId("")
@@ -209,6 +222,9 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	}
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		providerCtx.GrantShowOfRoleCache.Invalidate(id.FullyQualifiedName())
 	}
 	d.SetId("")
 	return nil

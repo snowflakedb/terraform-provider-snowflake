@@ -799,7 +799,9 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		}
 	}
 
-	providerCtx := &provider.Context{}
+	providerCtx := &provider.Context{
+		GrantShowOfRoleCache: provider.NewShowGrantsOfRoleCache(),
+	}
 	if client, err := sdk.NewClient(config); err != nil {
 		return nil, diag.FromErr(err)
 	} else {
