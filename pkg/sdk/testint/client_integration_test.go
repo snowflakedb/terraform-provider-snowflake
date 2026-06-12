@@ -35,8 +35,9 @@ func TestInt_Client_NewClient(t *testing.T) {
 		})
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 		config := sdk.DefaultConfig(sdk.WithUseLegacyTomlFormat(true))
-		_, err := sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		require.NoError(t, client.Close())
 	})
 
 	t.Run("with config", func(t *testing.T) {
@@ -48,8 +49,9 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile)
 		require.NoError(t, err)
-		_, err = sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		require.NoError(t, client.Close())
 	})
 
 	t.Run("with config (legacy)", func(t *testing.T) {
@@ -61,8 +63,9 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithUseLegacyTomlFormat(true))
 		require.NoError(t, err)
-		_, err = sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		require.NoError(t, client.Close())
 	})
 
 	t.Run("with missing config", func(t *testing.T) {
@@ -129,8 +132,9 @@ func TestInt_Client_NewClient(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
-		_, err = sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		require.NoError(t, client.Close())
 	})
 
 	t.Run("with missing config - should not care about correct env variables", func(t *testing.T) {
@@ -154,8 +158,11 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 	t.Run("registers snowflake driver", func(t *testing.T) {
 		config := sdk.DefaultConfig()
-		_, err := sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		t.Cleanup(func() {
+			require.NoError(t, client.Close())
+		})
 
 		assert.ElementsMatch(t, sql.Drivers(), []string{"snowflake"})
 	})
@@ -263,8 +270,11 @@ func TestInt_Client(t *testing.T) {
 	t.Run("newCLientDriverLoggingLevel", func(t *testing.T) {
 		t.Run("get default gosnowflake driver logging level", func(t *testing.T) {
 			config := sdk.DefaultConfig()
-			_, err := sdk.NewClient(config)
+			client, err := sdk.NewClient(config)
 			require.NoError(t, err)
+			t.Cleanup(func() {
+				require.NoError(t, client.Close())
+			})
 
 			var expected string
 			if os.Getenv("GITHUB_ACTIONS") != "" {
@@ -278,8 +288,11 @@ func TestInt_Client(t *testing.T) {
 		t.Run("set gosnowflake driver logging level with config", func(t *testing.T) {
 			config := sdk.DefaultConfig()
 			config.Tracing = "trace"
-			_, err := sdk.NewClient(config)
+			client, err := sdk.NewClient(config)
 			require.NoError(t, err)
+			t.Cleanup(func() {
+				require.NoError(t, client.Close())
+			})
 
 			assert.Equal(t, "TRACE", gosnowflake.GetLogger().GetLogLevel())
 		})
@@ -306,6 +319,9 @@ func defaultTestClient(t *testing.T) *sdk.Client {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(func() {
+		require.NoError(t, client.Close())
+	})
 
 	return client
 }
