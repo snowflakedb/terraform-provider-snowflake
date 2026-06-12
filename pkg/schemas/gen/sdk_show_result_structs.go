@@ -27,6 +27,7 @@ var SdkShowResultStructs = []any{
 	sdk.GitRepository{},
 	sdk.Grant{},
 	sdk.HybridTable{},
+	sdk.IcebergTable{},
 	sdk.ImageRepository{},
 	sdk.Listing{},
 	sdk.ManagedAccount{},
@@ -71,14 +72,15 @@ var SdkShowResultStructs = []any{
 // TODO [SNOW-1501905]: currently all these structs have the "Show" added to the schema, while these are not show outputs
 // TODO [SNOW-1501905]: temporary struct, may be refactored with addition to generation of describe results; for now used to some structs needing a schema representation
 var AdditionalStructs = []any{
+	sdk.CatalogIntegrationAwsGlueDetails{},
+	sdk.CatalogIntegrationObjectStorageDetails{},
+	sdk.CortexAgentDetails{},
+	sdk.IcebergTableDetails{},
+	sdk.PasswordPolicyDetails{},
 	sdk.SecurityIntegrationProperty{},
+	sdk.SessionPolicyDetails{},
+	sdk.StorageIntegrationAllDetails{},
 	sdk.StorageIntegrationAwsDetails{},
 	sdk.StorageIntegrationAzureDetails{},
 	sdk.StorageIntegrationGcsDetails{},
-	sdk.StorageIntegrationAllDetails{},
-	sdk.CatalogIntegrationAwsGlueDetails{},
-	sdk.CatalogIntegrationObjectStorageDetails{},
-	sdk.SessionPolicyDetails{},
-	sdk.PasswordPolicyDetails{},
-	sdk.CortexAgentDetails{},
 }

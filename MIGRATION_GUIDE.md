@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new preview resource)* New Iceberg Table resources
+
+We have added a new preview resource for Iceberg tables: [snowflake_iceberg_table_from_files](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_files) for managing Snowflake Iceberg Tables created from files ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files)).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_iceberg_table_from_files_resource` to the `preview_features_enabled` field in the provider configuration.
+
+Stay tuned for the next variants of Iceberg Tables support in the provider!
+
 ### *(new feature)* `log_event_level` parameter support
 
 We added support for the [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level) parameter, following the same handling as the existing `log_level` parameter. The new `log_event_level` field is now available in the following resources:

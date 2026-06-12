@@ -59,3 +59,9 @@ func (c *IcebergTableClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifie
 	ctx := context.Background()
 	return c.context.client.IcebergTables.Describe(ctx, id)
 }
+
+func (c *IcebergTableClient) Alter(t *testing.T, request *sdk.AlterIcebergTableRequest) {
+	t.Helper()
+	ctx := context.Background()
+	require.NoError(t, c.context.client.IcebergTables.Alter(ctx, request))
+}

@@ -271,6 +271,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.GitRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.GitRepositories.ShowByID)
 	},
+	resources.IcebergTableFromFiles: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ImageRepositories.ShowByID)
 	},

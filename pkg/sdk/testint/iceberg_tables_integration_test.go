@@ -1385,6 +1385,43 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasAutoRefreshStatus(""),
 		)
 	})
+
+	t.Run("alter iceberg table from files: set and unset", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
+
+		err := client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSet(
+			*sdk.NewIcebergTableSetPropertiesRequest().
+				WithComment("integration test comment").
+				WithReplaceInvalidCharacters(true),
+		))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasComment("integration test comment"),
+		)
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasReplaceInvalidCharacters(true),
+		)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnset(
+			*sdk.NewIcebergTableUnsetPropertiesRequest().
+				WithComment(true).
+				WithReplaceInvalidCharacters(true),
+		))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasComment(""),
+		)
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasReplaceInvalidCharacters(false),
+		)
+	})
+
 	t.Run("drop iceberg table: existing", func(t *testing.T) {
 		obj, cleanup := testClientHelper().IcebergTable.Create(t)
 		t.Cleanup(cleanup)
