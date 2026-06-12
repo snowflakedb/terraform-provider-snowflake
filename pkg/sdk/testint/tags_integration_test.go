@@ -861,6 +861,19 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 		},
 		{
+			name:       "IcebergTable",
+			objectType: sdk.ObjectTypeIcebergTable,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				return testClientHelper().IcebergTable.Create(t)
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
 			name:       "MaterializedView",
 			objectType: sdk.ObjectTypeMaterializedView,
 			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
@@ -1108,6 +1121,20 @@ func TestInt_TagsAssociations(t *testing.T) {
 		setTags     func(sdk.TableColumnIdentifier, []sdk.TagAssociation) error
 		unsetTags   func(sdk.TableColumnIdentifier, []sdk.ObjectIdentifier) error
 	}{
+		{
+			name: "IcebergTable",
+			setupObject: func() (sdk.TableColumnIdentifier, func()) {
+				object, objectCleanup := testClientHelper().IcebergTable.Create(t)
+				columnId := sdk.NewTableColumnIdentifier(object.ID().DatabaseName(), object.ID().SchemaName(), object.ID().Name(), "ID")
+				return columnId, objectCleanup
+			},
+			setTags: func(id sdk.TableColumnIdentifier, tags []sdk.TagAssociation) error {
+				return client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithSetTagsOnColumn(*sdk.NewTableSetColumnTagsRequest(id.Name(), tags)))
+			},
+			unsetTags: func(id sdk.TableColumnIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithUnsetTagsOnColumn(*sdk.NewTableUnsetColumnTagsRequest(id.Name(), tags)))
+			},
+		},
 		{
 			name: "Table",
 			setupObject: func() (sdk.TableColumnIdentifier, func()) {
