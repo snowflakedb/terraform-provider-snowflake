@@ -159,8 +159,8 @@ generate-sdk-validations-check: generate-sdk-validations ## check that SDK valid
 	$(call GIT_DIFF_CHECK,pkg/sdk/*_validations_gen.go)
 
 # Objects excluded from impl generation because their impl files contain manual changes:
-# DataMetricFunctionReferences, ExternalFunctions, SemanticViews, Tasks, UserProgrammaticAccessTokens
-SDK_IMPL_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,EventTables,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,Notebooks,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,Procedures,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,Streamlits,Streams,TagReferences,Views
+# ExternalFunctions, SemanticViews
+SDK_IMPL_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,DataMetricFunctionReferences,EventTables,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,Notebooks,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,Procedures,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,Streamlits,Streams,TagReferences,Tasks,UserProgrammaticAccessTokens,Views
 
 generate-sdk-impl: ## Generate SDK impl for objects without manual changes
 	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=impl --filter-object-names=$(SDK_IMPL_OBJECTS)'
@@ -169,12 +169,11 @@ generate-sdk-impl-check: generate-sdk-impl ## Check that SDK impl files are up-t
 	$(call GIT_DIFF_CHECK,pkg/sdk/*_impl_gen.go)
 
 # Objects excluded from dto generation because their dto files contain manual changes:
-# EventTables (ClusterBy builder bug), Notebooks (shared SecretsListRequest),
-# Procedures (shared SecretsListRequest), SemanticViews (nested Request types), Tasks (nested Request types)
-SDK_DTO_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,DataMetricFunctionReferences,ExternalFunctions,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,StorageLifecyclePolicies,Streamlits,Streams,TagReferences,UserProgrammaticAccessTokens,Views
+# Notebooks (shared SecretsListRequest), Procedures (shared SecretsListRequest)
+SDK_DTO_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,DataMetricFunctionReferences,EventTables,ExternalFunctions,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,RowAccessPolicies,Secrets,SecurityIntegrations,SemanticViews,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,StorageLifecyclePolicies,Streamlits,Streams,TagReferences,Tasks,UserProgrammaticAccessTokens,Views
 
 generate-sdk-dto: ## Generate SDK dto and dto_builders for objects without manual changes
-	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=dto,dto_builders --filter-object-names=$(SDK_DTO_OBJECTS)'
+	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,dto,dto_builders --filter-object-names=$(SDK_DTO_OBJECTS)'
 
 generate-sdk-dto-check: generate-sdk-dto ## Check that SDK dto files are up-to-date
 	$(call GIT_DIFF_CHECK,pkg/sdk/*_dto_gen.go pkg/sdk/*_dto_builders_gen.go)

@@ -52,7 +52,6 @@ var (
 					List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses())
 )
 
-// TODO [next PRs]: support adding a field only in plain struct (in this case: `ArgumentsOld` and `ReturnTypeOld`)
 var functionPairs = g.StructPair("functionRow", "Function").
 	Text("created_on").
 	Text("name").
@@ -63,6 +62,8 @@ var functionPairs = g.StructPair("functionRow", "Function").
 	Number("min_num_arguments").
 	Number("max_num_arguments").
 	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	PlainOnlyField("ArgumentsOld", "[]DataType").
+	PlainOnlyField("ReturnTypeOld", "DataType").
 	Text("description").
 	Text("catalog_name", g.WithManualConvert()).
 	BoolFromText("is_table_function").

@@ -285,7 +285,6 @@ func (r *DescribeHybridTableRequest) toOpts() *DescribeHybridTableOptions {
 func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
 	result := &HybridTableDetails{
 		Name:       r.Name,
-		Type:       r.Type,
 		Kind:       r.Kind,
 		IsNullable: r.Null == "Y",
 		PrimaryKey: r.PrimaryKey == "Y",
@@ -298,6 +297,9 @@ func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
 	mapNullStringToNonNullableField(&result.PolicyName, r.PolicyName)
 	mapNullStringToNonNullableField(&result.PrivacyDomain, r.PrivacyDomain)
 	mapNullStringToNonNullableField(&result.SchemaEvolutionRecord, r.SchemaEvolutionRecord)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 

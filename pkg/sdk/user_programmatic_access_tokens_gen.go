@@ -14,10 +14,8 @@ type UserProgrammaticAccessTokens interface {
 	Rotate(ctx context.Context, request *RotateUserProgrammaticAccessTokenRequest) (*RotateProgrammaticAccessTokenResult, error)
 	Remove(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 	Show(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
-	// adjusted manually - adding userId
-	ShowByID(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
-	// adjusted manually - adding userId
-	ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
+	ShowByID(ctx context.Context, userId AccountObjectIdentifier, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
+	ShowByIDSafely(ctx context.Context, userId AccountObjectIdentifier, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 	RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error
 }
 

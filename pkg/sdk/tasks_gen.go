@@ -33,7 +33,7 @@ type CreateTaskOptions struct {
 	name                                    SchemaObjectIdentifier   `ddl:"identifier"`
 	Warehouse                               *CreateTaskWarehouse     `ddl:"keyword"`
 	Schedule                                *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
-	Config                                  *string                  `ddl:"parameter,no_quotes" sql:"CONFIG"`
+	Config                                  *string                  `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
 	AllowOverlappingExecution               *bool                    `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
 	SessionParameters                       *SessionParameters       `ddl:"list,no_parentheses"`
 	UserTaskTimeoutMs                       *int                     `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
@@ -65,7 +65,7 @@ type CreateOrAlterTaskOptions struct {
 	name                        SchemaObjectIdentifier   `ddl:"identifier"`
 	Warehouse                   *CreateTaskWarehouse     `ddl:"keyword"`
 	Schedule                    *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
-	Config                      *string                  `ddl:"parameter,no_quotes" sql:"CONFIG"`
+	Config                      *string                  `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
 	AllowOverlappingExecution   *bool                    `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
 	UserTaskTimeoutMs           *int                     `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
 	SessionParameters           *SessionParameters       `ddl:"list,no_parentheses"`
@@ -116,7 +116,7 @@ type TaskSet struct {
 	Warehouse                               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
 	UserTaskManagedInitialWarehouseSize     *WarehouseSize           `ddl:"parameter,single_quotes" sql:"USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"`
 	Schedule                                *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
-	Config                                  *string                  `ddl:"parameter,no_quotes" sql:"CONFIG"`
+	Config                                  *string                  `ddl:"parameter,double_dollar_quotes" sql:"CONFIG"`
 	AllowOverlappingExecution               *bool                    `ddl:"parameter" sql:"ALLOW_OVERLAPPING_EXECUTION"`
 	UserTaskTimeoutMs                       *int                     `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
 	SuspendTaskAfterNumFailures             *int                     `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`

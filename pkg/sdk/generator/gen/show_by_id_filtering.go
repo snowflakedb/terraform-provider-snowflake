@@ -17,6 +17,10 @@ const (
 
 	// ShowByIDNoFiltering causes the auto-generated ShowByID to use no filtering when passed as the sole filtering argument to ShowOperation
 	ShowByIDNoFiltering ShowByIDFilteringKind = 100
+
+	// ShowByIDSuppressed prevents auto-generation of ShowByID/ShowByIDSafely.
+	// Use when ShowByID needs a custom signature and manual implementation.
+	ShowByIDSuppressed ShowByIDFilteringKind = 101
 )
 
 type idPrefix string
