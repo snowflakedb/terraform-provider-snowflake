@@ -34,6 +34,26 @@ func (v *databaseRoles) RevokeFromShareSafely(ctx context.Context, request *Revo
 	return SafeRevokePrivileges(func() error { return v.RevokeFromShare(ctx, request) })
 }
 
+// WithAccountRole is a convenience method for granting a database role to an account role.
+func (s *GrantDatabaseRoleRequest) WithAccountRole(accountRole AccountObjectIdentifier) *GrantDatabaseRoleRequest {
+	return s.WithTo(*NewDatabaseRoleKindOfRoleRequest().WithAccountRoleName(accountRole))
+}
+
+// WithDatabaseRole is a convenience method for granting a database role to another database role.
+func (s *GrantDatabaseRoleRequest) WithDatabaseRole(databaseRole DatabaseObjectIdentifier) *GrantDatabaseRoleRequest {
+	return s.WithTo(*NewDatabaseRoleKindOfRoleRequest().WithDatabaseRoleName(databaseRole))
+}
+
+// WithAccountRole is a convenience method for revoking a database role from an account role.
+func (s *RevokeDatabaseRoleRequest) WithAccountRole(accountRole AccountObjectIdentifier) *RevokeDatabaseRoleRequest {
+	return s.WithFrom(*NewDatabaseRoleKindOfRoleRequest().WithAccountRoleName(accountRole))
+}
+
+// WithDatabaseRole is a convenience method for revoking a database role from another database role.
+func (s *RevokeDatabaseRoleRequest) WithDatabaseRole(databaseRole DatabaseObjectIdentifier) *RevokeDatabaseRoleRequest {
+	return s.WithFrom(*NewDatabaseRoleKindOfRoleRequest().WithDatabaseRoleName(databaseRole))
+}
+
 func (r databaseRoleDBRow) additionalConvert(_ *DatabaseRole) error {
 	return nil
 }
@@ -43,6 +63,13 @@ func (opts *AlterDatabaseRoleOptions) additionalValidations() error {
 		if opts.name.DatabaseName() != opts.Rename.DatabaseName() {
 			return errors.Join(ErrDifferentDatabase)
 		}
+	}
+	return nil
+}
+
+func (opts *ShowDatabaseRoleOptions) additionalValidations() error {
+	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
+		return errors.Join(ErrPatternRequiredForLikeKeyword)
 	}
 	return nil
 }

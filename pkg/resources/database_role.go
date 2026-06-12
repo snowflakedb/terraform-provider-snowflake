@@ -170,7 +170,7 @@ func UpdateDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	if d.HasChange("comment") {
 		newComment := d.Get("comment").(string)
-		err := client.DatabaseRoles.Alter(ctx, sdk.NewAlterDatabaseRoleRequest(id).WithSet(*sdk.NewDatabaseRoleSetRequest(newComment)))
+		err := client.DatabaseRoles.Alter(ctx, sdk.NewAlterDatabaseRoleRequest(id).WithSet(*sdk.NewDatabaseRoleSetRequest().WithComment(newComment)))
 		if err != nil {
 			return diag.FromErr(err)
 		}
