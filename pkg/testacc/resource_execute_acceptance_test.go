@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -32,13 +34,6 @@ func TestAcc_Execute_basic(t *testing.T) {
 	dropDatabaseStatement := func(id string) string { return fmt.Sprintf("drop database %s", id) }
 
 	resourceName := "snowflake_execute.test"
-	createConfigVariables := func(id string) map[string]config.Variable {
-		return map[string]config.Variable{
-			"execute": config.StringVariable(createDatabaseStatement(id)),
-			"revert":  config.StringVariable(dropDatabaseStatement(id)),
-		}
-	}
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -47,8 +42,7 @@ func TestAcc_Execute_basic(t *testing.T) {
 		CheckDestroy: testAccCheckDatabaseExistence(t, id, false),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: createConfigVariables(name),
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(name), dropDatabaseStatement(name))),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -72,8 +66,7 @@ func TestAcc_Execute_basic(t *testing.T) {
 		CheckDestroy: testAccCheckDatabaseExistence(t, secondIdLowerCased, false),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: createConfigVariables(nameLowerCaseEscaped),
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(nameLowerCaseEscaped), dropDatabaseStatement(nameLowerCaseEscaped))),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -98,13 +91,6 @@ func TestAcc_Execute_withRead(t *testing.T) {
 	showDatabaseStatement := func(id string) string { return fmt.Sprintf("show databases like '%%%s%%'", id) }
 
 	resourceName := "snowflake_execute.test"
-	createConfigVariables := func(id string) map[string]config.Variable {
-		return map[string]config.Variable{
-			"execute": config.StringVariable(createDatabaseStatement(id)),
-			"revert":  config.StringVariable(dropDatabaseStatement(id)),
-			"query":   config.StringVariable(showDatabaseStatement(id)),
-		}
-	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -114,8 +100,7 @@ func TestAcc_Execute_withRead(t *testing.T) {
 		CheckDestroy: testAccCheckDatabaseExistence(t, id, false),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_withRead"),
-				ConfigVariables: createConfigVariables(name),
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(name), dropDatabaseStatement(name)).WithQuery(showDatabaseStatement(name))),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -151,12 +136,7 @@ func TestAcc_Execute_readRemoved(t *testing.T) {
 		CheckDestroy: testAccCheckDatabaseExistence(t, id, false),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_withRead"),
-				ConfigVariables: map[string]config.Variable{
-					"execute": config.StringVariable(createDatabaseStatement(name)),
-					"revert":  config.StringVariable(dropDatabaseStatement(name)),
-					"query":   config.StringVariable(showDatabaseStatement(name)),
-				},
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(name), dropDatabaseStatement(name)).WithQuery(showDatabaseStatement(name))),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -166,12 +146,7 @@ func TestAcc_Execute_readRemoved(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_withRead"),
-				ConfigVariables: map[string]config.Variable{
-					"execute": config.StringVariable(createDatabaseStatement(name)),
-					"revert":  config.StringVariable(dropDatabaseStatement(name)),
-					"query":   config.StringVariable(""),
-				},
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(name), dropDatabaseStatement(name)).WithQuery("")),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -200,12 +175,7 @@ func TestAcc_Execute_badQuery(t *testing.T) {
 		CheckDestroy: testAccCheckDatabaseExistence(t, id, false),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_withRead"),
-				ConfigVariables: map[string]config.Variable{
-					"execute": config.StringVariable(createDatabaseStatement(name)),
-					"revert":  config.StringVariable(dropDatabaseStatement(name)),
-					"query":   config.StringVariable("bad query"),
-				},
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(name), dropDatabaseStatement(name)).WithQuery("bad query")),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -218,12 +188,7 @@ func TestAcc_Execute_badQuery(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_withRead"),
-				ConfigVariables: map[string]config.Variable{
-					"execute": config.StringVariable(createDatabaseStatement(name)),
-					"revert":  config.StringVariable(dropDatabaseStatement(name)),
-					"query":   config.StringVariable(showDatabaseStatement(name)),
-				},
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(name), dropDatabaseStatement(name)).WithQuery(showDatabaseStatement(name))),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -242,13 +207,6 @@ func TestAcc_Execute_invalidExecuteStatement(t *testing.T) {
 	invalidCreateStatement := "create database"
 	invalidDropStatement := "drop database"
 
-	createConfigVariables := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"execute": config.StringVariable(invalidCreateStatement),
-			"revert":  config.StringVariable(invalidDropStatement),
-		}
-	}
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -256,8 +214,7 @@ func TestAcc_Execute_invalidExecuteStatement(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: createConfigVariables(),
+				Config: accconfig.FromModels(t, model.Execute("test", invalidCreateStatement, invalidDropStatement)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -296,11 +253,7 @@ func TestAcc_Execute_invalidRevertStatement(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: map[string]config.Variable{
-					"execute": config.StringVariable(createDatabaseStatement(name)),
-					"revert":  config.StringVariable(invalidDropStatement),
-				},
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(name), invalidDropStatement)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -312,22 +265,14 @@ func TestAcc_Execute_invalidRevertStatement(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: map[string]config.Variable{
-					"execute": config.StringVariable(createDatabaseStatement(updatedName)),
-					"revert":  config.StringVariable(invalidDropStatement),
-				},
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(updatedName), invalidDropStatement)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
 				ExpectError: regexp.MustCompile("SQL compilation error"),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: map[string]config.Variable{
-					"execute": config.StringVariable(createDatabaseStatement(name)),
-					"revert":  config.StringVariable(dropDatabaseStatement(name)),
-				},
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(name), dropDatabaseStatement(name))),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -340,11 +285,7 @@ func TestAcc_Execute_invalidRevertStatement(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: map[string]config.Variable{
-					"execute": config.StringVariable(createDatabaseStatement(updatedName)),
-					"revert":  config.StringVariable(dropDatabaseStatement(updatedName)),
-				},
+				Config: accconfig.FromModels(t, model.Execute("test", createDatabaseStatement(updatedName), dropDatabaseStatement(updatedName))),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -369,12 +310,6 @@ func TestAcc_Execute_revertUpdated(t *testing.T) {
 	var savedId string
 
 	resourceName := "snowflake_execute.test"
-	createConfigVariables := func(execute string, revert string) map[string]config.Variable {
-		return map[string]config.Variable{
-			"execute": config.StringVariable(execute),
-			"revert":  config.StringVariable(revert),
-		}
-	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -384,8 +319,7 @@ func TestAcc_Execute_revertUpdated(t *testing.T) {
 		CheckDestroy: testAccCheckDatabaseExistence(t, id, false),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: createConfigVariables(execute, notMatchingRevert),
+				Config: accconfig.FromModels(t, model.Execute("test", execute, notMatchingRevert)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -401,8 +335,7 @@ func TestAcc_Execute_revertUpdated(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: createConfigVariables(execute, revert),
+				Config: accconfig.FromModels(t, model.Execute("test", execute, revert)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -437,12 +370,6 @@ func TestAcc_Execute_executeUpdated(t *testing.T) {
 	var savedId string
 
 	resourceName := "snowflake_execute.test"
-	createConfigVariables := func(execute string, revert string) map[string]config.Variable {
-		return map[string]config.Variable{
-			"execute": config.StringVariable(execute),
-			"revert":  config.StringVariable(revert),
-		}
-	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -462,8 +389,7 @@ func TestAcc_Execute_executeUpdated(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: createConfigVariables(execute, revert),
+				Config: accconfig.FromModels(t, model.Execute("test", execute, revert)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -479,8 +405,7 @@ func TestAcc_Execute_executeUpdated(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: createConfigVariables(newExecute, newRevert),
+				Config: accconfig.FromModels(t, model.Execute("test", newExecute, newRevert)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -516,12 +441,6 @@ func TestAcc_Execute_grants(t *testing.T) {
 	revert := fmt.Sprintf("REVOKE %s ON DATABASE %s FROM ROLE %s", privilege, database.ID().FullyQualifiedName(), role.ID().FullyQualifiedName())
 
 	resourceName := "snowflake_execute.test"
-	createConfigVariables := func(execute string, revert string) map[string]config.Variable {
-		return map[string]config.Variable{
-			"execute": config.StringVariable(execute),
-			"revert":  config.StringVariable(revert),
-		}
-	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -534,8 +453,7 @@ func TestAcc_Execute_grants(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_commonSetup"),
-				ConfigVariables: createConfigVariables(execute, revert),
+				Config: accconfig.FromModels(t, model.Execute("test", execute, revert)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -666,7 +584,7 @@ func TestAcc_Execute_queryResultsBug(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: executeConfig(108),
+				Config: accconfig.FromModels(t, model.Execute("test", "SELECT 18", "SELECT 36").WithQuery("SELECT 108")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "query", "SELECT 108"),
 					resource.TestCheckResourceAttrSet(resourceName, "query_results.#"),
@@ -674,7 +592,7 @@ func TestAcc_Execute_queryResultsBug(t *testing.T) {
 				),
 			},
 			{
-				Config: executeConfig(96),
+				Config: accconfig.FromModels(t, model.Execute("test", "SELECT 18", "SELECT 36").WithQuery("SELECT 96")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "query", "SELECT 96"),
 					resource.TestCheckResourceAttrSet(resourceName, "query_results.#"),
@@ -688,24 +606,15 @@ func TestAcc_Execute_queryResultsBug(t *testing.T) {
 	})
 }
 
-func executeConfig(queryNumber int) string {
-	return fmt.Sprintf(`
-resource "snowflake_execute" "test" {
-  execute = "SELECT 18"
-  revert  = "SELECT 36"
-  query  = "SELECT %d"
-}
-
-output "query_results_output" {
-  value = snowflake_execute.test.query_results
-}
-`, queryNumber)
-}
-
 func TestAcc_Execute_QueryResultsRecomputedWithoutQueryChanges(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	resourceName := "snowflake_execute.test"
+	executeModel := model.Execute("test",
+		fmt.Sprintf(`CREATE DATABASE "%s"`, id.Name()),
+		fmt.Sprintf(`DROP DATABASE "%s"`, id.Name()),
+	).WithQuery(fmt.Sprintf("SHOW DATABASES LIKE '%s'", id.Name()))
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -713,7 +622,7 @@ func TestAcc_Execute_QueryResultsRecomputedWithoutQueryChanges(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: executeConfigCreateDatabase(id),
+				Config: accconfig.FromModels(t, executeModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "query_results.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "query_results.0.name", id.Name()),
@@ -728,7 +637,7 @@ func TestAcc_Execute_QueryResultsRecomputedWithoutQueryChanges(t *testing.T) {
 						},
 					})
 				},
-				Config: executeConfigCreateDatabase(id),
+				Config: accconfig.FromModels(t, executeModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "query_results.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "query_results.0.name", id.Name()),
@@ -737,16 +646,6 @@ func TestAcc_Execute_QueryResultsRecomputedWithoutQueryChanges(t *testing.T) {
 			},
 		},
 	})
-}
-
-func executeConfigCreateDatabase(id sdk.AccountObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_execute" "test" {
-  execute = "CREATE DATABASE \"%[1]s\""
-  revert  = "DROP DATABASE \"%[1]s\""
-  query   = "SHOW DATABASES LIKE '%[1]s'"
-}
-`, id.Name())
 }
 
 func verifyGrantExists(t *testing.T, roleId sdk.AccountObjectIdentifier, privilege sdk.AccountObjectPrivilege, shouldExist bool) func(state *terraform.State) error {
@@ -776,6 +675,13 @@ func TestAcc_Execute_ImportWithRandomId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 
+	executeModel := func(dbId sdk.AccountObjectIdentifier) *model.ExecuteModel {
+		return model.Execute("test",
+			fmt.Sprintf(`CREATE DATABASE "%s"`, dbId.Name()),
+			fmt.Sprintf(`DROP DATABASE "%s"`, dbId.Name()),
+		).WithQuery(fmt.Sprintf("SHOW DATABASES LIKE '%s'", dbId.Name()))
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -787,7 +693,7 @@ func TestAcc_Execute_ImportWithRandomId(t *testing.T) {
 					_, databaseCleanup := testClient().Database.CreateDatabaseWithIdentifier(t, id)
 					t.Cleanup(databaseCleanup)
 				},
-				Config:                  executeConfigCreateDatabase(id),
+				Config:                  accconfig.FromModels(t, executeModel(id)),
 				ResourceName:            "snowflake_execute.test",
 				ImportState:             true,
 				ImportStatePersist:      true,
@@ -801,7 +707,7 @@ func TestAcc_Execute_ImportWithRandomId(t *testing.T) {
 						plancheck.ExpectResourceAction("snowflake_execute.test", plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: executeConfigCreateDatabase(id),
+				Config: accconfig.FromModels(t, executeModel(id)),
 			},
 			// change the id in every query to see if:
 			// 1. execute will trigger force new behavior
@@ -821,7 +727,7 @@ func TestAcc_Execute_ImportWithRandomId(t *testing.T) {
 						}),
 					},
 				},
-				Config: executeConfigCreateDatabase(newId),
+				Config: accconfig.FromModels(t, executeModel(newId)),
 			},
 		},
 	})
@@ -847,18 +753,6 @@ func testAccCheckDatabaseExistence(t *testing.T, id sdk.AccountObjectIdentifier,
 
 // Result of https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/3334.
 func TestAcc_Execute_gh3334_allTimeouts(t *testing.T) {
-	createConfigVariables := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"execute":        config.StringVariable("CALL SYSTEM$WAIT(5, 'SECONDS');"),
-			"revert":         config.StringVariable("select 2"),
-			"query":          config.StringVariable("select 3"),
-			"create_timeout": config.StringVariable("1m"),
-			"read_timeout":   config.StringVariable("31m"),
-			"update_timeout": config.StringVariable("32m"),
-			"delete_timeout": config.StringVariable("33m"),
-		}
-	}
-
 	resourceName := "snowflake_execute.test"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -868,8 +762,9 @@ func TestAcc_Execute_gh3334_allTimeouts(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_withTimeouts"),
-				ConfigVariables: createConfigVariables(),
+				Config: accconfig.FromModels(t, model.Execute("test", "CALL SYSTEM$WAIT(5, 'SECONDS');", "select 2").
+					WithQuery("select 3").
+					WithTimeout(accconfig.Timeouts{Create: "1m", Read: "31m", Update: "32m", Delete: "33m"})),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},
@@ -886,15 +781,6 @@ func TestAcc_Execute_gh3334_allTimeouts(t *testing.T) {
 
 // Result of https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/3334.
 func TestAcc_Execute_gh3334_longRunningCreate(t *testing.T) {
-	createConfigVariables := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"execute":        config.StringVariable("CALL SYSTEM$WAIT(15, 'SECONDS');"),
-			"revert":         config.StringVariable("select 2"),
-			"query":          config.StringVariable("select 3"),
-			"create_timeout": config.StringVariable("5s"),
-		}
-	}
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -903,8 +789,9 @@ func TestAcc_Execute_gh3334_longRunningCreate(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Execute_withTimeouts"),
-				ConfigVariables: createConfigVariables(),
+				Config: accconfig.FromModels(t, model.Execute("test", "CALL SYSTEM$WAIT(15, 'SECONDS');", "select 2").
+					WithQuery("select 3").
+					WithTimeout(accconfig.Timeouts{Create: "5s"})),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
 				},

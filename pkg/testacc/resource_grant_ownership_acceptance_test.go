@@ -9,10 +9,13 @@ import (
 	"slices"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/config"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -31,10 +34,12 @@ func TestAcc_GrantOwnership_OnObject_Database_ToAccountRole(t *testing.T) {
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-	}
+	roleModel := model.AccountRole("test", accountRoleName)
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnObject("DATABASE", databaseName).
+		WithDependsOn(roleModel.ResourceReference())
+
 	resourceName := "snowflake_grant_ownership.test"
 
 	resource.Test(t, resource.TestCase{
@@ -44,8 +49,7 @@ func TestAcc_GrantOwnership_OnObject_Database_ToAccountRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Database_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, roleModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "DATABASE"),
@@ -59,8 +63,7 @@ func TestAcc_GrantOwnership_OnObject_Database_ToAccountRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Database_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, roleModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -81,10 +84,11 @@ func TestAcc_GrantOwnership_OnObject_Database_IdentifiersWithDots(t *testing.T) 
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-	}
+	roleModel := model.AccountRole("test", accountRoleName)
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnObject("DATABASE", databaseName).
+		WithDependsOn(roleModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -94,8 +98,7 @@ func TestAcc_GrantOwnership_OnObject_Database_IdentifiersWithDots(t *testing.T) 
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Database_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, roleModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "DATABASE"),
@@ -109,8 +112,7 @@ func TestAcc_GrantOwnership_OnObject_Database_IdentifiersWithDots(t *testing.T) 
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Database_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, roleModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -124,21 +126,20 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToAccountRole(t *testing.T) {
 	t.Cleanup(databaseCleanup)
 
 	databaseId := database.ID()
-	databaseName := databaseId.Name()
 
 	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
-	schemaName := schemaId.Name()
 	schemaFullyQualifiedName := schemaId.FullyQualifiedName()
 
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-		"schema_name":       config.StringVariable(schemaName),
-	}
+	roleModel := model.AccountRole("test", accountRoleName)
+	schemaModel := model.Schema("test", schemaId.DatabaseName(), schemaId.Name())
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnObject("SCHEMA", schemaFullyQualifiedName).
+		WithDependsOn(roleModel.ResourceReference(), schemaModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -148,8 +149,7 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToAccountRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Schema_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, roleModel, schemaModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "SCHEMA"),
@@ -163,8 +163,7 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToAccountRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Schema_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, roleModel, schemaModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -178,21 +177,20 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToDatabaseRole(t *testing.T) {
 	t.Cleanup(databaseCleanup)
 
 	databaseId := database.ID()
-	databaseName := databaseId.Name()
 
 	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
-	schemaName := schemaId.Name()
 	schemaFullyQualifiedName := schemaId.FullyQualifiedName()
 
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
 	databaseRoleName := databaseRoleId.Name()
 	databaseRoleFullyQualifiedName := databaseRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"database_role_name": config.StringVariable(databaseRoleName),
-		"database_name":      config.StringVariable(databaseName),
-		"schema_name":        config.StringVariable(schemaName),
-	}
+	dbRoleModel := model.DatabaseRole("test", databaseId.Name(), databaseRoleId.Name())
+	schemaModel := model.Schema("test", schemaId.DatabaseName(), schemaId.Name())
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithDatabaseRoleName(databaseRoleFullyQualifiedName).
+		WithOnObject("SCHEMA", schemaFullyQualifiedName).
+		WithDependsOn(dbRoleModel.ResourceReference(), schemaModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -202,8 +200,7 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToDatabaseRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Schema_ToDatabaseRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, dbRoleModel, schemaModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRoleFullyQualifiedName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "SCHEMA"),
@@ -217,8 +214,7 @@ func TestAcc_GrantOwnership_OnObject_Schema_ToDatabaseRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Schema_ToDatabaseRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, dbRoleModel, schemaModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -232,21 +228,20 @@ func TestAcc_GrantOwnership_OnObject_Table_ToAccountRole(t *testing.T) {
 	t.Cleanup(databaseCleanup)
 
 	databaseId := database.ID()
-	databaseName := databaseId.Name()
-
 	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
-	schemaName := schemaId.Name()
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
 
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	accountRoleName := accountRoleId.Name()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-		"schema_name":       config.StringVariable(schemaName),
-		"table_name":        config.StringVariable(tableId.Name()),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleName)
+	schemaModel := model.Schema("test", schemaId.DatabaseName(), schemaId.Name())
+	tableModel := model.Table("test", databaseId.Name(), schemaId.Name(), tableId.Name(), []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}}).
+		WithDependsOn(schemaModel.ResourceReference())
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnObject("TABLE", tableId.FullyQualifiedName()).
+		WithDependsOn(accountRoleModel.ResourceReference(), tableModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -256,8 +251,7 @@ func TestAcc_GrantOwnership_OnObject_Table_ToAccountRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Table_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, schemaModel, tableModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "TABLE"),
@@ -271,8 +265,7 @@ func TestAcc_GrantOwnership_OnObject_Table_ToAccountRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Table_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, accountRoleModel, schemaModel, tableModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -286,25 +279,23 @@ func TestAcc_GrantOwnership_OnObject_Table_ToDatabaseRole(t *testing.T) {
 	t.Cleanup(databaseCleanup)
 
 	databaseId := database.ID()
-	databaseName := databaseId.Name()
-
 	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
-	schemaName := schemaId.Name()
 
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
-	tableName := tableId.Name()
 	tableFullyQualifiedName := tableId.FullyQualifiedName()
 
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
 	databaseRoleName := databaseRoleId.Name()
 	databaseRoleFullyQualifiedName := databaseRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"database_role_name": config.StringVariable(databaseRoleName),
-		"database_name":      config.StringVariable(databaseName),
-		"schema_name":        config.StringVariable(schemaName),
-		"table_name":         config.StringVariable(tableName),
-	}
+	dbRoleModel := model.DatabaseRole("test", databaseId.Name(), databaseRoleId.Name())
+	schemaModel := model.Schema("test", schemaId.DatabaseName(), schemaId.Name())
+	tableModel := model.Table("test", databaseId.Name(), schemaId.Name(), tableId.Name(), []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}}).
+		WithDependsOn(schemaModel.ResourceReference())
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithDatabaseRoleName(databaseRoleFullyQualifiedName).
+		WithOnObject("TABLE", tableFullyQualifiedName).
+		WithDependsOn(dbRoleModel.ResourceReference(), tableModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -314,8 +305,7 @@ func TestAcc_GrantOwnership_OnObject_Table_ToDatabaseRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Table_ToDatabaseRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, dbRoleModel, schemaModel, tableModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRoleFullyQualifiedName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "TABLE"),
@@ -329,8 +319,7 @@ func TestAcc_GrantOwnership_OnObject_Table_ToDatabaseRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Table_ToDatabaseRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, dbRoleModel, schemaModel, tableModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -348,11 +337,11 @@ func TestAcc_GrantOwnership_OnObject_ProcedureWithArguments_ToAccountRole(t *tes
 	procedureId := testClient().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(testClient().Ids.Alpha(), schemaId, sdk.DataTypeFloat)
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleId.Name()),
-		"database_name":     config.StringVariable(databaseId.Name()),
-		"schema_name":       config.StringVariable(schemaId.Name()),
-		"procedure_name":    config.StringVariable(procedureId.Name()),
+	configVariables := tfconfig.Variables{
+		"account_role_name": tfconfig.StringVariable(accountRoleId.Name()),
+		"database_name":     tfconfig.StringVariable(databaseId.Name()),
+		"schema_name":       tfconfig.StringVariable(schemaId.Name()),
+		"procedure_name":    tfconfig.StringVariable(procedureId.Name()),
 	}
 	resourceName := "snowflake_grant_ownership.test"
 
@@ -397,11 +386,11 @@ func TestAcc_GrantOwnership_OnObject_ProcedureWithoutArguments_ToDatabaseRole(t 
 	procedureId := testClient().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(testClient().Ids.Alpha(), schemaId)
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
 
-	configVariables := config.Variables{
-		"database_role_name": config.StringVariable(databaseRoleId.Name()),
-		"database_name":      config.StringVariable(databaseId.Name()),
-		"schema_name":        config.StringVariable(schemaId.Name()),
-		"procedure_name":     config.StringVariable(procedureId.Name()),
+	configVariables := tfconfig.Variables{
+		"database_role_name": tfconfig.StringVariable(databaseRoleId.Name()),
+		"database_name":      tfconfig.StringVariable(databaseId.Name()),
+		"schema_name":        tfconfig.StringVariable(schemaId.Name()),
+		"procedure_name":     tfconfig.StringVariable(procedureId.Name()),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
@@ -447,13 +436,16 @@ func TestAcc_GrantOwnership_OnAll_InDatabase_ToAccountRole(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
 	secondTableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleId.Name()),
-		"database_name":     config.StringVariable(databaseId.Name()),
-		"schema_name":       config.StringVariable(schemaId.Name()),
-		"table_name":        config.StringVariable(tableId.Name()),
-		"second_table_name": config.StringVariable(secondTableId.Name()),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleId.Name())
+	schemaModel := model.Schema("test", schemaId.DatabaseName(), schemaId.Name())
+	tableModel := model.Table("test", databaseId.Name(), schemaId.Name(), tableId.Name(), []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}}).
+		WithDependsOn(schemaModel.ResourceReference())
+	table2Model := model.Table("test2", databaseId.Name(), schemaId.Name(), secondTableId.Name(), []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}}).
+		WithDependsOn(schemaModel.ResourceReference())
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleId.Name()).
+		WithOnAllInDatabase("TABLES", databaseId.Name()).
+		WithDependsOn(tableModel.ResourceReference(), table2Model.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -463,8 +455,7 @@ func TestAcc_GrantOwnership_OnAll_InDatabase_ToAccountRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnAll_InDatabase_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, schemaModel, tableModel, table2Model, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "on.0.all.0.object_type_plural", "TABLES"),
@@ -478,8 +469,7 @@ func TestAcc_GrantOwnership_OnAll_InDatabase_ToAccountRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnAll_InDatabase_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, accountRoleModel, schemaModel, tableModel, table2Model, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -500,13 +490,16 @@ func TestAcc_GrantOwnership_OnAll_InSchema_ToAccountRole(t *testing.T) {
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	accountRoleName := accountRoleId.Name()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseId.Name()),
-		"schema_name":       config.StringVariable(schemaId.Name()),
-		"table_name":        config.StringVariable(tableId.Name()),
-		"second_table_name": config.StringVariable(secondTableId.Name()),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleName)
+	schemaModel := model.Schema("test", schemaId.DatabaseName(), schemaId.Name())
+	tableModel := model.Table("test", databaseId.Name(), schemaId.Name(), tableId.Name(), []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}}).
+		WithDependsOn(schemaModel.ResourceReference())
+	table2Model := model.Table("test2", databaseId.Name(), schemaId.Name(), secondTableId.Name(), []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}}).
+		WithDependsOn(schemaModel.ResourceReference())
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnAllInSchema("TABLES", schemaId.FullyQualifiedName()).
+		WithDependsOn(tableModel.ResourceReference(), table2Model.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -516,8 +509,7 @@ func TestAcc_GrantOwnership_OnAll_InSchema_ToAccountRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnAll_InSchema_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, schemaModel, tableModel, table2Model, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.all.0.object_type_plural", "TABLES"),
@@ -531,8 +523,7 @@ func TestAcc_GrantOwnership_OnAll_InSchema_ToAccountRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnAll_InSchema_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, accountRoleModel, schemaModel, tableModel, table2Model, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -553,10 +544,11 @@ func TestAcc_GrantOwnership_OnFuture_InDatabase_ToAccountRole(t *testing.T) {
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleName)
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnFutureInDatabase("TABLES", databaseName).
+		WithDependsOn(accountRoleModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -566,8 +558,7 @@ func TestAcc_GrantOwnership_OnFuture_InDatabase_ToAccountRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnFuture_InDatabase_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.future.0.object_type_plural", "TABLES"),
@@ -582,8 +573,7 @@ func TestAcc_GrantOwnership_OnFuture_InDatabase_ToAccountRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnFuture_InDatabase_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, accountRoleModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -607,11 +597,12 @@ func TestAcc_GrantOwnership_OnFuture_InSchema_ToAccountRole(t *testing.T) {
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-		"schema_name":       config.StringVariable(schemaName),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleName)
+	schemaModel := model.Schema("test", schemaId.DatabaseName(), schemaId.Name())
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnFutureInSchema("TABLES", schemaFullyQualifiedName).
+		WithDependsOn(accountRoleModel.ResourceReference(), schemaModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -621,8 +612,7 @@ func TestAcc_GrantOwnership_OnFuture_InSchema_ToAccountRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnFuture_InSchema_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, schemaModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.future.0.object_type_plural", "TABLES"),
@@ -637,8 +627,7 @@ func TestAcc_GrantOwnership_OnFuture_InSchema_ToAccountRole(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnFuture_InSchema_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, accountRoleModel, schemaModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -653,9 +642,9 @@ func TestAcc_GrantOwnership_InvalidConfiguration_EmptyObjectType(t *testing.T) {
 
 	roleId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(roleId.Name()),
-		"database_name":     config.StringVariable(database.ID().Name()),
+	configVariables := tfconfig.Variables{
+		"account_role_name": tfconfig.StringVariable(roleId.Name()),
+		"database_name":     tfconfig.StringVariable(database.ID().Name()),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -679,9 +668,9 @@ func TestAcc_GrantOwnership_InvalidConfiguration_MultipleTargets(t *testing.T) {
 
 	roleId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(roleId.Name()),
-		"database_name":     config.StringVariable(database.ID().Name()),
+	configVariables := tfconfig.Variables{
+		"account_role_name": tfconfig.StringVariable(roleId.Name()),
+		"database_name":     tfconfig.StringVariable(database.ID().Name()),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -711,10 +700,11 @@ func TestAcc_GrantOwnership_TargetObjectRemovedOutsideTerraform(t *testing.T) {
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleName)
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnObject("DATABASE", databaseName).
+		WithDependsOn(accountRoleModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -724,8 +714,7 @@ func TestAcc_GrantOwnership_TargetObjectRemovedOutsideTerraform(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Database_ToAccountRole_NoDatabaseResource"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "DATABASE"),
@@ -744,8 +733,7 @@ func TestAcc_GrantOwnership_TargetObjectRemovedOutsideTerraform(t *testing.T) {
 					testClient().Grant.GrantOwnershipToAccountRole(t, currentRole, sdk.ObjectTypeDatabase, databaseId)
 					databaseCleanup()
 				},
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Database_ToAccountRole_NoDatabaseResource"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, grantModel),
 				// The error occurs in Create operation indicating the Read operation couldn't find the grant and set the resource as removed.
 				ExpectError: regexp.MustCompile("An error occurred during grant ownership"),
 			},
@@ -768,10 +756,9 @@ func TestAcc_GrantOwnership_AccountRoleRemovedOutsideTerraform(t *testing.T) {
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-	}
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnObject("DATABASE", databaseName)
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -781,8 +768,7 @@ func TestAcc_GrantOwnership_AccountRoleRemovedOutsideTerraform(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Database_ToAccountRole_NoRoleResource"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "DATABASE"),
@@ -799,8 +785,7 @@ func TestAcc_GrantOwnership_AccountRoleRemovedOutsideTerraform(t *testing.T) {
 				PreConfig: func() {
 					cleanupAccountRole()
 				},
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_Database_ToAccountRole_NoRoleResource"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, grantModel),
 				// The error occurs in Create operation indicating the Read operation couldn't find the grant and set the resource as removed.
 				ExpectError: regexp.MustCompile("An error occurred during grant ownership"),
 			},
@@ -825,13 +810,13 @@ func TestAcc_GrantOwnership_OnMaterializedView(t *testing.T) {
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	accountRoleName := accountRoleId.Name()
 
-	configVariables := config.Variables{
-		"account_role_name":      config.StringVariable(accountRoleName),
-		"database_name":          config.StringVariable(databaseName),
-		"schema_name":            config.StringVariable(schemaName),
-		"table_name":             config.StringVariable(tableName),
-		"materialized_view_name": config.StringVariable(materializedViewId.Name()),
-		"warehouse_name":         config.StringVariable(TestWarehouseName),
+	configVariables := tfconfig.Variables{
+		"account_role_name":      tfconfig.StringVariable(accountRoleName),
+		"database_name":          tfconfig.StringVariable(databaseName),
+		"schema_name":            tfconfig.StringVariable(schemaName),
+		"table_name":             tfconfig.StringVariable(tableName),
+		"materialized_view_name": tfconfig.StringVariable(materializedViewId.Name()),
+		"warehouse_name":         tfconfig.StringVariable(TestWarehouseName),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
@@ -963,11 +948,12 @@ func TestAcc_GrantOwnership_MoveOwnershipOutsideTerraform(t *testing.T) {
 	otherAccountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	otherAccountRoleName := otherAccountRoleId.Name()
 
-	configVariables := config.Variables{
-		"account_role_name":       config.StringVariable(accountRoleName),
-		"other_account_role_name": config.StringVariable(otherAccountRoleName),
-		"database_name":           config.StringVariable(databaseName),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleName)
+	otherRoleModel := model.AccountRole("other_role", otherAccountRoleName)
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnObject("DATABASE", databaseName).
+		WithDependsOn(accountRoleModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -977,8 +963,7 @@ func TestAcc_GrantOwnership_MoveOwnershipOutsideTerraform(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/MoveResourceOwnershipOutsideTerraform"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, otherRoleModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "DATABASE"),
@@ -990,8 +975,7 @@ func TestAcc_GrantOwnership_MoveOwnershipOutsideTerraform(t *testing.T) {
 				PreConfig: func() {
 					testClient().Grant.GrantOwnershipToAccountRole(t, otherAccountRoleId, sdk.ObjectTypeDatabase, databaseId)
 				},
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/MoveResourceOwnershipOutsideTerraform"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, otherRoleModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "DATABASE"),
@@ -1030,10 +1014,10 @@ func TestAcc_GrantOwnership_ForceOwnershipTransferOnCreate(t *testing.T) {
 	newDatabaseOwningAccountRoleId := newRole.ID()
 	newDatabaseOwningAccountRoleName := newDatabaseOwningAccountRoleId.Name()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(newDatabaseOwningAccountRoleName),
-		"database_name":     config.StringVariable(databaseName),
-	}
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(newDatabaseOwningAccountRoleName).
+		WithOnObject("DATABASE", databaseName)
+
 	resourceName := "snowflake_grant_ownership.test"
 
 	resource.Test(t, resource.TestCase{
@@ -1043,8 +1027,7 @@ func TestAcc_GrantOwnership_ForceOwnershipTransferOnCreate(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/ForceOwnershipTransferOnCreate"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", newDatabaseOwningAccountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "DATABASE"),
@@ -1067,13 +1050,13 @@ func TestAcc_GrantOwnership_OnPipe(t *testing.T) {
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 	pipeId := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database":          config.StringVariable(pipeId.DatabaseName()),
-		"schema":            config.StringVariable(pipeId.SchemaName()),
-		"stage":             config.StringVariable(stageName),
-		"table":             config.StringVariable(tableName),
-		"pipe":              config.StringVariable(pipeId.Name()),
+	configVariables := tfconfig.Variables{
+		"account_role_name": tfconfig.StringVariable(accountRoleName),
+		"database":          tfconfig.StringVariable(pipeId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(pipeId.SchemaName()),
+		"stage":             tfconfig.StringVariable(stageName),
+		"table":             tfconfig.StringVariable(tableName),
+		"pipe":              tfconfig.StringVariable(pipeId.Name()),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
@@ -1117,14 +1100,14 @@ func TestAcc_GrantOwnership_OnAllPipes(t *testing.T) {
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleName),
-		"database":          config.StringVariable(pipeId.DatabaseName()),
-		"schema":            config.StringVariable(pipeId.SchemaName()),
-		"stage":             config.StringVariable(stageName),
-		"table":             config.StringVariable(tableName),
-		"pipe":              config.StringVariable(pipeId.Name()),
-		"second_pipe":       config.StringVariable(secondPipeId.Name()),
+	configVariables := tfconfig.Variables{
+		"account_role_name": tfconfig.StringVariable(accountRoleName),
+		"database":          tfconfig.StringVariable(pipeId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(pipeId.SchemaName()),
+		"stage":             tfconfig.StringVariable(stageName),
+		"table":             tfconfig.StringVariable(tableName),
+		"pipe":              tfconfig.StringVariable(pipeId.Name()),
+		"second_pipe":       tfconfig.StringVariable(secondPipeId.Name()),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
@@ -1155,12 +1138,12 @@ func TestAcc_GrantOwnership_OnTask(t *testing.T) {
 	taskId := testClient().Ids.RandomSchemaObjectIdentifier()
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleId.Name()),
-		"database":          config.StringVariable(taskId.DatabaseName()),
-		"schema":            config.StringVariable(taskId.SchemaName()),
-		"task":              config.StringVariable(taskId.Name()),
-		"warehouse":         config.StringVariable(TestWarehouseName),
+	configVariables := tfconfig.Variables{
+		"account_role_name": tfconfig.StringVariable(accountRoleId.Name()),
+		"database":          tfconfig.StringVariable(taskId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(taskId.SchemaName()),
+		"task":              tfconfig.StringVariable(taskId.Name()),
+		"warehouse":         tfconfig.StringVariable(TestWarehouseName),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
@@ -1197,13 +1180,13 @@ func TestAcc_GrantOwnership_OnTask_Discussion2877(t *testing.T) {
 	childId := testClient().Ids.RandomSchemaObjectIdentifier()
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleId.Name()),
-		"database":          config.StringVariable(taskId.DatabaseName()),
-		"schema":            config.StringVariable(taskId.SchemaName()),
-		"task":              config.StringVariable(taskId.Name()),
-		"child":             config.StringVariable(childId.Name()),
-		"warehouse":         config.StringVariable(TestWarehouseName),
+	configVariables := tfconfig.Variables{
+		"account_role_name": tfconfig.StringVariable(accountRoleId.Name()),
+		"database":          tfconfig.StringVariable(taskId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(taskId.SchemaName()),
+		"task":              tfconfig.StringVariable(taskId.Name()),
+		"child":             tfconfig.StringVariable(childId.Name()),
+		"warehouse":         tfconfig.StringVariable(TestWarehouseName),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
@@ -1283,12 +1266,12 @@ func TestAcc_GrantOwnership_OnAllTasks(t *testing.T) {
 	secondTaskId := testClient().Ids.RandomSchemaObjectIdentifier()
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleId.Name()),
-		"database":          config.StringVariable(taskId.DatabaseName()),
-		"schema":            config.StringVariable(taskId.SchemaName()),
-		"task":              config.StringVariable(taskId.Name()),
-		"second_task":       config.StringVariable(secondTaskId.Name()),
+	configVariables := tfconfig.Variables{
+		"account_role_name": tfconfig.StringVariable(accountRoleId.Name()),
+		"database":          tfconfig.StringVariable(taskId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(taskId.SchemaName()),
+		"task":              tfconfig.StringVariable(taskId.Name()),
+		"second_task":       tfconfig.StringVariable(secondTaskId.Name()),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
@@ -1321,12 +1304,12 @@ func TestAcc_GrantOwnership_OnServerlessTask(t *testing.T) {
 	taskId := testClient().Ids.RandomSchemaObjectIdentifier()
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	configVariables := config.Variables{
-		"account_role_name":   config.StringVariable(accountRoleId.Name()),
-		"database":            config.StringVariable(taskId.DatabaseName()),
-		"schema":              config.StringVariable(taskId.SchemaName()),
-		"task":                config.StringVariable(taskId.Name()),
-		"warehouse_init_size": config.StringVariable("XSMALL"),
+	configVariables := tfconfig.Variables{
+		"account_role_name":   tfconfig.StringVariable(accountRoleId.Name()),
+		"database":            tfconfig.StringVariable(taskId.DatabaseName()),
+		"schema":              tfconfig.StringVariable(taskId.SchemaName()),
+		"task":                tfconfig.StringVariable(taskId.Name()),
+		"warehouse_init_size": tfconfig.StringVariable("XSMALL"),
 	}
 
 	resourceName := "snowflake_grant_ownership.test"
@@ -1363,7 +1346,6 @@ func TestAcc_GrantOwnership_OnDatabaseRole(t *testing.T) {
 	t.Cleanup(databaseCleanup)
 
 	databaseId := database.ID()
-	databaseName := databaseId.Name()
 
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
 	databaseRoleFullyQualifiedName := databaseRoleId.FullyQualifiedName()
@@ -1371,11 +1353,12 @@ func TestAcc_GrantOwnership_OnDatabaseRole(t *testing.T) {
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name":  config.StringVariable(accountRoleId.Name()),
-		"database_name":      config.StringVariable(databaseName),
-		"database_role_name": config.StringVariable(databaseRoleId.Name()),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleId.Name())
+	dbRoleModel := model.DatabaseRole("test", databaseId.Name(), databaseRoleId.Name())
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleId.Name()).
+		WithOnObject("DATABASE ROLE", databaseRoleFullyQualifiedName).
+		WithDependsOn(accountRoleModel.ResourceReference(), dbRoleModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -1385,8 +1368,7 @@ func TestAcc_GrantOwnership_OnDatabaseRole(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_DatabaseRole_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, dbRoleModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "DATABASE ROLE"),
@@ -1592,10 +1574,12 @@ func TestAcc_GrantOwnership_OnObject_ResourceMonitor_ToAccountRole(t *testing.T)
 	accountRoleName := accountRoleId.Name()
 	accountRoleFullyQualifiedName := accountRoleId.FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"account_role_name":     config.StringVariable(accountRoleName),
-		"resource_monitor_name": config.StringVariable(resourceMonitorName),
-	}
+	accountRoleModel := model.AccountRole("test", accountRoleName)
+	resourceMonitorModel := model.ResourceMonitor("test", resourceMonitorName)
+	grantModel := model.GrantOwnershipWithRawOn("test").
+		WithAccountRoleName(accountRoleName).
+		WithOnObject("RESOURCE MONITOR", resourceMonitorName).
+		WithDependsOn(accountRoleModel.ResourceReference(), resourceMonitorModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -1605,8 +1589,7 @@ func TestAcc_GrantOwnership_OnObject_ResourceMonitor_ToAccountRole(t *testing.T)
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_ResourceMonitor_ToAccountRole"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, accountRoleModel, resourceMonitorModel, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", "RESOURCE MONITOR"),
@@ -1620,8 +1603,7 @@ func TestAcc_GrantOwnership_OnObject_ResourceMonitor_ToAccountRole(t *testing.T)
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantOwnership/OnObject_ResourceMonitor_ToAccountRole"),
-				ConfigVariables:   configVariables,
+				Config:            accconfig.FromModels(t, accountRoleModel, resourceMonitorModel, grantModel),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1638,11 +1620,11 @@ func TestAcc_GrantOwnership_OnObject_HybridTable_ToAccountRole_Fails(t *testing.
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 	accountRoleName := accountRoleId.Name()
 
-	configVariables := func(objectType sdk.ObjectType) config.Variables {
-		cfg := config.Variables{
-			"account_role_name":                 config.StringVariable(accountRoleName),
-			"hybrid_table_fully_qualified_name": config.StringVariable(hybridTableId.FullyQualifiedName()),
-			"object_type":                       config.StringVariable(string(objectType)),
+	configVariables := func(objectType sdk.ObjectType) tfconfig.Variables {
+		cfg := tfconfig.Variables{
+			"account_role_name":                 tfconfig.StringVariable(accountRoleName),
+			"hybrid_table_fully_qualified_name": tfconfig.StringVariable(hybridTableId.FullyQualifiedName()),
+			"object_type":                       tfconfig.StringVariable(string(objectType)),
 		}
 		return cfg
 	}

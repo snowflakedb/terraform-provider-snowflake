@@ -7,10 +7,11 @@ import (
 	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -52,13 +53,8 @@ func TestAcc_GrantApplicationRole_accountRole(t *testing.T) {
 	applicationRoleName := testvars.ApplicationRole1
 	applicationRoleNameFullyQualified := sdk.NewDatabaseObjectIdentifier(app.Name, applicationRoleName).FullyQualifiedName()
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"parent_account_role_name": config.StringVariable(parentRole.ID().Name()),
-			"application_name":         config.StringVariable(app.Name),
-			"application_role_name":    config.StringVariable(applicationRoleName),
-		}
-	}
+	grantModel := model.GrantApplicationRole("g", applicationRoleNameFullyQualified).
+		WithParentAccountRoleName(parentRole.ID().FullyQualifiedName())
 
 	resourceName := "snowflake_grant_application_role.g"
 	resource.Test(t, resource.TestCase{
@@ -69,8 +65,7 @@ func TestAcc_GrantApplicationRole_accountRole(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          config.StaticDirectory("testdata/TestAcc_GrantApplicationRole/account_role"),
-				ConfigVariables:          m(),
+				Config:                   accconfig.FromModels(t, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "application_role_name", applicationRoleNameFullyQualified),
 					resource.TestCheckResourceAttr(resourceName, "parent_account_role_name", parentRole.ID().FullyQualifiedName()),
@@ -80,8 +75,7 @@ func TestAcc_GrantApplicationRole_accountRole(t *testing.T) {
 			// test import
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          config.StaticDirectory("testdata/TestAcc_GrantApplicationRole/account_role"),
-				ConfigVariables:          m(),
+				Config:                   accconfig.FromModels(t, grantModel),
 				ResourceName:             resourceName,
 				ImportState:              true,
 				ImportStateVerify:        true,
@@ -96,13 +90,8 @@ func TestAcc_GrantApplicationRole_application(t *testing.T) {
 	applicationRoleName := testvars.ApplicationRole1
 	applicationRoleNameFullyQualified := sdk.NewDatabaseObjectIdentifier(app.Name, applicationRoleName).FullyQualifiedName()
 
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"application_name":      config.StringVariable(app.Name),
-			"application_name2":     config.StringVariable(app2.Name),
-			"application_role_name": config.StringVariable(applicationRoleName),
-		}
-	}
+	grantModel := model.GrantApplicationRole("g", applicationRoleNameFullyQualified).
+		WithApplicationName(fmt.Sprintf("\"%s\"", app2.Name))
 
 	resourceName := "snowflake_grant_application_role.g"
 	resource.Test(t, resource.TestCase{
@@ -113,8 +102,7 @@ func TestAcc_GrantApplicationRole_application(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          config.StaticDirectory("testdata/TestAcc_GrantApplicationRole/application"),
-				ConfigVariables:          m(),
+				Config:                   accconfig.FromModels(t, grantModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "application_role_name", applicationRoleNameFullyQualified),
 					resource.TestCheckResourceAttr(resourceName, "application_name", fmt.Sprintf("\"%s\"", app2.Name)),
@@ -124,8 +112,7 @@ func TestAcc_GrantApplicationRole_application(t *testing.T) {
 			// test import
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				ConfigDirectory:          config.StaticDirectory("testdata/TestAcc_GrantApplicationRole/application"),
-				ConfigVariables:          m(),
+				Config:                   accconfig.FromModels(t, grantModel),
 				ResourceName:             resourceName,
 				ImportState:              true,
 				ImportStateVerify:        true,
