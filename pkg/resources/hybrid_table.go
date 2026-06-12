@@ -61,6 +61,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 					Description:      "Column type. See [Snowflake data types](https://docs.snowflake.com/en/sql-reference-data-types) for supported values. Example: VARCHAR(256), NUMBER(38,0).",
 					ValidateDiagFunc: IsDataTypeValid,
 					DiffSuppressFunc: DiffSuppressDataTypes,
+					StateFunc:        DataTypeStateFunc,
 				},
 				"nullable": {
 					Type:        schema.TypeBool,

@@ -112,3 +112,29 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 		assert.Contains(t, err.Error(), "exactly one")
 	})
 }
+
+func Test_hybridTableColumnTypeStateFunc(t *testing.T) {
+	cases := []struct {
+		input    string
+		wantSame bool
+	}{
+		{"VARCHAR(256)", true},
+		{"NUMBER(38,0)", false}, // normalised to "NUMBER(38, 0)" (added space)
+		{"TEXT", false},         // expanded to "TEXT(16777216)"
+		{"BOOLEAN", true},
+		{"VARCHAR", false},
+		{"NUMBER", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.input, func(t *testing.T) {
+			got := DataTypeStateFunc(tc.input)
+			if tc.wantSame {
+				require.Equal(t, tc.input, got)
+			} else {
+				require.NotEqual(t, tc.input, got)
+			}
+			gotTwice := DataTypeStateFunc(got)
+			require.Equal(t, got, gotTwice)
+		})
+	}
+}
