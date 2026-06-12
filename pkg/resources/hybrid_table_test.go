@@ -115,26 +115,22 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 
 func Test_hybridTableColumnTypeStateFunc(t *testing.T) {
 	cases := []struct {
-		input    string
-		wantSame bool
+		input string
+		want  string
 	}{
-		{"VARCHAR(256)", true},
-		{"NUMBER(38,0)", false}, // normalised to "NUMBER(38, 0)" (added space)
-		{"TEXT", false},         // expanded to "TEXT(16777216)"
-		{"BOOLEAN", true},
-		{"VARCHAR", false},
-		{"NUMBER", false},
+		{"VARCHAR(256)", "VARCHAR(256)"},
+		{"NUMBER(38,0)", "NUMBER(38, 0)"},
+		{"TEXT", "TEXT(16777216)"},
+		{"BOOLEAN", "BOOLEAN"},
+		{"VARCHAR", "VARCHAR(16777216)"},
+		{"NUMBER", "NUMBER(38, 0)"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.input, func(t *testing.T) {
 			got := DataTypeStateFunc(tc.input)
-			if tc.wantSame {
-				require.Equal(t, tc.input, got)
-			} else {
-				require.NotEqual(t, tc.input, got)
-			}
-			gotTwice := DataTypeStateFunc(got)
-			require.Equal(t, got, gotTwice)
+			require.Equal(t, tc.want, got)
+			// Idempotency: applying StateFunc to its own output must be a no-op.
+			require.Equal(t, got, DataTypeStateFunc(got))
 		})
 	}
 }
