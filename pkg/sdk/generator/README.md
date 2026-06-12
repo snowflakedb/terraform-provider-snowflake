@@ -113,7 +113,7 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 
 ##### CI guard targets
 
-- `make generate-sdk-check` — regenerates all non-test parts (`default`, `dto`, `dto_builders`, `impl`, `validations`) for all objects and verifies no diff. Wired into `pre-push-check`.
+- `make generate-sdk-no-tests-check` — regenerates all non-test parts (`default`, `dto`, `dto_builders`, `impl`, `validations`) for all objects and verifies no diff. Wired into `pre-push-check`.
 - `make generate-sdk-examples-check` — regenerates examples and verifies no diff. Wired into `pre-push-check`.
 
 ---
