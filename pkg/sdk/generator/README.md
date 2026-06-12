@@ -31,6 +31,8 @@ Available generation parts:
 - unit_tests
 - validations
 
+Generation parts can be registered as **optional** (disabled by default). Optional parts are only generated for objects that explicitly enable them via `WithEnabledGenerationParts(...)`. Use `WithOptionalGenerationPart(...)` on the generator to register such a part.
+
 Generator is built on top of our common generator (read more in its [README](../../internal/genhelpers/README.md)). Experiment with the following commands:
 
 ```shell
