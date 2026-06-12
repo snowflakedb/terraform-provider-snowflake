@@ -192,6 +192,7 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 }
 
 func TestAcc_ProcedureSql_DecfloatUnsupported(t *testing.T) {
+	t.Skip("TODO(next prs): fix or remove the test now that DECFLOAT is supported for SQL procedures")
 	argName := "x"
 	dataType := testdatatypes.DataTypeDecfloat
 

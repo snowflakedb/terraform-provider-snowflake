@@ -88,7 +88,7 @@ type EventTableDropAndAddRowAccessPolicyRequest struct {
 }
 
 type EventTableClusteringActionRequest struct {
-	ClusterBy         *[]string
+	ClusterBy         []string
 	SuspendRecluster  *bool
 	ResumeRecluster   *bool
 	DropClusteringKey *bool

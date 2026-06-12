@@ -148,6 +148,7 @@ var servicesDef = g.NewInterface(
 		Name().
 		OptionalSQL("FORCE").
 		WithValidation(g.ValidIdentifier, "name"),
+	g.WithDropSafelyForce(),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-services",
 	g.StructPair("servicesRow", "Service").
@@ -178,8 +179,7 @@ var servicesDef = g.NewInterface(
 		Text("spec_digest").
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
-		OptionalText("managing_object_name").
-		WithConvertGeneration(),
+		OptionalText("managing_object_name"),
 	g.NewQueryStruct("ShowServices").
 		Show().
 		OptionalSQL("JOB").
@@ -224,8 +224,7 @@ var servicesDef = g.NewInterface(
 		Text("spec_digest").
 		Bool("is_upgrading").
 		OptionalText("managing_object_domain").
-		OptionalText("managing_object_name").
-		WithConvertGeneration(),
+		OptionalText("managing_object_name"),
 	g.NewQueryStruct("DescService").
 		Describe().
 		SQL("SERVICE").

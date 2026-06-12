@@ -8,15 +8,27 @@
         }
 
         {{ if .ShowMapping }}
-            {{ template "convert" .ShowMapping }}
+            {{ if not .ShowMapping.SkipConvert }}
+                {{ template "convert" .ShowMapping }}
+            {{ end }}
         {{ end }}
 
         {{ if .DescribeMapping }}
-            {{ template "convert" .DescribeMapping }}
+            {{ if not .DescribeMapping.SkipConvert }}
+                {{ template "convert" .DescribeMapping }}
+            {{ end }}
         {{ end }}
 
         {{ if .InstanceMethodMapping }}
-            {{ template "convert" .InstanceMethodMapping }}
+            {{ if not .InstanceMethodMapping.SkipConvert }}
+                {{ template "convert" .InstanceMethodMapping }}
+            {{ end }}
         {{ end }}
     {{- end}}
+{{ end }}
+
+{{ range .SharedToOptsFields }}
+    func (r *{{ .DtoDecl }}) toOpts() *{{ .KindNoPtr }} {
+        return &{{ template "toOptsMapping" . }}
+    }
 {{ end }}

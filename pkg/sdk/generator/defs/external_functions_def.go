@@ -45,6 +45,31 @@ var externalFunctionUnset = g.NewQueryStruct("ExternalFunctionUnset").
 	OptionalSQL("RESPONSE_TRANSLATOR").
 	WithValidation(g.AtLeastOneValueSet, "Comment", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "Secure", "RequestTranslator", "ResponseTranslator")
 
+var externalFunctionPairs = g.StructPair("externalFunctionRow", "ExternalFunction").
+	Text("created_on").
+	Text("name").
+	OptionalText("schema_name", g.WithManualConvert(), g.WithRequiredInPlain()).
+	BoolFromText("is_builtin").
+	BoolFromText("is_aggregate").
+	BoolFromText("is_ansi").
+	Number("min_num_arguments").
+	Number("max_num_arguments").
+	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	PlainOnlyField("Arguments", "[]DataType").
+	Text("description").
+	Field("catalog_name", "sql.NullString", "string", g.WithManualConvert()).
+	BoolFromText("is_table_function").
+	BoolFromText("valid_for_clustering").
+	OptionalBoolFromText("is_secure", g.WithRequiredInPlain()).
+	BoolFromText("is_external_function").
+	Text("language").
+	OptionalBoolFromText("is_memoizable", g.WithRequiredInPlain()).
+	OptionalBoolFromText("is_data_metric", g.WithRequiredInPlain())
+
+var externalFunctionPropertyPairs = g.StructPair("externalFunctionPropertyRow", "ExternalFunctionProperty").
+	Text("property").
+	Text("value")
+
 // TODO [SNOW-2048276]: Add dedicated external Drop and DropSafely functions
 var externalFunctionsDef = g.NewInterface(
 	"ExternalFunctions",
@@ -107,47 +132,9 @@ var externalFunctionsDef = g.NewInterface(
 		).
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset").
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-external-functions",
-	g.DbStruct("externalFunctionRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("schema_name", "sql.NullString").
-		Field("is_builtin", "string").
-		Field("is_aggregate", "string").
-		Field("is_ansi", "string").
-		Field("min_num_arguments", "int").
-		Field("max_num_arguments", "int").
-		Field("arguments", "string").
-		Field("description", "string").
-		Field("catalog_name", "sql.NullString").
-		Field("is_table_function", "string").
-		Field("valid_for_clustering", "string").
-		Field("is_secure", "sql.NullString").
-		Field("is_external_function", "string").
-		Field("language", "string").
-		Field("is_memoizable", "sql.NullString").
-		Field("is_data_metric", "sql.NullString"),
-	g.PlainStruct("ExternalFunction").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("SchemaName", "string").
-		Field("IsBuiltin", "bool").
-		Field("IsAggregate", "bool").
-		Field("IsAnsi", "bool").
-		Field("MinNumArguments", "int").
-		Field("MaxNumArguments", "int").
-		Field("Arguments", "[]DataType").
-		Field("ArgumentsRaw", "string").
-		Field("Description", "string").
-		Field("CatalogName", "string").
-		Field("IsTableFunction", "bool").
-		Field("ValidForClustering", "bool").
-		Field("IsSecure", "bool").
-		Field("IsExternalFunction", "bool").
-		Field("Language", "string").
-		Field("IsMemoizable", "bool").
-		Field("IsDataMetric", "bool"),
+	externalFunctionPairs,
 	g.NewQueryStruct("ShowFunctions").
 		Show().
 		SQL("EXTERNAL FUNCTIONS").
@@ -155,15 +142,10 @@ var externalFunctionsDef = g.NewInterface(
 		OptionalIn(),
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-function",
-	g.DbStruct("externalFunctionPropertyRow").
-		Field("property", "string").
-		Field("value", "string"),
-	g.PlainStruct("ExternalFunctionProperty").
-		Field("Property", "string").
-		Field("Value", "string"),
+	externalFunctionPropertyPairs,
 	g.NewQueryStruct("DescribeExternalFunction").
 		Describe().
 		SQL("FUNCTION").

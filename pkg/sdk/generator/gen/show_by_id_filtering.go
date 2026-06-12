@@ -13,9 +13,14 @@ const (
 	ShowByIDExtendedInFiltering
 	ShowByIDApplicationNameFiltering
 	ShowByIDServiceInFiltering
+	ShowByIDTableInFiltering
 
 	// ShowByIDNoFiltering causes the auto-generated ShowByID to use no filtering when passed as the sole filtering argument to ShowOperation
 	ShowByIDNoFiltering ShowByIDFilteringKind = 100
+
+	// ShowByIDSuppressed prevents auto-generation of ShowByID/ShowByIDSafely.
+	// Use when ShowByID needs a custom signature and manual implementation.
+	ShowByIDSuppressed ShowByIDFilteringKind = 101
 )
 
 type idPrefix string
@@ -79,6 +84,10 @@ func newShowByIDServiceInFiltering(identifierKind idPrefix) ShowByIDFiltering {
 	return newShowByIDFiltering("In", "ServiceIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
 }
 
+func newShowByIDTableInFiltering(identifierKind idPrefix) ShowByIDFiltering {
+	return newShowByIDFiltering("In", "TableIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
+}
+
 type showByIDApplicationFilter struct {
 	showByIDFilter
 }
@@ -106,6 +115,8 @@ func (s *Operation) withFiltering(filtering ...ShowByIDFilteringKind) *Operation
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDExtendedInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDServiceInFiltering:
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDServiceInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
+		case ShowByIDTableInFiltering:
+			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDTableInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDLikeFiltering:
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDLikeFiltering())
 		case ShowByIDApplicationNameFiltering:

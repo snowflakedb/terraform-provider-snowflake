@@ -10,18 +10,105 @@ var (
 	_ optionsProvider[ShowSemanticViewOptions]     = new(ShowSemanticViewRequest)
 )
 
-// Adjusted manually (changed from opt structs to Requests)
 type CreateSemanticViewRequest struct {
 	OrReplace                 *bool
 	IfNotExists               *bool
 	name                      SchemaObjectIdentifier // required
-	logicalTables             []LogicalTableRequest  // required
-	semanticViewRelationships []SemanticViewRelationshipRequest
-	semanticViewFacts         []FactDefinitionRequest
-	semanticViewDimensions    []DimensionDefinitionRequest
-	semanticViewMetrics       []MetricDefinitionRequest
+	LogicalTables             []LogicalTableRequest  // required
+	SemanticViewRelationships []SemanticViewRelationshipRequest
+	SemanticViewFacts         []FactDefinitionRequest
+	SemanticViewDimensions    []DimensionDefinitionRequest
+	SemanticViewMetrics       []MetricDefinitionRequest
 	Comment                   *string
 	CopyGrants                *bool
+}
+
+type LogicalTableRequest struct {
+	LogicalTableAlias *LogicalTableAliasRequest
+	TableName         SchemaObjectIdentifier // required
+	PrimaryKeys       *PrimaryKeysRequest
+	UniqueKeys        []UniqueKeysRequest
+	Synonyms          *SynonymsRequest
+	Comment           *string
+}
+
+type LogicalTableAliasRequest struct {
+	LogicalTableAlias string // required
+}
+
+type PrimaryKeysRequest struct {
+	PrimaryKey []SemanticViewColumn // required
+}
+
+type UniqueKeysRequest struct {
+	Unique []SemanticViewColumn // required
+}
+
+type SynonymsRequest struct {
+	WithSynonyms []Synonym // required
+}
+
+type SemanticViewRelationshipRequest struct {
+	RelationshipAlias          *RelationshipAliasRequest
+	TableNameOrAlias           *RelationshipTableAliasRequest // required
+	RelationshipColumnNames    []SemanticViewColumnRequest    // required
+	RefTableNameOrAlias        *RelationshipTableAliasRequest // required
+	RelationshipRefColumnNames []SemanticViewColumnRequest
+}
+
+type RelationshipAliasRequest struct {
+	RelationshipAlias string // required
+}
+
+type RelationshipTableAliasRequest struct {
+	RelationshipTableName  *SchemaObjectIdentifier
+	RelationshipTableAlias *string
+}
+
+type SemanticViewColumnRequest struct {
+	Name string // required
+}
+
+type FactDefinitionRequest struct {
+	IsPrivate          *bool
+	SemanticExpression *SemanticExpressionRequest
+}
+
+type SemanticExpressionRequest struct {
+	QualifiedExpressionName *QualifiedExpressionNameRequest // required
+	SqlExpression           *SemanticSqlExpressionRequest   // required
+	Synonyms                *SynonymsRequest
+	Comment                 *string
+}
+
+type QualifiedExpressionNameRequest struct {
+	QualifiedExpressionName string // required
+}
+
+type SemanticSqlExpressionRequest struct {
+	SqlExpression string // required
+}
+
+type DimensionDefinitionRequest struct {
+	SemanticExpression *SemanticExpressionRequest
+}
+
+type MetricDefinitionRequest struct {
+	IsPrivate                      *bool
+	SemanticExpression             *SemanticExpressionRequest
+	WindowFunctionMetricDefinition *WindowFunctionMetricDefinitionRequest
+}
+
+type WindowFunctionMetricDefinitionRequest struct {
+	QualifiedExpressionName *QualifiedExpressionNameRequest // required
+	SqlExpression           *SemanticSqlExpressionRequest   // required
+	OverClause              *WindowFunctionOverClauseRequest
+}
+
+type WindowFunctionOverClauseRequest struct {
+	PartitionBy       *string
+	OrderBy           *string
+	WindowFrameClause *string
 }
 
 type AlterSemanticViewRequest struct {
@@ -47,94 +134,4 @@ type ShowSemanticViewRequest struct {
 	In         *In
 	StartsWith *string
 	Limit      *LimitFrom
-}
-
-// All the requests below added manually
-
-type LogicalTableRequest struct {
-	logicalTableAlias *LogicalTableAliasRequest
-	TableName         SchemaObjectIdentifier // required
-	primaryKeys       *PrimaryKeysRequest
-	uniqueKeys        []UniqueKeysRequest
-	synonyms          *SynonymsRequest
-	Comment           *string
-}
-
-type LogicalTableAliasRequest struct {
-	LogicalTableAlias string
-}
-
-type PrimaryKeysRequest struct {
-	PrimaryKey []SemanticViewColumn
-}
-
-type UniqueKeysRequest struct {
-	Unique []SemanticViewColumn
-}
-
-type SynonymsRequest struct {
-	WithSynonyms []Synonym
-}
-
-type SemanticViewRelationshipRequest struct {
-	relationshipAlias          *RelationshipAliasRequest
-	tableNameOrAlias           *RelationshipTableAliasRequest // required
-	relationshipColumnNames    []SemanticViewColumnRequest    // required
-	refTableNameOrAlias        *RelationshipTableAliasRequest // required
-	relationshipRefColumnNames []SemanticViewColumnRequest
-}
-
-type RelationshipAliasRequest struct {
-	RelationshipAlias string
-}
-
-type RelationshipTableAliasRequest struct {
-	RelationshipTableName  *SchemaObjectIdentifier
-	RelationshipTableAlias *string
-}
-
-type SemanticViewColumnRequest struct {
-	Name string // required
-}
-
-type SemanticExpressionRequest struct {
-	qualifiedExpressionName *QualifiedExpressionNameRequest // required
-	sqlExpression           *SemanticSqlExpressionRequest   // required
-	synonyms                *SynonymsRequest
-	Comment                 *string
-}
-
-type QualifiedExpressionNameRequest struct {
-	QualifiedExpressionName string
-}
-
-type SemanticSqlExpressionRequest struct {
-	SqlExpression string
-}
-
-type FactDefinitionRequest struct {
-	isPrivate          *bool
-	semanticExpression *SemanticExpressionRequest
-}
-
-type DimensionDefinitionRequest struct {
-	semanticExpression *SemanticExpressionRequest
-}
-
-type MetricDefinitionRequest struct {
-	isPrivate                      *bool
-	semanticExpression             *SemanticExpressionRequest
-	windowFunctionMetricDefinition *WindowFunctionMetricDefinitionRequest
-}
-
-type WindowFunctionMetricDefinitionRequest struct {
-	qualifiedExpressionName *QualifiedExpressionNameRequest // required
-	sqlExpression           *SemanticSqlExpressionRequest   // required
-	OverClause              *WindowFunctionOverClauseRequest
-}
-
-type WindowFunctionOverClauseRequest struct {
-	PartitionBy       *string
-	OrderBy           *string
-	WindowFrameClause *string
 }

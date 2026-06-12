@@ -18,6 +18,8 @@ func init() {
 		EnumExamplesDef,
 		CustomInterfaceMethodExamplesDef,
 		InstanceMethodExamplesDef,
+		DropSafelyHookExampleDef,
+		DropSafelyForceExampleDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

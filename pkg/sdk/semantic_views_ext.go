@@ -69,20 +69,13 @@ type SemanticViewDescribeDetails struct {
 
 func (opts *CreateSemanticViewOptions) additionalValidations() error {
 	var errs []error
-	if valueSet(opts.semanticViewRelationships) {
-		for _, v := range opts.semanticViewRelationships {
-			if !exactlyOneValueSet(v.tableNameOrAlias.RelationshipTableName, v.tableNameOrAlias.RelationshipTableAlias) {
+	if valueSet(opts.SemanticViewRelationships) {
+		for _, v := range opts.SemanticViewRelationships {
+			if !exactlyOneValueSet(v.TableNameOrAlias.RelationshipTableName, v.TableNameOrAlias.RelationshipTableAlias) {
 				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
 			}
-			if !exactlyOneValueSet(v.refTableNameOrAlias.RelationshipTableName, v.refTableNameOrAlias.RelationshipTableAlias) {
+			if !exactlyOneValueSet(v.RefTableNameOrAlias.RelationshipTableName, v.RefTableNameOrAlias.RelationshipTableAlias) {
 				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
-			}
-		}
-	}
-	if valueSet(opts.semanticViewMetrics) {
-		for _, v := range opts.semanticViewMetrics {
-			if !exactlyOneValueSet(v.semanticExpression, v.windowFunctionMetricDefinition) {
-				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
 			}
 		}
 	}
@@ -94,23 +87,23 @@ func (s *CreateSemanticViewRequest) GetName() SchemaObjectIdentifier {
 }
 
 func (l *LogicalTable) GetLogicalTableAlias() *LogicalTableAlias {
-	return l.logicalTableAlias
+	return l.LogicalTableAlias
 }
 
 func (l *LogicalTable) GetPrimaryKeys() *PrimaryKeys {
-	return l.primaryKeys
+	return l.PrimaryKeys
 }
 
 func (l *LogicalTable) GetUniqueKeys() []UniqueKeys {
-	return l.uniqueKeys
+	return l.UniqueKeys
 }
 
 func (l *LogicalTable) GetSynonyms() *Synonyms {
-	return l.synonyms
+	return l.Synonyms
 }
 
 func (l *LogicalTable) WithLogicalTableAlias(alias string) *LogicalTable {
-	l.logicalTableAlias = &LogicalTableAlias{LogicalTableAlias: alias}
+	l.LogicalTableAlias = &LogicalTableAlias{LogicalTableAlias: alias}
 
 	return l
 }
@@ -122,7 +115,7 @@ func (l *LogicalTable) WithTableName(tableName SchemaObjectIdentifier) *LogicalT
 }
 
 func (l *LogicalTable) WithPrimaryKeys(keys []SemanticViewColumn) *LogicalTable {
-	l.primaryKeys = &PrimaryKeys{
+	l.PrimaryKeys = &PrimaryKeys{
 		PrimaryKey: keys,
 	}
 
@@ -131,13 +124,13 @@ func (l *LogicalTable) WithPrimaryKeys(keys []SemanticViewColumn) *LogicalTable 
 
 func (l *LogicalTable) WithUniqueKeys(keys [][]SemanticViewColumn) *LogicalTable {
 	for _, key := range keys {
-		l.uniqueKeys = append(l.uniqueKeys, UniqueKeys{Unique: key})
+		l.UniqueKeys = append(l.UniqueKeys, UniqueKeys{Unique: key})
 	}
 	return l
 }
 
 func (l *LogicalTable) WithSynonyms(synonyms []Synonym) *LogicalTable {
-	l.synonyms = &Synonyms{
+	l.Synonyms = &Synonyms{
 		WithSynonyms: synonyms,
 	}
 
@@ -151,97 +144,97 @@ func (l *LogicalTable) WithComment(comment string) *LogicalTable {
 }
 
 func (m *MetricDefinition) GetIsPrivate() bool {
-	if m.isPrivate == nil {
+	if m.IsPrivate == nil {
 		return false
 	}
-	return *m.isPrivate
+	return *m.IsPrivate
 }
 
 func (m *MetricDefinition) CheckIsPrivateIsNotNil() bool {
-	return m.isPrivate != nil
+	return m.IsPrivate != nil
 }
 
 func (m *MetricDefinition) GetSemanticExpression() *SemanticExpression {
-	return m.semanticExpression
+	return m.SemanticExpression
 }
 
 func (m *MetricDefinition) GetWindowFunctionMetricDefinition() *WindowFunctionMetricDefinition {
-	return m.windowFunctionMetricDefinition
+	return m.WindowFunctionMetricDefinition
 }
 
 func (m *MetricDefinition) WithIsPrivate(isPrivate bool) *MetricDefinition {
-	m.isPrivate = &isPrivate
+	m.IsPrivate = &isPrivate
 
 	return m
 }
 
 func (m *MetricDefinition) WithSemanticExpression(semExp *SemanticExpression) *MetricDefinition {
-	m.semanticExpression = semExp
+	m.SemanticExpression = semExp
 
 	return m
 }
 
 func (m *MetricDefinition) WithWindowFunctionMetricDefinition(windowFunc *WindowFunctionMetricDefinition) *MetricDefinition {
-	m.windowFunctionMetricDefinition = windowFunc
+	m.WindowFunctionMetricDefinition = windowFunc
 
 	return m
 }
 
 func (f *FactDefinition) GetIsPrivate() bool {
-	if f.isPrivate == nil {
+	if f.IsPrivate == nil {
 		return false
 	}
-	return *f.isPrivate
+	return *f.IsPrivate
 }
 
 func (f *FactDefinition) CheckIsPrivateIsNotNil() bool {
-	return f.isPrivate != nil
+	return f.IsPrivate != nil
 }
 
 func (f *FactDefinition) WithIsPrivate(isPrivate bool) *FactDefinition {
-	f.isPrivate = &isPrivate
+	f.IsPrivate = &isPrivate
 
 	return f
 }
 
 func (f *FactDefinition) GetSemanticExpression() *SemanticExpression {
-	return f.semanticExpression
+	return f.SemanticExpression
 }
 
 func (f *FactDefinition) WithSemanticExpression(semExp *SemanticExpression) *FactDefinition {
-	f.semanticExpression = semExp
+	f.SemanticExpression = semExp
 
 	return f
 }
 
 func (d *DimensionDefinition) GetSemanticExpression() *SemanticExpression {
-	return d.semanticExpression
+	return d.SemanticExpression
 }
 
 func (d *DimensionDefinition) WithSemanticExpression(semExp *SemanticExpression) *DimensionDefinition {
-	d.semanticExpression = semExp
+	d.SemanticExpression = semExp
 
 	return d
 }
 
 func (s *SemanticExpression) GetQualifiedExpressionName() *QualifiedExpressionName {
-	return s.qualifiedExpressionName
+	return s.QualifiedExpressionName
 }
 
 func (s *SemanticExpression) WithQualifiedExpressionName(qExName string) *SemanticExpression {
-	s.qualifiedExpressionName = &QualifiedExpressionName{QualifiedExpressionName: qExName}
+	s.QualifiedExpressionName = &QualifiedExpressionName{QualifiedExpressionName: qExName}
 
 	return s
 }
 
 func (s *SemanticExpression) WithSqlExpression(sqlExpression string) *SemanticExpression {
-	s.sqlExpression = &SemanticSqlExpression{SqlExpression: sqlExpression}
+	s.SqlExpression = &SemanticSqlExpression{SqlExpression: sqlExpression}
 
 	return s
 }
 
 func (s *SemanticExpression) WithSynonyms(synonyms []Synonym) *SemanticExpression {
-	s.synonyms = &Synonyms{
+	s.Synonyms = &Synonyms{
 		WithSynonyms: synonyms,
 	}
 
@@ -255,29 +248,29 @@ func (s *SemanticExpression) WithComment(comment string) *SemanticExpression {
 }
 
 func (s *SemanticExpression) GetSqlExpression() *SemanticSqlExpression {
-	return s.sqlExpression
+	return s.SqlExpression
 }
 
 func (s *SemanticExpression) GetSynonyms() *Synonyms {
-	return s.synonyms
+	return s.Synonyms
 }
 
 func (w *WindowFunctionMetricDefinition) GetQualifiedExpressionName() *QualifiedExpressionName {
-	return w.qualifiedExpressionName
+	return w.QualifiedExpressionName
 }
 
 func (w *WindowFunctionMetricDefinition) WithQualifiedExpressionName(qExName string) *WindowFunctionMetricDefinition {
-	w.qualifiedExpressionName = &QualifiedExpressionName{QualifiedExpressionName: qExName}
+	w.QualifiedExpressionName = &QualifiedExpressionName{QualifiedExpressionName: qExName}
 
 	return w
 }
 
 func (w *WindowFunctionMetricDefinition) GetSqlExpression() *SemanticSqlExpression {
-	return w.sqlExpression
+	return w.SqlExpression
 }
 
 func (w *WindowFunctionMetricDefinition) WithSqlExpression(sqlExpression string) *WindowFunctionMetricDefinition {
-	w.sqlExpression = &SemanticSqlExpression{SqlExpression: sqlExpression}
+	w.SqlExpression = &SemanticSqlExpression{SqlExpression: sqlExpression}
 
 	return w
 }
@@ -289,51 +282,51 @@ func (w *WindowFunctionMetricDefinition) WithOverClause(overClause WindowFunctio
 }
 
 func (r *SemanticViewRelationship) GetRelationshipAlias() *RelationshipAlias {
-	return r.relationshipAlias
+	return r.RelationshipAlias
 }
 
 func (r *SemanticViewRelationship) WithRelationshipAlias(alias string) *SemanticViewRelationship {
-	r.relationshipAlias = &RelationshipAlias{RelationshipAlias: alias}
+	r.RelationshipAlias = &RelationshipAlias{RelationshipAlias: alias}
 
 	return r
 }
 
 func (r *SemanticViewRelationship) GetTableNameOrAlias() *RelationshipTableAlias {
-	return r.tableNameOrAlias
+	return r.TableNameOrAlias
 }
 
 func (r *SemanticViewRelationship) WithTableNameOrAlias(tableNameOrAlias RelationshipTableAlias) *SemanticViewRelationship {
-	r.tableNameOrAlias = &tableNameOrAlias
+	r.TableNameOrAlias = &tableNameOrAlias
 
 	return r
 }
 
 func (r *SemanticViewRelationship) GetRelationshipColumnsNames() []SemanticViewColumn {
-	return r.relationshipColumnNames
+	return r.RelationshipColumnNames
 }
 
 func (r *SemanticViewRelationship) WithRelationshipColumnsNames(keys []SemanticViewColumn) *SemanticViewRelationship {
-	r.relationshipColumnNames = keys
+	r.RelationshipColumnNames = keys
 
 	return r
 }
 
 func (r *SemanticViewRelationship) GetRefTableNameOrAlias() *RelationshipTableAlias {
-	return r.refTableNameOrAlias
+	return r.RefTableNameOrAlias
 }
 
 func (r *SemanticViewRelationship) WithRefTableNameOrAlias(refTableNameOrAlias RelationshipTableAlias) *SemanticViewRelationship {
-	r.refTableNameOrAlias = &refTableNameOrAlias
+	r.RefTableNameOrAlias = &refTableNameOrAlias
 
 	return r
 }
 
 func (r *SemanticViewRelationship) GetRelationshipRefColumnsNames() []SemanticViewColumn {
-	return r.relationshipRefColumnNames
+	return r.RelationshipRefColumnNames
 }
 
 func (r *SemanticViewRelationship) WithRelationshipRefColumnsNames(keys []SemanticViewColumn) *SemanticViewRelationship {
-	r.relationshipRefColumnNames = keys
+	r.RelationshipRefColumnNames = keys
 
 	return r
 }

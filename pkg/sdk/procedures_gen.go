@@ -184,9 +184,14 @@ type CreateForSQLProcedureOptions struct {
 }
 
 type ProcedureSQLReturns struct {
-	ResultDataType *ProcedureReturnsResultDataType `ddl:"keyword"`
-	Table          *ProcedureReturnsTable          `ddl:"keyword" sql:"TABLE"`
-	NotNull        *bool                           `ddl:"keyword" sql:"NOT NULL"`
+	ResultDataType *ProcedureSQLReturnsResultDataType `ddl:"keyword"`
+	Table          *ProcedureReturnsTable             `ddl:"keyword" sql:"TABLE"`
+	NotNull        *bool                              `ddl:"keyword" sql:"NOT NULL"`
+}
+
+type ProcedureSQLReturnsResultDataType struct {
+	ResultDataTypeOld DataType           `ddl:"keyword,no_quotes"`
+	ResultDataType    datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
 }
 
 // AlterProcedureOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-procedure.
@@ -210,11 +215,10 @@ type ProcedureSet struct {
 	AutoEventLogging           *AutoEventLogging         `ddl:"parameter,single_quotes" sql:"AUTO_EVENT_LOGGING"`
 	EnableConsoleOutput        *bool                     `ddl:"parameter" sql:"ENABLE_CONSOLE_OUTPUT"`
 	LogLevel                   *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	LogEventLevel              *LogLevel                 `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	MetricLevel                *MetricLevel              `ddl:"parameter,single_quotes" sql:"METRIC_LEVEL"`
 	TraceLevel                 *TraceLevel               `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 }
-
-// SecretsList removed manually - redeclared in functions
 
 type ProcedureUnset struct {
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
@@ -222,6 +226,7 @@ type ProcedureUnset struct {
 	AutoEventLogging           *bool `ddl:"keyword" sql:"AUTO_EVENT_LOGGING"`
 	EnableConsoleOutput        *bool `ddl:"keyword" sql:"ENABLE_CONSOLE_OUTPUT"`
 	LogLevel                   *bool `ddl:"keyword" sql:"LOG_LEVEL"`
+	LogEventLevel              *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	MetricLevel                *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
 	TraceLevel                 *bool `ddl:"keyword" sql:"TRACE_LEVEL"`
 }
@@ -270,9 +275,9 @@ type Procedure struct {
 	IsAnsi                     bool
 	MinNumArguments            int
 	MaxNumArguments            int
+	ArgumentsRaw               string
 	ArgumentsOld               []DataType
 	ReturnTypeOld              DataType
-	ArgumentsRaw               string
 	Description                string
 	CatalogName                string
 	IsTableFunction            bool

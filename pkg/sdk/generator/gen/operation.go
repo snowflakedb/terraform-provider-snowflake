@@ -1,5 +1,7 @@
 package gen
 
+import "fmt"
+
 type OperationKind string
 
 const (
@@ -65,6 +67,16 @@ type Operation struct {
 	InstanceMethodScalarReturnType string
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
+	// ShowResultFilterHook, when true, inserts a hook call in the generated Show implementation.
+	// It allows filtering the rows by implementing excludeFromShow() method on the given row type.
+	// The implementation should be provided in the _ext.go file.
+	ShowResultFilterHook bool
+	// DropSafelyHook, when true, inserts a hook call in the generated DropSafely implementation.
+	// It allows running operation before dropping the object safely by implementing dropSafelyHook() method on the given object interface implementation.
+	// The implementation should be provided in the _ext.go file.
+	DropSafelyHook bool
+	// DropSafelyForce, when true, appends .WithForce(true) to the Drop request in the generated DropSafely implementation.
+	DropSafelyForce bool
 
 	// TODO [SNOW-2324252]: Consider splitting the Operation into definition and generation model
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
@@ -87,6 +99,20 @@ type Mapping struct {
 	// The mapping needs to be built from a PairedStructs definition with WithConvertGeneration() enabled.
 	// Otherwise, the old placeholder is used.
 	FieldPairs []FieldPair
+	// SkipConvert is set by preprocessDefinition when another Mapping with the same From.Name has
+	// already been scheduled for emission in the same interface. Guards and convert bodies are suppressed.
+	SkipConvert bool
+}
+
+// HasManualConvert reports whether any field in this Mapping is marked as manual convert.
+// When true, the generated convert() will call r.additionalConvert(result) after all generated mappings.
+func (m *Mapping) HasManualConvert() bool {
+	for _, f := range m.FieldPairs {
+		if f.manualConvert {
+			return true
+		}
+	}
+	return false
 }
 
 func newOperation(kind string, doc string) *Operation {
@@ -222,8 +248,27 @@ func (i *Interface) AlterOperation(doc string, queryStruct *QueryStruct) *Interf
 	return i.newSimpleOperation(string(OperationKindAlter), doc, queryStruct)
 }
 
-func (i *Interface) DropOperation(doc string, queryStruct *QueryStruct) *Interface {
-	return i.newSimpleOperation(string(OperationKindDrop), doc, queryStruct)
+// DropOperationOption is a functional option for configuring DropSafely behavior.
+type DropOperationOption func(*Operation)
+
+// WithDropSafelyHook enables running action before dropping the objects safely.
+func WithDropSafelyHook() DropOperationOption {
+	return func(op *Operation) { op.DropSafelyHook = true }
+}
+
+// WithDropSafelyForce adds .WithForce(true) to the Drop request in the generated DropSafely implementation.
+func WithDropSafelyForce() DropOperationOption {
+	return func(op *Operation) { op.DropSafelyForce = true }
+}
+
+func (i *Interface) DropOperation(doc string, queryStruct *QueryStruct, opts ...DropOperationOption) *Interface {
+	i.newSimpleOperation(string(OperationKindDrop), doc, queryStruct)
+	// TODO [next PRs]: the operation is obtained in an ugly way; the new operation provate helpers should be made consistent and return operation instead of an interface
+	op := i.Operations[len(i.Operations)-1]
+	for _, opt := range opts {
+		opt(op)
+	}
+	return i
 }
 
 func (i *Interface) GrantOperation(doc string, queryStruct *QueryStruct) *Interface {
@@ -235,6 +280,9 @@ func (i *Interface) RevokeOperation(doc string, queryStruct *QueryStruct) *Inter
 }
 
 func (i *Interface) appendShowByID(filtering []ShowByIDFilteringKind) *Interface {
+	if len(filtering) == 1 && filtering[0] == ShowByIDSuppressed {
+		return i
+	}
 	if len(filtering) == 1 && filtering[0] == ShowByIDNoFiltering {
 		return i.ShowByIdOperationWithNoFiltering()
 	}
@@ -294,4 +342,17 @@ func (i *Interface) describeOperation(describeKind DescriptionMappingKind, doc s
 
 func (i *Interface) CustomOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	return i.newSimpleOperation(kind, doc, queryStruct, helperStructs...)
+}
+
+func (i *Interface) ShowParameters(identifierKind string) *Interface {
+	objectIdentifierKind, err := ToObjectIdentifierKind(identifierKind)
+	if err != nil {
+		panic(fmt.Errorf("invalid identifier kind: %s", identifierKind))
+	}
+	return i.WithCustomInterfaceMethod(
+		"ShowParameters",
+		"",
+		[]*MethodParameter{NewMethodParameter("id", string(objectIdentifierKind))},
+		"[]*Parameter", "error",
+	)
 }

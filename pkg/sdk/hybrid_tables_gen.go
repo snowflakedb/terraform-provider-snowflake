@@ -20,17 +20,20 @@ type HybridTables interface {
 	CreateIndex(ctx context.Context, request *CreateIndexHybridTableRequest) error
 	DropIndex(ctx context.Context, request *DropIndexHybridTableRequest) error
 	ShowIndexes(ctx context.Context, request *ShowIndexesHybridTableRequest) ([]HybridTableIndex, error)
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.
 type CreateHybridTableOptions struct {
-	create                bool                                    `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                                   `ddl:"keyword" sql:"OR REPLACE"`
-	hybridTable           bool                                    `ddl:"static" sql:"HYBRID TABLE"`
-	IfNotExists           *bool                                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier                  `ddl:"identifier"`
-	ColumnsAndConstraints HybridTableColumnsConstraintsAndIndexes `ddl:"list,parentheses"`
-	Comment               *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                     bool                                    `ddl:"static" sql:"CREATE"`
+	OrReplace                  *bool                                   `ddl:"keyword" sql:"OR REPLACE"`
+	hybridTable                bool                                    `ddl:"static" sql:"HYBRID TABLE"`
+	IfNotExists                *bool                                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                       SchemaObjectIdentifier                  `ddl:"identifier"`
+	ColumnsAndConstraints      HybridTableColumnsConstraintsAndIndexes `ddl:"list,parentheses"`
+	DataRetentionTimeInDays    *int                                    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                                    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	Comment                    *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type HybridTableColumnsConstraintsAndIndexes struct {
@@ -41,7 +44,7 @@ type HybridTableColumnsConstraintsAndIndexes struct {
 
 type HybridTableColumn struct {
 	Name             string                  `ddl:"keyword,double_quotes"`
-	Type             DataType                `ddl:"keyword"`
+	DataType         DataType                `ddl:"keyword"`
 	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
 	NotNull          *bool                   `ddl:"keyword" sql:"NOT NULL"`
 	DefaultValue     *ColumnDefaultValue     `ddl:"keyword"`
@@ -50,10 +53,10 @@ type HybridTableColumn struct {
 }
 
 type HybridTableOutOfLineConstraint struct {
-	Name       *string              `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	Type       ColumnConstraintType `ddl:"keyword"`
-	Columns    []string             `ddl:"keyword,parentheses"`
-	ForeignKey *OutOfLineForeignKey `ddl:"keyword"`
+	Name                 *string              `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	ColumnConstraintType ColumnConstraintType `ddl:"keyword"`
+	Columns              []string             `ddl:"keyword,parentheses"`
+	ForeignKey           *OutOfLineForeignKey `ddl:"keyword"`
 }
 
 type HybridTableOutOfLineIndex struct {
@@ -77,6 +80,7 @@ type AlterHybridTableOptions struct {
 	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
+	Unset             *HybridTableUnsetProperties    `ddl:"list,no_parentheses" sql:"UNSET"`
 }
 
 type HybridTableAddColumnAction struct {
@@ -84,7 +88,7 @@ type HybridTableAddColumnAction struct {
 	column           bool                    `ddl:"static" sql:"COLUMN"`
 	IfNotExists      *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	Name             string                  `ddl:"keyword,double_quotes"`
-	Type             DataType                `ddl:"keyword"`
+	DataType         DataType                `ddl:"keyword"`
 	Collate          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 	DefaultValue     *ColumnDefaultValue     `ddl:"keyword"`
 	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
@@ -118,7 +122,7 @@ type HybridTableAlterColumnAction struct {
 	ColumnName   string        `ddl:"keyword,double_quotes"`
 	DropDefault  *bool         `ddl:"keyword" sql:"DROP DEFAULT"`
 	SetDefault   *SequenceName `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
-	Type         *DataType     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
+	DataType     *DataType     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
 	Comment      *string       `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 	UnsetComment *bool         `ddl:"keyword" sql:"UNSET COMMENT"`
 }
@@ -157,6 +161,12 @@ type HybridTableSetProperties struct {
 	DataRetentionTimeInDays    *int    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type HybridTableUnsetProperties struct {
+	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
+	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 }
 
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.
@@ -238,6 +248,7 @@ type hybridTableDetailsRow struct {
 type HybridTableDetails struct {
 	Name                  string
 	Type                  string
+	Collation             *string
 	Kind                  string
 	IsNullable            bool
 	Default               string

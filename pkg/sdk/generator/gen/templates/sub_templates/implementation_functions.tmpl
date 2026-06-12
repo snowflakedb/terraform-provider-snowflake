@@ -21,6 +21,9 @@
                     if err != nil {
                         return nil, err
                     }
+                    {{- if .ShowResultFilterHook }}
+                    dbRows = slices.DeleteFunc(dbRows, func(row {{ .ShowMapping.From.Name }}) bool { return row.excludeFromShow() })
+                    {{- end }}
                     return convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
                 }
             {{ end }}
@@ -35,7 +38,12 @@
             if err != nil {
                 return nil, err
             }
-            return collections.FindFirst({{ $impl }}, func(r {{ .ObjectInterface.ShowObjectName }}) bool { return r.Name == id.Name() })
+            return collections.FindFirst({{ $impl }}, func(r {{ .ObjectInterface.ShowObjectName }}) bool { return
+                {{- if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsFullID }} r.ID().FullyQualifiedName() == id.FullyQualifiedName()
+                {{- else if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsAccountName }} r.AccountName == id.Name()
+                {{- else if .ObjectInterface.ResolvedShowByIDFindPredicateKind.IsNameAndLocator }} r.Name == id.Name() && r.AccountLocator == v.client.GetAccountLocator()
+                {{- else }} r.Name == id.Name()
+                {{- end }} })
         }
 
         func (v *{{ $impl }}) ShowByIDSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.ShowObjectName }}, error) {
@@ -74,7 +82,12 @@
         }
 
         func (v *{{ $impl }}) DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error {
-            return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDrop{{ .ObjectInterface.NameSingular }}Request(id).WithIfExists(true)) }, ctx, id)
+            {{- if .DropSafelyHook }}
+            if err := v.dropSafelyHook(ctx, id); err != nil {
+                return err
+            }
+            {{- end }}
+            return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDrop{{ .ObjectInterface.NameSingular }}Request(id).WithIfExists(true){{ if .DropSafelyForce }}.WithForce(true){{ end }}) }, ctx, id)
         }
     {{ else if .InstanceMethodMapping }}
         {{ if eq (instance_method_kind_deref .InstanceMethodKind) "slice" }}

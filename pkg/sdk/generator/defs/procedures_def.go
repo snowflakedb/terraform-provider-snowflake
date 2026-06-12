@@ -11,18 +11,16 @@ var procedureArgument = func() *g.QueryStruct {
 		Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
 		PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 		PredefinedQueryStructField("ArgDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT"))
-	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-	// .WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT")).
+		WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
 }
 
 var procedureColumn = func() *g.QueryStruct {
 	return g.NewQueryStruct("ProcedureColumn").
 		Text("ColumnName", g.KeywordOptions().DoubleQuotes().Required()).
 		PredefinedQueryStructField("ColumnDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
-		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required())
-	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-	// .WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
+		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
+		WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
 }
 
 var procedureReturns = func() *g.QueryStruct {
@@ -32,7 +30,8 @@ var procedureReturns = func() *g.QueryStruct {
 			g.NewQueryStruct("ProcedureReturnsResultDataType").
 				PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 				PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-				OptionalSQL("NULL").OptionalSQL("NOT NULL").
+				OptionalSQL("NULL").
+				OptionalSQL("NOT NULL").
 				WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
 			g.KeywordOptions(),
 		).
@@ -43,16 +42,16 @@ var procedureReturns = func() *g.QueryStruct {
 					"Columns",
 					procedureColumn(),
 					g.ListOptions().MustParentheses(),
-				).
-				WithAdditionalValidations(),
+				),
 			g.KeywordOptions().SQL("TABLE"),
 		).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 }
 
+// TODO [SNOW-1850370]: docs (https://docs.snowflake.com/en/sql-reference/sql/create-procedure#snowflake-scripting-handler) do not include null/not null; verify it during stabilization
 var procedureSQLReturns = g.NewQueryStruct("ProcedureSQLReturns").
 	OptionalQueryStructField(
 		"ResultDataType",
-		g.NewQueryStruct("ProcedureReturnsResultDataType").
+		g.NewQueryStruct("ProcedureSQLReturnsResultDataType").
 			PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 			PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 			WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
@@ -65,8 +64,7 @@ var procedureSQLReturns = g.NewQueryStruct("ProcedureSQLReturns").
 				"Columns",
 				procedureColumn(),
 				g.ListOptions().MustParentheses(),
-			).
-			WithAdditionalValidations(),
+			),
 		g.KeywordOptions().SQL("TABLE"),
 	).
 	OptionalSQL("NOT NULL").
@@ -83,6 +81,30 @@ var procedureWithClause = g.NewQueryStruct("ProcedureWithClause").
 	Identifier("CteName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 	PredefinedQueryStructField("CteColumns", "[]string", g.KeywordOptions().Parentheses()).
 	PredefinedQueryStructField("Statement", "string", g.ParameterOptions().NoEquals().NoQuotes().SQL("AS").Required())
+
+var procedurePairs = g.StructPair("procedureRow", "Procedure").
+	Text("created_on").
+	Text("name").
+	Text("schema_name", g.WithManualConvert()).
+	BoolFromText("is_builtin").
+	BoolFromText("is_aggregate").
+	BoolFromText("is_ansi").
+	Number("min_num_arguments").
+	Number("max_num_arguments").
+	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	PlainOnlyField("ArgumentsOld", "[]DataType").
+	PlainOnlyField("ReturnTypeOld", "DataType").
+	Text("description").
+	Text("catalog_name", g.WithManualConvert()).
+	BoolFromText("is_table_function").
+	BoolFromText("valid_for_clustering").
+	OptionalBoolFromText("is_secure", g.WithRequiredInPlain()).
+	OptionalText("secrets").
+	OptionalText("external_access_integrations")
+
+var procedureDetailPairs = g.StructPair("procedureDetailRow", "ProcedureDetail").
+	Text("property").
+	OptionalText("value", g.WithManualConvert())
 
 var proceduresDef = g.NewInterface(
 	"Procedures",
@@ -161,8 +183,7 @@ var proceduresDef = g.NewInterface(
 		PredefinedQueryStructField("ProcedureDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType").
-		WithAdditionalValidations(),
+		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
 ).CustomOperation(
 	"CreateForPython",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-procedure#python-handler",
@@ -206,8 +227,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
-		WithValidation(g.ValidIdentifier, "name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "name"),
 ).CustomOperation(
 	"CreateForScala",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-procedure#scala-handler",
@@ -281,8 +301,7 @@ var proceduresDef = g.NewInterface(
 		PredefinedQueryStructField("ExecuteAs", "*ExecuteAs", g.ParameterOptions().NoQuotes().NoEquals().SQL("EXECUTE AS")).
 		PredefinedQueryStructField("ProcedureDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
-		WithValidation(g.ValidIdentifier, "name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "name"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-procedure",
 	g.NewQueryStruct("AlterProcedure").
@@ -296,13 +315,14 @@ var proceduresDef = g.NewInterface(
 			g.NewQueryStruct("ProcedureSet").
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
-				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
+				OptionalSharedQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 				OptionalAssignment("AUTO_EVENT_LOGGING", g.KindOfTPointer[sdkcommons.AutoEventLogging](), g.ParameterOptions().SingleQuotes()).
 				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
 				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
+				OptionalAssignment("LOG_EVENT_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -313,9 +333,10 @@ var proceduresDef = g.NewInterface(
 				OptionalSQL("AUTO_EVENT_LOGGING").
 				OptionalSQL("ENABLE_CONSOLE_OUTPUT").
 				OptionalSQL("LOG_LEVEL").
+				OptionalSQL("LOG_EVENT_LEVEL").
 				OptionalSQL("METRIC_LEVEL").
 				OptionalSQL("TRACE_LEVEL").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("UNSET"),
 		).
 		OptionalSetTags().
@@ -332,60 +353,20 @@ var proceduresDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-procedures",
-	g.DbStruct("procedureRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("schema_name", "string").
-		Field("is_builtin", "string").
-		Field("is_aggregate", "string").
-		Field("is_ansi", "string").
-		Field("min_num_arguments", "int").
-		Field("max_num_arguments", "int").
-		Field("arguments", "string").
-		Field("description", "string").
-		Field("catalog_name", "string").
-		Field("is_table_function", "string").
-		Field("valid_for_clustering", "string").
-		Field("is_secure", "sql.NullString").
-		OptionalText("secrets").
-		OptionalText("external_access_integrations"),
-	g.PlainStruct("Procedure").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("SchemaName", "string").
-		Field("IsBuiltin", "bool").
-		Field("IsAggregate", "bool").
-		Field("IsAnsi", "bool").
-		Field("MinNumArguments", "int").
-		Field("MaxNumArguments", "int").
-		Field("ArgumentsOld", "[]DataType").
-		Field("ReturnTypeOld", "DataType").
-		Field("ArgumentsRaw", "string").
-		Field("Description", "string").
-		Field("CatalogName", "string").
-		Field("IsTableFunction", "bool").
-		Field("ValidForClustering", "bool").
-		Field("IsSecure", "bool").
-		OptionalText("Secrets").
-		OptionalText("ExternalAccessIntegrations"),
+	procedurePairs,
 	g.NewQueryStruct("ShowProcedures").
 		Show().
 		SQL("PROCEDURES").
 		OptionalLike().
 		OptionalExtendedIn(),
-	g.ShowByIDInFiltering,
+	g.ShowByIDExtendedInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-procedure",
-	g.DbStruct("procedureDetailRow").
-		Field("property", "string").
-		Field("value", "sql.NullString"),
-	g.PlainStruct("ProcedureDetail").
-		Field("Property", "string").
-		OptionalText("Value"),
+	procedureDetailPairs,
 	g.NewQueryStruct("DescribeProcedure").
 		Describe().
 		SQL("PROCEDURE").
@@ -445,7 +426,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).CustomOperation(
 	"CreateAndCallForScala",
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#java-and-scala",
@@ -491,7 +472,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).CustomOperation(
 	"CreateAndCallForJavaScript",
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#javascript",
@@ -523,7 +504,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).CustomOperation(
 	"CreateAndCallForPython",
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#python",
@@ -569,7 +550,7 @@ var proceduresDef = g.NewInterface(
 		WithValidation(g.ValidateValueSet, "Packages").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).CustomOperation(
 	"CreateAndCallForSQL",
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#snowflake-scripting",
@@ -601,7 +582,7 @@ var proceduresDef = g.NewInterface(
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
 		WithValidation(g.ValidIdentifier, "Name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "ProcedureName"),
 ).WithCustomInterfaceMethod(
 	"DescribeDetails",
 	"DescribeDetails returns aggregated describe results for the given procedure.",

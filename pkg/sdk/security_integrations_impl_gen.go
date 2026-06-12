@@ -2,17 +2,14 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ SecurityIntegrations = (*securityIntegrations)(nil)
-
 var (
+	_ SecurityIntegrations                        = (*securityIntegrations)(nil)
 	_ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
 	_ convertibleRow[SecurityIntegration]         = new(securityIntegrationShowRow)
 )
@@ -273,11 +270,10 @@ func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) toOpts() *Create
 		OauthUseSecondaryRoles:      r.OauthUseSecondaryRoles,
 		OauthIssueRefreshTokens:     r.OauthIssueRefreshTokens,
 		OauthRefreshTokenValidity:   r.OauthRefreshTokenValidity,
-		// Adjusted manually.
-		NetworkPolicy:            securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
-		OauthClientRsaPublicKey:  r.OauthClientRsaPublicKey,
-		OauthClientRsaPublicKey2: r.OauthClientRsaPublicKey2,
-		Comment:                  r.Comment,
+		NetworkPolicy:               r.NetworkPolicy,
+		OauthClientRsaPublicKey:     r.OauthClientRsaPublicKey,
+		OauthClientRsaPublicKey2:    r.OauthClientRsaPublicKey2,
+		Comment:                     r.Comment,
 	}
 	if r.PreAuthorizedRolesList != nil {
 		opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{
@@ -320,15 +316,13 @@ func (r *CreateSaml2SecurityIntegrationRequest) toOpts() *CreateSaml2SecurityInt
 
 func (r *CreateScimSecurityIntegrationRequest) toOpts() *CreateScimSecurityIntegrationOptions {
 	opts := &CreateScimSecurityIntegrationOptions{
-		OrReplace:   r.OrReplace,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		Enabled:     r.Enabled,
-		ScimClient:  r.ScimClient,
-		// Adjusted manually.
-		RunAsRole: fmt.Sprintf("'%s'", r.RunAsRole),
-		// Adjusted manually.
-		NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
+		OrReplace:     r.OrReplace,
+		IfNotExists:   r.IfNotExists,
+		name:          r.name,
+		Enabled:       r.Enabled,
+		ScimClient:    r.ScimClient,
+		RunAsRole:     r.RunAsRole,
+		NetworkPolicy: r.NetworkPolicy,
 		SyncPassword:  r.SyncPassword,
 		Comment:       r.Comment,
 	}
@@ -487,10 +481,7 @@ func (r *AlterOauthForPartnerApplicationsSecurityIntegrationRequest) toOpts() *A
 			OauthRedirectUri:          r.Set.OauthRedirectUri,
 			OauthRefreshTokenValidity: r.Set.OauthRefreshTokenValidity,
 			OauthUseSecondaryRoles:    r.Set.OauthUseSecondaryRoles,
-			// Comment adjusted manually below
-		}
-		if r.Set.Comment != nil {
-			opts.Set.Comment = &StringAllowEmpty{*r.Set.Comment}
+			Comment:                   r.Set.Comment,
 		}
 		if r.Set.BlockedRolesList != nil {
 			opts.Set.BlockedRolesList = &BlockedRolesList{
@@ -523,11 +514,10 @@ func (r *AlterOauthForCustomClientsSecurityIntegrationRequest) toOpts() *AlterOa
 			OauthIssueRefreshTokens:     r.Set.OauthIssueRefreshTokens,
 			OauthRefreshTokenValidity:   r.Set.OauthRefreshTokenValidity,
 			OauthUseSecondaryRoles:      r.Set.OauthUseSecondaryRoles,
-			// Adjusted manually.
-			NetworkPolicy:            securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
-			OauthClientRsaPublicKey:  r.Set.OauthClientRsaPublicKey,
-			OauthClientRsaPublicKey2: r.Set.OauthClientRsaPublicKey2,
-			Comment:                  r.Set.Comment,
+			NetworkPolicy:               r.Set.NetworkPolicy,
+			OauthClientRsaPublicKey:     r.Set.OauthClientRsaPublicKey,
+			OauthClientRsaPublicKey2:    r.Set.OauthClientRsaPublicKey2,
+			Comment:                     r.Set.Comment,
 		}
 		if r.Set.PreAuthorizedRolesList != nil {
 			opts.Set.PreAuthorizedRolesList = &PreAuthorizedRolesList{
@@ -601,9 +591,8 @@ func (r *AlterScimSecurityIntegrationRequest) toOpts() *AlterScimSecurityIntegra
 	}
 	if r.Set != nil {
 		opts.Set = &ScimIntegrationSet{
-			Enabled: r.Set.Enabled,
-			// Adjusted manually.
-			NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
+			Enabled:       r.Set.Enabled,
+			NetworkPolicy: r.Set.NetworkPolicy,
 			SyncPassword:  r.Set.SyncPassword,
 			Comment:       r.Set.Comment,
 		}

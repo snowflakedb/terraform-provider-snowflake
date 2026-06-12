@@ -11,18 +11,16 @@ var functionArgument = func() *g.QueryStruct {
 		Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
 		PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 		PredefinedQueryStructField("ArgDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT"))
-	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-	// .WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT")).
+		WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
 }
 
 var functionColumn = func() *g.QueryStruct {
 	return g.NewQueryStruct("FunctionColumn").
 		Text("ColumnName", g.KeywordOptions().DoubleQuotes().Required()).
 		PredefinedQueryStructField("ColumnDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
-		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required())
-	// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-	// .WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
+		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
+		WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
 }
 
 var functionReturns = func() *g.QueryStruct {
@@ -42,8 +40,7 @@ var functionReturns = func() *g.QueryStruct {
 					"Columns",
 					functionColumn(),
 					g.ParameterOptions().Parentheses().NoEquals(),
-				).
-				WithAdditionalValidations(),
+				),
 			g.KeywordOptions().SQL("TABLE"),
 		).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 }
@@ -52,8 +49,37 @@ var (
 	functionImports            = g.NewQueryStruct("FunctionImport").Text("FunctionImport", g.KeywordOptions().SingleQuotes())
 	functionPackages           = g.NewQueryStruct("FunctionPackage").Text("FunctionPackage", g.KeywordOptions().SingleQuotes())
 	functionSecretsListWrapper = g.NewQueryStruct("SecretsList").
-					List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses())
+					List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses()).
+					WithSharedToOpts()
 )
+
+var functionPairs = g.StructPair("functionRow", "Function").
+	Text("created_on").
+	Text("name").
+	Text("schema_name", g.WithManualConvert()).
+	BoolFromText("is_builtin").
+	BoolFromText("is_aggregate").
+	BoolFromText("is_ansi").
+	Number("min_num_arguments").
+	Number("max_num_arguments").
+	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	PlainOnlyField("ArgumentsOld", "[]DataType").
+	PlainOnlyField("ReturnTypeOld", "DataType").
+	Text("description").
+	Text("catalog_name", g.WithManualConvert()).
+	BoolFromText("is_table_function").
+	BoolFromText("valid_for_clustering").
+	OptionalBoolFromText("is_secure", g.WithRequiredInPlain()).
+	OptionalText("secrets").
+	OptionalText("external_access_integrations").
+	BoolFromText("is_external_function").
+	Text("language").
+	OptionalBoolFromText("is_memoizable", g.WithRequiredInPlain()).
+	OptionalBoolFromText("is_data_metric", g.WithRequiredInPlain())
+
+var functionDetailPairs = g.StructPair("functionDetailRow", "FunctionDetail").
+	Text("property").
+	OptionalText("value", g.WithManualConvert())
 
 var functionsDef = g.NewInterface(
 	"Functions",
@@ -140,8 +166,7 @@ var functionsDef = g.NewInterface(
 		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
-		WithValidation(g.ValidIdentifier, "name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "name"),
 ).CustomOperation(
 	"CreateForPython",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-function#python-handler",
@@ -272,8 +297,7 @@ var functionsDef = g.NewInterface(
 		OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 		PredefinedQueryStructField("FunctionDefinition", "string", g.ParameterOptions().NoEquals().SQL("AS").Required()).
 		WithValidation(g.ValidateValueSet, "FunctionDefinition").
-		WithValidation(g.ValidIdentifier, "name").
-		WithAdditionalValidations(),
+		WithValidation(g.ValidIdentifier, "name"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-function",
 	g.NewQueryStruct("AlterFunction").
@@ -290,9 +314,10 @@ var functionsDef = g.NewInterface(
 				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
 				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
+				OptionalAssignment("LOG_EVENT_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -302,9 +327,10 @@ var functionsDef = g.NewInterface(
 				OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
 				OptionalSQL("ENABLE_CONSOLE_OUTPUT").
 				OptionalSQL("LOG_LEVEL").
+				OptionalSQL("LOG_EVENT_LEVEL").
 				OptionalSQL("METRIC_LEVEL").
 				OptionalSQL("TRACE_LEVEL").
-				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
+				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("UNSET"),
 		).
 		OptionalSQL("SET SECURE").
@@ -322,52 +348,9 @@ var functionsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-user-functions",
-	g.DbStruct("functionRow").
-		Field("created_on", "string").
-		Field("name", "string").
-		Field("schema_name", "string").
-		Field("is_builtin", "string").
-		Field("is_aggregate", "string").
-		Field("is_ansi", "string").
-		Field("min_num_arguments", "int").
-		Field("max_num_arguments", "int").
-		Field("arguments", "string").
-		Field("description", "string").
-		Field("catalog_name", "string").
-		Field("is_table_function", "string").
-		Field("valid_for_clustering", "string").
-		Field("is_secure", "sql.NullString").
-		OptionalText("secrets").
-		OptionalText("external_access_integrations").
-		Field("is_external_function", "string").
-		Field("language", "string").
-		Field("is_memoizable", "sql.NullString").
-		Field("is_data_metric", "sql.NullString"),
-	g.PlainStruct("Function").
-		Field("CreatedOn", "string").
-		Field("Name", "string").
-		Field("SchemaName", "string").
-		Field("IsBuiltin", "bool").
-		Field("IsAggregate", "bool").
-		Field("IsAnsi", "bool").
-		Field("MinNumArguments", "int").
-		Field("MaxNumArguments", "int").
-		Field("ArgumentsOld", "[]DataType").
-		Field("ReturnTypeOld", "DataType").
-		Field("ArgumentsRaw", "string").
-		Field("Description", "string").
-		Field("CatalogName", "string").
-		Field("IsTableFunction", "bool").
-		Field("ValidForClustering", "bool").
-		Field("IsSecure", "bool").
-		OptionalText("Secrets").
-		OptionalText("ExternalAccessIntegrations").
-		Field("IsExternalFunction", "bool").
-		Field("Language", "string").
-		Field("IsMemoizable", "bool").
-		Field("IsDataMetric", "bool"),
+	functionPairs,
 	g.NewQueryStruct("ShowFunctions").
 		Show().
 		SQL("USER FUNCTIONS").
@@ -375,15 +358,10 @@ var functionsDef = g.NewInterface(
 		OptionalExtendedIn(),
 	g.ShowByIDExtendedInFiltering,
 	g.ShowByIDLikeFiltering,
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-function",
-	g.DbStruct("functionDetailRow").
-		Field("property", "string").
-		Field("value", "sql.NullString"),
-	g.PlainStruct("FunctionDetail").
-		Text("Property").
-		OptionalText("Value"),
+	functionDetailPairs,
 	g.NewQueryStruct("DescribeFunction").
 		Describe().
 		SQL("FUNCTION").

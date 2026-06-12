@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Services = (*services)(nil)
-
 var (
+	_ Services                       = (*services)(nil)
 	_ convertibleRow[Service]        = new(servicesRow)
 	_ convertibleRow[ServiceDetails] = new(serviceDescRow)
 )
@@ -35,7 +34,6 @@ func (v *services) Drop(ctx context.Context, request *DropServiceRequest) error 
 }
 
 func (v *services) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
-	// adjusted manually
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropServiceRequest(id).WithIfExists(true).WithForce(true)) }, ctx, id)
 }
 

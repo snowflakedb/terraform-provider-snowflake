@@ -21,6 +21,7 @@ type SchemaModel struct {
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
 	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsTransient                             tfconfig.Variable `json:"is_transient,omitempty"`
+	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
 	PipeExecutionPaused                     tfconfig.Variable `json:"pipe_execution_paused,omitempty"`
@@ -151,6 +152,11 @@ func (s *SchemaModel) WithIsTransient(isTransient string) *SchemaModel {
 	return s
 }
 
+func (s *SchemaModel) WithLogEventLevel(logEventLevel string) *SchemaModel {
+	s.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return s
+}
+
 func (s *SchemaModel) WithLogLevel(logLevel string) *SchemaModel {
 	s.LogLevel = tfconfig.StringVariable(logLevel)
 	return s
@@ -267,6 +273,11 @@ func (s *SchemaModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *Sche
 
 func (s *SchemaModel) WithIsTransientValue(value tfconfig.Variable) *SchemaModel {
 	s.IsTransient = value
+	return s
+}
+
+func (s *SchemaModel) WithLogEventLevelValue(value tfconfig.Variable) *SchemaModel {
+	s.LogEventLevel = value
 	return s
 }
 

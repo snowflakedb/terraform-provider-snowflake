@@ -1,4 +1,4 @@
-> ⚠️ **Disclaimer**: The SDK generator started as PoC but was widely used to speed up the development of the SQL abstraction over Snowflake. It requires a lot of changes as improvements as working with it is not always the easiest. Additionally, we are currently considering the move to REST API (check [this roadmap entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#snowflake-rest-apis)), which may ultimately lead to deprecation of this generator as SQL abstraction may not be needed anymore.
+> ⚠️ **Disclaimer**: The SDK generator started as PoC but was widely used to speed up the development of the SQL abstraction over Snowflake. SDK in its current state fully depends on this generation and no manual changes are needed (besides unit tests). When adding the new SDK object, make sure the regeneration goes smoothly. Additionally, we are currently considering the move to REST API (check [this roadmap entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#snowflake-rest-apis)), which may ultimately lead to deprecation of this generator as SQL abstraction may not be needed anymore.
 
 ## SDK generator
 
@@ -64,6 +64,14 @@ There are example files ready for generation, e.g. [database_role_def.go](exampl
 - [database_role_impl_gen.go](example/database_roles_impl_gen.go) - SDK interface implementation
 - [database_role_gen_test.go](example/database_roles_gen_test.go) - unit tests placeholders with guidance comments (at least for now)
 
+Additional example definitions covering specific generator features:
+- [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`
+- [paired_struct_def.go](example/defs/paired_struct_def.go) — all `PairedStructs` field methods and options (see [PairedStructs](#pairedstructs) below)
+- [to_opts_optional_example_def.go](example/defs/to_opts_optional_example_def.go) — `ListQueryStructField` with slice-of-structs toOpts, optional nested fields
+- [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()` and `WithDropSafelyForce()` options
+- [instance_method_example_def.go](example/defs/instance_method_example_def.go) — `InstanceMethodOperation` and `InstanceMethodOperationScalar`
+- [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
+
 The commands follow the same format as the official SDK ones:
 
 ```shell
@@ -94,112 +102,160 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ##### Known issues/limitations
 - The generator was added after parts of the SDK were implemented manually. Some objects don't have the generator definitions which make it harder to keep the up-to-date. All of them should be gradually migrated to the definition-based generation implementation.
 - The implementation of nested fields causes problems when reusing nested definitions (the same `[]Fields` slice is reused causing parent redefinition and incorrect mapping; the root cause being the lack of separation between the definition and model structs). It's currently validated programmatically and the panic is raised (`Field <field> already has a parent`). When it happens, create a function wrapper instead of directly creating a `var` with a definition.
-- Currently, multiple `convert` method signatures are generated when multiple interface methods use the same object pairs. They are manually removed but such situations should be recognized automatically.
 
-##### High-priority Improvements
-
-This section aims mostly at reducing the manual labor when using the generator in its current state.
+##### Remaining TODOs
 
 - Generate `ID()` methods for `Request` structs as already done for the `Opts` structs.
-- Allow overriding the `ObjectType()` method returned `ObjectType`.
-- Generate `convert` function body.
-  - General implementation considerations:
-    - For simpler generation implementation, consider always initiating an empty struct and setting all the fields using mappers.
-    - There are existing helpers for convert mappings like `mapNullString`. There is also a separate file with `handleNullableBoolString`. Consider unifying and reusing them in the generated code for more compactness.
-    - Optional trimming (e.g. `strings.Trim(row.MetricDatabaseName, "\"")`); this should probably be a setting for each mapping.
-  - Simple conversions (required with no type change). Use this as default.
-  - Additional predefined conversions, like:
-    - string to bool `r.IsDefault == "Y"`
-    - additional checks for string value (e.g. `r.Value.String != "null"`)
-    - optional with `.Valid` for different types
-    - enum conversion
-    - identifier parsing
-    - datatype parsing (e.g. `datatypes.ParseDataType(row.Type)`); remember about `LegacyDataTypeFrom`.
-    - type conversions (e.g. `ParseBool`)
-    - list with simple type (e.g. `strings.Split(r.AttributeColumns.String, ",")` or `ParseCommaSeparatedStringArray`)
-    - list with complex type conversion (e.g. `ParseCommaSeparatedAccountIdentifierArray`)
-    - json unmarshaling (e.g. `json.Unmarshal([]byte(row.RefArguments), &x.RefArguments)`)
-  - (optionally - if needed) Custom conversion/custom conversion hooks, like:
-    - function and procedure argument parsing
-    - custom checks for string value (e.g. `r.AutomaticClustering == "ON"` or `row.Origin.String != "<revoked>"`)
-    - additional adjustment with list conversion (e.g. in `DescNetworkRulesRow`)
-    - tracking the metadata (e.g. `tracking.TrimMetadata(r.Text)`)
-    - analyze conversions for `failoverGroupDBRow`
-    - analyze conversions for `grantRow`
-    - analyze conversions for `shareRow`
-    - analyze conversions for `userWorkloadIdentityAuthenticationMethodsDBRow`
-    - warehouse generation custom logic
-    - task predecessors custom logic
+- PoC of unit tests generation without manual changes in the generated files (details soon)
+  - generate each branch of alter in tests (instead of basic and all options)
+- Improve validation handling for nested slices (the path is built incorrectly now)
+- `PlainStruct`-only fields do not currently trigger the additionalConvert creation, as they are filtered out in the iteration
 
-[//]: # (TODO [next PRs]: update next sections)
+##### CI guard targets
 
-> ⚠️ **Disclaimer**: The following sections may contain the deprecated information. They will be cleaned up shortly.
+- `make generate-sdk-no-tests-check` — regenerates all non-test parts (`default`, `dto`, `dto_builders`, `impl`, `validations`) for all objects and verifies no diff. Wired into `pre-push-check`.
+- `make generate-sdk-examples-check` — regenerates examples and verifies no diff. Wired into `pre-push-check`.
 
-##### Old High-priority improvements/changes
+---
 
-- Improve lists handling
-  - wrong generated validations for `validIdentifierIfSet` for cases like
-    ```go
-    A := QueryStruct("A").
-        Identifier("Name").
-        Validation(ValidIdentifierIfSet, "Name")
-    B := QueryStruct("B")
-        .ListQueryStructField(A) // A []A - validations will be wrong because this is array
-    ```
-  - generation for lists is not recursive, so we're only supporting one-level mapping
-    ```go
-    []Request1{ foo Request2, bar int } // won't be converted
-    []Request1{ foo string, bar int } // will
-    ```
-  - optional structs inside slices are not being checked for nil in the toOpts() methods in the implementation file
-  - pointer fields are not being handled correctly in lists
-- Refresh the example
+### DropSafely options
 
-##### Essentials
-- generate each branch of alter in tests (instead of basic and all options)
-- clean up predefined operations in generator (now casting to string)
+`DropOperation` accepts optional functional options that configure how the generated `DropSafely` method behaves:
+
+- **`WithDropSafelyHook()`** — the generated `DropSafely` calls `v.dropSafelyHook(ctx, id)` before issuing the drop. Useful when a pre-drop side-effect is needed (e.g. revoking grants). The hook function must be implemented manually in a `_ext.go` file.
+
+- **`WithDropSafelyForce()`** — the generated `DropSafely` appends `.WithForce(true)` to the Drop request, so dependent objects are also removed.
+
+Example usage:
+```go
+// Calls v.dropSafelyHook(ctx, id) before dropping.
+).DropOperation("https://...", dropStruct, g.WithDropSafelyHook())
+
+// Appends .WithForce(true) to the Drop request.
+).DropOperation("https://...", dropStruct, g.WithDropSafelyForce())
+```
+
+See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for complete examples.
+
+---
+
+### PairedStructs
+
+`PairedStructs` is a single-definition approach for declaring both the database row struct (`dbStruct`) and the plain SDK struct (`plainStruct`) in one field-by-field chain. It replaces the older pattern of calling `ShowOperation`/`DescribeOperation` with separate `DbStruct` and `PlainStruct` builders.
+
+See [paired_struct_def.go](example/defs/paired_struct_def.go) for a complete usage example covering all supported field methods and options.
+
+#### Constructor
+
+**`StructPair(dbName, plainName string)`** — creates a new `PairedStructs` builder. `dbName` is the Go name for the database row struct (used in SQL scanning); `plainName` is the plain SDK struct name (returned by `Show`/`Describe`).
+
+#### Field methods
+
+Each method accepts zero or more `PairedFieldOption`s (see below).
+
+| Method | db struct type | plain struct type |
+|---|---|---|
+| `Text(col)` | `string` | `string` |
+| `OptionalText(col)` | `sql.NullString` | `*string` |
+| `Bool(col)` | `bool` | `bool` |
+| `OptionalBool(col)` | `sql.NullBool` | `*bool` |
+| `BoolFromText(col)` | `string` | `bool` (compared to `"Y"`) |
+| `OptionalBoolFromText(col)` | `sql.NullString` | `*bool` |
+| `Number(col)` | `int` | `int` |
+| `OptionalNumber(col)` | `sql.NullInt64` | `*int` |
+| `Time(col)` | `time.Time` | `time.Time` |
+| `OptionalTime(col)` | `sql.NullTime` | `*time.Time` |
+| `PlainField(col, plainKind)` | `string` | `<plainKind>` |
+| `OptionalPlainField(col, plainKind)` | `sql.NullString` | `<plainKind>` |
+| `DataType(col)` | `string` | `datatypes.DataType` (via `ParseDataType`) |
+| `StringList(col)` | `string` | `[]string` |
+| `AccountObjectIdentifier(col)` | `string` | `AccountObjectIdentifier` (plain defaults to `"Id"`) |
+| `OptionalAccountObjectIdentifier(col)` | `sql.NullString` | `*AccountObjectIdentifier` |
+| `DatabaseObjectIdentifier(col)` | `string` | `DatabaseObjectIdentifier` (plain defaults to `"Id"`) |
+| `SchemaObjectIdentifier(col)` | `string` | `SchemaObjectIdentifier` (plain defaults to `"Id"`) |
+| `OptionalSchemaObjectIdentifier(col)` | `sql.NullString` | `*SchemaObjectIdentifier` |
+| `NullableSchemaObjectIdentifierArray(col)` | `sql.NullString` | `[]SchemaObjectIdentifier` |
+| `AccountIdentifierArray(col)` | `string` | `[]AccountIdentifier` |
+| `SchemaObjectIdentifierWithArguments(col)` | `string` | `SchemaObjectIdentifierWithArguments` |
+| `OptionalSchemaObjectIdentifierWithArguments(col)` | `sql.NullString` | `*SchemaObjectIdentifierWithArguments` |
+| `Enum(col, enumDef)` | `string` | `<enumType>` |
+| `OptionalEnum(col, enumDef)` | `sql.NullString` | `*<enumType>` |
+| `JsonField(col, kind)` | `string` | `<kind>` (via `json.Unmarshal`) |
+| `Field(col, dbKind, plainKind)` | explicit | explicit |
+| `PlainOnlyField(fieldName, plainKind)` | _(none)_ | `<plainKind>` (must be populated in `additionalConvert()`) |
+
+#### PairedFieldOption options
+
+- **`WithDbFieldName(name)`** — override the Go field name in the db row struct (default: derived from `col` via `ToSnakeCase` → `ToCamelCase`).
+- **`WithPlainFieldName(name)`** — override the plain struct field name.
+- **`WithRequiredInPlain()`** — strip the pointer from the plain kind (e.g. `sql.NullString` db → `string` plain instead of `*string`).
+- **`WithCustomParser(funcName)`** — use a custom parse function `func(string) (T, error)` to convert the db value.
+- **`WithValueAdjuster(funcName)`** — apply an adjustment function `func(T) T` to the converted value after assignment.
+- **`WithBoolTrueValue(v)`** — override the truthy string for `BoolFromText`/`OptionalBoolFromText` (default `"Y"`).
+- **`WithBoolParsed()`** — use `strconv.ParseBool` instead of a fixed string comparison for bool fields.
+- **`WithManualConvert()`** — skip this field in the generated `convert()` body; handle it manually in `additionalConvert()` in a `_ext.go` file.
+
+#### PairedStructs modifiers
+
+- **`WithoutConvertGeneration()`** — disable `convert()` body generation for this pair entirely.
+- **`WithShowResultFilterHook()`** — enable row filtering; the generated code calls `excludeFromShow()` which must be implemented in a `_ext.go` file.
+
+### ShowByID suppression
+
+By default, `ShowOperationWithPairedStructs` auto-generates `ShowByID` and `ShowByIDSafely` methods.
+When an object requires a custom `ShowByID` signature (e.g. additional parameters), pass
+`g.ShowByIDSuppressed` as the filtering argument to suppress auto-generation:
+
+```go
+.ShowOperationWithPairedStructs("https://...", pairs, queryStruct, g.ShowByIDSuppressed).
+    WithCustomInterfaceMethod("ShowByID", "", []*g.MethodParameter{...}, "*Object", "error").
+    WithCustomInterfaceMethod("ShowByIDSafely", "", []*g.MethodParameter{...}, "*Object", "error")
+```
+
+The custom methods must be implemented manually in a `_ext.go` file.
+
+See [user_programmatic_access_tokens_def.go](defs/user_programmatic_access_tokens_def.go) for an example.
+
+---
+
+### Shared struct reuse across objects
+
+When a `QueryStruct` is shared across multiple object definitions (e.g. `SecretsList` used by
+Functions, Notebooks, and Procedures), use `WithSharedToOpts()` and `OptionalSharedQueryStructField`
+to avoid duplicate struct declarations.
+
+**In the originating object** (the one that "owns" the struct):
+```go
+var sharedStruct = g.NewQueryStruct("SecretsList").
+    List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses()).
+    WithSharedToOpts()  // generates a standalone func (r *SecretsListRequest) toOpts() *SecretsList
+```
+
+**In reusing objects:**
+```go
+OptionalSharedQueryStructField("Secrets", sharedStruct, g.ParameterOptions().SQL("SECRETS").Parentheses())
+```
+
+**What happens:**
+- The struct type (`SecretsList`), Request type (`SecretsListRequest`), and constructor (`NewSecretsListRequest`) are generated only once — in the originating object.
+- The standalone `toOpts()` method is generated in the originating object's `_impl_gen.go`.
+- In all objects (including the originator), the `toOpts` mapping calls `.toOpts()` instead of inlining the field mapping.
+- Reusing objects skip struct/DTO/constructor generation for the shared field.
+
+See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go](defs/notebooks_def.go) (reuser).
+
+### Potential Improvements
+
 - handle more validation types
   - validating numbers in a given range constrained by another variable (e.g. `x <= y`, `x > y`, etc.)
   - validating number relations in a sequence (e.g. `x <= y <= z`, `x < y < z`)
-- write new `valueSet` function (see validations.go) that will have better defaults or more parameters that will determine
-checking behaviour which should get rid of edge cases that may cause bugs in the future
-   - right now, we have `valueSet` function that doesn't take into consideration edge cases, e.g. with slice where sometimes
-   we would like to do something like `alter x set y = ()` (set empty array to unset `y`). Those edge cases have cause on our
-   validation, and it determines sometimes if we'll return an error or not, which can lead to bugs!
-- refactor generation of `Describe`, so it will tak context and request as arguments
-  - all the interface functions should have context and request as arguments for the sake of API consistency and generation simplicity
-- check if SelfIdentifier implementation is correct (mostly type, because it's derived from interface obj) by checking
-if there's a resource with different types of identifiers across queries (e.g. Create <AccountObjectIdentifier>, Alter <SchemaObjectIdentifier>)
-- we should specify prefix / postfix standard for top-level items in _def.go files to avoid any conflicts in the package
 - remove name argument from QueryStruct in the Operation, because Opt structs in the Operation will have name from op name + interface field and not query struct itself
 - Derive field name from QueryStruct, e.g. see network_policies_def where we can remove "Set" field, but we have to make a convention of creating nested struct with
-name pattern like <interface name><name> e.g. NetworkPoliciesSet or NetworkPolicySet, then we could automatically remove prefix and we'll name field with postfix, so "Set" in this case
-- Add more operations (every operation ?) in the database_role_def.go example
-- Divide into packages or add common prefix for similar files (e.g. struct_plain.go, struct_db.go or builders_keyword.go, builders_parameter.go)
-- Make a clear division between DSL files and model files (etc. QueryStruct(DSL) and Field(Model)) and divide them into separate packages (?)
-- Add parameter to DtoTemplate (templates.go) to generate the right path to the dto generator's main.go file
-- Right now to avoid generated structs duplication, arrays containing struct names have been introduced (template_executors.go),
-find a better solution to solve the issue (add more logic to the templates ?)
-
-##### Improvements
+  name pattern like <interface name><name> e.g. NetworkPoliciesSet or NetworkPolicySet, then we could automatically remove prefix and we'll name field with postfix, so "Set" in this case
 - automatic names of nested `struct`s (e.g. `DatabaseRoleRename`)
-- check if generating with package name + invoking format removes unnecessary qualifier
-- consider merging templates `StructTemplate` and `OptionsTemplate` (requires moving Doc to Field)
-- expand unit tests generation
-- experiment with Snowflake table (any table) representation in Go in order to implement DbStruct -> PlainStruct convert function
-  - see if *string can have similar effect as sql.NullString (check go-snowflake connector ?)
-     - if yes, then we should be using pointers instead of abstractions like sql.NullString and we can
-     modify ShowMapping and DescribeMapping to generate convert function with automatic conversion (as we have in DTOs).
-     warehouses.go is a good place to start with when planning mapping strategy, because there's a lot of different mapping cases.
-- when calling .SelfIdentifier we can implicitly also add validateObjectIdentifier validation rule
 - enforce user to use KindOf... functions with interface
   - example implementation - StringTyper implements Typer and all the KindOf... functions use StringTyper to return Typer easily - https://go.dev/play/p/TZZgSkkHw_M
-- `queryStruct` should be spilled into `Operation` interface file, because the idea was to have model which is unaware of DSL used to create it.
-- generate full tests for common types (e.g. setting/unsetting tags)
-- generate common resources for integration tests
 - cleanup the design of builders in DSL (e.g. why transformer has to be always added?)
-- generate getters for requests, at least for identifier/name
-- generate integration tests in child package (because now we keep them in `testint` package)
 - struct_to_builder is not supporting templated-like values. See stages_def.go where in SQL there could be value, where 'n' can be replaced with any number
   - `SKIP_FILE_n` - this looks more like keyword without a space between SQL prefix and int
   - `SKIP_FILE_n%` (e.g. `SKIP_FILE_123%`) - this is more template-like behaviour, notice that 'n' is inside the value (we cannot reproduce that right now with struct_to_builder capabilities)
@@ -210,12 +266,4 @@ find a better solution to solve the issue (add more logic to the templates ?)
 - better handling of list of strings/identifiers
   - there should be no need to define custom types every time
   - more clear definition of lists that can be empty vs cannot be empty
-- add empty ids in generated tests (TODO in random_test.go)
-- add optional imports (currently they have to be added manually, e.g. `datatypes.DataType`)
-- handle objects that do not have ids
-  - ShowById should take more customizable attributes, instead of only object ID
-  - Add a possibility to generate a non-sql method with a custom implementation. Currently, it is done only in `ShowById...` functions with `newNoSqlOperation`.
-- improve handling operations that return one row
 - add more context to validated identifiers, so that error contains the affected field
-- add custom identifier wrapping, like it's used in security integrations' network policies
-- Generate nested Request structs for fields that use slices of Opt objects (see the following fields Create operation in semantic_view.def: LogicalTables, semanticViewRelationships, etc.)

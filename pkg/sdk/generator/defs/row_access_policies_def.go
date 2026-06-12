@@ -70,8 +70,7 @@ var rowAccessPoliciesDef = g.NewInterface(
 			Text("owner").
 			OptionalText("comment", g.WithRequiredInPlain()).
 			Text("options").
-			Text("owner_role_type").
-			WithConvertGeneration(),
+			Text("owner_role_type"),
 		g.NewQueryStruct("ShowRowAccessPolicies").
 			Show().
 			SQL("ROW ACCESS POLICIES").
@@ -88,8 +87,7 @@ var rowAccessPoliciesDef = g.NewInterface(
 			Text("name").
 			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
 			Text("return_type").
-			Text("body").
-			WithConvertGeneration(),
+			Text("body"),
 		g.NewQueryStruct("DescribeRowAccessPolicy").
 			Describe().
 			SQL("ROW ACCESS POLICY").

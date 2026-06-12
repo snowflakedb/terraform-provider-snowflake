@@ -460,7 +460,7 @@ func NewProcedureSQLReturnsRequest() *ProcedureSQLReturnsRequest {
 	return &s
 }
 
-func (s *ProcedureSQLReturnsRequest) WithResultDataType(resultDataType ProcedureReturnsResultDataTypeRequest) *ProcedureSQLReturnsRequest {
+func (s *ProcedureSQLReturnsRequest) WithResultDataType(resultDataType ProcedureSQLReturnsResultDataTypeRequest) *ProcedureSQLReturnsRequest {
 	s.ResultDataType = &resultDataType
 	return s
 }
@@ -472,6 +472,19 @@ func (s *ProcedureSQLReturnsRequest) WithTable(table ProcedureReturnsTableReques
 
 func (s *ProcedureSQLReturnsRequest) WithNotNull(notNull bool) *ProcedureSQLReturnsRequest {
 	s.NotNull = &notNull
+	return s
+}
+
+func NewProcedureSQLReturnsResultDataTypeRequest(
+	resultDataType datatypes.DataType,
+) *ProcedureSQLReturnsResultDataTypeRequest {
+	s := ProcedureSQLReturnsResultDataTypeRequest{}
+	s.ResultDataType = resultDataType
+	return &s
+}
+
+func (s *ProcedureSQLReturnsResultDataTypeRequest) WithResultDataTypeOld(resultDataTypeOld DataType) *ProcedureSQLReturnsResultDataTypeRequest {
+	s.ResultDataTypeOld = resultDataTypeOld
 	return s
 }
 
@@ -553,6 +566,11 @@ func (s *ProcedureSetRequest) WithLogLevel(logLevel LogLevel) *ProcedureSetReque
 	return s
 }
 
+func (s *ProcedureSetRequest) WithLogEventLevel(logEventLevel LogLevel) *ProcedureSetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
 func (s *ProcedureSetRequest) WithMetricLevel(metricLevel MetricLevel) *ProcedureSetRequest {
 	s.MetricLevel = &metricLevel
 	return s
@@ -562,8 +580,6 @@ func (s *ProcedureSetRequest) WithTraceLevel(traceLevel TraceLevel) *ProcedureSe
 	s.TraceLevel = &traceLevel
 	return s
 }
-
-// NewSecretsListRequest removed manually - redeclared in functions
 
 func NewProcedureUnsetRequest() *ProcedureUnsetRequest {
 	s := ProcedureUnsetRequest{}
@@ -592,6 +608,11 @@ func (s *ProcedureUnsetRequest) WithEnableConsoleOutput(enableConsoleOutput bool
 
 func (s *ProcedureUnsetRequest) WithLogLevel(logLevel bool) *ProcedureUnsetRequest {
 	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *ProcedureUnsetRequest) WithLogEventLevel(logEventLevel bool) *ProcedureUnsetRequest {
+	s.LogEventLevel = &logEventLevel
 	return s
 }
 

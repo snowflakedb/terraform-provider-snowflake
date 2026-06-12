@@ -43,5 +43,15 @@ func (r *AlterToOptsOptionalExampleRequest) toOpts() *AlterToOptsOptionalExample
 	opts.RequiredField = RequiredField{
 		SomeRequiredList: r.RequiredField.SomeRequiredList,
 	}
+	if r.ItemList != nil {
+		itemList := make([]ToOptsOptionalExampleSliceItem, len(r.ItemList))
+		for i, v := range r.ItemList {
+			itemList[i] = ToOptsOptionalExampleSliceItem{
+				NAME:   v.NAME,
+				Parent: v.Parent,
+			}
+		}
+		opts.ItemList = itemList
+	}
 	return opts
 }

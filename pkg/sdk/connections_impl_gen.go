@@ -8,9 +8,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Connections = (*connections)(nil)
-
-var _ convertibleRow[Connection] = new(connectionRow)
+var (
+	_ Connections                = (*connections)(nil)
+	_ convertibleRow[Connection] = new(connectionRow)
+)
 
 type connections struct {
 	client *Client
@@ -52,7 +53,6 @@ func (v *connections) ShowByID(ctx context.Context, id AccountObjectIdentifier) 
 		return nil, err
 	}
 	return collections.FindFirst(connections, func(r Connection) bool {
-		// manually adjusted
 		return r.Name == id.Name() && r.AccountLocator == v.client.GetAccountLocator()
 	})
 }

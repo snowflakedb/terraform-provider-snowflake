@@ -61,12 +61,11 @@ var materializedViewPairs = g.StructPair("materializedViewDBRow", "MaterializedV
 	OptionalText("invalid_reason", g.WithRequiredInPlain()).
 	Text("behind_by").
 	OptionalText("comment", g.WithRequiredInPlain()).
-	Text("text").
+	Text("text", g.WithValueAdjuster("tracking.TrimMetadata")).
 	Bool("is_secure").
 	Field("automatic_clustering", "string", "bool", g.WithBoolTrueValue("ON")).
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).
-	OptionalText("budget", g.WithRequiredInPlain()).
-	WithConvertGeneration()
+	OptionalText("budget", g.WithRequiredInPlain())
 
 var materializedViewDetailsPairs = g.StructPair("materializedViewDetailsRow", "MaterializedViewDetails").
 	Text("name").
@@ -78,8 +77,7 @@ var materializedViewDetailsPairs = g.StructPair("materializedViewDetailsRow", "M
 	Field("unique key", "string", "bool", g.WithPlainFieldName("IsUnique")).
 	Field("check", "sql.NullString", "*bool").
 	OptionalText("expression").
-	OptionalText("comment").
-	WithConvertGeneration()
+	OptionalText("comment")
 
 var materializedViewsDef = g.NewInterface(
 	"MaterializedViews",

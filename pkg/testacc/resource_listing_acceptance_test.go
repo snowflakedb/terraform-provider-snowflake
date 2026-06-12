@@ -894,7 +894,7 @@ func TestAcc_Listing_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelWithInvalidName),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores`),
+				ExpectError: regexp.MustCompile(`Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores and hyphens`),
 			},
 		},
 	})

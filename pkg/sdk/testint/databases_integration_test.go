@@ -87,6 +87,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 			DefaultDDLCollation:                     sdk.String("en_US"),
 			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
 			LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
+			LogEventLevel:                           sdk.Pointer(sdk.LogLevelInfo),
 			TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
 			SuspendTaskAfterNumFailures:             sdk.Int(10),
 			TaskAutoRetryAttempts:                   sdk.Int(10),
@@ -128,6 +129,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
+		assertParameterEquals(t, sdk.AccountParameterLogEventLevel, string(sdk.LogLevelInfo))
 		assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelPropagate))
 		assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
 		assertParameterEquals(t, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
@@ -200,6 +202,7 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 		ExternalVolume:                          &externalVolume,
 		Catalog:                                 &catalog,
 		LogLevel:                                sdk.Pointer(sdk.LogLevelDebug),
+		LogEventLevel:                           sdk.Pointer(sdk.LogLevelDebug),
 		TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
 		ReplaceInvalidCharacters:                sdk.Bool(true),
 		DefaultDDLCollation:                     sdk.String("en_US"),
@@ -239,6 +242,7 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 	assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelDebug))
+	assertParameterEquals(t, sdk.AccountParameterLogEventLevel, string(sdk.LogLevelDebug))
 	assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelAlways))
 	assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
 	assertParameterEquals(t, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyOptimized))
@@ -294,6 +298,7 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 		DefaultDDLCollation:                     sdk.String("en_US"),
 		StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyOptimized),
 		LogLevel:                                sdk.Pointer(sdk.LogLevelDebug),
+		LogEventLevel:                           sdk.Pointer(sdk.LogLevelDebug),
 		TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
 		SuspendTaskAfterNumFailures:             sdk.Int(10),
 		TaskAutoRetryAttempts:                   sdk.Int(10),
@@ -326,6 +331,7 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 	assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelDebug))
+	assertParameterEquals(t, sdk.AccountParameterLogEventLevel, string(sdk.LogLevelDebug))
 	assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelAlways))
 	assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
 	assertParameterEquals(t, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyOptimized))
@@ -466,6 +472,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					DefaultDDLCollation:                     sdk.String("en_US"),
 					StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
 					LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
+					LogEventLevel:                           sdk.Pointer(sdk.LogLevelInfo),
 					TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
 					SuspendTaskAfterNumFailures:             sdk.Int(10),
 					TaskAutoRetryAttempts:                   sdk.Int(10),
@@ -488,6 +495,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDefaultDDLCollation, "en_US")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
+			assertDatabaseParameterEquals(t, params, sdk.AccountParameterLogEventLevel, string(sdk.LogLevelInfo))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelPropagate))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterSuspendTaskAfterNumFailures, "10")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterTaskAutoRetryAttempts, "10")
@@ -507,6 +515,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					DefaultDDLCollation:                     sdk.Bool(true),
 					StorageSerializationPolicy:              sdk.Bool(true),
 					LogLevel:                                sdk.Bool(true),
+					LogEventLevel:                           sdk.Bool(true),
 					TraceLevel:                              sdk.Bool(true),
 					SuspendTaskAfterNumFailures:             sdk.Bool(true),
 					TaskAutoRetryAttempts:                   sdk.Bool(true),
@@ -529,6 +538,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDDLCollation)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
+			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterTraceLevel)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterSuspendTaskAfterNumFailures)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterTaskAutoRetryAttempts)

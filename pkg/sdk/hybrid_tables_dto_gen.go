@@ -14,11 +14,13 @@ var (
 )
 
 type CreateHybridTableRequest struct {
-	OrReplace             *bool
-	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ColumnsAndConstraints HybridTableColumnsConstraintsAndIndexesRequest
-	Comment               *string
+	OrReplace                  *bool
+	IfNotExists                *bool
+	name                       SchemaObjectIdentifier                         // required
+	ColumnsAndConstraints      HybridTableColumnsConstraintsAndIndexesRequest // required
+	DataRetentionTimeInDays    *int
+	MaxDataExtensionTimeInDays *int
+	Comment                    *string
 }
 
 type HybridTableColumnsConstraintsAndIndexesRequest struct {
@@ -29,7 +31,7 @@ type HybridTableColumnsConstraintsAndIndexesRequest struct {
 
 type HybridTableColumnRequest struct {
 	Name             string   // required
-	Type             DataType // required
+	DataType         DataType // required
 	InlineConstraint *ColumnInlineConstraint
 	NotNull          *bool
 	DefaultValue     *ColumnDefaultValue
@@ -38,10 +40,10 @@ type HybridTableColumnRequest struct {
 }
 
 type HybridTableOutOfLineConstraintRequest struct {
-	Name       *string
-	Type       ColumnConstraintType // required
-	Columns    []string
-	ForeignKey *OutOfLineForeignKey
+	Name                 *string
+	ColumnConstraintType ColumnConstraintType // required
+	Columns              []string
+	ForeignKey           *OutOfLineForeignKey
 }
 
 type HybridTableOutOfLineIndexRequest struct {
@@ -61,12 +63,13 @@ type AlterHybridTableRequest struct {
 	DropIndexAction   *HybridTableDropIndexActionRequest
 	ClusteringAction  *HybridTableClusteringActionRequest
 	Set               *HybridTableSetPropertiesRequest
+	Unset             *HybridTableUnsetPropertiesRequest
 }
 
 type HybridTableAddColumnActionRequest struct {
 	IfNotExists      *bool
 	Name             string   // required
-	Type             DataType // required
+	DataType         DataType // required
 	Collate          *string
 	DefaultValue     *ColumnDefaultValue
 	InlineConstraint *ColumnInlineConstraint
@@ -80,7 +83,7 @@ type HybridTableConstraintActionRequest struct {
 
 type HybridTableConstraintActionRenameRequest struct {
 	OldName string // required
-	NewName string
+	NewName string // required
 }
 
 type HybridTableConstraintActionDropRequest struct {
@@ -96,7 +99,7 @@ type HybridTableAlterColumnActionRequest struct {
 	ColumnName   string // required
 	DropDefault  *bool
 	SetDefault   *SequenceName
-	Type         *DataType
+	DataType     *DataType
 	Comment      *string
 	UnsetComment *bool
 }
@@ -131,6 +134,12 @@ type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	Comment                    *string
+}
+
+type HybridTableUnsetPropertiesRequest struct {
+	Comment                    *bool
+	DataRetentionTimeInDays    *bool
+	MaxDataExtensionTimeInDays *bool
 }
 
 type DropHybridTableRequest struct {

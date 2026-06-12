@@ -189,6 +189,7 @@ type FunctionSetRequest struct {
 	SecretsList                *SecretsListRequest
 	EnableConsoleOutput        *bool
 	LogLevel                   *LogLevel
+	LogEventLevel              *LogLevel
 	MetricLevel                *MetricLevel
 	TraceLevel                 *TraceLevel
 }
@@ -202,6 +203,7 @@ type FunctionUnsetRequest struct {
 	ExternalAccessIntegrations *bool
 	EnableConsoleOutput        *bool
 	LogLevel                   *bool
+	LogEventLevel              *bool
 	MetricLevel                *bool
 	TraceLevel                 *bool
 }

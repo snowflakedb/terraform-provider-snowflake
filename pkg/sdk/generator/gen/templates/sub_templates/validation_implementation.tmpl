@@ -5,15 +5,21 @@
     {{- if .IsAdditionalValidations }}
         errs = append(errs, opts{{ $field.Path }}.additionalValidations())
     {{- else }}
-        if {{ .Condition $field }} {
-            errs = append(errs, {{ .ReturnedError $field }})
-        }
+        {{- if $field.IsSlice }}for _, {{ $field.SliceElemVar }} := range opts{{ $field.Path }} { {{ end }}
+            if {{ .Condition $field }} {
+                errs = append(errs, {{ .ReturnedError $field }})
+            }
+        {{- if $field.IsSlice }} } {{ end }}
     {{- end }}
 {{- end -}}
 {{- range .Fields }}
     {{- if .HasAnyValidationInSubtree }}
-        if valueSet(opts{{ .Path }}) {
-            {{- template "validationImplementation" . }}{{/* Recursive call */}}
-        }
+        {{- if and .IsSlice (not .Validations) }}
+            // nested validation in {{ .Name }} collection is not supported
+        {{- else }}
+            if valueSet(opts{{ .Path }}) {
+                {{- template "validationImplementation" . }}{{/* Recursive call */}}
+            }
+        {{- end -}}
     {{- end -}}
 {{- end -}}

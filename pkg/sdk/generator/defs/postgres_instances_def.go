@@ -22,6 +22,30 @@ var (
 	)
 )
 
+var postgresInstancesPairs = g.StructPair("postgresInstancesRow", "PostgresInstance").
+	Text("name").
+	Text("owner").
+	Text("owner_role_type").
+	Time("created_on").
+	Time("updated_on").
+	Text("type").
+	OptionalText("origin").
+	OptionalText("host").
+	OptionalText("privatelink_service_identifier").
+	Text("compute_family").
+	Text("authentication_authority").
+	Number("storage_size").
+	Text("postgres_version").
+	OptionalText("postgres_settings").
+	BoolFromText("is_ha", g.WithBoolTrueValue("true")).
+	Number("retention_time").
+	Enum("state", PostgresInstanceStateEnumDef).
+	OptionalText("comment")
+
+var postgresInstanceDetailPairs = g.StructPair("postgresInstanceDetailsRow", "PostgresInstanceProperty").
+	Text("property").
+	OptionalText("value", g.WithRequiredInPlain())
+
 var postgresInstancesDef = g.NewInterface(
 	"PostgresInstances",
 	"PostgresInstance",
@@ -33,7 +57,7 @@ var postgresInstancesDef = g.NewInterface(
 		SQL("POSTGRES INSTANCE").
 		Name().
 		TextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
-		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
+		NumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions().Required()).
 		EnumAssignment(
 			"AUTHENTICATION_AUTHORITY", PostgresInstanceAuthenticationAuthorityEnumDef,
 			g.ParameterOptions().NoQuotes().Required(),
@@ -60,7 +84,7 @@ var postgresInstancesDef = g.NewInterface(
 				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().SingleQuotes().ArrowEquals()).
 				OptionalTextAssignment("OFFSET", g.ParameterOptions().NoQuotes().ArrowEquals()).
 				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset"),
-			g.KeywordOptions().SQL("AT").MustParentheses(),
+			g.ListOptions().SQL("AT").Parentheses().NoComma(),
 		).
 		OptionalQueryStructField(
 			"Before",
@@ -68,7 +92,7 @@ var postgresInstancesDef = g.NewInterface(
 				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().SingleQuotes().ArrowEquals()).
 				OptionalTextAssignment("OFFSET", g.ParameterOptions().NoQuotes().ArrowEquals()).
 				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset"),
-			g.KeywordOptions().SQL("BEFORE").MustParentheses(),
+			g.ListOptions().SQL("BEFORE").Parentheses().NoComma(),
 		).
 		OptionalTextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
 		OptionalNumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
@@ -107,7 +131,7 @@ var postgresInstancesDef = g.NewInterface(
 					"Apply",
 					g.NewQueryStruct("PostgresInstanceApply").
 						OptionalSQL("IMMEDIATELY").
-						OptionalTextAssignment("ON", g.ParameterOptions().SingleQuotes()).
+						OptionalTextAssignment("ON", g.ParameterOptions().SingleQuotes().NoEquals()).
 						WithValidation(g.ExactlyOneValueSet, "Immediately", "On"),
 					g.KeywordOptions().SQL("APPLY"),
 				).
@@ -130,7 +154,7 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"ResetAccess",
 			g.NewQueryStruct("PostgresInstanceResetAccess").
-				OptionalTextAssignment("FOR", g.ParameterOptions().NoEquals().SingleQuotes()),
+				EnumAssignmentWithFieldName("FOR", PostgresInstanceResetAccessRoleEnumDef, g.ParameterOptions().NoEquals().SingleQuotes().Required(), "ForRole"),
 			g.KeywordOptions().SQL("RESET ACCESS"),
 		).
 		OptionalSetTags().
@@ -145,61 +169,19 @@ var postgresInstancesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperation(
+).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-postgres-instances",
-	g.DbStruct("postgresInstancesRow").
-		Text("name").
-		Text("owner").
-		Text("owner_role_type").
-		Time("created_on").
-		Time("updated_on").
-		Text("type").
-		OptionalText("origin").
-		OptionalText("host").
-		OptionalText("privatelink_service_identifier").
-		Text("compute_family").
-		Text("authentication_authority").
-		Number("storage_size").
-		Text("postgres_version").
-		OptionalText("postgres_settings").
-		Text("is_ha").
-		Number("retention_time").
-		Text("state").
-		OptionalText("comment"),
-	g.PlainStruct("PostgresInstance").
-		Text("Name").
-		Text("Owner").
-		Text("OwnerRoleType").
-		Time("CreatedOn").
-		Time("UpdatedOn").
-		Text("Type").
-		OptionalText("Origin").
-		OptionalText("Host").
-		OptionalText("PrivatelinkServiceIdentifier").
-		Text("ComputeFamily").
-		Text("AuthenticationAuthority").
-		Number("StorageSize").
-		Text("PostgresVersion").
-		OptionalText("PostgresSettings").
-		Bool("IsHa").
-		Number("RetentionTime").
-		Enum("State", PostgresInstanceStateEnumDef).
-		OptionalText("Comment"),
+	postgresInstancesPairs,
 	g.NewQueryStruct("ShowPostgresInstances").
 		Show().
 		SQL("POSTGRES INSTANCES").
 		OptionalLike().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).DescribeOperation(
+).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-postgres-instance",
-	g.DbStruct("postgresInstanceDetailsRow").
-		Text("property").
-		OptionalText("value"),
-	g.PlainStruct("PostgresInstanceProperty").
-		Text("Property").
-		Text("Value"),
+	postgresInstanceDetailPairs,
 	g.NewQueryStruct("DescribePostgresInstance").
 		Describe().
 		SQL("POSTGRES INSTANCE").

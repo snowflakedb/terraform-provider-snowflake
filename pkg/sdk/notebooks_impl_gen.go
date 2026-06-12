@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Notebooks = (*notebooks)(nil)
-
 var (
+	_ Notebooks                       = (*notebooks)(nil)
 	_ convertibleRow[NotebookDetails] = new(NotebookDetailsRow)
 	_ convertibleRow[Notebook]        = new(notebookRow)
 )
@@ -92,9 +91,7 @@ func (r *CreateNotebookRequest) toOpts() *CreateNotebookOptions {
 		DefaultVersion:              r.DefaultVersion,
 	}
 	if r.Secrets != nil {
-		opts.Secrets = &SecretsList{
-			SecretsList: r.Secrets.SecretsList,
-		}
+		opts.Secrets = r.Secrets.toOpts()
 	}
 	return opts
 }
@@ -120,9 +117,7 @@ func (r *AlterNotebookRequest) toOpts() *AlterNotebookOptions {
 			RuntimeEnvironmentVersion:   r.Set.RuntimeEnvironmentVersion,
 		}
 		if r.Set.Secrets != nil {
-			opts.Set.Secrets = &SecretsList{
-				SecretsList: r.Set.Secrets.SecretsList,
-			}
+			opts.Set.Secrets = r.Set.Secrets.toOpts()
 		}
 	}
 	if r.Unset != nil {

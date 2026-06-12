@@ -74,6 +74,7 @@ type CurrentAccountModel struct {
 	JsonIndent                                       tfconfig.Variable `json:"json_indent,omitempty"`
 	ListingAutoFulfillmentReplicationRefreshSchedule tfconfig.Variable `json:"listing_auto_fulfillment_replication_refresh_schedule,omitempty"`
 	LockTimeout                                      tfconfig.Variable `json:"lock_timeout,omitempty"`
+	LogEventLevel                                    tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                         tfconfig.Variable `json:"log_level,omitempty"`
 	MaxConcurrencyLevel                              tfconfig.Variable `json:"max_concurrency_level,omitempty"`
 	MaxDataExtensionTimeInDays                       tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
@@ -503,6 +504,11 @@ func (c *CurrentAccountModel) WithListingAutoFulfillmentReplicationRefreshSchedu
 
 func (c *CurrentAccountModel) WithLockTimeout(lockTimeout int) *CurrentAccountModel {
 	c.LockTimeout = tfconfig.IntegerVariable(lockTimeout)
+	return c
+}
+
+func (c *CurrentAccountModel) WithLogEventLevel(logEventLevel string) *CurrentAccountModel {
+	c.LogEventLevel = tfconfig.StringVariable(logEventLevel)
 	return c
 }
 
@@ -1117,6 +1123,11 @@ func (c *CurrentAccountModel) WithListingAutoFulfillmentReplicationRefreshSchedu
 
 func (c *CurrentAccountModel) WithLockTimeoutValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.LockTimeout = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithLogEventLevelValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.LogEventLevel = value
 	return c
 }
 

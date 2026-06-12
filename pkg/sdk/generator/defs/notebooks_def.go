@@ -16,8 +16,7 @@ var notebookPairs = g.StructPair("notebookRow", "Notebook").
 	Field("query_warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("QueryWarehouse")).
 	Text("url_id").
 	Text("owner_role_type").
-	Field("code_warehouse", "string", "AccountObjectIdentifier", g.WithPlainFieldName("CodeWarehouse")).
-	WithConvertGeneration()
+	Field("code_warehouse", "string", "AccountObjectIdentifier", g.WithPlainFieldName("CodeWarehouse"))
 
 var notebookDetailsPairs = g.StructPair("NotebookDetailsRow", "NotebookDetails").
 	OptionalText("title").
@@ -48,8 +47,7 @@ var notebookDetailsPairs = g.StructPair("NotebookDetailsRow", "NotebookDetails")
 	Text("last_version_location_uri").
 	OptionalText("last_version_source_location_uri").
 	OptionalText("last_version_git_commit_hash").
-	OptionalText("live_version_location_uri").
-	WithConvertGeneration()
+	OptionalText("live_version_location_uri")
 
 var notebooksDef = g.NewInterface(
 	"Notebooks",
@@ -75,7 +73,7 @@ var notebooksDef = g.NewInterface(
 		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("RUNTIME_ENVIRONMENT_VERSION", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("DEFAULT_VERSION", g.ParameterOptions().NoQuotes()).
-		OptionalQueryStructField("Secrets", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
+		OptionalSharedQueryStructField("Secrets", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 		WithValidation(g.ValidIdentifierIfSet, "Warehouse").
@@ -96,7 +94,7 @@ var notebooksDef = g.NewInterface(
 				OptionalComment().
 				OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
 				OptionalNumberAssignment("IDLE_AUTO_SHUTDOWN_TIME_SECONDS", g.ParameterOptions().NoQuotes()).
-				OptionalQueryStructField("Secrets", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
+				OptionalSharedQueryStructField("Secrets", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 				OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
 				OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("WAREHOUSE").Equals()).
 				OptionalTextAssignment("RUNTIME_NAME", g.ParameterOptions().SingleQuotes()).

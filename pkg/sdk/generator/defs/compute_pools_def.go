@@ -82,6 +82,7 @@ var computePoolsDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+	g.WithDropSafelyHook(),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-compute-pools",
 	g.StructPair("computePoolsRow", "ComputePool").
@@ -103,8 +104,7 @@ var computePoolsDef = g.NewInterface(
 		Text("owner").
 		OptionalText("comment").
 		Bool("is_exclusive").
-		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
-		WithConvertGeneration(),
+		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")),
 	g.NewQueryStruct("ShowComputePools").
 		Show().
 		SQL("COMPUTE POOLS").
@@ -135,8 +135,7 @@ var computePoolsDef = g.NewInterface(
 		Bool("is_exclusive").
 		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
 		Text("error_code").
-		Text("status_message").
-		WithConvertGeneration(),
+		Text("status_message"),
 	g.NewQueryStruct("DescComputePool").
 		Describe().
 		SQL("COMPUTE POOL").

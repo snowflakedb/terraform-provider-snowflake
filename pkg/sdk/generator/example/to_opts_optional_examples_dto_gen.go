@@ -17,6 +17,7 @@ type AlterToOptsOptionalExampleRequest struct {
 	name          DatabaseObjectIdentifier // required
 	OptionalField *OptionalFieldRequest
 	RequiredField RequiredFieldRequest // required
+	ItemList      []ToOptsOptionalExampleSliceItemRequest
 }
 
 type OptionalFieldRequest struct {
@@ -25,4 +26,9 @@ type OptionalFieldRequest struct {
 
 type RequiredFieldRequest struct {
 	SomeRequiredList []DatabaseObjectIdentifier // required
+}
+
+type ToOptsOptionalExampleSliceItemRequest struct {
+	NAME   string
+	Parent *DatabaseObjectIdentifier
 }

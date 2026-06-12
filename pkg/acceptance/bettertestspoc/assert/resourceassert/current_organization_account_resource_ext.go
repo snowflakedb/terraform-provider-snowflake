@@ -66,6 +66,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasJsTreatIntegerAsBigintString("false").
 		HasListingAutoFulfillmentReplicationRefreshScheduleString("1440 MINUTE").
 		HasLockTimeoutString("43200").
+		HasLogEventLevelString("OFF").
 		HasLogLevelString("OFF").
 		HasMaxConcurrencyLevelString("8").
 		HasMaxDataExtensionTimeInDaysString("14").
@@ -180,6 +181,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasJsTreatIntegerAsBigintString("true").
 		HasListingAutoFulfillmentReplicationRefreshScheduleString("2 minutes").
 		HasLockTimeoutString("43201").
+		HasLogEventLevelString(string(sdk.LogLevelInfo)).
 		HasLogLevelString(string(sdk.LogLevelInfo)).
 		HasMaxConcurrencyLevelString("7").
 		HasMaxDataExtensionTimeInDaysString("13").

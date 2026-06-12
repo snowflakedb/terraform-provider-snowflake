@@ -8,7 +8,7 @@ import (
 
 var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+	PredefinedQueryStructField("DataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
 	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
 	OptionalSQL("NOT NULL").
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
@@ -17,7 +17,7 @@ var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
 	OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-	WithField(g.EnumLegacy[sdkcommons.ColumnConstraintType]("Type", g.KeywordOptions().Required())).
+	WithField(g.EnumLegacy[sdkcommons.ColumnConstraintType]("ColumnConstraintType", g.KeywordOptions().Required())).
 	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
 	// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
 	// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
@@ -41,7 +41,7 @@ var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	SQL("COLUMN").
 	OptionalSQL("IF NOT EXISTS").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+	PredefinedQueryStructField("DataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
 	OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
 	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
@@ -56,7 +56,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 		g.NewQueryStruct("HybridTableConstraintActionRename").
 			SQL("RENAME CONSTRAINT").
 			Text("OldName", g.KeywordOptions().Required().DoubleQuotes()).
-			AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().DoubleQuotes(), "NewName"),
+			AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().DoubleQuotes().Required(), "NewName"),
 		g.KeywordOptions(),
 	).
 	OptionalQueryStructField(
@@ -84,12 +84,10 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("DROP DEFAULT").
 	WithField(g.OptionalEnumLegacy[sdkcommons.SequenceName]("SetDefault", g.ParameterOptions().NoEquals().SQL("SET DEFAULT"))).
-	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
+	PredefinedQueryStructField("DataType", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
-	OptionalSQL("UNSET COMMENT")
-
-// TODO [next PR]: validation is not generated properly as this is used as an array; using the additionalValidations above for now
-// .WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment")
+	OptionalSQL("UNSET COMMENT").
+	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment")
 
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
@@ -129,14 +127,31 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment")
 
-// NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
-// Snowflake docs may suggest otherwise but the operation errors at runtime.
+// NOTE: Multi-property `ALTER TABLE ... UNSET` on hybrid tables requires comma-separated
+// property names (`UNSET A, B, C`) — the bare-keyword form (`UNSET A B C`) emitted by the
+// generator's default `keyword` rendering is rejected by the parser. Applying
+// `g.ListOptions().NoParentheses().SQL("UNSET")` to the parent field on
+// AlterHybridTableOptions causes the SQL builder to comma-join the children.
+// Mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74. Verified on preprod6.
+var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
+	OptionalSQL("COMMENT").
+	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
+	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
+	WithValidation(g.AtLeastOneValueSet, "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays")
 
 // NOTE: After running make generate-sdk, the hybridTableDetailsRow.Null field in
 // hybrid_tables_gen.go will have tag db:"null" (the generator strips '?'). It must
 // be manually corrected back to db:"null?" because the DESCRIBE TABLE output column
 // is literally named "null?" in Snowflake. The convert() method in hybrid_tables_impl_gen.go
 // uses r.Null == "Y" to derive the IsNullable bool.
+//
+// NOTE: HybridTableDetails carries a Collation *string field that is not derivable from
+// the DESCRIBE TABLE output via the generator (DESCRIBE returns the collation glued onto
+// the "type" column, e.g. "VARCHAR(200) COLLATE 'en-ci'"). After running make generate-sdk,
+// the Collation field must be re-added manually to HybridTableDetails in hybrid_tables_gen.go,
+// and the convert() method in hybrid_tables_impl_gen.go must call splitTypeAndCollation()
+// (in hybrid_tables_ext.go) to populate Type (without the suffix) and Collation. This
+// mirrors pkg/sdk/tables.go:736 for classic tables.
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
 	"HybridTable",
@@ -149,7 +164,12 @@ var hybridTablesDef = g.NewInterface(
 		SQL("HYBRID TABLE").
 		IfNotExists().
 		Name().
-		QueryStructField("ColumnsAndConstraints", hybridTableColumnsConstraintsAndIndexes, g.ListOptions().Parentheses()).
+		QueryStructField("ColumnsAndConstraints", hybridTableColumnsConstraintsAndIndexes, g.ListOptions().Parentheses().Required()).
+		// NOTE: DATA_RETENTION_TIME_IN_DAYS and MAX_DATA_EXTENSION_TIME_IN_DAYS are
+		// accepted at CREATE HYBRID TABLE time even though the public docs omit them
+		// from the syntax diagram. Verified against production via SHOW PARAMETERS.
+		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
+		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
@@ -196,9 +216,13 @@ var hybridTablesDef = g.NewInterface(
 			hybridTableSetProperties,
 			g.KeywordOptions().SQL("SET"),
 		).
+		OptionalQueryStructField(
+			"Unset",
+			hybridTableUnsetProperties,
+			g.ListOptions().NoParentheses().SQL("UNSET"),
+		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set").
-		WithAdditionalValidations(),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
@@ -221,8 +245,7 @@ var hybridTablesDef = g.NewInterface(
 		OptionalNumber("rows").
 		OptionalNumber("bytes").
 		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowHybridTables").
 		Show().
 		Terse().
@@ -231,14 +254,15 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-	g.ShowByIDInFiltering,
+	g.ShowByIDTableInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
 	g.StructPair("hybridTableDetailsRow", "HybridTableDetails").
 		Text("name").
-		Text("type").
+		Text("type", g.WithManualConvert()).
+		PlainOnlyField("Collation", "*string").
 		Text("kind").
 		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 		OptionalText("default", g.WithRequiredInPlain()).
@@ -249,8 +273,7 @@ var hybridTablesDef = g.NewInterface(
 		OptionalText("comment", g.WithRequiredInPlain()).
 		OptionalText("policy name", g.WithPlainFieldName("PolicyName"), g.WithRequiredInPlain()).
 		OptionalText("privacy domain", g.WithPlainFieldName("PrivacyDomain"), g.WithRequiredInPlain()).
-		OptionalText("schema_evolution_record", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("schema_evolution_record", g.WithRequiredInPlain()),
 	g.NewQueryStruct("DescribeHybridTable").
 		Describe().
 		SQL("TABLE").
@@ -295,8 +318,7 @@ var hybridTablesDef = g.NewInterface(
 		Text("database_name").
 		Text("schema_name").
 		OptionalText("owner", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowHybridTableIndexes").
 		Show().
 		SQL("INDEXES").
@@ -304,4 +326,9 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
+).WithCustomInterfaceMethod(
+	"ShowParameters",
+	"",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+	"[]*Parameter", "error",
 )

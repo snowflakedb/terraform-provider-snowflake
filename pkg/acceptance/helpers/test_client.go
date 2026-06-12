@@ -26,6 +26,7 @@ type TestClient struct {
 	Budget                       *BudgetClient
 	ComputePool                  *ComputePoolClient
 	Connection                   *ConnectionClient
+	Contact                      *ContactClient
 	Context                      *ContextClient
 	CortexAgent                  *AgentClient
 	CortexSearchService          *CortexSearchServiceClient
@@ -47,6 +48,7 @@ type TestClient struct {
 	GitRepository                *GitRepositoryClient
 	Grant                        *GrantClient
 	HybridTable                  *HybridTableClient
+	IcebergTable                 *IcebergTableClient
 	ImageRepository              *ImageRepositoryClient
 	InformationSchema            *InformationSchemaClient
 	Listing                      *ListingClient
@@ -81,6 +83,7 @@ type TestClient struct {
 	SnowflakeDefaults            *SnowflakeDefaultsClient
 	Stage                        *StageClient
 	StorageIntegration           *StorageIntegrationClient
+	StorageLifecyclePolicy       *StorageLifecyclePolicyClient
 	Stream                       *StreamClient
 	Streamlit                    *StreamlitClient
 	Table                        *TableClient
@@ -126,6 +129,7 @@ func NewTestClient(
 		Budget:                       NewBudgetClient(context, idsGenerator),
 		ComputePool:                  NewComputePoolClient(context, idsGenerator),
 		Connection:                   NewConnectionClient(context, idsGenerator),
+		Contact:                      NewContactClient(context, idsGenerator),
 		Context:                      NewContextClient(context),
 		CortexAgent:                  NewAgentClient(context, idsGenerator),
 		CortexSearchService:          NewCortexSearchServiceClient(context, idsGenerator),
@@ -147,6 +151,7 @@ func NewTestClient(
 		GitRepository:                NewGitRepositoryClient(context, idsGenerator),
 		Grant:                        NewGrantClient(context, idsGenerator),
 		HybridTable:                  NewHybridTableClient(context, idsGenerator),
+		IcebergTable:                 NewIcebergTableClient(context, idsGenerator),
 		ImageRepository:              NewImageRepositoryClient(context, idsGenerator),
 		InformationSchema:            NewInformationSchemaClient(context, idsGenerator),
 		Listing:                      NewListingClient(context, idsGenerator),
@@ -181,6 +186,7 @@ func NewTestClient(
 		Share:                        NewShareClient(context, idsGenerator),
 		Stage:                        NewStageClient(context, idsGenerator),
 		StorageIntegration:           NewStorageIntegrationClient(context, idsGenerator),
+		StorageLifecyclePolicy:       NewStorageLifecyclePolicyClient(context, idsGenerator),
 		Stream:                       NewStreamClient(context, idsGenerator),
 		Streamlit:                    NewStreamlitClient(context, idsGenerator),
 		Table:                        NewTableClient(context, idsGenerator),

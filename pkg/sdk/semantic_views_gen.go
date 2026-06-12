@@ -28,21 +28,25 @@ type CreateSemanticViewOptions struct {
 	semanticView              bool                       `ddl:"static" sql:"SEMANTIC VIEW"`
 	IfNotExists               *bool                      `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                      SchemaObjectIdentifier     `ddl:"identifier"`
-	logicalTables             []LogicalTable             `ddl:"parameter,parentheses,no_equals" sql:"TABLES"`
-	semanticViewRelationships []SemanticViewRelationship `ddl:"parameter,parentheses,no_equals" sql:"RELATIONSHIPS"`
-	semanticViewFacts         []FactDefinition           `ddl:"parameter,parentheses,no_equals" sql:"FACTS"`
-	semanticViewDimensions    []DimensionDefinition      `ddl:"parameter,parentheses,no_equals" sql:"DIMENSIONS"`
-	semanticViewMetrics       []MetricDefinition         `ddl:"parameter,parentheses,no_equals" sql:"METRICS"`
+	LogicalTables             []LogicalTable             `ddl:"parameter,parentheses,no_equals" sql:"TABLES"`
+	SemanticViewRelationships []SemanticViewRelationship `ddl:"parameter,parentheses,no_equals" sql:"RELATIONSHIPS"`
+	SemanticViewFacts         []FactDefinition           `ddl:"parameter,parentheses,no_equals" sql:"FACTS"`
+	SemanticViewDimensions    []DimensionDefinition      `ddl:"parameter,parentheses,no_equals" sql:"DIMENSIONS"`
+	SemanticViewMetrics       []MetricDefinition         `ddl:"parameter,parentheses,no_equals" sql:"METRICS"`
 	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
 }
 
+type Synonym struct {
+	Synonym string `ddl:"keyword,single_quotes"`
+}
+
 type LogicalTable struct {
-	logicalTableAlias *LogicalTableAlias     `ddl:"keyword"`
+	LogicalTableAlias *LogicalTableAlias     `ddl:"keyword"`
 	TableName         SchemaObjectIdentifier `ddl:"identifier"`
-	primaryKeys       *PrimaryKeys           `ddl:"parameter,no_equals"`
-	uniqueKeys        []UniqueKeys           `ddl:"list,no_equals,no_comma"`
-	synonyms          *Synonyms              `ddl:"parameter,no_equals"`
+	PrimaryKeys       *PrimaryKeys           `ddl:"parameter,no_equals"`
+	UniqueKeys        []UniqueKeys           `ddl:"list,no_equals,no_comma"`
+	Synonyms          *Synonyms              `ddl:"parameter,no_equals"`
 	Comment           *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -63,17 +67,13 @@ type Synonyms struct {
 	WithSynonyms []Synonym `ddl:"parameter,parentheses,no_equals" sql:"WITH SYNONYMS"`
 }
 
-type Synonym struct {
-	Synonym string `ddl:"keyword,single_quotes"`
-}
-
 type SemanticViewRelationship struct {
-	relationshipAlias          *RelationshipAlias      `ddl:"keyword"`
-	tableNameOrAlias           *RelationshipTableAlias `ddl:"keyword"`
-	relationshipColumnNames    []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
+	RelationshipAlias          *RelationshipAlias      `ddl:"keyword"`
+	TableNameOrAlias           *RelationshipTableAlias `ddl:"keyword"`
+	RelationshipColumnNames    []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
 	references                 bool                    `ddl:"static" sql:"REFERENCES"`
-	refTableNameOrAlias        *RelationshipTableAlias `ddl:"keyword"`
-	relationshipRefColumnNames []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
+	RefTableNameOrAlias        *RelationshipTableAlias `ddl:"keyword"`
+	RelationshipRefColumnNames []SemanticViewColumn    `ddl:"list,parentheses,no_equals"`
 }
 
 type RelationshipAlias struct {
@@ -90,11 +90,16 @@ type SemanticViewColumn struct {
 	Name string `ddl:"keyword,double_quotes"`
 }
 
+type FactDefinition struct {
+	IsPrivate          *bool               `ddl:"keyword" sql:"PRIVATE"`
+	SemanticExpression *SemanticExpression `ddl:"keyword"`
+}
+
 type SemanticExpression struct {
-	qualifiedExpressionName *QualifiedExpressionName `ddl:"keyword"`
+	QualifiedExpressionName *QualifiedExpressionName `ddl:"keyword"`
 	as                      bool                     `ddl:"static" sql:"AS"`
-	sqlExpression           *SemanticSqlExpression   `ddl:"keyword"`
-	synonyms                *Synonyms                `ddl:"parameter,no_equals"`
+	SqlExpression           *SemanticSqlExpression   `ddl:"keyword"`
+	Synonyms                *Synonyms                `ddl:"parameter,no_equals"`
 	Comment                 *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -106,27 +111,20 @@ type SemanticSqlExpression struct {
 	SqlExpression string `ddl:"keyword,no_quotes"`
 }
 
-type FactDefinition struct {
-	// adjusted manually
-	isPrivate          *bool               `ddl:"keyword" sql:"PRIVATE"`
-	semanticExpression *SemanticExpression `ddl:"keyword"`
-}
-
 type DimensionDefinition struct {
-	semanticExpression *SemanticExpression `ddl:"keyword"`
+	SemanticExpression *SemanticExpression `ddl:"keyword"`
 }
 
 type MetricDefinition struct {
-	// adjusted manually
-	isPrivate                      *bool                           `ddl:"keyword" sql:"PRIVATE"`
-	semanticExpression             *SemanticExpression             `ddl:"keyword"`
-	windowFunctionMetricDefinition *WindowFunctionMetricDefinition `ddl:"keyword"`
+	IsPrivate                      *bool                           `ddl:"keyword" sql:"PRIVATE"`
+	SemanticExpression             *SemanticExpression             `ddl:"keyword"`
+	WindowFunctionMetricDefinition *WindowFunctionMetricDefinition `ddl:"keyword"`
 }
 
 type WindowFunctionMetricDefinition struct {
-	qualifiedExpressionName *QualifiedExpressionName  `ddl:"keyword"`
+	QualifiedExpressionName *QualifiedExpressionName  `ddl:"keyword"`
 	as                      bool                      `ddl:"static" sql:"AS"`
-	sqlExpression           *SemanticSqlExpression    `ddl:"keyword"`
+	SqlExpression           *SemanticSqlExpression    `ddl:"keyword"`
 	OverClause              *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
 }
 

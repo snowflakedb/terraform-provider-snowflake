@@ -235,7 +235,7 @@ var oauthForCustomClientsIntegrationSetDef = g.NewQueryStruct("OauthForCustomCli
 		"OAUTH_USE_SECONDARY_ROLES", OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef,
 		g.ParameterOptions(),
 	).
-	OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
+	OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("NETWORK_POLICY").Equals().SingleQuotes()).
 	OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes()).
 	OptionalComment().
@@ -289,7 +289,7 @@ var saml2IntegrationUnsetDef = g.NewQueryStruct("Saml2IntegrationUnset").
 
 var scimIntegrationSetDef = g.NewQueryStruct("ScimIntegrationSet").
 	OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
-	OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
+	OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("NETWORK_POLICY").Equals().SingleQuotes()).
 	OptionalBooleanAssignment("SYNC_PASSWORD", g.ParameterOptions()).
 	// TODO(SNOW-1461780): use COMMENT in unset and here use OptionalComment
 	OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
@@ -458,7 +458,7 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses()).
 				OptionalBooleanAssignment("OAUTH_ISSUE_REFRESH_TOKENS", g.ParameterOptions()).
 				OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
-				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
+				OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("NETWORK_POLICY").Equals().SingleQuotes()).
 				OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes())
 		}),
@@ -504,8 +504,8 @@ var securityIntegrationsDef = g.NewInterface(
 				SQLWithCustomFieldName("integrationType", "TYPE = SCIM").
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				EnumAssignment("SCIM_CLIENT", ScimSecurityIntegrationScimClientOptionEnumDef, g.ParameterOptions().SingleQuotes().Required()).
-				TextAssignment("RUN_AS_ROLE", g.ParameterOptions().Required().NoQuotes()).
-				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
+				Identifier("RunAsRole", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RUN_AS_ROLE").Required().Equals().SingleQuotes()).
+				OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("NETWORK_POLICY").Equals().SingleQuotes()).
 				OptionalBooleanAssignment("SYNC_PASSWORD", g.ParameterOptions())
 		}).WithAdditionalValidations(),
 	).
@@ -646,8 +646,7 @@ var securityIntegrationsDef = g.NewInterface(
 			Text("property", g.WithPlainFieldName("Name")).
 			Text("property_type", g.WithPlainFieldName("Type")).
 			Text("property_value", g.WithPlainFieldName("Value")).
-			Text("property_default", g.WithPlainFieldName("Default")).
-			WithConvertGeneration(),
+			Text("property_default", g.WithPlainFieldName("Default")),
 		g.NewQueryStruct("DescSecurityIntegration").
 			Describe().
 			SQL("SECURITY INTEGRATION").
@@ -662,8 +661,7 @@ var securityIntegrationsDef = g.NewInterface(
 			Text("category").
 			Bool("enabled").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			Time("created_on").
-			WithConvertGeneration(),
+			Time("created_on"),
 		g.NewQueryStruct("ShowSecurityIntegrations").
 			Show().
 			SQL("SECURITY INTEGRATIONS").

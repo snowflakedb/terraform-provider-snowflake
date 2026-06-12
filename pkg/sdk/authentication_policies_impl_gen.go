@@ -2,19 +2,15 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"errors"
-	"fmt"
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ AuthenticationPolicies = (*authenticationPolicies)(nil)
-
 var (
+	_ AuthenticationPolicies                          = (*authenticationPolicies)(nil)
 	_ convertibleRow[AuthenticationPolicy]            = new(showAuthenticationPolicyDBRow)
 	_ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
 )
@@ -48,10 +44,7 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
-	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool {
-		return !row.DatabaseName.Valid || !row.SchemaName.Valid
-	})
+	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool { return row.excludeFromShow() })
 	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
@@ -208,24 +201,12 @@ func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) 
 		Kind:    r.Kind,
 		Options: r.Options,
 	}
-
-	// following validation logic added manually
-	var errs []error
-	if !r.DatabaseName.Valid {
-		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
-	}
-	if !r.SchemaName.Valid {
-		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
-	}
-	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
-	}
-
 	mapNullTimeToNonNullableField(&result.CreatedOn, r.CreatedOn)
-	mapNullStringToNonNullableField(&result.DatabaseName, r.DatabaseName)
-	mapNullStringToNonNullableField(&result.SchemaName, r.SchemaName)
 	mapNullStringToNonNullableField(&result.Owner, r.Owner)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 

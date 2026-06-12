@@ -20,6 +20,7 @@ var (
 		sdk.AccountParameterDefaultDDLCollation,
 		sdk.AccountParameterStorageSerializationPolicy,
 		sdk.AccountParameterLogLevel,
+		sdk.AccountParameterLogEventLevel,
 		sdk.AccountParameterTraceLevel,
 		sdk.AccountParameterSuspendTaskAfterNumFailures,
 		sdk.AccountParameterTaskAutoRetryAttempts,

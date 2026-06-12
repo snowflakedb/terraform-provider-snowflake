@@ -24,8 +24,8 @@ func (c *HybridTableClient) Create(t *testing.T) (sdk.SchemaObjectIdentifier, fu
 	t.Helper()
 	return c.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
 		{
-			Name: "id",
-			Type: sdk.DataType("INT"),
+			Name:     "id",
+			DataType: sdk.DataType("INT"),
 			InlineConstraint: &sdk.ColumnInlineConstraint{
 				Type: sdk.ColumnConstraintTypePrimaryKey,
 			},
@@ -62,4 +62,11 @@ func (c *HybridTableClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*
 	t.Helper()
 	ctx := context.Background()
 	return c.context.client.HybridTables.ShowByID(ctx, id)
+}
+
+func (c *HybridTableClient) Alter(t *testing.T, req *sdk.AlterHybridTableRequest) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.context.client.HybridTables.Alter(ctx, req)
+	require.NoError(t, err)
 }

@@ -293,7 +293,7 @@ func NewPostgresInstanceResetAccessRequest(
 	forRole PostgresInstanceResetAccessRole,
 ) *PostgresInstanceResetAccessRequest {
 	s := PostgresInstanceResetAccessRequest{}
-	s.For = forRole
+	s.ForRole = forRole
 	return &s
 }
 

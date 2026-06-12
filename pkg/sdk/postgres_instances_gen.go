@@ -42,7 +42,7 @@ type ForkPostgresInstanceOptions struct {
 	create           bool                        `ddl:"static" sql:"CREATE"`
 	postgresInstance bool                        `ddl:"static" sql:"POSTGRES INSTANCE"`
 	name             AccountObjectIdentifier     `ddl:"identifier"`
-	Fork             AccountObjectIdentifier     `ddl:"identifier,required" sql:"FORK"`
+	Fork             AccountObjectIdentifier     `ddl:"identifier" sql:"FORK"`
 	At               *PostgresInstanceForkAt     `ddl:"list,parentheses,no_comma" sql:"AT"`
 	Before           *PostgresInstanceForkBefore `ddl:"list,parentheses,no_comma" sql:"BEFORE"`
 	ComputeFamily    *string                     `ddl:"parameter,single_quotes" sql:"COMPUTE_FAMILY"`
@@ -107,7 +107,7 @@ type PostgresInstanceUnset struct {
 }
 
 type PostgresInstanceResetAccess struct {
-	For PostgresInstanceResetAccessRole `ddl:"parameter,single_quotes,no_equals" sql:"FOR"`
+	ForRole PostgresInstanceResetAccessRole `ddl:"parameter,single_quotes,no_equals" sql:"FOR"`
 }
 
 // DropPostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-postgres-instance.

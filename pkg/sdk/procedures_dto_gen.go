@@ -152,9 +152,14 @@ type CreateForSQLProcedureRequest struct {
 }
 
 type ProcedureSQLReturnsRequest struct {
-	ResultDataType *ProcedureReturnsResultDataTypeRequest
+	ResultDataType *ProcedureSQLReturnsResultDataTypeRequest
 	Table          *ProcedureReturnsTableRequest
 	NotNull        *bool
+}
+
+type ProcedureSQLReturnsResultDataTypeRequest struct {
+	ResultDataTypeOld DataType
+	ResultDataType    datatypes.DataType // required
 }
 
 type AlterProcedureRequest struct {
@@ -175,11 +180,10 @@ type ProcedureSetRequest struct {
 	AutoEventLogging           *AutoEventLogging
 	EnableConsoleOutput        *bool
 	LogLevel                   *LogLevel
+	LogEventLevel              *LogLevel
 	MetricLevel                *MetricLevel
 	TraceLevel                 *TraceLevel
 }
-
-// SecretsListRequest removed manually - redeclaration with function
 
 type ProcedureUnsetRequest struct {
 	Comment                    *bool
@@ -187,6 +191,7 @@ type ProcedureUnsetRequest struct {
 	AutoEventLogging           *bool
 	EnableConsoleOutput        *bool
 	LogLevel                   *bool
+	LogEventLevel              *bool
 	MetricLevel                *bool
 	TraceLevel                 *bool
 }

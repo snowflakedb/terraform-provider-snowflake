@@ -113,6 +113,8 @@ type UserCsvRow struct {
 	LockTimeoutValue                              string `csv:"lock_timeout_value"`
 	LogLevelLevel                                 string `csv:"log_level_level"`
 	LogLevelValue                                 string `csv:"log_level_value"`
+	LogEventLevelLevel                            string `csv:"log_event_level_level"`
+	LogEventLevelValue                            string `csv:"log_event_level_value"`
 	MultiStatementCountLevel                      string `csv:"multi_statement_count_level"`
 	MultiStatementCountValue                      string `csv:"multi_statement_count_value"`
 	NetworkPolicyLevel                            string `csv:"network_policy_level"`
@@ -232,6 +234,7 @@ type UserRepresentation struct {
 	JsonIndent                               *int
 	LockTimeout                              *int
 	LogLevel                                 *string
+	LogEventLevel                            *string
 	MultiStatementCount                      *int
 	NetworkPolicy                            *string
 	NoorderSequenceAsDefault                 *bool
@@ -345,6 +348,7 @@ func (row UserCsvRow) convert() (*UserRepresentation, error) {
 		handler.handleIntegerParameter(row.JsonIndentLevel, row.JsonIndentValue, &userRepresentation.JsonIndent),
 		handler.handleIntegerParameter(row.LockTimeoutLevel, row.LockTimeoutValue, &userRepresentation.LockTimeout),
 		handler.handleStringParameter(row.LogLevelLevel, row.LogLevelValue, &userRepresentation.LogLevel),
+		handler.handleStringParameter(row.LogEventLevelLevel, row.LogEventLevelValue, &userRepresentation.LogEventLevel),
 		handler.handleIntegerParameter(row.MultiStatementCountLevel, row.MultiStatementCountValue, &userRepresentation.MultiStatementCount),
 		handler.handleStringParameter(row.NetworkPolicyLevel, row.NetworkPolicyValue, &userRepresentation.NetworkPolicy),
 		handler.handleBooleanParameter(row.NoorderSequenceAsDefaultLevel, row.NoorderSequenceAsDefaultValue, &userRepresentation.NoorderSequenceAsDefault),

@@ -673,7 +673,7 @@ func parseProcedureSqlReturns(d *schema.ResourceData) (*sdk.ProcedureSQLReturnsR
 		}
 		returns.WithTable(*sdk.NewProcedureReturnsTableRequest().WithColumns(cr))
 	default:
-		returns.WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(dataType))
+		returns.WithResultDataType(*sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType))
 	}
 	return returns, nil
 }

@@ -20,6 +20,7 @@ type ProcedureJavascriptModel struct {
 	ExecuteAs           tfconfig.Variable `json:"execute_as,omitempty"`
 	FullyQualifiedName  tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IsSecure            tfconfig.Variable `json:"is_secure,omitempty"`
+	LogEventLevel       tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel            tfconfig.Variable `json:"log_level,omitempty"`
 	MetricLevel         tfconfig.Variable `json:"metric_level,omitempty"`
 	NullInputBehavior   tfconfig.Variable `json:"null_input_behavior,omitempty"`
@@ -148,6 +149,11 @@ func (p *ProcedureJavascriptModel) WithIsSecure(isSecure string) *ProcedureJavas
 	return p
 }
 
+func (p *ProcedureJavascriptModel) WithLogEventLevel(logEventLevel string) *ProcedureJavascriptModel {
+	p.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return p
+}
+
 func (p *ProcedureJavascriptModel) WithLogLevel(logLevel string) *ProcedureJavascriptModel {
 	p.LogLevel = tfconfig.StringVariable(logLevel)
 	return p
@@ -229,6 +235,11 @@ func (p *ProcedureJavascriptModel) WithFullyQualifiedNameValue(value tfconfig.Va
 
 func (p *ProcedureJavascriptModel) WithIsSecureValue(value tfconfig.Variable) *ProcedureJavascriptModel {
 	p.IsSecure = value
+	return p
+}
+
+func (p *ProcedureJavascriptModel) WithLogEventLevelValue(value tfconfig.Variable) *ProcedureJavascriptModel {
+	p.LogEventLevel = value
 	return p
 }
 

@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ComputePools = (*computePools)(nil)
-
 var (
+	_ ComputePools                       = (*computePools)(nil)
 	_ convertibleRow[ComputePool]        = new(computePoolsRow)
 	_ convertibleRow[ComputePoolDetails] = new(computePoolDescRow)
 )
@@ -36,14 +35,10 @@ func (v *computePools) Drop(ctx context.Context, request *DropComputePoolRequest
 }
 
 func (v *computePools) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(v.client, func() error {
-		// Adjusted manually.
-		err := v.client.ComputePools.Alter(ctx, NewAlterComputePoolRequest(id).WithIfExists(true).WithStopAll(true))
-		if err != nil {
-			return err
-		}
-		return v.Drop(ctx, NewDropComputePoolRequest(id).WithIfExists(true))
-	}, ctx, id)
+	if err := v.dropSafelyHook(ctx, id); err != nil {
+		return err
+	}
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropComputePoolRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
 func (v *computePools) Show(ctx context.Context, request *ShowComputePoolRequest) ([]ComputePool, error) {
@@ -162,10 +157,10 @@ func (r computePoolsRow) convert() (*ComputePool, error) {
 		IsExclusive:     r.IsExclusive,
 	}
 	mapStringWithMapping(&result.State, r.State, ToComputePoolState)
-	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err == nil {
-		result.InstanceFamily = v
-	} else {
+	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err != nil {
 		return nil, fmt.Errorf("parsing compute pool instance family: %w", err)
+	} else {
+		result.InstanceFamily = v
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)
@@ -200,10 +195,10 @@ func (r computePoolDescRow) convert() (*ComputePoolDetails, error) {
 		StatusMessage:   r.StatusMessage,
 	}
 	mapStringWithMapping(&result.State, r.State, ToComputePoolState)
-	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err == nil {
-		result.InstanceFamily = v
-	} else {
+	if v, err := ToComputePoolInstanceFamily(r.InstanceFamily); err != nil {
 		return nil, fmt.Errorf("parsing compute pool instance family: %w", err)
+	} else {
+		result.InstanceFamily = v
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)

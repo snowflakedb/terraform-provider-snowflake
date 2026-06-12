@@ -40,7 +40,7 @@ var (
 			Text("schema_name").
 			OptionalText("owner").
 			OptionalText("comment").
-			OptionalSchemaObjectIdentifier("table_name", g.WithPlainFieldName("TableName")).
+			OptionalSchemaObjectIdentifier("table_name", g.WithPlainFieldName("TableName"), g.WithManualConvert()).
 			OptionalEnum("source_type", StreamSourceTypeEnumDef).
 			NullableSchemaObjectIdentifierArray("base_tables").
 			OptionalText("type").
@@ -48,8 +48,7 @@ var (
 			OptionalEnum("mode", StreamModeEnumDef).
 			OptionalTime("stale_after").
 			OptionalText("invalid_reason").
-			OptionalText("owner_role_type").
-			WithConvertGeneration()
+			OptionalText("owner_role_type")
 
 	streamsDef = g.NewInterface(
 		"Streams",

@@ -4,13 +4,14 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
-var _ IcebergTables = (*icebergTables)(nil)
-
 var (
+	_ IcebergTables                       = (*icebergTables)(nil)
 	_ convertibleRow[IcebergTable]        = new(icebergTableRow)
 	_ convertibleRow[IcebergTableDetails] = new(icebergTableDetailsRow)
 )
@@ -20,6 +21,16 @@ type icebergTables struct {
 }
 
 func (v *icebergTables) Create(ctx context.Context, request *CreateIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *icebergTables) CreateFromIcebergFiles(ctx context.Context, request *CreateFromIcebergFilesIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *icebergTables) CreateFromDeltaLake(ctx context.Context, request *CreateFromDeltaLakeIcebergTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -75,14 +86,13 @@ func (v *icebergTables) Describe(ctx context.Context, id SchemaObjectIdentifier)
 
 func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 	opts := &CreateIcebergTableOptions{
-		OrReplace:   r.OrReplace,
-		Transient:   r.Transient,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		PathLayout:  r.PathLayout,
-		ClusterBy:   r.ClusterBy,
-		// Adjusted manually
-		ExternalVolume:             icebergTableExternalVolumeQuoted(r.ExternalVolume),
+		OrReplace:                  r.OrReplace,
+		Transient:                  r.Transient,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		PathLayout:                 r.PathLayout,
+		ClusterBy:                  r.ClusterBy,
+		ExternalVolume:             r.ExternalVolume,
 		Catalog:                    r.Catalog,
 		BaseLocation:               r.BaseLocation,
 		TargetFileSize:             r.TargetFileSize,
@@ -102,9 +112,9 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 	}
 	opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{}
 	if r.ColumnsAndConstraints.Columns != nil {
-		s := make([]IcebergTableColumn, len(r.ColumnsAndConstraints.Columns))
+		columns := make([]IcebergTableColumn, len(r.ColumnsAndConstraints.Columns))
 		for i, v := range r.ColumnsAndConstraints.Columns {
-			s[i] = IcebergTableColumn{
+			columns[i] = IcebergTableColumn{
 				Name:         v.Name,
 				ColumnType:   v.ColumnType,
 				DefaultValue: v.DefaultValue,
@@ -112,48 +122,177 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				Tag:          v.Tag,
 				Comment:      v.Comment,
 			}
-			// Adjusted manually: convert *Request sub-structs to *Options
+			if v.InlineConstraint != nil {
+				columns[i].InlineConstraint = &TableColumnInlineConstraint{}
+				if v.InlineConstraint.UniquePK != nil {
+					columns[i].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{
+						Name:               v.InlineConstraint.UniquePK.Name,
+						Unique:             v.InlineConstraint.UniquePK.Unique,
+						PrimaryKey:         v.InlineConstraint.UniquePK.PrimaryKey,
+						Enforced:           v.InlineConstraint.UniquePK.Enforced,
+						NotEnforced:        v.InlineConstraint.UniquePK.NotEnforced,
+						Deferrable:         v.InlineConstraint.UniquePK.Deferrable,
+						NotDeferrable:      v.InlineConstraint.UniquePK.NotDeferrable,
+						InitiallyDeferred:  v.InlineConstraint.UniquePK.InitiallyDeferred,
+						InitiallyImmediate: v.InlineConstraint.UniquePK.InitiallyImmediate,
+						Enable:             v.InlineConstraint.UniquePK.Enable,
+						Disable:            v.InlineConstraint.UniquePK.Disable,
+						Validate:           v.InlineConstraint.UniquePK.Validate,
+						Novalidate:         v.InlineConstraint.UniquePK.Novalidate,
+						Rely:               v.InlineConstraint.UniquePK.Rely,
+						Norely:             v.InlineConstraint.UniquePK.Norely,
+					}
+				}
+				if v.InlineConstraint.FK != nil {
+					columns[i].InlineConstraint.FK = &TableColumnInlineFK{
+						Name:               v.InlineConstraint.FK.Name,
+						ForeignKey:         v.InlineConstraint.FK.ForeignKey,
+						References:         v.InlineConstraint.FK.References,
+						RefColumn:          v.InlineConstraint.FK.RefColumn,
+						Match:              v.InlineConstraint.FK.Match,
+						On:                 v.InlineConstraint.FK.On,
+						Enforced:           v.InlineConstraint.FK.Enforced,
+						NotEnforced:        v.InlineConstraint.FK.NotEnforced,
+						Deferrable:         v.InlineConstraint.FK.Deferrable,
+						NotDeferrable:      v.InlineConstraint.FK.NotDeferrable,
+						InitiallyDeferred:  v.InlineConstraint.FK.InitiallyDeferred,
+						InitiallyImmediate: v.InlineConstraint.FK.InitiallyImmediate,
+						Enable:             v.InlineConstraint.FK.Enable,
+						Disable:            v.InlineConstraint.FK.Disable,
+						Validate:           v.InlineConstraint.FK.Validate,
+						Novalidate:         v.InlineConstraint.FK.Novalidate,
+						Rely:               v.InlineConstraint.FK.Rely,
+						Norely:             v.InlineConstraint.FK.Norely,
+					}
+				}
+				if v.InlineConstraint.CH != nil {
+					columns[i].InlineConstraint.CH = &TableColumnInlineCH{
+						Name:             v.InlineConstraint.CH.Name,
+						Expression:       v.InlineConstraint.CH.Expression,
+						EnableValidate:   v.InlineConstraint.CH.EnableValidate,
+						EnableNovalidate: v.InlineConstraint.CH.EnableNovalidate,
+					}
+				}
+			}
 			if v.MaskingPolicy != nil {
-				s[i].MaskingPolicy = &TableColumnMaskingPolicy{
+				columns[i].MaskingPolicy = &TableColumnMaskingPolicy{
 					MaskingPolicy: v.MaskingPolicy.MaskingPolicy,
 					Using:         v.MaskingPolicy.Using,
 				}
 			}
 			if v.ProjectionPolicy != nil {
-				s[i].ProjectionPolicy = &TableColumnProjectionPolicy{
+				columns[i].ProjectionPolicy = &TableColumnProjectionPolicy{
 					ProjectionPolicy: v.ProjectionPolicy.ProjectionPolicy,
 				}
 			}
 		}
-		opts.ColumnsAndConstraints.Columns = s
+		opts.ColumnsAndConstraints.Columns = columns
 	}
-	if r.PartitionBy != nil {
-		s := make([]IcebergTablePartitionExpression, len(r.PartitionBy))
-		for i, v := range r.PartitionBy {
-			s[i] = IcebergTablePartitionExpression{
-				Identity: v.Identity,
+	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
+		outOfLineConstraint := make([]TableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
+			outOfLineConstraint[i] = TableOutOfLineConstraint{}
+			if v.UniquePK != nil {
+				outOfLineConstraint[i].UniquePK = &TableOutOfLineUniquePK{
+					Name:               v.UniquePK.Name,
+					Unique:             v.UniquePK.Unique,
+					PrimaryKey:         v.UniquePK.PrimaryKey,
+					Columns:            v.UniquePK.Columns,
+					Enforced:           v.UniquePK.Enforced,
+					NotEnforced:        v.UniquePK.NotEnforced,
+					Deferrable:         v.UniquePK.Deferrable,
+					NotDeferrable:      v.UniquePK.NotDeferrable,
+					InitiallyDeferred:  v.UniquePK.InitiallyDeferred,
+					InitiallyImmediate: v.UniquePK.InitiallyImmediate,
+					Enable:             v.UniquePK.Enable,
+					Disable:            v.UniquePK.Disable,
+					Validate:           v.UniquePK.Validate,
+					Novalidate:         v.UniquePK.Novalidate,
+					Rely:               v.UniquePK.Rely,
+					Norely:             v.UniquePK.Norely,
+					Comment:            v.UniquePK.Comment,
+				}
 			}
-			// Adjusted manually: convert *Request sub-structs to *Options for each transform
-			if v.Bucket != nil {
-				s[i].Bucket = &IcebergTablePartitionBucket{Args: IcebergTablePartitionBucketArgs(v.Bucket.Args)}
+			if v.FK != nil {
+				outOfLineConstraint[i].FK = &TableOutOfLineFK{
+					Name:               v.FK.Name,
+					Columns:            v.FK.Columns,
+					References:         v.FK.References,
+					RefColumns:         v.FK.RefColumns,
+					Match:              v.FK.Match,
+					On:                 v.FK.On,
+					Enforced:           v.FK.Enforced,
+					NotEnforced:        v.FK.NotEnforced,
+					Deferrable:         v.FK.Deferrable,
+					NotDeferrable:      v.FK.NotDeferrable,
+					InitiallyDeferred:  v.FK.InitiallyDeferred,
+					InitiallyImmediate: v.FK.InitiallyImmediate,
+					Enable:             v.FK.Enable,
+					Disable:            v.FK.Disable,
+					Validate:           v.FK.Validate,
+					Novalidate:         v.FK.Novalidate,
+					Rely:               v.FK.Rely,
+					Norely:             v.FK.Norely,
+					Comment:            v.FK.Comment,
+				}
 			}
-			if v.Truncate != nil {
-				s[i].Truncate = &IcebergTablePartitionTruncate{Args: IcebergTablePartitionTruncateArgs(v.Truncate.Args)}
-			}
-			if v.Year != nil {
-				s[i].Year = &IcebergTablePartitionYear{Args: IcebergTablePartitionTimeArgs(v.Year.Args)}
-			}
-			if v.Month != nil {
-				s[i].Month = &IcebergTablePartitionMonth{Args: IcebergTablePartitionTimeArgs(v.Month.Args)}
-			}
-			if v.Day != nil {
-				s[i].Day = &IcebergTablePartitionDay{Args: IcebergTablePartitionTimeArgs(v.Day.Args)}
-			}
-			if v.Hour != nil {
-				s[i].Hour = &IcebergTablePartitionHour{Args: IcebergTablePartitionTimeArgs(v.Hour.Args)}
+			if v.CH != nil {
+				outOfLineConstraint[i].CH = &TableOutOfLineCH{
+					Name:             v.CH.Name,
+					Expression:       v.CH.Expression,
+					EnableValidate:   v.CH.EnableValidate,
+					EnableNovalidate: v.CH.EnableNovalidate,
+				}
 			}
 		}
-		opts.PartitionBy = s
+		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
+	}
+	if r.PartitionBy != nil {
+		partitionBy := make([]IcebergTablePartitionExpression, len(r.PartitionBy))
+		for i, v := range r.PartitionBy {
+			partitionBy[i] = IcebergTablePartitionExpression{
+				Identity: v.Identity,
+			}
+			if v.Bucket != nil {
+				partitionBy[i].Bucket = &IcebergTablePartitionBucket{}
+				partitionBy[i].Bucket.Args = IcebergTablePartitionBucketArgs{
+					NumBuckets: v.Bucket.Args.NumBuckets,
+					Column:     v.Bucket.Args.Column,
+				}
+			}
+			if v.Truncate != nil {
+				partitionBy[i].Truncate = &IcebergTablePartitionTruncate{}
+				partitionBy[i].Truncate.Args = IcebergTablePartitionTruncateArgs{
+					Width:  v.Truncate.Args.Width,
+					Column: v.Truncate.Args.Column,
+				}
+			}
+			if v.Year != nil {
+				partitionBy[i].Year = &IcebergTablePartitionYear{}
+				partitionBy[i].Year.Args = IcebergTablePartitionTimeArgs{
+					Column: v.Year.Args.Column,
+				}
+			}
+			if v.Month != nil {
+				partitionBy[i].Month = &IcebergTablePartitionMonth{}
+				partitionBy[i].Month.Args = IcebergTablePartitionTimeArgs{
+					Column: v.Month.Args.Column,
+				}
+			}
+			if v.Day != nil {
+				partitionBy[i].Day = &IcebergTablePartitionDay{}
+				partitionBy[i].Day.Args = IcebergTablePartitionTimeArgs{
+					Column: v.Day.Args.Column,
+				}
+			}
+			if v.Hour != nil {
+				partitionBy[i].Hour = &IcebergTablePartitionHour{}
+				partitionBy[i].Hour.Args = IcebergTablePartitionTimeArgs{
+					Column: v.Hour.Args.Column,
+				}
+			}
+		}
+		opts.PartitionBy = partitionBy
 	}
 	if r.RowAccessPolicy != nil {
 		opts.RowAccessPolicy = &IcebergTableRowAccessPolicy{
@@ -165,6 +304,39 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
 			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
 		}
+	}
+	return opts
+}
+
+func (r *CreateFromIcebergFilesIcebergTableRequest) toOpts() *CreateFromIcebergFilesIcebergTableOptions {
+	opts := &CreateFromIcebergFilesIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
+		MetadataFilePath:         r.MetadataFilePath,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
+	}
+	return opts
+}
+
+func (r *CreateFromDeltaLakeIcebergTableRequest) toOpts() *CreateFromDeltaLakeIcebergTableOptions {
+	opts := &CreateFromDeltaLakeIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
+		BaseLocation:             r.BaseLocation,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		AutoRefresh:              r.AutoRefresh,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
 	}
 	return opts
 }
@@ -187,6 +359,58 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			ColumnType:   r.AddColumnAction.ColumnType,
 			DefaultValue: r.AddColumnAction.DefaultValue,
 			Tag:          r.AddColumnAction.Tag,
+		}
+		if r.AddColumnAction.InlineConstraint != nil {
+			opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
+			if r.AddColumnAction.InlineConstraint.UniquePK != nil {
+				opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{
+					Name:               r.AddColumnAction.InlineConstraint.UniquePK.Name,
+					Unique:             r.AddColumnAction.InlineConstraint.UniquePK.Unique,
+					PrimaryKey:         r.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey,
+					Enforced:           r.AddColumnAction.InlineConstraint.UniquePK.Enforced,
+					NotEnforced:        r.AddColumnAction.InlineConstraint.UniquePK.NotEnforced,
+					Deferrable:         r.AddColumnAction.InlineConstraint.UniquePK.Deferrable,
+					NotDeferrable:      r.AddColumnAction.InlineConstraint.UniquePK.NotDeferrable,
+					InitiallyDeferred:  r.AddColumnAction.InlineConstraint.UniquePK.InitiallyDeferred,
+					InitiallyImmediate: r.AddColumnAction.InlineConstraint.UniquePK.InitiallyImmediate,
+					Enable:             r.AddColumnAction.InlineConstraint.UniquePK.Enable,
+					Disable:            r.AddColumnAction.InlineConstraint.UniquePK.Disable,
+					Validate:           r.AddColumnAction.InlineConstraint.UniquePK.Validate,
+					Novalidate:         r.AddColumnAction.InlineConstraint.UniquePK.Novalidate,
+					Rely:               r.AddColumnAction.InlineConstraint.UniquePK.Rely,
+					Norely:             r.AddColumnAction.InlineConstraint.UniquePK.Norely,
+				}
+			}
+			if r.AddColumnAction.InlineConstraint.FK != nil {
+				opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{
+					Name:               r.AddColumnAction.InlineConstraint.FK.Name,
+					ForeignKey:         r.AddColumnAction.InlineConstraint.FK.ForeignKey,
+					References:         r.AddColumnAction.InlineConstraint.FK.References,
+					RefColumn:          r.AddColumnAction.InlineConstraint.FK.RefColumn,
+					Match:              r.AddColumnAction.InlineConstraint.FK.Match,
+					On:                 r.AddColumnAction.InlineConstraint.FK.On,
+					Enforced:           r.AddColumnAction.InlineConstraint.FK.Enforced,
+					NotEnforced:        r.AddColumnAction.InlineConstraint.FK.NotEnforced,
+					Deferrable:         r.AddColumnAction.InlineConstraint.FK.Deferrable,
+					NotDeferrable:      r.AddColumnAction.InlineConstraint.FK.NotDeferrable,
+					InitiallyDeferred:  r.AddColumnAction.InlineConstraint.FK.InitiallyDeferred,
+					InitiallyImmediate: r.AddColumnAction.InlineConstraint.FK.InitiallyImmediate,
+					Enable:             r.AddColumnAction.InlineConstraint.FK.Enable,
+					Disable:            r.AddColumnAction.InlineConstraint.FK.Disable,
+					Validate:           r.AddColumnAction.InlineConstraint.FK.Validate,
+					Novalidate:         r.AddColumnAction.InlineConstraint.FK.Novalidate,
+					Rely:               r.AddColumnAction.InlineConstraint.FK.Rely,
+					Norely:             r.AddColumnAction.InlineConstraint.FK.Norely,
+				}
+			}
+			if r.AddColumnAction.InlineConstraint.CH != nil {
+				opts.AddColumnAction.InlineConstraint.CH = &TableColumnInlineCH{
+					Name:             r.AddColumnAction.InlineConstraint.CH.Name,
+					Expression:       r.AddColumnAction.InlineConstraint.CH.Expression,
+					EnableValidate:   r.AddColumnAction.InlineConstraint.CH.EnableValidate,
+					EnableNovalidate: r.AddColumnAction.InlineConstraint.CH.EnableNovalidate,
+				}
+			}
 		}
 		if r.AddColumnAction.MaskingPolicy != nil {
 			opts.AddColumnAction.MaskingPolicy = &TableColumnMaskingPolicy{
@@ -213,10 +437,9 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		}
 	}
 	if r.AlterColumnAction != nil {
-		// Adjusted manually: drop generated alterColumn static field copy (Request type lacks it)
-		s := make([]IcebergTableAlterColumnAction, len(r.AlterColumnAction))
+		alterColumnAction := make([]IcebergTableAlterColumnAction, len(r.AlterColumnAction))
 		for i, v := range r.AlterColumnAction {
-			s[i] = IcebergTableAlterColumnAction{
+			alterColumnAction[i] = IcebergTableAlterColumnAction{
 				ColumnName:       v.ColumnName,
 				SetNotNull:       v.SetNotNull,
 				DropNotNull:      v.DropNotNull,
@@ -227,7 +450,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 				DropWriteDefault: v.DropWriteDefault,
 			}
 		}
-		opts.AlterColumnAction = s
+		opts.AlterColumnAction = alterColumnAction
 	}
 	if r.SetMaskingPolicyOnColumn != nil {
 		opts.SetMaskingPolicyOnColumn = &TableSetColumnMaskingPolicy{
@@ -331,41 +554,39 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		if r.SearchOptimizationAction.Add != nil {
 			opts.SearchOptimizationAction.Add = &TableAddSearchOptimization{}
 			if r.SearchOptimizationAction.Add.On != nil {
-				s := make([]TableSearchMethodWithTarget, len(r.SearchOptimizationAction.Add.On))
+				on := make([]TableSearchMethodWithTarget, len(r.SearchOptimizationAction.Add.On))
 				for i, v := range r.SearchOptimizationAction.Add.On {
-					// Adjusted manually: convert Args from Request to Options shape
-					s[i] = TableSearchMethodWithTarget{
+					on[i] = TableSearchMethodWithTarget{
 						Method: v.Method,
-						Args: TableSearchMethodArgs{
-							Targets:  v.Args.Targets,
-							Analyzer: v.Args.Analyzer,
-						},
+					}
+					on[i].Args = TableSearchMethodArgs{
+						Targets:  v.Args.Targets,
+						Analyzer: v.Args.Analyzer,
 					}
 				}
-				opts.SearchOptimizationAction.Add.On = s
+				opts.SearchOptimizationAction.Add.On = on
 			}
 		}
 		if r.SearchOptimizationAction.Drop != nil {
 			opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
 			if r.SearchOptimizationAction.Drop.On != nil {
-				s := make([]TableDropSearchOptimizationOn, len(r.SearchOptimizationAction.Drop.On))
+				on := make([]TableDropSearchOptimizationOn, len(r.SearchOptimizationAction.Drop.On))
 				for i, v := range r.SearchOptimizationAction.Drop.On {
-					// Adjusted manually: polymorphic On — one of search_method_with_target | column_name | expression_id
-					s[i] = TableDropSearchOptimizationOn{
+					on[i] = TableDropSearchOptimizationOn{
 						ColumnName:   v.ColumnName,
 						ExpressionId: v.ExpressionId,
 					}
 					if v.SearchMethodWithTarget != nil {
-						s[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
+						on[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
 							Method: v.SearchMethodWithTarget.Method,
-							Args: TableSearchMethodArgs{
-								Targets:  v.SearchMethodWithTarget.Args.Targets,
-								Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
-							},
+						}
+						on[i].SearchMethodWithTarget.Args = TableSearchMethodArgs{
+							Targets:  v.SearchMethodWithTarget.Args.Targets,
+							Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
 						}
 					}
 				}
-				opts.SearchOptimizationAction.Drop.On = s
+				opts.SearchOptimizationAction.Drop.On = on
 			}
 		}
 	}
@@ -399,7 +620,6 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		Name:                      r.Name,
 		DatabaseName:              r.DatabaseName,
 		SchemaName:                r.SchemaName,
-		BaseLocation:              r.BaseLocation,
 		CanWriteMetadata:          r.CanWriteMetadata == "Y",
 		OwnerRoleType:             r.OwnerRoleType,
 		CatalogSyncName:           r.CatalogSyncName,
@@ -414,6 +634,7 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 	mapStringWithMapping(&result.IcebergTableType, r.IcebergTableType, ToIcebergTableType)
 	mapNullString(&result.CatalogTableName, r.CatalogTableName)
 	mapNullString(&result.CatalogNamespace, r.CatalogNamespace)
+	mapNullString(&result.BaseLocation, r.BaseLocation)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.NameMapping, r.NameMapping)
 	return result, nil
@@ -430,18 +651,22 @@ func (r *DescribeIcebergTableRequest) toOpts() *DescribeIcebergTableOptions {
 func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 	result := &IcebergTableDetails{
 		Name:              r.Name,
-		Type:              r.Type,
 		SourceIcebergType: r.SourceIcebergType,
 		Kind:              r.Kind,
 		IsNullable:        r.Null == "Y",
 		PrimaryKey:        r.PrimaryKey == "Y",
 		UniqueKey:         r.UniqueKey == "Y",
 	}
+	if v, err := datatypes.ParseDataType(r.Type); err != nil {
+		return nil, fmt.Errorf("parsing datatypes. data type: %w", err)
+	} else {
+		result.Type = v
+	}
 	mapNullString(&result.Default, r.Default)
 	mapNullString(&result.Check, r.Check)
 	mapNullString(&result.Expression, r.Expression)
 	mapNullString(&result.Comment, r.Comment)
-	mapNullString(&result.PolicyName, r.PolicyName)
+	mapNullStringWithMapping(&result.PolicyName, r.PolicyName, ParseSchemaObjectIdentifier)
 	mapNullString(&result.PrivacyDomain, r.PrivacyDomain)
 	mapNullString(&result.NameMapping, r.NameMapping)
 	mapNullString(&result.WriteDefault, r.WriteDefault)

@@ -34,7 +34,7 @@ var eventTableDropAndAddRowAccessPolicy = g.NewQueryStruct("EventTableDropAndAdd
 	QueryStructField("Add", eventTableAddRowAccessPolicy, g.KeywordOptions().Required())
 
 var eventTableClusteringAction = g.NewQueryStruct("EventTableClusteringAction").
-	PredefinedQueryStructField("ClusterBy", "*[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+	PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 	OptionalSQL("SUSPEND RECLUSTER").
 	OptionalSQL("RESUME RECLUSTER").
 	OptionalSQL("DROP CLUSTERING KEY")
@@ -74,7 +74,7 @@ var eventTablesDef = g.NewInterface(
 		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
 		OptionalSQL("COPY GRANTS").
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
+		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicyLegacy", g.KeywordOptions()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
@@ -87,8 +87,7 @@ var eventTablesDef = g.NewInterface(
 		Text("schema_name").
 		OptionalText("owner", g.WithRequiredInPlain()).
 		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()).
-		WithConvertGeneration(),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
 	g.NewQueryStruct("ShowEventTables").
 		Show().
 		Terse().
@@ -105,8 +104,7 @@ var eventTablesDef = g.NewInterface(
 	g.StructPair("eventTableDetailsRow", "EventTableDetails").
 		Text("name").
 		Text("kind").
-		Text("comment").
-		WithConvertGeneration(),
+		Text("comment"),
 	g.NewQueryStruct("DescribeEventTable").
 		Describe().
 		SQL("EVENT TABLE").

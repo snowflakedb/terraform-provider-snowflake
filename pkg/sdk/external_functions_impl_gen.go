@@ -2,18 +2,14 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ExternalFunctions = (*externalFunctions)(nil)
-
 var (
+	_ ExternalFunctions                        = (*externalFunctions)(nil)
 	_ convertibleRow[ExternalFunction]         = new(externalFunctionRow)
 	_ convertibleRow[ExternalFunctionProperty] = new(externalFunctionPropertyRow)
 )
@@ -49,7 +45,6 @@ func (v *externalFunctions) ShowByID(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
 	return collections.FindFirst(externalFunctions, func(r ExternalFunction) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
 }
 
@@ -58,8 +53,7 @@ func (v *externalFunctions) ShowByIDSafely(ctx context.Context, id SchemaObjectI
 }
 
 func (v *externalFunctions) Describe(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]ExternalFunctionProperty, error) {
-	// adjusted manually
-	opts := &DescribeFunctionOptions{
+	opts := &DescribeExternalFunctionOptions{
 		name: id,
 	}
 	rows, err := validateAndQuery[externalFunctionPropertyRow](v.client, ctx, opts)
@@ -71,10 +65,9 @@ func (v *externalFunctions) Describe(ctx context.Context, id SchemaObjectIdentif
 
 func (r *CreateExternalFunctionRequest) toOpts() *CreateExternalFunctionOptions {
 	opts := &CreateExternalFunctionOptions{
-		OrReplace: r.OrReplace,
-		Secure:    r.Secure,
-		// adjusted manually
-		name:                  r.name.WithoutArguments(),
+		OrReplace:             r.OrReplace,
+		Secure:                r.Secure,
+		name:                  r.name,
 		ResultDataType:        r.ResultDataType,
 		ReturnNullValues:      r.ReturnNullValues,
 		NullInputBehavior:     r.NullInputBehavior,
@@ -88,28 +81,33 @@ func (r *CreateExternalFunctionRequest) toOpts() *CreateExternalFunctionOptions 
 		As:                    r.As,
 	}
 	if r.Arguments != nil {
-		s := make([]ExternalFunctionArgument, len(r.Arguments))
+		arguments := make([]ExternalFunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
-			// adjusted manually
-			s[i] = ExternalFunctionArgument(v)
+			arguments[i] = ExternalFunctionArgument{
+				ArgName:     v.ArgName,
+				ArgDataType: v.ArgDataType,
+			}
 		}
-		opts.Arguments = s
+		opts.Arguments = arguments
 	}
 	if r.Headers != nil {
-		s := make([]ExternalFunctionHeader, len(r.Headers))
+		headers := make([]ExternalFunctionHeader, len(r.Headers))
 		for i, v := range r.Headers {
-			// adjusted manually
-			s[i] = ExternalFunctionHeader(v)
+			headers[i] = ExternalFunctionHeader{
+				Name:  v.Name,
+				Value: v.Value,
+			}
 		}
-		opts.Headers = s
+		opts.Headers = headers
 	}
 	if r.ContextHeaders != nil {
-		s := make([]ExternalFunctionContextHeader, len(r.ContextHeaders))
+		contextHeaders := make([]ExternalFunctionContextHeader, len(r.ContextHeaders))
 		for i, v := range r.ContextHeaders {
-			// adjusted manually
-			s[i] = ExternalFunctionContextHeader(v)
+			contextHeaders[i] = ExternalFunctionContextHeader{
+				ContextFunction: v.ContextFunction,
+			}
 		}
-		opts.ContextHeaders = s
+		opts.ContextHeaders = contextHeaders
 	}
 	return opts
 }
@@ -128,20 +126,23 @@ func (r *AlterExternalFunctionRequest) toOpts() *AlterExternalFunctionOptions {
 			ResponseTranslator: r.Set.ResponseTranslator,
 		}
 		if r.Set.Headers != nil {
-			s := make([]ExternalFunctionHeader, len(r.Set.Headers))
+			headers := make([]ExternalFunctionHeader, len(r.Set.Headers))
 			for i, v := range r.Set.Headers {
-				// adjusted manually
-				s[i] = ExternalFunctionHeader(v)
+				headers[i] = ExternalFunctionHeader{
+					Name:  v.Name,
+					Value: v.Value,
+				}
 			}
-			opts.Set.Headers = s
+			opts.Set.Headers = headers
 		}
 		if r.Set.ContextHeaders != nil {
-			s := make([]ExternalFunctionContextHeader, len(r.Set.ContextHeaders))
+			contextHeaders := make([]ExternalFunctionContextHeader, len(r.Set.ContextHeaders))
 			for i, v := range r.Set.ContextHeaders {
-				// adjusted manually
-				s[i] = ExternalFunctionContextHeader(v)
+				contextHeaders[i] = ExternalFunctionContextHeader{
+					ContextFunction: v.ContextFunction,
+				}
 			}
-			opts.Set.ContextHeaders = s
+			opts.Set.ContextHeaders = contextHeaders
 		}
 	}
 	if r.Unset != nil {
@@ -168,8 +169,7 @@ func (r *ShowExternalFunctionRequest) toOpts() *ShowExternalFunctionOptions {
 }
 
 func (r externalFunctionRow) convert() (*ExternalFunction, error) {
-	// adjusted manually
-	e := &ExternalFunction{
+	result := &ExternalFunction{
 		CreatedOn:          r.CreatedOn,
 		Name:               r.Name,
 		IsBuiltin:          r.IsBuiltin == "Y",
@@ -184,32 +184,13 @@ func (r externalFunctionRow) convert() (*ExternalFunction, error) {
 		IsExternalFunction: r.IsExternalFunction == "Y",
 		Language:           r.Language,
 	}
-	arguments := strings.TrimLeft(r.Arguments, r.Name)
-	returnIndex := strings.Index(arguments, ") RETURN ")
-	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse external function arguments: %w", err)
-	} else {
-		e.Arguments = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
-			return DataType(a.ArgType)
-		})
+	mapNullStringToRequiredBool(&result.IsSecure, r.IsSecure)
+	mapNullStringToRequiredBool(&result.IsMemoizable, r.IsMemoizable)
+	mapNullStringToRequiredBool(&result.IsDataMetric, r.IsDataMetric)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
 	}
-	if r.SchemaName.Valid {
-		e.SchemaName = strings.Trim(r.SchemaName.String, `"`)
-	}
-	if r.CatalogName.Valid {
-		e.CatalogName = strings.Trim(r.CatalogName.String, `"`)
-	}
-	if r.IsSecure.Valid {
-		e.IsSecure = r.IsSecure.String == "Y"
-	}
-	if r.IsMemoizable.Valid {
-		e.IsMemoizable = r.IsMemoizable.String == "Y"
-	}
-	if r.IsDataMetric.Valid {
-		e.IsDataMetric = r.IsDataMetric.String == "Y"
-	}
-	return e, nil
+	return result, nil
 }
 
 func (r *DescribeExternalFunctionRequest) toOpts() *DescribeExternalFunctionOptions {
@@ -220,9 +201,9 @@ func (r *DescribeExternalFunctionRequest) toOpts() *DescribeExternalFunctionOpti
 }
 
 func (r externalFunctionPropertyRow) convert() (*ExternalFunctionProperty, error) {
-	// adjusted manually
-	return &ExternalFunctionProperty{
+	result := &ExternalFunctionProperty{
 		Property: r.Property,
 		Value:    r.Value,
-	}, nil
+	}
+	return result, nil
 }

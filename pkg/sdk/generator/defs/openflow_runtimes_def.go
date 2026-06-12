@@ -111,8 +111,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Text("owner").
 		OptionalText("comment").
 		Time("created_on").
-		Time("updated_on").
-		WithConvertGeneration(),
+		Time("updated_on"),
 	g.NewQueryStruct("ShowOpenflowRuntimes").
 		Show().
 		SQL("OPENFLOW RUNTIMES").
@@ -140,8 +139,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Time("created_on").
 		Time("updated_on").
 		OptionalText("error_code").
-		OptionalText("status_message").
-		WithConvertGeneration(),
+		OptionalText("status_message"),
 	g.NewQueryStruct("DescribeOpenflowRuntime").
 		Describe().
 		SQL("OPENFLOW RUNTIME").

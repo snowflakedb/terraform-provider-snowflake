@@ -9,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ RowAccessPolicies = (*rowAccessPolicies)(nil)
-
 var (
+	_ RowAccessPolicies                          = (*rowAccessPolicies)(nil)
 	_ convertibleRow[RowAccessPolicy]            = new(rowAccessPolicyDBRow)
 	_ convertibleRow[RowAccessPolicyDescription] = new(describeRowAccessPolicyDBRow)
 )
@@ -83,14 +82,14 @@ func (r *CreateRowAccessPolicyRequest) toOpts() *CreateRowAccessPolicyOptions {
 		Comment:     r.Comment,
 	}
 	if r.args != nil {
-		s := make([]CreateRowAccessPolicyArgs, len(r.args))
+		args := make([]CreateRowAccessPolicyArgs, len(r.args))
 		for i, v := range r.args {
-			s[i] = CreateRowAccessPolicyArgs{
+			args[i] = CreateRowAccessPolicyArgs{
 				Name:     v.Name,
 				DataType: v.DataType,
 			}
 		}
-		opts.args = s
+		opts.args = args
 	}
 	return opts
 }
@@ -153,10 +152,10 @@ func (r describeRowAccessPolicyDBRow) convert() (*RowAccessPolicyDescription, er
 		ReturnType: r.ReturnType,
 		Body:       r.Body,
 	}
-	if v, err := ParseTableColumnSignature(r.Signature); err == nil {
-		result.Signature = v
-	} else {
+	if v, err := ParseTableColumnSignature(r.Signature); err != nil {
 		return nil, fmt.Errorf("parsing table column signature: %w", err)
+	} else {
+		result.Signature = v
 	}
 	return result, nil
 }

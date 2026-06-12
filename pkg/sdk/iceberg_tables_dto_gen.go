@@ -5,19 +5,21 @@ package sdk
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 
 var (
-	_ optionsProvider[CreateIcebergTableOptions]   = new(CreateIcebergTableRequest)
-	_ optionsProvider[AlterIcebergTableOptions]    = new(AlterIcebergTableRequest)
-	_ optionsProvider[DropIcebergTableOptions]     = new(DropIcebergTableRequest)
-	_ optionsProvider[ShowIcebergTableOptions]     = new(ShowIcebergTableRequest)
-	_ optionsProvider[DescribeIcebergTableOptions] = new(DescribeIcebergTableRequest)
+	_ optionsProvider[CreateIcebergTableOptions]                 = new(CreateIcebergTableRequest)
+	_ optionsProvider[CreateFromIcebergFilesIcebergTableOptions] = new(CreateFromIcebergFilesIcebergTableRequest)
+	_ optionsProvider[CreateFromDeltaLakeIcebergTableOptions]    = new(CreateFromDeltaLakeIcebergTableRequest)
+	_ optionsProvider[AlterIcebergTableOptions]                  = new(AlterIcebergTableRequest)
+	_ optionsProvider[DropIcebergTableOptions]                   = new(DropIcebergTableRequest)
+	_ optionsProvider[ShowIcebergTableOptions]                   = new(ShowIcebergTableRequest)
+	_ optionsProvider[DescribeIcebergTableOptions]               = new(DescribeIcebergTableRequest)
 )
 
 type CreateIcebergTableRequest struct {
 	OrReplace                  *bool
 	Transient                  *bool
 	IfNotExists                *bool
-	name                       SchemaObjectIdentifier // required
-	ColumnsAndConstraints      IcebergTableColumnsAndConstraintsRequest
+	name                       SchemaObjectIdentifier                   // required
+	ColumnsAndConstraints      IcebergTableColumnsAndConstraintsRequest // required
 	PartitionBy                []IcebergTablePartitionExpressionRequest
 	PathLayout                 *IcebergTablePathLayout
 	ClusterBy                  []string
@@ -43,7 +45,8 @@ type CreateIcebergTableRequest struct {
 }
 
 type IcebergTableColumnsAndConstraintsRequest struct {
-	Columns []IcebergTableColumnRequest
+	Columns             []IcebergTableColumnRequest
+	OutOfLineConstraint []TableOutOfLineConstraintRequest
 }
 
 type IcebergTableColumnRequest struct {
@@ -51,10 +54,63 @@ type IcebergTableColumnRequest struct {
 	ColumnType       datatypes.DataType // required
 	DefaultValue     *ColumnDefaultValue
 	NotNull          *bool
+	InlineConstraint *TableColumnInlineConstraintRequest
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
 	ProjectionPolicy *TableColumnProjectionPolicyRequest
 	Tag              []TagAssociation
 	Comment          *string
+}
+
+type TableColumnInlineConstraintRequest struct {
+	UniquePK *TableColumnInlineUniquePKRequest
+	FK       *TableColumnInlineFKRequest
+	CH       *TableColumnInlineCHRequest
+}
+
+type TableColumnInlineUniquePKRequest struct {
+	Name               *string
+	Unique             *bool
+	PrimaryKey         *bool
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type TableColumnInlineFKRequest struct {
+	Name               *string
+	ForeignKey         *bool
+	References         SchemaObjectIdentifier // required
+	RefColumn          []Column
+	Match              *MatchType
+	On                 *ForeignKeyOnAction
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type TableColumnInlineCHRequest struct {
+	Name             *string
+	Expression       string // required
+	EnableValidate   *bool
+	EnableNovalidate *bool
 }
 
 type TableColumnMaskingPolicyRequest struct {
@@ -64,6 +120,61 @@ type TableColumnMaskingPolicyRequest struct {
 
 type TableColumnProjectionPolicyRequest struct {
 	ProjectionPolicy SchemaObjectIdentifier // required
+}
+
+type TableOutOfLineConstraintRequest struct {
+	UniquePK *TableOutOfLineUniquePKRequest
+	FK       *TableOutOfLineFKRequest
+	CH       *TableOutOfLineCHRequest
+}
+
+type TableOutOfLineUniquePKRequest struct {
+	Name               *string
+	Unique             *bool
+	PrimaryKey         *bool
+	Columns            []Column
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+	Comment            *string
+}
+
+type TableOutOfLineFKRequest struct {
+	Name               *string
+	Columns            []Column
+	References         SchemaObjectIdentifier // required
+	RefColumns         []Column
+	Match              *MatchType
+	On                 *ForeignKeyOnAction
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+	Comment            *string
+}
+
+type TableOutOfLineCHRequest struct {
+	Name             *string
+	Expression       string // required
+	EnableValidate   *bool
+	EnableNovalidate *bool
 }
 
 type IcebergTablePartitionExpressionRequest struct {
@@ -123,6 +234,33 @@ type IcebergTableAggregationPolicyRequest struct {
 	AggregationPolicy SchemaObjectIdentifier // required
 }
 
+type CreateFromIcebergFilesIcebergTableRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
+	ExternalVolume           *AccountObjectIdentifier
+	Catalog                  *AccountObjectIdentifier
+	MetadataFilePath         string // required
+	ReplaceInvalidCharacters *bool
+	Comment                  *string
+	Tag                      []TagAssociation
+	Contact                  []TableContact
+}
+
+type CreateFromDeltaLakeIcebergTableRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
+	ExternalVolume           *AccountObjectIdentifier
+	Catalog                  *AccountObjectIdentifier
+	BaseLocation             string // required
+	ReplaceInvalidCharacters *bool
+	AutoRefresh              *bool
+	Comment                  *string
+	Tag                      []TagAssociation
+	Contact                  []TableContact
+}
+
 type AlterIcebergTableRequest struct {
 	IfExists                      *bool
 	name                          SchemaObjectIdentifier // required
@@ -156,6 +294,7 @@ type IcebergTableAddColumnActionRequest struct {
 	IfNotExists      *bool
 	Name             string             // required
 	ColumnType       datatypes.DataType // required
+	InlineConstraint *TableColumnInlineConstraintRequest
 	DefaultValue     *ColumnDefaultValue
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
 	ProjectionPolicy *TableColumnProjectionPolicyRequest

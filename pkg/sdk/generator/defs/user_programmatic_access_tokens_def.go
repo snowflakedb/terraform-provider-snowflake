@@ -18,19 +18,16 @@ var programmaticAccessTokenPairs = g.StructPair("programmaticAccessTokenResultDB
 	Time("created_on").
 	Text("created_by").
 	OptionalNumber("mins_to_bypass_network_policy_requirement").
-	OptionalText("rotated_to").
-	WithConvertGeneration()
+	OptionalText("rotated_to")
 
 var addProgrammaticAccessTokenResultPairs = g.StructPair("addProgrammaticAccessTokenResultDBRow", "AddProgrammaticAccessTokenResult").
 	Text("token_name").
-	Text("token_secret").
-	WithConvertGeneration()
+	Text("token_secret")
 
 var rotateProgrammaticAccessTokenResultPairs = g.StructPair("rotateProgrammaticAccessTokenResultDBRow", "RotateProgrammaticAccessTokenResult").
 	Text("token_name").
 	Text("token_secret").
-	Text("rotated_token_name").
-	WithConvertGeneration()
+	Text("rotated_token_name")
 
 var userProgrammaticAccessTokensDef = g.NewInterface(
 	"UserProgrammaticAccessTokens",
@@ -123,8 +120,26 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
 		OptionalIdentifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
-	g.ShowByIDNoFiltering,
+	g.ShowByIDSuppressed,
 ).
+	WithCustomInterfaceMethod(
+		"ShowByID",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("userId", g.KindOfT[sdkcommons.AccountObjectIdentifier]()),
+			g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]()),
+		},
+		"*ProgrammaticAccessToken", "error",
+	).
+	WithCustomInterfaceMethod(
+		"ShowByIDSafely",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("userId", g.KindOfT[sdkcommons.AccountObjectIdentifier]()),
+			g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]()),
+		},
+		"*ProgrammaticAccessToken", "error",
+	).
 	WithCustomInterfaceMethod(
 		"RemoveByIDSafely",
 		"",

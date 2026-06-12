@@ -98,6 +98,10 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.HybridTable{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.ImageRepository{},
 	},
 	{
@@ -136,6 +140,15 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.StorageIntegration{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.StorageLifecyclePolicy{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.StorageLifecyclePolicyDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
@@ -206,6 +219,10 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.ApiIntegration{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.CatalogIntegration{},
 	},
 	{
@@ -259,12 +276,21 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.IcebergTableDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.PasswordPolicy{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.HybridTable{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.IcebergTable{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",

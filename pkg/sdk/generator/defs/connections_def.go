@@ -87,10 +87,10 @@ var connectionsDef = g.NewInterface(
 		AccountIdentifierArray("failover_allowed_to_accounts").
 		Text("connection_url").
 		Text("organization_name").
-		Text("account_locator").
-		WithConvertGeneration(),
+		Text("account_locator"),
 	g.NewQueryStruct("ShowConnections").
 		Show().
 		SQL("CONNECTIONS").
 		OptionalLike(),
-)
+).
+	WithShowByIDFindPredicateKind(g.ShowByIDFindPredicateNameAndLocator)

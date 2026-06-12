@@ -51,6 +51,7 @@ type Client struct {
 	GitRepositories              GitRepositories
 	Grants                       Grants
 	HybridTables                 HybridTables
+	IcebergTables                IcebergTables
 	ImageRepositories            ImageRepositories
 	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
@@ -84,6 +85,7 @@ type Client struct {
 	Shares                       Shares
 	Stages                       Stages
 	StorageIntegrations          StorageIntegrations
+	StorageLifecyclePolicies     StorageLifecyclePolicies
 	Streamlits                   Streamlits
 	Streams                      Streams
 	Tables                       Tables
@@ -192,6 +194,7 @@ func (c *Client) initialize() {
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
 	c.HybridTables = &hybridTables{client: c}
+	c.IcebergTables = &icebergTables{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
 	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
@@ -226,6 +229,7 @@ func (c *Client) initialize() {
 	c.Shares = &shares{client: c}
 	c.Stages = &stages{client: c}
 	c.StorageIntegrations = &storageIntegrations{client: c}
+	c.StorageLifecyclePolicies = &storageLifecyclePolicies{client: c}
 	c.Streamlits = &streamlits{client: c}
 	c.Streams = &streams{client: c}
 	c.SystemFunctions = &systemFunctions{client: c}

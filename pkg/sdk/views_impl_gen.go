@@ -2,7 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 
@@ -10,9 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Views = (*views)(nil)
-
 var (
+	_ Views                       = (*views)(nil)
 	_ convertibleRow[View]        = new(viewDBRow)
 	_ convertibleRow[ViewDetails] = new(viewDetailsRow)
 )
@@ -89,27 +87,26 @@ func (r *CreateViewRequest) toOpts() *CreateViewOptions {
 		sql:         r.sql,
 	}
 	if r.Columns != nil {
-		s := make([]ViewColumn, len(r.Columns))
-		// adjusted manually
+		columns := make([]ViewColumn, len(r.Columns))
 		for i, v := range r.Columns {
-			s[i] = ViewColumn{
+			columns[i] = ViewColumn{
 				Name:    v.Name,
-				Tag:     v.Tag,
 				Comment: v.Comment,
+				Tag:     v.Tag,
 			}
 			if v.ProjectionPolicy != nil {
-				s[i].ProjectionPolicy = &ViewColumnProjectionPolicy{
+				columns[i].ProjectionPolicy = &ViewColumnProjectionPolicy{
 					ProjectionPolicy: v.ProjectionPolicy.ProjectionPolicy,
 				}
 			}
 			if v.MaskingPolicy != nil {
-				s[i].MaskingPolicy = &ViewColumnMaskingPolicy{
+				columns[i].MaskingPolicy = &ViewColumnMaskingPolicy{
 					MaskingPolicy: v.MaskingPolicy.MaskingPolicy,
 					Using:         v.MaskingPolicy.Using,
 				}
 			}
 		}
-		opts.Columns = s
+		opts.Columns = columns
 	}
 	if r.RowAccessPolicy != nil {
 		opts.RowAccessPolicy = &ViewRowAccessPolicy{
@@ -264,10 +261,7 @@ func (r viewDBRow) convert() (*View, error) {
 	mapNullStringToNonNullableField(&result.Reserved, r.Reserved)
 	mapNullStringToNonNullableField(&result.Owner, r.Owner)
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
-	// TODO [this PR]: allow metadata trimming
-	if r.Text.Valid {
-		result.Text = tracking.TrimMetadata(r.Text.String)
-	}
+	mapNullStringToNonNullableFieldWithAdjuster(&result.Text, r.Text, tracking.TrimMetadata)
 	mapNullBoolToNonNullableField(&result.IsSecure, r.IsSecure)
 	mapNullBoolToNonNullableField(&result.IsMaterialized, r.IsMaterialized)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)

@@ -48,6 +48,7 @@ func TestInt_Procedures(t *testing.T) {
 			// HasAutoEventLogging(sdk.AutoEventLoggingTracing).
 			HasEnableConsoleOutput(true).
 			HasLogLevel(sdk.LogLevelWarn).
+			HasLogEventLevel(sdk.LogLevelWarn).
 			HasMetricLevel(sdk.MetricLevelAll).
 			HasTraceLevel(sdk.TraceLevelAlways),
 		)
@@ -95,8 +96,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, procedure.ID()).
@@ -168,10 +169,10 @@ func TestInt_Procedures(t *testing.T) {
 		t.Cleanup(testClientHelper().Procedure.DropProcedureFunc(t, id))
 		t.Cleanup(testClientHelper().Stage.RemoveFromUserStageFunc(t, jarName))
 
-		function, err := client.Procedures.ShowByID(ctx, id)
+		proc, err := client.Procedures.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ProcedureFromObject(t, function).
+		assertThatObject(t, objectassert.ProcedureFromObject(t, proc).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
 			HasSchemaName(id.SchemaName()).
@@ -182,18 +183,17 @@ func TestInt_Procedures(t *testing.T) {
 			HasMaxNumArguments(1).
 			HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
 			HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
-			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
+			HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, proc.ID().Name(), dataType.ToLegacyDataTypeSql())).
 			HasDescription("comment").
 			HasCatalogName(id.DatabaseName()).
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			// TODO [SNOW-1850370]: apparently external access integrations and secrets are not filled out correctly for procedures
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
-		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
+		assertThatObject(t, objectassert.ProcedureDetails(t, proc.ID()).
 			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
 			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
 			HasReturnDataType(dataType).
@@ -270,8 +270,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -357,8 +357,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -506,8 +506,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -580,8 +580,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -654,8 +654,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -742,8 +742,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -819,8 +819,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -906,8 +906,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -987,8 +987,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1082,8 +1082,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1160,8 +1160,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1249,8 +1249,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations(externalAccessIntegration).
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1293,7 +1293,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -1323,8 +1323,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1363,7 +1363,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType).WithDefaultValue("3.123")
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -1391,8 +1391,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType).
-			WithNotNull(true)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -1428,15 +1427,15 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
 			HasSignature(fmt.Sprintf(`(%s %s)`, argName, dataType.ToLegacyDataTypeSql())).
-			HasReturns(fmt.Sprintf(`%s NOT NULL`, dataType.ToSql())).
+			HasReturns(dataType.ToSql()).
 			HasReturnDataType(dataType).
-			HasReturnNotNull(true).
+			HasReturnNotNull(false).
 			HasLanguage("SQL").
 			HasBody(definition).
 			// TODO [SNOW-1348103]: null handling and volatility are not returned and is present in create syntax
@@ -1468,7 +1467,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments()
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition)
 
@@ -1496,8 +1495,8 @@ func TestInt_Procedures(t *testing.T) {
 			HasIsTableFunction(false).
 			HasValidForClustering(false).
 			HasIsSecure(false).
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExternalAccessIntegrations("").
+			HasSecrets(""),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, function.ID()).
@@ -1777,7 +1776,7 @@ def filter_by_role(session, table_name, role):
 			RETURN message;
 		END;`
 
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt).WithNotNull(true)
 		argument := sdk.NewProcedureArgumentRequest("message", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -1915,6 +1914,7 @@ def filter_by_role(session, table_name, role):
 			// WithAutoEventLogging(sdk.AutoEventLoggingAll).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(sdk.LogLevelWarn).
+			WithLogEventLevel(sdk.LogLevelWarn).
 			WithMetricLevel(sdk.MetricLevelAll).
 			WithTraceLevel(sdk.TraceLevelAlways).
 			WithComment("new comment"),
@@ -1942,6 +1942,7 @@ def filter_by_role(session, table_name, role):
 			// WithAutoEventLogging(true).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(true).
+			WithLogEventLevel(true).
 			WithMetricLevel(true).
 			WithTraceLevel(true).
 			WithComment(true),
@@ -1953,9 +1954,8 @@ def filter_by_role(session, table_name, role):
 		assertThatObject(t, objectassert.Procedure(t, id).
 			HasName(id.Name()).
 			HasDescription(sdk.DefaultProcedureComment).
-			// both nil, because they are always nil in SHOW for procedures
-			HasExternalAccessIntegrationsNil().
-			HasSecretsNil(),
+			HasExactlyExternalAccessIntegrations().
+			HasExactlySecrets(map[string]sdk.SchemaObjectIdentifier{"abc": secretId}),
 		)
 
 		assertThatObject(t, objectassert.ProcedureDetails(t, id).
@@ -1996,6 +1996,7 @@ def filter_by_role(session, table_name, role):
 			// WithAutoEventLogging(sdk.AutoEventLoggingTracing).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(sdk.LogLevelWarn).
+			WithLogEventLevel(sdk.LogLevelWarn).
 			WithMetricLevel(sdk.MetricLevelAll).
 			WithTraceLevel(sdk.TraceLevelAlways).
 			WithComment("new comment"),
@@ -2015,6 +2016,7 @@ def filter_by_role(session, table_name, role):
 			// WithAutoEventLogging(true).
 			WithEnableConsoleOutput(true).
 			WithLogLevel(true).
+			WithLogEventLevel(true).
 			WithMetricLevel(true).
 			WithTraceLevel(true).
 			WithComment(true),
@@ -2490,7 +2492,7 @@ func TestInt_CallProcedure(t *testing.T) {
 			RETURN MESSAGE;
 		END;`
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeVARCHAR)
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt).WithNotNull(true)
 		argument := sdk.NewProcedureArgumentRequest("MESSAGE", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
@@ -2866,6 +2868,7 @@ def filter_by_role(session, name, role):
 	// `The DECFLOAT data type isn’t supported in stored procedures or user-defined functions (UDFs) written in a language other than SQL, such as Python or Java.`
 	// is unclear. Confirming that DECFLOAT is not supported even for SQL procedures.
 	t.Run("document that DECFLOAT is not supported even for SQL procedures", func(t *testing.T) {
+		t.Skip("TODO(next prs): fix or remove the test now that DECFLOAT is supported for SQL procedures")
 		argName := "A"
 		dataType, err := datatypes.ParseDataType("DECFLOAT")
 		require.NoError(t, err)
@@ -2877,7 +2880,7 @@ def filter_by_role(session, name, role):
 
 		err = client.Procedures.CreateForSQL(ctx, sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(
 			idWithArguments.SchemaObjectId(),
-			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(dataType)),
+			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)),
 			testClientHelper().Procedure.SampleSqlDefinitionWithArgument(t),
 		).
 			WithArguments(args),

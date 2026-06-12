@@ -6,9 +6,11 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes
 
 func NewCreateIcebergTableRequest(
 	name SchemaObjectIdentifier,
+	columnsAndConstraints IcebergTableColumnsAndConstraintsRequest,
 ) *CreateIcebergTableRequest {
 	s := CreateIcebergTableRequest{}
 	s.name = name
+	s.ColumnsAndConstraints = columnsAndConstraints
 	return &s
 }
 
@@ -24,11 +26,6 @@ func (s *CreateIcebergTableRequest) WithTransient(transient bool) *CreateIceberg
 
 func (s *CreateIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateIcebergTableRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateIcebergTableRequest) WithColumnsAndConstraints(columnsAndConstraints IcebergTableColumnsAndConstraintsRequest) *CreateIcebergTableRequest {
-	s.ColumnsAndConstraints = columnsAndConstraints
 	return s
 }
 
@@ -152,6 +149,11 @@ func (s *IcebergTableColumnsAndConstraintsRequest) WithColumns(columns []Iceberg
 	return s
 }
 
+func (s *IcebergTableColumnsAndConstraintsRequest) WithOutOfLineConstraint(outOfLineConstraint []TableOutOfLineConstraintRequest) *IcebergTableColumnsAndConstraintsRequest {
+	s.OutOfLineConstraint = outOfLineConstraint
+	return s
+}
+
 func NewIcebergTableColumnRequest(
 	name string,
 	columnType datatypes.DataType,
@@ -169,6 +171,11 @@ func (s *IcebergTableColumnRequest) WithDefaultValue(defaultValue ColumnDefaultV
 
 func (s *IcebergTableColumnRequest) WithNotNull(notNull bool) *IcebergTableColumnRequest {
 	s.NotNull = &notNull
+	return s
+}
+
+func (s *IcebergTableColumnRequest) WithInlineConstraint(inlineConstraint TableColumnInlineConstraintRequest) *IcebergTableColumnRequest {
+	s.InlineConstraint = &inlineConstraint
 	return s
 }
 
@@ -192,6 +199,222 @@ func (s *IcebergTableColumnRequest) WithComment(comment string) *IcebergTableCol
 	return s
 }
 
+func NewTableColumnInlineConstraintRequest() *TableColumnInlineConstraintRequest {
+	s := TableColumnInlineConstraintRequest{}
+	return &s
+}
+
+func (s *TableColumnInlineConstraintRequest) WithUniquePK(uniquePK TableColumnInlineUniquePKRequest) *TableColumnInlineConstraintRequest {
+	s.UniquePK = &uniquePK
+	return s
+}
+
+func (s *TableColumnInlineConstraintRequest) WithFK(fK TableColumnInlineFKRequest) *TableColumnInlineConstraintRequest {
+	s.FK = &fK
+	return s
+}
+
+func (s *TableColumnInlineConstraintRequest) WithCH(cH TableColumnInlineCHRequest) *TableColumnInlineConstraintRequest {
+	s.CH = &cH
+	return s
+}
+
+func NewTableColumnInlineUniquePKRequest() *TableColumnInlineUniquePKRequest {
+	s := TableColumnInlineUniquePKRequest{}
+	return &s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithName(name string) *TableColumnInlineUniquePKRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithUnique(unique bool) *TableColumnInlineUniquePKRequest {
+	s.Unique = &unique
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithPrimaryKey(primaryKey bool) *TableColumnInlineUniquePKRequest {
+	s.PrimaryKey = &primaryKey
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithEnforced(enforced bool) *TableColumnInlineUniquePKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithNotEnforced(notEnforced bool) *TableColumnInlineUniquePKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithDeferrable(deferrable bool) *TableColumnInlineUniquePKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithNotDeferrable(notDeferrable bool) *TableColumnInlineUniquePKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableColumnInlineUniquePKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableColumnInlineUniquePKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithEnable(enable bool) *TableColumnInlineUniquePKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithDisable(disable bool) *TableColumnInlineUniquePKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithValidate(validate bool) *TableColumnInlineUniquePKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithNovalidate(novalidate bool) *TableColumnInlineUniquePKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithRely(rely bool) *TableColumnInlineUniquePKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithNorely(norely bool) *TableColumnInlineUniquePKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func NewTableColumnInlineFKRequest(
+	references SchemaObjectIdentifier,
+) *TableColumnInlineFKRequest {
+	s := TableColumnInlineFKRequest{}
+	s.References = references
+	return &s
+}
+
+func (s *TableColumnInlineFKRequest) WithName(name string) *TableColumnInlineFKRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithForeignKey(foreignKey bool) *TableColumnInlineFKRequest {
+	s.ForeignKey = &foreignKey
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithRefColumn(refColumn []Column) *TableColumnInlineFKRequest {
+	s.RefColumn = refColumn
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithMatch(match MatchType) *TableColumnInlineFKRequest {
+	s.Match = &match
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithOn(on ForeignKeyOnAction) *TableColumnInlineFKRequest {
+	s.On = &on
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithEnforced(enforced bool) *TableColumnInlineFKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithNotEnforced(notEnforced bool) *TableColumnInlineFKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithDeferrable(deferrable bool) *TableColumnInlineFKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithNotDeferrable(notDeferrable bool) *TableColumnInlineFKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableColumnInlineFKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableColumnInlineFKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithEnable(enable bool) *TableColumnInlineFKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithDisable(disable bool) *TableColumnInlineFKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithValidate(validate bool) *TableColumnInlineFKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithNovalidate(novalidate bool) *TableColumnInlineFKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithRely(rely bool) *TableColumnInlineFKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithNorely(norely bool) *TableColumnInlineFKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func NewTableColumnInlineCHRequest(
+	expression string,
+) *TableColumnInlineCHRequest {
+	s := TableColumnInlineCHRequest{}
+	s.Expression = expression
+	return &s
+}
+
+func (s *TableColumnInlineCHRequest) WithName(name string) *TableColumnInlineCHRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableColumnInlineCHRequest) WithEnableValidate(enableValidate bool) *TableColumnInlineCHRequest {
+	s.EnableValidate = &enableValidate
+	return s
+}
+
+func (s *TableColumnInlineCHRequest) WithEnableNovalidate(enableNovalidate bool) *TableColumnInlineCHRequest {
+	s.EnableNovalidate = &enableNovalidate
+	return s
+}
+
 func NewTableColumnMaskingPolicyRequest(
 	maskingPolicy SchemaObjectIdentifier,
 ) *TableColumnMaskingPolicyRequest {
@@ -211,6 +434,237 @@ func NewTableColumnProjectionPolicyRequest(
 	s := TableColumnProjectionPolicyRequest{}
 	s.ProjectionPolicy = projectionPolicy
 	return &s
+}
+
+func NewTableOutOfLineConstraintRequest() *TableOutOfLineConstraintRequest {
+	s := TableOutOfLineConstraintRequest{}
+	return &s
+}
+
+func (s *TableOutOfLineConstraintRequest) WithUniquePK(uniquePK TableOutOfLineUniquePKRequest) *TableOutOfLineConstraintRequest {
+	s.UniquePK = &uniquePK
+	return s
+}
+
+func (s *TableOutOfLineConstraintRequest) WithFK(fK TableOutOfLineFKRequest) *TableOutOfLineConstraintRequest {
+	s.FK = &fK
+	return s
+}
+
+func (s *TableOutOfLineConstraintRequest) WithCH(cH TableOutOfLineCHRequest) *TableOutOfLineConstraintRequest {
+	s.CH = &cH
+	return s
+}
+
+func NewTableOutOfLineUniquePKRequest() *TableOutOfLineUniquePKRequest {
+	s := TableOutOfLineUniquePKRequest{}
+	return &s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithName(name string) *TableOutOfLineUniquePKRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithUnique(unique bool) *TableOutOfLineUniquePKRequest {
+	s.Unique = &unique
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithPrimaryKey(primaryKey bool) *TableOutOfLineUniquePKRequest {
+	s.PrimaryKey = &primaryKey
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithColumns(columns []Column) *TableOutOfLineUniquePKRequest {
+	s.Columns = columns
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithEnforced(enforced bool) *TableOutOfLineUniquePKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithNotEnforced(notEnforced bool) *TableOutOfLineUniquePKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithDeferrable(deferrable bool) *TableOutOfLineUniquePKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithNotDeferrable(notDeferrable bool) *TableOutOfLineUniquePKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableOutOfLineUniquePKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableOutOfLineUniquePKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithEnable(enable bool) *TableOutOfLineUniquePKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithDisable(disable bool) *TableOutOfLineUniquePKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithValidate(validate bool) *TableOutOfLineUniquePKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithNovalidate(novalidate bool) *TableOutOfLineUniquePKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithRely(rely bool) *TableOutOfLineUniquePKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithNorely(norely bool) *TableOutOfLineUniquePKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithComment(comment string) *TableOutOfLineUniquePKRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewTableOutOfLineFKRequest(
+	references SchemaObjectIdentifier,
+) *TableOutOfLineFKRequest {
+	s := TableOutOfLineFKRequest{}
+	s.References = references
+	return &s
+}
+
+func (s *TableOutOfLineFKRequest) WithName(name string) *TableOutOfLineFKRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithColumns(columns []Column) *TableOutOfLineFKRequest {
+	s.Columns = columns
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithRefColumns(refColumns []Column) *TableOutOfLineFKRequest {
+	s.RefColumns = refColumns
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithMatch(match MatchType) *TableOutOfLineFKRequest {
+	s.Match = &match
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithOn(on ForeignKeyOnAction) *TableOutOfLineFKRequest {
+	s.On = &on
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithEnforced(enforced bool) *TableOutOfLineFKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithNotEnforced(notEnforced bool) *TableOutOfLineFKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithDeferrable(deferrable bool) *TableOutOfLineFKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithNotDeferrable(notDeferrable bool) *TableOutOfLineFKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableOutOfLineFKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableOutOfLineFKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithEnable(enable bool) *TableOutOfLineFKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithDisable(disable bool) *TableOutOfLineFKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithValidate(validate bool) *TableOutOfLineFKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithNovalidate(novalidate bool) *TableOutOfLineFKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithRely(rely bool) *TableOutOfLineFKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithNorely(norely bool) *TableOutOfLineFKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithComment(comment string) *TableOutOfLineFKRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewTableOutOfLineCHRequest(
+	expression string,
+) *TableOutOfLineCHRequest {
+	s := TableOutOfLineCHRequest{}
+	s.Expression = expression
+	return &s
+}
+
+func (s *TableOutOfLineCHRequest) WithName(name string) *TableOutOfLineCHRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableOutOfLineCHRequest) WithEnableValidate(enableValidate bool) *TableOutOfLineCHRequest {
+	s.EnableValidate = &enableValidate
+	return s
+}
+
+func (s *TableOutOfLineCHRequest) WithEnableNovalidate(enableNovalidate bool) *TableOutOfLineCHRequest {
+	s.EnableNovalidate = &enableNovalidate
+	return s
 }
 
 func NewIcebergTablePartitionExpressionRequest() *IcebergTablePartitionExpressionRequest {
@@ -359,6 +813,111 @@ func NewIcebergTableAggregationPolicyRequest(
 	return &s
 }
 
+func NewCreateFromIcebergFilesIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	metadataFilePath string,
+) *CreateFromIcebergFilesIcebergTableRequest {
+	s := CreateFromIcebergFilesIcebergTableRequest{}
+	s.name = name
+	s.MetadataFilePath = metadataFilePath
+	return &s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromIcebergFilesIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromIcebergFilesIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithComment(comment string) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromIcebergFilesIcebergTableRequest) WithContact(contact []TableContact) *CreateFromIcebergFilesIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
+func NewCreateFromDeltaLakeIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	baseLocation string,
+) *CreateFromDeltaLakeIcebergTableRequest {
+	s := CreateFromDeltaLakeIcebergTableRequest{}
+	s.name = name
+	s.BaseLocation = baseLocation
+	return &s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromDeltaLakeIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithAutoRefresh(autoRefresh bool) *CreateFromDeltaLakeIcebergTableRequest {
+	s.AutoRefresh = &autoRefresh
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithComment(comment string) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromDeltaLakeIcebergTableRequest) WithContact(contact []TableContact) *CreateFromDeltaLakeIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
 func NewAlterIcebergTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterIcebergTableRequest {
@@ -504,6 +1063,11 @@ func NewIcebergTableAddColumnActionRequest(
 
 func (s *IcebergTableAddColumnActionRequest) WithIfNotExists(ifNotExists bool) *IcebergTableAddColumnActionRequest {
 	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *IcebergTableAddColumnActionRequest) WithInlineConstraint(inlineConstraint TableColumnInlineConstraintRequest) *IcebergTableAddColumnActionRequest {
+	s.InlineConstraint = &inlineConstraint
 	return s
 }
 

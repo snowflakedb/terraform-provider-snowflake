@@ -8,10 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ HybridTables = (*hybridTables)(nil)
-
-// adjusted manually
 var (
+	_ HybridTables                       = (*hybridTables)(nil)
 	_ convertibleRow[HybridTable]        = new(hybridTableRow)
 	_ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
 	_ convertibleRow[HybridTableIndex]   = new(hybridTableIndexRow)
@@ -52,7 +50,6 @@ func (v *hybridTables) Show(ctx context.Context, request *ShowHybridTableRequest
 func (v *hybridTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error) {
 	request := NewShowHybridTableRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		// adjusted manually
 		WithIn(TableIn{In: In{Schema: id.SchemaId()}})
 	hybridTables, err := v.Show(ctx, request)
 	if err != nil {
@@ -97,18 +94,20 @@ func (v *hybridTables) ShowIndexes(ctx context.Context, request *ShowIndexesHybr
 
 func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 	opts := &CreateHybridTableOptions{
-		OrReplace:   r.OrReplace,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		Comment:     r.Comment,
+		OrReplace:                  r.OrReplace,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		DataRetentionTimeInDays:    r.DataRetentionTimeInDays,
+		MaxDataExtensionTimeInDays: r.MaxDataExtensionTimeInDays,
+		Comment:                    r.Comment,
 	}
 	opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
 	if r.ColumnsAndConstraints.Columns != nil {
-		s := make([]HybridTableColumn, len(r.ColumnsAndConstraints.Columns))
+		columns := make([]HybridTableColumn, len(r.ColumnsAndConstraints.Columns))
 		for i, v := range r.ColumnsAndConstraints.Columns {
-			s[i] = HybridTableColumn{
+			columns[i] = HybridTableColumn{
 				Name:             v.Name,
-				Type:             v.Type,
+				DataType:         v.DataType,
 				InlineConstraint: v.InlineConstraint,
 				NotNull:          v.NotNull,
 				DefaultValue:     v.DefaultValue,
@@ -116,31 +115,30 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 				Comment:          v.Comment,
 			}
 		}
-		opts.ColumnsAndConstraints.Columns = s
+		opts.ColumnsAndConstraints.Columns = columns
 	}
 	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
-		s := make([]HybridTableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		outOfLineConstraint := make([]HybridTableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
-			s[i] = HybridTableOutOfLineConstraint{
-				Name:       v.Name,
-				Type:       v.Type,
-				Columns:    v.Columns,
-				ForeignKey: v.ForeignKey,
+			outOfLineConstraint[i] = HybridTableOutOfLineConstraint{
+				Name:                 v.Name,
+				ColumnConstraintType: v.ColumnConstraintType,
+				Columns:              v.Columns,
+				ForeignKey:           v.ForeignKey,
 			}
 		}
-		opts.ColumnsAndConstraints.OutOfLineConstraint = s
+		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
 	if r.ColumnsAndConstraints.OutOfLineIndex != nil {
-		s := make([]HybridTableOutOfLineIndex, len(r.ColumnsAndConstraints.OutOfLineIndex))
+		outOfLineIndex := make([]HybridTableOutOfLineIndex, len(r.ColumnsAndConstraints.OutOfLineIndex))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineIndex {
-			s[i] = HybridTableOutOfLineIndex{
-				// adjusted manually
+			outOfLineIndex[i] = HybridTableOutOfLineIndex{
 				Name:           v.Name,
 				Columns:        v.Columns,
 				IncludeColumns: v.IncludeColumns,
 			}
 		}
-		opts.ColumnsAndConstraints.OutOfLineIndex = s
+		opts.ColumnsAndConstraints.OutOfLineIndex = outOfLineIndex
 	}
 	return opts
 }
@@ -155,7 +153,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		opts.AddColumnAction = &HybridTableAddColumnAction{
 			IfNotExists:      r.AddColumnAction.IfNotExists,
 			Name:             r.AddColumnAction.Name,
-			Type:             r.AddColumnAction.Type,
+			DataType:         r.AddColumnAction.DataType,
 			Collate:          r.AddColumnAction.Collate,
 			DefaultValue:     r.AddColumnAction.DefaultValue,
 			InlineConstraint: r.AddColumnAction.InlineConstraint,
@@ -182,19 +180,18 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		}
 	}
 	if r.AlterColumnAction != nil {
-		s := make([]HybridTableAlterColumnAction, len(r.AlterColumnAction))
+		alterColumnAction := make([]HybridTableAlterColumnAction, len(r.AlterColumnAction))
 		for i, v := range r.AlterColumnAction {
-			s[i] = HybridTableAlterColumnAction{
-				// adjusted manually
+			alterColumnAction[i] = HybridTableAlterColumnAction{
 				ColumnName:   v.ColumnName,
 				DropDefault:  v.DropDefault,
 				SetDefault:   v.SetDefault,
-				Type:         v.Type,
+				DataType:     v.DataType,
 				Comment:      v.Comment,
 				UnsetComment: v.UnsetComment,
 			}
 		}
-		opts.AlterColumnAction = s
+		opts.AlterColumnAction = alterColumnAction
 	}
 	if r.DropColumnAction != nil {
 		opts.DropColumnAction = &HybridTableDropColumnAction{
@@ -230,6 +227,13 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
 			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
 			Comment:                    r.Set.Comment,
+		}
+	}
+	if r.Unset != nil {
+		opts.Unset = &HybridTableUnsetProperties{
+			Comment:                    r.Unset.Comment,
+			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
 		}
 	}
 	return opts
@@ -281,7 +285,6 @@ func (r *DescribeHybridTableRequest) toOpts() *DescribeHybridTableOptions {
 func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
 	result := &HybridTableDetails{
 		Name:       r.Name,
-		Type:       r.Type,
 		Kind:       r.Kind,
 		IsNullable: r.Null == "Y",
 		PrimaryKey: r.PrimaryKey == "Y",
@@ -294,6 +297,9 @@ func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
 	mapNullStringToNonNullableField(&result.PolicyName, r.PolicyName)
 	mapNullStringToNonNullableField(&result.PrivacyDomain, r.PrivacyDomain)
 	mapNullStringToNonNullableField(&result.SchemaEvolutionRecord, r.SchemaEvolutionRecord)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 

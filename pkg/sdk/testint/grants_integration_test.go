@@ -1515,7 +1515,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		// TODO [SNOW-2852837]: Create a better semantic view helper
 		table1ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		alias1 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table1")
+		alias1 := sdk.NewLogicalTableAliasRequest("table1")
 		columns1 := []sdk.TableColumnRequest{
 			*sdk.NewTableColumnRequest("FIRST_A", sdk.DataTypeNumber),
 			*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber),

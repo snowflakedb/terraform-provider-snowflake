@@ -4,11 +4,8 @@ package sdk
 
 import (
 	"context"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-// whitespace adjusted manually
 var (
 	_ UserProgrammaticAccessTokens                        = (*userProgrammaticAccessTokens)(nil)
 	_ convertibleRow[AddProgrammaticAccessTokenResult]    = new(addProgrammaticAccessTokenResultDBRow)
@@ -55,21 +52,6 @@ func (v *userProgrammaticAccessTokens) Show(ctx context.Context, request *ShowUs
 		return nil, err
 	}
 	return convertRows[programmaticAccessTokenResultDBRow, ProgrammaticAccessToken](dbRows)
-}
-
-// Adjusted manually to include the user id in the request.
-func (v *userProgrammaticAccessTokens) ShowByID(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
-	request := NewShowUserProgrammaticAccessTokenRequest().WithUserName(userId)
-	userProgrammaticAccessTokens, err := v.Show(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return collections.FindFirst(userProgrammaticAccessTokens, func(r ProgrammaticAccessToken) bool { return r.Name == id.Name() })
-}
-
-// Adjusted manually to include the user id in the request.
-func (v *userProgrammaticAccessTokens) ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
-	return SafeShowProgrammaticAccessTokenByName(v.client, ctx, userId, id)
 }
 
 func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAccessTokenOptions {

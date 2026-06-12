@@ -114,6 +114,7 @@ func init() {
 		"instance_method_kind_deref":    deref[InstanceMethodKind],
 		"TypeWithoutPointer":            genhelpers.TypeWithoutPointer,
 		"TypeWithoutPointerAndBrackets": genhelpers.TypeWithoutPointerAndBrackets,
+		"toOptsSliceElemVar":            func() string { return toOptsSliceElemVar },
 	})
 	subTemplates, _ = subTemplates.New("toOptsMapping").Parse(toOptsMappingTemplateContent)
 	subTemplates, _ = subTemplates.New("convert").Funcs(genhelpers.BuildTemplateFuncMap(

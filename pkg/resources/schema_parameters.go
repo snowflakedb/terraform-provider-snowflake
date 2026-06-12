@@ -24,6 +24,7 @@ var (
 		parameter[sdk.ObjectParameter]{sdk.ObjectParameterDefaultDDLCollation, valueTypeString, sdk.ParameterTypeSchema},
 		parameter[sdk.ObjectParameter]{sdk.ObjectParameterStorageSerializationPolicy, valueTypeString, sdk.ParameterTypeSchema},
 		parameter[sdk.ObjectParameter]{sdk.ObjectParameterLogLevel, valueTypeString, sdk.ParameterTypeSchema},
+		parameter[sdk.ObjectParameter]{sdk.ObjectParameterLogEventLevel, valueTypeString, sdk.ParameterTypeSchema},
 		parameter[sdk.ObjectParameter]{sdk.ObjectParameterTraceLevel, valueTypeString, sdk.ParameterTypeSchema},
 		parameter[sdk.ObjectParameter]{sdk.ObjectParameterSuspendTaskAfterNumFailures, valueTypeInt, sdk.ParameterTypeSchema},
 		parameter[sdk.ObjectParameter]{sdk.ObjectParameterTaskAutoRetryAttempts, valueTypeInt, sdk.ParameterTypeSchema},
@@ -86,6 +87,7 @@ func handleSchemaParameterRead(d *schema.ResourceData, schemaParameters []*sdk.P
 			string(sdk.ObjectParameterDefaultDDLCollation),
 			string(sdk.ObjectParameterStorageSerializationPolicy),
 			string(sdk.ObjectParameterLogLevel),
+			string(sdk.ObjectParameterLogEventLevel),
 			string(sdk.ObjectParameterTraceLevel),
 			string(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize):
 			if err := d.Set(strings.ToLower(parameter.Key), parameter.Value); err != nil {
@@ -120,6 +122,7 @@ func handleSchemaParametersCreate(d *schema.ResourceData, createOpts *sdk.Create
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDDLCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &createOpts.LogLevel, sdk.ToLogLevel),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &createOpts.LogEventLevel, sdk.ToLogLevel),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterTraceLevel, &createOpts.TraceLevel, sdk.ToTraceLevel),
 		handleParameterCreate(d, sdk.ObjectParameterSuspendTaskAfterNumFailures, &createOpts.SuspendTaskAfterNumFailures),
 		handleParameterCreate(d, sdk.ObjectParameterTaskAutoRetryAttempts, &createOpts.TaskAutoRetryAttempts),
@@ -142,6 +145,7 @@ func handleSchemaParametersChanges(d *schema.ResourceData, set *sdk.SchemaSet, u
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterDefaultDDLCollation, &set.DefaultDDLCollation, &unset.DefaultDDLCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &set.StorageSerializationPolicy, &unset.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogLevel, &set.LogLevel, &unset.LogLevel, sdk.ToLogLevel),
+		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, sdk.ToLogLevel),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterTraceLevel, &set.TraceLevel, &unset.TraceLevel, sdk.ToTraceLevel),
 		handleParameterUpdate(d, sdk.ObjectParameterSuspendTaskAfterNumFailures, &set.SuspendTaskAfterNumFailures, &unset.SuspendTaskAfterNumFailures),
 		handleParameterUpdate(d, sdk.ObjectParameterTaskAutoRetryAttempts, &set.TaskAutoRetryAttempts, &unset.TaskAutoRetryAttempts),

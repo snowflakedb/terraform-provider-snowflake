@@ -22,6 +22,16 @@ func (s *CreateHybridTableRequest) WithIfNotExists(ifNotExists bool) *CreateHybr
 	return s
 }
 
+func (s *CreateHybridTableRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateHybridTableRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *CreateHybridTableRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *CreateHybridTableRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
 func (s *CreateHybridTableRequest) WithComment(comment string) *CreateHybridTableRequest {
 	s.Comment = &comment
 	return s
@@ -49,11 +59,11 @@ func (s *HybridTableColumnsConstraintsAndIndexesRequest) WithOutOfLineIndex(outO
 
 func NewHybridTableColumnRequest(
 	name string,
-	columnType DataType,
+	dataType DataType,
 ) *HybridTableColumnRequest {
 	s := HybridTableColumnRequest{}
 	s.Name = name
-	s.Type = columnType
+	s.DataType = dataType
 	return &s
 }
 
@@ -83,10 +93,10 @@ func (s *HybridTableColumnRequest) WithComment(comment string) *HybridTableColum
 }
 
 func NewHybridTableOutOfLineConstraintRequest(
-	constraintType ColumnConstraintType,
+	columnConstraintType ColumnConstraintType,
 ) *HybridTableOutOfLineConstraintRequest {
 	s := HybridTableOutOfLineConstraintRequest{}
-	s.Type = constraintType
+	s.ColumnConstraintType = columnConstraintType
 	return &s
 }
 
@@ -173,13 +183,18 @@ func (s *AlterHybridTableRequest) WithSet(set HybridTableSetPropertiesRequest) *
 	return s
 }
 
+func (s *AlterHybridTableRequest) WithUnset(unset HybridTableUnsetPropertiesRequest) *AlterHybridTableRequest {
+	s.Unset = &unset
+	return s
+}
+
 func NewHybridTableAddColumnActionRequest(
 	name string,
-	columnType DataType,
+	dataType DataType,
 ) *HybridTableAddColumnActionRequest {
 	s := HybridTableAddColumnActionRequest{}
 	s.Name = name
-	s.Type = columnType
+	s.DataType = dataType
 	return &s
 }
 
@@ -286,8 +301,8 @@ func (s *HybridTableAlterColumnActionRequest) WithSetDefault(setDefault Sequence
 	return s
 }
 
-func (s *HybridTableAlterColumnActionRequest) WithType(dataType DataType) *HybridTableAlterColumnActionRequest {
-	s.Type = &dataType
+func (s *HybridTableAlterColumnActionRequest) WithDataType(dataType DataType) *HybridTableAlterColumnActionRequest {
+	s.DataType = &dataType
 	return s
 }
 
@@ -394,6 +409,26 @@ func (s *HybridTableSetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxData
 
 func (s *HybridTableSetPropertiesRequest) WithComment(comment string) *HybridTableSetPropertiesRequest {
 	s.Comment = &comment
+	return s
+}
+
+func NewHybridTableUnsetPropertiesRequest() *HybridTableUnsetPropertiesRequest {
+	s := HybridTableUnsetPropertiesRequest{}
+	return &s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithComment(comment bool) *HybridTableUnsetPropertiesRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
+	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
 	return s
 }
 

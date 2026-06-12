@@ -8,9 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ ApiIntegrations = (*apiIntegrations)(nil)
-
 var (
+	_ ApiIntegrations                        = (*apiIntegrations)(nil)
 	_ convertibleRow[ApiIntegration]         = new(showApiIntegrationsDbRow)
 	_ convertibleRow[ApiIntegrationProperty] = new(descApiIntegrationsDbRow)
 )
@@ -101,6 +100,64 @@ func (r *CreateApiIntegrationRequest) toOpts() *CreateApiIntegrationOptions {
 			GoogleAudience: r.GoogleApiProviderParams.GoogleAudience,
 		}
 	}
+	if r.GitHttpsApiTokenBasedProviderParams != nil {
+		opts.GitHttpsApiTokenBasedProviderParams = &GitHttpsApiTokenBasedParams{}
+		if r.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets != nil {
+			opts.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{
+				AllSecrets:  r.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllSecrets,
+				NoSecrets:   r.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.NoSecrets,
+				AllowedList: r.GitHttpsApiTokenBasedProviderParams.AllowedAuthenticationSecrets.AllowedList,
+			}
+		}
+	}
+	if r.GitHttpsApiGithubAppProviderParams != nil {
+		opts.GitHttpsApiGithubAppProviderParams = &GitHttpsApiGithubAppParams{}
+		opts.GitHttpsApiGithubAppProviderParams.ApiUserAuthentication = GithubAppUserAuthentication{}
+	}
+	if r.GitHttpsApiOAuth2ProviderParams != nil {
+		opts.GitHttpsApiOAuth2ProviderParams = &GitHttpsApiOAuth2Params{}
+		opts.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication = OAuth2GitUserAuthentication{
+			OauthAuthorizationEndpoint: r.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication.OauthAuthorizationEndpoint,
+			OauthTokenEndpoint:         r.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication.OauthTokenEndpoint,
+			OauthClientId:              r.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication.OauthClientId,
+			OauthClientSecret:          r.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication.OauthClientSecret,
+			OauthAccessTokenValidity:   r.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication.OauthAccessTokenValidity,
+			OauthRefreshTokenValidity:  r.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication.OauthRefreshTokenValidity,
+			OauthAllowedScopes:         r.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication.OauthAllowedScopes,
+			OauthUsername:              r.GitHttpsApiOAuth2ProviderParams.ApiUserAuthentication.OauthUsername,
+		}
+	}
+	if r.GitHttpsApiPrivateLinkProviderParams != nil {
+		opts.GitHttpsApiPrivateLinkProviderParams = &GitHttpsApiPrivateLinkParams{
+			UsePrivatelinkEndpoint: r.GitHttpsApiPrivateLinkProviderParams.UsePrivatelinkEndpoint,
+			TlsTrustedCertificates: r.GitHttpsApiPrivateLinkProviderParams.TlsTrustedCertificates,
+		}
+		if r.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets != nil {
+			opts.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{
+				AllSecrets:  r.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllSecrets,
+				NoSecrets:   r.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.NoSecrets,
+				AllowedList: r.GitHttpsApiPrivateLinkProviderParams.AllowedAuthenticationSecrets.AllowedList,
+			}
+		}
+	}
+	if r.ExternalMcpOAuth2ProviderParams != nil {
+		opts.ExternalMcpOAuth2ProviderParams = &ExternalMcpOAuth2Params{}
+		opts.ExternalMcpOAuth2ProviderParams.ApiUserAuthentication = OAuth2McpUserAuthentication{
+			OauthClientId:              r.ExternalMcpOAuth2ProviderParams.ApiUserAuthentication.OauthClientId,
+			OauthClientSecret:          r.ExternalMcpOAuth2ProviderParams.ApiUserAuthentication.OauthClientSecret,
+			OauthTokenEndpoint:         r.ExternalMcpOAuth2ProviderParams.ApiUserAuthentication.OauthTokenEndpoint,
+			OauthAuthorizationEndpoint: r.ExternalMcpOAuth2ProviderParams.ApiUserAuthentication.OauthAuthorizationEndpoint,
+			OauthClientAuthMethod:      r.ExternalMcpOAuth2ProviderParams.ApiUserAuthentication.OauthClientAuthMethod,
+			OauthDiscoveryUrl:          r.ExternalMcpOAuth2ProviderParams.ApiUserAuthentication.OauthDiscoveryUrl,
+			OauthRefreshTokenValidity:  r.ExternalMcpOAuth2ProviderParams.ApiUserAuthentication.OauthRefreshTokenValidity,
+		}
+	}
+	if r.ExternalMcpDynamicClientProviderParams != nil {
+		opts.ExternalMcpDynamicClientProviderParams = &ExternalMcpDynamicClientParams{}
+		opts.ExternalMcpDynamicClientProviderParams.ApiUserAuthentication = DynamicClientMcpUserAuthentication{
+			OauthResourceUrl: r.ExternalMcpDynamicClientProviderParams.ApiUserAuthentication.OauthResourceUrl,
+		}
+	}
 	return opts
 }
 
@@ -136,13 +193,69 @@ func (r *AlterApiIntegrationRequest) toOpts() *AlterApiIntegrationOptions {
 				GoogleAudience: r.Set.GoogleParams.GoogleAudience,
 			}
 		}
+		if r.Set.GitHttpsApiTokenBasedParams != nil {
+			opts.Set.GitHttpsApiTokenBasedParams = &SetGitHttpsApiTokenBasedParams{}
+			if r.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets != nil {
+				opts.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{
+					AllSecrets:  r.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllSecrets,
+					NoSecrets:   r.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.NoSecrets,
+					AllowedList: r.Set.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets.AllowedList,
+				}
+			}
+		}
+		if r.Set.GitHttpsApiPrivateLinkParams != nil {
+			opts.Set.GitHttpsApiPrivateLinkParams = &SetGitHttpsApiPrivateLinkParams{
+				UsePrivatelinkEndpoint: r.Set.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint,
+				TlsTrustedCertificates: r.Set.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates,
+			}
+			if r.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets != nil {
+				opts.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets = &ApiIntegrationAllowedAuthenticationSecrets{
+					AllSecrets:  r.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllSecrets,
+					NoSecrets:   r.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.NoSecrets,
+					AllowedList: r.Set.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets.AllowedList,
+				}
+			}
+		}
+		if r.Set.ExternalMcpOAuth2Params != nil {
+			opts.Set.ExternalMcpOAuth2Params = &SetExternalMcpOAuth2Params{}
+			opts.Set.ExternalMcpOAuth2Params.ApiUserAuthentication = OAuth2McpUserAuthentication{
+				OauthClientId:              r.Set.ExternalMcpOAuth2Params.ApiUserAuthentication.OauthClientId,
+				OauthClientSecret:          r.Set.ExternalMcpOAuth2Params.ApiUserAuthentication.OauthClientSecret,
+				OauthTokenEndpoint:         r.Set.ExternalMcpOAuth2Params.ApiUserAuthentication.OauthTokenEndpoint,
+				OauthAuthorizationEndpoint: r.Set.ExternalMcpOAuth2Params.ApiUserAuthentication.OauthAuthorizationEndpoint,
+				OauthClientAuthMethod:      r.Set.ExternalMcpOAuth2Params.ApiUserAuthentication.OauthClientAuthMethod,
+				OauthDiscoveryUrl:          r.Set.ExternalMcpOAuth2Params.ApiUserAuthentication.OauthDiscoveryUrl,
+				OauthRefreshTokenValidity:  r.Set.ExternalMcpOAuth2Params.ApiUserAuthentication.OauthRefreshTokenValidity,
+			}
+		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &ApiIntegrationUnset{
-			ApiKey:             r.Unset.ApiKey,
 			Enabled:            r.Unset.Enabled,
 			ApiBlockedPrefixes: r.Unset.ApiBlockedPrefixes,
 			Comment:            r.Unset.Comment,
+		}
+		if r.Unset.AwsParams != nil {
+			opts.Unset.AwsParams = &UnsetAwsApiParams{
+				ApiKey: r.Unset.AwsParams.ApiKey,
+			}
+		}
+		if r.Unset.AzureParams != nil {
+			opts.Unset.AzureParams = &UnsetAzureApiParams{
+				ApiKey: r.Unset.AzureParams.ApiKey,
+			}
+		}
+		if r.Unset.GitHttpsApiTokenBasedParams != nil {
+			opts.Unset.GitHttpsApiTokenBasedParams = &UnsetGitHttpsApiTokenBasedParams{
+				AllowedAuthenticationSecrets: r.Unset.GitHttpsApiTokenBasedParams.AllowedAuthenticationSecrets,
+			}
+		}
+		if r.Unset.GitHttpsApiPrivateLinkParams != nil {
+			opts.Unset.GitHttpsApiPrivateLinkParams = &UnsetGitHttpsApiPrivateLinkParams{
+				AllowedAuthenticationSecrets: r.Unset.GitHttpsApiPrivateLinkParams.AllowedAuthenticationSecrets,
+				TlsTrustedCertificates:       r.Unset.GitHttpsApiPrivateLinkParams.TlsTrustedCertificates,
+				UsePrivatelinkEndpoint:       r.Unset.GitHttpsApiPrivateLinkParams.UsePrivatelinkEndpoint,
+			}
 		}
 	}
 	return opts

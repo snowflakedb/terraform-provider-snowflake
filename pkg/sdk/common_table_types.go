@@ -183,6 +183,7 @@ func AsStringList[T ~string](input []T) []string {
 
 // TableContact represents a CONTACT <purpose> = <contact_name> assignment.
 type TableContact struct {
-	Purpose string `ddl:"keyword"`
-	Contact string `ddl:"parameter,single_quotes"`
+	Purpose string                 `ddl:"keyword"`
+	equals  bool                   `ddl:"static" sql:"="`
+	Contact SchemaObjectIdentifier `ddl:"identifier"`
 }

@@ -33,7 +33,7 @@ type CreateEventTableOptions struct {
 	DefaultDdlCollation        *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	CopyGrants                 *bool                       `ddl:"keyword" sql:"COPY GRANTS"`
 	Comment                    *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	RowAccessPolicy            *TableRowAccessPolicyLegacy `ddl:"keyword"` // adjusted manually
+	RowAccessPolicy            *TableRowAccessPolicyLegacy `ddl:"keyword"`
 	Tag                        []TagAssociation            `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
@@ -154,10 +154,10 @@ type EventTableDropAndAddRowAccessPolicy struct {
 }
 
 type EventTableClusteringAction struct {
-	ClusterBy         *[]string `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	SuspendRecluster  *bool     `ddl:"keyword" sql:"SUSPEND RECLUSTER"`
-	ResumeRecluster   *bool     `ddl:"keyword" sql:"RESUME RECLUSTER"`
-	DropClusteringKey *bool     `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
+	ClusterBy         []string `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	SuspendRecluster  *bool    `ddl:"keyword" sql:"SUSPEND RECLUSTER"`
+	ResumeRecluster   *bool    `ddl:"keyword" sql:"RESUME RECLUSTER"`
+	DropClusteringKey *bool    `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
 }
 
 type EventTableSearchOptimizationAction struct {

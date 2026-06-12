@@ -84,8 +84,7 @@ var networkRulesDef = g.NewInterface(
 			Enum("type", NetworkRuleTypeEnumDef).
 			Enum("mode", NetworkRuleModeEnumDef).
 			Number("entries_in_valuelist", g.WithPlainFieldName("EntriesInValueList")).
-			Text("owner_role_type").
-			WithConvertGeneration(),
+			Text("owner_role_type"),
 		g.NewQueryStruct("ShowNetworkRules").
 			Show().
 			SQL("NETWORK RULES").
@@ -108,8 +107,7 @@ var networkRulesDef = g.NewInterface(
 			Text("comment").
 			Enum("type", NetworkRuleTypeEnumDef).
 			Enum("mode", NetworkRuleModeEnumDef).
-			StringList("value_list").
-			WithConvertGeneration(),
+			StringList("value_list"),
 		g.NewQueryStruct("ShowNetworkRules").
 			Describe().
 			SQL("NETWORK RULE").

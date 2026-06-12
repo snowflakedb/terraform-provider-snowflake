@@ -14,16 +14,14 @@ var semanticViewPairs = g.StructPair("semanticViewDBRow", "SemanticView").
 	OptionalText("comment").
 	Text("owner").
 	Text("owner_role_type").
-	OptionalText("extension").
-	WithConvertGeneration()
+	OptionalText("extension")
 
 var semanticViewDetailsPairs = g.StructPair("semanticViewDetailsRow", "SemanticViewDetails").
 	OptionalText("object_kind").
 	OptionalText("object_name").
 	OptionalText("parent_entity").
 	Text("property").
-	Text("property_value").
-	WithConvertGeneration()
+	Text("property_value")
 
 var semanticViewsDef = g.NewInterface(
 	"SemanticViews",
@@ -38,23 +36,17 @@ var semanticViewsDef = g.NewInterface(
 			SQL("SEMANTIC VIEW").
 			IfNotExists().
 			Name().
-			PredefinedQueryStructField("logicalTables", "[]LogicalTable", g.ParameterOptions().Required().Parentheses().NoEquals().SQL("TABLES")).
-			PredefinedQueryStructField("semanticViewRelationships", "[]SemanticViewRelationship", g.ParameterOptions().Parentheses().NoEquals().SQL("RELATIONSHIPS")).
-			PredefinedQueryStructField("semanticViewFacts", "[]FactDefinition", g.ParameterOptions().Parentheses().NoEquals().SQL("FACTS")).
-			PredefinedQueryStructField("semanticViewDimensions", "[]DimensionDefinition", g.ParameterOptions().Parentheses().NoEquals().SQL("DIMENSIONS")).
-			PredefinedQueryStructField("semanticViewMetrics", "[]MetricDefinition", g.ParameterOptions().Parentheses().NoEquals().SQL("METRICS")).
+			ListQueryStructField("LogicalTables", logicalTable, g.ParameterOptions().Required().Parentheses().NoEquals().SQL("TABLES")).
+			ListQueryStructField("SemanticViewRelationships", semanticViewRelationship, g.ParameterOptions().Parentheses().NoEquals().SQL("RELATIONSHIPS")).
+			ListQueryStructField("SemanticViewFacts", factDefinition, g.ParameterOptions().Parentheses().NoEquals().SQL("FACTS")).
+			ListQueryStructField("SemanticViewDimensions", dimensionDefinition, g.ParameterOptions().Parentheses().NoEquals().SQL("DIMENSIONS")).
+			ListQueryStructField("SemanticViewMetrics", metricDefinition, g.ParameterOptions().Parentheses().NoEquals().SQL("METRICS")).
 			OptionalComment().
 			OptionalCopyGrants().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
 			WithAdditionalValidations(),
-		logicalTable,
 		synonym,
-		semanticViewRelationship,
-		semanticExpression,
-		factDefinition,
-		dimensionDefinition,
-		metricDefinition,
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view",
@@ -129,11 +121,11 @@ var semanticViewColumn = g.NewQueryStruct("SemanticViewColumn").
 	Text("Name", g.KeywordOptions().DoubleQuotes().Required())
 
 var logicalTable = g.NewQueryStruct("LogicalTable").
-	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.KeywordOptions()).
+	OptionalQueryStructField("LogicalTableAlias", logicalTableAlias, g.KeywordOptions()).
 	Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-	OptionalQueryStructField("primaryKeys", primaryKey, g.ParameterOptions().NoEquals()).
-	ListQueryStructField("uniqueKeys", uniqueKey, g.ListOptions().NoEquals().NoComma()).
-	OptionalQueryStructField("synonyms", synonyms, g.ParameterOptions().NoEquals()).
+	OptionalQueryStructField("PrimaryKeys", primaryKey, g.ParameterOptions().NoEquals()).
+	ListQueryStructField("UniqueKeys", uniqueKey, g.ListOptions().NoEquals().NoComma()).
+	OptionalQueryStructField("Synonyms", synonyms, g.ParameterOptions().NoEquals()).
 	OptionalComment()
 
 var relationshipAlias = g.NewQueryStruct("RelationshipAlias").
@@ -146,26 +138,30 @@ var relationshipTableNameOrAlias = g.NewQueryStruct("RelationshipTableAlias").
 	WithValidation(g.ExactlyOneValueSet, "RelationshipTableName", "RelationshipTableAlias")
 
 var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
-	OptionalQueryStructField("relationshipAlias", relationshipAlias, g.KeywordOptions()).
-	OptionalQueryStructField("tableNameOrAlias", relationshipTableNameOrAlias, g.KeywordOptions().Required()).
-	ListQueryStructField("relationshipColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses().Required()).
+	OptionalQueryStructField("RelationshipAlias", relationshipAlias, g.KeywordOptions()).
+	OptionalQueryStructField("TableNameOrAlias", relationshipTableNameOrAlias, g.KeywordOptions().Required()).
+	ListQueryStructField("RelationshipColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses().Required()).
 	SQL("REFERENCES").
-	OptionalQueryStructField("refTableNameOrAlias", relationshipTableNameOrAlias, g.KeywordOptions().Required()).
-	ListQueryStructField("relationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())
+	OptionalQueryStructField("RefTableNameOrAlias", relationshipTableNameOrAlias, g.KeywordOptions().Required()).
+	ListQueryStructField("RelationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())
 
-var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
-	Text("QualifiedExpressionName", g.KeywordOptions().Required())
+func qualifiedExpressionName() *g.QueryStruct {
+	return g.NewQueryStruct("QualifiedExpressionName").
+		Text("QualifiedExpressionName", g.KeywordOptions().Required())
+}
 
 var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
 	Text("SqlExpression", g.KeywordOptions().NoQuotes().Required())
 
 // TODO [SNOW-2398097]: replace qualifiedExpressionName with table_alias and fact_or_metric fields
-var semanticExpression = g.NewQueryStruct("SemanticExpression").
-	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
-	SQL("AS").
-	OptionalQueryStructField("sqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
-	OptionalQueryStructField("synonyms", synonyms, g.ParameterOptions().NoEquals()).
-	OptionalComment()
+func semanticExpression() *g.QueryStruct {
+	return g.NewQueryStruct("SemanticExpression").
+		OptionalQueryStructField("QualifiedExpressionName", qualifiedExpressionName(), g.KeywordOptions().Required()).
+		SQL("AS").
+		OptionalQueryStructField("SqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
+		OptionalQueryStructField("Synonyms", synonyms, g.ParameterOptions().NoEquals()).
+		OptionalComment()
+}
 
 var windowFunctionOverClause = g.NewQueryStruct("WindowFunctionOverClause").
 	OptionalTextAssignment("PARTITION BY", g.ParameterOptions().NoEquals()).
@@ -175,20 +171,20 @@ var windowFunctionOverClause = g.NewQueryStruct("WindowFunctionOverClause").
 // TODO [SNOW-2398097]: sqlExpression could be replaced with <window_function>(<metric>)
 // TODO [SNOW-2398097]: windowFunctionMetricDefinition could be merged with semanticExpression to have syntax for metrics definition (different than for facts and dimensions)
 var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefinition").
-	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
+	OptionalQueryStructField("QualifiedExpressionName", qualifiedExpressionName(), g.KeywordOptions().Required()).
 	SQL("AS").
-	OptionalQueryStructField("sqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
+	OptionalQueryStructField("SqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
 	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ListOptions().Parentheses().NoComma().SQL("OVER"))
 
 var metricDefinition = g.NewQueryStruct("MetricDefinition").
-	OptionalText("IsPrivate", g.KeywordOptions()).
-	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions()).
-	OptionalQueryStructField("windowFunctionMetricDefinition", windowFunctionMetricDefinition, g.KeywordOptions()).
-	WithValidation(g.ExactlyOneValueSet, "semanticExpression", "windowFunctionMetricDefinition")
+	OptionalSQLWithCustomFieldName("IsPrivate", "PRIVATE").
+	OptionalQueryStructField("SemanticExpression", semanticExpression(), g.KeywordOptions()).
+	OptionalQueryStructField("WindowFunctionMetricDefinition", windowFunctionMetricDefinition, g.KeywordOptions()).
+	WithValidation(g.ExactlyOneValueSet, "SemanticExpression", "WindowFunctionMetricDefinition")
 
 var factDefinition = g.NewQueryStruct("FactDefinition").
-	OptionalText("IsPrivate", g.KeywordOptions()).
-	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions())
+	OptionalSQLWithCustomFieldName("IsPrivate", "PRIVATE").
+	OptionalQueryStructField("SemanticExpression", semanticExpression(), g.KeywordOptions())
 
 var dimensionDefinition = g.NewQueryStruct("DimensionDefinition").
-	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions())
+	OptionalQueryStructField("SemanticExpression", semanticExpression(), g.KeywordOptions())

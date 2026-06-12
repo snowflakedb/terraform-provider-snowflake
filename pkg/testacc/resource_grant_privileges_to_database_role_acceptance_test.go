@@ -1402,6 +1402,33 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnFutureModels_issue3050(t *testing.T
 	})
 }
 
+func TestAcc_GrantPrivilegesToDatabaseRole_OnFutureModelMonitors_InDatabase_v2_17_0_NonEmptyPlan(t *testing.T) {
+	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders:  ExternalProviderWithExactVersion("2.17.0"),
+				Config:             grantPrivilegesToDatabaseRoleOnFutureInDatabaseConfig(databaseRoleId, []string{"USAGE"}, sdk.PluralObjectTypeModelMonitors, databaseRoleId.DatabaseName()),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   grantPrivilegesToDatabaseRoleOnFutureInDatabaseConfig(databaseRoleId, []string{"USAGE"}, sdk.PluralObjectTypeModelMonitors, databaseRoleId.DatabaseName()),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
 func grantPrivilegesToDatabaseRoleOnFutureInDatabaseConfig(databaseRoleId sdk.DatabaseObjectIdentifier, privileges []string, objectTypePlural sdk.PluralObjectType, databaseName string) string {
 	return fmt.Sprintf(`
 resource "snowflake_database_role" "test" {
