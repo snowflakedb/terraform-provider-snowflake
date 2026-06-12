@@ -85,6 +85,15 @@ func (i *Interface) WithAllowedGenerationParts(parts ...string) *Interface {
 	return i
 }
 
+// WithEnabledGenerationParts enables optional (disabled-by-default) generation parts for this object.
+func (i *Interface) WithEnabledGenerationParts(parts ...string) *Interface {
+	if i.ObjectGenerationSettings == nil {
+		i.ObjectGenerationSettings = &genhelpers.ObjectGenerationSettings{}
+	}
+	i.ObjectGenerationSettings.EnabledGenerationParts = parts
+	return i
+}
+
 func (i *Interface) ObjectName() string {
 	return i.Name
 }

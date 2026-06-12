@@ -55,6 +55,8 @@ type ObjectGenerationSettings struct {
 	// AllowedGenerationParts lists which generation parts apply to this object.
 	// nil/empty means "use the generator's default" (all globally-filtered parts).
 	AllowedGenerationParts []string
+	// EnabledGenerationParts lists optional (disabled-by-default) generation parts that should be enabled for this object.
+	EnabledGenerationParts []string
 }
 
 type HasObjectGenerationSettings interface {
