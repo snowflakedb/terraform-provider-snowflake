@@ -388,7 +388,7 @@ var icebergTablesDef = g.NewInterface(
 	g.StructPair("icebergTableDetailsRow", "IcebergTableDetails").
 		Text("name").
 		DataType("type").
-		Text("source iceberg type").
+		OptionalText("source iceberg type").
 		Text("kind").
 		PlainField("null", "bool", g.WithPlainFieldName("IsNullable")).
 		OptionalText("default").
