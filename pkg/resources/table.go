@@ -9,13 +9,13 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -404,9 +404,7 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 		return nil, err
 	}
 
-	escapedName := strings.ReplaceAll(c["name"].(string), `\`, `\\`)
-	escapedName = strings.ReplaceAll(escapedName, `'`, `\'`)
-	nameInQuotes := fmt.Sprintf(`"%v"`, escapedName)
+	nameInQuotes := fmt.Sprintf(`"%v"`, snowflake.EscapeString(c["name"].(string)))
 	request := sdk.NewTableColumnRequest(nameInQuotes, sdk.DataType(_type))
 
 	_default := c["default"].([]interface{})
@@ -415,7 +413,7 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 		if c, ok := _default[0].(map[string]interface{})["constant"]; ok {
 			if constant, ok := c.(string); ok && len(constant) > 0 {
 				if datatypes.IsTextDataType(dataType) {
-					expression = "'" + strings.ReplaceAll(constant, "'", "''") + "'"
+					expression = snowflake.EscapeSnowflakeString(constant)
 				} else {
 					expression = constant
 				}
@@ -552,8 +550,7 @@ func toColumnDefaultConfig(td sdk.TableColumnDetails) map[string]any {
 	}
 
 	if sdk.IsStringType(string(td.Type)) {
-		unquoted := strings.TrimSuffix(strings.TrimPrefix(defaultRaw, "'"), "'")
-		def["constant"] = strings.ReplaceAll(unquoted, "''", "'")
+		def["constant"] = snowflake.UnescapeSnowflakeString(defaultRaw)
 		return def
 	}
 
@@ -615,7 +612,7 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		keysList := v.([]any)
 		if len(keysList) > 0 {
 			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]interface{}))
-			constraintRequest := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(collections.Map(keys, func(s string) string { return fmt.Sprintf(`"%s"`, s) }))
+			constraintRequest := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(snowflake.QuoteStringList(keys))
 
 			keyName, isPresent := keysList[0].(map[string]any)["name"]
 			if isPresent && keyName != "" {
@@ -812,7 +809,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			for i, r := range removed {
 				removedColumnNames[i] = r.name
 			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithDropColumns(collections.Map(removedColumnNames, func(s string) string { return fmt.Sprintf(`"%s"`, s) }))))
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithDropColumns(snowflake.QuoteStringList(removedColumnNames))))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 			}
@@ -828,7 +825,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				}
 				var expression string
 				if sdk.IsStringType(cA.dataType) {
-					expression = "'" + strings.ReplaceAll(*cA._default.constant, "'", "''") + "'"
+					expression = snowflake.EscapeSnowflakeString(*cA._default.constant)
 				} else {
 					expression = *cA._default.constant
 				}
@@ -931,7 +928,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		}
 
 		if len(newKey.keys) > 0 {
-			constraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(collections.Map(newKey.keys, func(s string) string { return fmt.Sprintf(`"%s"`, s) }))
+			constraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(snowflake.QuoteStringList(newKey.keys))
 			if newKey.name != "" {
 				constraint.WithName(sdk.String(newKey.name))
 			}
