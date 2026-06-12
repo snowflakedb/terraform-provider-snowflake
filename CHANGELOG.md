@@ -1,5 +1,58 @@
 # Changelog
 
+## [2.18.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.17.0...v2.18.0) (2026-06-12)
+
+
+### 🎉 **What's new:**
+
+* add LOG_EVENT_LEVEL parameter support to the SDK ([#4796](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4796)) ([525bc45](https://github.com/snowflakedb/terraform-provider-snowflake/commit/525bc45ce54b3201aac88471c8ca0be045f844a0))
+* Add snowflake_hybrid_table resource (preview) ([#4689](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4689)) ([54d00a9](https://github.com/snowflakedb/terraform-provider-snowflake/commit/54d00a940fa5be72e1b1486e9b1666d105d46ab7))
+* add storage lifecycle policies integration tests ([#4823](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4823)) ([09073e1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/09073e147a5545603f5303ca7bae4dca1d8d70cd))
+* add storage lifecycle policies to SDK ([#4818](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4818)) ([1d2d630](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1d2d630d9bdcb3e8f66879d92e0fe594b65c4053))
+* refresh sdk for api integration ([#4765](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4765)) ([1054223](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1054223419094a24de16ed919d224bb9975de196))
+* wire log_event_level in provider resources and data sources ([#4799](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4799)) ([2e62b58](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2e62b58b891a6ee0f67c214409b056d7f12a8beb))
+
+
+### 🔧 **Misc**
+
+* Add CreateFromIcebergFiles SDK operation ([#4809](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4809)) ([754c511](https://github.com/snowflakedb/terraform-provider-snowflake/commit/754c511d7afd869527acd8033c2725fbbbceccb9))
+* Add inline and out-of-line constraints to iceberg tables SDK ([#4763](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4763)) ([22f4b8e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/22f4b8ea11b3fece5356a0f2ae90c1dce281af8f))
+* Add missing validations ([#4801](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4801)) ([76d9dea](https://github.com/snowflakedb/terraform-provider-snowflake/commit/76d9dea4c922dbf8e91e8364182b3cf92e377e68))
+* Add roadmap update for 2026-06-09 ([#4828](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4828)) ([a36de3c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a36de3cb84f3fa32bd212b76a866a771f6665397))
+* Add SDK support for CreateFromDeltaLake iceberg table ([#4820](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4820)) ([d88d13a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d88d13add91166388b3cc29a4bf87e3e67cd3fa2))
+* Add Snowflake-managed IcebergTable integration tests ([#4804](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4804)) ([b926189](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b926189461f675e3bd557944d63c31e4581c1afc))
+* Adjust BCR 2026-03 test ([#4827](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4827)) ([eb1f35f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/eb1f35f39c61ae82bc04a136d9bdc0b9a676882f))
+* Fix integration tests ([#4817](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4817)) ([2ab774c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2ab774c7c9906f5301abe203784741555e8d83cc))
+* Generate convert for more SDK objects - part 5 ([#4794](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4794)) ([5d547b4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5d547b41104a54bf4c3a91169b0e7ec247d72cba))
+* Generate convert for more SDK objects - part 6 ([#4800](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4800)) ([d4d2d06](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d4d2d067a422781a8df794ff1198fb5d66e1c2c5))
+* Generate convert for more SDK objects - part 7 ([#4802](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4802)) ([0975cc4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0975cc41a3afe8fbbcbe279d0ca89d4a5b4f7b8b))
+* Generate convert for more SDK objects - part 8 ([#4807](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4807)) ([7ff9512](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7ff9512523c5e1e90be0d5bb79a4a3ac38fef1de))
+* generate issue labels and object type dropdowns ([#4808](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4808)) ([cd56e11](https://github.com/snowflakedb/terraform-provider-snowflake/commit/cd56e11c838658d031e4cad99f66297896d53c81))
+* Handle slice validations correctly ([#4795](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4795)) ([14b07b7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/14b07b75ecc7fe4d96de133183ed70260aa73ef3))
+* Iceberg table from file - integration tests ([#4816](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4816)) ([3c31547](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3c315474fe013d8438e9568762c3cddc0fc0f2a8))
+* Improve SDK generation - Enforce no changes for dto and dto builders ([#4824](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4824)) ([2975d2e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2975d2e04eed47b248950d6176dd91441962ebaf))
+* Improve SDK generation - full regeneration without manual changes ([#4846](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4846)) ([d6464f3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d6464f3f56b97467422b42d56648a7018cb2ee02))
+* Improve SDK generation - Semantic Views definitions adjustments and some minor fixes ([#4832](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4832)) ([bcd7c36](https://github.com/snowflakedb/terraform-provider-snowflake/commit/bcd7c36aa1b0e94fe4d2885cac32135a90fe5699))
+* Improve SDK generation - ShowByID suppression and definition fixes ([#4845](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4845)) ([dc49192](https://github.com/snowflakedb/terraform-provider-snowflake/commit/dc49192f553c4228f74ebf76d982cb93c2105f5e))
+* Improve SDK generation - Update SDK generation examples and README ([#4819](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4819)) ([7f67566](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7f67566017e1ad3a5551c248356003f225a65043))
+* Improve SDK impl files generation - DropSafely and toOpts improvements ([#4810](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4810)) ([a3b3a70](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a3b3a703361857540719d609003260070340c909))
+* Improve SDK impl files generation - StringAllowEmpty and single-quote-wrapped identifiers ([#4812](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4812)) ([41f9eae](https://github.com/snowflakedb/terraform-provider-snowflake/commit/41f9eae8cfa3c3b2472e746ccfbd40cacb66ec4a))
+* Reconfigure GH Actions CI for faster PR feedback ([#4811](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4811)) ([691e544](https://github.com/snowflakedb/terraform-provider-snowflake/commit/691e54422518d31037c121f31fa212cf10f10bd3))
+* refresh integration tests for api integration ([#4777](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4777)) ([8430dd7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8430dd744166454916c104eaaf60b849f65235f7))
+* reset global gosnowflake logger level after NewClient tests ([#4833](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4833)) ([ea06d81](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ea06d81c20a65dc5a346dd7253dbe60ec0c76120))
+* restore global gosnowflake logger level after TestInt_Client ([#4847](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4847)) ([0d6f9c5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0d6f9c50d773cae1085823a6f9d807886ebeedf8))
+* Revert api integration unit tests ([#4821](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4821)) ([678f23f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/678f23fda40a01c0a29c8997290909ab5c82182e))
+* Skip all Postgres integration tests ([#4798](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4798)) ([8f7816e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8f7816e434b1d70911fc46cda011c4aa28ab4b86))
+* Skip api integration amazon private api gateway test ([#4837](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4837)) ([c3ddc58](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c3ddc585fc6fbfe0dbb10b4b7662f77d181fe1bc))
+* Skip failing DECFLOAT and hybrid table integration tests ([#4843](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4843)) ([81ae7bf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/81ae7bf63621241ebaecd20ee3b5d4f11d4c5d4d))
+* Turn the parallel execution of account level features off ([#4838](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4838)) ([7a964f4](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7a964f4814e68c7ef694fdae8acb7f1b134cf72c))
+
+
+### 🐛 **Bug fixes:**
+
+* Adjust model monitor object type in grants ([#4806](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4806)) ([6b8daef](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6b8daef05df054fb24e31d2fc4648471aab724e9))
+* **listing:** allow hyphens in listing name validation ([#4653](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4653)) ([9c68dc2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9c68dc240e74390383947a59d8d64e898e519c7e))
+
 ## [2.17.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.16.0...v2.17.0) (2026-05-28)
 
 
