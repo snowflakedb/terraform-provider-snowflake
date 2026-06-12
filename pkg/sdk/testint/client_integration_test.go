@@ -26,14 +26,7 @@ import (
 // TODO [SNOW-1827310]: use generated config for these tests
 // TODO [SNOW-2054366]: Use dedicated users for these tests.
 func TestInt_Client_NewClient(t *testing.T) {
-	// gosnowflake.GetLogger() is a single global logger for the whole test binary. The driver sets the global logger
-	// level in its init. Every time a connection is opened with a non‑empty Tracing, the driver overwrites that
-	// global level. We reset it with the following cleanup function.
-	defaultLogLevel := gosnowflake.GetLogger().GetLogLevel()
-	t.Cleanup(func() {
-		err := gosnowflake.GetLogger().SetLogLevel(defaultLogLevel)
-		require.NoError(t, err)
-	})
+	restoreDriverLogLevelAfterTest(t)
 
 	t.Run("with default config (legacy)", func(t *testing.T) {
 		tmpServiceUser := testClientHelper().SetUpTemporaryServiceUser(t)
@@ -221,6 +214,8 @@ func TestInt_Client_AdditionalMetadata(t *testing.T) {
 }
 
 func TestInt_Client(t *testing.T) {
+	restoreDriverLogLevelAfterTest(t)
+
 	t.Run("ping", func(t *testing.T) {
 		client := defaultTestClient(t)
 		err := client.Ping()
@@ -288,6 +283,19 @@ func TestInt_Client(t *testing.T) {
 
 			assert.Equal(t, "TRACE", gosnowflake.GetLogger().GetLogLevel())
 		})
+	})
+}
+
+// restoreDriverLogLevelAfterTest snapshots the global gosnowflake logger level and restores it once the test finishes.
+// gosnowflake.GetLogger() is a single global logger for the whole test binary. The driver sets the global logger level
+// in its init, and every time a connection is opened with a non-empty Tracing the driver overwrites that global level.
+// Without restoring it, the level leaks into subsequent tests in the binary.
+func restoreDriverLogLevelAfterTest(t *testing.T) {
+	t.Helper()
+	defaultLogLevel := gosnowflake.GetLogger().GetLogLevel()
+	t.Cleanup(func() {
+		err := gosnowflake.GetLogger().SetLogLevel(defaultLogLevel)
+		require.NoError(t, err)
 	})
 }
 
