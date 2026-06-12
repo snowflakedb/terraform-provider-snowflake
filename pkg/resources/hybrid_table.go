@@ -61,6 +61,10 @@ var hybridTableSchema = map[string]*schema.Schema{
 					Description:      "Column type. See [Snowflake data types](https://docs.snowflake.com/en/sql-reference-data-types) for supported values. Example: VARCHAR(256), NUMBER(38,0).",
 					ValidateDiagFunc: IsDataTypeValid,
 					DiffSuppressFunc: DiffSuppressDataTypes,
+					// Matches the data-type field pattern. StateFunc does not reliably fire for
+					// nested TypeList fields (SNOW-2054238), so buildHybridColumnStateFromDescribe
+					// is the actual Read-path normalizer — keep it.
+					StateFunc: DataTypeStateFunc,
 				},
 				"nullable": {
 					Type:        schema.TypeBool,

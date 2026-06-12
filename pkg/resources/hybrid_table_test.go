@@ -112,3 +112,25 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 		assert.Contains(t, err.Error(), "exactly one")
 	})
 }
+
+func Test_hybridTableColumnTypeStateFunc(t *testing.T) {
+	cases := []struct {
+		input string
+		want  string
+	}{
+		{"VARCHAR(256)", "VARCHAR(256)"},
+		{"NUMBER(38,0)", "NUMBER(38, 0)"},
+		{"TEXT", "TEXT(16777216)"},
+		{"BOOLEAN", "BOOLEAN"},
+		{"VARCHAR", "VARCHAR(16777216)"},
+		{"NUMBER", "NUMBER(38, 0)"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.input, func(t *testing.T) {
+			got := DataTypeStateFunc(tc.input)
+			require.Equal(t, tc.want, got)
+			// Idempotency: applying StateFunc to its own output must be a no-op.
+			require.Equal(t, got, DataTypeStateFunc(got))
+		})
+	}
+}

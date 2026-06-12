@@ -22,7 +22,6 @@ var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConst
 	// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
 	// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
 	// are not supported on hybrid tables — Snowflake returns "invalid constraint property".
-	// Removed from the SDK per PR #4461 review feedback.
 	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions())
 
 var hybridTableOutOfLineIndex = g.NewQueryStruct("HybridTableOutOfLineIndex").
@@ -61,8 +60,8 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 	).
 	OptionalQueryStructField(
 		"Drop",
-		// NOTE: PRIMARY KEY is not included here — DROP PRIMARY KEY is unsupported on hybrid tables.
-		// Snowflake returns an error at runtime; removed per PR #4461 review feedback.
+		// NOTE: PRIMARY KEY is not included here — DROP PRIMARY KEY is unsupported on hybrid tables
+		// (Snowflake returns an error at runtime).
 		g.NewQueryStruct("HybridTableConstraintActionDrop").
 			SQL("DROP").
 			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "ConstraintName").
@@ -128,11 +127,10 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment")
 
 // NOTE: Multi-property `ALTER TABLE ... UNSET` on hybrid tables requires comma-separated
-// property names (`UNSET A, B, C`) — the bare-keyword form (`UNSET A B C`) emitted by the
-// generator's default `keyword` rendering is rejected by the parser. Applying
-// `g.ListOptions().NoParentheses().SQL("UNSET")` to the parent field on
-// AlterHybridTableOptions causes the SQL builder to comma-join the children.
-// Mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74. Verified on preprod6.
+// property names (`UNSET A, B, C`); the generator's default `keyword` rendering emits the
+// bare-keyword form, which the parser rejects. Applying
+// `g.ListOptions().NoParentheses().SQL("UNSET")` on the parent field causes the SQL builder
+// to comma-join the children — mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74.
 var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
 	OptionalSQL("COMMENT").
 	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
@@ -326,9 +324,4 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-).WithCustomInterfaceMethod(
-	"ShowParameters",
-	"",
-	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-	"[]*Parameter", "error",
-)
+).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]())
