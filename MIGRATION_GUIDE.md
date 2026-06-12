@@ -26,6 +26,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(improvement)* GRANT_ACCOUNT_ROLE_SHOW_CACHING experiment for snowflake_grant_account_role
+
+A new experiment `GRANT_ACCOUNT_ROLE_SHOW_CACHING` is now available for the `snowflake_grant_account_role` resource. When enabled, the provider caches `SHOW GRANTS OF ROLE` results in memory for the duration of a single plan or apply cycle.
+
+Without caching, every `snowflake_grant_account_role` instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same set of roles (a common RBAC topology), this produces N identical round-trips that each return the same full result set — only 1 is needed per unique role per plan.
+
+When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain correctly visible to subsequent Reads.
+
+To enable, add `GRANT_ACCOUNT_ROLE_SHOW_CACHING` to the `experimental_features_enabled` field in the provider configuration:
+
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["GRANT_ACCOUNT_ROLE_SHOW_CACHING"]
+}
+```
+
+No changes to existing configurations are required. The experiment is intended for large RBAC configurations (thousands of `snowflake_grant_account_role` resources) where plan time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
+
 ### *(new feature)* `log_event_level` parameter support
 
 We added support for the [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level) parameter, following the same handling as the existing `log_level` parameter. The new `log_event_level` field is now available in the following resources:

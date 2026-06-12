@@ -24,6 +24,7 @@ const (
 	GrantsSafeDestroy              ExperimentalFeature = "GRANTS_SAFE_DESTROY"
 	TagAssociationSafeDestroy      ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
 	GrantAccountRoleSafePublicRole ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
+	GrantAccountRoleShowCaching    ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SHOW_CACHING"
 )
 
 type experimentalFeatureState string
@@ -137,6 +138,16 @@ var allExperiments = []Experiment{
 			"Currently supported by: `snowflake_tag_association`.",
 			"This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.",
 			"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
+		),
+	},
+	{
+		GrantAccountRoleShowCaching,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Enables per-plan in-memory caching of `SHOW GRANTS OF ROLE` results for the `snowflake_grant_account_role` resource.",
+			"Without caching, every resource instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same role, this results in N identical round-trips returning the same full result set — only 1 is needed.",
+			"When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain visible to subsequent Reads.",
+			"Intended for large configurations (thousands of `snowflake_grant_account_role` resources) where plan time is dominated by redundant `SHOW GRANTS OF ROLE` calls.",
 		),
 	},
 	{
