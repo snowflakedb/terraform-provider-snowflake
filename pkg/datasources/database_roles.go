@@ -101,6 +101,12 @@ func ReadDatabaseRoles(ctx context.Context, d *schema.ResourceData, meta any) di
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	databaseName := d.Get("in_database").(string)
+	for i := range databaseRoles {
+		databaseRoles[i].DatabaseName = databaseName
+	}
+
 	d.SetId("database_roles_read")
 
 	flattenedDatabaseRoles := make([]map[string]any, len(databaseRoles))
