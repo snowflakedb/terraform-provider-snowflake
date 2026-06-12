@@ -53,6 +53,18 @@ make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=Sequences'
 # generate chosen objects and chosen files only
 make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,impl --filter-object-names=Sequences'
 ```
+```shell
+# generate all objects except the given ones
+make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-object-names=Sequences'
+```
+```shell
+# generate all files except the given generation parts
+make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
+```
+```shell
+# combine inclusion and exclusion filters
+make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=Sequences,DatabaseRoles --exclude-object-names=Sequences'
+```
 
 ##### Examples
 
@@ -93,6 +105,14 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--filter-object-names=Sequences
 ```shell
 # generate chosen example objects and chosen files only
 make generate-sdk-examples SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,impl --filter-object-names=Sequences'
+```
+```shell
+# generate all example objects except the given ones
+make generate-sdk-examples SF_TF_GENERATOR_ARGS='--exclude-object-names=Sequences'
+```
+```shell
+# generate all example files except the given generation parts
+make generate-sdk-examples SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
 ```
 ```shell
 # show usage
