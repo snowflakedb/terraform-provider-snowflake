@@ -104,6 +104,15 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 	})
 }
 
+// ForceNewIfChangedFromNonEmptyString sets a ForceNew for a string field that changes from a previously
+// non-empty value. It is used for immutable-once-set attributes.
+func ForceNewIfChangedFromNonEmptyString(key string) schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
+		oldString, newString := oldValue.(string), newValue.(string)
+		return oldString != "" && oldString != newString
+	})
+}
+
 // ForceNewIfUrlIsS3Compatible sets a ForceNew for a url field which is set to an s3compat:// url.
 func ForceNewIfUrlIsS3Compatible() schema.CustomizeDiffFunc {
 	return customdiff.ForceNewIfChange("url", func(ctx context.Context, oldValue, newValue, meta any) bool {
