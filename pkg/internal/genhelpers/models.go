@@ -64,3 +64,10 @@ type HasObjectGenerationSettings interface {
 }
 
 func (i *ObjectGenerationSettings) getObjectGenerationSettings() *ObjectGenerationSettings { return i }
+
+// GenerationPartNamer is implemented by typed generation part name constants.
+// Each generator package defines its own private type satisfying this interface,
+// ensuring that only predefined constants can be passed to generation part registration methods.
+type GenerationPartNamer interface {
+	GenerationPartName() string
+}

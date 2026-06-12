@@ -94,30 +94,30 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 }
 
 // TODO [SNOW-2324252]: Probably remove later when we have vararg support in the NewGenerator constructor
-func (g *Generator[T, M]) WithGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
-	g.generationParts = append(g.generationParts, NewGenerationPart(partName, filenameProvider, templates))
+func (g *Generator[T, M]) WithGenerationPart(partName GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+	g.generationParts = append(g.generationParts, NewGenerationPart(partName.GenerationPartName(), filenameProvider, templates))
 	return g
 }
 
 // WithConditionalGenerationPart registers a generation part that is only executed for an object when condition returns true.
-func (g *Generator[T, M]) WithConditionalGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
-	part := NewGenerationPart(partName, filenameProvider, templates)
+func (g *Generator[T, M]) WithConditionalGenerationPart(partName GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
+	part := NewGenerationPart(partName.GenerationPartName(), filenameProvider, templates)
 	part.condition = condition
 	g.generationParts = append(g.generationParts, part)
 	return g
 }
 
 // WithOptionalGenerationPart registers a generation part that is disabled by default and must be explicitly enabled per object.
-func (g *Generator[T, M]) WithOptionalGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
-	part := NewGenerationPart(partName, filenameProvider, templates)
+func (g *Generator[T, M]) WithOptionalGenerationPart(partName GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+	part := NewGenerationPart(partName.GenerationPartName(), filenameProvider, templates)
 	part.enabledByDefault = false
 	g.generationParts = append(g.generationParts, part)
 	return g
 }
 
 // WithOptionalConditionalGenerationPart registers a generation part that is disabled by default and has an additional runtime condition.
-func (g *Generator[T, M]) WithOptionalConditionalGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
-	part := NewGenerationPart(partName, filenameProvider, templates)
+func (g *Generator[T, M]) WithOptionalConditionalGenerationPart(partName GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
+	part := NewGenerationPart(partName.GenerationPartName(), filenameProvider, templates)
 	part.enabledByDefault = false
 	part.condition = condition
 	g.generationParts = append(g.generationParts, part)
