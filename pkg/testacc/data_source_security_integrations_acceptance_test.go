@@ -452,9 +452,24 @@ func TestAcc_SecurityIntegrations_SecurityIntegrationNotFound_WithPostConditions
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_SecurityIntegrations/non_existing"),
-				ExpectError:     regexp.MustCompile("there should be at least one security integration"),
+				Config:      securityIntegrationsDatasourceNonExisting(),
+				ExpectError: regexp.MustCompile("there should be at least one security integration"),
 			},
 		},
 	})
+}
+
+func securityIntegrationsDatasourceNonExisting() string {
+	return `
+data "snowflake_security_integrations" "test" {
+  like = "non-existing-security-integration"
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.security_integrations) > 0
+      error_message = "there should be at least one security integration"
+    }
+  }
+}
+`
 }

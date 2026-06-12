@@ -375,9 +375,24 @@ func TestAcc_Users_UserNotFound_WithPostConditions(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Users/without_user"),
-				ExpectError:     regexp.MustCompile("there should be at least one user"),
+				Config:      usersNonExisting(),
+				ExpectError: regexp.MustCompile("there should be at least one user"),
 			},
 		},
 	})
+}
+
+func usersNonExisting() string {
+	return `
+data "snowflake_users" "test" {
+  like = "non-existing-user"
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.users) > 0
+      error_message = "there should be at least one user"
+    }
+  }
+}
+`
 }

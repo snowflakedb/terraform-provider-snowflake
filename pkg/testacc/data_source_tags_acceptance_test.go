@@ -179,9 +179,24 @@ func TestAcc_Tags_NotFound_WithPostConditions(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Tags/non_existing"),
-				ExpectError:     regexp.MustCompile("there should be at least one tag"),
+				Config:      tagsDatasourceNonExisting(),
+				ExpectError: regexp.MustCompile("there should be at least one tag"),
 			},
 		},
 	})
+}
+
+func tagsDatasourceNonExisting() string {
+	return `
+data "snowflake_tags" "test" {
+  like = "non-existing-tag"
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.tags) > 0
+      error_message = "there should be at least one tag"
+    }
+  }
+}
+`
 }

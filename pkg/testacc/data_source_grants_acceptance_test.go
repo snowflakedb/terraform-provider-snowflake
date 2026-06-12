@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 	"github.com/stretchr/testify/require"
@@ -166,6 +165,9 @@ func TestAcc_Grants_To_AccountRole(t *testing.T) {
 	// TODO [SNOW-1887460]: handle SNOWFLAKE.CORE."AVG(ARG_T TABLE(FLOAT)):FLOAT" and SNOWFLAKE.ACCOUNT_USAGE."TAG_REFERENCES_WITH_LINEAGE(TAG_NAME_INPUT VARCHAR):TABLE:
 	t.Skip(`Skipped temporarily because incompatible data types on the current role: SNOWFLAKE.CORE."AVG(ARG_T TABLE(FLOAT)):FLOAT" and SNOWFLAKE.ACCOUNT_USAGE."TAG_REFERENCES_WITH_LINEAGE(TAG_NAME_INPUT VARCHAR):TABLE:`)
 
+	currentRole := testClient().Context.CurrentRole(t)
+	grantsModel := datasourcemodel.GrantsToAccountRole("test", currentRole.Name())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -174,8 +176,8 @@ func TestAcc_Grants_To_AccountRole(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/To/AccountRole"),
-				Check:           checkAtLeastOneGrantPresent(),
+				Config: accconfig.FromModels(t, grantsModel),
+				Check:  checkAtLeastOneGrantPresent(),
 			},
 		},
 	})
@@ -223,10 +225,13 @@ func TestAcc_Grants_To_User(t *testing.T) {
 
 func TestAcc_Grants_To_Share(t *testing.T) {
 	shareId := testClient().Ids.RandomAccountObjectIdentifier()
-	configVariables := config.Variables{
-		"database": config.StringVariable(TestDatabaseName),
-		"share":    config.StringVariable(shareId.Name()),
-	}
+
+	shareModel := model.Share("test", shareId.Name())
+	grantPrivilegesToShareModel := model.GrantPrivilegesToShare("test", []string{"USAGE"}, shareId.Name()).
+		WithOnDatabase(TestDatabaseName).
+		WithDependsOn(shareModel.ResourceReference())
+	grantsModel := datasourcemodel.GrantsToShare("test", shareId.Name()).
+		WithDependsOn(grantPrivilegesToShareModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -236,9 +241,8 @@ func TestAcc_Grants_To_Share(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/To/Share"),
-				ConfigVariables: configVariables,
-				Check:           checkAtLeastOneGrantPresent(),
+				Config: accconfig.FromModels(t, shareModel, grantPrivilegesToShareModel, grantsModel),
+				Check:  checkAtLeastOneGrantPresent(),
 			},
 		},
 	})
@@ -250,6 +254,8 @@ func TestAcc_Grants_To_ShareWithApplicationPackage(t *testing.T) {
 }
 
 func TestAcc_Grants_To_Invalid_NoAttribute(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsToInvalidEmpty("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -258,15 +264,17 @@ func TestAcc_Grants_To_Invalid_NoAttribute(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/To/Invalid/NoAttribute"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid combination of arguments"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid combination of arguments"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_To_Invalid_ShareNameMissing(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsToInvalidShareNameMissing("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -275,15 +283,17 @@ func TestAcc_Grants_To_Invalid_ShareNameMissing(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/To/Invalid/ShareNameMissing"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Missing required argument"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Missing required argument"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_To_Invalid_DatabaseRoleIdInvalid(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsToInvalidDatabaseRoleIdInvalid("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -292,15 +302,17 @@ func TestAcc_Grants_To_Invalid_DatabaseRoleIdInvalid(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/To/Invalid/DatabaseRoleIdInvalid"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid identifier type"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid identifier type"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_To_Invalid_ApplicationRoleIdInvalid(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsToInvalidApplicationRoleIdInvalid("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -309,15 +321,18 @@ func TestAcc_Grants_To_Invalid_ApplicationRoleIdInvalid(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/To/Invalid/ApplicationRoleIdInvalid"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid identifier type"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid identifier type"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_Of_AccountRole(t *testing.T) {
+	currentRole := testClient().Context.CurrentRole(t)
+	grantsModel := datasourcemodel.GrantsOfAccountRole("test", currentRole.Name())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -326,8 +341,8 @@ func TestAcc_Grants_Of_AccountRole(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/Of/AccountRole"),
-				Check:           checkAtLeastOneGrantPresentLimited(),
+				Config: accconfig.FromModels(t, grantsModel),
+				Check:  checkAtLeastOneGrantPresentLimited(),
 			},
 		},
 	})
@@ -335,10 +350,14 @@ func TestAcc_Grants_Of_AccountRole(t *testing.T) {
 
 func TestAcc_Grants_Of_DatabaseRole(t *testing.T) {
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
-	configVariables := config.Variables{
-		"database":      config.StringVariable(TestDatabaseName),
-		"database_role": config.StringVariable(databaseRoleId.Name()),
-	}
+	currentRole := testClient().Context.CurrentRole(t)
+
+	databaseRoleModel := model.DatabaseRole("test", databaseRoleId.DatabaseName(), databaseRoleId.Name())
+	grantDatabaseRoleModel := model.GrantDatabaseRole("test", databaseRoleId.FullyQualifiedName()).
+		WithParentRoleName(currentRole.Name()).
+		WithDependsOn(databaseRoleModel.ResourceReference())
+	grantsModel := datasourcemodel.GrantsOfDatabaseRole("test", databaseRoleId).
+		WithDependsOn(grantDatabaseRoleModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -348,9 +367,8 @@ func TestAcc_Grants_Of_DatabaseRole(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/Of/DatabaseRole"),
-				ConfigVariables: configVariables,
-				Check:           checkAtLeastOneGrantPresentLimited(),
+				Config: accconfig.FromModels(t, databaseRoleModel, grantDatabaseRoleModel, grantsModel),
+				Check:  checkAtLeastOneGrantPresentLimited(),
 			},
 		},
 	})
@@ -369,11 +387,13 @@ func TestAcc_Grants_Of_Share(t *testing.T) {
 	accountId := secondaryTestClient().Account.GetAccountIdentifier(t)
 	require.NotNil(t, accountId)
 
-	configVariables := config.Variables{
-		"database": config.StringVariable(TestDatabaseName),
-		"share":    config.StringVariable(shareId.Name()),
-		"account":  config.StringVariable(accountId.FullyQualifiedName()),
-	}
+	shareModel := model.Share("test", shareId.Name()).
+		WithAccounts(accountId.FullyQualifiedName())
+	grantPrivilegesToShareModel := model.GrantPrivilegesToShare("test", []string{"USAGE"}, shareId.Name()).
+		WithOnDatabase(TestDatabaseName).
+		WithDependsOn(shareModel.ResourceReference())
+	grantsModel := datasourcemodel.GrantsOfShare("test", shareId.Name()).
+		WithDependsOn(grantPrivilegesToShareModel.ResourceReference())
 
 	datasourceName := "data.snowflake_grants.test"
 	resource.Test(t, resource.TestCase{
@@ -384,8 +404,7 @@ func TestAcc_Grants_Of_Share(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/Of/Share"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, shareModel, grantPrivilegesToShareModel, grantsModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(datasourceName, "grants.#"),
 					resource.TestCheckNoResourceAttr(datasourceName, "grants.0.created_on"),
@@ -396,6 +415,8 @@ func TestAcc_Grants_Of_Share(t *testing.T) {
 }
 
 func TestAcc_Grants_Of_Invalid_NoAttribute(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsOfInvalidEmpty("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -404,15 +425,17 @@ func TestAcc_Grants_Of_Invalid_NoAttribute(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/Of/Invalid/NoAttribute"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid combination of arguments"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid combination of arguments"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_Of_Invalid_DatabaseRoleIdInvalid(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsOfInvalidDatabaseRoleIdInvalid("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -421,15 +444,17 @@ func TestAcc_Grants_Of_Invalid_DatabaseRoleIdInvalid(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/Of/Invalid/DatabaseRoleIdInvalid"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid identifier type"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid identifier type"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_Of_Invalid_ApplicationRoleIdInvalid(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsOfInvalidApplicationRoleIdInvalid("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -438,18 +463,22 @@ func TestAcc_Grants_Of_Invalid_ApplicationRoleIdInvalid(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/Of/Invalid/ApplicationRoleIdInvalid"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid identifier type"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid identifier type"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_FutureIn_Database(t *testing.T) {
-	configVariables := config.Variables{
-		"database": config.StringVariable(TestDatabaseName),
-	}
+	currentRole := testClient().Context.CurrentRole(t)
+
+	grantPrivilegesToAccountRoleModel := model.GrantPrivilegesToAccountRole("test", currentRole.Name()).
+		WithPrivileges("CREATE TABLE").
+		WithOnFutureSchemasInDatabase(testClient().Ids.DatabaseId())
+	grantsModel := datasourcemodel.GrantsFutureInDatabase("test", TestDatabaseName).
+		WithDependsOn(grantPrivilegesToAccountRoleModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -459,19 +488,22 @@ func TestAcc_Grants_FutureIn_Database(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/FutureIn/Database"),
-				ConfigVariables: configVariables,
-				Check:           checkAtLeastOneFutureGrantPresent(),
+				Config: accconfig.FromModels(t, grantPrivilegesToAccountRoleModel, grantsModel),
+				Check:  checkAtLeastOneFutureGrantPresent(),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_FutureIn_Schema(t *testing.T) {
-	configVariables := config.Variables{
-		"database": config.StringVariable(TestDatabaseName),
-		"schema":   config.StringVariable(TestSchemaName),
-	}
+	currentRole := testClient().Context.CurrentRole(t)
+	schemaId := sdk.NewDatabaseObjectIdentifier(TestDatabaseName, TestSchemaName)
+
+	grantPrivilegesToAccountRoleModel := model.GrantPrivilegesToAccountRole("test", currentRole.Name()).
+		WithPrivileges("INSERT").
+		WithOnFutureSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schemaId)
+	grantsModel := datasourcemodel.GrantsFutureInSchema("test", schemaId.FullyQualifiedName()).
+		WithDependsOn(grantPrivilegesToAccountRoleModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -481,15 +513,16 @@ func TestAcc_Grants_FutureIn_Schema(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/FutureIn/Schema"),
-				ConfigVariables: configVariables,
-				Check:           checkAtLeastOneFutureGrantPresent(),
+				Config: accconfig.FromModels(t, grantPrivilegesToAccountRoleModel, grantsModel),
+				Check:  checkAtLeastOneFutureGrantPresent(),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_FutureIn_Invalid_NoAttribute(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsFutureInInvalidEmpty("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -498,15 +531,17 @@ func TestAcc_Grants_FutureIn_Invalid_NoAttribute(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/FutureIn/Invalid/NoAttribute"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid combination of arguments"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid combination of arguments"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_FutureIn_Invalid_SchemaNameNotFullyQualified(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsFutureInInvalidSchemaNotFullyQualified("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -515,18 +550,22 @@ func TestAcc_Grants_FutureIn_Invalid_SchemaNameNotFullyQualified(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/FutureIn/Invalid/SchemaNameNotFullyQualified"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid identifier type"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid identifier type"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_FutureTo_AccountRole(t *testing.T) {
-	configVariables := config.Variables{
-		"database": config.StringVariable(TestDatabaseName),
-	}
+	currentRole := testClient().Context.CurrentRole(t)
+
+	grantPrivilegesToAccountRoleModel := model.GrantPrivilegesToAccountRole("test", currentRole.Name()).
+		WithPrivileges("CREATE TABLE").
+		WithOnFutureSchemasInDatabase(testClient().Ids.DatabaseId())
+	grantsModel := datasourcemodel.GrantsFutureToAccountRole("test", currentRole.Name()).
+		WithDependsOn(grantPrivilegesToAccountRoleModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -536,9 +575,8 @@ func TestAcc_Grants_FutureTo_AccountRole(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/FutureTo/AccountRole"),
-				ConfigVariables: configVariables,
-				Check:           checkAtLeastOneFutureGrantPresent(),
+				Config: accconfig.FromModels(t, grantPrivilegesToAccountRoleModel, grantsModel),
+				Check:  checkAtLeastOneFutureGrantPresent(),
 			},
 		},
 	})
@@ -546,10 +584,14 @@ func TestAcc_Grants_FutureTo_AccountRole(t *testing.T) {
 
 func TestAcc_Grants_FutureTo_DatabaseRole(t *testing.T) {
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
-	configVariables := config.Variables{
-		"database":      config.StringVariable(TestDatabaseName),
-		"database_role": config.StringVariable(databaseRoleId.Name()),
-	}
+
+	databaseRoleModel := model.DatabaseRole("test", databaseRoleId.DatabaseName(), databaseRoleId.Name())
+	grantPrivilegesToDatabaseRoleModel := model.GrantPrivilegesToDatabaseRole("test", databaseRoleId.FullyQualifiedName()).
+		WithPrivileges("CREATE TABLE").
+		WithOnFutureSchemasInDatabase(TestDatabaseName).
+		WithDependsOn(databaseRoleModel.ResourceReference())
+	grantsModel := datasourcemodel.GrantsFutureToDatabaseRole("test", databaseRoleId).
+		WithDependsOn(grantPrivilegesToDatabaseRoleModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -559,15 +601,16 @@ func TestAcc_Grants_FutureTo_DatabaseRole(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/FutureTo/DatabaseRole"),
-				ConfigVariables: configVariables,
-				Check:           checkAtLeastOneFutureGrantPresent(),
+				Config: accconfig.FromModels(t, databaseRoleModel, grantPrivilegesToDatabaseRoleModel, grantsModel),
+				Check:  checkAtLeastOneFutureGrantPresent(),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_FutureTo_Invalid_NoAttribute(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsFutureToInvalidEmpty("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -576,15 +619,17 @@ func TestAcc_Grants_FutureTo_Invalid_NoAttribute(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/FutureTo/Invalid/NoAttribute"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid combination of arguments"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid combination of arguments"),
 			},
 		},
 	})
 }
 
 func TestAcc_Grants_FutureTo_Invalid_DatabaseRoleIdInvalid(t *testing.T) {
+	grantsModel := datasourcemodel.GrantsFutureToInvalidDatabaseRoleIdInvalid("test")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -593,9 +638,9 @@ func TestAcc_Grants_FutureTo_Invalid_DatabaseRoleIdInvalid(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Grants/FutureTo/Invalid/DatabaseRoleIdInvalid"),
-				PlanOnly:        true,
-				ExpectError:     regexp.MustCompile("Error: Invalid identifier type"),
+				Config:      accconfig.FromModels(t, grantsModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Error: Invalid identifier type"),
 			},
 		},
 	})

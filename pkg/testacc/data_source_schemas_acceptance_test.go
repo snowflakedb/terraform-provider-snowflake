@@ -212,11 +212,26 @@ func TestAcc_Schemas_SchemaNotFound_WithPostConditions(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Schemas/non_existing"),
-				ExpectError:     regexp.MustCompile("there should be at least one schema"),
+				Config:      schemasWithPostcondition(),
+				ExpectError: regexp.MustCompile("there should be at least one schema"),
 			},
 		},
 	})
+}
+
+func schemasWithPostcondition() string {
+	return `
+data "snowflake_schemas" "test" {
+  like = "non-existing-schema"
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.schemas) > 0
+      error_message = "there should be at least one schema"
+    }
+  }
+}
+`
 }
 
 func TestAcc_Schemas_BadCombination(t *testing.T) {

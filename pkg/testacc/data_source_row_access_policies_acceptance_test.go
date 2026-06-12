@@ -229,9 +229,24 @@ func TestAcc_RowAccessPolicies_NotFound_WithPostConditions(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicies/non_existing"),
-				ExpectError:     regexp.MustCompile("there should be at least one row access policy"),
+				Config:      rowAccessPoliciesDatasourceNonExisting(),
+				ExpectError: regexp.MustCompile("there should be at least one row access policy"),
 			},
 		},
 	})
+}
+
+func rowAccessPoliciesDatasourceNonExisting() string {
+	return `
+data "snowflake_row_access_policies" "test" {
+  like = "non-existing-row-access-policy"
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.row_access_policies) > 0
+      error_message = "there should be at least one row access policy"
+    }
+  }
+}
+`
 }

@@ -305,7 +305,7 @@ func TestAcc_Streamlits_badCombination(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config:      streamlitsDatasourceConfigDbAndSchema(),
+				Config:      config.FromModels(t, datasourcemodel.Streamlits("test").WithInDatabaseAndSchema(TestDatabaseName, TestSchemaName)),
 				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
 			},
 		},
@@ -321,7 +321,7 @@ func TestAcc_Streamlits_emptyIn(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config:      streamlitsDatasourceEmptyIn(),
+				Config:      config.FromModels(t, datasourcemodel.Streamlits("test").WithEmptyIn()),
 				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
 			},
 		},
@@ -336,28 +336,23 @@ func TestAcc_Streamlits_StreamlitNotFound_WithPostConditions(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Streamlits/non_existing"),
-				ExpectError:     regexp.MustCompile("there should be at least one streamlit"),
+				Config:      streamlitsDatasourceWithPostCondition(),
+				ExpectError: regexp.MustCompile("there should be at least one streamlit"),
 			},
 		},
 	})
 }
 
-func streamlitsDatasourceConfigDbAndSchema() string {
-	return fmt.Sprintf(`
-data "snowflake_streamlits" "test" {
-  in {
-    database = "%s"
-    schema   = "%s"
-  }
-}
-`, TestDatabaseName, TestSchemaName)
-}
-
-func streamlitsDatasourceEmptyIn() string {
+func streamlitsDatasourceWithPostCondition() string {
 	return `
 data "snowflake_streamlits" "test" {
-  in {
+  like = "non-existing-streamlit"
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.streamlits) > 0
+      error_message = "there should be at least one streamlit"
+    }
   }
 }
 `

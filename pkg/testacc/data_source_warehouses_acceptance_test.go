@@ -240,9 +240,24 @@ func TestAcc_Warehouses_WarehouseNotFound_WithPostConditions(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Warehouses/without_warehouse"),
-				ExpectError:     regexp.MustCompile("there should be at least one warehouse"),
+				Config:      warehousesWithPostcondition(),
+				ExpectError: regexp.MustCompile("there should be at least one warehouse"),
 			},
 		},
 	})
+}
+
+func warehousesWithPostcondition() string {
+	return `
+data "snowflake_warehouses" "test" {
+  like = "non-existing-warehouse"
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.warehouses) > 0
+      error_message = "there should be at least one warehouse"
+    }
+  }
+}
+`
 }

@@ -438,9 +438,24 @@ func TestAcc_Streams_NotFound_WithPostConditions(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Streams/non_existing"),
-				ExpectError:     regexp.MustCompile("there should be at least one stream"),
+				Config:      streamsDatasourceNonExisting(),
+				ExpectError: regexp.MustCompile("there should be at least one stream"),
 			},
 		},
 	})
+}
+
+func streamsDatasourceNonExisting() string {
+	return `
+data "snowflake_streams" "test" {
+  like = "non-existing-stream"
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.streams) > 0
+      error_message = "there should be at least one stream"
+    }
+  }
+}
+`
 }

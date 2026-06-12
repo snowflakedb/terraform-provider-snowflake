@@ -3,7 +3,6 @@
 package testacc
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -20,13 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
-
-func connectionsData() string {
-	return `
-    data "snowflake_connections" "test" {
-        depends_on = [snowflake_primary_connection.test]
-    }`
-}
 
 func TestAcc_Connections_Minimal(t *testing.T) {
 	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
@@ -38,7 +31,8 @@ func TestAcc_Connections_Minimal(t *testing.T) {
 
 	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(accountId, id)
 
-	dataConnections := accconfig.FromModels(t, connectionModel) + connectionsData()
+	connectionsModel := datasourcemodel.Connections("test").
+		WithDependsOn(connectionModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -48,7 +42,7 @@ func TestAcc_Connections_Minimal(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.PrimaryConnection),
 		Steps: []resource.TestStep{
 			{
-				Config: dataConnections,
+				Config: accconfig.FromModels(t, connectionModel, connectionsModel),
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr("data.snowflake_connections.test", "connections.#", "1")),
 					resourceshowoutputassert.ConnectionShowOutput(t, "snowflake_primary_connection.test").
@@ -85,7 +79,8 @@ func TestAcc_Connections_Complete(t *testing.T) {
 
 	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(accountId, id)
 
-	dataConnections := accconfig.FromModels(t, connectionModel) + connectionsData()
+	connectionsModel := datasourcemodel.Connections("test").
+		WithDependsOn(connectionModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -95,7 +90,7 @@ func TestAcc_Connections_Complete(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.PrimaryConnection),
 		Steps: []resource.TestStep{
 			{
-				Config: dataConnections,
+				Config: accconfig.FromModels(t, connectionModel, connectionsModel),
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr("data.snowflake_connections.test", "connections.#", "1")),
 					resourceshowoutputassert.ConnectionShowOutput(t, "snowflake_connection.test").
@@ -134,9 +129,9 @@ func TestAcc_Connections_Filtering(t *testing.T) {
 	connectionModelTwo := model.PrimaryConnection("c2", idTwo.Name())
 	connectionModelThree := model.PrimaryConnection("c3", idThree.Name())
 
-	configWithLike := accconfig.FromModels(t, connectionModelOne) +
-		accconfig.FromModels(t, connectionModelTwo) +
-		accconfig.FromModels(t, connectionModelThree)
+	connectionsDatasourceModel := datasourcemodel.Connections("test").
+		WithLike(prefix+"%").
+		WithDependsOn(connectionModelOne.ResourceReference(), connectionModelTwo.ResourceReference(), connectionModelThree.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -147,7 +142,7 @@ func TestAcc_Connections_Filtering(t *testing.T) {
 		Steps: []resource.TestStep{
 			// with like
 			{
-				Config: configWithLike + connectionDatasourceWithLike(prefix+"%"),
+				Config: accconfig.FromModels(t, connectionModelOne, connectionModelTwo, connectionModelThree, connectionsDatasourceModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.snowflake_connections.test", "connections.#", "2"),
 				),
@@ -179,8 +174,9 @@ func TestAcc_Connections_FilteringWithReplica(t *testing.T) {
 	connectionModelOne := model.PrimaryConnection("c1", idOne.Name())
 	connectionModelTwo := model.SecondaryConnection("c2", idTwo.Name(), primaryConnectionAsExternalId.FullyQualifiedName())
 
-	configWithLike := accconfig.FromModels(t, connectionModelOne) +
-		accconfig.FromModels(t, connectionModelTwo)
+	connectionsDatasourceModel := datasourcemodel.Connections("test").
+		WithLike(prefix+"%").
+		WithDependsOn(connectionModelOne.ResourceReference(), connectionModelTwo.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -191,33 +187,13 @@ func TestAcc_Connections_FilteringWithReplica(t *testing.T) {
 		Steps: []resource.TestStep{
 			// with like
 			{
-				Config: configWithLike + connectionAndSecondaryConnectionDatasourceWithLike(prefix+"%"),
+				Config: accconfig.FromModels(t, connectionModelOne, connectionModelTwo, connectionsDatasourceModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.snowflake_connections.test", "connections.#", "2"),
 				),
 			},
 		},
 	})
-}
-
-func connectionDatasourceWithLike(like string) string {
-	return fmt.Sprintf(`
-    data "snowflake_connections" "test" {
-        depends_on = [snowflake_primary_connection.c1, snowflake_primary_connection.c2, snowflake_primary_connection.c3]
-
-        like = "%s"
-    }
-`, like)
-}
-
-func connectionAndSecondaryConnectionDatasourceWithLike(like string) string {
-	return fmt.Sprintf(`
-    data "snowflake_connections" "test" {
-        depends_on = [snowflake_primary_connection.c1, snowflake_secondary_connection.c2]
-
-        like = "%s"
-    }
-`, like)
 }
 
 func TestAcc_Connections_NotFound_WithPostConditions(t *testing.T) {
