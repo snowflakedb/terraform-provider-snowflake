@@ -66,6 +66,7 @@ var databaseRolesDef = g.NewInterface(
 	g.StructPair("databaseRoleDBRow", "DatabaseRole").
 		Text("created_on").
 		Text("name").
+		PlainOnlyField("DatabaseName", "string"). // not returned by SHOW; populated manually in Show override (see _ext.go)
 		OptionalBoolFromText("is_default", g.WithRequiredInPlain()).
 		OptionalBoolFromText("is_current", g.WithRequiredInPlain()).
 		OptionalBoolFromText("is_inherited", g.WithRequiredInPlain()).
@@ -74,8 +75,10 @@ var databaseRolesDef = g.NewInterface(
 		Number("granted_database_roles").
 		Text("owner").
 		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()).
-		PlainOnlyField("DatabaseName", "string"),
+		OptionalText("owner_role_type", g.WithRequiredInPlain()),
+	// TODO: The generated Show implementation does not populate DatabaseName (it comes from the request, not the DB row).
+	// A custom Show override in _ext.go is needed to populate it after convertRows. Once the generator supports
+	// a post-convert hook for Show, this can be moved back to generated code.
 	g.NewQueryStruct("ShowDatabaseRoles").
 		Show().
 		SQL("DATABASE ROLES").
@@ -83,7 +86,8 @@ var databaseRolesDef = g.NewInterface(
 		SQL("IN DATABASE").
 		Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
 		OptionalLimitFrom().
-		WithValidation(g.ValidIdentifier, "Database"),
+		WithValidation(g.ValidIdentifier, "Database").
+		WithValidation(g.AdditionalValidations),
 	g.ShowByIDSuppressed,
 ).CustomOperation(
 	"Grant",

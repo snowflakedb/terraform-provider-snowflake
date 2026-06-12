@@ -74,7 +74,7 @@ func DatabaseRoles() *schema.Resource {
 
 func ReadDatabaseRoles(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	req := sdk.NewShowDatabaseRoleRequest(sdk.NewAccountObjectIdentifier(d.Get("in_database").(string)))
+	req := sdk.NewShowDatabaseRoleRequest().WithDatabase(sdk.NewAccountObjectIdentifier(d.Get("in_database").(string)))
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		req.WithLike(sdk.Like{
