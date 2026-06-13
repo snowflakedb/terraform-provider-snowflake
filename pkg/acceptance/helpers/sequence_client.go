@@ -33,3 +33,16 @@ func (c *SequenceClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) f
 		require.NoError(t, err)
 	}
 }
+
+func (c *SequenceClient) Create(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+	t.Helper()
+	return c.CreateWithId(t, c.ids.RandomSchemaObjectIdentifier())
+}
+
+func (c *SequenceClient) CreateWithId(t *testing.T, id sdk.SchemaObjectIdentifier) (sdk.SchemaObjectIdentifier, func()) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.client().Create(ctx, sdk.NewCreateSequenceRequest(id))
+	require.NoError(t, err)
+	return id, c.DropFunc(t, id)
+}

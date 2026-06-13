@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -16,6 +17,27 @@ func (h *HybridTableResourceAssert) HasColumns(columns []sdk.TableColumnSignatur
 		// canonically equivalent (see buildHybridColumnStateFromDescribe), so
 		// state holds the same form the model writes to HCL — Type.ToSql().
 		h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type.ToSql()))
+	}
+	return h
+}
+
+// HasColumnConfigs asserts all per-column fields (name, type, nullable, comment, collate)
+// in one call. Use this when the model was built with WithColumnConfigs. Zero-valued
+// fields in HybridTableColumnConfig are not asserted.
+func (h *HybridTableResourceAssert) HasColumnConfigs(columns []model.HybridTableColumnConfig) *HybridTableResourceAssert {
+	h.AddAssertion(assert.ValueSet("column.#", strconv.Itoa(len(columns))))
+	for i, col := range columns {
+		h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.name", i), col.Name))
+		h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type))
+		if col.Nullable != nil {
+			h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.nullable", i), strconv.FormatBool(*col.Nullable)))
+		}
+		if col.Comment != "" {
+			h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.comment", i), col.Comment))
+		}
+		if col.Collate != "" {
+			h.AddAssertion(assert.ValueSet(fmt.Sprintf("column.%d.collate", i), col.Collate))
+		}
 	}
 	return h
 }
