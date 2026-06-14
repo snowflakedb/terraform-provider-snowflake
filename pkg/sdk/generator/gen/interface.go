@@ -82,7 +82,7 @@ func (i *Interface) WithAllowedGenerationParts(parts ...GenerationPartName) *Int
 	if i.ObjectGenerationSettings == nil {
 		i.ObjectGenerationSettings = &genhelpers.ObjectGenerationSettings{}
 	}
-	i.ObjectGenerationSettings.AllowedGenerationParts = generationPartNamesToStrings(parts)
+	i.ObjectGenerationSettings.AllowedGenerationParts = generationPartNamesToNamers(parts)
 	return i
 }
 
@@ -91,12 +91,12 @@ func (i *Interface) WithEnabledGenerationParts(parts ...GenerationPartName) *Int
 	if i.ObjectGenerationSettings == nil {
 		i.ObjectGenerationSettings = &genhelpers.ObjectGenerationSettings{}
 	}
-	i.ObjectGenerationSettings.EnabledGenerationParts = generationPartNamesToStrings(parts)
+	i.ObjectGenerationSettings.EnabledGenerationParts = generationPartNamesToNamers(parts)
 	return i
 }
 
-func generationPartNamesToStrings(parts []GenerationPartName) []string {
-	return collections.Map(parts, func(p GenerationPartName) string { return p.GenerationPartName() })
+func generationPartNamesToNamers(parts []GenerationPartName) []genhelpers.GenerationPartNamer {
+	return collections.Map(parts, func(p GenerationPartName) genhelpers.GenerationPartNamer { return p })
 }
 
 func (i *Interface) ObjectName() string {

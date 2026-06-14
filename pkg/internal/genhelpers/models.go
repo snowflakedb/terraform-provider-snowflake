@@ -54,9 +54,9 @@ type HasPreambleModel interface {
 type ObjectGenerationSettings struct {
 	// AllowedGenerationParts lists which generation parts apply to this object.
 	// nil/empty means "use the generator's default" (all globally-filtered parts).
-	AllowedGenerationParts []string
+	AllowedGenerationParts []GenerationPartNamer
 	// EnabledGenerationParts lists optional (disabled-by-default) generation parts that should be enabled for this object.
-	EnabledGenerationParts []string
+	EnabledGenerationParts []GenerationPartNamer
 }
 
 type HasObjectGenerationSettings interface {
@@ -71,3 +71,9 @@ func (i *ObjectGenerationSettings) getObjectGenerationSettings() *ObjectGenerati
 type GenerationPartNamer interface {
 	GenerationPartName() string
 }
+
+type defaultGenerationPartName string
+
+func (d defaultGenerationPartName) GenerationPartName() string { return string(d) }
+
+const DefaultGenerationPart defaultGenerationPartName = "default"
