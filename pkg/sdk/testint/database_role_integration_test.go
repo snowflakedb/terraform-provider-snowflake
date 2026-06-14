@@ -101,7 +101,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupDatabaseRoleProvider(id))
 
-		alterRequest := sdk.NewAlterDatabaseRoleRequest(id).WithSet(*sdk.NewDatabaseRoleSetRequest("new comment"))
+		alterRequest := sdk.NewAlterDatabaseRoleRequest(id).WithSet(*sdk.NewDatabaseRoleSetRequest().WithComment("new comment"))
 		err = client.DatabaseRoles.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
