@@ -211,3 +211,14 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasNoBlockedPrefixes() *ApiInte
 	})
 	return a
 }
+
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthResourceUrl(expected string) *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthResourceUrl != expected {
+			return fmt.Errorf("expected oauth resource url: %v; got: %v", expected, o.OauthResourceUrl)
+		}
+		return nil
+	})
+	return a
+}

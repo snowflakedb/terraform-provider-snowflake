@@ -54,6 +54,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationAmazonApiGateway().Schema,
 	},
 	{
+		name:   "ApiIntegrationExternalMcpDynamicClient",
+		schema: resources.ApiIntegrationExternalMcpDynamicClient().Schema,
+	},
+	{
 		name:   "AuthenticationPolicy",
 		schema: resources.AuthenticationPolicy().Schema,
 	},
