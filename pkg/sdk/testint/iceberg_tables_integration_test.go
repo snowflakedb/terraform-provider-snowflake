@@ -112,7 +112,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeNumber_38_0).
 			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -195,7 +195,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeNumber_38_0).
 			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -213,7 +213,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeTimestampNTZ_6).
 			HasSourceIcebergType("TIMESTAMP").
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -231,7 +231,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeVarcharIceberg).
 			HasSourceIcebergType("STRING").
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(true).
@@ -262,7 +262,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasType(def.typ).
 				HasSourceIcebergType(def.sourceIceberg).
 				HasKind("COLUMN").
-				HasIsNullable(false).
+				HasIsNullable(true).
 				HasNoDefault().
 				HasPrimaryKey(false).
 				HasUniqueKey(false).
@@ -280,7 +280,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeVarcharIceberg).
 			HasSourceIcebergType("STRING").
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasDefault("'active'").
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -860,6 +860,18 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NotNil(t, details[0].PolicyName)
 		assert.Equal(t, maskingPolicy2.ID().Name(), details[0].PolicyName.Name())
 
+		// set with USING explicitly listing the column the policy is applied to
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetMaskingPolicyOnColumn(*sdk.NewTableSetColumnMaskingPolicyRequest("ID", maskingPolicy.ID()).
+				WithUsing([]sdk.Column{{Value: "ID"}}).WithForce(true)))
+		require.NoError(t, err)
+
+		details, err = client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+		require.NotNil(t, details[0].PolicyName)
+		assert.Equal(t, maskingPolicy.ID().Name(), details[0].PolicyName.Name())
+
 		// unset
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithUnsetMaskingPolicyOnColumn(*sdk.NewTableUnsetColumnMaskingPolicyRequest("ID")))
@@ -929,7 +941,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithDropClusteringKey(true)))
 		require.NoError(t, err)
 
-		// Clustering key is not returned from Snowflake.
+		// TODO (next PR): verify the clustering key with SYSTEM$CLUSTERING_INFORMATION, as it is not returned from SHOW/DESCRIBE.
 	})
 
 	t.Run("alter: set and unset properties", func(t *testing.T) {
@@ -978,6 +990,9 @@ func TestInt_IcebergTables(t *testing.T) {
 			))
 		require.NoError(t, err)
 
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasComment(""),
+		)
 		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
 			HasAllDefaultsExplicit(),
 		)
@@ -1209,9 +1224,9 @@ func TestInt_IcebergTables(t *testing.T) {
 	t.Run("alter: set and unset join policy", func(t *testing.T) {
 		// Create the policies before the table so that on cleanup the table (which references a
 		// policy) is dropped first, releasing it before the policies are dropped.
-		joinPolicy1, joinPolicy1Cleanup := testClientHelper().JoinPolicy.CreateJoinPolicy(t)
+		joinPolicy1, joinPolicy1Cleanup := testClientHelper().JoinPolicy.Create(t)
 		t.Cleanup(joinPolicy1Cleanup)
-		joinPolicy2, joinPolicy2Cleanup := testClientHelper().JoinPolicy.CreateJoinPolicy(t)
+		joinPolicy2, joinPolicy2Cleanup := testClientHelper().JoinPolicy.Create(t)
 		t.Cleanup(joinPolicy2Cleanup)
 
 		obj, cleanup := testClientHelper().IcebergTable.Create(t)

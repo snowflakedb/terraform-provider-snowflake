@@ -26,17 +26,17 @@ func (c *JoinPolicyClient) client() *sdk.Client {
 	return c.context.client
 }
 
-func (c *JoinPolicyClient) CreateJoinPolicy(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+func (c *JoinPolicyClient) Create(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
 	t.Helper()
 	ctx := context.Background()
 
 	id := c.ids.RandomSchemaObjectIdentifier()
 	_, err := c.client().ExecForTests(ctx, fmt.Sprintf(`CREATE JOIN POLICY %s AS () RETURNS JOIN_CONSTRAINT -> JOIN_CONSTRAINT(JOIN_REQUIRED => TRUE)`, id.FullyQualifiedName()))
 	require.NoError(t, err)
-	return id, c.DropJoinPolicyFunc(t, id)
+	return id, c.DropFunc(t, id)
 }
 
-func (c *JoinPolicyClient) DropJoinPolicyFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
+func (c *JoinPolicyClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
 
