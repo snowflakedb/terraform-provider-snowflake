@@ -153,13 +153,17 @@ func (g *Generator[T, M]) Run() error {
 	objects := g.objectsProvider()
 	parts := g.generationParts
 
-	filterObjects := newFiltersFlag("object names", collections.Map(objects, func(o T) string { return o.ObjectName() }))
-	filterParts := newFiltersFlag("generation part names", collections.Map(parts, func(p GenerationPart[T, M]) string { return p.GetName() }))
+	filterObjects := newInclusionFlag("object names", collections.Map(objects, func(o T) string { return o.ObjectName() }))
+	filterParts := newInclusionFlag("generation part names", collections.Map(parts, func(p GenerationPart[T, M]) string { return p.GetName() }))
+	excludeObjects := newExclusionFlag("object names", collections.Map(objects, func(o T) string { return o.ObjectName() }))
+	excludeParts := newExclusionFlag("generation part names", collections.Map(parts, func(p GenerationPart[T, M]) string { return p.GetName() }))
 
 	additionalLogs := flag.Bool("verbose", false, "print additional object debug logs")
 	dryRun := flag.Bool("dry-run", false, "generate to std out instead of saving")
 	flag.Var(filterObjects, filterObjects.flagName(), filterObjects.usage())
 	flag.Var(filterParts, filterParts.flagName(), filterParts.usage())
+	flag.Var(excludeObjects, excludeObjects.flagName(), excludeObjects.usage())
+	flag.Var(excludeParts, excludeParts.flagName(), excludeParts.usage())
 
 	flag.Usage = func() {
 		usage := fmt.Sprintf(`%[1]s
@@ -180,6 +184,14 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 		fmt.Printf("Generation part filters present: %s\n", filterParts)
 		g.generationPartFilters = append(g.generationPartFilters, filterGenerationPartByNameProvider[T, M](filterParts.filters))
 	}
+	if excludeObjects.hasValues() {
+		fmt.Printf("Object exclusions present: %s\n", excludeObjects)
+		g.objectFilters = append(g.objectFilters, excludeObjectByNameProvider[T](excludeObjects.filters))
+	}
+	if excludeParts.hasValues() {
+		fmt.Printf("Generation part exclusions present: %s\n", excludeParts)
+		g.generationPartFilters = append(g.generationPartFilters, excludeGenerationPartByNameProvider[T, M](excludeParts.filters))
+	}
 
 	if len(g.objectFilters) > 0 {
 		filteredObjects := make([]T, 0)
@@ -193,7 +205,7 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 			}
 		}
 		if len(filteredObjects) == 0 {
-			return fmt.Errorf("no objects found for the given filters: %s", filterObjects)
+			return fmt.Errorf("no objects found for the given filters: %s; exclusions: %s", filterObjects, excludeObjects)
 		}
 		objects = filteredObjects
 	}
@@ -208,6 +220,9 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 			if matches {
 				filteredGenerationParts = append(filteredGenerationParts, p)
 			}
+		}
+		if len(filteredGenerationParts) == 0 {
+			return fmt.Errorf("no generation parts found for the given filters: %s; exclusions: %s", filterParts, excludeParts)
 		}
 		parts = filteredGenerationParts
 	}

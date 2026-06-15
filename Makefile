@@ -153,7 +153,7 @@ generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
 
 generate-sdk-no-tests: ## Generated all SDK files (except tests)
-	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,dto,dto_builders,impl,validations'
+	make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
 
 generate-sdk-no-tests-check: generate-sdk-no-tests ## Check that all generated SDK files (except tests) are up-to-date
 	$(call GIT_DIFF_CHECK,pkg/sdk/*_gen.go pkg/sdk/*_dto_gen.go pkg/sdk/*_dto_builders_gen.go pkg/sdk/*_impl_gen.go pkg/sdk/*_validations_gen.go)
