@@ -29,8 +29,6 @@ type CreateNotebookRequest struct {
 	Secrets                     *SecretsListRequest
 }
 
-// SecretsListRequest removed manually (redefined)
-
 type AlterNotebookRequest struct {
 	IfExists  *bool
 	name      SchemaObjectIdentifier // required

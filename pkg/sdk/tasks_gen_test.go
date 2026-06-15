@@ -91,7 +91,7 @@ func TestTasks_Create(t *testing.T) {
 			Warehouse: &warehouseId,
 		}
 		opts.Schedule = String("10 MINUTE")
-		opts.Config = String(`$${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$`)
+		opts.Config = String(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`)
 		opts.AllowOverlappingExecution = Bool(true)
 		opts.SessionParameters = &SessionParameters{
 			JsonIndent:  Int(10),
@@ -163,7 +163,7 @@ func TestTasks_CreateOrAlter(t *testing.T) {
 	t.Run("opts.Warehouse.Warehouse conflicts with opts.Warehouse.UserTaskManagedInitialWarehouseSize", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Warehouse = &CreateTaskWarehouse{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrAlterTaskOptions.CreateTaskWarehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrAlterTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -180,7 +180,7 @@ func TestTasks_CreateOrAlter(t *testing.T) {
 			Warehouse: &warehouseId,
 		}
 		opts.Schedule = String("10 MINUTE")
-		opts.Config = String(`$${"output_dir": "/temp/test_directory/", "learning_rate": 0.1}$$`)
+		opts.Config = String(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`)
 		opts.AllowOverlappingExecution = Bool(true)
 		opts.UserTaskTimeoutMs = Int(5)
 		opts.SessionParameters = &SessionParameters{

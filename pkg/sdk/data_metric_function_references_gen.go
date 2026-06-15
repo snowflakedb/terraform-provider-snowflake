@@ -7,7 +7,6 @@ import (
 )
 
 type DataMetricFunctionReferences interface {
-	// Manually edited the return type
 	GetForEntity(ctx context.Context, request *GetForEntityDataMetricFunctionReferenceRequest) ([]DataMetricFunctionReference, error)
 }
 
@@ -15,16 +14,6 @@ type DataMetricFunctionReferences interface {
 type GetForEntityDataMetricFunctionReferenceOptions struct {
 	selectEverythingFrom bool                                   `ddl:"static" sql:"SELECT * FROM TABLE"`
 	parameters           *dataMetricFunctionReferenceParameters `ddl:"list,parentheses,no_comma"`
-}
-
-type dataMetricFunctionReferenceParameters struct {
-	functionFullyQualifiedName bool                                          `ddl:"static" sql:"SNOWFLAKE.INFORMATION_SCHEMA.DATA_METRIC_FUNCTION_REFERENCES"`
-	arguments                  *dataMetricFunctionReferenceFunctionArguments `ddl:"list,parentheses"`
-}
-
-type dataMetricFunctionReferenceFunctionArguments struct {
-	refEntityName   []ObjectIdentifier                       `ddl:"parameter,single_quotes,arrow_equals" sql:"REF_ENTITY_NAME"`
-	RefEntityDomain *DataMetricFunctionRefEntityDomainOption `ddl:"parameter,single_quotes,arrow_equals" sql:"REF_ENTITY_DOMAIN"`
 }
 
 type dataMetricFunctionReferencesRow struct {
@@ -57,4 +46,14 @@ type DataMetricFunctionReference struct {
 	RefId                 string
 	Schedule              string
 	ScheduleStatus        string
+}
+
+type dataMetricFunctionReferenceFunctionArguments struct {
+	refEntityName   []ObjectIdentifier                       `ddl:"parameter,single_quotes,arrow_equals" sql:"REF_ENTITY_NAME"`
+	RefEntityDomain *DataMetricFunctionRefEntityDomainOption `ddl:"parameter,single_quotes,arrow_equals" sql:"REF_ENTITY_DOMAIN"`
+}
+
+type dataMetricFunctionReferenceParameters struct {
+	functionFullyQualifiedName bool                                          `ddl:"static" sql:"SNOWFLAKE.INFORMATION_SCHEMA.DATA_METRIC_FUNCTION_REFERENCES"`
+	arguments                  *dataMetricFunctionReferenceFunctionArguments `ddl:"list,parentheses"`
 }

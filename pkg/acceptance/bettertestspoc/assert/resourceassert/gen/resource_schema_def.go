@@ -150,6 +150,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.GitRepository().Schema,
 	},
 	{
+		name:   "HybridTable",
+		schema: resources.HybridTable().Schema,
+	},
+	{
 		name:   "ImageRepository",
 		schema: resources.ImageRepository().Schema,
 	},

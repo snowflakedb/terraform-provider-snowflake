@@ -34,7 +34,7 @@ var eventTableDropAndAddRowAccessPolicy = g.NewQueryStruct("EventTableDropAndAdd
 	QueryStructField("Add", eventTableAddRowAccessPolicy, g.KeywordOptions().Required())
 
 var eventTableClusteringAction = g.NewQueryStruct("EventTableClusteringAction").
-	PredefinedQueryStructField("ClusterBy", "*[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+	PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 	OptionalSQL("SUSPEND RECLUSTER").
 	OptionalSQL("RESUME RECLUSTER").
 	OptionalSQL("DROP CLUSTERING KEY")

@@ -581,8 +581,6 @@ func (s *ProcedureSetRequest) WithTraceLevel(traceLevel TraceLevel) *ProcedureSe
 	return s
 }
 
-// NewSecretsListRequest removed manually - redeclared in functions
-
 func NewProcedureUnsetRequest() *ProcedureUnsetRequest {
 	s := ProcedureUnsetRequest{}
 	return &s

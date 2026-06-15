@@ -41,8 +41,6 @@ type CreateNotebookOptions struct {
 	Secrets                     *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
 }
 
-// SecretsList removed manually (redefined in functions)
-
 // AlterNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-notebook.
 type AlterNotebookOptions struct {
 	alter     bool                    `ddl:"static" sql:"ALTER"`

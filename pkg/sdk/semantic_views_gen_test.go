@@ -19,7 +19,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		return &CreateSemanticViewOptions{
 			// adjusted manually
 			name: id,
-			logicalTables: []LogicalTable{
+			LogicalTables: []LogicalTable{
 				{
 					TableName: logicalTableId,
 				},
@@ -46,40 +46,40 @@ func TestSemanticViews_Create(t *testing.T) {
 	})
 
 	// below validations added manually
-	t.Run("validation: exactly one field for [metricDefinition.semanticExpression metricDefinition.windowFunctionMetricDefinition] none set", func(t *testing.T) {
+	t.Run("validation: exactly one field for [MetricDefinition.SemanticExpression MetricDefinition.WindowFunctionMetricDefinition] none set", func(t *testing.T) {
 		metricsObj := []MetricDefinition{
 			{},
 		}
 		opts := &CreateSemanticViewOptions{
 			name:                id,
 			Comment:             String("comment"),
-			semanticViewMetrics: metricsObj,
+			SemanticViewMetrics: metricsObj,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"))
 	})
 
 	t.Run("validation: exactly one field for [metricDefinition.semanticExpression metricDefinition.windowFunctionMetricDefinition] both set", func(t *testing.T) {
 		metricsObj := []MetricDefinition{
 			{
-				semanticExpression:             &SemanticExpression{},
-				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{},
+				SemanticExpression:             &SemanticExpression{},
+				WindowFunctionMetricDefinition: &WindowFunctionMetricDefinition{},
 			},
 		}
 		opts := &CreateSemanticViewOptions{
 			name:                id,
 			Comment:             String("comment"),
-			semanticViewMetrics: metricsObj,
+			SemanticViewMetrics: metricsObj,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"))
 	})
 
 	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias RelationshipTableName or RelationshipTableAlias] none set", func(t *testing.T) {
 		opts := &CreateSemanticViewOptions{
 			name: id,
-			semanticViewRelationships: []SemanticViewRelationship{
+			SemanticViewRelationships: []SemanticViewRelationship{
 				{
-					tableNameOrAlias:    &RelationshipTableAlias{},
-					refTableNameOrAlias: &RelationshipTableAlias{},
+					TableNameOrAlias:    &RelationshipTableAlias{},
+					RefTableNameOrAlias: &RelationshipTableAlias{},
 				},
 			},
 		}
@@ -89,13 +89,13 @@ func TestSemanticViews_Create(t *testing.T) {
 	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias RelationshipTableName or RelationshipTableAlias] both set", func(t *testing.T) {
 		opts := &CreateSemanticViewOptions{
 			name: id,
-			semanticViewRelationships: []SemanticViewRelationship{
+			SemanticViewRelationships: []SemanticViewRelationship{
 				{
-					tableNameOrAlias: &RelationshipTableAlias{
+					TableNameOrAlias: &RelationshipTableAlias{
 						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
 						RelationshipTableAlias: String("alias"),
 					},
-					refTableNameOrAlias: &RelationshipTableAlias{
+					RefTableNameOrAlias: &RelationshipTableAlias{
 						RelationshipTableName: Pointer(randomSchemaObjectIdentifier()),
 					},
 				},
@@ -107,12 +107,12 @@ func TestSemanticViews_Create(t *testing.T) {
 	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias RelationshipTableName or RelationshipTableAlias] both set", func(t *testing.T) {
 		opts := &CreateSemanticViewOptions{
 			name: id,
-			semanticViewRelationships: []SemanticViewRelationship{
+			SemanticViewRelationships: []SemanticViewRelationship{
 				{
-					tableNameOrAlias: &RelationshipTableAlias{
+					TableNameOrAlias: &RelationshipTableAlias{
 						RelationshipTableName: Pointer(randomSchemaObjectIdentifier()),
 					},
-					refTableNameOrAlias: &RelationshipTableAlias{
+					RefTableNameOrAlias: &RelationshipTableAlias{
 						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
 						RelationshipTableAlias: String("alias"),
 					},
@@ -145,9 +145,9 @@ func TestSemanticViews_Create(t *testing.T) {
 		privateAccessModifier := true
 		tablesObj := []LogicalTable{
 			{
-				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
+				LogicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
 				TableName:         logicalTableId1,
-				primaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
+				PrimaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
 					{
 						Name: "pk1.1",
 					},
@@ -155,7 +155,7 @@ func TestSemanticViews_Create(t *testing.T) {
 						Name: "pk1.2",
 					},
 				}},
-				uniqueKeys: []UniqueKeys{
+				UniqueKeys: []UniqueKeys{
 					{
 						Unique: []SemanticViewColumn{
 							{
@@ -171,13 +171,13 @@ func TestSemanticViews_Create(t *testing.T) {
 						},
 					},
 				},
-				synonyms: &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
+				Synonyms: &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
 				Comment:  logicalTableComment1,
 			},
 			{
-				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias2},
+				LogicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias2},
 				TableName:         logicalTableId2,
-				primaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
+				PrimaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
 					{
 						Name: "pk2.1",
 					},
@@ -185,15 +185,15 @@ func TestSemanticViews_Create(t *testing.T) {
 						Name: "pk2.2",
 					},
 				}},
-				synonyms: &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
+				Synonyms: &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
 				Comment:  logicalTableComment2,
 			},
 		}
 		relationshipsObj := []SemanticViewRelationship{
 			{
-				relationshipAlias: &RelationshipAlias{RelationshipAlias: relationshipAlias1},
-				tableNameOrAlias:  &RelationshipTableAlias{RelationshipTableAlias: &tableAlias1},
-				relationshipColumnNames: []SemanticViewColumn{
+				RelationshipAlias: &RelationshipAlias{RelationshipAlias: relationshipAlias1},
+				TableNameOrAlias:  &RelationshipTableAlias{RelationshipTableAlias: &tableAlias1},
+				RelationshipColumnNames: []SemanticViewColumn{
 					{
 						Name: "pk1.1",
 					},
@@ -201,8 +201,8 @@ func TestSemanticViews_Create(t *testing.T) {
 						Name: "pk1.2",
 					},
 				},
-				refTableNameOrAlias: &RelationshipTableAlias{RelationshipTableAlias: &tableAlias2},
-				relationshipRefColumnNames: []SemanticViewColumn{
+				RefTableNameOrAlias: &RelationshipTableAlias{RelationshipTableAlias: &tableAlias2},
+				RelationshipRefColumnNames: []SemanticViewColumn{
 					{
 						Name: "pk2.1",
 					},
@@ -214,40 +214,40 @@ func TestSemanticViews_Create(t *testing.T) {
 		}
 		factsObj := []FactDefinition{
 			{
-				isPrivate: &privateAccessModifier,
-				semanticExpression: &SemanticExpression{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, factName)},
-					sqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
-					synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
+				IsPrivate: &privateAccessModifier,
+				SemanticExpression: &SemanticExpression{
+					QualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, factName)},
+					SqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
+					Synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
 					Comment:                 String("fact_comment"),
 				},
 			},
 		}
 		dimensionsObj := []DimensionDefinition{
 			{
-				semanticExpression: &SemanticExpression{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, dimensionName)},
-					sqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
-					synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
+				SemanticExpression: &SemanticExpression{
+					QualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, dimensionName)},
+					SqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
+					Synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
 					Comment:                 String("dimension_comment"),
 				},
 			},
 		}
 		metricsObj := []MetricDefinition{
 			{
-				isPrivate: &privateAccessModifier,
-				semanticExpression: &SemanticExpression{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
-					sqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
-					synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test5"}, {Synonym: "test6"}}},
+				IsPrivate: &privateAccessModifier,
+				SemanticExpression: &SemanticExpression{
+					QualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
+					SqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
+					Synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test5"}, {Synonym: "test6"}}},
 					Comment:                 String("metric_comment"),
 				},
 			},
 			{
-				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: `"table1"."metric1"`},
+				WindowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
+					QualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: `"table1"."metric1"`},
 					as:                      true,
-					sqlExpression:           &SemanticSqlExpression{SqlExpression: fmt.Sprintf(`SUM(%s)`, metricName)},
+					SqlExpression:           &SemanticSqlExpression{SqlExpression: fmt.Sprintf(`SUM(%s)`, metricName)},
 					OverClause: &WindowFunctionOverClause{
 						PartitionBy: String("table_1.dimension_2, table_1.dimension_3"),
 						OrderBy:     String("table_1.dimension_2"),
@@ -260,11 +260,11 @@ func TestSemanticViews_Create(t *testing.T) {
 			name:                      id,
 			Comment:                   String("comment"),
 			IfNotExists:               Bool(true),
-			logicalTables:             tablesObj,
-			semanticViewRelationships: relationshipsObj,
-			semanticViewFacts:         factsObj,
-			semanticViewDimensions:    dimensionsObj,
-			semanticViewMetrics:       metricsObj,
+			LogicalTables:             tablesObj,
+			SemanticViewRelationships: relationshipsObj,
+			SemanticViewFacts:         factsObj,
+			SemanticViewDimensions:    dimensionsObj,
+			SemanticViewMetrics:       metricsObj,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES ("%s" AS %s PRIMARY KEY ("pk1.1", "pk1.2") UNIQUE ("uk1.3") UNIQUE ("uk1.4") WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', "%s" AS %s PRIMARY KEY ("pk2.1", "pk2.2") WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS ("%s" AS "%s" ("pk1.1", "pk1.2") REFERENCES "%s" ("pk2.1", "pk2.2")) FACTS (PRIVATE "%s" AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS ("%s" AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (PRIVATE %s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
 			id.FullyQualifiedName(),
@@ -279,17 +279,17 @@ func TestSemanticViews_Create(t *testing.T) {
 			tableAlias2,
 			factName,
 			factExpression,
-			*factsObj[0].semanticExpression.Comment,
+			*factsObj[0].SemanticExpression.Comment,
 			dimensionName,
 			dimensionExpression,
-			*dimensionsObj[0].semanticExpression.Comment,
+			*dimensionsObj[0].SemanticExpression.Comment,
 			metricName,
 			metricExpression,
-			*metricsObj[0].semanticExpression.Comment,
-			metricsObj[1].windowFunctionMetricDefinition.qualifiedExpressionName.QualifiedExpressionName,
-			metricsObj[1].windowFunctionMetricDefinition.sqlExpression.SqlExpression,
-			*metricsObj[1].windowFunctionMetricDefinition.OverClause.PartitionBy,
-			*metricsObj[1].windowFunctionMetricDefinition.OverClause.OrderBy,
+			*metricsObj[0].SemanticExpression.Comment,
+			metricsObj[1].WindowFunctionMetricDefinition.QualifiedExpressionName.QualifiedExpressionName,
+			metricsObj[1].WindowFunctionMetricDefinition.SqlExpression.SqlExpression,
+			*metricsObj[1].WindowFunctionMetricDefinition.OverClause.PartitionBy,
+			*metricsObj[1].WindowFunctionMetricDefinition.OverClause.OrderBy,
 			"comment",
 		)
 	})

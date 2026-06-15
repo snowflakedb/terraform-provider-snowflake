@@ -85,6 +85,15 @@ func (i *Interface) WithAllowedGenerationParts(parts ...string) *Interface {
 	return i
 }
 
+// WithEnabledGenerationParts enables optional (disabled-by-default) generation parts for this object.
+func (i *Interface) WithEnabledGenerationParts(parts ...string) *Interface {
+	if i.ObjectGenerationSettings == nil {
+		i.ObjectGenerationSettings = &genhelpers.ObjectGenerationSettings{}
+	}
+	i.ObjectGenerationSettings.EnabledGenerationParts = parts
+	return i
+}
+
 func (i *Interface) ObjectName() string {
 	return i.Name
 }
@@ -101,6 +110,28 @@ func NewInterface(name string, nameSingular string, identifierKind string, opera
 // NameLowerCased returns interface name starting with a lower case letter
 func (i *Interface) NameLowerCased() string {
 	return startingWithLowerCase(i.Name)
+}
+
+// SharedToOptsFields returns all nested struct fields marked with GenerateSharedToOpts
+// across all operations. Used by the impl template to emit standalone toOpts() methods.
+func (i *Interface) SharedToOptsFields() []*Field {
+	var result []*Field
+	for _, op := range i.Operations {
+		if op.OptsField == nil {
+			continue
+		}
+		collectSharedToOpts(op.OptsField, &result)
+	}
+	return result
+}
+
+func collectSharedToOpts(f *Field, result *[]*Field) {
+	if f.GenerateSharedToOpts && !f.IsShared {
+		*result = append(*result, f)
+	}
+	for idx := range f.Fields {
+		collectSharedToOpts(&f.Fields[idx], result)
+	}
 }
 
 // ObjectIdentifierKind returns the level of the object identifier (e.g. for DatabaseObjectIdentifier, it returns the prefix "Database")

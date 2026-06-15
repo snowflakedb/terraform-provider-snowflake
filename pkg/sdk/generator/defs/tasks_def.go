@@ -49,9 +49,9 @@ var tasksDef = g.NewInterface(
 			SQL("TASK").
 			IfNotExists().
 			Name().
-			PredefinedQueryStructField("Warehouse", "*CreateTaskWarehouse", g.KeywordOptions()).
+			OptionalQueryStructField("Warehouse", taskCreateWarehouse, g.KeywordOptions()).
 			OptionalTextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
-			OptionalTextAssignment("CONFIG", g.ParameterOptions().NoQuotes()).
+			OptionalTextAssignment("CONFIG", g.ParameterOptions().DoubleDollarQuotes()).
 			OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
 			PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
 			OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
@@ -73,7 +73,6 @@ var tasksDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
 			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
-		taskCreateWarehouse,
 	).
 	CustomOperation(
 		"CreateOrAlter",
@@ -82,9 +81,9 @@ var tasksDef = g.NewInterface(
 			CreateOrAlter().
 			SQL("TASK").
 			Name().
-			PredefinedQueryStructField("Warehouse", "*CreateTaskWarehouse", g.KeywordOptions()).
+			OptionalQueryStructField("Warehouse", taskCreateWarehouse, g.KeywordOptions()).
 			OptionalTextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
-			OptionalTextAssignment("CONFIG", g.ParameterOptions().NoQuotes()).
+			OptionalTextAssignment("CONFIG", g.ParameterOptions().DoubleDollarQuotes()).
 			OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
 			OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
 			PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
@@ -132,7 +131,7 @@ var tasksDef = g.NewInterface(
 					OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
 					OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
-					OptionalTextAssignment("CONFIG", g.ParameterOptions().NoQuotes()).
+					OptionalTextAssignment("CONFIG", g.ParameterOptions().DoubleDollarQuotes()).
 					OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
 					OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
 					OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).

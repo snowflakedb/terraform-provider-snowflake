@@ -87,26 +87,26 @@ func (r *CreateViewRequest) toOpts() *CreateViewOptions {
 		sql:         r.sql,
 	}
 	if r.Columns != nil {
-		s := make([]ViewColumn, len(r.Columns))
+		columns := make([]ViewColumn, len(r.Columns))
 		for i, v := range r.Columns {
-			s[i] = ViewColumn{
+			columns[i] = ViewColumn{
 				Name:    v.Name,
 				Comment: v.Comment,
 				Tag:     v.Tag,
 			}
 			if v.ProjectionPolicy != nil {
-				s[i].ProjectionPolicy = &ViewColumnProjectionPolicy{
+				columns[i].ProjectionPolicy = &ViewColumnProjectionPolicy{
 					ProjectionPolicy: v.ProjectionPolicy.ProjectionPolicy,
 				}
 			}
 			if v.MaskingPolicy != nil {
-				s[i].MaskingPolicy = &ViewColumnMaskingPolicy{
+				columns[i].MaskingPolicy = &ViewColumnMaskingPolicy{
 					MaskingPolicy: v.MaskingPolicy.MaskingPolicy,
 					Using:         v.MaskingPolicy.Using,
 				}
 			}
 		}
-		opts.Columns = s
+		opts.Columns = columns
 	}
 	if r.RowAccessPolicy != nil {
 		opts.RowAccessPolicy = &ViewRowAccessPolicy{

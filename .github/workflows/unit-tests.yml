@@ -1,0 +1,30 @@
+name: Unit tests
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    env:
+      TEST_SF_TF_TEST_WORKFLOW_ID: "${{ github.event.pull_request.head.sha }}_${{ github.run_attempt }}"
+      ADDITIONAL_TEST_FLAGS: "-json"
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: ./go.mod
+          cache: false
+
+      - name: Run unit tests
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
+        run: set -o pipefail && make test-unit | make save-test-results
+        env:
+          TEST_SF_TF_TEST_TYPE: "unit"

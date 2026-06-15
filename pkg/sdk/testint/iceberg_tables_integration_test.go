@@ -304,6 +304,9 @@ func TestInt_IcebergTables(t *testing.T) {
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
 		basicAssertions(t, id)
+
+		info := testClientHelper().IcebergTable.GetIcebergTableInformation(t, id)
+		assert.NotEmpty(t, info.MetadataLocation)
 	})
 
 	t.Run("create Snowflake managed: all options", func(t *testing.T) {
@@ -440,6 +443,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		completeAssertions(t, id, maskingPolicy.ID())
 
+		info := testClientHelper().IcebergTable.GetIcebergTableInformation(t, id)
+		assert.NotEmpty(t, info.MetadataLocation)
+
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
 		require.NoError(t, err)
 		require.Len(t, references, 4)
@@ -492,6 +498,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		_, err = client.IcebergTables.ShowByID(ctx, id)
 		require.NoError(t, err)
+
+		info := testClientHelper().IcebergTable.GetIcebergTableInformation(t, id)
+		assert.NotEmpty(t, info.MetadataLocation)
 	})
 	t.Run("create from iceberg files: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
@@ -557,6 +566,9 @@ func TestInt_IcebergTables(t *testing.T) {
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
 		require.NoError(t, err)
 		require.Empty(t, references)
+
+		info := testClientHelper().IcebergTable.GetIcebergTableInformation(t, id)
+		assert.Equal(t, s3CompatBaseUrl+metadataFilePath, info.MetadataLocation)
 	})
 
 	t.Run("create from iceberg files: all options", func(t *testing.T) {
@@ -623,6 +635,9 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasNoWriteDefault(),
 			)
 		}
+
+		info := testClientHelper().IcebergTable.GetIcebergTableInformation(t, id)
+		assert.Equal(t, s3CompatBaseUrl+metadataFilePath, info.MetadataLocation)
 	})
 
 	t.Run("create from iceberg files: if not exists", func(t *testing.T) {

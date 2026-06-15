@@ -167,7 +167,9 @@ func TestInt_HybridTables(t *testing.T) {
 
 			notesCol := details[4]
 			require.Equal(t, "NOTES", notesCol.Name)
-			require.Equal(t, "VARCHAR(200) COLLATE 'en-ci'", notesCol.Type)
+			require.Equal(t, "VARCHAR(200)", notesCol.Type)
+			require.NotNil(t, notesCol.Collation)
+			require.Equal(t, "en-ci", *notesCol.Collation)
 			require.Equal(t, "COLUMN", notesCol.Kind)
 			require.True(t, notesCol.IsNullable)
 			require.False(t, notesCol.PrimaryKey)
@@ -237,6 +239,26 @@ func TestInt_HybridTables(t *testing.T) {
 
 			err = client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns).WithIfNotExists(true))
 			require.NoError(t, err)
+		})
+
+		t.Run("with retention parameters", func(t *testing.T) {
+			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "ID", DataType: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				},
+			}
+			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns).
+				WithDataRetentionTimeInDays(5).
+				WithMaxDataExtensionTimeInDays(10))
+			require.NoError(t, err)
+			t.Cleanup(testClientHelper().HybridTable.DropFunc(t, id))
+
+			// Both parameters must be set at TABLE level by the CREATE itself,
+			// proving they are accepted in CREATE HYBRID TABLE despite the docs omission.
+			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).
+				HasDataRetentionTimeInDays(5).
+				HasMaxDataExtensionTimeInDays(10))
 		})
 	})
 
@@ -382,6 +404,101 @@ func TestInt_HybridTables(t *testing.T) {
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithMaxDataExtensionTimeInDays(28)))
 			require.NoError(t, err)
 			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).HasMaxDataExtensionTimeInDays(28))
+		})
+
+		t.Run("show parameters", func(t *testing.T) {
+			id, cleanup := testClientHelper().HybridTable.Create(t)
+			t.Cleanup(cleanup)
+
+			// Parity: client.Parameters.ShowParameters with ParametersIn{Table: id} returns the same
+			// payload as the HybridTables extension method.
+			parametersDirect, err := client.Parameters.ShowParameters(ctx, &sdk.ShowParametersOptions{
+				In: &sdk.ParametersIn{Table: id},
+			})
+			require.NoError(t, err)
+			require.NotEmpty(t, parametersDirect)
+
+			parametersExt, err := client.HybridTables.ShowParameters(ctx, id)
+			require.NoError(t, err)
+			require.Equal(t, parametersDirect, parametersExt)
+
+			// After SET, the TABLE-level Level value is returned for that parameter.
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithDataRetentionTimeInDays(3)))
+			require.NoError(t, err)
+
+			parametersAfterSet, err := client.HybridTables.ShowParameters(ctx, id)
+			require.NoError(t, err)
+
+			retention, err := collections.FindFirst(parametersAfterSet, func(p *sdk.Parameter) bool {
+				return p.Key == string(sdk.ObjectParameterDataRetentionTimeInDays)
+			})
+			require.NoError(t, err, "DATA_RETENTION_TIME_IN_DAYS parameter must be present after SET")
+			require.Equal(t, "3", (*retention).Value)
+			require.Equal(t, sdk.ParameterTypeTable, (*retention).Level,
+				"expected Level=%q (SHOW PARAMETERS returns TABLE for hybrid tables)", sdk.ParameterTypeTable)
+		})
+
+		t.Run("unset properties", func(t *testing.T) {
+			// Arrange: create the table with COMMENT and the retention properties set,
+			// so the multi-property UNSET below has all three fields at non-default values.
+			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{
+						Name:     "id",
+						DataType: sdk.DataType("INT"),
+						InlineConstraint: &sdk.ColumnInlineConstraint{
+							Type: sdk.ColumnConstraintTypePrimaryKey,
+						},
+					},
+				},
+			}).
+				WithComment("to be unset").
+				WithDataRetentionTimeInDays(3).
+				WithMaxDataExtensionTimeInDays(7))
+			require.NoError(t, err)
+			t.Cleanup(testClientHelper().HybridTable.DropFunc(t, id))
+
+			// Single-property UNSET — baseline (expected to succeed regardless of multi-property capability).
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().WithComment(true)))
+			require.NoError(t, err, "single-property UNSET COMMENT must succeed")
+			assertThatObject(t, objectassert.HybridTable(t, id).HasComment(""))
+
+			// Re-set COMMENT (cleared by the single-UNSET above) so the multi-UNSET
+			// has all three properties at non-default values to clear in one ALTER.
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithComment("about to be multi-unset")))
+			require.NoError(t, err, "re-SET COMMENT must succeed before multi-UNSET")
+
+			// Multi-property UNSET (COMMENT + DATA_RETENTION_TIME_IN_DAYS + MAX_DATA_EXTENSION_TIME_IN_DAYS)
+			// in a single ALTER. The SDK emits `UNSET COMMENT, DATA_RETENTION_TIME_IN_DAYS,
+			// MAX_DATA_EXTENSION_TIME_IN_DAYS` (comma-separated) — the form the parser accepts.
+			// Mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74.
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().
+					WithComment(true).
+					WithDataRetentionTimeInDays(true).
+					WithMaxDataExtensionTimeInDays(true)))
+			require.NoError(t, err, "multi-property UNSET in a single ALTER must succeed")
+
+			// Verify COMMENT is cleared and the TABLE-level override on the two
+			// retention parameters is gone. The fallback level (ACCOUNT/DATABASE/SCHEMA/default)
+			// is environment-dependent, so we only assert what we changed, not the inherited level.
+			assertThatObject(t, objectassert.HybridTable(t, id).HasComment(""))
+			parametersAfterUnset, err := client.HybridTables.ShowParameters(ctx, id)
+			require.NoError(t, err)
+			for _, p := range parametersAfterUnset {
+				if p.Key == string(sdk.ObjectParameterDataRetentionTimeInDays) || p.Key == string(sdk.ObjectParameterMaxDataExtensionTimeInDays) {
+					require.NotEqual(t, sdk.ParameterTypeTable, p.Level, "TABLE-level override for %s must be cleared after UNSET", p.Key)
+				}
+			}
+
+			// UNSET with IfExists — ensures the ALTER wrapper works for UNSET too.
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithIfExists(true).
+				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().WithComment(true)))
+			require.NoError(t, err, "UNSET with IfExists must succeed on existing table")
 		})
 
 		// NOTE: The following ALTER TABLE SET properties are NOT supported on hybrid tables and are
