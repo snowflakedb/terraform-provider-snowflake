@@ -178,6 +178,55 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_ApiIntegrationGitRepositoryToken_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	const allowedPrefix = "https://github.com/my-org/"
+	const blockedPrefix = "https://github.com/my-org/blocked/"
+	const allowedSecrets = "ALL"
+	comment := random.Comment()
+
+	testModel := model.ApiIntegrationGitRepositoryToken("t", id.Name(), allowedSecrets, []string{allowedPrefix}, true).
+		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ApiIntegrationGitRepositoryToken),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+						sdk.NewCreateApiIntegrationRequest(id,
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							WithComment(comment).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithGitHttpsApiTokenBasedProviderParams(*sdk.NewGitHttpsApiTokenBasedParamsRequest().
+								WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))),
+					)
+					t.Cleanup(cleanup)
+				},
+				Config:             config.FromModels(t, testModel),
+				ResourceName:       testModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, testModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
+
 func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
