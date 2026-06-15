@@ -108,7 +108,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		assertThatObject(t, objectassert.DatabaseRole(t, id).
 			HasComment("new comment"))
 
-		alterRequest = sdk.NewAlterDatabaseRoleRequest(id).WithUnset(*sdk.NewDatabaseRoleUnsetRequest())
+		alterRequest = sdk.NewAlterDatabaseRoleRequest(id).WithUnset(*sdk.NewDatabaseRoleUnsetRequest().WithComment(true))
 		err = client.DatabaseRoles.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -160,12 +160,16 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		alterRequest := sdk.NewAlterDatabaseRoleRequest(id).WithRename(newId)
 
 		err = client.DatabaseRoles.Alter(ctx, alterRequest)
-		assert.ErrorIs(t, err, sdk.ErrDifferentDatabase)
+		assert.ErrorContains(t, err, sdk.ErrDifferentDatabase.Error())
 	})
 
 	t.Run("show database_role: without like", func(t *testing.T) {
 		role1 := createDatabaseRole(t)
 		role2 := createDatabaseRole(t)
+
+		// TODO [next PR]: introduce a hook after convert for cases like this one (database name is not one of the returned columns, so we need to fill it out based on the request)
+		role1.DatabaseName = ""
+		role2.DatabaseName = ""
 
 		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId())
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
@@ -179,6 +183,10 @@ func TestInt_DatabaseRoles(t *testing.T) {
 	t.Run("show database_role: with like", func(t *testing.T) {
 		role1 := createDatabaseRole(t)
 		role2 := createDatabaseRole(t)
+
+		// TODO [next PR]: introduce a hook after convert for cases like this one (database name is not one of the returned columns, so we need to fill it out based on the request)
+		role1.DatabaseName = ""
+		role2.DatabaseName = ""
 
 		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId()).WithLike(sdk.Like{Pattern: &role1.Name})
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
@@ -199,6 +207,10 @@ func TestInt_DatabaseRoles(t *testing.T) {
 
 		role2, cleanupRole2 := testClientHelper().DatabaseRole.CreateDatabaseRoleWithName(t, roleId2)
 		t.Cleanup(cleanupRole2)
+
+		// TODO [next PR]: introduce a hook after convert for cases like this one (database name is not one of the returned columns, so we need to fill it out based on the request)
+		role1.DatabaseName = ""
+		role2.DatabaseName = ""
 
 		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId()).
 			WithLike(sdk.Like{

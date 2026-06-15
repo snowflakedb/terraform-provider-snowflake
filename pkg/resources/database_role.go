@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
@@ -168,10 +169,24 @@ func UpdateDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) d
 		id = newId
 	}
 
-	if d.HasChange("comment") {
-		newComment := d.Get("comment").(string)
-		err := client.DatabaseRoles.Alter(ctx, sdk.NewAlterDatabaseRoleRequest(id).WithSet(*sdk.NewDatabaseRoleSetRequest().WithComment(newComment)))
-		if err != nil {
+	set := sdk.NewDatabaseRoleSetRequest()
+	unset := sdk.NewDatabaseRoleUnsetRequest()
+
+	errs := errors.Join(
+		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if !reflect.DeepEqual(*set, *sdk.NewDatabaseRoleSetRequest()) {
+		if err := client.DatabaseRoles.Alter(ctx, sdk.NewAlterDatabaseRoleRequest(id).WithSet(*set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if !reflect.DeepEqual(*unset, *sdk.NewDatabaseRoleUnsetRequest()) {
+		if err := client.DatabaseRoles.Alter(ctx, sdk.NewAlterDatabaseRoleRequest(id).WithUnset(*unset)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
