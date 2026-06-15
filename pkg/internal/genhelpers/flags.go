@@ -39,7 +39,7 @@ func newEnablementFlag(name string, availableOptions []string) *namesListFlag {
 	slices.Sort(availableOptions)
 	return &namesListFlag{
 		name:             name,
-		prefix:           "enable",
+		prefix:           "exclude",
 		filters:          make([]string, 0),
 		availableOptions: availableOptions,
 	}
