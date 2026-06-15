@@ -44,6 +44,21 @@ func TestInt_IcebergTables(t *testing.T) {
 	t.Cleanup(dbForIcebergFilesCleanup)
 	schemaIdForIcebergFiles := sdk.NewDatabaseObjectIdentifier(dbForIcebergFiles.ID().Name(), "PUBLIC")
 
+	deltaBaseLocation := "delta_lake_test_table"
+
+	catalogForDeltaLakeId, catalogForDeltaLakeCleanup := testClientHelper().CatalogIntegration.CreateFunc(t,
+		sdk.NewCreateCatalogIntegrationRequest(testClientHelper().Ids.RandomAccountObjectIdentifier(), true).
+			WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta)),
+	)
+	t.Cleanup(catalogForDeltaLakeCleanup)
+
+	dbForDeltaLake, dbForDeltaLakeCleanup := testClientHelper().Database.CreateDatabaseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
+		Catalog:        new(catalogForDeltaLakeId),
+		ExternalVolume: new(externalVolumeId),
+	})
+	t.Cleanup(dbForDeltaLakeCleanup)
+	schemaIdForDeltaLake := sdk.NewDatabaseObjectIdentifier(dbForDeltaLake.ID().Name(), "PUBLIC")
+
 	contactId, contactCleanup := testClientHelper().Contact.Create(t)
 	t.Cleanup(contactCleanup)
 
@@ -649,6 +664,116 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// IF NOT EXISTS should not error when the table already exists.
 		err = client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath).
+			WithIfNotExists(true))
+		require.NoError(t, err)
+	})
+
+	t.Run("create from delta lake: basic", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForDeltaLake)
+
+		err := client.IcebergTables.CreateFromDeltaLake(ctx, sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, deltaBaseLocation))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner("ACCOUNTADMIN").
+			HasExternalVolumeName(externalVolumeId).
+			HasCatalogName(catalogForDeltaLakeId).
+			HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+			HasNoCatalogTableName().
+			HasNoCatalogNamespace().
+			HasCanWriteMetadata(true).
+			HasComment("").
+			HasNoNameMapping().
+			HasOwnerRoleType("ROLE").
+			HasCatalogSyncName("").
+			HasAutoRefreshStatus(""),
+		)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasCatalog(catalogForDeltaLakeId.Name()).
+			HasExternalVolume(externalVolumeId.Name()).
+			HasReplaceInvalidCharacters(false),
+		)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, details)
+		for _, col := range details {
+			assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &col).
+				HasKind("COLUMN").
+				HasNoPolicyName().
+				HasNoPrivacyDomain().
+				HasNoWriteDefault(),
+			)
+		}
+	})
+
+	t.Run("create from delta lake: all options", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.IcebergTables.CreateFromDeltaLake(ctx, sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, deltaBaseLocation).
+			WithOrReplace(true).
+			WithExternalVolume(externalVolumeId).
+			WithCatalog(catalogForDeltaLakeId).
+			WithReplaceInvalidCharacters(true).
+			WithAutoRefresh(false).
+			WithComment("integration test").
+			WithContact([]sdk.TableContact{
+				{Purpose: "SUPPORT", Contact: contactId},
+			}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner("ACCOUNTADMIN").
+			HasExternalVolumeName(externalVolumeId).
+			HasCatalogName(catalogForDeltaLakeId).
+			HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+			HasNoCatalogTableName().
+			HasNoCatalogNamespace().
+			HasCanWriteMetadata(true).
+			HasComment("integration test").
+			HasNoNameMapping().
+			HasOwnerRoleType("ROLE").
+			HasCatalogSyncName("").
+			HasAutoRefreshStatus(""),
+		)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasCatalog(catalogForDeltaLakeId.FullyQualifiedName()).
+			HasExternalVolume(externalVolumeId.FullyQualifiedName()).
+			HasReplaceInvalidCharacters(true),
+		)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, details)
+		for _, col := range details {
+			assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &col).
+				HasKind("COLUMN").
+				HasNoPolicyName().
+				HasNoPrivacyDomain().
+				HasNoWriteDefault(),
+			)
+		}
+	})
+
+	t.Run("create from delta lake: if not exists", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForDeltaLake)
+
+		err := client.IcebergTables.CreateFromDeltaLake(ctx, sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, deltaBaseLocation))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// IF NOT EXISTS should not error when the table already exists.
+		err = client.IcebergTables.CreateFromDeltaLake(ctx, sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, deltaBaseLocation).
 			WithIfNotExists(true))
 		require.NoError(t, err)
 	})
