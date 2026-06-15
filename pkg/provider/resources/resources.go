@@ -15,6 +15,7 @@ const (
 	ApiAuthenticationIntegrationWithJwtBearer              resource = "snowflake_api_authentication_integration_with_jwt_bearer"
 	ApiIntegration                                         resource = "snowflake_api_integration"
 	ApiIntegrationAmazonApiGateway                         resource = "snowflake_api_integration_amazon_api_gateway"
+	ApiIntegrationGitRepositoryPrivateLink                 resource = "snowflake_api_integration_git_repository_private_link"
 	AuthenticationPolicy                                   resource = "snowflake_authentication_policy"
 	CatalogIntegrationAwsGlue                              resource = "snowflake_catalog_integration_aws_glue"
 	CatalogIntegrationObjectStorage                        resource = "snowflake_catalog_integration_object_storage"

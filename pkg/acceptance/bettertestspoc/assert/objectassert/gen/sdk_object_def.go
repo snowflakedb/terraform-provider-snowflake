@@ -227,6 +227,11 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationGitHttpsApiDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.CatalogIntegration{},
 	},

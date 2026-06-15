@@ -18,6 +18,7 @@ const (
 	AlertsDatasource                              feature = "snowflake_alerts_datasource"
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
 	ApiIntegrationAmazonApiGatewayResource        feature = "snowflake_api_integration_amazon_api_gateway_resource"
+	ApiIntegrationGitRepositoryPrivateLinkResource feature = "snowflake_api_integration_git_repository_private_link_resource"
 	AuthenticationPolicyResource                  feature = "snowflake_authentication_policy_resource"
 	AuthenticationPoliciesDatasource              feature = "snowflake_authentication_policies_datasource"
 	CatalogIntegrationAwsGlueResource             feature = "snowflake_catalog_integration_aws_glue_resource"
@@ -133,6 +134,7 @@ var allPreviewFeatures = []feature{
 	AlertsDatasource,
 	ApiIntegrationResource,
 	// TODO(next api integration prs): ApiIntegrationAmazonApiGatewayResource,
+	// TODO(next api integration prs): ApiIntegrationGitRepositoryPrivateLinkResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
 	CatalogIntegrationAwsGlueResource,
