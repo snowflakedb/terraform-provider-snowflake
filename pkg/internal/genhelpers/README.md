@@ -70,6 +70,7 @@ To create a new generator:
    - `--filter-object-names <name1>,<name2>,...` allowing to generate only for the given object names; defaults to empty list meaning all objects are used
    - `--exclude-object-names <name1>,<name2>,...` allowing to exclude the given object names from generation; composes with inclusion filters (AND logic)
    - `--exclude-generation-part-names <name1>,<name2>,...` allowing to exclude the given generation part names from generation; composes with inclusion filters (AND logic)
+   - `--enable-generation-part-names <name1>,<name2>,...` allowing to force-enable optional (disabled-by-default) generation parts for all objects during a run
    - `--verbose` allowing to see the all the additional debug logs
 
 ### Next steps
