@@ -13,8 +13,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -299,6 +301,65 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_Import_WrongAuthType(t *testing.T
 				ImportState:   true,
 				ImportStateId: githubAppIntegration.ID().Name(),
 				ExpectError:   regexp.MustCompile("not compatible with snowflake_api_integration_git_repository_oauth2"),
+			},
+		},
+	})
+}
+
+func TestAcc_ApiIntegrationGitRepositoryOauth2_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	const allowedPrefix = "https://github.com/my-org/"
+	const blockedPrefix = "https://github.com/my-org/blocked/"
+	const authorizationEndpoint = "https://auth.example.com/authorize"
+	const tokenEndpoint = "https://auth.example.com/token"
+	const clientId = "oauth-client-id-123"
+	clientSecret := random.AlphanumericN(20)
+	comment := random.Comment()
+
+	testModel := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true,
+		authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
+		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ApiIntegrationGitRepositoryOauth2),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+						sdk.NewCreateApiIntegrationRequest(id,
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							WithComment(comment).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().
+								WithApiUserAuthentication(*sdk.NewOAuth2GitUserAuthenticationRequest(
+									authorizationEndpoint, tokenEndpoint, clientId, clientSecret,
+								))),
+					)
+					t.Cleanup(cleanup)
+				},
+				Config:             config.FromModels(t, testModel),
+				ResourceName:       testModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, testModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(testModel.ResourceReference(), "oauth_client_secret", tfjson.ActionUpdate, nil, sdk.String(clientSecret)),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})
