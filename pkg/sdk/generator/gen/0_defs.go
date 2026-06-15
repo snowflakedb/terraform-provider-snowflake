@@ -41,6 +41,9 @@ func preprocessDefinition(definition *Interface) {
 				}
 			}
 			for idx, f := range o.OptsField.Fields {
+				if f.IsShared {
+					continue
+				}
 				if f.IsStruct() && !slices.Contains(generatedStructs, f.KindNoPtr()) {
 					structsToGenerate, generatedStructs = addStructToGenerate(&(o.OptsField.Fields[idx]), structsToGenerate, generatedStructs)
 				}
@@ -113,6 +116,9 @@ func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStru
 	}
 
 	for idx, f := range field.Fields {
+		if f.IsShared {
+			continue
+		}
 		if f.IsStruct() && !slices.Contains(generatedStructs, f.KindNoPtr()) {
 			structsToGenerate, generatedStructs = addStructToGenerate(&(field.Fields[idx]), structsToGenerate, generatedStructs)
 		}
@@ -127,6 +133,9 @@ func addDtoToGenerate(field *Field, dtosToGenerate []*Field, generatedDtos []str
 		generatedDtos = append(generatedDtos, field.DtoDecl())
 
 		for idx, f := range field.Fields {
+			if f.IsShared {
+				continue
+			}
 			if f.HasAnyFields() {
 				dtosToGenerate, generatedDtos = addDtoToGenerate(&(field.Fields[idx]), dtosToGenerate, generatedDtos)
 			}

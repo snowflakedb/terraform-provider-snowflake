@@ -24,11 +24,6 @@ type HybridTables interface {
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.
-//
-// NOTE: DataRetentionTimeInDays and MaxDataExtensionTimeInDays are accepted by
-// the Snowflake server at CREATE HYBRID TABLE time even though the public
-// docs omit them from the syntax diagram. Verified against production via
-// SHOW PARAMETERS (post-CREATE level == TABLE).
 type CreateHybridTableOptions struct {
 	create                     bool                                    `ddl:"static" sql:"CREATE"`
 	OrReplace                  *bool                                   `ddl:"keyword" sql:"OR REPLACE"`
@@ -85,12 +80,7 @@ type AlterHybridTableOptions struct {
 	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
-	// NOTE: `ddl:"list,no_parentheses"` causes the SQL builder to comma-join the children of
-	// HybridTableUnsetProperties, emitting `UNSET A, B, C`. The default `ddl:"keyword"` would
-	// space-join (`UNSET A B C`), which the Snowflake parser rejects for hybrid tables.
-	// The def in pkg/sdk/generator/defs/hybrid_tables_def.go encodes this with
-	// g.ListOptions().NoParentheses().SQL("UNSET"); mirrors NetworkPolicyUnset.
-	Unset *HybridTableUnsetProperties `ddl:"list,no_parentheses" sql:"UNSET"`
+	Unset             *HybridTableUnsetProperties    `ddl:"list,no_parentheses" sql:"UNSET"`
 }
 
 type HybridTableAddColumnAction struct {
@@ -173,10 +163,6 @@ type HybridTableSetProperties struct {
 	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-// HybridTableUnsetProperties is emitted as a single `UNSET` keyword followed by
-// the property names of the non-nil fields, in struct-declaration order, e.g.
-// `UNSET COMMENT DATA_RETENTION_TIME_IN_DAYS`. Multiple properties may be unset
-// in a single ALTER call. Mirrors TableUnset in pkg/sdk/tables.go.
 type HybridTableUnsetProperties struct {
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
@@ -260,13 +246,8 @@ type hybridTableDetailsRow struct {
 }
 
 type HybridTableDetails struct {
-	Name string
-	Type string
-	// NOTE: Collation is added manually here because the generator cannot derive it
-	// from the raw "type" column returned by DESCRIBE TABLE. The convert() method in
-	// hybrid_tables_impl_gen.go invokes splitTypeAndCollation() (defined in
-	// hybrid_tables_ext.go) to populate Type (without the COLLATE suffix) and Collation
-	// separately. See pkg/sdk/tables.go:736 for the same pattern on classic tables.
+	Name                  string
+	Type                  string
 	Collation             *string
 	Kind                  string
 	IsNullable            bool

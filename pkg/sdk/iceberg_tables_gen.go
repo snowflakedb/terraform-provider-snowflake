@@ -581,7 +581,7 @@ type DescribeIcebergTableOptions struct {
 type icebergTableDetailsRow struct {
 	Name              string         `db:"name"`
 	Type              string         `db:"type"`
-	SourceIcebergType string         `db:"source iceberg type"`
+	SourceIcebergType sql.NullString `db:"source iceberg type"`
 	Kind              string         `db:"kind"`
 	Null              string         `db:"null?"`
 	Default           sql.NullString `db:"default"`
@@ -599,7 +599,7 @@ type icebergTableDetailsRow struct {
 type IcebergTableDetails struct {
 	Name              string
 	Type              datatypes.DataType
-	SourceIcebergType string
+	SourceIcebergType *string
 	Kind              string
 	IsNullable        bool
 	Default           *string

@@ -21,6 +21,7 @@ type SystemFunctions interface {
 	DisableBehaviorChangeBundle(ctx context.Context, bundle string) error
 	ShowActiveBehaviorChangeBundles(ctx context.Context) ([]BehaviorChangeBundleInfo, error)
 	BehaviorChangeBundleStatus(ctx context.Context, bundle string) (BehaviorChangeBundleStatus, error)
+	GetIcebergTableInformation(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTableInformation, error)
 }
 
 var _ SystemFunctions = (*systemFunctions)(nil)
@@ -197,4 +198,36 @@ func (c *systemFunctions) BehaviorChangeBundleStatus(ctx context.Context, bundle
 		return "", err
 	}
 	return ToBehaviorChangeBundleStatus(row.StatusRaw)
+}
+
+type icebergTableInformationDbStruct struct {
+	MetadataLocation string `json:"metadataLocation"`
+	Status           string `json:"status"`
+}
+
+type IcebergTableInformation struct {
+	MetadataLocation string
+}
+
+// Implementation of SYSTEM$GET_ICEBERG_TABLE_INFORMATION - see https://docs.snowflake.com/en/sql-reference/functions/system_get_iceberg_table_information.
+func (c *systemFunctions) GetIcebergTableInformation(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTableInformation, error) {
+	row := &struct {
+		Info string `db:"ICEBERG_TABLE_INFORMATION"`
+	}{}
+	sql := fmt.Sprintf(`SELECT SYSTEM$GET_ICEBERG_TABLE_INFORMATION('%s') AS "ICEBERG_TABLE_INFORMATION"`, id.FullyQualifiedName())
+	err := c.client.queryOne(ctx, row, sql)
+	if err != nil {
+		return nil, err
+	}
+	var info icebergTableInformationDbStruct
+	if err = json.Unmarshal([]byte(row.Info), &info); err != nil {
+		return nil, err
+	}
+	if !strings.EqualFold(info.Status, "success") {
+		return nil, fmt.Errorf("getting iceberg table information failed: %s", info.Status)
+	}
+
+	return &IcebergTableInformation{
+		MetadataLocation: info.MetadataLocation,
+	}, nil
 }

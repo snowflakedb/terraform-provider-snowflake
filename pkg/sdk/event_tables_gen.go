@@ -154,10 +154,10 @@ type EventTableDropAndAddRowAccessPolicy struct {
 }
 
 type EventTableClusteringAction struct {
-	ClusterBy         *[]string `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	SuspendRecluster  *bool     `ddl:"keyword" sql:"SUSPEND RECLUSTER"`
-	ResumeRecluster   *bool     `ddl:"keyword" sql:"RESUME RECLUSTER"`
-	DropClusteringKey *bool     `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
+	ClusterBy         []string `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	SuspendRecluster  *bool    `ddl:"keyword" sql:"SUSPEND RECLUSTER"`
+	ResumeRecluster   *bool    `ddl:"keyword" sql:"RESUME RECLUSTER"`
+	DropClusteringKey *bool    `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
 }
 
 type EventTableSearchOptimizationAction struct {

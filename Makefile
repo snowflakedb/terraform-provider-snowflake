@@ -67,9 +67,9 @@ mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
 	go mod tidy -compat=1.26.3 -diff
 
-pre-push: generate-all-config-model-builders generate-sdk-validations generate-sdk-impl generate-sdk-dto generate-sdk-examples mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
+pre-push: generate-all-config-model-builders generate-sdk-no-tests generate-sdk-examples mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
-pre-push-check: generate-all-config-model-builders-check generate-sdk-validations-check generate-sdk-impl-check generate-sdk-dto-check generate-sdk-examples-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
+pre-push-check: generate-all-config-model-builders-check generate-sdk-no-tests-check generate-sdk-examples-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -87,7 +87,7 @@ test-acceptance: ## run acceptance tests
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=180m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
 
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=60m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -p=1 --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=120m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
 
 test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
@@ -152,32 +152,11 @@ generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
 
-generate-sdk-validations: ## check that SDK validations are up-to-date
-	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=validations'
+generate-sdk-no-tests: ## Generated all SDK files (except tests)
+	make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
 
-generate-sdk-validations-check: generate-sdk-validations ## check that SDK validations are up-to-date
-	$(call GIT_DIFF_CHECK,pkg/sdk/*_validations_gen.go)
-
-# Objects excluded from impl generation because their impl files contain manual changes:
-# DataMetricFunctionReferences, ExternalFunctions, SemanticViews, Tasks, UserProgrammaticAccessTokens
-SDK_IMPL_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,EventTables,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,Notebooks,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,Procedures,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,Streamlits,Streams,TagReferences,Views
-
-generate-sdk-impl: ## Generate SDK impl for objects without manual changes
-	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=impl --filter-object-names=$(SDK_IMPL_OBJECTS)'
-
-generate-sdk-impl-check: generate-sdk-impl ## Check that SDK impl files are up-to-date
-	$(call GIT_DIFF_CHECK,pkg/sdk/*_impl_gen.go)
-
-# Objects excluded from dto generation because their dto files contain manual changes:
-# EventTables (ClusterBy builder bug), Notebooks (shared SecretsListRequest),
-# Procedures (shared SecretsListRequest), SemanticViews (nested Request types), Tasks (nested Request types)
-SDK_DTO_OBJECTS := ApiIntegrations,ApplicationPackages,ApplicationRoles,Applications,AuthenticationPolicies,Budgets,CatalogIntegrations,ComputePools,Connections,CortexAgents,CortexSearchServices,DataMetricFunctionReferences,ExternalFunctions,ExternalVolumes,FileFormats,Functions,GitRepositories,HybridTables,IcebergTables,ImageRepositories,Listings,ManagedAccounts,MaterializedViews,NetworkPolicies,NetworkRules,NotificationIntegrations,OpenflowConnectors,OpenflowDeployments,OpenflowRuntimes,OrganizationAccounts,PasswordPolicies,PostgresInstances,RowAccessPolicies,Secrets,SecurityIntegrations,Sequences,Services,SessionPolicies,Stages,StorageIntegrations,StorageLifecyclePolicies,Streamlits,Streams,TagReferences,UserProgrammaticAccessTokens,Views
-
-generate-sdk-dto: ## Generate SDK dto and dto_builders for objects without manual changes
-	make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=dto,dto_builders --filter-object-names=$(SDK_DTO_OBJECTS)'
-
-generate-sdk-dto-check: generate-sdk-dto ## Check that SDK dto files are up-to-date
-	$(call GIT_DIFF_CHECK,pkg/sdk/*_dto_gen.go pkg/sdk/*_dto_builders_gen.go)
+generate-sdk-no-tests-check: generate-sdk-no-tests ## Check that all generated SDK files (except tests) are up-to-date
+	$(call GIT_DIFF_CHECK,pkg/sdk/*_gen.go pkg/sdk/*_dto_gen.go pkg/sdk/*_dto_builders_gen.go pkg/sdk/*_impl_gen.go pkg/sdk/*_validations_gen.go)
 
 clean-generated-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/*_gen.go
@@ -281,4 +260,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-validations-check generate-sdk-impl-check generate-sdk-dto-check generate-sdk-examples-check
+.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-no-tests-check generate-sdk-examples-check

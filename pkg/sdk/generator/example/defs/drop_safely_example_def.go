@@ -11,7 +11,7 @@ var DropSafelyHookExampleDef = g.NewInterface(
 	"DropSafelyHookExamples",
 	"DropSafelyHookExample",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).WithAllowedGenerationParts("default", "impl", "dto", "dto_builders", "validations").
+).WithAllowedGenerationParts(g.PartDefault, g.PartImpl, g.PartDto, g.PartDtoBuilders, g.PartValidations).
 	DropOperation(
 		"https://example.com",
 		g.NewQueryStruct("DropDropSafelyHookExample").
@@ -29,7 +29,7 @@ var DropSafelyForceExampleDef = g.NewInterface(
 	"DropSafelyForceExamples",
 	"DropSafelyForceExample",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).WithAllowedGenerationParts("default", "impl", "dto", "dto_builders", "validations").
+).WithAllowedGenerationParts(g.PartDefault, g.PartImpl, g.PartDto, g.PartDtoBuilders, g.PartValidations).
 	DropOperation(
 		"https://example.com",
 		g.NewQueryStruct("DropDropSafelyForceExample").

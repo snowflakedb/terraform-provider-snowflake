@@ -78,7 +78,7 @@ var PairedStructExample = g.NewInterface(
 	"PairedStructExample",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
-	WithAllowedGenerationParts("default", "dto", "dto_builders", "impl", "validations").
+	WithAllowedGenerationParts(g.PartDefault, g.PartDto, g.PartDtoBuilders, g.PartImpl, g.PartValidations).
 	ShowOperationWithPairedStructs(
 		"https://example.com",
 		pairedStructExampleAllOptions("pairedStructExampleRow", "PairedStructExample"),

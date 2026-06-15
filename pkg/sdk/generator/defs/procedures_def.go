@@ -82,7 +82,6 @@ var procedureWithClause = g.NewQueryStruct("ProcedureWithClause").
 	PredefinedQueryStructField("CteColumns", "[]string", g.KeywordOptions().Parentheses()).
 	PredefinedQueryStructField("Statement", "string", g.ParameterOptions().NoEquals().NoQuotes().SQL("AS").Required())
 
-// TODO [next PRs]: support adding a field only in plain struct (in this case: `ArgumentsOld` and `ReturnTypeOld`)
 var procedurePairs = g.StructPair("procedureRow", "Procedure").
 	Text("created_on").
 	Text("name").
@@ -93,6 +92,8 @@ var procedurePairs = g.StructPair("procedureRow", "Procedure").
 	Number("min_num_arguments").
 	Number("max_num_arguments").
 	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	PlainOnlyField("ArgumentsOld", "[]DataType").
+	PlainOnlyField("ReturnTypeOld", "DataType").
 	Text("description").
 	Text("catalog_name", g.WithManualConvert()).
 	BoolFromText("is_table_function").
@@ -314,7 +315,7 @@ var proceduresDef = g.NewInterface(
 			g.NewQueryStruct("ProcedureSet").
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
-				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
+				OptionalSharedQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 				OptionalAssignment("AUTO_EVENT_LOGGING", g.KindOfTPointer[sdkcommons.AutoEventLogging](), g.ParameterOptions().SingleQuotes()).
 				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
 				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
