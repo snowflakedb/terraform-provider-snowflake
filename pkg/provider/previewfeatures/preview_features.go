@@ -132,7 +132,7 @@ var allPreviewFeatures = []feature{
 	AlertResource,
 	AlertsDatasource,
 	ApiIntegrationResource,
-	ApiIntegrationAmazonApiGatewayResource,
+	// TODO(next api integration prs): ApiIntegrationAmazonApiGatewayResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
 	CatalogIntegrationAwsGlueResource,
