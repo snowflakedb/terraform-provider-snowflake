@@ -200,3 +200,50 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_Import_WrongAuthType(t *testin
 		},
 	})
 }
+
+func TestAcc_ApiIntegrationGitRepositoryGithubApp_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	const allowedPrefix = "https://github.com/my-org/"
+	const blockedPrefix = "https://github.com/my-org/blocked/"
+	comment := random.Comment()
+
+	testModel := model.ApiIntegrationGitRepositoryGithubApp("t", id.Name(), []string{allowedPrefix}, true).
+		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ApiIntegrationGitRepositoryGithubApp),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+						sdk.NewCreateApiIntegrationRequest(id,
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							WithComment(comment).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithGitHttpsApiGithubAppProviderParams(*sdk.NewGitHttpsApiGithubAppParamsRequest()),
+					)
+					t.Cleanup(cleanup)
+				},
+				Config:             config.FromModels(t, testModel),
+				ResourceName:       testModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, testModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
