@@ -19,6 +19,7 @@ var (
 
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-ownership#required-parameters
 var validGrantOwnershipObjectTypes = []ObjectType{
+	ObjectTypeAgent,
 	ObjectTypeAggregationPolicy,
 	ObjectTypeAlert,
 	ObjectTypeAuthenticationPolicy,
@@ -69,6 +70,7 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 
 // Database roles are excluded
 var validGrantOwnershipBulkObjectTypes = []ObjectType{
+	ObjectTypeAgent,
 	ObjectTypeAggregationPolicy,
 	ObjectTypeAlert,
 	ObjectTypeAuthenticationPolicy,

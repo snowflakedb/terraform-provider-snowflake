@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new feature)* `snowflake_grant_ownership`: support for `AGENT` object type
+
+The `snowflake_grant_ownership` resource now supports granting ownership on `AGENT` objects. This includes single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`).
+
+No changes are required for existing configurations.
+
 ### *(new feature)* `log_event_level` parameter support
 
 We added support for the [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level) parameter, following the same handling as the existing `log_level` parameter. The new `log_event_level` field is now available in the following resources:
