@@ -56,9 +56,9 @@ func (g *GenerationPart[_, _]) IsEnabledByDefault() bool {
 	return g.enabledByDefault
 }
 
-func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](name string, filenameProvider func(T, M) string, templates []*template.Template) GenerationPart[T, M] {
+func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](name GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template) GenerationPart[T, M] {
 	return GenerationPart[T, M]{
-		name:             name,
+		name:             name.GenerationPartName(),
 		filenameProvider: filenameProvider,
 		templates:        templates,
 		enabledByDefault: true,
@@ -69,7 +69,7 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 	// TODO [SNOW-2324252]: handle vararg input
 	parts := []GenerationPart[T, M]{
 		// TODO [SNOW-2324252]: change default to name when changing to vararg
-		NewGenerationPart("default", filenameProvider, templates),
+		NewGenerationPart(DefaultGenerationPart, filenameProvider, templates),
 	}
 	// TODO [SNOW-2324252]: Probably remove later; it should be a part of the constructor
 	defaultDescription := "Generator's description missing."
@@ -94,13 +94,13 @@ func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleMo
 }
 
 // TODO [SNOW-2324252]: Probably remove later when we have vararg support in the NewGenerator constructor
-func (g *Generator[T, M]) WithGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+func (g *Generator[T, M]) WithGenerationPart(partName GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	g.generationParts = append(g.generationParts, NewGenerationPart(partName, filenameProvider, templates))
 	return g
 }
 
 // WithConditionalGenerationPart registers a generation part that is only executed for an object when condition returns true.
-func (g *Generator[T, M]) WithConditionalGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
+func (g *Generator[T, M]) WithConditionalGenerationPart(partName GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
 	part := NewGenerationPart(partName, filenameProvider, templates)
 	part.condition = condition
 	g.generationParts = append(g.generationParts, part)
@@ -108,7 +108,7 @@ func (g *Generator[T, M]) WithConditionalGenerationPart(partName string, filenam
 }
 
 // WithOptionalGenerationPart registers a generation part that is disabled by default and must be explicitly enabled per object.
-func (g *Generator[T, M]) WithOptionalGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+func (g *Generator[T, M]) WithOptionalGenerationPart(partName GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	part := NewGenerationPart(partName, filenameProvider, templates)
 	part.enabledByDefault = false
 	g.generationParts = append(g.generationParts, part)
@@ -116,7 +116,7 @@ func (g *Generator[T, M]) WithOptionalGenerationPart(partName string, filenamePr
 }
 
 // WithOptionalConditionalGenerationPart registers a generation part that is disabled by default and has an additional runtime condition.
-func (g *Generator[T, M]) WithOptionalConditionalGenerationPart(partName string, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
+func (g *Generator[T, M]) WithOptionalConditionalGenerationPart(partName GenerationPartNamer, filenameProvider func(T, M) string, templates []*template.Template, condition func(T) bool) *Generator[T, M] {
 	part := NewGenerationPart(partName, filenameProvider, templates)
 	part.enabledByDefault = false
 	part.condition = condition
@@ -162,7 +162,7 @@ func (g *Generator[T, M]) effectivePartsForObject(object T, globalParts []Genera
 		if s := settings.getObjectGenerationSettings(); s != nil && len(s.AllowedGenerationParts) > 0 {
 			filtered := make([]GenerationPart[T, M], 0)
 			for _, p := range parts {
-				if slices.Contains(s.AllowedGenerationParts, p.name) {
+				if slices.ContainsFunc(s.AllowedGenerationParts, func(n GenerationPartNamer) bool { return n.GenerationPartName() == p.name }) {
 					filtered = append(filtered, p)
 				}
 			}
@@ -171,7 +171,7 @@ func (g *Generator[T, M]) effectivePartsForObject(object T, globalParts []Genera
 	}
 
 	// Filter out optional parts not explicitly enabled for this object or via CLI
-	var enabledParts []string
+	var enabledParts []GenerationPartNamer
 	if settings, ok := any(object).(HasObjectGenerationSettings); ok {
 		if s := settings.getObjectGenerationSettings(); s != nil {
 			enabledParts = s.EnabledGenerationParts
@@ -181,7 +181,7 @@ func (g *Generator[T, M]) effectivePartsForObject(object T, globalParts []Genera
 	for _, p := range parts {
 		if p.enabledByDefault {
 			result = append(result, p)
-		} else if slices.Contains(enabledParts, p.name) || slices.Contains(g.cliEnabledParts, p.name) {
+		} else if slices.ContainsFunc(enabledParts, func(n GenerationPartNamer) bool { return n.GenerationPartName() == p.name }) || slices.Contains(g.cliEnabledParts, p.name) {
 			result = append(result, p)
 		}
 	}
@@ -301,17 +301,17 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 		if settings, ok := any(o).(HasObjectGenerationSettings); ok {
 			if s := settings.getObjectGenerationSettings(); s != nil {
 				for _, name := range s.AllowedGenerationParts {
-					if !slices.ContainsFunc(parts, func(p GenerationPart[T, M]) bool { return p.name == name }) {
-						return fmt.Errorf("object %s: allowed generation part %q does not exist", o.ObjectName(), name)
+					if !slices.ContainsFunc(parts, func(p GenerationPart[T, M]) bool { return p.name == name.GenerationPartName() }) {
+						return fmt.Errorf("object %s: allowed generation part %q does not exist", o.ObjectName(), name.GenerationPartName())
 					}
 				}
 				for _, name := range s.EnabledGenerationParts {
-					idx := slices.IndexFunc(parts, func(p GenerationPart[T, M]) bool { return p.name == name })
+					idx := slices.IndexFunc(parts, func(p GenerationPart[T, M]) bool { return p.name == name.GenerationPartName() })
 					if idx == -1 {
-						return fmt.Errorf("object %s: enabled generation part %q does not exist", o.ObjectName(), name)
+						return fmt.Errorf("object %s: enabled generation part %q does not exist", o.ObjectName(), name.GenerationPartName())
 					}
 					if parts[idx].enabledByDefault {
-						return fmt.Errorf("object %s: enabled generation part %q is already enabled by default", o.ObjectName(), name)
+						return fmt.Errorf("object %s: enabled generation part %q is already enabled by default", o.ObjectName(), name.GenerationPartName())
 					}
 				}
 			}

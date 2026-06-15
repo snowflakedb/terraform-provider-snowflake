@@ -11,7 +11,7 @@ var CustomInterfaceMethodExamplesDef = g.NewInterface(
 	"CustomInterfaceMethodExample",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
-	WithAllowedGenerationParts("default", "dto", "impl", "validations").
+	WithAllowedGenerationParts(g.PartDefault, g.PartDto, g.PartImpl, g.PartValidations).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-database-role",
 		g.NewQueryStruct("CreateCustomInterfaceMethodExample").
