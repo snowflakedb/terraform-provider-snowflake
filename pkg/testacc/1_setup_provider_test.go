@@ -69,6 +69,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	// add resources and data sources that are not ready here like:
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	p.ResourcesMap["snowflake_api_integration_amazon_api_gateway"] = resources.ApiIntegrationAmazonApiGateway()
+	p.ResourcesMap["snowflake_api_integration_google_cloud_api_gateway"] = resources.ApiIntegrationGoogleCloudApiGateway()
 	return p
 }
 

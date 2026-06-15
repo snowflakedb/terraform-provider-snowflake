@@ -54,6 +54,28 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasEnabled(expected bool) *ApiIntegr
 	return a
 }
 
+func (a *ApiIntegrationGoogleDetailsAssert) HasApiKey(expected string) *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if o.ApiKey != expected {
+			return fmt.Errorf("expected api key: %v; got: %v", expected, o.ApiKey)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGoogleDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if o.ApiKey == "" {
+			return fmt.Errorf("expected api key not empty; got empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGoogleDetailsAssert) HasApiProvider(expected sdk.ApiIntegrationGoogleApiProviderType) *ApiIntegrationGoogleDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
 		t.Helper()

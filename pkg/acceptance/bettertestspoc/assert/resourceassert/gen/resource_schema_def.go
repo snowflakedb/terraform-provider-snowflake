@@ -54,6 +54,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationAmazonApiGateway().Schema,
 	},
 	{
+		name:   "ApiIntegrationGoogleCloudApiGateway",
+		schema: resources.ApiIntegrationGoogleCloudApiGateway().Schema,
+	},
+	{
 		name:   "AuthenticationPolicy",
 		schema: resources.AuthenticationPolicy().Schema,
 	},
