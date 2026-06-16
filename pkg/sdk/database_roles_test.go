@@ -7,14 +7,14 @@ import (
 func TestDatabaseRoleCreate(t *testing.T) {
 	id := randomDatabaseObjectIdentifier()
 
-	defaultOpts := func() *createDatabaseRoleOptions {
-		return &createDatabaseRoleOptions{
+	defaultOpts := func() *CreateDatabaseRoleOptions {
+		return &CreateDatabaseRoleOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *createDatabaseRoleOptions = nil
+		var opts *CreateDatabaseRoleOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -28,7 +28,7 @@ func TestDatabaseRoleCreate(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("createDatabaseRoleOptions", "OrReplace", "IfNotExists"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateDatabaseRoleOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("validation: multiple errors", func(t *testing.T) {
@@ -36,7 +36,7 @@ func TestDatabaseRoleCreate(t *testing.T) {
 		opts.name = emptyDatabaseObjectIdentifier
 		opts.IfNotExists = Bool(true)
 		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errOneOf("createDatabaseRoleOptions", "OrReplace", "IfNotExists"))
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errOneOf("CreateDatabaseRoleOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -47,7 +47,6 @@ func TestDatabaseRoleCreate(t *testing.T) {
 	t.Run("all optional", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(false)
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE DATABASE ROLE IF NOT EXISTS %s COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -56,14 +55,14 @@ func TestDatabaseRoleCreate(t *testing.T) {
 func TestDatabaseRoleAlter(t *testing.T) {
 	id := randomDatabaseObjectIdentifier()
 
-	defaultOpts := func() *alterDatabaseRoleOptions {
-		return &alterDatabaseRoleOptions{
+	defaultOpts := func() *AlterDatabaseRoleOptions {
+		return &AlterDatabaseRoleOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *alterDatabaseRoleOptions = nil
+		var opts *AlterDatabaseRoleOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -75,26 +74,26 @@ func TestDatabaseRoleAlter(t *testing.T) {
 
 	t.Run("validation: no alter action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDatabaseRoleOptions", "Rename", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseRoleOptions", "Rename", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &DatabaseRoleSet{
-			Comment: "new comment",
+			Comment: String("new comment"),
 		}
 		opts.Unset = &DatabaseRoleUnset{
-			Comment: true,
+			Comment: Bool(true),
 		}
 		opts.SetTags = []TagAssociation{}
 		opts.UnsetTags = []ObjectIdentifier{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDatabaseRoleOptions", "Rename", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseRoleOptions", "Rename", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: invalid new name", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Rename = &emptyDatabaseObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("alterDatabaseRoleOptions", "Rename"))
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: new name from different db", func(t *testing.T) {
@@ -107,10 +106,8 @@ func TestDatabaseRoleAlter(t *testing.T) {
 
 	t.Run("validation: no property to unset", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Unset = &DatabaseRoleUnset{
-			Comment: false,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("alterDatabaseRoleOptions.Unset", "Comment"))
+		opts.Unset = &DatabaseRoleUnset{}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterDatabaseRoleOptions.Unset", "Comment"))
 	})
 
 	t.Run("rename", func(t *testing.T) {
@@ -125,7 +122,7 @@ func TestDatabaseRoleAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.Set = &DatabaseRoleSet{
-			Comment: "new comment",
+			Comment: String("new comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE IF EXISTS %s SET COMMENT = 'new comment'`, id.FullyQualifiedName())
 	})
@@ -146,20 +143,20 @@ func TestDatabaseRoleAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE IF EXISTS %s SET TAG "123" = 'value-123', "456" = 'value-123'`, id.FullyQualifiedName())
 	})
 
-	t.Run("set comment to empty", func(t *testing.T) {
+	t.Run("set comment", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.Set = &DatabaseRoleSet{
-			Comment: "",
+			Comment: String("some comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE IF EXISTS %s SET COMMENT = ''`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE IF EXISTS %s SET COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.Unset = &DatabaseRoleUnset{
-			Comment: true,
+			Comment: Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE IF EXISTS %s UNSET COMMENT`, id.FullyQualifiedName())
 	})
@@ -178,14 +175,14 @@ func TestDatabaseRoleAlter(t *testing.T) {
 func TestDatabaseRoleDrop(t *testing.T) {
 	id := randomDatabaseObjectIdentifier()
 
-	defaultOpts := func() *dropDatabaseRoleOptions {
-		return &dropDatabaseRoleOptions{
+	defaultOpts := func() *DropDatabaseRoleOptions {
+		return &DropDatabaseRoleOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *dropDatabaseRoleOptions = nil
+		var opts *DropDatabaseRoleOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -210,14 +207,14 @@ func TestDatabaseRoleDrop(t *testing.T) {
 func TestDatabaseRolesShow(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 
-	defaultOpts := func() *showDatabaseRoleOptions {
-		return &showDatabaseRoleOptions{
+	defaultOpts := func() *ShowDatabaseRoleOptions {
+		return &ShowDatabaseRoleOptions{
 			Database: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *showDatabaseRoleOptions = nil
+		var opts *ShowDatabaseRoleOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -264,14 +261,14 @@ func TestDatabaseRoles_Grant(t *testing.T) {
 	databaseRoleId := randomDatabaseObjectIdentifier()
 	accountRoleId := randomAccountObjectIdentifier()
 
-	setUpOpts := func() *grantDatabaseRoleOptions {
-		return &grantDatabaseRoleOptions{
+	setUpOpts := func() *GrantDatabaseRoleOptions {
+		return &GrantDatabaseRoleOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *grantDatabaseRoleOptions = nil
+		var opts *GrantDatabaseRoleOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -283,26 +280,26 @@ func TestDatabaseRoles_Grant(t *testing.T) {
 
 	t.Run("validation: no role", func(t *testing.T) {
 		opts := setUpOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("DatabaseRoleName", "AccountRoleName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantDatabaseRoleOptions.To", "DatabaseRoleName", "AccountRoleName"))
 	})
 
 	t.Run("validation: multiple roles", func(t *testing.T) {
 		opts := setUpOpts()
-		opts.ParentRole.DatabaseRoleName = &databaseRoleId
-		opts.ParentRole.AccountRoleName = &accountRoleId
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("DatabaseRoleName", "AccountRoleName"))
+		opts.To.DatabaseRoleName = &databaseRoleId
+		opts.To.AccountRoleName = &accountRoleId
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantDatabaseRoleOptions.To", "DatabaseRoleName", "AccountRoleName"))
 	})
 
 	t.Run("grant to database role", func(t *testing.T) {
 		opts := setUpOpts()
-		opts.ParentRole.DatabaseRoleName = &databaseRoleId
+		opts.To.DatabaseRoleName = &databaseRoleId
 
 		assertOptsValidAndSQLEquals(t, opts, `GRANT DATABASE ROLE %s TO DATABASE ROLE %s`, id.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
 	})
 
 	t.Run("grant to account role", func(t *testing.T) {
 		opts := setUpOpts()
-		opts.ParentRole.AccountRoleName = &accountRoleId
+		opts.To.AccountRoleName = &accountRoleId
 
 		assertOptsValidAndSQLEquals(t, opts, `GRANT DATABASE ROLE %s TO ROLE %s`, id.FullyQualifiedName(), accountRoleId.FullyQualifiedName())
 	})
@@ -313,14 +310,14 @@ func TestDatabaseRoles_Revoke(t *testing.T) {
 	databaseRoleId := randomDatabaseObjectIdentifier()
 	accountRoleId := randomAccountObjectIdentifier()
 
-	setUpOpts := func() *revokeDatabaseRoleOptions {
-		return &revokeDatabaseRoleOptions{
+	setUpOpts := func() *RevokeDatabaseRoleOptions {
+		return &RevokeDatabaseRoleOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *revokeDatabaseRoleOptions = nil
+		var opts *RevokeDatabaseRoleOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -332,26 +329,26 @@ func TestDatabaseRoles_Revoke(t *testing.T) {
 
 	t.Run("validation: no role", func(t *testing.T) {
 		opts := setUpOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("DatabaseRoleName", "AccountRoleName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeDatabaseRoleOptions.From", "DatabaseRoleName", "AccountRoleName"))
 	})
 
 	t.Run("validation: multiple roles", func(t *testing.T) {
 		opts := setUpOpts()
-		opts.ParentRole.DatabaseRoleName = &databaseRoleId
-		opts.ParentRole.AccountRoleName = &accountRoleId
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("DatabaseRoleName", "AccountRoleName"))
+		opts.From.DatabaseRoleName = &databaseRoleId
+		opts.From.AccountRoleName = &accountRoleId
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeDatabaseRoleOptions.From", "DatabaseRoleName", "AccountRoleName"))
 	})
 
 	t.Run("revoke from database role", func(t *testing.T) {
 		opts := setUpOpts()
-		opts.ParentRole.DatabaseRoleName = &databaseRoleId
+		opts.From.DatabaseRoleName = &databaseRoleId
 
 		assertOptsValidAndSQLEquals(t, opts, `REVOKE DATABASE ROLE %s FROM DATABASE ROLE %s`, id.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
 	})
 
 	t.Run("revoke from account role", func(t *testing.T) {
 		opts := setUpOpts()
-		opts.ParentRole.AccountRoleName = &accountRoleId
+		opts.From.AccountRoleName = &accountRoleId
 
 		assertOptsValidAndSQLEquals(t, opts, `REVOKE DATABASE ROLE %s FROM ROLE %s`, id.FullyQualifiedName(), accountRoleId.FullyQualifiedName())
 	})
@@ -361,15 +358,15 @@ func TestDatabaseRoles_GrantToShare(t *testing.T) {
 	id := randomDatabaseObjectIdentifier()
 	share := randomAccountObjectIdentifier()
 
-	setUpOpts := func() *grantDatabaseRoleToShareOptions {
-		return &grantDatabaseRoleToShareOptions{
+	setUpOpts := func() *GrantToShareDatabaseRoleOptions {
+		return &GrantToShareDatabaseRoleOptions{
 			name:  id,
 			Share: share,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *grantDatabaseRoleToShareOptions = nil
+		var opts *GrantToShareDatabaseRoleOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -396,15 +393,15 @@ func TestDatabaseRoles_RevokeFromShare(t *testing.T) {
 	id := randomDatabaseObjectIdentifier()
 	share := randomAccountObjectIdentifier()
 
-	setUpOpts := func() *revokeDatabaseRoleFromShareOptions {
-		return &revokeDatabaseRoleFromShareOptions{
+	setUpOpts := func() *RevokeFromShareDatabaseRoleOptions {
+		return &RevokeFromShareDatabaseRoleOptions{
 			name:  id,
 			Share: share,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *revokeDatabaseRoleFromShareOptions = nil
+		var opts *RevokeFromShareDatabaseRoleOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
