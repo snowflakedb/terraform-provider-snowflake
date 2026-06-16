@@ -135,6 +135,17 @@ func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsExternalIdNotEmpty() *ApiInteg
 	return a
 }
 
+func (a *ApiIntegrationAwsDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ApiKey == "" {
+			return fmt.Errorf("expected api key not empty; got empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAwsDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationAwsDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
 		t.Helper()
