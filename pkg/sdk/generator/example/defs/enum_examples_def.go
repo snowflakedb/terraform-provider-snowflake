@@ -26,5 +26,5 @@ var EnumExamplesDef = g.NewInterface(
 	"EnumExamples",
 	"EnumExample",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-).WithAllowedGenerationParts("enums", "unit_tests").
+).WithAllowedGenerationParts(g.PartEnums, g.PartUnitTests).
 	WithEnums(ExampleStatusDef, ExampleSizeDef)

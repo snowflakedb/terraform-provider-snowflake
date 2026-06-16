@@ -32,6 +32,14 @@ The `snowflake_grant_ownership` resource now supports granting ownership on `AGE
 
 No changes are required for existing configurations.
 
+### *(new feature)* New storage lifecycle policy resource
+
+We have added a new preview resource for managing storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_storage_lifecycle_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(new feature)* `log_event_level` parameter support
 
 We added support for the [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level) parameter, following the same handling as the existing `log_level` parameter. The new `log_event_level` field is now available in the following resources:
@@ -59,6 +67,40 @@ This is the same class of object type name mismatch bug previously fixed for `AG
 This has been fixed: grant resources can now be used with the `MODEL MONITOR` object type without any unexpected plans.
 
 No changes in the configuration are required.
+
+### *(new feature)* HIERARCHY_RENAMES experiment
+
+A new `HIERARCHY_RENAMES` experiment has been added. When enabled, changing the `database` field on supported resources no longer forces resource recreation. Instead, the provider detects whether the parent database was renamed or the schema should be moved to a different database, and handles it in-place.
+
+Currently supported by: [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema).
+
+The provider handles two use cases:
+
+1. **Database rename**: The parent database was renamed (e.g. from `A` to `B`). The provider detects that the old database no longer exists while the schema already exists under the new name, and updates the resource ID without performing any Snowflake modification.
+2. **Schema move**: Both the old and new databases exist. The provider executes `ALTER SCHEMA A.X RENAME TO B.X` to move the schema to the target database.
+
+To enable, add `HIERARCHY_RENAMES` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["HIERARCHY_RENAMES"]
+}
+```
+
+Example configuration using an implicit dependency (recommended):
+```hcl
+resource "snowflake_database" "example" {
+  name = "my_database"
+}
+
+resource "snowflake_schema" "example" {
+  name     = "my_schema"
+  database = snowflake_database.example.name
+}
+```
+
+With the experiment enabled, renaming `snowflake_database.example` from `my_database` to `my_new_database` will cause the schema resource to detect the rename and update its state accordingly — without recreating the schema or losing any objects within it.
+
+For more details, see the [Object Renaming Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).
 
 ## v2.16.0 ➞ v2.17.0
 

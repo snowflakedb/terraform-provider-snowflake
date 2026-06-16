@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
@@ -77,12 +78,25 @@ type Interface struct {
 
 // WithAllowedGenerationParts restricts this object to only the specified generation parts.
 // Parts not listed here will be skipped during generation, even if enabled globally.
-func (i *Interface) WithAllowedGenerationParts(parts ...string) *Interface {
+func (i *Interface) WithAllowedGenerationParts(parts ...GenerationPartName) *Interface {
 	if i.ObjectGenerationSettings == nil {
 		i.ObjectGenerationSettings = &genhelpers.ObjectGenerationSettings{}
 	}
-	i.ObjectGenerationSettings.AllowedGenerationParts = parts
+	i.ObjectGenerationSettings.AllowedGenerationParts = generationPartNamesToNamers(parts)
 	return i
+}
+
+// WithEnabledGenerationParts enables optional (disabled-by-default) generation parts for this object.
+func (i *Interface) WithEnabledGenerationParts(parts ...GenerationPartName) *Interface {
+	if i.ObjectGenerationSettings == nil {
+		i.ObjectGenerationSettings = &genhelpers.ObjectGenerationSettings{}
+	}
+	i.ObjectGenerationSettings.EnabledGenerationParts = generationPartNamesToNamers(parts)
+	return i
+}
+
+func generationPartNamesToNamers(parts []GenerationPartName) []genhelpers.GenerationPartNamer {
+	return collections.Map(parts, func(p GenerationPartName) genhelpers.GenerationPartNamer { return p })
 }
 
 func (i *Interface) ObjectName() string {

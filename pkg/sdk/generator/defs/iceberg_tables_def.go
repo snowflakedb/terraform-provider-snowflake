@@ -315,7 +315,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"Unset",
 			icebergTableUnsetProperties,
-			g.KeywordOptions().SQL("UNSET"),
+			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		OptionalSetTags().
 		OptionalUnsetTags().
@@ -388,9 +388,9 @@ var icebergTablesDef = g.NewInterface(
 	g.StructPair("icebergTableDetailsRow", "IcebergTableDetails").
 		Text("name").
 		DataType("type").
-		Text("source iceberg type").
+		OptionalText("source iceberg type").
 		Text("kind").
-		PlainField("null", "bool", g.WithPlainFieldName("IsNullable")).
+		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 		OptionalText("default").
 		PlainField("primary key", "bool", g.WithPlainFieldName("PrimaryKey")).
 		PlainField("unique key", "bool", g.WithPlainFieldName("UniqueKey")).

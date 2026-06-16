@@ -21,6 +21,7 @@ func init() {
 		connectionsDef,
 		cortexAgentsDef,
 		cortexSearchServicesDef,
+		databaseRolesDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
 		externalFunctionsDef,

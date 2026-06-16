@@ -55,6 +55,7 @@
 - [snowflake_storage_integration_aws](./docs/resources/storage_integration_aws)
 - [snowflake_storage_integration_azure](./docs/resources/storage_integration_azure)
 - [snowflake_storage_integration_gcs](./docs/resources/storage_integration_gcs)
+- [snowflake_storage_lifecycle_policy](./docs/resources/storage_lifecycle_policy)
 - [snowflake_table](./docs/resources/table)
 - [snowflake_table_column_masking_policy_application](./docs/resources/table_column_masking_policy_application)
 - [snowflake_table_constraint](./docs/resources/table_constraint)
