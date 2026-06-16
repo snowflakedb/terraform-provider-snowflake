@@ -22,3 +22,9 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithAllowedAuthenticationS
 	a.WithAllowedAuthenticationSecretsValue(tfconfig.SetVariable(secretVars...))
 	return a
 }
+
+func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithTlsTrustedCertificates(certs []string) *ApiIntegrationGitRepositoryPrivateLinkModel {
+	certVars := collections.Map(certs, func(s string) tfconfig.Variable { return tfconfig.StringVariable(s) })
+	a.WithTlsTrustedCertificatesValue(tfconfig.ListVariable(certVars...))
+	return a
+}

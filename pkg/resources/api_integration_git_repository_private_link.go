@@ -58,7 +58,7 @@ var apiIntegrationGitRepositoryPrivateLinkSchema = func() map[string]*schema.Sch
 			Type:        schema.TypeList,
 			Optional:    true,
 			Elem:        &schema.Schema{Type: schema.TypeString},
-			Description: "Specifies a list of TLS certificates that are trusted for secure communication with the git repository. Each entry must be a fully-qualified Snowflake schema object identifier (e.g. db.schema.cert_name).",
+			Description: "Specifies secrets containing self-signed certificates to be used when authenticating with a Git repository server over private link. Only needed when the certificate is self-signed rather than signed by a certificate authority. Each entry must be a fully-qualified name of a Snowflake secret of type generic string whose value is Base64-encoded certificate data.",
 		},
 		DescribeOutputAttributeName: {
 			Type:        schema.TypeList,
@@ -206,21 +206,6 @@ func ImportApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema
 	details, err := client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	// Validate this is a private-link sub-type: UsePrivatelinkEndpoint=true, no UserAuthType.
-	if !details.UsePrivatelinkEndpoint {
-		return nil, fmt.Errorf(
-			"api integration %s has use_privatelink_endpoint=false, not compatible with snowflake_api_integration_git_repository_private_link; use the appropriate resource type",
-			id.FullyQualifiedName(),
-		)
-	}
-	if details.UserAuthType != "" {
-		return nil, fmt.Errorf(
-			"api integration %s has user_auth_type %q, not compatible with snowflake_api_integration_git_repository_private_link; use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.UserAuthType,
-		)
 	}
 
 	if _, err := sdk.ToApiIntegrationGitApiProviderType(details.ApiProvider); err != nil {

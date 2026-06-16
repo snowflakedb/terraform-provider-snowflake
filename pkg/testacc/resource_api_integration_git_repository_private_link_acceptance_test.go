@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -33,10 +34,15 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	externalComment := random.Comment()
 
+	certSecretId := testClient().Ids.RandomSchemaObjectIdentifier()
+	_, cleanupCert := testClient().Secret.CreateWithGenericString(t, certSecretId, random.GenerateX509(t))
+	t.Cleanup(cleanupCert)
+
 	basic := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true)
 	withOptionals := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
 		WithAllAllowedAuthenticationSecrets(true).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithTlsTrustedCertificates([]string{certSecretId.FullyQualifiedName()}).
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
@@ -84,7 +90,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasNoAllowedAuthenticationSecrets(false).
 			HasAllowedAuthenticationSecretsEmpty().
 			HasApiBlockedPrefixes(blockedPrefix).
-			HasTlsTrustedCertificatesEmpty().
+			HasTlsTrustedCertificates(certSecretId.FullyQualifiedName()).
 			HasCommentString(comment),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -94,7 +100,6 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasApiProvider(apiProvider).
 			HasAllowedAuthenticationSecrets("ALL").
 			HasUsePrivatelinkEndpoint(true).
-			HasNoTlsTrustedCertificates().
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
@@ -104,7 +109,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasUsePrivatelinkEndpoint(true).
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
-			HasNoTlsTrustedCertificates().
+			HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())).
 			HasComment(comment),
 	}
 
