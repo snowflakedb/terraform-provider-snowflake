@@ -110,7 +110,6 @@ func TestGetOnObjectIdentifier(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			id, err := GetOnObjectIdentifier(tt.ObjectType, tt.ObjectName)
 			if tt.Error == "" {
@@ -195,7 +194,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 			Expected: sdk.OwnershipGrantOn{
 				All: &sdk.GrantOnSchemaObjectIn{
 					PluralObjectType: sdk.PluralObjectTypeTables,
-					InDatabase:       sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
+					InDatabase:       new(sdk.NewAccountObjectIdentifier("test_database")),
 				},
 			},
 		},
@@ -212,7 +211,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 			Expected: sdk.OwnershipGrantOn{
 				All: &sdk.GrantOnSchemaObjectIn{
 					PluralObjectType: sdk.PluralObjectTypeTables,
-					InSchema:         sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
+					InSchema:         new(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
 				},
 			},
 		},
@@ -229,7 +228,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 			Expected: sdk.OwnershipGrantOn{
 				Future: &sdk.GrantOnSchemaObjectIn{
 					PluralObjectType: sdk.PluralObjectTypeTables,
-					InDatabase:       sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
+					InDatabase:       new(sdk.NewAccountObjectIdentifier("test_database")),
 				},
 			},
 		},
@@ -246,7 +245,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 			Expected: sdk.OwnershipGrantOn{
 				Future: &sdk.GrantOnSchemaObjectIn{
 					PluralObjectType: sdk.PluralObjectTypeTables,
-					InSchema:         sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
+					InSchema:         new(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
 				},
 			},
 		},
@@ -276,7 +275,7 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 			Expected: sdk.OwnershipGrantOn{
 				Future: &sdk.GrantOnSchemaObjectIn{
 					PluralObjectType: sdk.PluralObjectTypeTables,
-					InSchema:         sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
+					InSchema:         new(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
 				},
 			},
 		},
@@ -291,7 +290,6 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			d := schema.TestResourceDataRaw(t, grantOwnershipSchema, map[string]any{
 				"on": []any{tt.On},
@@ -360,7 +358,7 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 				Data: &BulkOperationGrantData{
 					ObjectNamePlural: sdk.PluralObjectTypeTables,
 					Kind:             InDatabaseBulkOperationGrantKind,
-					Database:         sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
+					Database:         new(sdk.NewAccountObjectIdentifier("test_database")),
 				},
 			},
 			ExpectedShowGrantsOpts: nil,
@@ -373,7 +371,7 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 				Data: &BulkOperationGrantData{
 					ObjectNamePlural: sdk.PluralObjectTypeTables,
 					Kind:             InSchemaBulkOperationGrantKind,
-					Schema:           sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
+					Schema:           new(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
 				},
 			},
 			ExpectedShowGrantsOpts: nil,
@@ -386,13 +384,13 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 				Data: &BulkOperationGrantData{
 					ObjectNamePlural: sdk.PluralObjectTypeTables,
 					Kind:             InDatabaseBulkOperationGrantKind,
-					Database:         sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
+					Database:         new(sdk.NewAccountObjectIdentifier("test_database")),
 				},
 			},
 			ExpectedShowGrantsOpts: &sdk.ShowGrantOptions{
-				Future: sdk.Bool(true),
+				Future: new(true),
 				In: &sdk.ShowGrantsIn{
-					Database: sdk.Pointer(sdk.NewAccountObjectIdentifier("test_database")),
+					Database: new(sdk.NewAccountObjectIdentifier("test_database")),
 				},
 			},
 			ExpectedGrantedOn: sdk.ObjectTypeTable,
@@ -404,13 +402,13 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 				Data: &BulkOperationGrantData{
 					ObjectNamePlural: sdk.PluralObjectTypeTables,
 					Kind:             InSchemaBulkOperationGrantKind,
-					Schema:           sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
+					Schema:           new(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
 				},
 			},
 			ExpectedShowGrantsOpts: &sdk.ShowGrantOptions{
-				Future: sdk.Bool(true),
+				Future: new(true),
 				In: &sdk.ShowGrantsIn{
-					Schema: sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
+					Schema: new(sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")),
 				},
 			},
 			ExpectedGrantedOn: sdk.ObjectTypeTable,
@@ -418,7 +416,6 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			opts, grantedOn := prepareShowGrantsRequestForGrantOwnership(&tt.Identifier)
 			if tt.ExpectedShowGrantsOpts == nil {
@@ -441,36 +438,35 @@ func TestValidAccountRoleNameGetOwnershipGrantTo(t *testing.T) {
 	}{
 		{
 			Name:        "account role name",
-			AccountRole: sdk.String("account_role_name"),
+			AccountRole: new("account_role_name"),
 			Expected: sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(sdk.NewAccountObjectIdentifier("account_role_name")),
+				AccountRoleName: new(sdk.NewAccountObjectIdentifier("account_role_name")),
 			},
 		},
 		{
 			Name:        "account role name - quoted",
-			AccountRole: sdk.String("\"account_role_name\""),
+			AccountRole: new("\"account_role_name\""),
 			Expected: sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(sdk.NewAccountObjectIdentifier("account_role_name")),
+				AccountRoleName: new(sdk.NewAccountObjectIdentifier("account_role_name")),
 			},
 		},
 		{
 			Name:        "account role name - with dots",
-			AccountRole: sdk.String("account.role.with.dots"),
+			AccountRole: new("account.role.with.dots"),
 			Expected: sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(sdk.NewAccountObjectIdentifier("account.role.with.dots")),
+				AccountRoleName: new(sdk.NewAccountObjectIdentifier("account.role.with.dots")),
 			},
 		},
 		{
 			Name:        "account role name - with dots quoted",
-			AccountRole: sdk.String("\"account.role.with.dots\""),
+			AccountRole: new("\"account.role.with.dots\""),
 			Expected: sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(sdk.NewAccountObjectIdentifier("account.role.with.dots")),
+				AccountRoleName: new(sdk.NewAccountObjectIdentifier("account.role.with.dots")),
 			},
 		},
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			grantTo, err := getOwnershipGrantTo(schema.TestResourceDataRaw(t, grantOwnershipSchema, map[string]any{
 				"account_role_name": *tt.AccountRole,
@@ -493,22 +489,21 @@ func TestValidDatabaseRoleNameGetOwnershipGrantTo(t *testing.T) {
 	}{
 		{
 			Name:         "database role name",
-			DatabaseRole: sdk.String("test_database.database_role_name"),
+			DatabaseRole: new("test_database.database_role_name"),
 			Expected: sdk.OwnershipGrantTo{
-				DatabaseRoleName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "database_role_name")),
+				DatabaseRoleName: new(sdk.NewDatabaseObjectIdentifier("test_database", "database_role_name")),
 			},
 		},
 		{
 			Name:         "database role name - quoted",
-			DatabaseRole: sdk.String("\"test_database\".\"database_role_name\""),
+			DatabaseRole: new("\"test_database\".\"database_role_name\""),
 			Expected: sdk.OwnershipGrantTo{
-				DatabaseRoleName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier("test_database", "database_role_name")),
+				DatabaseRoleName: new(sdk.NewDatabaseObjectIdentifier("test_database", "database_role_name")),
 			},
 		},
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			grantTo, err := getOwnershipGrantTo(schema.TestResourceDataRaw(t, grantOwnershipSchema, map[string]any{
 				"database_role_name": *tt.DatabaseRole,
@@ -538,7 +533,7 @@ func TestGetOwnershipGrantOpts(t *testing.T) {
 		{
 			Name: "outbound privileges copy",
 			Identifier: GrantOwnershipId{
-				OutboundPrivilegesBehavior: sdk.Pointer(CopyOutboundPrivilegesBehavior),
+				OutboundPrivilegesBehavior: new(CopyOutboundPrivilegesBehavior),
 			},
 			Expected: &sdk.GrantOwnershipOptions{
 				CurrentGrants: &sdk.OwnershipCurrentGrants{
@@ -549,7 +544,7 @@ func TestGetOwnershipGrantOpts(t *testing.T) {
 		{
 			Name: "outbound privileges revoke",
 			Identifier: GrantOwnershipId{
-				OutboundPrivilegesBehavior: sdk.Pointer(RevokeOutboundPrivilegesBehavior),
+				OutboundPrivilegesBehavior: new(RevokeOutboundPrivilegesBehavior),
 			},
 			Expected: &sdk.GrantOwnershipOptions{
 				CurrentGrants: &sdk.OwnershipCurrentGrants{
@@ -567,7 +562,6 @@ func TestGetOwnershipGrantOpts(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			opts := getOwnershipGrantOpts(&tt.Identifier)
 			assert.NotNil(t, opts)

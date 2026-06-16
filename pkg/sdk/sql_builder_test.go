@@ -19,7 +19,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			BooleanKeyword *bool `ddl:"keyword" sql:"EXAMPLE_KEYWORD"`
 		}{
-			BooleanKeyword: Bool(true),
+			BooleanKeyword: new(true),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -35,7 +35,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			BooleanKeyword *bool `ddl:"keyword" sql:"EXAMPLE_KEYWORD"`
 		}{
-			BooleanKeyword: Bool(false),
+			BooleanKeyword: new(false),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -65,7 +65,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			StringKeyword *string `ddl:"keyword"`
 		}{
-			StringKeyword: String("example"),
+			StringKeyword: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -95,7 +95,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			StringKeyword *string `ddl:"keyword,double_quotes"`
 		}{
-			StringKeyword: String("example"),
+			StringKeyword: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -111,7 +111,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			StringKeyword *string `ddl:"keyword,single_quotes"`
 		}{
-			StringKeyword: String("example"),
+			StringKeyword: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -127,7 +127,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			StringKeyword *string `ddl:"keyword,double_dollar_quotes"`
 		}{
-			StringKeyword: String("example"),
+			StringKeyword: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -143,7 +143,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			Static *bool `ddl:"static" sql:"EXAMPLE_STATIC"`
 		}{
-			Static: Bool(true),
+			Static: new(true),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -173,7 +173,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			Parameter *string `ddl:"parameter" sql:"EXAMPLE_PARAMETER"`
 		}{
-			Parameter: String("example"),
+			Parameter: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -203,7 +203,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			Parameter *string `ddl:"parameter,double_quotes" sql:"EXAMPLE_PARAMETER"`
 		}{
-			Parameter: String("example"),
+			Parameter: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -219,7 +219,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			Parameter *string `ddl:"parameter,double_dollar_quotes" sql:"EXAMPLE_PARAMETER"`
 		}{
-			Parameter: String("example"),
+			Parameter: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -235,7 +235,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			Parameter *string `ddl:"parameter,single_quotes" sql:"EXAMPLE_PARAMETER"`
 		}{
-			Parameter: String("example"),
+			Parameter: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -251,7 +251,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			Parameter *int `ddl:"parameter" sql:"EXAMPLE_PARAMETER"`
 		}{
-			Parameter: Int(1),
+			Parameter: new(1),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -267,7 +267,7 @@ func TestBuilder_parseField(t *testing.T) {
 		s := struct {
 			Parameter *string `ddl:"parameter"`
 		}{
-			Parameter: String("example"),
+			Parameter: new("example"),
 		}
 		val := reflect.ValueOf(s)
 		typ := val.Type()
@@ -419,7 +419,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		s := &structTestHelper{
 			static: true,
 			name:   randomAccountObjectIdentifier(),
-			Param:  String("example"),
+			Param:  new("example"),
 		}
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
@@ -437,7 +437,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		s := &struct {
 			List []testListElement `ddl:"keyword,parentheses" sql:"TAG"`
 		}{
-			List: []testListElement{{K: String("abc"), K2: String("def")}, {K: String("123"), K2: String("456")}},
+			List: []testListElement{{K: new("abc"), K2: new("def")}, {K: new("123"), K2: new("456")}},
 		}
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
@@ -464,7 +464,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		s := &struct {
 			List []testListElement `ddl:"-,no_parentheses"`
 		}{
-			List: []testListElement{{K: String("abc")}, {K: String("123")}},
+			List: []testListElement{{K: new("abc")}, {K: new("123")}},
 		}
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
@@ -548,7 +548,7 @@ func TestBuilder_instanceMethodInvocation(t *testing.T) {
 		s := &struct {
 			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"ADD_NOTIFICATION_INTEGRATION"`
 			args *oneArg                 `ddl:"list,parentheses"`
-		}{name: id, args: &oneArg{V: String("integration_name")}}
+		}{name: id, args: &oneArg{V: new("integration_name")}}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
 		assert.Equal(t, id.FullyQualifiedName()+"!ADD_NOTIFICATION_INTEGRATION ('integration_name')", sql)
@@ -563,7 +563,7 @@ func TestBuilder_instanceMethodInvocation(t *testing.T) {
 		s := &struct {
 			name AccountObjectIdentifier `ddl:"identifier,instance_method" sql:"MY_METHOD"`
 			args *twoArgs                `ddl:"list,parentheses,comma"`
-		}{name: id, args: &twoArgs{A: String("first"), B: String("second")}}
+		}{name: id, args: &twoArgs{A: new("first"), B: new("second")}}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
 		assert.Equal(t, id.FullyQualifiedName()+"!MY_METHOD ('first', 'second')", sql)
@@ -769,7 +769,6 @@ func TestBuilder_DataType(t *testing.T) {
 	})
 
 	for _, tc := range nilTestCases {
-		tc := tc
 		t.Run(fmt.Sprintf(`test for nil data type "%s"`, reflect.TypeOf(tc)), func(t *testing.T) {
 			opts := dataTypeTestHelper{
 				DataType: tc,
@@ -783,7 +782,6 @@ func TestBuilder_DataType(t *testing.T) {
 	}
 
 	for _, tc := range dataTypes {
-		tc := tc
 		t.Run(fmt.Sprintf(`cheking building SQL for data type "%s, expecting "%s"`, tc.dataType, tc.expectedSql), func(t *testing.T) {
 			dataType, err := datatypes.ParseDataType(tc.dataType)
 			require.NoError(t, err)

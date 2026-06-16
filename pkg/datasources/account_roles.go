@@ -79,7 +79,6 @@ func ReadAccountRoles(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	flattenedAccountRoles := make([]map[string]any, len(roles))
 	for i, role := range roles {
-		role := role
 		flattenedAccountRoles[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.RoleToSchema(&role)},
 		}

@@ -71,8 +71,8 @@ type Database struct {
 }
 
 func (v *Database) SetTransient(value string) {
-	parts := strings.Split(value, ", ")
-	for _, part := range parts {
+	parts := strings.SplitSeq(value, ", ")
+	for part := range parts {
 		if part == "TRANSIENT" {
 			v.Transient = true
 		}
@@ -760,7 +760,7 @@ func (v *databases) Drop(ctx context.Context, id AccountObjectIdentifier, opts *
 }
 
 func (v *databases) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropDatabaseOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropDatabaseOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // undropDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/undrop-database.
@@ -825,7 +825,7 @@ func (v *databases) Show(ctx context.Context, opts *ShowDatabasesOptions) ([]Dat
 func (v *databases) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Database, error) {
 	databases, err := v.Show(ctx, &ShowDatabasesOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 	})
 	if err != nil {

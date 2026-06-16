@@ -49,11 +49,11 @@ func TestPostgresInstances_Create(t *testing.T) {
 			ComputeFamily:           "STANDARD_S",
 			StorageSizeGb:           50,
 			AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
-			PostgresVersion:         Pointer(17),
-			NetworkPolicy:           Pointer("my_policy"),
-			HighAvailability:        Pointer(true),
-			StorageIntegration:      Pointer("my_integration"),
-			PostgresSettings:        Pointer("{}"),
+			PostgresVersion:         new(17),
+			NetworkPolicy:           new("my_policy"),
+			HighAvailability:        new(true),
+			StorageIntegration:      new("my_integration"),
+			PostgresSettings:        new("{}"),
 			Comment:                 &comment,
 			Tag: []TagAssociation{
 				{
@@ -113,10 +113,10 @@ func TestPostgresInstances_Fork(t *testing.T) {
 	t.Run("validation: conflicting fields [opts.At opts.Before]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.At = &PostgresInstanceForkAt{
-			Timestamp: Pointer("2025-01-15 12:00:00"),
+			Timestamp: new("2025-01-15 12:00:00"),
 		}
 		opts.Before = &PostgresInstanceForkBefore{
-			Timestamp: Pointer("2025-01-15 12:00:00"),
+			Timestamp: new("2025-01-15 12:00:00"),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("ForkPostgresInstanceOptions", "At", "Before"))
 	})
@@ -131,7 +131,7 @@ func TestPostgresInstances_Fork(t *testing.T) {
 	t.Run("fork with at timestamp", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.At = &PostgresInstanceForkAt{
-			Timestamp: Pointer("2025-01-15 12:00:00"),
+			Timestamp: new("2025-01-15 12:00:00"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => '2025-01-15 12:00:00')`,
@@ -141,7 +141,7 @@ func TestPostgresInstances_Fork(t *testing.T) {
 	t.Run("fork with at offset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.At = &PostgresInstanceForkAt{
-			Offset: Pointer("-7200"),
+			Offset: new("-7200"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`CREATE POSTGRES INSTANCE %s FORK %s AT (OFFSET => -7200)`,
@@ -151,7 +151,7 @@ func TestPostgresInstances_Fork(t *testing.T) {
 	t.Run("fork with before timestamp", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Before = &PostgresInstanceForkBefore{
-			Timestamp: Pointer("2025-01-15 12:00:00"),
+			Timestamp: new("2025-01-15 12:00:00"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`CREATE POSTGRES INSTANCE %s FORK %s BEFORE (TIMESTAMP => '2025-01-15 12:00:00')`,
@@ -165,12 +165,12 @@ func TestPostgresInstances_Fork(t *testing.T) {
 			name: id,
 			Fork: forkId,
 			At: &PostgresInstanceForkAt{
-				Timestamp: Pointer("2025-01-15 12:00:00"),
+				Timestamp: new("2025-01-15 12:00:00"),
 			},
-			ComputeFamily:    Pointer("STANDARD_M"),
-			StorageSizeGb:    Pointer(100),
-			HighAvailability: Pointer(true),
-			PostgresSettings: Pointer("{}"),
+			ComputeFamily:    new("STANDARD_M"),
+			StorageSizeGb:    new(100),
+			HighAvailability: new(true),
+			PostgresSettings: new("{}"),
 			Comment:          &comment,
 			Tag: []TagAssociation{
 				{
@@ -242,14 +242,14 @@ func TestPostgresInstances_Alter(t *testing.T) {
 		auth := PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake
 		opts := defaultOpts()
 		opts.Set = &PostgresInstanceSet{
-			NetworkPolicy:           Pointer("my_policy"),
+			NetworkPolicy:           new("my_policy"),
 			AuthenticationAuthority: &auth,
 			Comment:                 &comment,
-			HighAvailability:        Pointer(true),
-			ComputeFamily:           Pointer("STANDARD_M"),
-			StorageSizeGb:           Pointer(100),
-			PostgresVersion:         Pointer(18),
-			PostgresSettings:        Pointer("{}"),
+			HighAvailability:        new(true),
+			ComputeFamily:           new("STANDARD_M"),
+			StorageSizeGb:           new(100),
+			PostgresVersion:         new(18),
+			PostgresSettings:        new("{}"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`ALTER POSTGRES INSTANCE %s SET NETWORK_POLICY = 'my_policy' AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE`+
@@ -261,9 +261,9 @@ func TestPostgresInstances_Alter(t *testing.T) {
 	t.Run("set with apply immediately", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &PostgresInstanceSet{
-			ComputeFamily: Pointer("STANDARD_L"),
+			ComputeFamily: new("STANDARD_L"),
 			Apply: &PostgresInstanceApply{
-				Immediately: Pointer(true),
+				Immediately: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts,
@@ -274,9 +274,9 @@ func TestPostgresInstances_Alter(t *testing.T) {
 	t.Run("set with apply on timestamp", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &PostgresInstanceSet{
-			PostgresVersion: Pointer(18),
+			PostgresVersion: new(18),
 			Apply: &PostgresInstanceApply{
-				On: Pointer("2026-03-01 12:00:00"),
+				On: new("2026-03-01 12:00:00"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts,
@@ -287,7 +287,7 @@ func TestPostgresInstances_Alter(t *testing.T) {
 	t.Run("validation: exactly one of Apply.Immediately or Apply.On should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &PostgresInstanceSet{
-			ComputeFamily: Pointer("STANDARD_L"),
+			ComputeFamily: new("STANDARD_L"),
 			Apply:         &PostgresInstanceApply{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPostgresInstanceOptions.Set.Apply", "Immediately", "On"))
@@ -296,22 +296,22 @@ func TestPostgresInstances_Alter(t *testing.T) {
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &PostgresInstanceUnset{
-			Comment:          Pointer(true),
-			PostgresSettings: Pointer(true),
-			NetworkPolicy:    Pointer(true),
+			Comment:          new(true),
+			PostgresSettings: new(true),
+			NetworkPolicy:    new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE %s UNSET COMMENT, POSTGRES_SETTINGS, NETWORK_POLICY`, id.FullyQualifiedName())
 	})
 
 	t.Run("suspend", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Suspend = Pointer(true)
+		opts.Suspend = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE %s SUSPEND`, id.FullyQualifiedName())
 	})
 
 	t.Run("resume", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Resume = Pointer(true)
+		opts.Resume = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE %s RESUME`, id.FullyQualifiedName())
 	})
 
@@ -333,8 +333,8 @@ func TestPostgresInstances_Alter(t *testing.T) {
 
 	t.Run("if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Pointer(true)
-		opts.Suspend = Pointer(true)
+		opts.IfExists = new(true)
+		opts.Suspend = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER POSTGRES INSTANCE IF EXISTS %s SUSPEND`, id.FullyQualifiedName())
 	})
 
@@ -384,7 +384,7 @@ func TestPostgresInstances_Drop(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "DROP POSTGRES INSTANCE IF EXISTS %s", id.FullyQualifiedName())
 	})
 }
@@ -407,22 +407,22 @@ func TestPostgresInstances_Show(t *testing.T) {
 	t.Run("like", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String("pattern"),
+			Pattern: new("pattern"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW POSTGRES INSTANCES LIKE 'pattern'")
 	})
 
 	t.Run("starts with", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StartsWith = Pointer("prefix")
+		opts.StartsWith = new("prefix")
 		assertOptsValidAndSQLEquals(t, opts, "SHOW POSTGRES INSTANCES STARTS WITH 'prefix'")
 	})
 
 	t.Run("limit from", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-			From: String("from"),
+			Rows: new(10),
+			From: new("from"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW POSTGRES INSTANCES LIMIT 10 FROM 'from'")
 	})

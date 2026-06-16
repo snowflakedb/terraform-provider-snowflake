@@ -28,7 +28,7 @@ func (c *ParameterClient) ShowAccountParameters(t *testing.T) []*sdk.Parameter {
 	t.Helper()
 	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{
 		In: &sdk.ParametersIn{
-			Account: sdk.Bool(true),
+			Account: new(true),
 		},
 	})
 	require.NoError(t, err)

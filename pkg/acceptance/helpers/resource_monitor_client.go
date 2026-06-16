@@ -28,7 +28,7 @@ func (c *ResourceMonitorClient) CreateResourceMonitor(t *testing.T) (*sdk.Resour
 	t.Helper()
 	return c.CreateResourceMonitorWithOptions(t, &sdk.CreateResourceMonitorOptions{
 		With: &sdk.ResourceMonitorWith{
-			CreditQuota: sdk.Pointer(100),
+			CreditQuota: new(100),
 			Triggers: []sdk.TriggerDefinition{
 				{
 					Threshold:     100,
@@ -74,7 +74,7 @@ func (c *ResourceMonitorClient) DropResourceMonitorFunc(t *testing.T, id sdk.Acc
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropResourceMonitorOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropResourceMonitorOptions{IfExists: new(true)})
 		require.NoError(t, err)
 	}
 }

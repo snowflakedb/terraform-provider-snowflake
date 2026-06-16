@@ -771,16 +771,16 @@ func parseXmlFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatXmlOption
 
 func parseStageFileFormatStringOrNone(v string) *sdk.StageFileFormatStringOrNone {
 	if strings.ToUpper(v) == "NONE" {
-		return &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)}
+		return &sdk.StageFileFormatStringOrNone{None: new(true)}
 	}
-	return &sdk.StageFileFormatStringOrNone{Value: sdk.String(v)}
+	return &sdk.StageFileFormatStringOrNone{Value: new(v)}
 }
 
 func parseStageFileFormatStringOrAuto(v string) *sdk.StageFileFormatStringOrAuto {
 	if strings.ToUpper(v) == "AUTO" {
-		return &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)}
+		return &sdk.StageFileFormatStringOrAuto{Auto: new(true)}
 	}
-	return &sdk.StageFileFormatStringOrAuto{Value: sdk.String(v)}
+	return &sdk.StageFileFormatStringOrAuto{Value: new(v)}
 }
 
 // stageFileFormatToSchema converts the SDK details to a Terraform schema.

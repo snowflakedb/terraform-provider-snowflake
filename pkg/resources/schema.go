@@ -202,14 +202,14 @@ func CreateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		opts.Transient = sdk.Bool(parsed)
+		opts.Transient = new(parsed)
 	}
 	if v := d.Get("with_managed_access").(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		opts.WithManagedAccess = sdk.Bool(parsed)
+		opts.WithManagedAccess = new(parsed)
 	}
 	if err := client.Schemas.Create(ctx, id, opts); err != nil {
 		return diag.Diagnostics{
@@ -376,7 +376,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	if d.HasChange("name") && !d.GetRawState().IsNull() {
 		newId := sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string))
 		err := client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-			NewName: sdk.Pointer(newId),
+			NewName: new(newId),
 		})
 		if err != nil {
 			d.Partial(true)
@@ -396,11 +396,11 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			}
 			if parsed {
 				err = client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-					EnableManagedAccess: sdk.Pointer(true),
+					EnableManagedAccess: new(true),
 				})
 			} else {
 				err = client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-					DisableManagedAccess: sdk.Pointer(true),
+					DisableManagedAccess: new(true),
 				})
 			}
 			if err != nil {
@@ -410,7 +410,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		} else {
 			// managed access can not be UNSET to a default value
 			if err := client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-				DisableManagedAccess: sdk.Pointer(true),
+				DisableManagedAccess: new(true),
 			}); err != nil {
 				d.Partial(true)
 				return diag.FromErr(fmt.Errorf("error handling with_managed_access on %v err = %w", d.Id(), err))
@@ -426,7 +426,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		if len(comment) > 0 {
 			set.Comment = &comment
 		} else {
-			unset.Comment = sdk.Bool(true)
+			unset.Comment = new(true)
 		}
 	}
 

@@ -157,13 +157,13 @@ func ParseGrantPrivilegesToDatabaseRoleId(id string) (GrantPrivilegesToDatabaseR
 			if err != nil {
 				return databaseRoleId, err
 			}
-			onSchemaGrantData.SchemaName = sdk.Pointer(schemaId)
+			onSchemaGrantData.SchemaName = new(schemaId)
 		case OnAllSchemasInDatabaseSchemaGrantKind, OnFutureSchemasInDatabaseSchemaGrantKind:
 			databaseId, err := sdk.ParseAccountObjectIdentifier(parts[6])
 			if err != nil {
 				return databaseRoleId, err
 			}
-			onSchemaGrantData.DatabaseName = sdk.Pointer(databaseId)
+			onSchemaGrantData.DatabaseName = new(databaseId)
 		default:
 			return databaseRoleId, sdk.NewError(fmt.Sprintf("invalid OnSchemaGrantKind: %s", onSchemaGrantData.Kind))
 		}
@@ -213,13 +213,13 @@ func ParseGrantPrivilegesToDatabaseRoleId(id string) (GrantPrivilegesToDatabaseR
 					if err != nil {
 						return databaseRoleId, err
 					}
-					bulkOperationGrantData.Database = sdk.Pointer(databaseId)
+					bulkOperationGrantData.Database = new(databaseId)
 				case InSchemaBulkOperationGrantKind:
 					schemaId, err := sdk.ParseDatabaseObjectIdentifier(parts[8])
 					if err != nil {
 						return databaseRoleId, err
 					}
-					bulkOperationGrantData.Schema = sdk.Pointer(schemaId)
+					bulkOperationGrantData.Schema = new(schemaId)
 				default:
 					return databaseRoleId, sdk.NewError(fmt.Sprintf("invalid BulkOperationGrantKind: %s", bulkOperationGrantData.Kind))
 				}

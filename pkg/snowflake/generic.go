@@ -3,6 +3,7 @@ package snowflake
 import (
 	"bytes"
 	"fmt"
+	"slices"
 	"strings"
 	"text/template"
 )
@@ -193,11 +194,5 @@ func formatStringList(list []string) string {
 }
 
 func Contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(s, str)
 }

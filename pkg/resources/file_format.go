@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -369,41 +370,41 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.CSVCompression = &comp
 		}
 		if v, ok := d.GetOk("record_delimiter"); ok {
-			opts.CSVRecordDelimiter = sdk.String(v.(string))
+			opts.CSVRecordDelimiter = new(v.(string))
 		}
 		if v, ok := d.GetOk("field_delimiter"); ok {
-			opts.CSVFieldDelimiter = sdk.String(v.(string))
+			opts.CSVFieldDelimiter = new(v.(string))
 		}
 		if v, ok := d.GetOk("file_extension"); ok {
-			opts.CSVFileExtension = sdk.String(v.(string))
+			opts.CSVFileExtension = new(v.(string))
 		}
-		opts.CSVParseHeader = sdk.Bool(d.Get("parse_header").(bool))
+		opts.CSVParseHeader = new(d.Get("parse_header").(bool))
 		if v, ok := d.GetOk("skip_header"); ok {
-			opts.CSVSkipHeader = sdk.Int(v.(int))
+			opts.CSVSkipHeader = new(v.(int))
 		}
-		opts.CSVSkipBlankLines = sdk.Bool(d.Get("skip_blank_lines").(bool))
+		opts.CSVSkipBlankLines = new(d.Get("skip_blank_lines").(bool))
 		if v, ok := d.GetOk("date_format"); ok {
-			opts.CSVDateFormat = sdk.String(v.(string))
+			opts.CSVDateFormat = new(v.(string))
 		}
 		if v, ok := d.GetOk("time_format"); ok {
-			opts.CSVTimeFormat = sdk.String(v.(string))
+			opts.CSVTimeFormat = new(v.(string))
 		}
 		if v, ok := d.GetOk("timestamp_format"); ok {
-			opts.CSVTimestampFormat = sdk.String(v.(string))
+			opts.CSVTimestampFormat = new(v.(string))
 		}
 		if v, ok := d.GetOk("binary_format"); ok {
 			bf := sdk.BinaryFormat(v.(string))
 			opts.CSVBinaryFormat = &bf
 		}
 		if v, ok := d.GetOk("escape"); ok {
-			opts.CSVEscape = sdk.String(v.(string))
+			opts.CSVEscape = new(v.(string))
 		}
 		if v, ok := d.GetOk("escape_unenclosed_field"); ok {
-			opts.CSVEscapeUnenclosedField = sdk.String(v.(string))
+			opts.CSVEscapeUnenclosedField = new(v.(string))
 		}
-		opts.CSVTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
+		opts.CSVTrimSpace = new(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("field_optionally_enclosed_by"); ok {
-			opts.CSVFieldOptionallyEnclosedBy = sdk.String(v.(string))
+			opts.CSVFieldOptionallyEnclosedBy = new(v.(string))
 		}
 		if v, ok := d.GetOk("null_if"); ok {
 			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
@@ -417,10 +418,10 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 			opts.CSVNullIf = &nullIf
 		}
-		opts.CSVErrorOnColumnCountMismatch = sdk.Bool(d.Get("error_on_column_count_mismatch").(bool))
-		opts.CSVReplaceInvalidCharacters = sdk.Bool(d.Get("replace_invalid_characters").(bool))
-		opts.CSVEmptyFieldAsNull = sdk.Bool(d.Get("empty_field_as_null").(bool))
-		opts.CSVSkipByteOrderMark = sdk.Bool(d.Get("skip_byte_order_mark").(bool))
+		opts.CSVErrorOnColumnCountMismatch = new(d.Get("error_on_column_count_mismatch").(bool))
+		opts.CSVReplaceInvalidCharacters = new(d.Get("replace_invalid_characters").(bool))
+		opts.CSVEmptyFieldAsNull = new(d.Get("empty_field_as_null").(bool))
+		opts.CSVSkipByteOrderMark = new(d.Get("skip_byte_order_mark").(bool))
 		if v, ok := d.GetOk("encoding"); ok {
 			enc := sdk.CsvEncoding(v.(string))
 			opts.CSVEncoding = &enc
@@ -431,19 +432,19 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.JSONCompression = &comp
 		}
 		if v, ok := d.GetOk("date_format"); ok {
-			opts.JSONDateFormat = sdk.String(v.(string))
+			opts.JSONDateFormat = new(v.(string))
 		}
 		if v, ok := d.GetOk("time_format"); ok {
-			opts.JSONTimeFormat = sdk.String(v.(string))
+			opts.JSONTimeFormat = new(v.(string))
 		}
 		if v, ok := d.GetOk("timestamp_format"); ok {
-			opts.JSONTimestampFormat = sdk.String(v.(string))
+			opts.JSONTimestampFormat = new(v.(string))
 		}
 		if v, ok := d.GetOk("binary_format"); ok {
 			bf := sdk.BinaryFormat(v.(string))
 			opts.JSONBinaryFormat = &bf
 		}
-		opts.JSONTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
+		opts.JSONTrimSpace = new(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
 			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
 			for _, s := range v.([]any) {
@@ -457,21 +458,21 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.JSONNullIf = nullIf
 		}
 		if v, ok := d.GetOk("file_extension"); ok {
-			opts.JSONFileExtension = sdk.String(v.(string))
+			opts.JSONFileExtension = new(v.(string))
 		}
-		opts.JSONEnableOctal = sdk.Bool(d.Get("enable_octal").(bool))
-		opts.JSONAllowDuplicate = sdk.Bool(d.Get("allow_duplicate").(bool))
-		opts.JSONStripOuterArray = sdk.Bool(d.Get("strip_outer_array").(bool))
-		opts.JSONStripNullValues = sdk.Bool(d.Get("strip_null_values").(bool))
-		opts.JSONReplaceInvalidCharacters = sdk.Bool(d.Get("replace_invalid_characters").(bool))
-		opts.JSONIgnoreUTF8Errors = sdk.Bool(d.Get("ignore_utf8_errors").(bool))
-		opts.JSONSkipByteOrderMark = sdk.Bool(d.Get("skip_byte_order_mark").(bool))
+		opts.JSONEnableOctal = new(d.Get("enable_octal").(bool))
+		opts.JSONAllowDuplicate = new(d.Get("allow_duplicate").(bool))
+		opts.JSONStripOuterArray = new(d.Get("strip_outer_array").(bool))
+		opts.JSONStripNullValues = new(d.Get("strip_null_values").(bool))
+		opts.JSONReplaceInvalidCharacters = new(d.Get("replace_invalid_characters").(bool))
+		opts.JSONIgnoreUTF8Errors = new(d.Get("ignore_utf8_errors").(bool))
+		opts.JSONSkipByteOrderMark = new(d.Get("skip_byte_order_mark").(bool))
 	case sdk.FileFormatTypeAvro:
 		if v, ok := d.GetOk("compression"); ok {
 			comp := sdk.AvroCompression(v.(string))
 			opts.AvroCompression = &comp
 		}
-		opts.AvroTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
+		opts.AvroTrimSpace = new(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
 			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
 			for _, s := range v.([]any) {
@@ -485,7 +486,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			opts.AvroNullIf = &nullIf
 		}
 	case sdk.FileFormatTypeOrc:
-		opts.ORCTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
+		opts.ORCTrimSpace = new(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
 			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
 			for _, s := range v.([]any) {
@@ -503,8 +504,8 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			comp := sdk.ParquetCompression(v.(string))
 			opts.ParquetCompression = &comp
 		}
-		opts.ParquetBinaryAsText = sdk.Bool(d.Get("binary_as_text").(bool))
-		opts.ParquetTrimSpace = sdk.Bool(d.Get("trim_space").(bool))
+		opts.ParquetBinaryAsText = new(d.Get("binary_as_text").(bool))
+		opts.ParquetTrimSpace = new(d.Get("trim_space").(bool))
 		if v, ok := d.GetOk("null_if"); ok {
 			nullIf := make([]sdk.NullString, 0, len(v.([]any)))
 			for _, s := range v.([]any) {
@@ -522,16 +523,16 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			comp := sdk.XmlCompression(v.(string))
 			opts.XMLCompression = &comp
 		}
-		opts.XMLIgnoreUTF8Errors = sdk.Bool(d.Get("ignore_utf8_errors").(bool))
-		opts.XMLPreserveSpace = sdk.Bool(d.Get("preserve_space").(bool))
-		opts.XMLStripOuterElement = sdk.Bool(d.Get("strip_outer_element").(bool))
-		opts.XMLDisableSnowflakeData = sdk.Bool(d.Get("disable_snowflake_data").(bool))
-		opts.XMLDisableAutoConvert = sdk.Bool(d.Get("disable_auto_convert").(bool))
-		opts.XMLSkipByteOrderMark = sdk.Bool(d.Get("skip_byte_order_mark").(bool))
+		opts.XMLIgnoreUTF8Errors = new(d.Get("ignore_utf8_errors").(bool))
+		opts.XMLPreserveSpace = new(d.Get("preserve_space").(bool))
+		opts.XMLStripOuterElement = new(d.Get("strip_outer_element").(bool))
+		opts.XMLDisableSnowflakeData = new(d.Get("disable_snowflake_data").(bool))
+		opts.XMLDisableAutoConvert = new(d.Get("disable_auto_convert").(bool))
+		opts.XMLSkipByteOrderMark = new(d.Get("skip_byte_order_mark").(bool))
 	}
 
 	if v, ok := d.GetOk("comment"); ok {
-		opts.Comment = sdk.String(v.(string))
+		opts.Comment = new(v.(string))
 	}
 
 	err := client.FileFormats.Create(ctx, id, &opts)
@@ -901,7 +902,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -970,7 +971,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1034,7 +1035,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1053,7 +1054,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1082,7 +1083,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1169,7 +1170,7 @@ func fileFormatIDFromString(stringID string) (*fileFormatID, error) {
 	}, nil
 }
 
-func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption string) (interface{}, bool, error) {
+func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption string) (any, bool, error) {
 	validFormatTypeOptions := formatTypeOptions[formatType]
 	if v, ok := d.GetOk(formatTypeOption); ok {
 		if err := validateFormatTypeOptions(formatType, formatTypeOption, validFormatTypeOptions); err != nil {
@@ -1181,10 +1182,8 @@ func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption st
 }
 
 func validateFormatTypeOptions(formatType, formatTypeOption string, validFormatTypeOptions []string) error {
-	for _, f := range validFormatTypeOptions {
-		if f == formatTypeOption {
-			return nil
-		}
+	if slices.Contains(validFormatTypeOptions, formatTypeOption) {
+		return nil
 	}
 	return fmt.Errorf("%v is an invalid format type option for format type %v", formatTypeOption, formatType)
 }

@@ -223,7 +223,7 @@ func (v *maskingPolicies) Drop(ctx context.Context, id SchemaObjectIdentifier, o
 }
 
 func (v *maskingPolicies) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropMaskingPolicyOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropMaskingPolicyOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // ShowMaskingPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-masking-policies.
@@ -326,7 +326,7 @@ func (v *maskingPolicies) Show(ctx context.Context, opts *ShowMaskingPolicyOptio
 func (v *maskingPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicy, error) {
 	maskingPolicies, err := v.Show(ctx, &ShowMaskingPolicyOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 		In: &ExtendedIn{
 			In: In{

@@ -28,17 +28,17 @@ func NewCreateRoleRequest(name AccountObjectIdentifier) *CreateRoleRequest {
 }
 
 func (s *CreateRoleRequest) WithOrReplace(orReplace bool) *CreateRoleRequest {
-	s.OrReplace = Bool(orReplace)
+	s.OrReplace = new(orReplace)
 	return s
 }
 
 func (s *CreateRoleRequest) WithIfNotExists(ifNotExists bool) *CreateRoleRequest {
-	s.IfNotExists = Bool(ifNotExists)
+	s.IfNotExists = new(ifNotExists)
 	return s
 }
 
 func (s *CreateRoleRequest) WithComment(comment string) *CreateRoleRequest {
-	s.Comment = String(comment)
+	s.Comment = new(comment)
 	return s
 }
 
@@ -74,7 +74,7 @@ func NewAlterRoleRequest(name AccountObjectIdentifier) *AlterRoleRequest {
 }
 
 func (s *AlterRoleRequest) WithIfExists(ifExists bool) *AlterRoleRequest {
-	s.IfExists = Bool(ifExists)
+	s.IfExists = new(ifExists)
 	return s
 }
 
@@ -84,7 +84,7 @@ func (s *AlterRoleRequest) WithRenameTo(renameTo AccountObjectIdentifier) *Alter
 }
 
 func (s *AlterRoleRequest) WithSetComment(setComment string) *AlterRoleRequest {
-	s.SetComment = String(setComment)
+	s.SetComment = new(setComment)
 	return s
 }
 
@@ -94,7 +94,7 @@ func (s *AlterRoleRequest) WithSetTags(setTags []TagAssociation) *AlterRoleReque
 }
 
 func (s *AlterRoleRequest) WithUnsetComment(unsetComment bool) *AlterRoleRequest {
-	s.UnsetComment = Bool(unsetComment)
+	s.UnsetComment = new(unsetComment)
 	return s
 }
 
@@ -127,7 +127,7 @@ func NewDropRoleRequest(name AccountObjectIdentifier) *DropRoleRequest {
 }
 
 func (s *DropRoleRequest) WithIfExists(ifExists bool) *DropRoleRequest {
-	s.IfExists = Bool(ifExists)
+	s.IfExists = new(ifExists)
 	return s
 }
 
@@ -149,7 +149,7 @@ func NewShowRoleRequest() *ShowRoleRequest {
 
 func (s *ShowRoleRequest) WithLike(like *LikeRequest) *ShowRoleRequest {
 	s.Like = &Like{
-		Pattern: String(like.pattern),
+		Pattern: new(like.pattern),
 	}
 	return s
 }

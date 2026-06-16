@@ -115,7 +115,7 @@ func getGrantOnSchemaObjectIn(allOrFuture map[string]any) (*sdk.GrantOnSchemaObj
 		if err != nil {
 			return nil, err
 		}
-		grantOnSchemaObjectIn.InDatabase = sdk.Pointer(databaseId)
+		grantOnSchemaObjectIn.InDatabase = new(databaseId)
 	}
 
 	if inSchema, ok := allOrFuture["in_schema"].(string); ok && len(inSchema) > 0 {
@@ -123,7 +123,7 @@ func getGrantOnSchemaObjectIn(allOrFuture map[string]any) (*sdk.GrantOnSchemaObj
 		if err != nil {
 			return nil, err
 		}
-		grantOnSchemaObjectIn.InSchema = sdk.Pointer(schemaId)
+		grantOnSchemaObjectIn.InSchema = new(schemaId)
 	}
 
 	return grantOnSchemaObjectIn, nil

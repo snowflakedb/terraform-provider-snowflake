@@ -17,8 +17,8 @@ func TestTagCreate(t *testing.T) {
 
 	t.Run("create with all optional", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("comment")
+		opts.IfNotExists = new(true)
+		opts.Comment = new("comment")
 		opts.AllowedValues = &AllowedValues{
 			Values: []StringAllowEmpty{
 				{
@@ -30,23 +30,23 @@ func TestTagCreate(t *testing.T) {
 			},
 		}
 		opts.Propagate = &TagPropagate{
-			PropagationMethod: Pointer(TagPropagationOnDependencyAndDataMovement),
-			OnConflict:        &TagOnConflict{CustomValue: String("FAIL")},
+			PropagationMethod: new(TagPropagationOnDependencyAndDataMovement),
+			OnConflict:        &TagOnConflict{CustomValue: new("FAIL")},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG IF NOT EXISTS %s ALLOWED_VALUES 'value1', 'value2' PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL' COMMENT = 'comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("create with propagate only", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Propagate = &TagPropagate{PropagationMethod: Pointer(TagPropagationOnDependency)}
+		opts.Propagate = &TagPropagate{PropagationMethod: new(TagPropagationOnDependency)}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DEPENDENCY`, id.FullyQualifiedName())
 	})
 
 	t.Run("create with on_conflict allowed_values_sequence", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Propagate = &TagPropagate{
-			PropagationMethod: Pointer(TagPropagationOnDataMovement),
-			OnConflict:        &TagOnConflict{AllowedValuesSequence: Bool(true)},
+			PropagationMethod: new(TagPropagationOnDataMovement),
+			OnConflict:        &TagOnConflict{AllowedValuesSequence: new(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DATA_MOVEMENT ON_CONFLICT = ALLOWED_VALUES_SEQUENCE`, id.FullyQualifiedName())
 	})
@@ -72,16 +72,16 @@ func TestTagCreate(t *testing.T) {
 
 	t.Run("validation: both ifNotExists and orReplace present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
+		opts.IfNotExists = new(true)
+		opts.OrReplace = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("createTagOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("validation: multiple errors", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptySchemaObjectIdentifier
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
+		opts.IfNotExists = new(true)
+		opts.OrReplace = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errOneOf("createTagOptions", "OrReplace", "IfNotExists"))
 	})
 }
@@ -112,7 +112,7 @@ func TestTagDrop(t *testing.T) {
 
 	t.Run("drop with if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP TAG IF EXISTS %s`, id.FullyQualifiedName())
 	})
 }
@@ -170,7 +170,7 @@ func TestTagShow(t *testing.T) {
 
 	t.Run("show with like", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("test")}
+		opts.Like = &Like{Pattern: new("test")}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TAGS LIKE 'test'`)
 	})
 
@@ -178,7 +178,7 @@ func TestTagShow(t *testing.T) {
 		opts := defaultOpts()
 		opts.In = &ExtendedIn{
 			In: In{
-				Account: Bool(true),
+				Account: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TAGS IN ACCOUNT`)
@@ -220,7 +220,7 @@ func TestTagAlter(t *testing.T) {
 	t.Run("alter with rename to and if exists", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Rename = &TagRename{Name: randomSchemaObjectIdentifierInSchema(id.SchemaId())}
-		opts.ifExists = Pointer(true)
+		opts.ifExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), opts.Rename.Name.FullyQualifiedName())
 	})
 
@@ -238,7 +238,7 @@ func TestTagAlter(t *testing.T) {
 
 	t.Run("alter with unset allowed values", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Unset = &TagUnset{AllowedValues: Bool(true)}
+		opts.Unset = &TagUnset{AllowedValues: new(true)}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s UNSET ALLOWED_VALUES`, id.FullyQualifiedName())
 	})
 
@@ -247,7 +247,7 @@ func TestTagAlter(t *testing.T) {
 		opts.Set = &TagSet{
 			MaskingPolicies: &TagSetMaskingPolicies{
 				MaskingPolicies: defaultMaskingPolicies(),
-				Force:           Bool(true),
+				Force:           new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET MASKING POLICY %s, MASKING POLICY %s FORCE`, id.FullyQualifiedName(), mp1ID.FullyQualifiedName(), mp2ID.FullyQualifiedName())
@@ -265,13 +265,13 @@ func TestTagAlter(t *testing.T) {
 
 	t.Run("alter with set comment", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Set = &TagSet{Comment: String("comment")}
+		opts.Set = &TagSet{Comment: new("comment")}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET COMMENT = 'comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter with set propagate", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Set = &TagSet{Propagate: &TagPropagate{PropagationMethod: Pointer(TagPropagationOnDependency)}}
+		opts.Set = &TagSet{Propagate: &TagPropagate{PropagationMethod: new(TagPropagationOnDependency)}}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET PROPAGATE = ON_DEPENDENCY`, id.FullyQualifiedName())
 	})
 
@@ -279,8 +279,8 @@ func TestTagAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TagSet{
 			Propagate: &TagPropagate{
-				PropagationMethod: Pointer(TagPropagationOnDependencyAndDataMovement),
-				OnConflict:        &TagOnConflict{CustomValue: String("FAIL")},
+				PropagationMethod: new(TagPropagationOnDependencyAndDataMovement),
+				OnConflict:        &TagOnConflict{CustomValue: new("FAIL")},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
@@ -288,19 +288,19 @@ func TestTagAlter(t *testing.T) {
 
 	t.Run("alter with unset propagate", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Unset = &TagUnset{Propagate: Bool(true)}
+		opts.Unset = &TagUnset{Propagate: new(true)}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s UNSET PROPAGATE`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter with unset on_conflict", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Unset = &TagUnset{OnConflict: Bool(true)}
+		opts.Unset = &TagUnset{OnConflict: new(true)}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s UNSET ON_CONFLICT`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter with unset comment", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Unset = &TagUnset{Comment: Bool(true)}
+		opts.Unset = &TagUnset{Comment: new(true)}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s UNSET COMMENT`, id.FullyQualifiedName())
 	})
 
@@ -323,10 +323,10 @@ func TestTagAlter(t *testing.T) {
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TagSet{
-			Comment: String("comment"),
+			Comment: new("comment"),
 		}
 		opts.Unset = &TagUnset{
-			AllowedValues: Bool(true),
+			AllowedValues: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTagOptions", "Add", "Drop", "Set", "Unset", "Rename"))
 	})
@@ -334,7 +334,7 @@ func TestTagAlter(t *testing.T) {
 	t.Run("validation: multiple fields in set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TagSet{
-			Comment:         String("comment"),
+			Comment:         new("comment"),
 			MaskingPolicies: &TagSetMaskingPolicies{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("TagSet", "MaskingPolicies", "AllowedValues", "Propagate", "Comment"))
@@ -499,7 +499,7 @@ func TestTagUnset(t *testing.T) {
 			NewAccountObjectIdentifier("tag1"),
 			NewAccountObjectIdentifier("tag2"),
 		}
-		opts.IfExists = Pointer(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER %s IF EXISTS %s UNSET TAG "tag1", "tag2"`, opts.objectType, id.FullyQualifiedName())
 	})
 
@@ -527,7 +527,7 @@ func TestTagUnset(t *testing.T) {
 				tagId1,
 				tagId2,
 			},
-			IfExists: Pointer(true),
+			IfExists: new(true),
 		}
 		opts := request.toOpts()
 		assertOptsValidAndSQLEquals(t, opts, `ALTER %s IF EXISTS %s MODIFY COLUMN "%s" UNSET TAG %s, %s`, opts.objectType, id.FullyQualifiedName(), objectId.Name(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())

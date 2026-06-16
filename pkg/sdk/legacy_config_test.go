@@ -62,7 +62,7 @@ func TestLoadConfigFileWithUnknownFieldsLegacy(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, map[string]*LegacyConfigDTO{
 		"default": {
-			AccountName: Pointer("TEST_ACCOUNT"),
+			AccountName: new("TEST_ACCOUNT"),
 		},
 	}, m)
 }
@@ -270,7 +270,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithDisableQueryContextCache(true).
 			WithIncludeRetryReason(true).
 			WithDisableConsoleLogin(true).
-			WithParams(map[string]*string{"foo": Pointer("bar")}).
+			WithParams(map[string]*string{"foo": new("bar")}).
 			WithOauthClientID("oauth_client_id").
 			WithOauthClientSecret("oauth_client_secret").
 			WithOauthTokenRequestURL("oauth_token_request_url").
@@ -315,7 +315,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, "password", config.Password)
 		assert.Equal(t, "warehouse", config.Warehouse)
 		assert.Equal(t, "role", config.Role)
-		assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, config.Params)
+		assert.Equal(t, map[string]*string{"foo": new("bar"), ClientTelemetryEnableSessionParameter: new("false")}, config.Params)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
 		assert.Equal(t, "http", config.Protocol)
 		assert.Equal(t, "host", config.Host)
@@ -429,7 +429,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				WithHost("host").
 				WithWarehouse("wh").
 				WithRole("role").
-				WithParams(map[string]*string{"foo": Pointer("bar")}).
+				WithParams(map[string]*string{"foo": new("bar")}).
 				WithClientIp("1.2.3.4").
 				WithProtocol("https").
 				WithPasscode("code").
@@ -485,7 +485,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "host", got.Host)
 				assert.Equal(t, "wh", got.Warehouse)
 				assert.Equal(t, "role", got.Role)
-				assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, got.Params)
+				assert.Equal(t, map[string]*string{"foo": new("bar"), ClientTelemetryEnableSessionParameter: new("false")}, got.Params)
 				assert.Equal(t, "https", got.Protocol)
 				assert.Equal(t, "code", got.Passcode)
 				assert.Equal(t, 1234, got.Port)
@@ -593,42 +593,42 @@ func TestLegacyConfigDTODriverConfig_insecureModeAndDisableOcspChecks(t *testing
 		},
 		{
 			insecureMode:      nil,
-			disableOcspChecks: Pointer(false),
+			disableOcspChecks: new(false),
 			expected:          false,
 		},
 		{
 			insecureMode:      nil,
-			disableOcspChecks: Pointer(true),
+			disableOcspChecks: new(true),
 			expected:          true,
 		},
 		{
-			insecureMode:      Pointer(false),
+			insecureMode:      new(false),
 			disableOcspChecks: nil,
 			expected:          false,
 		},
 		{
-			insecureMode:      Pointer(true),
+			insecureMode:      new(true),
 			disableOcspChecks: nil,
 			expected:          true,
 		},
 		{
-			insecureMode:      Pointer(false),
-			disableOcspChecks: Pointer(false),
+			insecureMode:      new(false),
+			disableOcspChecks: new(false),
 			expected:          false,
 		},
 		{
-			insecureMode:      Pointer(false),
-			disableOcspChecks: Pointer(true),
+			insecureMode:      new(false),
+			disableOcspChecks: new(true),
 			expected:          true,
 		},
 		{
-			insecureMode:      Pointer(true),
-			disableOcspChecks: Pointer(false),
+			insecureMode:      new(true),
+			disableOcspChecks: new(false),
 			expected:          true,
 		},
 		{
-			insecureMode:      Pointer(true),
-			disableOcspChecks: Pointer(true),
+			insecureMode:      new(true),
+			disableOcspChecks: new(true),
 			expected:          true,
 		},
 	}

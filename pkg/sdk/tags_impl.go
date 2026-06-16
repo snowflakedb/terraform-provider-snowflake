@@ -39,7 +39,7 @@ func (v *tags) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Tag, e
 		In: In{
 			Schema: id.SchemaId(),
 		},
-	}).WithLike(Like{Pattern: String(id.Name())})
+	}).WithLike(Like{Pattern: new(id.Name())})
 
 	tags, err := v.Show(ctx, request)
 	if err != nil {
@@ -178,7 +178,7 @@ func (s *ShowTagRequest) toOpts() *showTagOptions {
 
 func (s *DropTagRequest) toOpts() *dropTagOptions {
 	return &dropTagOptions{
-		IfExists: Bool(s.ifExists),
+		IfExists: new(s.ifExists),
 		name:     s.name,
 	}
 }
@@ -201,7 +201,7 @@ func (s *SetTagRequest) toOpts() *setTagOptions {
 		if ok {
 			o.objectType = ObjectTypeTable
 			o.objectName = id.SchemaObjectId()
-			o.column = String(id.Name())
+			o.column = new(id.Name())
 		}
 	}
 	// TODO(SNOW-1818976): Remove this workaround. Currently ALTER "ORGNAME"."ACCOUNTNAME" SET TAG does not work, but ALTER "ACCOUNTNAME" does.
@@ -228,7 +228,7 @@ func (s *UnsetTagRequest) toOpts() *unsetTagOptions {
 		if ok {
 			o.objectType = ObjectTypeTable
 			o.objectName = id.SchemaObjectId()
-			o.column = String(id.Name())
+			o.column = new(id.Name())
 		}
 	}
 

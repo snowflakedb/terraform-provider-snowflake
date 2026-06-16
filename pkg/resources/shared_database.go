@@ -145,7 +145,7 @@ func UpdateSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any)
 		} else {
 			err := client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
 				Unset: &sdk.DatabaseUnset{
-					Comment: sdk.Bool(true),
+					Comment: new(true),
 				},
 			})
 			if err != nil {

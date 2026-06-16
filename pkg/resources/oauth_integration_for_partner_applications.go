@@ -234,7 +234,7 @@ func ImportOauthForPartnerApplicationIntegration(ctx context.Context, d *schema.
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextOauthIntegrationForPartnerApplications(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextOauthIntegrationForPartnerApplications(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 	if err != nil {
@@ -302,7 +302,7 @@ func CreateContextOauthIntegrationForPartnerApplications(ctx context.Context, d 
 }
 
 func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		providerCtx := meta.(*provider.Context)
 		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -436,7 +436,7 @@ func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarkin
 	}
 }
 
-func UpdateContextOauthIntegrationForPartnerApplications(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextOauthIntegrationForPartnerApplications(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

@@ -19,7 +19,7 @@ const parameterHandlingBackingFieldDefaultValue = "default value - parameter han
 
 var parameterHandlingBackingFieldHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.ParameterHandlingBackingFieldOpts](
 	testfunctional.ParameterHandlingBackingFieldOpts{
-		StringValue: sdk.Pointer(parameterHandlingBackingFieldDefaultValue),
+		StringValue: new(parameterHandlingBackingFieldDefaultValue),
 		Level:       string(sdk.ParameterTypeSnowflakeDefault),
 	}, parameterHandlingBackingFieldOptsUseDefaultsForNil,
 )
@@ -59,7 +59,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(value)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, new(value)),
 					},
 				},
 				Config: parameterHandlingBackingFieldAllSetConfig(id, resourceType, value),
@@ -98,7 +98,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(value), sdk.String(newValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(value), new(newValue)),
 					},
 				},
 				Config: parameterHandlingBackingFieldAllSetConfig(id, resourceType, newValue),
@@ -126,8 +126,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), sdk.String(externalValue)),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), sdk.String(newValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value", new(newValue), new(externalValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(externalValue), new(newValue)),
 					},
 				},
 				Config: parameterHandlingBackingFieldAllSetConfig(id, resourceType, newValue),
@@ -155,8 +155,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), nil),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(newValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value", new(newValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, new(newValue)),
 						planchecks.ExpectComputed(resourceReference, "string_value", false),
 					},
 				},
@@ -179,7 +179,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(newValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(newValue), nil),
 					},
 				},
 				Config: parameterHandlingBackingFieldNotSetConfig(id, resourceType),
@@ -209,7 +209,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(parameterHandlingBackingFieldDefaultValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, new(parameterHandlingBackingFieldDefaultValue)),
 					},
 				},
 				Config: parameterHandlingBackingFieldAllSetConfig(id, resourceType, parameterHandlingBackingFieldDefaultValue),
@@ -231,7 +231,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(parameterHandlingBackingFieldDefaultValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(parameterHandlingBackingFieldDefaultValue), nil),
 					},
 				},
 				Config: parameterHandlingBackingFieldNotSetConfig(id, resourceType),
@@ -252,7 +252,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 			{
 				PreConfig: func() {
 					parameterHandlingBackingFieldHandler.SetCurrentValue(testfunctional.ParameterHandlingBackingFieldOpts{
-						StringValue: sdk.Pointer(parameterHandlingBackingFieldDefaultValue),
+						StringValue: new(parameterHandlingBackingFieldDefaultValue),
 						Level:       "IN_BETWEEN",
 					})
 				},
@@ -276,15 +276,15 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_BackingField(t
 			{
 				PreConfig: func() {
 					parameterHandlingBackingFieldHandler.SetCurrentValue(testfunctional.ParameterHandlingBackingFieldOpts{
-						StringValue: sdk.Pointer(parameterHandlingBackingFieldDefaultValue),
+						StringValue: new(parameterHandlingBackingFieldDefaultValue),
 						Level:       "OBJECT",
 					})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", nil, sdk.String(parameterHandlingBackingFieldDefaultValue)),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(parameterHandlingBackingFieldDefaultValue), nil),
+						planchecks.ExpectDrift(resourceReference, "string_value", nil, new(parameterHandlingBackingFieldDefaultValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(parameterHandlingBackingFieldDefaultValue), nil),
 					},
 				},
 				Config: parameterHandlingBackingFieldNotSetConfig(id, resourceType),

@@ -53,8 +53,8 @@ func TestMaskingPolicyCreate(t *testing.T) {
 			signature:   signature,
 			body:        expression,
 			returns:     dataTypeVarchar,
-			IfNotExists: Bool(true),
-			OrReplace:   Bool(true),
+			IfNotExists: new(true),
+			OrReplace:   new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateMaskingPolicyOptions", "OrReplace", "IfNotExists"))
 	})
@@ -73,13 +73,13 @@ func TestMaskingPolicyCreate(t *testing.T) {
 		comment := random.Comment()
 
 		opts := &CreateMaskingPolicyOptions{
-			OrReplace:           Bool(true),
+			OrReplace:           new(true),
 			name:                id,
 			signature:           signature,
 			body:                expression,
 			returns:             dataTypeVarchar,
-			Comment:             String(comment),
-			ExemptOtherPolicies: Bool(true),
+			Comment:             new(comment),
+			ExemptOtherPolicies: new(true),
 		}
 
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE MASKING POLICY %s AS ("col1" VARCHAR(16777216), "col2" VARCHAR(16777216)) RETURNS %s -> %s COMMENT = '%s' EXEMPT_OTHER_POLICIES = %t`, id.FullyQualifiedName(), dataTypeVarchar.ToSql(), expression, comment, true)
@@ -124,7 +124,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 			name:    id,
 			NewName: &newID,
 			Set: &MaskingPolicySet{
-				Comment: String("foo"),
+				Comment: new("foo"),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaskingPolicyOptions", "Set", "Unset", "SetTag", "UnsetTag", "NewName"))
@@ -135,7 +135,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
 			name: id,
 			Set: &MaskingPolicySet{
-				Comment: String(newComment),
+				Comment: new(newComment),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER MASKING POLICY %s SET COMMENT = '%s'", id.FullyQualifiedName(), newComment)
@@ -145,7 +145,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
 			name: id,
 			Unset: &MaskingPolicyUnset{
-				Comment: Bool(true),
+				Comment: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER MASKING POLICY %s UNSET COMMENT", id.FullyQualifiedName())
@@ -164,7 +164,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
 			name: id,
 			Set: &MaskingPolicySet{
-				Body: Pointer("body"),
+				Body: new("body"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER MASKING POLICY %s SET BODY -> body", id.FullyQualifiedName())
@@ -173,7 +173,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 	t.Run("set tags", func(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
 			name:     id,
-			IfExists: Pointer(true),
+			IfExists: new(true),
 			SetTag: []TagAssociation{
 				{
 					Name:  NewAccountObjectIdentifier("123"),
@@ -191,7 +191,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 	t.Run("unset tags", func(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
 			name:     id,
-			IfExists: Pointer(true),
+			IfExists: new(true),
 			UnsetTag: []ObjectIdentifier{
 				NewAccountObjectIdentifier("123"),
 				NewAccountObjectIdentifier("456"),
@@ -226,7 +226,7 @@ func TestMaskingPolicyDrop(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := &DropMaskingPolicyOptions{
 			name:     id,
-			IfExists: Bool(true),
+			IfExists: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "DROP MASKING POLICY IF EXISTS %s", id.FullyQualifiedName())
 	})
@@ -243,7 +243,7 @@ func TestMaskingPolicyShow(t *testing.T) {
 	t.Run("with like", func(t *testing.T) {
 		opts := &ShowMaskingPolicyOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW MASKING POLICIES LIKE '%s'", id.Name())
@@ -252,11 +252,11 @@ func TestMaskingPolicyShow(t *testing.T) {
 	t.Run("with like and in account", func(t *testing.T) {
 		opts := &ShowMaskingPolicyOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 			In: &ExtendedIn{
 				In: In{
-					Account: Pointer(true),
+					Account: new(true),
 				},
 			},
 		}
@@ -267,7 +267,7 @@ func TestMaskingPolicyShow(t *testing.T) {
 		databaseIdentifier := NewAccountObjectIdentifier(id.DatabaseName())
 		opts := &ShowMaskingPolicyOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 			In: &ExtendedIn{
 				In: In{
@@ -281,7 +281,7 @@ func TestMaskingPolicyShow(t *testing.T) {
 	t.Run("with like and in schema", func(t *testing.T) {
 		opts := &ShowMaskingPolicyOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 			In: &ExtendedIn{
 				In: In{
@@ -295,8 +295,8 @@ func TestMaskingPolicyShow(t *testing.T) {
 	t.Run("with limit", func(t *testing.T) {
 		opts := &ShowMaskingPolicyOptions{
 			Limit: &LimitFrom{
-				Rows: Int(10),
-				From: Pointer("foo"),
+				Rows: new(10),
+				From: new("foo"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW MASKING POLICIES LIMIT 10 FROM 'foo'")

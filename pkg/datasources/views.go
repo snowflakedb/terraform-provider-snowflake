@@ -121,7 +121,7 @@ func ReadViews(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	if v, ok := d.GetOk("in"); ok {
 		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok && v.(bool) {
-			req.WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}})
+			req.WithIn(sdk.ExtendedIn{In: sdk.In{Account: new(true)}})
 		}
 		if v, ok := in["database"]; ok {
 			database := v.(string)
@@ -143,7 +143,7 @@ func ReadViews(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		req.WithLike(sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		})
 	}
 
@@ -156,11 +156,11 @@ func ReadViews(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		limit := sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)
-			limit.Rows = sdk.Int(rows)
+			limit.Rows = new(rows)
 		}
 		if v, ok := l["from"]; ok {
 			from := v.(string)
-			limit.From = sdk.String(from)
+			limit.From = new(from)
 		}
 		req.WithLimit(limit)
 	}
@@ -174,7 +174,6 @@ func ReadViews(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 	flattenedViews := make([]map[string]any, len(views))
 	for i, view := range views {
-		view := view
 		var viewDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeOutput, err := client.Views.Describe(ctx, view.ID())

@@ -19,7 +19,7 @@ const parameterHandlingPrivateDefaultValue = "default value - parameter handling
 
 var parameterHandlingPrivateHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.ParameterHandlingPrivateOpts](
 	testfunctional.ParameterHandlingPrivateOpts{
-		StringValue: sdk.Pointer(parameterHandlingPrivateDefaultValue),
+		StringValue: new(parameterHandlingPrivateDefaultValue),
 		Level:       string(sdk.ParameterTypeSnowflakeDefault),
 	}, parameterHandlingPrivateOptsUseDefaultsForNil,
 )
@@ -60,7 +60,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(value)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, new(value)),
 					},
 				},
 				Config: parameterHandlingPrivateAllSetConfig(id, resourceType, value),
@@ -97,7 +97,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(value), sdk.String(newValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(value), new(newValue)),
 					},
 				},
 				Config: parameterHandlingPrivateAllSetConfig(id, resourceType, newValue),
@@ -123,8 +123,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), sdk.String(externalValue)),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), sdk.String(newValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value", new(newValue), new(externalValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(externalValue), new(newValue)),
 					},
 				},
 				Config: parameterHandlingPrivateAllSetConfig(id, resourceType, newValue),
@@ -150,8 +150,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), nil),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(newValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value", new(newValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, new(newValue)),
 						planchecks.ExpectComputed(resourceReference, "string_value", false),
 					},
 				},
@@ -172,7 +172,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(newValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(newValue), nil),
 					},
 				},
 				Config: parameterHandlingPrivateNotSetConfig(id, resourceType),
@@ -200,7 +200,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(parameterHandlingPrivateDefaultValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, new(parameterHandlingPrivateDefaultValue)),
 					},
 				},
 				Config: parameterHandlingPrivateAllSetConfig(id, resourceType, parameterHandlingPrivateDefaultValue),
@@ -220,7 +220,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(parameterHandlingPrivateDefaultValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(parameterHandlingPrivateDefaultValue), nil),
 					},
 				},
 				Config: parameterHandlingPrivateNotSetConfig(id, resourceType),
@@ -239,7 +239,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 			{
 				PreConfig: func() {
 					parameterHandlingPrivateHandler.SetCurrentValue(testfunctional.ParameterHandlingPrivateOpts{
-						StringValue: sdk.Pointer(parameterHandlingPrivateDefaultValue),
+						StringValue: new(parameterHandlingPrivateDefaultValue),
 						Level:       "IN_BETWEEN",
 					})
 				},
@@ -261,15 +261,15 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_Private(t *tes
 			{
 				PreConfig: func() {
 					parameterHandlingPrivateHandler.SetCurrentValue(testfunctional.ParameterHandlingPrivateOpts{
-						StringValue: sdk.Pointer(parameterHandlingPrivateDefaultValue),
+						StringValue: new(parameterHandlingPrivateDefaultValue),
 						Level:       "OBJECT",
 					})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", nil, sdk.String(parameterHandlingPrivateDefaultValue)),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(parameterHandlingPrivateDefaultValue), nil),
+						planchecks.ExpectDrift(resourceReference, "string_value", nil, new(parameterHandlingPrivateDefaultValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(parameterHandlingPrivateDefaultValue), nil),
 					},
 				},
 				Config: parameterHandlingPrivateNotSetConfig(id, resourceType),

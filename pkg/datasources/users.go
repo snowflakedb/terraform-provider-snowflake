@@ -106,12 +106,12 @@ func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		opts.Like = &sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		}
 	}
 
 	if startsWith, ok := d.GetOk("starts_with"); ok {
-		opts.StartsWith = sdk.String(startsWith.(string))
+		opts.StartsWith = new(startsWith.(string))
 	}
 
 	if limit, ok := d.GetOk("limit"); ok && len(limit.([]any)) == 1 {
@@ -134,7 +134,6 @@ func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	flattenedUsers := make([]map[string]any, len(users))
 
 	for i, user := range users {
-		user := user
 		var userDescription []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Users.Describe(ctx, user.ID())

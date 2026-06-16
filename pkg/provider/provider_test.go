@@ -22,7 +22,7 @@ func TestProvider(t *testing.T) {
 }
 
 func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]interface{}{})
+	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{})
 
 	config, err := getDriverConfigFromTerraform(d)
 
@@ -85,7 +85,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 }
 
 func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]interface{}{ //nolint:gosec // test credentials
+	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{ //nolint:gosec // test credentials
 		"account_name":                      "test_account",
 		"organization_name":                 "test_org",
 		"user":                              "test_user",
@@ -118,7 +118,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"driver_tracing":                    "INFO",
 		"tmp_directory_path":                "/tmp/snowflake",
 		"disable_console_login":             "false",
-		"params": map[string]interface{}{
+		"params": map[string]any{
 			"QUERY_TAG": "test_tag",
 			"TIMEZONE":  "UTC",
 		},
@@ -182,7 +182,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "INFO", config.Tracing)
 	assert.Equal(t, "/tmp/snowflake", config.TmpDirPath)
 	assert.Equal(t, gosnowflake.ConfigBoolFalse, config.DisableConsoleLogin)
-	assert.Equal(t, map[string]*string{"QUERY_TAG": sdk.Pointer("test_tag"), "TIMEZONE": sdk.Pointer("UTC")}, config.Params)
+	assert.Equal(t, map[string]*string{"QUERY_TAG": new("test_tag"), "TIMEZONE": new("UTC")}, config.Params)
 	assert.Equal(t, "test_tag", *config.Params["QUERY_TAG"])
 	assert.Equal(t, "UTC", *config.Params["TIMEZONE"])
 	assert.Equal(t, "oauth_client_id", config.OauthClientID)

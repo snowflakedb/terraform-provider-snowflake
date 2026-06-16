@@ -66,7 +66,7 @@ func ReadNetworkPolicies(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		req.WithLike(sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		})
 	}
 
@@ -79,7 +79,6 @@ func ReadNetworkPolicies(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	flattenedNetworkPolicies := make([]map[string]any, len(networkPolicies))
 	for i, networkPolicy := range networkPolicies {
-		networkPolicy := networkPolicy
 
 		var networkPolicyDescribeOutput []map[string]any
 		if d.Get("with_describe").(bool) {

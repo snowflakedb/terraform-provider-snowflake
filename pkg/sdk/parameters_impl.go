@@ -28,13 +28,13 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 	case SessionParameterAbortDetachedQuery:
 		err = setBooleanValue(parameter, value, &sessionParameters.AbortDetachedQuery)
 	case SessionParameterActivePythonProfiler:
-		sessionParameters.ActivePythonProfiler = Pointer(ActivePythonProfiler(value))
+		sessionParameters.ActivePythonProfiler = new(ActivePythonProfiler(value))
 	case SessionParameterAutocommit:
 		err = setBooleanValue(parameter, value, &sessionParameters.Autocommit)
 	case SessionParameterBinaryInputFormat:
-		sessionParameters.BinaryInputFormat = Pointer(BinaryInputFormat(value))
+		sessionParameters.BinaryInputFormat = new(BinaryInputFormat(value))
 	case SessionParameterBinaryOutputFormat:
-		sessionParameters.BinaryOutputFormat = Pointer(BinaryOutputFormat(value))
+		sessionParameters.BinaryOutputFormat = new(BinaryOutputFormat(value))
 	case SessionParameterClientEnableLogInfoStatementParameters:
 		err = setBooleanValue(parameter, value, &sessionParameters.ClientEnableLogInfoStatementParameters)
 	case SessionParameterClientMemoryLimit:
@@ -54,7 +54,7 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 	case SessionParameterClientSessionKeepAliveHeartbeatFrequency:
 		err = setIntegerValue(parameter, value, &sessionParameters.ClientSessionKeepAliveHeartbeatFrequency)
 	case SessionParameterClientTimestampTypeMapping:
-		sessionParameters.ClientTimestampTypeMapping = Pointer(ClientTimestampTypeMapping(value))
+		sessionParameters.ClientTimestampTypeMapping = new(ClientTimestampTypeMapping(value))
 	case SessionParameterCsvTimestampFormat:
 		sessionParameters.CsvTimestampFormat = &value
 	case SessionParameterDateInputFormat:
@@ -72,9 +72,9 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 	case SessionParameterErrorOnNondeterministicUpdate:
 		err = setBooleanValue(parameter, value, &sessionParameters.ErrorOnNondeterministicUpdate)
 	case SessionParameterGeographyOutputFormat:
-		sessionParameters.GeographyOutputFormat = Pointer(GeographyOutputFormat(value))
+		sessionParameters.GeographyOutputFormat = new(GeographyOutputFormat(value))
 	case SessionParameterGeometryOutputFormat:
-		sessionParameters.GeometryOutputFormat = Pointer(GeometryOutputFormat(value))
+		sessionParameters.GeometryOutputFormat = new(GeometryOutputFormat(value))
 	case SessionParameterHybridTableLockTimeout:
 		err = setIntegerValue(parameter, value, &sessionParameters.HybridTableLockTimeout)
 	case SessionParameterJdbcTreatDecimalAsInt:
@@ -90,9 +90,9 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 	case SessionParameterLockTimeout:
 		err = setIntegerValue(parameter, value, &sessionParameters.LockTimeout)
 	case SessionParameterLogLevel:
-		sessionParameters.LogLevel = Pointer(LogLevel(value))
+		sessionParameters.LogLevel = new(LogLevel(value))
 	case SessionParameterLogEventLevel:
-		sessionParameters.LogEventLevel = Pointer(LogLevel(value))
+		sessionParameters.LogEventLevel = new(LogLevel(value))
 	case SessionParameterMultiStatementCount:
 		err = setIntegerValue(parameter, value, &sessionParameters.MultiStatementCount)
 	case SessionParameterNoorderSequenceAsDefault:
@@ -132,7 +132,7 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 	case SessionParameterTimestampOutputFormat:
 		sessionParameters.TimestampOutputFormat = &value
 	case SessionParameterTimestampTypeMapping:
-		sessionParameters.TimestampTypeMapping = Pointer(TimestampTypeMapping(value))
+		sessionParameters.TimestampTypeMapping = new(TimestampTypeMapping(value))
 	case SessionParameterTimestampTZOutputFormat:
 		sessionParameters.TimestampTZOutputFormat = &value
 	case SessionParameterTimezone:
@@ -142,15 +142,15 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 	case SessionParameterTimeOutputFormat:
 		sessionParameters.TimeOutputFormat = &value
 	case SessionParameterTraceLevel:
-		sessionParameters.TraceLevel = Pointer(TraceLevel(value))
+		sessionParameters.TraceLevel = new(TraceLevel(value))
 	case SessionParameterTransactionAbortOnError:
 		err = setBooleanValue(parameter, value, &sessionParameters.TransactionAbortOnError)
 	case SessionParameterTransactionDefaultIsolationLevel:
-		sessionParameters.TransactionDefaultIsolationLevel = Pointer(TransactionDefaultIsolationLevel(value))
+		sessionParameters.TransactionDefaultIsolationLevel = new(TransactionDefaultIsolationLevel(value))
 	case SessionParameterTwoDigitCenturyStart:
 		err = setIntegerValue(parameter, value, &sessionParameters.TwoDigitCenturyStart)
 	case SessionParameterUnsupportedDDLAction:
-		sessionParameters.UnsupportedDDLAction = Pointer(UnsupportedDDLAction(value))
+		sessionParameters.UnsupportedDDLAction = new(UnsupportedDDLAction(value))
 	case SessionParameterUseCachedResult:
 		err = setBooleanValue(parameter, value, &sessionParameters.UseCachedResult)
 	case SessionParameterWeekOfYearPolicy:
@@ -312,7 +312,7 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 	default:
 		return fmt.Errorf("%s session parameter is not supported", string(parameter))
 	}
-	*unsetField = Bool(true)
+	*unsetField = new(true)
 	return nil
 }
 
@@ -347,7 +347,7 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 		if err != nil {
 			return matched, fmt.Errorf("CLIENT_ENCRYPTION_KEY_SIZE session parameter is an integer, got %v", value)
 		}
-		legacyAccountParameters.ClientEncryptionKeySize = Pointer(v)
+		legacyAccountParameters.ClientEncryptionKeySize = new(v)
 	case AccountParameterCortexEnabledCrossRegion:
 		legacyAccountParameters.CortexEnabledCrossRegion = &value
 	case AccountParameterCortexModelsAllowlist:
@@ -459,13 +459,13 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 	case AccountParameterInitialReplicationSizeLimitInTB:
 		legacyAccountParameters.InitialReplicationSizeLimitInTB = &value
 	case AccountParameterMetricLevel:
-		legacyAccountParameters.MetricLevel = Pointer(MetricLevel(value))
+		legacyAccountParameters.MetricLevel = new(MetricLevel(value))
 	case AccountParameterMinDataRetentionTimeInDays:
 		v, err := strconv.Atoi(value)
 		if err != nil {
 			return matched, fmt.Errorf("MIN_DATA_RETENTION_TIME_IN_DAYS session parameter is an integer, got %v", value)
 		}
-		legacyAccountParameters.MinDataRetentionTimeInDays = Pointer(v)
+		legacyAccountParameters.MinDataRetentionTimeInDays = new(v)
 	case AccountParameterNetworkPolicy:
 		legacyAccountParameters.NetworkPolicy = &value
 	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:

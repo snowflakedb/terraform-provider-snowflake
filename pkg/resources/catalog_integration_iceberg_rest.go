@@ -353,10 +353,10 @@ func buildIcebergRestRestConfigRequest(d *schema.ResourceData) (sdk.IcebergRestR
 	catalogUri := block["catalog_uri"].(string)
 	req := sdk.IcebergRestRestConfigRequest{CatalogUri: catalogUri}
 	if p, ok := block["prefix"].(string); ok && p != "" {
-		req.Prefix = sdk.String(p)
+		req.Prefix = new(p)
 	}
 	if n, ok := block["catalog_name"].(string); ok && n != "" {
-		req.CatalogName = sdk.String(n)
+		req.CatalogName = new(n)
 	}
 	if v, ok := block["catalog_api_type"].(string); ok && v != "" {
 		t, err := sdk.ToCatalogIntegrationCatalogApiType(v)

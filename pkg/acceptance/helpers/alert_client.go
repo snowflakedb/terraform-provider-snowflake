@@ -52,7 +52,7 @@ func (c *AlertClient) DropAlertFunc(t *testing.T, id sdk.SchemaObjectIdentifier)
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropAlertOptions{IfExists: new(true)})
 		require.NoError(t, err)
 	}
 }

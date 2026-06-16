@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"maps"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -25,9 +26,7 @@ func v098TaskStateUpgrader(ctx context.Context, rawState map[string]any, meta an
 	}
 	if rawState["session_parameters"] != nil {
 		if sessionParamsMap, okType := rawState["session_parameters"].(map[string]any); okType {
-			for k, v := range sessionParamsMap {
-				rawState[k] = v
-			}
+			maps.Copy(rawState, sessionParamsMap)
 		}
 	}
 	delete(rawState, "session_parameters")

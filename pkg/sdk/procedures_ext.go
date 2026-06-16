@@ -150,8 +150,8 @@ func procedureDetailsFromRows(rows []ProcedureDetail) (*ProcedureDetails, error)
 				var found bool
 				for _, o := range p {
 					o := strings.TrimSpace(o)
-					if strings.HasPrefix(o, JavaSnowparkPackageString) {
-						v.SnowparkVersion = strings.TrimPrefix(o, JavaSnowparkPackageString)
+					if after, ok := strings.CutPrefix(o, JavaSnowparkPackageString); ok {
+						v.SnowparkVersion = after
 						found = true
 					} else {
 						filtered = append(filtered, o)
@@ -166,8 +166,8 @@ func procedureDetailsFromRows(rows []ProcedureDetail) (*ProcedureDetails, error)
 				var found bool
 				for _, o := range p {
 					o := strings.TrimSpace(o)
-					if strings.HasPrefix(o, PythonSnowparkPackageString) {
-						v.SnowparkVersion = strings.TrimPrefix(o, PythonSnowparkPackageString)
+					if after, ok := strings.CutPrefix(o, PythonSnowparkPackageString); ok {
+						v.SnowparkVersion = after
 						found = true
 					} else {
 						filtered = append(filtered, o)
@@ -206,7 +206,7 @@ func (d *ProcedureDetail) setOptionalBoolValueOrError(property string, field **b
 		if err != nil {
 			return fmt.Errorf("invalid value for field %s, err: %w", property, err)
 		} else {
-			*field = Bool(v)
+			*field = new(v)
 		}
 	}
 	return nil
@@ -229,17 +229,17 @@ func (v *procedures) ShowParameters(ctx context.Context, id SchemaObjectIdentifi
 }
 
 func (s *CreateForJavaProcedureRequest) WithProcedureDefinitionWrapped(procedureDefinition string) *CreateForJavaProcedureRequest {
-	s.ProcedureDefinition = String(fmt.Sprintf(`$$%s$$`, procedureDefinition))
+	s.ProcedureDefinition = new(fmt.Sprintf(`$$%s$$`, procedureDefinition))
 	return s
 }
 
 func (s *CreateForPythonProcedureRequest) WithProcedureDefinitionWrapped(procedureDefinition string) *CreateForPythonProcedureRequest {
-	s.ProcedureDefinition = String(fmt.Sprintf(`$$%s$$`, procedureDefinition))
+	s.ProcedureDefinition = new(fmt.Sprintf(`$$%s$$`, procedureDefinition))
 	return s
 }
 
 func (s *CreateForScalaProcedureRequest) WithProcedureDefinitionWrapped(procedureDefinition string) *CreateForScalaProcedureRequest {
-	s.ProcedureDefinition = String(fmt.Sprintf(`$$%s$$`, procedureDefinition))
+	s.ProcedureDefinition = new(fmt.Sprintf(`$$%s$$`, procedureDefinition))
 	return s
 }
 
@@ -301,7 +301,7 @@ func (r procedureRow) additionalConvert(result *Procedure) error {
 
 func (r procedureDetailRow) additionalConvert(result *ProcedureDetail) error {
 	if r.Value.Valid && r.Value.String != "null" {
-		result.Value = String(r.Value.String)
+		result.Value = new(r.Value.String)
 	}
 	return nil
 }

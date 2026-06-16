@@ -392,7 +392,7 @@ func (v *resourceMonitors) Drop(ctx context.Context, id AccountObjectIdentifier,
 }
 
 func (v *resourceMonitors) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropResourceMonitorOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropResourceMonitorOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // ShowResourceMonitorOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-resource-monitors.
@@ -429,7 +429,7 @@ func (v *resourceMonitors) Show(ctx context.Context, opts *ShowResourceMonitorOp
 func (v *resourceMonitors) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ResourceMonitor, error) {
 	resourceMonitors, err := v.Show(ctx, &ShowResourceMonitorOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 	})
 	if err != nil {

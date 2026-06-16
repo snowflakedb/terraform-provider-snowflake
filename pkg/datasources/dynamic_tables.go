@@ -208,17 +208,17 @@ func ReadDynamicTables(ctx context.Context, d *schema.ResourceData, meta any) di
 	client := meta.(*provider.Context).Client
 	request := sdk.NewShowDynamicTableRequest()
 	if v, ok := d.GetOk("like"); ok {
-		like := v.([]interface{})[0].(map[string]interface{})
+		like := v.([]any)[0].(map[string]any)
 		pattern := like["pattern"].(string)
-		request.WithLike(&sdk.Like{Pattern: sdk.String(pattern)})
+		request.WithLike(&sdk.Like{Pattern: new(pattern)})
 	}
 
 	if v, ok := d.GetOk("in"); ok {
-		in := v.([]interface{})[0].(map[string]interface{})
+		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok {
 			account := v.(bool)
 			if account {
-				request.WithIn(&sdk.In{Account: sdk.Bool(account)})
+				request.WithIn(&sdk.In{Account: new(account)})
 			}
 		}
 		if v, ok := in["database"]; ok {
@@ -236,18 +236,18 @@ func ReadDynamicTables(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 	if v, ok := d.GetOk("starts_with"); ok {
 		startsWith := v.(string)
-		request.WithStartsWith(sdk.String(startsWith))
+		request.WithStartsWith(new(startsWith))
 	}
 	if v, ok := d.GetOk("limit"); ok {
-		l := v.([]interface{})[0].(map[string]interface{})
+		l := v.([]any)[0].(map[string]any)
 		limit := sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)
-			limit.Rows = sdk.Int(rows)
+			limit.Rows = new(rows)
 		}
 		if v, ok := l["from"]; ok {
 			from := v.(string)
-			limit.From = sdk.String(from)
+			limit.From = new(from)
 		}
 		request.WithLimit(&limit)
 	}

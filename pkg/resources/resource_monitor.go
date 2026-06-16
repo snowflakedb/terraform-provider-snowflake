@@ -179,7 +179,7 @@ func CreateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 	with := new(sdk.ResourceMonitorWith)
 
 	if v, ok := d.GetOk("credit_quota"); ok {
-		with.CreditQuota = sdk.Pointer(v.(int))
+		with.CreditQuota = new(v.(int))
 	}
 
 	if v, ok := d.GetOk("notify_users"); ok {
@@ -202,11 +202,11 @@ func CreateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	if v, ok := d.GetOk("start_timestamp"); ok {
-		with.StartTimestamp = sdk.Pointer(v.(string))
+		with.StartTimestamp = new(v.(string))
 	}
 
 	if v, ok := d.GetOk("end_timestamp"); ok {
-		with.EndTimestamp = sdk.Pointer(v.(string))
+		with.EndTimestamp = new(v.(string))
 	}
 
 	triggers := make([]sdk.TriggerDefinition, 0)
@@ -330,9 +330,9 @@ func UpdateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 
 	if d.HasChange("credit_quota") {
 		if v, ok := d.GetOk("credit_quota"); ok {
-			set.CreditQuota = sdk.Pointer(v.(int))
+			set.CreditQuota = new(v.(int))
 		} else {
-			unset.CreditQuota = sdk.Bool(true)
+			unset.CreditQuota = new(true)
 		}
 	}
 
@@ -343,14 +343,14 @@ func UpdateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 			return diag.FromErr(err)
 		}
 		set.Frequency = frequency
-		set.StartTimestamp = sdk.Pointer(d.Get("start_timestamp").(string))
+		set.StartTimestamp = new(d.Get("start_timestamp").(string))
 	}
 
 	if d.HasChange("end_timestamp") {
 		if v, ok := d.GetOk("end_timestamp"); ok {
-			set.EndTimestamp = sdk.Pointer(v.(string))
+			set.EndTimestamp = new(v.(string))
 		} else {
-			unset.EndTimestamp = sdk.Bool(true)
+			unset.EndTimestamp = new(true)
 		}
 	}
 
@@ -367,7 +367,7 @@ func UpdateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 				Users: users,
 			}
 		} else {
-			unset.NotifyUsers = sdk.Bool(true)
+			unset.NotifyUsers = new(true)
 		}
 	}
 
@@ -407,9 +407,9 @@ func UpdateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 	// It's going to set credit quota to the same value as before making it pass SQL compilation stage.
 	if len(opts.Triggers) > 0 && (set == (sdk.ResourceMonitorSet{})) && (unset == (sdk.ResourceMonitorUnset{})) {
 		if creditQuota, ok := d.GetOk("credit_quota"); ok {
-			set.CreditQuota = sdk.Pointer(creditQuota.(int))
+			set.CreditQuota = new(creditQuota.(int))
 		} else {
-			unset.CreditQuota = sdk.Bool(true)
+			unset.CreditQuota = new(true)
 		}
 	}
 

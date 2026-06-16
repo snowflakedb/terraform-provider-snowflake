@@ -12,7 +12,7 @@ func (c *TestClient) CreateTestDatabase(ctx context.Context, ifNotExists bool) (
 		_ = c.context.client.Databases.DropSafely(ctx, id)
 	}
 	opts := c.Database.TestParametersSet()
-	opts.IfNotExists = sdk.Bool(ifNotExists)
+	opts.IfNotExists = new(ifNotExists)
 	err := c.context.client.Databases.Create(ctx, id, opts)
 	if err != nil {
 		return nil, cleanup, err
@@ -26,7 +26,7 @@ func (c *TestClient) CreateTestSchema(ctx context.Context, ifNotExists bool) (*s
 	cleanup := func() {
 		_ = c.context.client.Schemas.DropSafely(ctx, id)
 	}
-	err := c.context.client.Schemas.Create(ctx, id, &sdk.CreateSchemaOptions{IfNotExists: sdk.Bool(ifNotExists)})
+	err := c.context.client.Schemas.Create(ctx, id, &sdk.CreateSchemaOptions{IfNotExists: new(ifNotExists)})
 	if err != nil {
 		return nil, cleanup, err
 	}
@@ -39,7 +39,7 @@ func (c *TestClient) CreateTestWarehouse(ctx context.Context, ifNotExists bool) 
 	cleanup := func() {
 		_ = c.context.client.Warehouses.DropSafely(ctx, id)
 	}
-	err := c.context.client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{IfNotExists: sdk.Bool(ifNotExists)})
+	err := c.context.client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{IfNotExists: new(ifNotExists)})
 	if err != nil {
 		return nil, cleanup, err
 	}

@@ -142,7 +142,7 @@ func DeleteUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Res
 
 	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
 		Unset: &sdk.UserUnset{
-			AuthenticationPolicy: sdk.Bool(true),
+			AuthenticationPolicy: new(true),
 		},
 	})
 	if err != nil {

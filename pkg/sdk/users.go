@@ -609,7 +609,7 @@ func (v *users) Drop(ctx context.Context, id AccountObjectIdentifier, opts *Drop
 }
 
 func (v *users) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropUserOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropUserOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // UserDetails contains details about a user.
@@ -798,7 +798,7 @@ func (v *users) Show(ctx context.Context, opts *ShowUserOptions) ([]User, error)
 func (v *users) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*User, error) {
 	users, err := v.Show(ctx, &ShowUserOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 	})
 	if err != nil {

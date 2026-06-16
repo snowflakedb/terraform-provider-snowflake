@@ -14,7 +14,7 @@ func (request *GetForEntityPolicyReferenceRequest) toOpts() *getForEntityPolicyR
 		parameters: &policyReferenceParameters{
 			arguments: &policyReferenceFunctionArguments{
 				refEntityName:   []ObjectIdentifier{request.RefEntityName},
-				refEntityDomain: Pointer(request.RefEntityDomain),
+				refEntityDomain: new(request.RefEntityDomain),
 			},
 		},
 	}

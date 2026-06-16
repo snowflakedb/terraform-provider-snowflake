@@ -511,7 +511,7 @@ func (v *legacyFileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier,
 }
 
 func (v *legacyFileFormats) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFileFormatOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFileFormatOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // ShowFileFormatsOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-file-formats.
@@ -538,7 +538,7 @@ func (v *legacyFileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptio
 func (v *legacyFileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
 	fileFormats, err := v.client.FileFormats.Show(ctx, &ShowFileFormatsOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 		In: &In{
 			Schema: id.SchemaId(),
@@ -653,7 +653,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.CSVFieldOptionallyEnclosedBy = &v
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.CSVNullIf = &newNullIf
@@ -723,7 +723,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.JSONTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.JSONNullIf = newNullIf
@@ -789,7 +789,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.AvroTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.AvroNullIf = &newNullIf
@@ -819,7 +819,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.ORCTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.ORCNullIf = &newNullIf
@@ -846,7 +846,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.ParquetTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.ParquetNullIf = &newNullIf

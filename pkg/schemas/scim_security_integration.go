@@ -32,7 +32,6 @@ var (
 func ScimSecurityIntegrationPropertiesToSchema(securityIntegrationProperties []sdk.SecurityIntegrationProperty) map[string]any {
 	securityIntegrationSchema := make(map[string]any)
 	for _, property := range securityIntegrationProperties {
-		property := property
 		if slices.Contains(ScimPropertiesNames, property.Name) {
 			securityIntegrationSchema[strings.ToLower(property.Name)] = []map[string]any{SecurityIntegrationPropertyToSchema(&property)}
 		} else {

@@ -26,7 +26,7 @@ func handleParameterCreateWithMapping[T, R any, P ~string](d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		*createField = sdk.Pointer(mappedValue)
+		*createField = new(mappedValue)
 	}
 	return nil
 }
@@ -57,9 +57,9 @@ func handleParameterUpdateWithMapping[T ctyGoPrimitive, R any, P ~string](d *sch
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			*setField = sdk.Pointer(mappedValue)
+			*setField = new(mappedValue)
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil

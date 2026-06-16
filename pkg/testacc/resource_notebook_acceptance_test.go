@@ -609,8 +609,8 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift("snowflake_notebook.test", "warehouse", nil, sdk.String(warehouse.ID().Name())),
-						planchecks.ExpectChange("snowflake_notebook.test", "warehouse", tfjson.ActionUpdate, sdk.String(warehouse.ID().Name()), nil),
+						planchecks.ExpectDrift("snowflake_notebook.test", "warehouse", nil, new(warehouse.ID().Name())),
+						planchecks.ExpectChange("snowflake_notebook.test", "warehouse", tfjson.ActionUpdate, new(warehouse.ID().Name()), nil),
 					},
 				},
 				Check: assertThat(t,

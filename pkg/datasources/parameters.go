@@ -101,12 +101,12 @@ func ReadParameters(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		In: &sdk.ParametersIn{},
 	}
 	if pattern != "" {
-		opts.Like = &sdk.Like{Pattern: sdk.String(pattern)}
+		opts.Like = &sdk.Like{Pattern: new(pattern)}
 	}
 	parameterType := strings.ToUpper(d.Get("parameter_type").(string))
 	switch parameterType {
 	case "ACCOUNT":
-		opts.In.Account = sdk.Bool(true)
+		opts.In.Account = new(true)
 	case "SESSION":
 		user := d.Get("user").(string)
 		if user == "" {
@@ -137,9 +137,9 @@ func ReadParameters(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 	d.SetId("parameters")
 
-	params := []map[string]interface{}{}
+	params := []map[string]any{}
 	for _, param := range parameters {
-		paramMap := map[string]interface{}{}
+		paramMap := map[string]any{}
 
 		paramMap["key"] = param.Key
 		paramMap["value"] = param.Value

@@ -433,19 +433,19 @@ func (r externalTableColumnDetailsRow) convert() (*ExternalTableColumnDetails, e
 		IsUnique:   r.IsUnique == "Y",
 	}
 	if r.Default.Valid {
-		details.Default = String(r.Default.String)
+		details.Default = new(r.Default.String)
 	}
 	if r.Check.Valid {
-		details.Check = Bool(r.Check.String == "Y")
+		details.Check = new(r.Check.String == "Y")
 	}
 	if r.Expression.Valid {
-		details.Expression = String(r.Expression.String)
+		details.Expression = new(r.Expression.String)
 	}
 	if r.Comment.Valid {
-		details.Comment = String(r.Comment.String)
+		details.Comment = new(r.Comment.String)
 	}
 	if r.PolicyName.Valid {
-		details.PolicyName = String(r.PolicyName.String)
+		details.PolicyName = new(r.PolicyName.String)
 	}
 	return details, nil
 }

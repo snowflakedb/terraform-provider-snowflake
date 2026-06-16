@@ -60,7 +60,7 @@ func TestOpenflowRuntimes_Create(t *testing.T) {
 		comment := random.Comment()
 		eaiId := randomAccountObjectIdentifier()
 		opts := &CreateOpenflowRuntimeOptions{
-			IfNotExists:   Bool(true),
+			IfNotExists:   new(true),
 			name:          id,
 			InDeployment:  deploymentId,
 			ExecuteAsRole: roleId,
@@ -70,7 +70,7 @@ func TestOpenflowRuntimes_Create(t *testing.T) {
 			ExternalAccessIntegrations: &OpenflowRuntimeExternalAccessIntegrations{
 				ExternalAccessIntegrations: []AccountObjectIdentifier{eaiId},
 			},
-			DisplayName: String("My Runtime"),
+			DisplayName: new("My Runtime"),
 			Comment:     &comment,
 		}
 		assertOptsValidAndSQLEquals(t, opts,
@@ -125,49 +125,49 @@ func TestOpenflowRuntimes_Alter(t *testing.T) {
 
 	t.Run("suspend", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Suspend = Bool(true)
+		opts.Suspend = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s SUSPEND", id.FullyQualifiedName())
 	})
 
 	t.Run("resume", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Resume = Bool(true)
+		opts.Resume = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s RESUME", id.FullyQualifiedName())
 	})
 
 	t.Run("resume recovery", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ResumeRecovery = Bool(true)
+		opts.ResumeRecovery = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s RESUME RECOVERY", id.FullyQualifiedName())
 	})
 
 	t.Run("restart", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Restart = Bool(true)
+		opts.Restart = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s RESTART", id.FullyQualifiedName())
 	})
 
 	t.Run("restart recovery", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.RestartRecovery = Bool(true)
+		opts.RestartRecovery = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s RESTART RECOVERY", id.FullyQualifiedName())
 	})
 
 	t.Run("terminate", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Terminate = Bool(true)
+		opts.Terminate = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s TERMINATE", id.FullyQualifiedName())
 	})
 
 	t.Run("terminate cascade", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.TerminateCascade = Bool(true)
+		opts.TerminateCascade = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s TERMINATE CASCADE", id.FullyQualifiedName())
 	})
 
 	t.Run("upgrade", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Upgrade = Bool(true)
+		opts.Upgrade = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s UPGRADE", id.FullyQualifiedName())
 	})
 
@@ -184,13 +184,13 @@ func TestOpenflowRuntimes_Alter(t *testing.T) {
 		eaiId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.Set = &OpenflowRuntimeSet{
-			MinNodes:      Int(2),
-			MaxNodes:      Int(5),
+			MinNodes:      new(2),
+			MaxNodes:      new(5),
 			ExecuteAsRole: &roleId,
 			ExternalAccessIntegrations: &OpenflowRuntimeExternalAccessIntegrations{
 				ExternalAccessIntegrations: []AccountObjectIdentifier{eaiId},
 			},
-			DisplayName: String("Updated Runtime"),
+			DisplayName: new("Updated Runtime"),
 			Comment:     &comment,
 		}
 		assertOptsValidAndSQLEquals(t, opts,
@@ -201,10 +201,10 @@ func TestOpenflowRuntimes_Alter(t *testing.T) {
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &OpenflowRuntimeUnset{
-			ExecuteAsRole:              Bool(true),
-			ExternalAccessIntegrations: Bool(true),
-			DisplayName:                Bool(true),
-			Comment:                    Bool(true),
+			ExecuteAsRole:              new(true),
+			ExternalAccessIntegrations: new(true),
+			DisplayName:                new(true),
+			Comment:                    new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW RUNTIME %s UNSET EXECUTE_AS_ROLE, EXTERNAL_ACCESS_INTEGRATIONS, DISPLAY_NAME, COMMENT",
 			id.FullyQualifiedName())
@@ -237,13 +237,13 @@ func TestOpenflowRuntimes_Drop(t *testing.T) {
 
 	t.Run("if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "DROP OPENFLOW RUNTIME IF EXISTS %s", id.FullyQualifiedName())
 	})
 
 	t.Run("cascade", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Cascade = Bool(true)
+		opts.Cascade = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "DROP OPENFLOW RUNTIME %s CASCADE", id.FullyQualifiedName())
 	})
 }
@@ -265,7 +265,7 @@ func TestOpenflowRuntimes_Show(t *testing.T) {
 
 	t.Run("like", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("my-runtime%")}
+		opts.Like = &Like{Pattern: new("my-runtime%")}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW OPENFLOW RUNTIMES LIKE 'my-runtime%%'")
 	})
 

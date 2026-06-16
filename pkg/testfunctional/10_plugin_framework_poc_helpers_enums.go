@@ -3,7 +3,6 @@
 package testfunctional
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional/customtypes"
 )
 
@@ -13,7 +12,7 @@ func StringEnumAttributeCreate[T customtypes.EnumCreator[T]](attr customtypes.En
 		if err != nil {
 			return err
 		}
-		*createField = sdk.Pointer(v)
+		*createField = new(v)
 	}
 	return nil
 }
@@ -28,7 +27,7 @@ func stringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planValue customtyp
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(v)
+			*setField = new(v)
 		}
 	}
 	return nil
@@ -39,13 +38,13 @@ func StringEnumAttributeUpdate[T customtypes.EnumCreator[T]](planValue customtyp
 	// currently Equal is enough as we have customplanmodifiers.EnumSuppressor which checks normalized equality for planValue and stateValue
 	if !planValue.Equal(stateValue) {
 		if planValue.IsNull() || planValue.IsUnknown() {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		} else {
 			v, err := planValue.Normalize()
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(v)
+			*setField = new(v)
 		}
 	}
 	return nil
@@ -56,13 +55,13 @@ func StringEnumAttributeUpdateSetDefaultInsteadOfUnset[T customtypes.EnumCreator
 	// currently Equal is enough as we have customplanmodifiers.EnumSuppressor which checks normalized equality for planValue and stateValue
 	if !planValue.Equal(stateValue) {
 		if planValue.IsNull() || planValue.IsUnknown() {
-			*setField = sdk.Pointer(defaultValue)
+			*setField = new(defaultValue)
 		} else {
 			v, err := planValue.Normalize()
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(v)
+			*setField = new(v)
 		}
 	}
 	return nil
@@ -79,7 +78,7 @@ func StringEnumAttributeUpdateSetOnly[T customtypes.EnumCreator[T]](planValue cu
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(v)
+			*setField = new(v)
 		}
 	}
 	return nil

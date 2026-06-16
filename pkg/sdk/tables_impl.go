@@ -71,7 +71,7 @@ func (v *tables) Drop(ctx context.Context, request *DropTableRequest) error {
 }
 
 func (v *tables) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropTableRequest(id).WithIfExists(Bool(true))) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropTableRequest(id).WithIfExists(new(true))) }, ctx, id)
 }
 
 func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, error) {
@@ -86,7 +86,7 @@ func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, 
 
 func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	request := NewShowTableRequest().WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
-		WithLike(Like{Pattern: String(id.Name())})
+		WithLike(Like{Pattern: new(id.Name())})
 	returnedTables, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
@@ -163,12 +163,12 @@ func (s *AlterTableRequest) toOpts() *alterTableOptions {
 	var tableUnset *TableUnset
 	if s.Unset != nil {
 		tableUnset = &TableUnset{
-			DataRetentionTimeInDays:    Bool(s.Unset.DataRetentionTimeInDays),
-			MaxDataExtensionTimeInDays: Bool(s.Unset.MaxDataExtensionTimeInDays),
-			ChangeTracking:             Bool(s.Unset.ChangeTracking),
-			DefaultDDLCollation:        Bool(s.Unset.DefaultDDLCollation),
-			EnableSchemaEvolution:      Bool(s.Unset.EnableSchemaEvolution),
-			Comment:                    Bool(s.Unset.Comment),
+			DataRetentionTimeInDays:    new(s.Unset.DataRetentionTimeInDays),
+			MaxDataExtensionTimeInDays: new(s.Unset.MaxDataExtensionTimeInDays),
+			ChangeTracking:             new(s.Unset.ChangeTracking),
+			DefaultDDLCollation:        new(s.Unset.DefaultDDLCollation),
+			EnableSchemaEvolution:      new(s.Unset.EnableSchemaEvolution),
+			Comment:                    new(s.Unset.Comment),
 		}
 	}
 	var addRowAccessPolicy *TableAddRowAccessPolicy
@@ -744,7 +744,6 @@ func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *LegacyFileFormatTypeOptio
 func convertColumns(columnRequests []TableColumnRequest) []TableColumn {
 	columns := make([]TableColumn, 0, len(columnRequests))
 	for _, columnRequest := range columnRequests {
-		columnRequest := columnRequest
 		var defaultValue *ColumnDefaultValue
 		if columnRequest.defaultValue != nil {
 			var columnIdentity *ColumnIdentity

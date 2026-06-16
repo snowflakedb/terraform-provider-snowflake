@@ -66,7 +66,7 @@ func ReadStorageIntegrations(ctx context.Context, d *schema.ResourceData, meta a
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		showRequest.WithLike(sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		})
 	}
 
@@ -79,7 +79,6 @@ func ReadStorageIntegrations(ctx context.Context, d *schema.ResourceData, meta a
 	flattenedStorageIntegrations := make([]map[string]any, len(storageIntegrations))
 
 	for i, storageIntegration := range storageIntegrations {
-		storageIntegration := storageIntegration
 		var storageIntegrationDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			descriptions, err := client.StorageIntegrations.DescribeDetails(ctx, storageIntegration.ID())

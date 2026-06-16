@@ -170,7 +170,7 @@ func CreateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	// if from_replica is set, then we are creating a failover group from an existing replica
 	if v, ok := d.GetOk("from_replica"); ok {
-		fromReplica := v.([]interface{})[0].(map[string]interface{})
+		fromReplica := v.([]any)[0].(map[string]any)
 		organizationName := fromReplica["organization_name"].(string)
 		sourceAccountName := fromReplica["source_account_name"].(string)
 		sourceFailoverGroupName := fromReplica["name"].(string)
@@ -240,27 +240,27 @@ func CreateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if v, ok := d.GetOk("ignore_edition_check"); ok {
-		opts.IgnoreEditionCheck = sdk.Bool(v.(bool))
+		opts.IgnoreEditionCheck = new(v.(bool))
 	}
 
 	if v, ok := d.GetOk("replication_schedule"); ok {
-		replicationSchedule := v.([]interface{})[0].(map[string]interface{})
+		replicationSchedule := v.([]any)[0].(map[string]any)
 		if v, ok := replicationSchedule["cron"]; ok {
-			c := v.([]interface{})
+			c := v.([]any)
 			if len(c) > 0 {
-				cron := c[0].(map[string]interface{})
+				cron := c[0].(map[string]any)
 				cronExpression := cron["expression"].(string)
 				if v, ok := cron["time_zone"]; ok {
 					timeZone := v.(string)
 					cronExpression += " " + timeZone
 				}
-				opts.ReplicationSchedule = sdk.String("USING CRON " + cronExpression)
+				opts.ReplicationSchedule = new("USING CRON " + cronExpression)
 			}
 		}
 		if v, ok := replicationSchedule["interval"]; ok {
 			interval := v.(int)
 			if interval > 1 {
-				opts.ReplicationSchedule = sdk.String(fmt.Sprintf("%d MINUTE", interval))
+				opts.ReplicationSchedule = new(fmt.Sprintf("%d MINUTE", interval))
 			}
 		}
 	}
@@ -312,8 +312,8 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = d.Set("replication_schedule", []interface{}{
-				map[string]interface{}{
+			err = d.Set("replication_schedule", []any{
+				map[string]any{
 					"interval": interval,
 				},
 			})
@@ -324,10 +324,10 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 			repScheduleParts := strings.Split(replicationSchedule, " ")
 			timeZone := repScheduleParts[len(repScheduleParts)-1]
 			expression := strings.TrimSuffix(strings.TrimPrefix(replicationSchedule, "USING CRON "), " "+timeZone)
-			err = d.Set("replication_schedule", []interface{}{
-				map[string]interface{}{
-					"cron": []interface{}{
-						map[string]interface{}{
+			err = d.Set("replication_schedule", []any{
+				map[string]any{
+					"cron": []any{
+						map[string]any{
 							"expression": expression,
 							"time_zone":  timeZone,
 						},
@@ -340,7 +340,7 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 		}
 	}
 	// object types
-	objectTypes := make([]interface{}, len(failoverGroup.ObjectTypes))
+	objectTypes := make([]any, len(failoverGroup.ObjectTypes))
 	for i, v := range failoverGroup.ObjectTypes {
 		objectTypes[i] = string(v)
 	}
@@ -350,7 +350,7 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 
 	// integration types
-	allowedIntegrationTypes := make([]interface{}, len(failoverGroup.AllowedIntegrationTypes))
+	allowedIntegrationTypes := make([]any, len(failoverGroup.AllowedIntegrationTypes))
 	for i, v := range failoverGroup.AllowedIntegrationTypes {
 		allowedIntegrationTypes[i] = string(v)
 	}
@@ -361,7 +361,7 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 
 	// allowed accounts
-	allowedAccounts := make([]interface{}, len(failoverGroup.AllowedAccounts))
+	allowedAccounts := make([]any, len(failoverGroup.AllowedAccounts))
 	for i, v := range failoverGroup.AllowedAccounts {
 		allowedAccounts[i] = v.Name()
 	}
@@ -375,7 +375,7 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	allowedDatabases := make([]interface{}, len(databases))
+	allowedDatabases := make([]any, len(databases))
 	for i, database := range databases {
 		allowedDatabases[i] = database.Name()
 	}
@@ -395,7 +395,7 @@ func ReadFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) di
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	allowedShares := make([]interface{}, len(shares))
+	allowedShares := make([]any, len(shares))
 	for i, share := range shares {
 		allowedShares[i] = share.Name()
 	}
@@ -481,7 +481,7 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 			}
 			err := client.FailoverGroups.AlterSource(ctx, id, &sdk.AlterSourceFailoverGroupOptions{
 				Set: &sdk.FailoverGroupSet{
-					ReplicationSchedule: sdk.String(updatedReplicationSchedule),
+					ReplicationSchedule: new(updatedReplicationSchedule),
 				},
 			})
 			if err != nil {
@@ -490,7 +490,7 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 		} else {
 			err := client.FailoverGroups.AlterSource(ctx, id, &sdk.AlterSourceFailoverGroupOptions{
 				Unset: &sdk.FailoverGroupUnset{
-					ReplicationSchedule: sdk.Bool(true),
+					ReplicationSchedule: new(true),
 				},
 			})
 			if err != nil {

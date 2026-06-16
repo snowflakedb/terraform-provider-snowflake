@@ -55,17 +55,17 @@ func (c *DatabaseClient) CreateTestDatabaseIfNotExists(t *testing.T) (*sdk.Datab
 	t.Helper()
 
 	opts := c.TestParametersSet()
-	opts.IfNotExists = sdk.Bool(true)
+	opts.IfNotExists = new(true)
 
 	return c.CreateDatabaseWithOptions(t, c.ids.DatabaseId(), opts)
 }
 
 func (c *DatabaseClient) TestParametersSet() *sdk.CreateDatabaseOptions {
 	return &sdk.CreateDatabaseOptions{
-		DataRetentionTimeInDays:    sdk.Int(testDatabaseDataRetentionTimeInDays),
-		MaxDataExtensionTimeInDays: sdk.Int(testDatabaseMaxDataExtensionTimeInDays),
+		DataRetentionTimeInDays:    new(testDatabaseDataRetentionTimeInDays),
+		MaxDataExtensionTimeInDays: new(testDatabaseMaxDataExtensionTimeInDays),
 		// according to the docs SNOWFLAKE is a valid value (https://docs.snowflake.com/en/sql-reference/parameters#catalog)
-		Catalog: sdk.Pointer(TestDatabaseCatalog),
+		Catalog: new(TestDatabaseCatalog),
 	}
 }
 
@@ -96,7 +96,7 @@ func (c *DatabaseClient) DropDatabase(t *testing.T, id sdk.AccountObjectIdentifi
 	t.Helper()
 	ctx := context.Background()
 
-	if err := c.client().Drop(ctx, id, &sdk.DropDatabaseOptions{IfExists: sdk.Bool(true)}); err != nil {
+	if err := c.client().Drop(ctx, id, &sdk.DropDatabaseOptions{IfExists: new(true)}); err != nil {
 		return err
 	}
 	if err := c.context.client.Sessions.UseSchema(ctx, c.ids.SchemaId()); err != nil {
@@ -143,7 +143,7 @@ func (c *DatabaseClient) CreatePrimaryDatabase(t *testing.T, enableReplicationTo
 	err := c.client().AlterReplication(ctx, primaryDatabase.ID(), &sdk.AlterDatabaseReplicationOptions{
 		EnableReplication: &sdk.EnableReplication{
 			ToAccounts:         enableReplicationTo,
-			IgnoreEditionCheck: sdk.Bool(true),
+			IgnoreEditionCheck: new(true),
 		},
 	})
 	require.NoError(t, err)
@@ -161,7 +161,7 @@ func (c *DatabaseClient) UpdateDataRetentionTime(t *testing.T, id sdk.AccountObj
 
 	err := c.client().Alter(ctx, id, &sdk.AlterDatabaseOptions{
 		Set: &sdk.DatabaseSet{
-			DataRetentionTimeInDays: sdk.Int(days),
+			DataRetentionTimeInDays: new(days),
 		},
 	})
 	require.NoError(t, err)
@@ -185,7 +185,7 @@ func (c *DatabaseClient) UnsetCatalog(t *testing.T, id sdk.AccountObjectIdentifi
 
 	err := c.client().Alter(ctx, id, &sdk.AlterDatabaseOptions{
 		Unset: &sdk.DatabaseUnset{
-			Catalog: sdk.Bool(true),
+			Catalog: new(true),
 		},
 	})
 	require.NoError(t, err)
@@ -233,7 +233,7 @@ func (c *DatabaseClient) CreateDatabaseFromShare(t *testing.T, externalShareId s
 func (c *DatabaseClient) testParametersSetSharedDatabase() *sdk.CreateSharedDatabaseOptions {
 	return &sdk.CreateSharedDatabaseOptions{
 		// according to the docs SNOWFLAKE is a valid value (https://docs.snowflake.com/en/sql-reference/parameters#catalog)
-		Catalog: sdk.Pointer(TestDatabaseCatalog),
+		Catalog: new(TestDatabaseCatalog),
 	}
 }
 

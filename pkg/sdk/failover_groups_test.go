@@ -7,7 +7,7 @@ import (
 func TestFailoverGroupsCreate(t *testing.T) {
 	t.Run("complete", func(t *testing.T) {
 		opts := &CreateFailoverGroupOptions{
-			IfNotExists: Bool(true),
+			IfNotExists: new(true),
 			name:        NewAccountObjectIdentifier("fg1"),
 			objectTypes: []PluralObjectType{
 				PluralObjectTypeShares,
@@ -22,15 +22,15 @@ func TestFailoverGroupsCreate(t *testing.T) {
 			allowedAccounts: []AccountIdentifier{
 				NewAccountIdentifier("MY_ORG", "MY_ACCOUNT"),
 			},
-			IgnoreEditionCheck:  Bool(true),
-			ReplicationSchedule: String("10 MINUTE"),
+			IgnoreEditionCheck:  new(true),
+			ReplicationSchedule: new("10 MINUTE"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE FAILOVER GROUP IF NOT EXISTS "fg1" OBJECT_TYPES = SHARES, DATABASES ALLOWED_DATABASES = "db1" ALLOWED_SHARES = "share1" ALLOWED_ACCOUNTS = "MY_ORG"."MY_ACCOUNT" IGNORE EDITION CHECK REPLICATION_SCHEDULE = '10 MINUTE'`)
 	})
 
 	t.Run("minimal", func(t *testing.T) {
 		opts := &CreateFailoverGroupOptions{
-			IfNotExists: Bool(true),
+			IfNotExists: new(true),
 			name:        NewAccountObjectIdentifier("fg1"),
 			objectTypes: []PluralObjectType{
 				PluralObjectTypeRoles,
@@ -45,7 +45,7 @@ func TestFailoverGroupsCreate(t *testing.T) {
 
 func TestCreateSecondaryReplicationGroup(t *testing.T) {
 	opts := &CreateSecondaryReplicationGroupOptions{
-		IfNotExists:          Bool(true),
+		IfNotExists:          new(true),
 		name:                 NewAccountObjectIdentifier("fg1"),
 		primaryFailoverGroup: NewExternalObjectIdentifierFromFullyQualifiedName("myorg.myaccount.fg1"),
 	}
@@ -67,7 +67,7 @@ func TestFailoverGroupAlterSource(t *testing.T) {
 		opts := &AlterSourceFailoverGroupOptions{
 			name: id,
 			Unset: &FailoverGroupUnset{
-				ReplicationSchedule: Bool(true),
+				ReplicationSchedule: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" UNSET REPLICATION_SCHEDULE`)
@@ -86,7 +86,7 @@ func TestFailoverGroupAlterSource(t *testing.T) {
 			name: id,
 			Set: &FailoverGroupSet{
 				ObjectTypes:         []PluralObjectType{PluralObjectTypeShares},
-				ReplicationSchedule: String("10 MINUTE"),
+				ReplicationSchedule: new("10 MINUTE"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" SET OBJECT_TYPES = SHARES REPLICATION_SCHEDULE = '10 MINUTE'`)
@@ -182,7 +182,7 @@ func TestFailoverGroupsAlterTarget(t *testing.T) {
 	t.Run("resume", func(t *testing.T) {
 		opts := &AlterTargetFailoverGroupOptions{
 			name:   NewAccountObjectIdentifier("fg1"),
-			Resume: Bool(true),
+			Resume: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" RESUME`)
 	})
@@ -190,7 +190,7 @@ func TestFailoverGroupsAlterTarget(t *testing.T) {
 	t.Run("primary", func(t *testing.T) {
 		opts := &AlterTargetFailoverGroupOptions{
 			name:    NewAccountObjectIdentifier("fg1"),
-			Primary: Bool(true),
+			Primary: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" PRIMARY`)
 	})
@@ -207,7 +207,7 @@ func TestFailoverGroupsDrop(t *testing.T) {
 	t.Run("with IfExists", func(t *testing.T) {
 		opts := &DropFailoverGroupOptions{
 			name:     NewAccountObjectIdentifier("fg1"),
-			IfExists: Bool(true),
+			IfExists: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP FAILOVER GROUP IF EXISTS "fg1"`)
 	})

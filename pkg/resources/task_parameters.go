@@ -453,9 +453,9 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 							},
 						}
 					}
-					set.SessionParameters.Autocommit = sdk.Bool(true)
+					set.SessionParameters.Autocommit = new(true)
 				} else {
-					unset.SessionParametersUnset.Autocommit = sdk.Bool(true)
+					unset.SessionParametersUnset.Autocommit = new(true)
 				}
 			}
 			return nil
@@ -465,7 +465,7 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 			if d.HasChange(key) || !d.GetRawPlan().AsValueMap()[key].IsKnown() {
 				if !d.GetRawConfig().AsValueMap()[key].IsNull() {
 					value := d.Get(key).(string)
-					set.SessionParameters.SearchPath = sdk.String(value)
+					set.SessionParameters.SearchPath = new(value)
 					return diag.Diagnostics{
 						diag.Diagnostic{
 							Severity: diag.Warning,
@@ -473,7 +473,7 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 						},
 					}
 				} else {
-					unset.SessionParametersUnset.SearchPath = sdk.Bool(true)
+					unset.SessionParametersUnset.SearchPath = new(true)
 				}
 			}
 			return nil

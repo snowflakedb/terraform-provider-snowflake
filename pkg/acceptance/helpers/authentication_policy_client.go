@@ -70,7 +70,7 @@ func (c *AuthenticationPolicyClient) Show(t *testing.T, id sdk.SchemaObjectIdent
 func (c *AuthenticationPolicyClient) ShowOnCurrentAccount(t *testing.T) *sdk.AuthenticationPolicy {
 	t.Helper()
 	ctx := context.Background()
-	policies, err := c.client().Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithOn(sdk.On{Account: sdk.Bool(true)}))
+	policies, err := c.client().Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithOn(sdk.On{Account: new(true)}))
 	require.NoError(t, err)
 	if len(policies) == 1 {
 		return &policies[0]

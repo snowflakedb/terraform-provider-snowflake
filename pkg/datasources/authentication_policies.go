@@ -86,7 +86,6 @@ func ReadAuthenticationPolicies(ctx context.Context, d *schema.ResourceData, met
 
 	flattenedAuthenticationPolicies := make([]map[string]any, len(authenticationPolicies))
 	for i, authenticationPolicy := range authenticationPolicies {
-		authenticationPolicy := authenticationPolicy
 		var authenticationPolicyDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())

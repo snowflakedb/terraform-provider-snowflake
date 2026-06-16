@@ -309,7 +309,7 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 			ctx,
 			*grantOn,
 			sdk.OwnershipGrantTo{
-				AccountRoleName: sdk.Pointer(accountRoleName),
+				AccountRoleName: new(accountRoleName),
 			},
 			getOwnershipGrantOpts(id),
 		)
@@ -555,7 +555,7 @@ func getOwnershipGrantTo(d *schema.ResourceData) (sdk.OwnershipGrantTo, error) {
 		if err != nil {
 			return ownershipGrantTo, err
 		}
-		ownershipGrantTo.DatabaseRoleName = sdk.Pointer(databaseRoleId)
+		ownershipGrantTo.DatabaseRoleName = new(databaseRoleId)
 	}
 
 	return ownershipGrantTo, nil
@@ -606,7 +606,7 @@ func prepareShowGrantsRequestForGrantOwnership(id *GrantOwnershipId) (*sdk.ShowG
 	case OnFutureGrantOwnershipKind:
 		data := id.Data.(*BulkOperationGrantData)
 		expectedGrantedOn = data.ObjectNamePlural.Singular()
-		opts.Future = sdk.Bool(true)
+		opts.Future = new(true)
 
 		switch data.Kind {
 		case InDatabaseBulkOperationGrantKind:
@@ -649,9 +649,9 @@ func createGrantOwnershipIdFromSchema(d *schema.ResourceData) (*GrantOwnershipId
 	if outboundPrivilegesOk {
 		switch OutboundPrivilegesBehavior(outboundPrivileges.(string)) {
 		case CopyOutboundPrivilegesBehavior:
-			id.OutboundPrivilegesBehavior = sdk.Pointer(CopyOutboundPrivilegesBehavior)
+			id.OutboundPrivilegesBehavior = new(CopyOutboundPrivilegesBehavior)
 		case RevokeOutboundPrivilegesBehavior:
-			id.OutboundPrivilegesBehavior = sdk.Pointer(RevokeOutboundPrivilegesBehavior)
+			id.OutboundPrivilegesBehavior = new(RevokeOutboundPrivilegesBehavior)
 		}
 	}
 

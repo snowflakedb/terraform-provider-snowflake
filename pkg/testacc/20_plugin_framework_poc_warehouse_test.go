@@ -763,7 +763,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	}
 	// workaround for WaitForCompletion
 	if set.WarehouseSize != nil {
-		set.WaitForCompletion = sdk.Bool(true)
+		set.WaitForCompletion = new(true)
 	}
 
 	// Apply SET and UNSET changes

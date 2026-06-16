@@ -316,7 +316,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	var propagate *string
 	if tag.Propagate != nil {
-		propagate = sdk.Pointer(string(*tag.Propagate))
+		propagate = new(string(*tag.Propagate))
 	}
 
 	errs := errors.Join(
@@ -620,12 +620,12 @@ func buildTagPropagateRequest(propagate string, d *schema.ResourceData) (*sdk.Ta
 		onConflictMap := v.([]any)[0].(map[string]any)
 		if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
 			propagateReq.WithOnConflict(sdk.TagOnConflict{
-				AllowedValuesSequence: sdk.Bool(true),
+				AllowedValuesSequence: new(true),
 			})
 		}
 		if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
 			propagateReq.WithOnConflict(sdk.TagOnConflict{
-				CustomValue: sdk.String(v.(string)),
+				CustomValue: new(v.(string)),
 			})
 		}
 	}

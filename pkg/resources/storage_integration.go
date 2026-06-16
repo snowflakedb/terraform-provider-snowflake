@@ -394,7 +394,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 	// We need to UNSET this if we remove all storage blocked locations, because Snowflake won't accept an empty list
 	if d.HasChange("storage_blocked_locations") {
 		storageBlockedLocations := d.Get("storage_blocked_locations")
-		if len(storageBlockedLocations.([]interface{})) > 0 {
+		if len(storageBlockedLocations.([]any)) > 0 {
 			stringStorageBlockedLocations := expandStringList(storageBlockedLocations.([]any))
 			storageBlockedLocations := make([]sdk.StorageLocation, len(stringStorageBlockedLocations))
 			for i, loc := range stringStorageBlockedLocations {

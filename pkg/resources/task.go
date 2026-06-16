@@ -297,16 +297,16 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		attributeMappedValueCreate(d, "schedule", &req.Schedule, func(v any) (*string, error) {
 			if len(v.([]any)) > 0 {
 				if seconds, ok := d.GetOk("schedule.0.seconds"); ok {
-					return sdk.String(fmt.Sprintf("%d SECOND", seconds)), nil
+					return new(fmt.Sprintf("%d SECOND", seconds)), nil
 				}
 				if minutes, ok := d.GetOk("schedule.0.minutes"); ok {
-					return sdk.String(fmt.Sprintf("%d MINUTE", minutes)), nil
+					return new(fmt.Sprintf("%d MINUTE", minutes)), nil
 				}
 				if hours, ok := d.GetOk("schedule.0.hours"); ok {
-					return sdk.String(fmt.Sprintf("%d HOUR", hours)), nil
+					return new(fmt.Sprintf("%d HOUR", hours)), nil
 				}
 				if cron, ok := d.GetOk("schedule.0.using_cron"); ok {
-					return sdk.String(fmt.Sprintf("USING CRON %s", cron)), nil
+					return new(fmt.Sprintf("USING CRON %s", cron)), nil
 				}
 				return nil, fmt.Errorf("when setting a schedule one of seconds, minutes, hours, or using_cron field should be set")
 			}
@@ -320,13 +320,13 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		attributeMappedValueCreate(d, "target_completion_interval", &req.TargetCompletionInterval, func(v any) (*string, error) {
 			if len(v.([]any)) > 0 {
 				if hours, ok := d.GetOk("target_completion_interval.0.hours"); ok {
-					return sdk.String(fmt.Sprintf("%d HOURS", hours)), nil
+					return new(fmt.Sprintf("%d HOURS", hours)), nil
 				}
 				if minutes, ok := d.GetOk("target_completion_interval.0.minutes"); ok {
-					return sdk.String(fmt.Sprintf("%d MINUTES", minutes)), nil
+					return new(fmt.Sprintf("%d MINUTES", minutes)), nil
 				}
 				if seconds, ok := d.GetOk("target_completion_interval.0.seconds"); ok {
-					return sdk.String(fmt.Sprintf("%d SECONDS", seconds)), nil
+					return new(fmt.Sprintf("%d SECONDS", seconds)), nil
 				}
 				return nil, fmt.Errorf("when setting target_completion_interval, one of hours, minutes, or seconds field should be set")
 			}
@@ -456,16 +456,16 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 
 		if newTargetCompletionInterval != nil && len(newTargetCompletionInterval.([]any)) == 1 {
 			if _, newHours := d.GetChange("target_completion_interval.0.hours"); newHours.(int) > 0 {
-				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d HOURS", newHours.(int)))
+				set.TargetCompletionInterval = new(fmt.Sprintf("%d HOURS", newHours.(int)))
 			}
 			if _, newMinutes := d.GetChange("target_completion_interval.0.minutes"); newMinutes.(int) > 0 {
-				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d MINUTES", newMinutes.(int)))
+				set.TargetCompletionInterval = new(fmt.Sprintf("%d MINUTES", newMinutes.(int)))
 			}
 			if _, newSeconds := d.GetChange("target_completion_interval.0.seconds"); newSeconds.(int) > 0 {
-				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d SECONDS", newSeconds.(int)))
+				set.TargetCompletionInterval = new(fmt.Sprintf("%d SECONDS", newSeconds.(int)))
 			}
 		} else {
-			unset.TargetCompletionInterval = sdk.Bool(true)
+			unset.TargetCompletionInterval = new(true)
 		}
 	}
 
@@ -474,19 +474,19 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 
 		if newSchedule != nil && len(newSchedule.([]any)) == 1 {
 			if _, newSeconds := d.GetChange("schedule.0.seconds"); newSeconds.(int) > 0 {
-				set.Schedule = sdk.String(fmt.Sprintf("%d SECOND", newSeconds.(int)))
+				set.Schedule = new(fmt.Sprintf("%d SECOND", newSeconds.(int)))
 			}
 			if _, newMinutes := d.GetChange("schedule.0.minutes"); newMinutes.(int) > 0 {
-				set.Schedule = sdk.String(fmt.Sprintf("%d MINUTE", newMinutes.(int)))
+				set.Schedule = new(fmt.Sprintf("%d MINUTE", newMinutes.(int)))
 			}
 			if _, newHours := d.GetChange("schedule.0.hours"); newHours.(int) > 0 {
-				set.Schedule = sdk.String(fmt.Sprintf("%d HOUR", newHours.(int)))
+				set.Schedule = new(fmt.Sprintf("%d HOUR", newHours.(int)))
 			}
 			if _, newCron := d.GetChange("schedule.0.using_cron"); newCron.(string) != "" {
-				set.Schedule = sdk.String(fmt.Sprintf("USING CRON %s", newCron.(string)))
+				set.Schedule = new(fmt.Sprintf("USING CRON %s", newCron.(string)))
 			}
 		} else {
-			unset.Schedule = sdk.Bool(true)
+			unset.Schedule = new(true)
 		}
 	}
 

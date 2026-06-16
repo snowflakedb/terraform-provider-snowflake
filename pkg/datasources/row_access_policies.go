@@ -128,7 +128,7 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 	if v, ok := d.GetOk("in"); ok {
 		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok && v.(bool) {
-			req.WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}})
+			req.WithIn(sdk.ExtendedIn{In: sdk.In{Account: new(true)}})
 		}
 		if v, ok := in["database"]; ok {
 			database := v.(string)
@@ -160,7 +160,7 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		req.WithLike(sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		})
 	}
 
@@ -169,11 +169,11 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 		limit := &sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)
-			limit.Rows = sdk.Int(rows)
+			limit.Rows = new(rows)
 		}
 		if v, ok := l["from"]; ok {
 			from := v.(string)
-			limit.From = sdk.String(from)
+			limit.From = new(from)
 		}
 		req.WithLimit(*limit)
 	}
@@ -187,7 +187,6 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 
 	flattenedRowAccessPolicies := make([]map[string]any, len(rowAccessPolicies))
 	for i, policy := range rowAccessPolicies {
-		policy := policy
 		var policyDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeOutput, err := client.RowAccessPolicies.Describe(ctx, policy.ID())

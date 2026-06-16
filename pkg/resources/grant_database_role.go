@@ -74,7 +74,7 @@ func GrantDatabaseRole() *schema.Resource {
 		DeleteContext: TrackingDeleteWrapper(resources.GrantDatabaseRole, DeleteGrantDatabaseRole),
 		Schema:        grantDatabaseRoleSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.GrantDatabaseRole, func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+			StateContext: TrackingImportWrapper(resources.GrantDatabaseRole, func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 				parts := helpers.ParseResourceIdentifier(d.Id())
 				if len(parts) != 3 {
 					return nil, fmt.Errorf("invalid ID specified: %v, expected <database_role_name>|<object_type>|<target_identifier>", d.Id())
@@ -125,7 +125,7 @@ func GrantDatabaseRole() *schema.Resource {
 }
 
 // CreateGrantDatabaseRole implements schema.CreateFunc.
-func CreateGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	databaseRoleName := d.Get("database_role_name").(string)
 	databaseRoleIdentifier, err := sdk.ParseDatabaseObjectIdentifier(databaseRoleName)
@@ -170,7 +170,7 @@ func CreateGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 // ReadGrantDatabaseRole implements schema.ReadFunc.
-func ReadGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	parts := helpers.ParseResourceIdentifier(d.Id())
 	databaseRoleName := parts[0]
@@ -208,7 +208,7 @@ func ReadGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 // DeleteGrantDatabaseRole implements schema.DeleteFunc.
-func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 

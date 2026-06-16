@@ -19,7 +19,7 @@ import (
 const optionalWithBackingFieldDefaultValue = "default value"
 
 var optionalWithBackingFieldHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.OptionalWithBackingFieldOpts](
-	testfunctional.OptionalWithBackingFieldOpts{StringValue: sdk.Pointer(optionalWithBackingFieldDefaultValue)}, optionalWithBackingFieldOptsUseDefaultsForNil,
+	testfunctional.OptionalWithBackingFieldOpts{StringValue: new(optionalWithBackingFieldDefaultValue)}, optionalWithBackingFieldOptsUseDefaultsForNil,
 )
 
 func optionalWithBackingFieldOptsUseDefaultsForNil(base testfunctional.OptionalWithBackingFieldOpts, defaults testfunctional.OptionalWithBackingFieldOpts, replaceWith testfunctional.OptionalWithBackingFieldOpts) testfunctional.OptionalWithBackingFieldOpts {
@@ -55,7 +55,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(value)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, new(value)),
 						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
@@ -85,7 +85,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(value), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(value), nil),
 						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
@@ -121,9 +121,9 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", nil, sdk.String(externalValue)),
-						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", sdk.String(optionalWithBackingFieldDefaultValue), sdk.String(externalValue)),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), nil),
+						planchecks.ExpectDrift(resourceReference, "string_value", nil, new(externalValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", new(optionalWithBackingFieldDefaultValue), new(externalValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(externalValue), nil),
 						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
@@ -159,7 +159,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(externalValue), nil),
 						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
@@ -181,7 +181,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(value)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, new(value)),
 						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
@@ -203,7 +203,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(value), sdk.String(newValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(value), new(newValue)),
 						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
@@ -230,9 +230,9 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), sdk.String(externalValue)),
-						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", sdk.String(newValue), sdk.String(externalValue)),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), sdk.String(newValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value", new(newValue), new(externalValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", new(newValue), new(externalValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(externalValue), new(newValue)),
 						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},
@@ -253,15 +253,15 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalWithBackingField(t *test
 			{
 				PreConfig: func() {
 					optionalWithBackingFieldHandler.SetCurrentValue(testfunctional.OptionalWithBackingFieldOpts{
-						StringValue: sdk.Pointer(optionalWithBackingFieldDefaultValue),
+						StringValue: new(optionalWithBackingFieldDefaultValue),
 					})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), sdk.String(optionalWithBackingFieldDefaultValue)),
-						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", sdk.String(newValue), sdk.String(optionalWithBackingFieldDefaultValue)),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(optionalWithBackingFieldDefaultValue), nil),
+						planchecks.ExpectDrift(resourceReference, "string_value", new(newValue), new(optionalWithBackingFieldDefaultValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value_backing_field", new(newValue), new(optionalWithBackingFieldDefaultValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(optionalWithBackingFieldDefaultValue), nil),
 						planchecks.ExpectComputed(resourceReference, "string_value_backing_field", true),
 					},
 				},

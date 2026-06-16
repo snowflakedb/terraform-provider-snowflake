@@ -19,7 +19,7 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUser(t *testing.T) *TmpLegacySer
 	tmpUser := c.setUpTmpUserWithBasicAccess(t, func(userId sdk.AccountObjectIdentifier) (*sdk.User, func()) {
 		return c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
 			Type:     sdk.Pointer(sdk.UserTypeLegacyService),
-			Password: sdk.String(pass),
+			Password: new(pass),
 		}})
 	})
 
@@ -37,7 +37,7 @@ func (c *TestClient) SetUpTemporaryServiceUser(t *testing.T) *TmpServiceUser {
 	tmpUser := c.setUpTmpUserWithBasicAccess(t, func(userId sdk.AccountObjectIdentifier) (*sdk.User, func()) {
 		return c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
 			Type:         sdk.Pointer(sdk.UserTypeLegacyService),
-			RSAPublicKey: sdk.String(publicKey),
+			RSAPublicKey: new(publicKey),
 		}})
 	})
 
@@ -72,8 +72,8 @@ func (c *TestClient) SetUpTemporaryUserForOauthClientCredentials(t *testing.T, l
 	t.Helper()
 	userId := c.Ids.RandomAccountObjectIdentifier()
 	user, userCleanup := c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-		MustChangePassword: sdk.Bool(false),
-		LoginName:          sdk.String(loginName),
+		MustChangePassword: new(false),
+		LoginName:          new(loginName),
 	}})
 	t.Cleanup(userCleanup)
 

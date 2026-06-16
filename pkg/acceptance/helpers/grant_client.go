@@ -39,10 +39,10 @@ func (c *GrantClient) GrantGlobalPrivilegesOnAccountRole(
 		GlobalPrivileges: privileges,
 	}
 	on := &sdk.AccountRoleGrantOn{
-		Account: sdk.Bool(true),
+		Account: new(true),
 	}
 	opts := &sdk.GrantPrivilegesToAccountRoleOptions{
-		WithGrantOption: sdk.Bool(false),
+		WithGrantOption: new(false),
 	}
 	err := c.client().GrantPrivilegesToAccountRole(ctx, accountRoleGrantPrivileges, on, accountRoleId, opts)
 	require.NoError(t, err)
@@ -62,7 +62,7 @@ func (c *GrantClient) RevokeGlobalPrivilegesFromAccountRole(
 			GlobalPrivileges: privileges,
 		},
 		&sdk.AccountRoleGrantOn{
-			Account: sdk.Bool(true),
+			Account: new(true),
 		},
 		accountRoleId,
 		&sdk.RevokePrivilegesFromAccountRoleOptions{},
@@ -185,7 +185,7 @@ func (c *GrantClient) ShowFutureGrantsInDatabase(t *testing.T, databaseId sdk.Ac
 	ctx := context.Background()
 
 	return c.client().Show(ctx, &sdk.ShowGrantOptions{
-		Future: sdk.Bool(true),
+		Future: new(true),
 		In: &sdk.ShowGrantsIn{
 			Database: &databaseId,
 		},
@@ -197,7 +197,7 @@ func (c *GrantClient) ShowFutureGrantsInSchema(t *testing.T, schemaId sdk.Databa
 	ctx := context.Background()
 
 	return c.client().Show(ctx, &sdk.ShowGrantOptions{
-		Future: sdk.Bool(true),
+		Future: new(true),
 		In: &sdk.ShowGrantsIn{
 			Schema: &schemaId,
 		},
@@ -286,7 +286,7 @@ func (c *GrantClient) GrantPrivilegesOnSchemaObjectToAccountRole(
 		},
 		accountRoleId,
 		&sdk.GrantPrivilegesToAccountRoleOptions{
-			WithGrantOption: sdk.Bool(withGrantOption),
+			WithGrantOption: new(withGrantOption),
 		},
 	)
 	require.NoError(t, err)
@@ -307,7 +307,7 @@ func (c *GrantClient) RevokePrivilegesOnDatabaseFromDatabaseRole(
 			DatabasePrivileges: privileges,
 		},
 		&sdk.DatabaseRoleGrantOn{
-			Database: sdk.Pointer(databaseId),
+			Database: new(databaseId),
 		},
 		databaseRoleId,
 		new(sdk.RevokePrivilegesFromDatabaseRoleOptions),
@@ -331,7 +331,7 @@ func (c *GrantClient) RevokePrivilegesOnDatabaseFromAccountRole(
 		},
 		&sdk.AccountRoleGrantOn{
 			AccountObject: &sdk.GrantOnAccountObject{
-				Database: sdk.Pointer(databaseId),
+				Database: new(databaseId),
 			},
 		},
 		accountRoleId,
@@ -353,7 +353,7 @@ func (c *GrantClient) GrantPrivilegesOnDatabaseToAccountRole(
 		accountRoleId,
 		&sdk.AccountRoleGrantOn{
 			AccountObject: &sdk.GrantOnAccountObject{
-				Database: sdk.Pointer(databaseId),
+				Database: new(databaseId),
 			},
 		},
 		privileges,
@@ -383,7 +383,7 @@ func (c *GrantClient) GrantPrivilegesOnSchemaToAccountRole(
 		},
 		accountRoleId,
 		&sdk.GrantPrivilegesToAccountRoleOptions{
-			WithGrantOption: sdk.Bool(withGrantOption),
+			WithGrantOption: new(withGrantOption),
 		},
 	)
 	require.NoError(t, err)
@@ -402,7 +402,7 @@ func (c *GrantClient) GrantPrivilegesOnWarehouseToAccountRole(
 		accountRoleId,
 		&sdk.AccountRoleGrantOn{
 			AccountObject: &sdk.GrantOnAccountObject{
-				Warehouse: sdk.Pointer(warehouseId),
+				Warehouse: new(warehouseId),
 			},
 		},
 		privileges,
@@ -428,7 +428,7 @@ func (c *GrantClient) grantPrivilegesOnAccountLevelObjectToAccountRole(
 		accountObjectGrantOn,
 		accountRoleId,
 		&sdk.GrantPrivilegesToAccountRoleOptions{
-			WithGrantOption: sdk.Bool(withGrantOption),
+			WithGrantOption: new(withGrantOption),
 		},
 	)
 	require.NoError(t, err)
@@ -450,11 +450,11 @@ func (c *GrantClient) GrantPrivilegesOnDatabaseToDatabaseRole(
 			DatabasePrivileges: privileges,
 		},
 		&sdk.DatabaseRoleGrantOn{
-			Database: sdk.Pointer(databaseId),
+			Database: new(databaseId),
 		},
 		databaseRoleId,
 		&sdk.GrantPrivilegesToDatabaseRoleOptions{
-			WithGrantOption: sdk.Bool(withGrantOption),
+			WithGrantOption: new(withGrantOption),
 		},
 	)
 	require.NoError(t, err)
@@ -530,7 +530,7 @@ func (c *GrantClient) GrantOwnershipOnSchemaObjectToAccountRole(
 			},
 		},
 		sdk.OwnershipGrantTo{
-			AccountRoleName: sdk.Pointer(accountRoleId),
+			AccountRoleName: new(accountRoleId),
 		},
 		&sdk.GrantOwnershipOptions{
 			CurrentGrants: &sdk.OwnershipCurrentGrants{

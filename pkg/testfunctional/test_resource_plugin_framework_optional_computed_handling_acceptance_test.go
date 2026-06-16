@@ -19,7 +19,7 @@ const optionalComputedHandlingPrivateDefaultValue = "default value - optional co
 
 var optionalComputedHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.OptionalComputedOpts](
 	testfunctional.OptionalComputedOpts{
-		StringValue: sdk.Pointer(optionalComputedHandlingPrivateDefaultValue),
+		StringValue: new(optionalComputedHandlingPrivateDefaultValue),
 	}, optionalComputedOptsReplaceWithNonNil,
 )
 
@@ -71,7 +71,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalComputed(t *testing.T) {
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.Pointer(optionalComputedHandlingPrivateDefaultValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(optionalComputedHandlingPrivateDefaultValue), nil),
 					},
 				},
 				Config: optionalComputedNoneSetConfig(id, resourceType),
@@ -87,11 +87,11 @@ func TestAcc_TerraformPluginFrameworkFunctional_OptionalComputed(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.Pointer(optionalComputedHandlingPrivateDefaultValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(optionalComputedHandlingPrivateDefaultValue), nil),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.Pointer(optionalComputedHandlingPrivateDefaultValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(optionalComputedHandlingPrivateDefaultValue), nil),
 					},
 				},
 				Config: optionalComputedNoneSetConfig(id, resourceType),

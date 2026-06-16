@@ -109,9 +109,9 @@ func ReadServices(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		}
 		switch mode {
 		case ShowServicesTypeJobsOnly:
-			req.Job = sdk.Bool(true)
+			req.Job = new(true)
 		case ShowServicesTypeServicesOnly:
-			req.ExcludeJobs = sdk.Bool(true)
+			req.ExcludeJobs = new(true)
 		case ShowServicesTypeAll:
 			// no-op, filtering is not applied
 		}
@@ -125,7 +125,6 @@ func ReadServices(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	flattenedServices := make([]map[string]any, len(services))
 	for i, service := range services {
-		service := service
 		var serviceDetails []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Services.Describe(ctx, service.ID())

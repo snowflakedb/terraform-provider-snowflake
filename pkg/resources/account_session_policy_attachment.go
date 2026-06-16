@@ -122,7 +122,7 @@ func UpdateAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 
 		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{
-				SessionPolicy: sdk.Bool(true),
+				SessionPolicy: new(true),
 			},
 		}); err != nil {
 			d.Partial(true)
@@ -148,7 +148,7 @@ func DeleteAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 		Unset: &sdk.AccountUnset{
-			SessionPolicy: sdk.Bool(true),
+			SessionPolicy: new(true),
 		},
 	})
 	if err != nil {

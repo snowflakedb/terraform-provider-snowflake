@@ -84,7 +84,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 				Kind:            OnSchemaAccountRoleGrantKind,
 				Data: &OnSchemaGrantData{
 					Kind:       OnSchemaSchemaGrantKind,
-					SchemaName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
+					SchemaName: new(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
 				},
 			},
 		},
@@ -98,7 +98,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 				Kind:            OnSchemaAccountRoleGrantKind,
 				Data: &OnSchemaGrantData{
 					Kind:         OnAllSchemasInDatabaseSchemaGrantKind,
-					DatabaseName: sdk.Pointer(sdk.NewAccountObjectIdentifier("database-name-123")),
+					DatabaseName: new(sdk.NewAccountObjectIdentifier("database-name-123")),
 				},
 			},
 		},
@@ -112,7 +112,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 				Kind:            OnSchemaAccountRoleGrantKind,
 				Data: &OnSchemaGrantData{
 					Kind:         OnFutureSchemasInDatabaseSchemaGrantKind,
-					DatabaseName: sdk.Pointer(sdk.NewAccountObjectIdentifier("database-name-123")),
+					DatabaseName: new(sdk.NewAccountObjectIdentifier("database-name-123")),
 				},
 			},
 		},
@@ -196,7 +196,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 					OnAllOrFuture: &BulkOperationGrantData{
 						ObjectNamePlural: "TABLES",
 						Kind:             InDatabaseBulkOperationGrantKind,
-						Database:         sdk.Pointer(sdk.NewAccountObjectIdentifier("database-name-123")),
+						Database:         new(sdk.NewAccountObjectIdentifier("database-name-123")),
 					},
 				},
 			},
@@ -214,7 +214,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 					OnAllOrFuture: &BulkOperationGrantData{
 						ObjectNamePlural: "TABLES",
 						Kind:             InSchemaBulkOperationGrantKind,
-						Schema:           sdk.Pointer(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
+						Schema:           new(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
 					},
 				},
 			},
@@ -248,7 +248,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 					OnAllOrFuture: &BulkOperationGrantData{
 						ObjectNamePlural: "TABLES",
 						Kind:             InDatabaseBulkOperationGrantKind,
-						Database:         sdk.Pointer(sdk.NewAccountObjectIdentifier("database-name-123")),
+						Database:         new(sdk.NewAccountObjectIdentifier("database-name-123")),
 					},
 				},
 			},
@@ -266,7 +266,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 					OnAllOrFuture: &BulkOperationGrantData{
 						ObjectNamePlural: "TABLES",
 						Kind:             InSchemaBulkOperationGrantKind,
-						Schema:           sdk.Pointer(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
+						Schema:           new(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
 					},
 				},
 			},
@@ -339,7 +339,6 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			id, err := ParseGrantPrivilegesToAccountRoleId(tt.Identifier)
 			if tt.Error == "" {
@@ -395,7 +394,7 @@ func TestGrantPrivilegesToAccountRoleIdString(t *testing.T) {
 				Kind:            OnSchemaAccountRoleGrantKind,
 				Data: &OnSchemaGrantData{
 					Kind:       OnSchemaSchemaGrantKind,
-					SchemaName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
+					SchemaName: new(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
 				},
 			},
 			Expected: `"account-role"|false|false|CREATE SCHEMA,USAGE,MONITOR|OnSchema|OnSchema|"database-name"."schema-name"`,
@@ -409,7 +408,7 @@ func TestGrantPrivilegesToAccountRoleIdString(t *testing.T) {
 				Kind:            OnSchemaAccountRoleGrantKind,
 				Data: &OnSchemaGrantData{
 					Kind:         OnAllSchemasInDatabaseSchemaGrantKind,
-					DatabaseName: sdk.Pointer(sdk.NewAccountObjectIdentifier("database-name")),
+					DatabaseName: new(sdk.NewAccountObjectIdentifier("database-name")),
 				},
 			},
 			Expected: `"account-role"|false|false|CREATE SCHEMA,USAGE,MONITOR|OnSchema|OnAllSchemasInDatabase|"database-name"`,
@@ -423,7 +422,7 @@ func TestGrantPrivilegesToAccountRoleIdString(t *testing.T) {
 				Kind:            OnSchemaAccountRoleGrantKind,
 				Data: &OnSchemaGrantData{
 					Kind:         OnFutureSchemasInDatabaseSchemaGrantKind,
-					DatabaseName: sdk.Pointer(sdk.NewAccountObjectIdentifier("database-name")),
+					DatabaseName: new(sdk.NewAccountObjectIdentifier("database-name")),
 				},
 			},
 			Expected: `"account-role"|false|false|CREATE SCHEMA,USAGE,MONITOR|OnSchema|OnFutureSchemasInDatabase|"database-name"`,
@@ -457,7 +456,7 @@ func TestGrantPrivilegesToAccountRoleIdString(t *testing.T) {
 					OnAllOrFuture: &BulkOperationGrantData{
 						ObjectNamePlural: sdk.PluralObjectTypeTables,
 						Kind:             InDatabaseBulkOperationGrantKind,
-						Database:         sdk.Pointer(sdk.NewAccountObjectIdentifier("database-name")),
+						Database:         new(sdk.NewAccountObjectIdentifier("database-name")),
 					},
 				},
 			},
@@ -475,7 +474,7 @@ func TestGrantPrivilegesToAccountRoleIdString(t *testing.T) {
 					OnAllOrFuture: &BulkOperationGrantData{
 						ObjectNamePlural: sdk.PluralObjectTypeTables,
 						Kind:             InSchemaBulkOperationGrantKind,
-						Schema:           sdk.Pointer(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
+						Schema:           new(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
 					},
 				},
 			},
@@ -484,7 +483,6 @@ func TestGrantPrivilegesToAccountRoleIdString(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			assert.Equal(t, tt.Expected, tt.Identifier.String())
 		})

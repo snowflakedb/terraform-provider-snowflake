@@ -130,23 +130,23 @@ func CreatePipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 
 	// Set optionals
 	if v, ok := d.GetOk("comment"); ok {
-		opts.Comment = sdk.String(v.(string))
+		opts.Comment = new(v.(string))
 	}
 
 	if v, ok := d.GetOk("auto_ingest"); ok && v.(bool) {
-		opts.AutoIngest = sdk.Bool(true)
+		opts.AutoIngest = new(true)
 	}
 
 	if v, ok := d.GetOk("aws_sns_topic_arn"); ok {
-		opts.AwsSnsTopic = sdk.String(v.(string))
+		opts.AwsSnsTopic = new(v.(string))
 	}
 
 	if v, ok := d.GetOk("integration"); ok {
-		opts.Integration = sdk.String(v.(string))
+		opts.Integration = new(v.(string))
 	}
 
 	if v, ok := d.GetOk("error_integration"); ok {
-		opts.ErrorIntegration = sdk.String(v.(string))
+		opts.ErrorIntegration = new(v.(string))
 	}
 
 	err := client.Pipes.Create(ctx, objectIdentifier, copyStatement, opts)
@@ -241,20 +241,20 @@ func UpdatePipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	if d.HasChange("comment") {
 		if comment, ok := d.GetOk("comment"); ok {
 			runSetStatement = true
-			pipeSet.Comment = sdk.String(comment.(string))
+			pipeSet.Comment = new(comment.(string))
 		} else {
 			runUnsetStatement = true
-			pipeUnset.Comment = sdk.Bool(true)
+			pipeUnset.Comment = new(true)
 		}
 	}
 
 	if d.HasChange("error_integration") {
 		if errorIntegration, ok := d.GetOk("error_integration"); ok {
 			runSetStatement = true
-			pipeSet.ErrorIntegration = sdk.String(errorIntegration.(string))
+			pipeSet.ErrorIntegration = new(errorIntegration.(string))
 		} else {
 			runUnsetStatement = true
-			pipeUnset.ErrorIntegration = sdk.Bool(true)
+			pipeUnset.ErrorIntegration = new(true)
 		}
 	}
 

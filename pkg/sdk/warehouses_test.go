@@ -14,7 +14,7 @@ func TestWarehouseCreate(t *testing.T) {
 	t.Run("validation: invalid warehouse type", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name:          NewAccountObjectIdentifier("mywarehouse"),
-			WarehouseType: Pointer(WarehouseTypeAdaptive),
+			WarehouseType: new(WarehouseTypeAdaptive),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("only STANDARD, SNOWPARK-OPTIMIZED warehouses are supported, got ADAPTIVE"))
 	})
@@ -33,28 +33,28 @@ func TestWarehouseCreate(t *testing.T) {
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
 		resourceMonitorId := randomAccountObjectIdentifier()
 		opts := &CreateWarehouseOptions{
-			OrReplace:   Bool(true),
+			OrReplace:   new(true),
 			name:        NewAccountObjectIdentifier("completewarehouse"),
-			IfNotExists: Bool(true),
+			IfNotExists: new(true),
 
-			WarehouseType:                   Pointer(WarehouseTypeStandard),
-			WarehouseSize:                   Pointer(WarehouseSizeX4Large),
-			MaxClusterCount:                 Int(8),
-			MinClusterCount:                 Int(3),
-			ScalingPolicy:                   Pointer(ScalingPolicyEconomy),
-			AutoSuspend:                     Int(1000),
-			AutoResume:                      Bool(true),
-			InitiallySuspended:              Bool(false),
-			ResourceMonitor:                 Pointer(resourceMonitorId),
-			Comment:                         String("hello"),
-			EnableQueryAcceleration:         Bool(true),
-			QueryAccelerationMaxScaleFactor: Int(62),
-			ResourceConstraint:              Pointer(WarehouseResourceConstraintMemory1X),
-			Generation:                      Pointer(WarehouseGenerationStandardGen1),
+			WarehouseType:                   new(WarehouseTypeStandard),
+			WarehouseSize:                   new(WarehouseSizeX4Large),
+			MaxClusterCount:                 new(8),
+			MinClusterCount:                 new(3),
+			ScalingPolicy:                   new(ScalingPolicyEconomy),
+			AutoSuspend:                     new(1000),
+			AutoResume:                      new(true),
+			InitiallySuspended:              new(false),
+			ResourceMonitor:                 new(resourceMonitorId),
+			Comment:                         new("hello"),
+			EnableQueryAcceleration:         new(true),
+			QueryAccelerationMaxScaleFactor: new(62),
+			ResourceConstraint:              new(WarehouseResourceConstraintMemory1X),
+			Generation:                      new(WarehouseGenerationStandardGen1),
 
-			MaxConcurrencyLevel:             Int(7),
-			StatementQueuedTimeoutInSeconds: Int(29),
-			StatementTimeoutInSeconds:       Int(89),
+			MaxConcurrencyLevel:             new(7),
+			StatementQueuedTimeoutInSeconds: new(29),
+			StatementTimeoutInSeconds:       new(89),
 			Tag: []TagAssociation{
 				{
 					Name:  tagId1,
@@ -82,14 +82,14 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 		tagId1 := randomSchemaObjectIdentifier()
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
 		opts := &CreateAdaptiveWarehouseOptions{
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			name:      NewAccountObjectIdentifier("myadaptivewh"),
 
-			Comment:                         String("adaptive warehouse"),
-			MaxQueryPerformanceLevel:        Pointer(MaxQueryPerformanceLevelMedium),
-			QueryThroughputMultiplier:       Int(22),
-			StatementQueuedTimeoutInSeconds: Int(30),
-			StatementTimeoutInSeconds:       Int(60),
+			Comment:                         new("adaptive warehouse"),
+			MaxQueryPerformanceLevel:        new(MaxQueryPerformanceLevelMedium),
+			QueryThroughputMultiplier:       new(22),
+			StatementQueuedTimeoutInSeconds: new(30),
+			StatementTimeoutInSeconds:       new(60),
 			Tag: []TagAssociation{
 				{
 					Name:  tagId1,
@@ -120,8 +120,8 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 	t.Run("validation: conflicting OrReplace and IfNotExists", func(t *testing.T) {
 		opts := &CreateAdaptiveWarehouseOptions{
 			name:        NewAccountObjectIdentifier("mywarehouse"),
-			OrReplace:   Bool(true),
-			IfNotExists: Bool(true),
+			OrReplace:   new(true),
+			IfNotExists: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateAdaptiveWarehouseOptions", "OrReplace", "IfNotExists"))
 	})
@@ -131,8 +131,8 @@ func TestWarehouseSizing(t *testing.T) {
 	t.Run("validation: Min bigger than Max", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name:            NewAccountObjectIdentifier("mywarehouse"),
-			MaxClusterCount: Int(1),
-			MinClusterCount: Int(2),
+			MaxClusterCount: new(1),
+			MinClusterCount: new(2),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("MinClusterCount must be less than or equal to MaxClusterCount"))
 	})
@@ -140,7 +140,7 @@ func TestWarehouseSizing(t *testing.T) {
 	t.Run("validation: only min set", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name:            NewAccountObjectIdentifier("mywarehouse"),
-			MinClusterCount: Int(2),
+			MinClusterCount: new(2),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE WAREHOUSE \"mywarehouse\" MIN_CLUSTER_COUNT = 2")
 	})
@@ -148,8 +148,8 @@ func TestWarehouseSizing(t *testing.T) {
 	t.Run("Max equal Min", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name:            NewAccountObjectIdentifier("mywarehouse"),
-			MaxClusterCount: Int(2),
-			MinClusterCount: Int(2),
+			MaxClusterCount: new(2),
+			MinClusterCount: new(2),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE WAREHOUSE \"mywarehouse\" MAX_CLUSTER_COUNT = 2 MIN_CLUSTER_COUNT = 2")
 	})
@@ -157,8 +157,8 @@ func TestWarehouseSizing(t *testing.T) {
 	t.Run("Max greater than Min", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name:            NewAccountObjectIdentifier("mywarehouse"),
-			MaxClusterCount: Int(2),
-			MinClusterCount: Int(1),
+			MaxClusterCount: new(2),
+			MinClusterCount: new(1),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE WAREHOUSE \"mywarehouse\" MAX_CLUSTER_COUNT = 2 MIN_CLUSTER_COUNT = 1")
 	})
@@ -166,8 +166,8 @@ func TestWarehouseSizing(t *testing.T) {
 	t.Run("Allow large Min Max Values", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name:            NewAccountObjectIdentifier("mywarehouse"),
-			MaxClusterCount: Int(100),
-			MinClusterCount: Int(11),
+			MaxClusterCount: new(100),
+			MinClusterCount: new(11),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE WAREHOUSE \"mywarehouse\" MAX_CLUSTER_COUNT = 100 MIN_CLUSTER_COUNT = 11")
 	})
@@ -179,16 +179,16 @@ func TestWarehouseAlter(t *testing.T) {
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
 			Set: &WarehouseSet{
-				WarehouseType:                   Pointer(WarehouseTypeSnowparkOptimized),
-				WaitForCompletion:               Bool(false),
-				MinClusterCount:                 Int(4),
-				MaxClusterCount:                 Int(5),
-				AutoSuspend:                     Int(200),
+				WarehouseType:                   new(WarehouseTypeSnowparkOptimized),
+				WaitForCompletion:               new(false),
+				MinClusterCount:                 new(4),
+				MaxClusterCount:                 new(5),
+				AutoSuspend:                     new(200),
 				ResourceMonitor:                 NewAccountObjectIdentifier("resmon"),
-				EnableQueryAcceleration:         Bool(false),
-				StatementQueuedTimeoutInSeconds: Int(1200),
-				ResourceConstraint:              Pointer(WarehouseResourceConstraintMemory1X),
-				Generation:                      Pointer(WarehouseGenerationStandardGen1),
+				EnableQueryAcceleration:         new(false),
+				StatementQueuedTimeoutInSeconds: new(1200),
+				ResourceConstraint:              new(WarehouseResourceConstraintMemory1X),
+				Generation:                      new(WarehouseGenerationStandardGen1),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET WAREHOUSE_TYPE = 'SNOWPARK-OPTIMIZED' WAIT_FOR_COMPLETION = false MAX_CLUSTER_COUNT = 5 MIN_CLUSTER_COUNT = 4 AUTO_SUSPEND = 200 RESOURCE_MONITOR = "resmon" ENABLE_QUERY_ACCELERATION = false RESOURCE_CONSTRAINT = 'MEMORY_1X' GENERATION = '1' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 1200`)
@@ -228,10 +228,10 @@ func TestWarehouseAlter(t *testing.T) {
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
 			Unset: &WarehouseUnset{
-				MaxClusterCount:    Bool(true),
-				AutoResume:         Bool(true),
-				ResourceConstraint: Bool(true),
-				Generation:         Bool(true),
+				MaxClusterCount:    new(true),
+				AutoResume:         new(true),
+				ResourceConstraint: new(true),
+				Generation:         new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" UNSET MAX_CLUSTER_COUNT, AUTO_RESUME, RESOURCE_CONSTRAINT, GENERATION`)
@@ -249,7 +249,7 @@ func TestWarehouseAlter(t *testing.T) {
 	t.Run("suspend", func(t *testing.T) {
 		opts := &AlterWarehouseOptions{
 			name:    NewAccountObjectIdentifier("mywarehouse"),
-			Suspend: Bool(true),
+			Suspend: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SUSPEND`)
 	})
@@ -257,8 +257,8 @@ func TestWarehouseAlter(t *testing.T) {
 	t.Run("resume", func(t *testing.T) {
 		opts := &AlterWarehouseOptions{
 			name:        NewAccountObjectIdentifier("mywarehouse"),
-			Resume:      Bool(true),
-			IfSuspended: Bool(true),
+			Resume:      new(true),
+			IfSuspended: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" RESUME IF SUSPENDED`)
 	})
@@ -266,7 +266,7 @@ func TestWarehouseAlter(t *testing.T) {
 	t.Run("abort all queries", func(t *testing.T) {
 		opts := &AlterWarehouseOptions{
 			name:            NewAccountObjectIdentifier("mywarehouse"),
-			AbortAllQueries: Bool(true),
+			AbortAllQueries: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" ABORT ALL QUERIES`)
 	})
@@ -309,10 +309,10 @@ func TestWarehouseAlterAdaptive(t *testing.T) {
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
 			Set: &WarehouseSet{
-				MaxQueryPerformanceLevel:        Pointer(MaxQueryPerformanceLevelXSmall),
-				QueryThroughputMultiplier:       Int(5),
-				StatementQueuedTimeoutInSeconds: Int(100),
-				StatementTimeoutInSeconds:       Int(200),
+				MaxQueryPerformanceLevel:        new(MaxQueryPerformanceLevelXSmall),
+				QueryThroughputMultiplier:       new(5),
+				StatementQueuedTimeoutInSeconds: new(100),
+				StatementTimeoutInSeconds:       new(200),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET QUERY_THROUGHPUT_MULTIPLIER = 5 MAX_QUERY_PERFORMANCE_LEVEL = 'XSMALL' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 100 STATEMENT_TIMEOUT_IN_SECONDS = 200`)
@@ -322,10 +322,10 @@ func TestWarehouseAlterAdaptive(t *testing.T) {
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
 			Unset: &WarehouseUnset{
-				MaxQueryPerformanceLevel:        Bool(true),
-				QueryThroughputMultiplier:       Bool(true),
-				StatementQueuedTimeoutInSeconds: Bool(true),
-				StatementTimeoutInSeconds:       Bool(true),
+				MaxQueryPerformanceLevel:        new(true),
+				QueryThroughputMultiplier:       new(true),
+				StatementQueuedTimeoutInSeconds: new(true),
+				StatementTimeoutInSeconds:       new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" UNSET STATEMENT_QUEUED_TIMEOUT_IN_SECONDS, STATEMENT_TIMEOUT_IN_SECONDS, QUERY_THROUGHPUT_MULTIPLIER, MAX_QUERY_PERFORMANCE_LEVEL`)
@@ -343,7 +343,7 @@ func TestWarehouseDrop(t *testing.T) {
 	t.Run("with if exists", func(t *testing.T) {
 		opts := &DropWarehouseOptions{
 			name:     NewAccountObjectIdentifier("mywarehouse"),
-			IfExists: Bool(true),
+			IfExists: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP WAREHOUSE IF EXISTS "mywarehouse"`)
 	})
@@ -358,7 +358,7 @@ func TestWarehouseShow(t *testing.T) {
 	t.Run("with like", func(t *testing.T) {
 		opts := &ShowWarehouseOptions{
 			Like: &Like{
-				Pattern: String("mywarehouse"),
+				Pattern: new("mywarehouse"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW WAREHOUSES LIKE 'mywarehouse'`)
@@ -367,12 +367,12 @@ func TestWarehouseShow(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := &ShowWarehouseOptions{}
 		opts.Like = &Like{
-			Pattern: String("pattern"),
+			Pattern: new("pattern"),
 		}
-		opts.StartsWith = String("A")
+		opts.StartsWith = new("A")
 		opts.LimitFrom = &LimitFrom{
-			Rows: Int(1),
-			From: String("B"),
+			Rows: new(1),
+			From: new("B"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW WAREHOUSES LIKE 'pattern' STARTS WITH 'A' LIMIT 1 FROM 'B'`)
 	})
@@ -689,7 +689,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, wh)
-		assert.Equal(t, Pointer(WarehouseSizeXSmall), wh.Size)
+		assert.Equal(t, new(WarehouseSizeXSmall), wh.Size)
 		assert.InDelta(t, 100.0, wh.Available, testvars.FloatEpsilon)
 	})
 

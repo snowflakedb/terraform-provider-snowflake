@@ -80,14 +80,14 @@ func (e *InternalStageModel) WithFileFormatCsv(opts sdk.FileFormatCsvOptions) *I
 
 func (i *InternalStageModel) WithFileFormatCsvConflictingOptions() *InternalStageModel {
 	return i.WithFileFormatCsv(sdk.FileFormatCsvOptions{
-		SkipHeader:  sdk.Pointer(1),
-		ParseHeader: sdk.Pointer(true),
+		SkipHeader:  new(1),
+		ParseHeader: new(true),
 	})
 }
 
 func (i *InternalStageModel) WithFileFormatCsvInvalidSkipHeader() *InternalStageModel {
 	return i.WithFileFormatCsv(sdk.FileFormatCsvOptions{
-		SkipHeader: sdk.Pointer(-1),
+		SkipHeader: new(-1),
 	})
 }
 
@@ -182,8 +182,8 @@ func (i *InternalStageModel) WithFileFormatJsonInvalidBooleanString() *InternalS
 
 func (i *InternalStageModel) WithFileFormatJsonConflictingOptions() *InternalStageModel {
 	return i.WithFileFormatJson(sdk.FileFormatJsonOptions{
-		ReplaceInvalidCharacters: sdk.Pointer(true),
-		IgnoreUtf8Errors:         sdk.Pointer(true),
+		ReplaceInvalidCharacters: new(true),
+		IgnoreUtf8Errors:         new(true),
 	})
 }
 
@@ -221,8 +221,8 @@ func (i *InternalStageModel) WithFileFormatXml(opts sdk.FileFormatXmlOptions) *I
 
 func (i *InternalStageModel) WithFileFormatXmlConflictingOptions() *InternalStageModel {
 	return i.WithFileFormatXml(sdk.FileFormatXmlOptions{
-		ReplaceInvalidCharacters: sdk.Pointer(true),
-		IgnoreUtf8Errors:         sdk.Pointer(true),
+		ReplaceInvalidCharacters: new(true),
+		IgnoreUtf8Errors:         new(true),
 	})
 }
 
