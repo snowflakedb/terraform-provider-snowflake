@@ -22,6 +22,10 @@ type SystemFunctions interface {
 	ShowActiveBehaviorChangeBundles(ctx context.Context) ([]BehaviorChangeBundleInfo, error)
 	BehaviorChangeBundleStatus(ctx context.Context, bundle string) (BehaviorChangeBundleStatus, error)
 	GetIcebergTableInformation(ctx context.Context, id SchemaObjectIdentifier) (*IcebergTableInformation, error)
+	// GetClusteringInformation returns clustering information for a table. If columns is empty, the table's defined
+	// clustering key is used; otherwise the given expressions are used as the clustering key for the calculation.
+	// See more in https://docs.snowflake.com/en/sql-reference/functions/system_clustering_information.
+	GetClusteringInformation(ctx context.Context, id SchemaObjectIdentifier, columns ...string) (*ClusteringInformation, error)
 }
 
 var _ SystemFunctions = (*systemFunctions)(nil)
@@ -235,5 +239,75 @@ func (c *systemFunctions) GetIcebergTableInformation(ctx context.Context, id Sch
 
 	return &IcebergTableInformation{
 		MetadataLocation: info.MetadataLocation,
+	}, nil
+}
+
+type clusteringInformationDbStruct struct {
+	ClusterByKeys               string                         `json:"cluster_by_keys"`
+	TotalPartitionCount         int                            `json:"total_partition_count"`
+	TotalConstantPartitionCount int                            `json:"total_constant_partition_count"`
+	AverageOverlaps             float64                        `json:"average_overlaps"`
+	AverageDepth                float64                        `json:"average_depth"`
+	PartitionDepthHistogram     map[string]int                 `json:"partition_depth_histogram"`
+	ClusteringErrors            []clusteringErrorEntryDbStruct `json:"clustering_errors"`
+}
+
+type clusteringErrorEntryDbStruct struct {
+	Timestamp string `json:"timestamp"`
+	Error     string `json:"error"`
+}
+
+type ClusteringInformation struct {
+	ClusterByKeys               string
+	TotalPartitionCount         int
+	TotalConstantPartitionCount int
+	AverageOverlaps             float64
+	AverageDepth                float64
+	PartitionDepthHistogram     map[string]int
+	ClusteringErrors            []ClusteringError
+}
+
+type ClusteringError struct {
+	Timestamp string
+	Error     string
+}
+
+// GetClusteringInformation is an implementation of SYSTEM$CLUSTERING_INFORMATION - see https://docs.snowflake.com/en/sql-reference/functions/system_clustering_information.
+// The clustering key is not returned by SHOW/DESCRIBE for Iceberg tables, so this is the way to verify it.
+func (c *systemFunctions) GetClusteringInformation(ctx context.Context, id SchemaObjectIdentifier, columns ...string) (*ClusteringInformation, error) {
+	row := &struct {
+		Info string `db:"CLUSTERING_INFORMATION"`
+	}{}
+	var columnsArg string
+	if len(columns) > 0 {
+		columnsArg = fmt.Sprintf(`, '(%s)'`, strings.Join(columns, ", "))
+	}
+	sql := fmt.Sprintf(`SELECT SYSTEM$CLUSTERING_INFORMATION('%s'%s) AS "CLUSTERING_INFORMATION"`, id.FullyQualifiedName(), columnsArg)
+	err := c.client.queryOne(ctx, row, sql)
+	if err != nil {
+		return nil, err
+	}
+	return parseClusteringInformation(row.Info)
+}
+
+func parseClusteringInformation(raw string) (*ClusteringInformation, error) {
+	var info clusteringInformationDbStruct
+	if err := json.Unmarshal([]byte(raw), &info); err != nil {
+		return nil, err
+	}
+
+	return &ClusteringInformation{
+		ClusterByKeys:               info.ClusterByKeys,
+		TotalPartitionCount:         info.TotalPartitionCount,
+		TotalConstantPartitionCount: info.TotalConstantPartitionCount,
+		AverageOverlaps:             info.AverageOverlaps,
+		AverageDepth:                info.AverageDepth,
+		PartitionDepthHistogram:     info.PartitionDepthHistogram,
+		ClusteringErrors: collections.Map(info.ClusteringErrors, func(entry clusteringErrorEntryDbStruct) ClusteringError {
+			return ClusteringError{
+				Timestamp: entry.Timestamp,
+				Error:     entry.Error,
+			}
+		}),
 	}, nil
 }
