@@ -2239,10 +2239,10 @@ const (
 	ParameterTypeWarehouse        ParameterType = "WAREHOUSE"
 	ParameterTypeDatabase         ParameterType = "DATABASE"
 	ParameterTypeSchema           ParameterType = "SCHEMA"
+	ParameterTypeTable            ParameterType = "TABLE"
 	ParameterTypeTask             ParameterType = "TASK"
 	ParameterTypeFunction         ParameterType = "FUNCTION"
 	ParameterTypeProcedure        ParameterType = "PROCEDURE"
-	ParameterTypeTable            ParameterType = "TABLE"
 )
 
 var AllParameterTypes = []ParameterType{
@@ -2254,10 +2254,10 @@ var AllParameterTypes = []ParameterType{
 	ParameterTypeWarehouse,
 	ParameterTypeDatabase,
 	ParameterTypeSchema,
+	ParameterTypeTable,
 	ParameterTypeTask,
 	ParameterTypeFunction,
 	ParameterTypeProcedure,
-	ParameterTypeTable,
 	ParameterTypeSnowflakeDefault,
 }
 

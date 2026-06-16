@@ -33,10 +33,12 @@ var complexListAttributesOverrides = map[string]map[string]string{
 	"RowAccessPolicy":               {"argument": "sdk.TableColumnSignature"},
 	"TagAssociation":                {"object_identifiers": "sdk.ObjectIdentifier"},
 	// TODO [SNOW-1348114]: use better type for override (not null and default are currently not supported)
+	"HybridTable":             {"column": "sdk.TableColumnSignature", "primary_key": "sdk.TableColumnSignature", "unique_constraint": "sdk.TableColumnSignature", "foreign_key": "sdk.TableColumnSignature"},
 	"Table":                   {"column": "sdk.TableColumnSignature"},
 	"SemanticView":            {"tables": "sdk.LogicalTable", "metrics": "sdk.MetricDefinition", "facts": "sdk.SemanticExpression", "dimensions": "sdk.SemanticExpression", "relationships": "sdk.SemanticViewRelationship"},
 	"DynamicTable":            {"target_lag": "sdk.TargetLag"},
 	"StorageIntegrationAws":   {"storage_allowed_locations": "sdk.StorageLocation"},
 	"StorageIntegrationAzure": {"storage_allowed_locations": "sdk.StorageLocation"},
 	"StorageIntegrationGcs":   {"storage_allowed_locations": "sdk.StorageLocation"},
+	"StorageLifecyclePolicy":  {"argument": "sdk.TableColumnSignature"},
 }

@@ -674,6 +674,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_storage_integration_aws":                                      resources.StorageIntegrationAws(),
 		"snowflake_storage_integration_azure":                                    resources.StorageIntegrationAzure(),
 		"snowflake_storage_integration_gcs":                                      resources.StorageIntegrationGcs(),
+		"snowflake_storage_lifecycle_policy":                                     resources.StorageLifecyclePolicy(),
 		"snowflake_stream_on_directory_table":                                    resources.StreamOnDirectoryTable(),
 		"snowflake_stream_on_external_table":                                     resources.StreamOnExternalTable(),
 		"snowflake_stream_on_table":                                              resources.StreamOnTable(),

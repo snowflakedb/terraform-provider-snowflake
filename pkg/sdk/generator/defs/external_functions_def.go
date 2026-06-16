@@ -45,7 +45,6 @@ var externalFunctionUnset = g.NewQueryStruct("ExternalFunctionUnset").
 	OptionalSQL("RESPONSE_TRANSLATOR").
 	WithValidation(g.AtLeastOneValueSet, "Comment", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "Secure", "RequestTranslator", "ResponseTranslator")
 
-// TODO [next PRs]: support adding a field only in plain struct (in this case: `Arguments`)
 var externalFunctionPairs = g.StructPair("externalFunctionRow", "ExternalFunction").
 	Text("created_on").
 	Text("name").
@@ -56,6 +55,7 @@ var externalFunctionPairs = g.StructPair("externalFunctionRow", "ExternalFunctio
 	Number("min_num_arguments").
 	Number("max_num_arguments").
 	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
+	PlainOnlyField("Arguments", "[]DataType").
 	Text("description").
 	Field("catalog_name", "sql.NullString", "string", g.WithManualConvert()).
 	BoolFromText("is_table_function").

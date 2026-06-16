@@ -4,7 +4,6 @@ package sdk
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -89,12 +88,11 @@ func (v *tasks) Execute(ctx context.Context, request *ExecuteTaskRequest) error 
 
 func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 	opts := &CreateTaskOptions{
-		OrReplace:   r.OrReplace,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-		// Warehouse handled below manually
-		Schedule: r.Schedule,
-		// Config handled below manually
+		OrReplace:                               r.OrReplace,
+		IfNotExists:                             r.IfNotExists,
+		name:                                    r.name,
+		Schedule:                                r.Schedule,
+		Config:                                  r.Config,
 		AllowOverlappingExecution:               r.AllowOverlappingExecution,
 		SessionParameters:                       r.SessionParameters,
 		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
@@ -112,26 +110,20 @@ func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 		When:                                    r.When,
 		sql:                                     r.sql,
 	}
-	// added manually
 	if r.Warehouse != nil {
 		opts.Warehouse = &CreateTaskWarehouse{
 			Warehouse:                           r.Warehouse.Warehouse,
 			UserTaskManagedInitialWarehouseSize: r.Warehouse.UserTaskManagedInitialWarehouseSize,
 		}
 	}
-	// added manually
-	if r.Config != nil {
-		opts.Config = String(fmt.Sprintf("$$%s$$", *r.Config))
-	}
 	return opts
 }
 
 func (r *CreateOrAlterTaskRequest) toOpts() *CreateOrAlterTaskOptions {
 	opts := &CreateOrAlterTaskOptions{
-		name: r.name,
-		// Warehouse handled below manually
-		Schedule: r.Schedule,
-		// Config handled below manually
+		name:                        r.name,
+		Schedule:                    r.Schedule,
+		Config:                      r.Config,
 		AllowOverlappingExecution:   r.AllowOverlappingExecution,
 		UserTaskTimeoutMs:           r.UserTaskTimeoutMs,
 		SessionParameters:           r.SessionParameters,
@@ -144,16 +136,11 @@ func (r *CreateOrAlterTaskRequest) toOpts() *CreateOrAlterTaskOptions {
 		When:                        r.When,
 		sql:                         r.sql,
 	}
-	// added manually
 	if r.Warehouse != nil {
 		opts.Warehouse = &CreateTaskWarehouse{
 			Warehouse:                           r.Warehouse.Warehouse,
 			UserTaskManagedInitialWarehouseSize: r.Warehouse.UserTaskManagedInitialWarehouseSize,
 		}
-	}
-	// added manually
-	if r.Config != nil {
-		opts.Config = String(fmt.Sprintf("$$%s$$", *r.Config))
 	}
 	return opts
 }
@@ -186,10 +173,10 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &TaskSet{
-			Warehouse:                           r.Set.Warehouse,
-			UserTaskManagedInitialWarehouseSize: r.Set.UserTaskManagedInitialWarehouseSize,
-			Schedule:                            r.Set.Schedule,
-			// Config handled below manually
+			Warehouse:                               r.Set.Warehouse,
+			UserTaskManagedInitialWarehouseSize:     r.Set.UserTaskManagedInitialWarehouseSize,
+			Schedule:                                r.Set.Schedule,
+			Config:                                  r.Set.Config,
 			AllowOverlappingExecution:               r.Set.AllowOverlappingExecution,
 			UserTaskTimeoutMs:                       r.Set.UserTaskTimeoutMs,
 			SuspendTaskAfterNumFailures:             r.Set.SuspendTaskAfterNumFailures,
@@ -201,10 +188,6 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			TargetCompletionInterval:                r.Set.TargetCompletionInterval,
 			ServerlessTaskMinStatementSize:          r.Set.ServerlessTaskMinStatementSize,
 			ServerlessTaskMaxStatementSize:          r.Set.ServerlessTaskMaxStatementSize,
-		}
-		// added manually
-		if r.Set.Config != nil {
-			opts.Set.Config = String(fmt.Sprintf("$$%s$$", *r.Set.Config))
 		}
 	}
 	if r.Unset != nil {

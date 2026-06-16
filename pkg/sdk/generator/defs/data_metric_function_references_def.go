@@ -25,13 +25,30 @@ var dataMetricFunctionReferenceFunctionArgumentsDef = g.NewQueryStruct("dataMetr
 	WithValidation(g.ValidateValueSet, "RefEntityDomain").
 	WithValidation(g.ValidateValueSet, "refEntityName")
 
+var dataMetricFunctionReferencePairs = g.StructPair("dataMetricFunctionReferencesRow", "DataMetricFunctionReference").
+	Text("METRIC_DATABASE_NAME", g.WithManualConvert()).
+	Text("METRIC_SCHEMA_NAME", g.WithManualConvert()).
+	Text("METRIC_NAME", g.WithManualConvert()).
+	Text("METRIC_SIGNATURE", g.WithPlainFieldName("ArgumentSignature")).
+	Text("METRIC_DATA_TYPE", g.WithPlainFieldName("DataType")).
+	Text("REF_ENTITY_DATABASE_NAME", g.WithManualConvert()).
+	Text("REF_ENTITY_SCHEMA_NAME", g.WithManualConvert()).
+	Text("REF_ENTITY_NAME", g.WithManualConvert()).
+	Text("REF_ENTITY_DOMAIN").
+	JsonField("REF_ARGUMENTS", "[]DataMetricFunctionRefArgument").
+	Text("REF_ID").
+	Text("SCHEDULE").
+	Text("SCHEDULE_STATUS")
+
 var dataMetricFunctionReferencesDef = g.NewInterface(
 	"DataMetricFunctionReferences",
 	"DataMetricFunctionReference",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
-).CustomOperation(
+).CustomShowOperationWithPairedStructs(
 	"GetForEntity",
+	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/functions/data_metric_function_references",
+	dataMetricFunctionReferencePairs,
 	g.NewQueryStruct("GetForEntity").
 		SQLWithCustomFieldName("selectEverythingFrom", "SELECT * FROM TABLE").
 		OptionalQueryStructField(
@@ -39,36 +56,7 @@ var dataMetricFunctionReferencesDef = g.NewInterface(
 			dataMetricFunctionReferenceParametersDef,
 			g.ListOptions().Parentheses().NoComma().Required(),
 		).WithValidation(g.ValidateValueSet, "parameters"),
-	dataMetricFunctionReferenceParametersDef,
 	dataMetricFunctionReferenceFunctionArgumentsDef,
-	g.DbStruct("dataMetricFunctionReferencesRow").
-		Text("METRIC_DATABASE_NAME").
-		Text("METRIC_SCHEMA_NAME").
-		Text("METRIC_NAME").
-		Text("METRIC_SIGNATURE").
-		Text("METRIC_DATA_TYPE").
-		Text("REF_ENTITY_DATABASE_NAME").
-		Text("REF_ENTITY_SCHEMA_NAME").
-		Text("REF_ENTITY_NAME").
-		Text("REF_ENTITY_DOMAIN").
-		Text("REF_ARGUMENTS").
-		Text("REF_ID").
-		Text("SCHEDULE").
-		Text("SCHEDULE_STATUS"),
-	g.PlainStruct("DataMetricFunctionReference").
-		Text("MetricDatabaseName").
-		Text("MetricSchemaName").
-		Text("MetricName").
-		Text("ArgumentSignature").
-		Text("DataType").
-		Text("RefEntityDatabaseName").
-		Text("RefEntitySchemaName").
-		Text("RefEntityName").
-		Text("RefEntityDomain").
-		Field("RefArguments", "[]DataMetricFunctionRefArgument").
-		Text("RefId").
-		Text("Schedule").
-		Text("ScheduleStatus"),
 ).WithEnums(
 	DataMetricFunctionRefEntityDomainOptionEnumDef,
 )

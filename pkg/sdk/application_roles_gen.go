@@ -7,13 +7,6 @@ import (
 	"time"
 )
 
-// Added the description manually.
-// ApplicationRoles is an interface that allows for querying application roles.
-// It does not allow for other DDL queries (CREATE, ALTER, DROP, ...) to be called, because they are not possible
-// to be called from the program level. Application roles are a special case where they're only usable
-// inside application context (e.g. setup.sql). Right now, they can be only manipulated from the program context
-// by applying debug_mode parameter to the application, but it's a hacky solution and even with that you're limited with GRANT and REVOKE options.
-// That's why we're only exposing SHOW operations, because only they are the only allowed operations to be called from the program context.
 type ApplicationRoles interface {
 	Grant(ctx context.Context, request *GrantApplicationRoleRequest) error
 	Revoke(ctx context.Context, request *RevokeApplicationRoleRequest) error

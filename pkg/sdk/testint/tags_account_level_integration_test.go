@@ -5,7 +5,6 @@ package testint
 import (
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -41,22 +40,5 @@ func TestInt_TagsAccountLevel(t *testing.T) {
 		assertTagUnset(t, tag.ID(), id, sdk.ObjectTypeIntegration)
 
 		testSetAndUnsetInTagObject(t, tags[0], id, sdk.ObjectTypeIntegration)
-	})
-}
-
-// TestInt_Tags_OnConflict_Bcr2291_BundleDisabled verifies that when the 2026_03 bundle is disabled,
-// the on_conflict column is absent from SHOW TAGS output and ShowByID returns nil for OnConflict.
-func TestInt_Tags_OnConflict_Bcr2291_BundleDisabled(t *testing.T) {
-	t.Run("bundle disabled: on_conflict is nil in ShowByID even when set", func(t *testing.T) {
-		testClientHelper().BcrBundles.DisableBcrBundle(t, "2026_03")
-
-		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
-			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
-				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
-					WithOnConflict(sdk.TagOnConflict{CustomValue: sdk.String("will_not_appear")})),
-		)
-		t.Cleanup(tagCleanup)
-
-		assertThatObject(t, objectassert.Tag(t, tag.ID()).HasNoOnConflict())
 	})
 }

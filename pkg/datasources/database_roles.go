@@ -74,7 +74,7 @@ func DatabaseRoles() *schema.Resource {
 
 func ReadDatabaseRoles(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	req := sdk.NewShowDatabaseRoleRequest(sdk.NewAccountObjectIdentifier(d.Get("in_database").(string)))
+	req := sdk.NewShowDatabaseRoleRequest().WithDatabase(sdk.NewAccountObjectIdentifier(d.Get("in_database").(string)))
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		req.WithLike(sdk.Like{
@@ -101,6 +101,12 @@ func ReadDatabaseRoles(ctx context.Context, d *schema.ResourceData, meta any) di
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	databaseName := d.Get("in_database").(string)
+	for i := range databaseRoles {
+		databaseRoles[i].DatabaseName = databaseName
+	}
+
 	d.SetId("database_roles_read")
 
 	flattenedDatabaseRoles := make([]map[string]any, len(databaseRoles))
