@@ -65,25 +65,6 @@ func ApiIntegrationGoogleCloudApiGateway() *schema.Resource {
 	}
 }
 
-func CreateApiIntegrationGoogleCloudApiGateway(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, request, err := handleApiIntegrationCommonCreate(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	googleParams := sdk.NewGoogleApiParamsRequest(d.Get("google_audience").(string))
-
-	if err = client.ApiIntegrations.Create(ctx, request.WithGoogleApiProviderParams(*googleParams)); err != nil {
-		return diag.FromErr(fmt.Errorf("error creating Google Cloud API integration: %w", err))
-	}
-
-	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	return ReadApiIntegrationGoogleCloudApiGateway(ctx, d, meta)
-}
-
 func ImportApiIntegrationGoogleCloudApiGateway(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -106,6 +87,25 @@ func ImportApiIntegrationGoogleCloudApiGateway(ctx context.Context, d *schema.Re
 	}
 
 	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+}
+
+func CreateApiIntegrationGoogleCloudApiGateway(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, request, err := handleApiIntegrationCommonCreate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	googleParams := sdk.NewGoogleApiParamsRequest(d.Get("google_audience").(string))
+
+	if err = client.ApiIntegrations.Create(ctx, request.WithGoogleApiProviderParams(*googleParams)); err != nil {
+		return diag.FromErr(fmt.Errorf("error creating Google Cloud API integration: %w", err))
+	}
+
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+
+	return ReadApiIntegrationGoogleCloudApiGateway(ctx, d, meta)
 }
 
 func ReadApiIntegrationGoogleCloudApiGateway(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

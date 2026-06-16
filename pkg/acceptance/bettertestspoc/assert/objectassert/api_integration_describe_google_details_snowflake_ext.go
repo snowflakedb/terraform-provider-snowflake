@@ -54,11 +54,11 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasEnabled(expected bool) *ApiIntegr
 	return a
 }
 
-func (a *ApiIntegrationGoogleDetailsAssert) HasApiKey(expected string) *ApiIntegrationGoogleDetailsAssert {
+func (a *ApiIntegrationGoogleDetailsAssert) HasApiKeyEmpty() *ApiIntegrationGoogleDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
 		t.Helper()
-		if o.ApiKey != expected {
-			return fmt.Errorf("expected api key: %v; got: %v", expected, o.ApiKey)
+		if o.ApiKey != "" {
+			return fmt.Errorf("expected api key: %v to be empty", o.ApiKey)
 		}
 		return nil
 	})

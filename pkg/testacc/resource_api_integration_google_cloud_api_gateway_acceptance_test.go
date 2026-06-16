@@ -64,7 +64,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 			HasGoogleAudience(googleAudience).
 			HasAllowedPrefixes(allowedPrefix).
 			HasNoBlockedPrefixes().
-			HasApiKey("").
+			HasApiKeyEmpty().
 			HasComment("").
 			HasGoogleApiServiceAccountNotEmpty(),
 	}
@@ -92,7 +92,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 			HasGoogleAudience(googleAudience).
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
-			HasApiKey("").
+			HasApiKeyEmpty().
 			HasComment(comment).
 			HasGoogleApiServiceAccountNotEmpty(),
 	}
@@ -221,7 +221,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_CompleteUseCase(t *testing.T) {
 			HasGoogleAudience(googleAudience).
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
-			HasApiKey("").
+			HasApiKeyEmpty().
 			HasComment(comment).
 			HasGoogleApiServiceAccountNotEmpty(),
 	}
