@@ -40,4 +40,5 @@ var complexListAttributesOverrides = map[string]map[string]string{
 	"StorageIntegrationAws":   {"storage_allowed_locations": "sdk.StorageLocation"},
 	"StorageIntegrationAzure": {"storage_allowed_locations": "sdk.StorageLocation"},
 	"StorageIntegrationGcs":   {"storage_allowed_locations": "sdk.StorageLocation"},
+	"StorageLifecyclePolicy":  {"argument": "sdk.TableColumnSignature"},
 }

@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new feature)* New storage lifecycle policy resource
+
+We have added a new preview resource for managing storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_storage_lifecycle_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(new feature)* `log_event_level` parameter support
 
 We added support for the [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level) parameter, following the same handling as the existing `log_level` parameter. The new `log_event_level` field is now available in the following resources:
