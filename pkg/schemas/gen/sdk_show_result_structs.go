@@ -57,6 +57,7 @@ var SdkShowResultStructs = []any{
 	sdk.Share{},
 	sdk.Stage{},
 	sdk.StorageIntegration{},
+	sdk.StorageLifecyclePolicy{},
 	sdk.Streamlit{},
 	sdk.Stream{},
 	sdk.Table{},

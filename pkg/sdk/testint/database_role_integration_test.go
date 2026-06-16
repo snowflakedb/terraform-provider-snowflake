@@ -101,14 +101,14 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupDatabaseRoleProvider(id))
 
-		alterRequest := sdk.NewAlterDatabaseRoleRequest(id).WithSet(*sdk.NewDatabaseRoleSetRequest("new comment"))
+		alterRequest := sdk.NewAlterDatabaseRoleRequest(id).WithSet(*sdk.NewDatabaseRoleSetRequest().WithComment("new comment"))
 		err = client.DatabaseRoles.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.DatabaseRole(t, id).
 			HasComment("new comment"))
 
-		alterRequest = sdk.NewAlterDatabaseRoleRequest(id).WithUnset(*sdk.NewDatabaseRoleUnsetRequest())
+		alterRequest = sdk.NewAlterDatabaseRoleRequest(id).WithUnset(*sdk.NewDatabaseRoleUnsetRequest().WithComment(true))
 		err = client.DatabaseRoles.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -160,14 +160,18 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		alterRequest := sdk.NewAlterDatabaseRoleRequest(id).WithRename(newId)
 
 		err = client.DatabaseRoles.Alter(ctx, alterRequest)
-		assert.ErrorIs(t, err, sdk.ErrDifferentDatabase)
+		assert.ErrorContains(t, err, sdk.ErrDifferentDatabase.Error())
 	})
 
 	t.Run("show database_role: without like", func(t *testing.T) {
 		role1 := createDatabaseRole(t)
 		role2 := createDatabaseRole(t)
 
-		showRequest := sdk.NewShowDatabaseRoleRequest(testClientHelper().Ids.DatabaseId())
+		// TODO [next PR]: introduce a hook after convert for cases like this one (database name is not one of the returned columns, so we need to fill it out based on the request)
+		role1.DatabaseName = ""
+		role2.DatabaseName = ""
+
+		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId())
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 		require.NoError(t, err)
 
@@ -180,7 +184,11 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		role1 := createDatabaseRole(t)
 		role2 := createDatabaseRole(t)
 
-		showRequest := sdk.NewShowDatabaseRoleRequest(testClientHelper().Ids.DatabaseId()).WithLike(sdk.Like{Pattern: &role1.Name})
+		// TODO [next PR]: introduce a hook after convert for cases like this one (database name is not one of the returned columns, so we need to fill it out based on the request)
+		role1.DatabaseName = ""
+		role2.DatabaseName = ""
+
+		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId()).WithLike(sdk.Like{Pattern: &role1.Name})
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 
 		require.NoError(t, err)
@@ -200,7 +208,11 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		role2, cleanupRole2 := testClientHelper().DatabaseRole.CreateDatabaseRoleWithName(t, roleId2)
 		t.Cleanup(cleanupRole2)
 
-		showRequest := sdk.NewShowDatabaseRoleRequest(testClientHelper().Ids.DatabaseId()).
+		// TODO [next PR]: introduce a hook after convert for cases like this one (database name is not one of the returned columns, so we need to fill it out based on the request)
+		role1.DatabaseName = ""
+		role2.DatabaseName = ""
+
+		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId()).
 			WithLike(sdk.Like{
 				Pattern: sdk.Pointer(prefix + "%"),
 			}).
@@ -217,7 +229,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 	})
 
 	t.Run("show database_role: no matches", func(t *testing.T) {
-		showRequest := sdk.NewShowDatabaseRoleRequest(testClientHelper().Ids.DatabaseId()).WithLike(sdk.Like{Pattern: sdk.Pointer("non-existent")})
+		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId()).WithLike(sdk.Like{Pattern: sdk.Pointer("non-existent")})
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 
 		require.NoError(t, err)
@@ -280,11 +292,11 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		err := client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{Database: testClientHelper().Ids.DatabaseId()}, share.ID())
 		require.NoError(t, err)
 
-		grantRequest := sdk.NewGrantDatabaseRoleToShareRequest(roleId, share.ID())
+		grantRequest := sdk.NewGrantToShareDatabaseRoleRequest(roleId, share.ID())
 		err = client.DatabaseRoles.GrantToShare(ctx, grantRequest)
 		require.NoError(t, err)
 
-		revokeRequest := sdk.NewRevokeDatabaseRoleFromShareRequest(roleId, share.ID())
+		revokeRequest := sdk.NewRevokeFromShareDatabaseRoleRequest(roleId, share.ID())
 		err = client.DatabaseRoles.RevokeFromShare(ctx, revokeRequest)
 		require.NoError(t, err)
 	})

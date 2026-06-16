@@ -412,6 +412,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.StorageIntegrationGcs: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
 	},
+	resources.StorageLifecyclePolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageLifecyclePolicies.ShowByID)
+	},
 	resources.StreamOnDirectoryTable: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Streams.ShowByID)
 	},

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -483,4 +484,72 @@ func TestStageLocation(t *testing.T) {
 
 		assert.Equal(t, "", identifier.ToSql())
 	})
+}
+
+func Test_ParseTableColumnSignatureWithVectorSupport(t *testing.T) {
+	mustParseDataType := func(raw string) datatypes.DataType {
+		dt, err := datatypes.ParseDataType(raw)
+		require.NoError(t, err)
+		return dt
+	}
+
+	testCases := []struct {
+		Name          string
+		Input         string
+		Expected      []TableColumnSignature
+		ExpectedError string
+	}{
+		{
+			Name:  "single argument",
+			Input: "(VAL VARCHAR)",
+			Expected: []TableColumnSignature{
+				{Name: "VAL", Type: mustParseDataType("VARCHAR")},
+			},
+		},
+		{
+			Name:  "multiple arguments",
+			Input: "(VAL VARCHAR, NUM NUMBER(38, 0))",
+			Expected: []TableColumnSignature{
+				{Name: "VAL", Type: mustParseDataType("VARCHAR")},
+				{Name: "NUM", Type: mustParseDataType("NUMBER(38, 0)")},
+			},
+		},
+		{
+			Name:  "vector argument",
+			Input: "(ID VECTOR(FLOAT, 768))",
+			Expected: []TableColumnSignature{
+				{Name: "ID", Type: mustParseDataType("VECTOR(FLOAT, 768)")},
+			},
+		},
+		{
+			Name:  "vector argument mixed with others",
+			Input: "(VAL VARCHAR, ID VECTOR(FLOAT, 768))",
+			Expected: []TableColumnSignature{
+				{Name: "VAL", Type: mustParseDataType("VARCHAR")},
+				{Name: "ID", Type: mustParseDataType("VECTOR(FLOAT, 768)")},
+			},
+		},
+		{
+			Name:          "validation: unparseable data type",
+			Input:         "(VAL INVALID_TYPE)",
+			ExpectedError: "invalid data type",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			result, err := ParseTableColumnSignatureWithVectorSupport(tc.Input)
+			if tc.ExpectedError != "" {
+				assert.ErrorContains(t, err, tc.ExpectedError)
+				return
+			}
+			require.NoError(t, err)
+			require.Len(t, result, len(tc.Expected))
+			for i := range tc.Expected {
+				assert.Equal(t, tc.Expected[i].Name, result[i].Name)
+				assert.Truef(t, datatypes.AreTheSame(tc.Expected[i].Type, result[i].Type),
+					"expected type %s, got %s", tc.Expected[i].Type.ToSql(), result[i].Type.ToSql())
+			}
+		})
+	}
 }

@@ -44,8 +44,26 @@ func TestInt_IcebergTables(t *testing.T) {
 	t.Cleanup(dbForIcebergFilesCleanup)
 	schemaIdForIcebergFiles := sdk.NewDatabaseObjectIdentifier(dbForIcebergFiles.ID().Name(), "PUBLIC")
 
+	deltaBaseLocation := "delta_lake_test_table"
+
+	catalogForDeltaLakeId, catalogForDeltaLakeCleanup := testClientHelper().CatalogIntegration.CreateFunc(t,
+		sdk.NewCreateCatalogIntegrationRequest(testClientHelper().Ids.RandomAccountObjectIdentifier(), true).
+			WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta)),
+	)
+	t.Cleanup(catalogForDeltaLakeCleanup)
+
+	dbForDeltaLake, dbForDeltaLakeCleanup := testClientHelper().Database.CreateDatabaseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
+		Catalog:        new(catalogForDeltaLakeId),
+		ExternalVolume: new(externalVolumeId),
+	})
+	t.Cleanup(dbForDeltaLakeCleanup)
+	schemaIdForDeltaLake := sdk.NewDatabaseObjectIdentifier(dbForDeltaLake.ID().Name(), "PUBLIC")
+
 	contactId, contactCleanup := testClientHelper().Contact.Create(t)
 	t.Cleanup(contactCleanup)
+
+	rowAccessPolicy1, rowAccessPolicy1Cleanup := testClientHelper().RowAccessPolicy.CreateRowAccessPolicy(t)
+	t.Cleanup(rowAccessPolicy1Cleanup)
 
 	assertPolicyReference := func(t *testing.T, policyRef sdk.PolicyReference,
 		policyId sdk.SchemaObjectIdentifier,
@@ -109,7 +127,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeNumber_38_0).
 			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -192,7 +210,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeNumber_38_0).
 			HasSourceIcebergType(testdatatypes.DataTypeDecimal_38_0.ToSql()).
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -210,7 +228,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeTimestampNTZ_6).
 			HasSourceIcebergType("TIMESTAMP").
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -228,7 +246,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeVarcharIceberg).
 			HasSourceIcebergType("STRING").
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasNoDefault().
 			HasPrimaryKey(false).
 			HasUniqueKey(true).
@@ -259,7 +277,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasType(def.typ).
 				HasSourceIcebergType(def.sourceIceberg).
 				HasKind("COLUMN").
-				HasIsNullable(false).
+				HasIsNullable(true).
 				HasNoDefault().
 				HasPrimaryKey(false).
 				HasUniqueKey(false).
@@ -277,7 +295,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasType(testdatatypes.DataTypeVarcharIceberg).
 			HasSourceIcebergType("STRING").
 			HasKind("COLUMN").
-			HasIsNullable(false).
+			HasIsNullable(true).
 			HasDefault("'active'").
 			HasPrimaryKey(false).
 			HasUniqueKey(false).
@@ -653,6 +671,876 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("create from delta lake: basic", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForDeltaLake)
+
+		err := client.IcebergTables.CreateFromDeltaLake(ctx, sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, deltaBaseLocation))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner("ACCOUNTADMIN").
+			HasExternalVolumeName(externalVolumeId).
+			HasCatalogName(catalogForDeltaLakeId).
+			HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+			HasNoCatalogTableName().
+			HasNoCatalogNamespace().
+			HasCanWriteMetadata(true).
+			HasComment("").
+			HasNoNameMapping().
+			HasOwnerRoleType("ROLE").
+			HasCatalogSyncName("").
+			HasAutoRefreshStatus(""),
+		)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasCatalog(catalogForDeltaLakeId.Name()).
+			HasExternalVolume(externalVolumeId.Name()).
+			HasReplaceInvalidCharacters(false),
+		)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, details)
+		for _, col := range details {
+			assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &col).
+				HasKind("COLUMN").
+				HasNoPolicyName().
+				HasNoPrivacyDomain().
+				HasNoWriteDefault(),
+			)
+		}
+	})
+
+	t.Run("create from delta lake: all options", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.IcebergTables.CreateFromDeltaLake(ctx, sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, deltaBaseLocation).
+			WithOrReplace(true).
+			WithExternalVolume(externalVolumeId).
+			WithCatalog(catalogForDeltaLakeId).
+			WithReplaceInvalidCharacters(true).
+			WithAutoRefresh(false).
+			WithComment("integration test").
+			WithContact([]sdk.TableContact{
+				{Purpose: "SUPPORT", Contact: contactId},
+			}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner("ACCOUNTADMIN").
+			HasExternalVolumeName(externalVolumeId).
+			HasCatalogName(catalogForDeltaLakeId).
+			HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+			HasNoCatalogTableName().
+			HasNoCatalogNamespace().
+			HasCanWriteMetadata(true).
+			HasComment("integration test").
+			HasNoNameMapping().
+			HasOwnerRoleType("ROLE").
+			HasCatalogSyncName("").
+			HasAutoRefreshStatus(""),
+		)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasCatalog(catalogForDeltaLakeId.FullyQualifiedName()).
+			HasExternalVolume(externalVolumeId.FullyQualifiedName()).
+			HasReplaceInvalidCharacters(true),
+		)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, details)
+		for _, col := range details {
+			assertThatObject(t, objectassert.IcebergTableDetailsFromObject(t, &col).
+				HasKind("COLUMN").
+				HasNoPolicyName().
+				HasNoPrivacyDomain().
+				HasNoWriteDefault(),
+			)
+		}
+	})
+
+	t.Run("create from delta lake: if not exists", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForDeltaLake)
+
+		err := client.IcebergTables.CreateFromDeltaLake(ctx, sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, deltaBaseLocation))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// IF NOT EXISTS should not error when the table already exists.
+		err = client.IcebergTables.CreateFromDeltaLake(ctx, sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, deltaBaseLocation).
+			WithIfNotExists(true))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: add column", func(t *testing.T) {
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAddColumnAction(*sdk.NewIcebergTableAddColumnActionRequest("STATUS", testdatatypes.DataTypeVarcharIceberg)))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 2)
+		assert.Equal(t, "STATUS", details[1].Name)
+	})
+
+	t.Run("alter: add column if not exists", func(t *testing.T) {
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAddColumnAction(*sdk.NewIcebergTableAddColumnActionRequest("STATUS", testdatatypes.DataTypeVarcharIceberg).WithIfNotExists(true)))
+		require.NoError(t, err)
+
+		// Adding the same column again with IF NOT EXISTS should not error.
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAddColumnAction(*sdk.NewIcebergTableAddColumnActionRequest("STATUS", testdatatypes.DataTypeVarcharIceberg).WithIfNotExists(true)))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: drop column", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "STATUS", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithDropColumnAction(*sdk.NewTableDropColumnActionRequest([]sdk.Column{{Value: "STATUS"}})))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+		assert.Equal(t, "ID", details[0].Name)
+	})
+
+	t.Run("alter: rename column", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "OLD_NAME", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithRenameColumnAction(*sdk.NewTableRenameColumnActionRequest("OLD_NAME").WithNewName("NEW_NAME")))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		names := make([]string, len(details))
+		for i, d := range details {
+			names[i] = d.Name
+		}
+		assert.Contains(t, names, "NEW_NAME")
+		assert.NotContains(t, names, "OLD_NAME")
+	})
+
+	t.Run("alter: alter column set/drop not null", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "STATUS", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
+				*sdk.NewIcebergTableAlterColumnActionRequest("STATUS").WithSetNotNull(true),
+			}))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		statusIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NotEqual(t, -1, statusIdx)
+		assert.False(t, details[statusIdx].IsNullable)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
+				*sdk.NewIcebergTableAlterColumnActionRequest("STATUS").WithDropNotNull(true),
+			}))
+		require.NoError(t, err)
+
+		details, err = client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		statusIdx = slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NotEqual(t, -1, statusIdx)
+		assert.True(t, details[statusIdx].IsNullable)
+	})
+
+	t.Run("alter: alter column set/unset comment", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
+				*sdk.NewIcebergTableAlterColumnActionRequest("ID").WithComment("my comment"),
+			}))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+		require.NotNil(t, details[0].Comment)
+		assert.Equal(t, "my comment", *details[0].Comment)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
+				*sdk.NewIcebergTableAlterColumnActionRequest("ID").WithUnsetComment(true),
+			}))
+		require.NoError(t, err)
+
+		details, err = client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+		assert.Nil(t, details[0].Comment)
+	})
+
+	t.Run("alter: alter column set/drop write default", func(t *testing.T) {
+		// WRITE DEFAULT requires an Iceberg v3 table; it is not supported on the default v2 tables
+		// used in the other alter tests (err 093695: WRITE DEFAULT feature disabled).
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "STATUS", ColumnType: testdatatypes.DataTypeVarcharIceberg, DefaultValue: &sdk.ColumnDefaultValue{Expression: new("'active'")}},
+			},
+		}).WithIcebergVersion(3))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
+				*sdk.NewIcebergTableAlterColumnActionRequest("STATUS").WithSetWriteDefault("'active'"),
+			}))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		statusIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NotEqual(t, -1, statusIdx)
+		require.NotNil(t, details[statusIdx].WriteDefault)
+		assert.Equal(t, "'active'", *details[statusIdx].WriteDefault)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
+				*sdk.NewIcebergTableAlterColumnActionRequest("STATUS").WithDropWriteDefault(true),
+			}))
+		require.NoError(t, err)
+
+		details, err = client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		statusIdx = slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NotEqual(t, -1, statusIdx)
+		assert.Nil(t, details[statusIdx].WriteDefault)
+	})
+
+	t.Run("alter: set and unset masking policy on column", func(t *testing.T) {
+		// Create the policies before the table so that on cleanup the table (which references a
+		// policy) is dropped first, releasing it before the policies are dropped.
+		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeNumber_38_0)
+		t.Cleanup(maskingPolicyCleanup)
+		maskingPolicy2, maskingPolicy2Cleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeNumber_38_0)
+		t.Cleanup(maskingPolicy2Cleanup)
+
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		// set
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetMaskingPolicyOnColumn(*sdk.NewTableSetColumnMaskingPolicyRequest("ID", maskingPolicy.ID())))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+		require.NotNil(t, details[0].PolicyName)
+		assert.Equal(t, maskingPolicy.ID().Name(), details[0].PolicyName.Name())
+
+		// set with FORCE atomically replaces the existing masking policy on the column
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetMaskingPolicyOnColumn(*sdk.NewTableSetColumnMaskingPolicyRequest("ID", maskingPolicy2.ID()).WithForce(true)))
+		require.NoError(t, err)
+
+		details, err = client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+		require.NotNil(t, details[0].PolicyName)
+		assert.Equal(t, maskingPolicy2.ID().Name(), details[0].PolicyName.Name())
+
+		// set with USING explicitly listing the column the policy is applied to
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetMaskingPolicyOnColumn(*sdk.NewTableSetColumnMaskingPolicyRequest("ID", maskingPolicy.ID()).
+				WithUsing([]sdk.Column{{Value: "ID"}}).WithForce(true)))
+		require.NoError(t, err)
+
+		details, err = client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+		require.NotNil(t, details[0].PolicyName)
+		assert.Equal(t, maskingPolicy.ID().Name(), details[0].PolicyName.Name())
+
+		// unset
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithUnsetMaskingPolicyOnColumn(*sdk.NewTableUnsetColumnMaskingPolicyRequest("ID")))
+		require.NoError(t, err)
+
+		details, err = client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+		assert.Nil(t, details[0].PolicyName)
+	})
+
+	t.Run("alter: set projection policy on column", func(t *testing.T) {
+		projectionPolicy, projectionPolicyCleanup := testClientHelper().ProjectionPolicy.CreateProjectionPolicy(t)
+		t.Cleanup(projectionPolicyCleanup)
+		projectionPolicy2, projectionPolicy2Cleanup := testClientHelper().ProjectionPolicy.CreateProjectionPolicy(t)
+		t.Cleanup(projectionPolicy2Cleanup)
+
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetProjectionPolicyOnColumn(*sdk.NewTableSetColumnProjectionPolicyRequest("ID", projectionPolicy)))
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertPolicyReference(t, references[0], projectionPolicy, sdk.PolicyKindProjectionPolicy, id, new("ID"))
+
+		// set with FORCE atomically replaces the existing projection policy on the column
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetProjectionPolicyOnColumn(*sdk.NewTableSetColumnProjectionPolicyRequest("ID", projectionPolicy2).WithForce(true)))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertPolicyReference(t, references[0], projectionPolicy2, sdk.PolicyKindProjectionPolicy, id, new("ID"))
+
+		// unset
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithUnsetProjectionPolicyOnColumn(*sdk.NewTableUnsetColumnProjectionPolicyRequest("ID")))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		assert.Empty(t, references)
+	})
+
+	t.Run("alter: clustering action - cluster by", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithClusterBy([]string{"REGION"})))
+		require.NoError(t, err)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithDropClusteringKey(true)))
+		require.NoError(t, err)
+
+		// TODO (next PR): verify the clustering key with SYSTEM$CLUSTERING_INFORMATION, as it is not returned from SHOW/DESCRIBE.
+	})
+
+	t.Run("alter: set and unset properties", func(t *testing.T) {
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSet(*sdk.NewIcebergTableSetPropertiesRequest().
+				// REPLACE_INVALID_CHARACTERS and LOG_EVENT_LEVEL are only supported for Iceberg tables using an external catalog - tested in other test
+				WithComment("new comment").
+				WithDataRetentionTimeInDays(2).
+				// TODO (next PRs): handle CATALOG_SYNC
+				WithMaxDataExtensionTimeInDays(5).
+				WithEnableDataCompaction(false).
+				WithTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
+				WithEnableIcebergMergeOnRead(false).
+				WithErrorLogging(false),
+			))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasComment("new comment"),
+		)
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasDataRetentionTimeInDays(2).
+			HasMaxDataExtensionTimeInDays(5).
+			HasEnableDataCompaction(false).
+			HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
+			HasEnableIcebergMergeOnRead(false),
+		)
+		// Error logging is not returned from Snowflake.
+
+		// unset
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithUnset(*sdk.NewIcebergTableUnsetPropertiesRequest().
+				// REPLACE_INVALID_CHARACTERS and LOG_EVENT_LEVEL are only supported for Iceberg tables using an external catalog - tested in other test
+				WithCatalogSync(true).
+				WithDataRetentionTimeInDays(true).
+				WithMaxDataExtensionTimeInDays(true).
+				WithTargetFileSize(true).
+				WithErrorLogging(true).
+				WithEnableDataCompaction(true).
+				WithEnableIcebergMergeOnRead(true).
+				WithComment(true),
+			))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasComment(""),
+		)
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasAllDefaultsExplicit(),
+		)
+	})
+	t.Run("alter: add plus drop row access policy", func(t *testing.T) {
+		rowAccessPolicy, rowAccessPolicyCleanup := testClientHelper().RowAccessPolicy.CreateRowAccessPolicy(t)
+		t.Cleanup(rowAccessPolicyCleanup)
+
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		// add
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAddRowAccessPolicy(sdk.ViewAddRowAccessPolicy{
+				RowAccessPolicy: rowAccessPolicy.ID(),
+				On:              []sdk.Column{{Value: "ID"}},
+			}))
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertPolicyReference(t, references[0], rowAccessPolicy.ID(), sdk.PolicyKindRowAccessPolicy, id, nil)
+
+		// drop
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithDropRowAccessPolicy(sdk.ViewDropRowAccessPolicy{
+				RowAccessPolicy: rowAccessPolicy.ID(),
+			}))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		assert.Empty(t, references)
+	})
+
+	t.Run("alter: drop and add row access policy", func(t *testing.T) {
+		rowAccessPolicy2, rowAccessPolicy2Cleanup := testClientHelper().RowAccessPolicy.CreateRowAccessPolicy(t)
+		t.Cleanup(rowAccessPolicy2Cleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+			},
+		}).WithRowAccessPolicy(sdk.IcebergTableRowAccessPolicyRequest{
+			Name: rowAccessPolicy1.ID(),
+			On:   []sdk.Column{{Value: "ID"}},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithDropAndAddRowAccessPolicy(sdk.ViewDropAndAddRowAccessPolicy{
+				Drop: sdk.ViewDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicy1.ID()},
+				Add:  sdk.ViewAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicy2.ID(), On: []sdk.Column{{Value: "ID"}}},
+			}))
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertPolicyReference(t, references[0], rowAccessPolicy2.ID(), sdk.PolicyKindRowAccessPolicy, id, nil)
+	})
+
+	t.Run("alter: drop all row access policies", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+			},
+		}).WithRowAccessPolicy(sdk.IcebergTableRowAccessPolicyRequest{
+			Name: rowAccessPolicy1.ID(),
+			On:   []sdk.Column{{Value: "ID"}},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithDropAllRowAccessPolicies(true))
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		assert.Empty(t, references)
+	})
+
+	t.Run("alter: set and unset aggregation policy", func(t *testing.T) {
+		aggregationPolicy, aggregationPolicyCleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
+		t.Cleanup(aggregationPolicyCleanup)
+		aggregationPolicy2, aggregationPolicy2Cleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
+		t.Cleanup(aggregationPolicy2Cleanup)
+
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		// set with an explicit entity key
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy).
+				WithEntityKey([]sdk.Column{{Value: "ID"}})))
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertPolicyReference(t, references[0], aggregationPolicy, sdk.PolicyKindAggregationPolicy, id, nil)
+
+		// set with FORCE atomically replaces the existing aggregation policy
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy2).
+				WithEntityKey([]sdk.Column{{Value: "ID"}}).
+				WithForce(true)))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertPolicyReference(t, references[0], aggregationPolicy2, sdk.PolicyKindAggregationPolicy, id, nil)
+
+		// unset
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithUnsetAggregationPolicy(*sdk.NewTableUnsetAggregationPolicyRequest()))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		assert.Empty(t, references)
+	})
+
+	t.Run("alter: alter column set data type", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "AMOUNT", ColumnType: testdatatypes.DataTypeNumber_2_0},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// Iceberg tables only support widening a NUMBER's precision (with the scale unchanged).
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
+				*sdk.NewIcebergTableAlterColumnActionRequest("AMOUNT").WithDataType(testdatatypes.DataTypeNumber_19_0),
+			}))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		amountIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "AMOUNT" })
+		require.NotEqual(t, -1, amountIdx)
+		assert.Equal(t, testdatatypes.DataTypeNumber_19_0.ToSql(), details[amountIdx].Type.ToSql())
+	})
+
+	t.Run("alter: clustering action - suspend and resume recluster", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}).WithClusterBy([]string{"REGION"}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().
+				WithChangeReclusterState(*sdk.NewIcebergTableReclusterChangeStateRequest().WithState(sdk.ReclusterStateSuspend))))
+		require.NoError(t, err)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().
+				WithChangeReclusterState(*sdk.NewIcebergTableReclusterChangeStateRequest().WithState(sdk.ReclusterStateResume))))
+		require.NoError(t, err)
+
+		// Recluster (automatic clustering) state is only available in SHOW TABLES... It is not returned by DESCRIBE nor modeled on the sdk.IcebergTable SHOW output.
+	})
+
+	t.Run("alter: search optimization action - add and drop", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// Add EQUALITY and FULL_TEXT (with an ANALYZER argument - DEFAULT_ANALYZER, UNICODE_ANALYZER
+		// or NO_OP_ANALYZER) in a single statement.
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
+				WithAdd(*sdk.NewTableAddSearchOptimizationRequest().
+					WithOn([]sdk.TableSearchMethodWithTargetRequest{
+						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality).
+							WithArgs(*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"})),
+						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodFullText).
+							WithArgs(*sdk.NewTableSearchMethodArgsRequest().
+								WithTargets([]string{"REGION"}).
+								WithAnalyzer("DEFAULT_ANALYZER")),
+					}))))
+		require.NoError(t, err)
+
+		// TODO (next PRs): Add support for DESCRIBE SEARCH OPTIMIZATION and assert the results.
+
+		// Drop by method/target: removes only the EQUALITY entry. The analyzer is not part of the matcher.
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
+				WithDrop(*sdk.NewTableDropSearchOptimizationRequest().
+					WithOn([]sdk.TableDropSearchOptimizationOnRequest{
+						*sdk.NewTableDropSearchOptimizationOnRequest().WithSearchMethodWithTarget(*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality).
+							WithArgs(*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"}))),
+					}))))
+		require.NoError(t, err)
+
+		// Drop by column name: removes the remaining (FULL_TEXT) search optimization on the column.
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
+				WithDrop(*sdk.NewTableDropSearchOptimizationRequest().
+					WithOn([]sdk.TableDropSearchOptimizationOnRequest{
+						*sdk.NewTableDropSearchOptimizationOnRequest().WithColumnName("REGION"),
+					}))))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: set and unset join policy", func(t *testing.T) {
+		// Create the policies before the table so that on cleanup the table (which references a
+		// policy) is dropped first, releasing it before the policies are dropped.
+		joinPolicy1, joinPolicy1Cleanup := testClientHelper().JoinPolicy.Create(t)
+		t.Cleanup(joinPolicy1Cleanup)
+		joinPolicy2, joinPolicy2Cleanup := testClientHelper().JoinPolicy.Create(t)
+		t.Cleanup(joinPolicy2Cleanup)
+
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		// set
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetJoinPolicy(*sdk.NewTableSetJoinPolicyRequest(joinPolicy1)))
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assert.Equal(t, joinPolicy1.Name(), references[0].PolicyName)
+
+		// set with FORCE atomically replaces the existing join policy
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSetJoinPolicy(*sdk.NewTableSetJoinPolicyRequest(joinPolicy2).WithForce(true)))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assert.Equal(t, joinPolicy2.Name(), references[0].PolicyName)
+
+		// unset
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithUnsetJoinPolicy(*sdk.NewTableUnsetJoinPolicyRequest()))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		assert.Empty(t, references)
+	})
+
+	t.Run("alter: if exists on non-existing table", func(t *testing.T) {
+		// ALTER ICEBERG TABLE ... IF EXISTS on a non-existing table should not error.
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(NonExistingSchemaObjectIdentifier).
+			WithIfExists(true).
+			WithSet(*sdk.NewIcebergTableSetPropertiesRequest().WithComment("noop")))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: add column with options", func(t *testing.T) {
+		// Create the policies before the table so that on cleanup the table (which references the
+		// policies) is dropped first, releasing them before they are dropped.
+		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarcharIceberg)
+		t.Cleanup(maskingPolicyCleanup)
+
+		projectionPolicyId, projectionPolicyCleanup := testClientHelper().ProjectionPolicy.CreateProjectionPolicy(t)
+		t.Cleanup(projectionPolicyCleanup)
+
+		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(tagCleanup)
+
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		// ADD COLUMN with a masking policy and a tag.
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAddColumnAction(*sdk.NewIcebergTableAddColumnActionRequest("DESCRIPTION", testdatatypes.DataTypeVarcharIceberg).
+				WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicy.ID()).WithUsing([]sdk.Column{{Value: "DESCRIPTION"}})).
+				WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: "tag-value"}})))
+		require.NoError(t, err)
+
+		// ADD COLUMN with a projection policy.
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAddColumnAction(*sdk.NewIcebergTableAddColumnActionRequest("CODE", testdatatypes.DataTypeVarcharIceberg).
+				WithProjectionPolicy(*sdk.NewTableColumnProjectionPolicyRequest(projectionPolicyId))))
+		require.NoError(t, err)
+
+		// ADD COLUMN with a default value and an inline check constraint.
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithAddColumnAction(*sdk.NewIcebergTableAddColumnActionRequest("STATUS", testdatatypes.DataTypeVarcharIceberg).
+				WithDefaultValue(sdk.ColumnDefaultValue{Expression: new("'active'")}).
+				WithInlineConstraint(sdk.TableColumnInlineConstraintRequest{
+					CH: &sdk.TableColumnInlineCHRequest{
+						Name:       new("chk_status_added"),
+						Expression: "STATUS IN ('active', 'inactive')",
+					},
+				})))
+		require.NoError(t, err)
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		// ID + DESCRIPTION + CODE + STATUS
+		require.Len(t, details, 4)
+
+		descriptionIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "DESCRIPTION" })
+		require.NotEqual(t, -1, descriptionIdx)
+		require.NotNil(t, details[descriptionIdx].PolicyName)
+		assert.Equal(t, maskingPolicy.ID().Name(), details[descriptionIdx].PolicyName.Name())
+
+		// the tag set on the DESCRIPTION column at ADD COLUMN time
+		descriptionColumnId := sdk.NewTableColumnIdentifier(id.DatabaseName(), id.SchemaName(), id.Name(), "DESCRIPTION")
+		tagValue, err := client.SystemFunctions.GetTag(ctx, tag.ID(), descriptionColumnId, sdk.ObjectTypeColumn)
+		require.NoError(t, err)
+		require.NotNil(t, tagValue)
+		assert.Equal(t, "tag-value", *tagValue)
+
+		statusIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NotEqual(t, -1, statusIdx)
+		require.NotNil(t, details[statusIdx].Default)
+		assert.Equal(t, "'active'", *details[statusIdx].Default)
+		require.NotNil(t, details[statusIdx].Check)
+		assert.Equal(t, "STATUS IN ('active', 'inactive')", *details[statusIdx].Check)
+
+		// The masking policy (DESCRIPTION) and the projection policy (CODE) are both referenced.
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 2)
+	})
+
+	t.Run("alter: set and unset log event level and replace invalid characters", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
+
+		err := client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSet(*sdk.NewIcebergTableSetPropertiesRequest().
+				WithLogEventLevel(sdk.IcebergTableLogEventLevelDebug).
+				WithReplaceInvalidCharacters(true),
+			))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasLogEventLevel(string(sdk.IcebergTableLogEventLevelDebug)).
+			HasReplaceInvalidCharacters(true),
+		)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithUnset(*sdk.NewIcebergTableUnsetPropertiesRequest().
+				WithLogEventLevel(true).
+				WithReplaceInvalidCharacters(true),
+			))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasDefaultLogEventLevelValueExplicit().
+			HasDefaultReplaceInvalidCharactersValueExplicit(),
+		)
+	})
+
+	t.Run("alter: set auto refresh on table from iceberg files", func(t *testing.T) {
+		// AUTO_REFRESH is only valid for unmanaged tables (created from iceberg files / Delta Lake),
+		// not the Snowflake-managed tables used in the other alter tests.
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
+
+		err := client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSet(*sdk.NewIcebergTableSetPropertiesRequest().WithAutoRefresh(true)))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasAutoRefreshStatusNotEmpty(),
+		)
+
+		// Disable auto refresh again. UNSET is not supported.
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSet(*sdk.NewIcebergTableSetPropertiesRequest().WithAutoRefresh(false)))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasAutoRefreshStatus(""),
+		)
+	})
+
 	t.Run("drop iceberg table: existing", func(t *testing.T) {
 		obj, cleanup := testClientHelper().IcebergTable.Create(t)
 		t.Cleanup(cleanup)
@@ -735,3 +1623,6 @@ func TestInt_IcebergTables(t *testing.T) {
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }
+
+// TODO: alter set/unset CATALOG_SYNC - requires a configured catalog-sync integration (see also the create test TODO).
+// TODO (next PRs): alter set CONTACT - SET CONTACT (...) on ALTER is unverified; contact is currently only covered at CREATE time. This should be ultimately handled similarly to tags.
