@@ -311,7 +311,7 @@ type AlterIcebergTableOptions struct {
 	UnsetTagsOnColumn             *TableUnsetColumnTags             `ddl:"keyword"`
 	ClusteringAction              *IcebergTableClusteringAction     `ddl:"keyword"`
 	Set                           *IcebergTableSetProperties        `ddl:"keyword" sql:"SET"`
-	Unset                         *IcebergTableUnsetProperties      `ddl:"keyword" sql:"UNSET"`
+	Unset                         *IcebergTableUnsetProperties      `ddl:"list,no_parentheses" sql:"UNSET"`
 	SetTags                       []TagAssociation                  `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags                     []ObjectIdentifier                `ddl:"keyword" sql:"UNSET TAG"`
 	AddRowAccessPolicy            *ViewAddRowAccessPolicy           `ddl:"keyword"`
@@ -581,9 +581,9 @@ type DescribeIcebergTableOptions struct {
 type icebergTableDetailsRow struct {
 	Name              string         `db:"name"`
 	Type              string         `db:"type"`
-	SourceIcebergType string         `db:"source iceberg type"`
+	SourceIcebergType sql.NullString `db:"source iceberg type"`
 	Kind              string         `db:"kind"`
-	Null              string         `db:"null"`
+	Null              string         `db:"null?"`
 	Default           sql.NullString `db:"default"`
 	PrimaryKey        string         `db:"primary key"`
 	UniqueKey         string         `db:"unique key"`
@@ -599,7 +599,7 @@ type icebergTableDetailsRow struct {
 type IcebergTableDetails struct {
 	Name              string
 	Type              datatypes.DataType
-	SourceIcebergType string
+	SourceIcebergType *string
 	Kind              string
 	IsNullable        bool
 	Default           *string

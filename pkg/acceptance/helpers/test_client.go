@@ -51,6 +51,7 @@ type TestClient struct {
 	IcebergTable                 *IcebergTableClient
 	ImageRepository              *ImageRepositoryClient
 	InformationSchema            *InformationSchemaClient
+	JoinPolicy                   *JoinPolicyClient
 	Listing                      *ListingClient
 	MaskingPolicy                *MaskingPolicyClient
 	MaterializedView             *MaterializedViewClient
@@ -154,6 +155,7 @@ func NewTestClient(
 		IcebergTable:                 NewIcebergTableClient(context, idsGenerator),
 		ImageRepository:              NewImageRepositoryClient(context, idsGenerator),
 		InformationSchema:            NewInformationSchemaClient(context, idsGenerator),
+		JoinPolicy:                   NewJoinPolicyClient(context, idsGenerator),
 		Listing:                      NewListingClient(context, idsGenerator),
 		MaskingPolicy:                NewMaskingPolicyClient(context, idsGenerator),
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),

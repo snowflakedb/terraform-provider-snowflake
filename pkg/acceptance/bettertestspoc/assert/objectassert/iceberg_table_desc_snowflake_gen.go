@@ -50,8 +50,11 @@ func (i *IcebergTableDetailsAssert) HasType(expected datatypes.DataType) *Iceber
 func (i *IcebergTableDetailsAssert) HasSourceIcebergType(expected string) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
-		if o.SourceIcebergType != expected {
-			return fmt.Errorf("expected source iceberg type: %v; got: %v", expected, o.SourceIcebergType)
+		if o.SourceIcebergType == nil {
+			return fmt.Errorf("expected source iceberg type to have value; got: nil")
+		}
+		if *o.SourceIcebergType != expected {
+			return fmt.Errorf("expected source iceberg type: %v; got: %v", expected, *o.SourceIcebergType)
 		}
 		return nil
 	})

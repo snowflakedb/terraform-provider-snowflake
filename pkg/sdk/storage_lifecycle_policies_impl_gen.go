@@ -86,14 +86,14 @@ func (r *CreateStorageLifecyclePolicyRequest) toOpts() *CreateStorageLifecyclePo
 		Tag:            r.Tag,
 	}
 	if r.args != nil {
-		s := make([]CreateStorageLifecyclePolicyArgs, len(r.args))
+		args := make([]CreateStorageLifecyclePolicyArgs, len(r.args))
 		for i, v := range r.args {
-			s[i] = CreateStorageLifecyclePolicyArgs{
+			args[i] = CreateStorageLifecyclePolicyArgs{
 				Name:     v.Name,
 				DataType: v.DataType,
 			}
 		}
-		opts.args = s
+		opts.args = args
 	}
 	return opts
 }
@@ -164,9 +164,9 @@ func (r describeStorageLifecyclePolicyDBRow) convert() (*StorageLifecyclePolicyD
 	result := &StorageLifecyclePolicyDetails{
 		Name:        r.Name,
 		Body:        r.Body,
-		ArchiveTier: r.ArchiveTier,
+		ArchiveTier: normalizeStorageLifecyclePolicyArchiveTier(r.ArchiveTier),
 	}
-	if v, err := ParseTableColumnSignature(r.Signature); err != nil {
+	if v, err := ParseTableColumnSignatureWithVectorSupport(r.Signature); err != nil {
 		return nil, fmt.Errorf("parsing table column signature: %w", err)
 	} else {
 		result.Signature = v

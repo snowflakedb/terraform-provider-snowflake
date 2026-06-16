@@ -537,17 +537,17 @@ func TestInt_SafeRevokeDatabaseRoleFromShare(t *testing.T) {
 	t.Cleanup(shareCleanup)
 
 	t.Run("revoke non-existing database role from share", func(t *testing.T) {
-		err := client.DatabaseRoles.RevokeFromShareSafely(ctx, sdk.NewRevokeDatabaseRoleFromShareRequest(NonExistingDatabaseObjectIdentifier, share.ID()))
+		err := client.DatabaseRoles.RevokeFromShareSafely(ctx, sdk.NewRevokeFromShareDatabaseRoleRequest(NonExistingDatabaseObjectIdentifier, share.ID()))
 		assert.NoError(t, err)
 	})
 
 	t.Run("revoke database role from non-existing share", func(t *testing.T) {
-		err := client.DatabaseRoles.RevokeFromShareSafely(ctx, sdk.NewRevokeDatabaseRoleFromShareRequest(databaseRole.ID(), NonExistingAccountObjectIdentifier))
+		err := client.DatabaseRoles.RevokeFromShareSafely(ctx, sdk.NewRevokeFromShareDatabaseRoleRequest(databaseRole.ID(), NonExistingAccountObjectIdentifier))
 		assert.NoError(t, err)
 	})
 
 	t.Run("revoke non-existing database role from non-existing share", func(t *testing.T) {
-		err := client.DatabaseRoles.RevokeFromShareSafely(ctx, sdk.NewRevokeDatabaseRoleFromShareRequest(NonExistingDatabaseObjectIdentifier, NonExistingAccountObjectIdentifier))
+		err := client.DatabaseRoles.RevokeFromShareSafely(ctx, sdk.NewRevokeFromShareDatabaseRoleRequest(NonExistingDatabaseObjectIdentifier, NonExistingAccountObjectIdentifier))
 		assert.NoError(t, err)
 	})
 }

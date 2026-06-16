@@ -35,14 +35,14 @@ func TestInt_SemanticView(t *testing.T) {
 	t.Cleanup(table2Cleanup)
 
 	// create logical table entities using the 2 tables created above
-	alias1 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table1")
-	pk1 := sdk.NewPrimaryKeysRequest().WithPrimaryKey([]sdk.SemanticViewColumn{
+	alias1 := sdk.NewLogicalTableAliasRequest("table1")
+	pk1 := sdk.NewPrimaryKeysRequest([]sdk.SemanticViewColumn{
 		{
 			Name: "first_c",
 		},
 	})
 	logicalTable1 := sdk.NewLogicalTableRequest(table1Id).WithLogicalTableAlias(*alias1).WithPrimaryKeys(*pk1)
-	alias2 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table2")
+	alias2 := sdk.NewLogicalTableAliasRequest("table2")
 	logicalTable2 := sdk.NewLogicalTableRequest(table2Id).WithLogicalTableAlias(*alias2)
 
 	logicalTables := []sdk.LogicalTableRequest{
@@ -157,7 +157,7 @@ func TestInt_SemanticView(t *testing.T) {
 			*relCol,
 		}
 		refTableAlias := sdk.NewRelationshipTableAliasRequest().WithRelationshipTableAlias("table1")
-		relAliasRequest := sdk.NewRelationshipAliasRequest().WithRelationshipAlias("rel1")
+		relAliasRequest := sdk.NewRelationshipAliasRequest("rel1")
 		relRefCol := sdk.NewSemanticViewColumnRequest("first_c")
 
 		relationships := sdk.NewSemanticViewRelationshipRequest(
@@ -167,13 +167,13 @@ func TestInt_SemanticView(t *testing.T) {
 		).WithRelationshipAlias(*relAliasRequest).WithRelationshipRefColumnNames([]sdk.SemanticViewColumnRequest{*relRefCol})
 
 		// facts
-		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F1"}, {Synonym: "FA"}})
+		factSynonymRequest := sdk.NewSynonymsRequest([]sdk.Synonym{{Synonym: "F1"}, {Synonym: "FA"}})
 		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."fact1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"first_c"`}).
 			WithSynonyms(*factSynonymRequest).
 			WithComment("fact comment")
 		fact := sdk.NewFactDefinitionRequest().WithSemanticExpression(*factSemanticExpression)
 
-		factSynonymRequest2 := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F2"}})
+		factSynonymRequest2 := sdk.NewSynonymsRequest([]sdk.Synonym{{Synonym: "F2"}})
 		factSemanticExpression2 := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."fact2"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"first_b"`}).
 			WithSynonyms(*factSynonymRequest2)
 		fact2 := sdk.NewFactDefinitionRequest().WithSemanticExpression(*factSemanticExpression2).WithIsPrivate(true)
@@ -181,7 +181,7 @@ func TestInt_SemanticView(t *testing.T) {
 		// dimensions
 		dimensionExpressionNameRaw := `"table1"."d1"`
 		dimensionExpressionRaw := `"table1"."first_c"`
-		dimensionSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "D1"}})
+		dimensionSynonymRequest := sdk.NewSynonymsRequest([]sdk.Synonym{{Synonym: "D1"}})
 		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: dimensionExpressionNameRaw}, &sdk.SemanticSqlExpressionRequest{SqlExpression: dimensionExpressionRaw}).
 			WithSynonyms(*dimensionSynonymRequest).
 			WithComment("dimension comment")

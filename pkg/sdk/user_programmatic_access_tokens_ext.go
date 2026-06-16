@@ -1,6 +1,10 @@
 package sdk
 
-import "context"
+import (
+	"context"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+)
 
 func (opts *AddUserProgrammaticAccessTokenOptions) additionalValidations() error {
 	var errs []error
@@ -63,4 +67,17 @@ func (v *ProgrammaticAccessToken) ID() AccountObjectIdentifier {
 
 func (v *userProgrammaticAccessTokens) RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
 	return SafeRemoveProgrammaticAccessToken(v.client, ctx, request)
+}
+
+func (v *userProgrammaticAccessTokens) ShowByID(ctx context.Context, userId AccountObjectIdentifier, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
+	request := NewShowUserProgrammaticAccessTokenRequest().WithUserName(userId)
+	results, err := v.Show(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return collections.FindFirst(results, func(r ProgrammaticAccessToken) bool { return r.Name == id.Name() })
+}
+
+func (v *userProgrammaticAccessTokens) ShowByIDSafely(ctx context.Context, userId AccountObjectIdentifier, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
+	return SafeShowProgrammaticAccessTokenByName(v.client, ctx, userId, id)
 }

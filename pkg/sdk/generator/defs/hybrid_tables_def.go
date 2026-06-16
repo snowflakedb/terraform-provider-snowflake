@@ -127,14 +127,31 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment")
 
-// NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
-// Snowflake docs may suggest otherwise but the operation errors at runtime.
+// NOTE: Multi-property `ALTER TABLE ... UNSET` on hybrid tables requires comma-separated
+// property names (`UNSET A, B, C`) — the bare-keyword form (`UNSET A B C`) emitted by the
+// generator's default `keyword` rendering is rejected by the parser. Applying
+// `g.ListOptions().NoParentheses().SQL("UNSET")` to the parent field on
+// AlterHybridTableOptions causes the SQL builder to comma-join the children.
+// Mirrors NetworkPolicyUnset in pkg/sdk/network_policies_gen.go:74. Verified on preprod6.
+var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
+	OptionalSQL("COMMENT").
+	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
+	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
+	WithValidation(g.AtLeastOneValueSet, "Comment", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays")
 
 // NOTE: After running make generate-sdk, the hybridTableDetailsRow.Null field in
 // hybrid_tables_gen.go will have tag db:"null" (the generator strips '?'). It must
 // be manually corrected back to db:"null?" because the DESCRIBE TABLE output column
 // is literally named "null?" in Snowflake. The convert() method in hybrid_tables_impl_gen.go
 // uses r.Null == "Y" to derive the IsNullable bool.
+//
+// NOTE: HybridTableDetails carries a Collation *string field that is not derivable from
+// the DESCRIBE TABLE output via the generator (DESCRIBE returns the collation glued onto
+// the "type" column, e.g. "VARCHAR(200) COLLATE 'en-ci'"). After running make generate-sdk,
+// the Collation field must be re-added manually to HybridTableDetails in hybrid_tables_gen.go,
+// and the convert() method in hybrid_tables_impl_gen.go must call splitTypeAndCollation()
+// (in hybrid_tables_ext.go) to populate Type (without the suffix) and Collation. This
+// mirrors pkg/sdk/tables.go:736 for classic tables.
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
 	"HybridTable",
@@ -148,6 +165,11 @@ var hybridTablesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		QueryStructField("ColumnsAndConstraints", hybridTableColumnsConstraintsAndIndexes, g.ListOptions().Parentheses().Required()).
+		// NOTE: DATA_RETENTION_TIME_IN_DAYS and MAX_DATA_EXTENSION_TIME_IN_DAYS are
+		// accepted at CREATE HYBRID TABLE time even though the public docs omit them
+		// from the syntax diagram. Verified against production via SHOW PARAMETERS.
+		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
+		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
@@ -194,8 +216,13 @@ var hybridTablesDef = g.NewInterface(
 			hybridTableSetProperties,
 			g.KeywordOptions().SQL("SET"),
 		).
+		OptionalQueryStructField(
+			"Unset",
+			hybridTableUnsetProperties,
+			g.ListOptions().NoParentheses().SQL("UNSET"),
+		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
@@ -234,7 +261,8 @@ var hybridTablesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
 	g.StructPair("hybridTableDetailsRow", "HybridTableDetails").
 		Text("name").
-		Text("type").
+		Text("type", g.WithManualConvert()).
+		PlainOnlyField("Collation", "*string").
 		Text("kind").
 		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 		OptionalText("default", g.WithRequiredInPlain()).
@@ -298,4 +326,9 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
+).WithCustomInterfaceMethod(
+	"ShowParameters",
+	"",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+	"[]*Parameter", "error",
 )

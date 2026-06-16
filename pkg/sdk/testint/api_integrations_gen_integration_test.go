@@ -4,11 +4,11 @@ package testint
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -106,8 +106,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	t.Run("create: aws all provider type variants", func(t *testing.T) {
 		for _, providerType := range sdk.AllApiIntegrationAwsApiProviderTypes {
 			t.Run(string(providerType), func(t *testing.T) {
-				if strings.Contains(string(providerType), "gov") {
+				if providerType == sdk.ApiIntegrationAwsApiProviderTypeAwsGovApiGateway || providerType == sdk.ApiIntegrationAwsApiProviderTypeAwsGovPrivateApiGateway {
 					t.Skip("gov provider types require a GovCloud Snowflake account")
+				}
+				if providerType == sdk.ApiIntegrationAwsApiProviderTypeAwsPrivateApiGateway && testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeProdEnvironment {
+					t.Skip("private api gateway is not supported in prod environment as the feature can be only run on Business Critical Accounts")
 				}
 
 				id := testClientHelper().Ids.RandomAccountObjectIdentifier()

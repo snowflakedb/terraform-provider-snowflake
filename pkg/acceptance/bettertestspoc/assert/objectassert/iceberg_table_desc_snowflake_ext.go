@@ -7,7 +7,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// Adjusted manually
+func (i *IcebergTableDetailsAssert) HasNoSourceIcebergType() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.SourceIcebergType != nil {
+			return fmt.Errorf("expected source iceberg type to be nil; got: %s", *o.SourceIcebergType)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasNoDefault() *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -19,7 +29,6 @@ func (i *IcebergTableDetailsAssert) HasNoDefault() *IcebergTableDetailsAssert {
 	return i
 }
 
-// Adjusted manually
 func (i *IcebergTableDetailsAssert) HasNoCheck() *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -31,7 +40,6 @@ func (i *IcebergTableDetailsAssert) HasNoCheck() *IcebergTableDetailsAssert {
 	return i
 }
 
-// Adjusted manually
 func (i *IcebergTableDetailsAssert) HasNoExpression() *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -43,7 +51,6 @@ func (i *IcebergTableDetailsAssert) HasNoExpression() *IcebergTableDetailsAssert
 	return i
 }
 
-// Adjusted manually
 func (i *IcebergTableDetailsAssert) HasNoComment() *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -55,7 +62,6 @@ func (i *IcebergTableDetailsAssert) HasNoComment() *IcebergTableDetailsAssert {
 	return i
 }
 
-// Adjusted manually
 func (i *IcebergTableDetailsAssert) HasNoPolicyName() *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -67,7 +73,6 @@ func (i *IcebergTableDetailsAssert) HasNoPolicyName() *IcebergTableDetailsAssert
 	return i
 }
 
-// Adjusted manually
 func (i *IcebergTableDetailsAssert) HasNoPrivacyDomain() *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -79,7 +84,6 @@ func (i *IcebergTableDetailsAssert) HasNoPrivacyDomain() *IcebergTableDetailsAss
 	return i
 }
 
-// Adjusted manually
 func (i *IcebergTableDetailsAssert) HasNoNameMapping() *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -91,7 +95,6 @@ func (i *IcebergTableDetailsAssert) HasNoNameMapping() *IcebergTableDetailsAsser
 	return i
 }
 
-// Adjusted manually
 func (i *IcebergTableDetailsAssert) HasNoWriteDefault() *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()

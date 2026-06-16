@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -15,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -316,6 +318,116 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import_WrongProviderType(t *testing.
 				ImportState:   true,
 				ImportStateId: azureIntegration.ID().Name(),
 				ExpectError:   regexp.MustCompile("not compatible with snowflake_api_integration_amazon_api_gateway"),
+			},
+		},
+	})
+}
+
+// TestAcc_ApiIntegrationAmazonApiGateway_Import verifies that importing a resource created outside Terraform
+// populates the ForceNew field api_provider correctly so that no destroy-before-create plan is produced.
+func TestAcc_ApiIntegrationAmazonApiGateway_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	const awsRoleArn = "arn:aws:iam::000000000001:role/test"
+	const allowedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/"
+	const blockedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/blocked/"
+	apiProvider := string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway)
+	comment := random.Comment()
+
+	testModel := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, apiProvider, true).
+		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ApiIntegrationAmazonApiGateway),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+						sdk.NewCreateApiIntegrationRequest(id,
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							WithComment(comment).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(
+								sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway,
+								awsRoleArn,
+							)),
+					)
+					t.Cleanup(cleanup)
+				},
+				Config:             config.FromModels(t, testModel),
+				ResourceName:       testModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, testModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+			},
+		},
+	})
+}
+
+// TestAcc_ApiIntegrationAmazonApiGateway_Import_WithApiKey verifies that importing a resource with api_key
+// does not trigger a destroy-before-create plan. Because Snowflake does not return api_key, the plan will show
+// an in-place update to sync the value into state; subsequent plans should be empty.
+func TestAcc_ApiIntegrationAmazonApiGateway_Import_WithApiKey(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	const awsRoleArn = "arn:aws:iam::000000000001:role/test"
+	const allowedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/"
+	apiProvider := string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway)
+
+	apiKey := random.AlphanumericN(10)
+
+	testModel := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, apiProvider, true).
+		WithApiKey(apiKey)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ApiIntegrationAmazonApiGateway),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+						sdk.NewCreateApiIntegrationRequest(id,
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(
+								sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway,
+								awsRoleArn,
+							).WithApiKey(apiKey)),
+					)
+					t.Cleanup(cleanup)
+				},
+				Config:             config.FromModels(t, testModel),
+				ResourceName:       testModel.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: config.FromModels(t, testModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(testModel.ResourceReference(), "api_key", tfjson.ActionUpdate, nil, sdk.String(apiKey)),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})

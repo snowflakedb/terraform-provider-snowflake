@@ -22,6 +22,14 @@ func (opts *CreateSemanticViewOptions) validate() error {
 		errs = append(errs, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	}
 	errs = append(errs, opts.additionalValidations())
+	// nested validation in SemanticViewRelationships collection is not supported
+	if valueSet(opts.SemanticViewMetrics) {
+		for _, semanticViewMetric := range opts.SemanticViewMetrics {
+			if !exactlyOneValueSet(semanticViewMetric.SemanticExpression, semanticViewMetric.WindowFunctionMetricDefinition) {
+				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

@@ -22,7 +22,6 @@ func (s *CreateTaskRequest) WithIfNotExists(ifNotExists bool) *CreateTaskRequest
 	return s
 }
 
-// adjusted manually
 func (s *CreateTaskRequest) WithWarehouse(warehouse CreateTaskWarehouseRequest) *CreateTaskRequest {
 	s.Warehouse = &warehouse
 	return s
@@ -113,6 +112,21 @@ func (s *CreateTaskRequest) WithWhen(when string) *CreateTaskRequest {
 	return s
 }
 
+func NewCreateTaskWarehouseRequest() *CreateTaskWarehouseRequest {
+	s := CreateTaskWarehouseRequest{}
+	return &s
+}
+
+func (s *CreateTaskWarehouseRequest) WithWarehouse(warehouse AccountObjectIdentifier) *CreateTaskWarehouseRequest {
+	s.Warehouse = &warehouse
+	return s
+}
+
+func (s *CreateTaskWarehouseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateTaskWarehouseRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+	return s
+}
+
 func NewCreateOrAlterTaskRequest(
 	name SchemaObjectIdentifier,
 	sql string,
@@ -123,7 +137,6 @@ func NewCreateOrAlterTaskRequest(
 	return &s
 }
 
-// adjusted manually
 func (s *CreateOrAlterTaskRequest) WithWarehouse(warehouse CreateTaskWarehouseRequest) *CreateOrAlterTaskRequest {
 	s.Warehouse = &warehouse
 	return s

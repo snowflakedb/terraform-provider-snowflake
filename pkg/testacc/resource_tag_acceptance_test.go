@@ -109,7 +109,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tagsProviderFactory,
+		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -199,7 +199,7 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 	basicWithDifferentValues := model.TagBase("test", id).WithAllowedValues("", "bar", "foo")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tagsProviderFactory,
+		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -267,6 +267,51 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"ordered_allowed_values", "allowed_values"},
+			},
+		},
+	})
+}
+
+func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	withAllowedValues := model.TagBase("test", id).
+		WithOrderedAllowedValues("confidential", "internal", "public").
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOnConflictAllowedValuesSequence()
+
+	withPropagateOnly := model.TagBase("test", id).
+		WithPropagateEnum(sdk.TagPropagationOnDependency)
+
+	resourceRef := withAllowedValues.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
+		Steps: []resource.TestStep{
+			// Step 1: create a tag with allowed_values + allowed_values_sequence on_conflict.
+			{
+				Config: config.FromModels(t, withAllowedValues),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, resourceRef).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasOnConflictAllowedValuesSequence(),
+				),
+			},
+			// Step 2: drop on_conflict; the value is cleared.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withPropagateOnly.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withPropagateOnly),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, withPropagateOnly.ResourceReference()).
+						HasOnConflictEmpty(),
+				),
 			},
 		},
 	})

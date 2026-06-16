@@ -104,6 +104,15 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 	})
 }
 
+// ForceNewIfChangedFromNonEmptyString sets a ForceNew for a string field that changes from a previously
+// non-empty value. It is used for immutable-once-set attributes.
+func ForceNewIfChangedFromNonEmptyString(key string) schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
+		oldString, newString := oldValue.(string), newValue.(string)
+		return oldString != "" && oldString != newString
+	})
+}
+
 // ForceNewIfUrlIsS3Compatible sets a ForceNew for a url field which is set to an s3compat:// url.
 func ForceNewIfUrlIsS3Compatible() schema.CustomizeDiffFunc {
 	return customdiff.ForceNewIfChange("url", func(ctx context.Context, oldValue, newValue, meta any) bool {
@@ -189,6 +198,11 @@ func ParametersCustomDiff[T ~string](parametersProvider func(context.Context, Re
 
 		params, err := parametersProvider(ctx, d, meta)
 		if err != nil {
+			// TODO [next PRs]: should it be a default behavior?
+			providerCtx := meta.(*provider.Context)
+			if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) {
+				return nil
+			}
 			return err
 		}
 
@@ -219,6 +233,21 @@ func ForceNewIfAllKeysAreNotSet(key string, keys ...string) schema.CustomizeDiff
 			}
 		}
 		return allUnset
+	})
+}
+
+// TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled applies ForceNew on the given identifier part only when the specified experiment is NOT enabled.
+// It should be used only for identifier parts and has identifier quoting suppression included.
+// This allows preserving the default ForceNew behavior while allowing an experiment to override it.
+func TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled(key string) schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIf(key, func(ctx context.Context, d *schema.ResourceDiff, meta any) bool {
+		providerCtx := meta.(*provider.Context)
+		if !d.HasChange(key) {
+			return false
+		}
+		o, n := d.GetChange(key)
+		suppressed := suppressIdentifierQuoting("", o.(string), n.(string), nil)
+		return !suppressed && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments)
 	})
 }
 
