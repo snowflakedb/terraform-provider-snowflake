@@ -3,13 +3,7 @@ package sdk
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
 	"time"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
@@ -47,12 +41,6 @@ type Databases interface {
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
 }
 
-var _ Databases = (*databases)(nil)
-
-type databases struct {
-	client *Client
-}
-
 type Database struct {
 	CreatedOn     time.Time
 	Name          string
@@ -68,23 +56,6 @@ type Database struct {
 	Transient     bool
 	Kind          string
 	OwnerRoleType string
-}
-
-func (v *Database) SetTransient(value string) {
-	parts := strings.Split(value, ", ")
-	for _, part := range parts {
-		if part == "TRANSIENT" {
-			v.Transient = true
-		}
-	}
-}
-
-func (v *Database) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.Name)
-}
-
-func (v *Database) ObjectType() ObjectType {
-	return ObjectTypeDatabase
 }
 
 type databaseRow struct {
@@ -103,57 +74,12 @@ type databaseRow struct {
 	OwnerRoleType sql.NullString `db:"owner_role_type"`
 }
 
-func (row databaseRow) convert() (*Database, error) {
-	database := &Database{
-		CreatedOn: row.CreatedOn,
-		Name:      row.Name,
-	}
-	if row.IsDefault.Valid {
-		database.IsDefault = row.IsDefault.String == "Y"
-	}
-	if row.IsCurrent.Valid {
-		database.IsCurrent = row.IsCurrent.String == "Y"
-	}
-	if row.Origin.Valid && row.Origin.String != "" && row.Origin.String != "<revoked>" {
-		originId, err := ParseObjectIdentifierString(row.Origin.String)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse origin ID: %w", err)
-		} else {
-			database.Origin = originId
-		}
-	}
-	if row.Owner.Valid {
-		database.Owner = row.Owner.String
-	}
-	if row.Comment.Valid {
-		database.Comment = row.Comment.String
-	}
-	if row.Options.Valid {
-		database.Options = row.Options.String
-	}
-	if row.RetentionTime.Valid {
-		retentionTimeInt, err := strconv.Atoi(row.RetentionTime.String)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse retention time: %w", err)
-		}
-		database.RetentionTime = retentionTimeInt
-	}
-	if row.ResourceGroup.Valid {
-		database.ResourceGroup = row.ResourceGroup.String
-	}
-	if row.DroppedOn.Valid {
-		database.DroppedOn = row.DroppedOn.Time
-	}
-	if row.Options.Valid {
-		database.SetTransient(row.Options.String)
-	}
-	if row.Kind.Valid {
-		database.Kind = row.Kind.String
-	}
-	if row.OwnerRoleType.Valid {
-		database.OwnerRoleType = row.OwnerRoleType.String
-	}
-	return database, nil
+func (v *Database) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}
+
+func (v *Database) ObjectType() ObjectType {
+	return ObjectTypeDatabase
 }
 
 // CreateDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-database.
@@ -189,47 +115,6 @@ type CreateDatabaseOptions struct {
 	Tag     []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
-func (opts *CreateDatabaseOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if valueSet(opts.Clone) {
-		if err := opts.Clone.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateDatabaseOptions", "OrReplace", "IfNotExists"))
-	}
-	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, errInvalidIdentifier("CreateDatabaseOptions", "ExternalVolume"))
-	}
-	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
-		errs = append(errs, errInvalidIdentifier("CreateDatabaseOptions", "Catalog"))
-	}
-	return errors.Join(errs...)
-}
-
-func (v *databases) Create(ctx context.Context, id AccountObjectIdentifier, opts *CreateDatabaseOptions) error {
-	if opts == nil {
-		opts = &CreateDatabaseOptions{}
-	}
-	opts.name = id
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
-}
-
 // CreateSharedDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-database.
 type CreateSharedDatabaseOptions struct {
 	create      bool                     `ddl:"static" sql:"CREATE"`
@@ -259,48 +144,6 @@ type CreateSharedDatabaseOptions struct {
 
 	Comment *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag     []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
-}
-
-func (opts *CreateSharedDatabaseOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateSharedDatabaseOptions", "OrReplace", "IfNotExists"))
-	}
-	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, errInvalidIdentifier("CreateSharedDatabaseOptions", "ExternalVolume"))
-	}
-	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
-		errs = append(errs, errInvalidIdentifier("CreateSharedDatabaseOptions", "Catalog"))
-	}
-	if !ValidObjectIdentifier(opts.fromShare) {
-		errs = append(errs, errInvalidIdentifier("CreateSharedDatabaseOptions", "fromShare"))
-	}
-	return errors.Join(errs...)
-}
-
-func (v *databases) CreateShared(ctx context.Context, id AccountObjectIdentifier, shareID ExternalObjectIdentifier, opts *CreateSharedDatabaseOptions) error {
-	if opts == nil {
-		opts = &CreateSharedDatabaseOptions{}
-	}
-
-	opts.name = id
-	opts.fromShare = shareID
-
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
 }
 
 // CreateSecondaryDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-database.
@@ -335,46 +178,6 @@ type CreateSecondaryDatabaseOptions struct {
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-func (opts *CreateSecondaryDatabaseOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if !ValidObjectIdentifier(opts.primaryDatabase) {
-		errs = append(errs, errInvalidIdentifier("CreateSecondaryDatabaseOptions", "primaryDatabase"))
-	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateSecondaryDatabaseOptions", "OrReplace", "IfNotExists"))
-	}
-	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, errInvalidIdentifier("CreateSecondaryDatabaseOptions", "ExternalVolume"))
-	}
-	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
-		errs = append(errs, errInvalidIdentifier("CreateSecondaryDatabaseOptions", "Catalog"))
-	}
-	return errors.Join(errs...)
-}
-
-func (v *databases) CreateSecondary(ctx context.Context, id AccountObjectIdentifier, primaryID ExternalObjectIdentifier, opts *CreateSecondaryDatabaseOptions) error {
-	if opts == nil {
-		opts = &CreateSecondaryDatabaseOptions{}
-	}
-	opts.name = id
-	opts.primaryDatabase = primaryID
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
-}
-
 // CreateDatabaseFromListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-database.
 // Supports both external listings and organization listings via the same FROM LISTING syntax.
 // SQL: CREATE DATABASE <name> FROM LISTING '<listing_global_name>'
@@ -383,37 +186,6 @@ type CreateDatabaseFromListingOptions struct {
 	database    bool                    `ddl:"static" sql:"DATABASE"`
 	name        AccountObjectIdentifier `ddl:"identifier"`
 	fromListing string                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM LISTING"`
-}
-
-func (opts *CreateDatabaseFromListingOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if opts.fromListing == "" {
-		errs = append(errs, fmt.Errorf("CreateDatabaseFromListingOptions: listing global name must not be empty"))
-	}
-	return errors.Join(errs...)
-}
-
-func (v *databases) CreateFromListing(ctx context.Context, id AccountObjectIdentifier, listingGlobalName string, opts *CreateDatabaseFromListingOptions) error {
-	if opts == nil {
-		opts = &CreateDatabaseFromListingOptions{}
-	}
-	opts.name = id
-	opts.fromListing = listingGlobalName
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
 }
 
 // AlterDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-database.
@@ -428,36 +200,6 @@ type AlterDatabaseOptions struct {
 	Unset    *DatabaseUnset           `ddl:"list,no_parentheses" sql:"UNSET"`
 	SetTag   []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
 	UnsetTag []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
-}
-
-func (opts *AlterDatabaseOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if opts.NewName != nil && !ValidObjectIdentifier(opts.NewName) {
-		errs = append(errs, errInvalidIdentifier("AlterDatabaseOptions", "NewName"))
-	}
-	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
-		errs = append(errs, errInvalidIdentifier("AlterDatabaseOptions", "SwapWith"))
-	}
-	if !exactlyOneValueSet(opts.NewName, opts.Set, opts.Unset, opts.SwapWith, opts.SetTag, opts.UnsetTag) {
-		errs = append(errs, errExactlyOneOf("AlterDatabaseOptions", "NewName", "Set", "Unset", "SwapWith", "SetTag", "UnsetTag"))
-	}
-	if valueSet(opts.Set) {
-		if err := opts.Set.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if valueSet(opts.Unset) {
-		if err := opts.Unset.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return errors.Join(errs...)
 }
 
 type DatabaseSet struct {
@@ -483,59 +225,6 @@ type DatabaseSet struct {
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-func (v *DatabaseSet) validate() error {
-	var errs []error
-	if v.ExternalVolume != nil && !ValidObjectIdentifier(v.ExternalVolume) {
-		errs = append(errs, errInvalidIdentifier("DatabaseSet", "ExternalVolume"))
-	}
-	if v.Catalog != nil && !ValidObjectIdentifier(v.Catalog) {
-		errs = append(errs, errInvalidIdentifier("DatabaseSet", "Catalog"))
-	}
-	if !anyValueSet(
-		v.DataRetentionTimeInDays,
-		v.MaxDataExtensionTimeInDays,
-		v.ExternalVolume,
-		v.Catalog,
-		v.ReplaceInvalidCharacters,
-		v.DefaultDDLCollation,
-		v.StorageSerializationPolicy,
-		v.LogLevel,
-		v.LogEventLevel,
-		v.TraceLevel,
-		v.SuspendTaskAfterNumFailures,
-		v.TaskAutoRetryAttempts,
-		v.UserTaskManagedInitialWarehouseSize,
-		v.UserTaskTimeoutMs,
-		v.UserTaskMinimumTriggerIntervalInSeconds,
-		v.QuotedIdentifiersIgnoreCase,
-		v.EnableConsoleOutput,
-		v.Comment,
-	) {
-		errs = append(errs, errAtLeastOneOf(
-			"DatabaseSet",
-			"DataRetentionTimeInDays",
-			"MaxDataExtensionTimeInDays",
-			"ExternalVolume",
-			"Catalog",
-			"ReplaceInvalidCharacters",
-			"DefaultDDLCollation",
-			"StorageSerializationPolicy",
-			"LogLevel",
-			"LogEventLevel",
-			"TraceLevel",
-			"SuspendTaskAfterNumFailures",
-			"TaskAutoRetryAttempts",
-			"UserTaskManagedInitialWarehouseSize",
-			"UserTaskTimeoutMs",
-			"UserTaskMinimumTriggerIntervalInSeconds",
-			"QuotedIdentifiersIgnoreCase",
-			"EnableConsoleOutput",
-			"Comment",
-		))
-	}
-	return errors.Join(errs...)
-}
-
 type DatabaseUnset struct {
 	// Parameters
 	DataRetentionTimeInDays                 *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
@@ -559,69 +248,6 @@ type DatabaseUnset struct {
 	Comment *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
-func (v *DatabaseUnset) validate() error {
-	var errs []error
-	if !anyValueSet(
-		v.DataRetentionTimeInDays,
-		v.MaxDataExtensionTimeInDays,
-		v.ExternalVolume,
-		v.Catalog,
-		v.ReplaceInvalidCharacters,
-		v.DefaultDDLCollation,
-		v.StorageSerializationPolicy,
-		v.LogLevel,
-		v.LogEventLevel,
-		v.TraceLevel,
-		v.SuspendTaskAfterNumFailures,
-		v.TaskAutoRetryAttempts,
-		v.UserTaskManagedInitialWarehouseSize,
-		v.UserTaskTimeoutMs,
-		v.UserTaskMinimumTriggerIntervalInSeconds,
-		v.QuotedIdentifiersIgnoreCase,
-		v.EnableConsoleOutput,
-		v.Comment,
-	) {
-		errs = append(errs, errAtLeastOneOf(
-			"DatabaseUnset",
-			"DataRetentionTimeInDays",
-			"MaxDataExtensionTimeInDays",
-			"ExternalVolume",
-			"Catalog",
-			"ReplaceInvalidCharacters",
-			"DefaultDDLCollation",
-			"StorageSerializationPolicy",
-			"LogLevel",
-			"LogEventLevel",
-			"TraceLevel",
-			"SuspendTaskAfterNumFailures",
-			"TaskAutoRetryAttempts",
-			"UserTaskManagedInitialWarehouseSize",
-			"UserTaskTimeoutMs",
-			"UserTaskMinimumTriggerIntervalInSeconds",
-			"QuotedIdentifiersIgnoreCase",
-			"EnableConsoleOutput",
-			"Comment",
-		))
-	}
-	return errors.Join(errs...)
-}
-
-func (v *databases) Alter(ctx context.Context, id AccountObjectIdentifier, opts *AlterDatabaseOptions) error {
-	if opts == nil {
-		opts = &AlterDatabaseOptions{}
-	}
-	opts.name = id
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
-}
-
 // AlterDatabaseReplicationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-database.
 type AlterDatabaseReplicationOptions struct {
 	alter              bool                    `ddl:"static" sql:"ALTER"`
@@ -632,20 +258,6 @@ type AlterDatabaseReplicationOptions struct {
 	Refresh            *bool                   `ddl:"keyword" sql:"REFRESH"`
 }
 
-func (opts *AlterDatabaseReplicationOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if !exactlyOneValueSet(opts.EnableReplication, opts.DisableReplication, opts.Refresh) {
-		errs = append(errs, errExactlyOneOf("AlterDatabaseReplicationOptions", "EnableReplication", "DisableReplication", "Refresh"))
-	}
-	return errors.Join(errs...)
-}
-
 type EnableReplication struct {
 	ToAccounts         []AccountIdentifier `ddl:"keyword,no_parentheses" sql:"TO ACCOUNTS"`
 	IgnoreEditionCheck *bool               `ddl:"keyword" sql:"IGNORE EDITION CHECK"`
@@ -653,22 +265,6 @@ type EnableReplication struct {
 
 type DisableReplication struct {
 	ToAccounts []AccountIdentifier `ddl:"keyword,no_parentheses" sql:"TO ACCOUNTS"`
-}
-
-func (v *databases) AlterReplication(ctx context.Context, id AccountObjectIdentifier, opts *AlterDatabaseReplicationOptions) error {
-	if opts == nil {
-		opts = &AlterDatabaseReplicationOptions{}
-	}
-	opts.name = id
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
 }
 
 // AlterDatabaseFailoverOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-database.
@@ -681,42 +277,12 @@ type AlterDatabaseFailoverOptions struct {
 	Primary         *bool                   `ddl:"keyword" sql:"PRIMARY"`
 }
 
-func (opts *AlterDatabaseFailoverOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if !exactlyOneValueSet(opts.EnableFailover, opts.DisableFailover, opts.Primary) {
-		errs = append(errs, errExactlyOneOf("AlterDatabaseFailoverOptions", "EnableFailover", "DisableFailover", "Primary"))
-	}
-	return errors.Join(errs...)
-}
-
 type EnableFailover struct {
 	ToAccounts []AccountIdentifier `ddl:"keyword,no_parentheses" sql:"TO ACCOUNTS"`
 }
 
 type DisableFailover struct {
 	ToAccounts []AccountIdentifier `ddl:"keyword,no_parentheses" sql:"TO ACCOUNTS"`
-}
-
-func (v *databases) AlterFailover(ctx context.Context, id AccountObjectIdentifier, opts *AlterDatabaseFailoverOptions) error {
-	if opts == nil {
-		opts = &AlterDatabaseFailoverOptions{}
-	}
-	opts.name = id
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
 }
 
 // DropDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-database.
@@ -729,70 +295,11 @@ type DropDatabaseOptions struct {
 	Restrict *bool                   `ddl:"keyword" sql:"RESTRICT"`
 }
 
-func (opts *DropDatabaseOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if everyValueSet(opts.Cascade, opts.Restrict) {
-		errs = append(errs, errOneOf("DropDatabaseOptions", "Cascade", "Restrict"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (v *databases) Drop(ctx context.Context, id AccountObjectIdentifier, opts *DropDatabaseOptions) error {
-	if opts == nil {
-		opts = &DropDatabaseOptions{}
-	}
-	opts.name = id
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
-}
-
-func (v *databases) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropDatabaseOptions{IfExists: Bool(true)}) }, ctx, id)
-}
-
 // undropDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/undrop-database.
 type undropDatabaseOptions struct {
 	undrop   bool                    `ddl:"static" sql:"UNDROP"`
 	database bool                    `ddl:"static" sql:"DATABASE"`
 	name     AccountObjectIdentifier `ddl:"identifier"`
-}
-
-func (opts *undropDatabaseOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	if !ValidObjectIdentifier(opts.name) {
-		return errors.Join(ErrInvalidObjectIdentifier)
-	}
-	return nil
-}
-
-func (v *databases) Undrop(ctx context.Context, id AccountObjectIdentifier) error {
-	opts := &undropDatabaseOptions{
-		name: id,
-	}
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
 }
 
 // ShowDatabasesOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-databases.
@@ -806,37 +313,11 @@ type ShowDatabasesOptions struct {
 	LimitFrom  *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
-func (opts *ShowDatabasesOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	return nil
-}
-
-func (v *databases) Show(ctx context.Context, opts *ShowDatabasesOptions) ([]Database, error) {
-	opts = createIfNil(opts)
-	dbRows, err := validateAndQuery[databaseRow](v.client, ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-	return convertRows[databaseRow, Database](dbRows)
-}
-
-func (v *databases) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Database, error) {
-	databases, err := v.Show(ctx, &ShowDatabasesOptions{
-		Like: &Like{
-			Pattern: String(id.Name()),
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return collections.FindFirst(databases, func(r Database) bool { return r.Name == id.Name() })
-}
-
-func (v *databases) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Database, error) {
-	return SafeShowById(v.client, v.ShowByID, ctx, id)
+// describeDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-database.
+type describeDatabaseOptions struct {
+	describe bool                    `ddl:"static" sql:"DESCRIBE"`
+	database bool                    `ddl:"static" sql:"DATABASE"`
+	name     AccountObjectIdentifier `ddl:"identifier"`
 }
 
 type DatabaseDetails struct {
@@ -847,57 +328,4 @@ type DatabaseDetailsRow struct {
 	CreatedOn time.Time
 	Name      string
 	Kind      string
-}
-
-// describeDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-database.
-type describeDatabaseOptions struct {
-	describe bool                    `ddl:"static" sql:"DESCRIBE"`
-	database bool                    `ddl:"static" sql:"DATABASE"`
-	name     AccountObjectIdentifier `ddl:"identifier"`
-}
-
-func (opts *describeDatabaseOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	if !ValidObjectIdentifier(opts.name) {
-		return errors.Join(ErrInvalidObjectIdentifier)
-	}
-	return nil
-}
-
-func (v *databases) Describe(ctx context.Context, id AccountObjectIdentifier) (*DatabaseDetails, error) {
-	opts := &describeDatabaseOptions{
-		name: id,
-	}
-	if err := opts.validate(); err != nil {
-		return nil, err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return nil, err
-	}
-	var rows []DatabaseDetailsRow
-	err = v.client.query(ctx, &rows, sql)
-	if err != nil {
-		return nil, err
-	}
-	details := DatabaseDetails{
-		Rows: rows,
-	}
-	return &details, err
-}
-
-// Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-database.
-func (v *databases) Use(ctx context.Context, id AccountObjectIdentifier) error {
-	// proxy to sessions
-	return v.client.Sessions.UseDatabase(ctx, id)
-}
-
-func (v *databases) ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error) {
-	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
-		In: &ParametersIn{
-			Database: id,
-		},
-	})
 }
