@@ -57,7 +57,7 @@ func normalizeGetTagObjectType(objectType ObjectType) (ObjectType, error) {
 	if !canBeAssociatedWithTag(objectType) {
 		return "", fmt.Errorf("tagging for object type %s is not supported", objectType)
 	}
-	if slices.Contains([]ObjectType{ObjectTypeView, ObjectTypeMaterializedView, ObjectTypeExternalTable, ObjectTypeEventTable, ObjectTypeIcebergTable}, objectType) {
+	if slices.Contains([]ObjectType{ObjectTypeView, ObjectTypeMaterializedView, ObjectTypeExternalTable, ObjectTypeEventTable}, objectType) {
 		return ObjectTypeTable, nil
 	}
 
