@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -55,9 +56,6 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
 	comment := random.Comment()
 	externalComment := random.Comment()
-
-	providerModel := providermodel.SnowflakeProvider().
-		WithPreviewFeaturesEnabled(string(previewfeatures.IcebergTableFromFilesResource))
 
 	// modelBasic relies on db-level external_volume and catalog defaults — no explicit values.
 	modelBasic := model.IcebergTableFromFilesWithDefaultMeta(
@@ -161,12 +159,12 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with only required fields (external_volume and catalog come from db defaults)
 			{
-				Config: accconfig.FromModels(t, providerModel, modelBasic),
+				Config: accconfig.FromModels(t, modelBasic),
 				Check:  assertThat(t, basicAssertions...),
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, providerModel, modelBasic),
+				Config:            accconfig.FromModels(t, modelBasic),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -176,7 +174,7 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 			},
 			// Set all optional fields
 			{
-				Config: accconfig.FromModels(t, providerModel, modelWithAllOptional),
+				Config: accconfig.FromModels(t, modelWithAllOptional),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -186,7 +184,7 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, providerModel, modelWithAllOptional),
+				Config:            accconfig.FromModels(t, modelWithAllOptional),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -215,12 +213,12 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "replace_invalid_characters", tfjson.ActionUpdate, new("false"), new("true")),
 					},
 				},
-				Config: accconfig.FromModels(t, providerModel, modelWithAllOptional),
+				Config: accconfig.FromModels(t, modelWithAllOptional),
 				Check:  assertThat(t, allOptionalAssertions...),
 			},
 			// Bring back only required fields
 			{
-				Config: accconfig.FromModels(t, providerModel, modelBasic),
+				Config: accconfig.FromModels(t, modelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -273,7 +271,7 @@ func TestAcc_IcebergTableFromFiles_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with all fields
 			{
-				Config: accconfig.FromModels(t, providerModel, modelComplete),
+				Config: accconfig.FromModels(t, modelComplete),
 				Check: assertThat(t,
 					resourceassert.IcebergTableFromFilesResource(t, modelComplete.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
@@ -304,6 +302,73 @@ func TestAcc_IcebergTableFromFiles_CompleteUseCase(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"metadata_file_path",
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_IcebergTableFromFiles_Import(t *testing.T) {
+	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
+	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
+
+	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
+	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
+	baseLocationPrefix := "iceberg_test_table"
+	metadataFilePath := baseLocationPrefix + "/metadata/v1.metadata.json"
+
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
+	t.Cleanup(externalVolumeCleanup)
+
+	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
+	t.Cleanup(catalogCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+
+	modelComplete := model.IcebergTableFromFilesWithDefaultMeta(
+		id.DatabaseName(),
+		id.SchemaName(),
+		id.Name(),
+		metadataFilePath,
+	).WithExternalVolume(externalVolumeId.Name()).
+		WithCatalog(catalogId.Name()).
+		WithComment(comment).
+		WithReplaceInvalidCharacters(true)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.IcebergTableFromFiles),
+		Steps: []resource.TestStep{
+			// Import the externally created resource
+			{
+				PreConfig: func() {
+					testClient().IcebergTable.CreateFromIcebergFiles(t, id,
+						sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath).
+							WithComment(comment).
+							WithExternalVolume(externalVolumeId).
+							WithCatalog(catalogId).
+							WithReplaceInvalidCharacters(true))
+				},
+				Config:             config.FromModels(t, modelComplete),
+				ResourceName:       modelComplete.ResourceReference(),
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			{
+				Config: accconfig.FromModels(t, modelComplete),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
 				},
 			},
 		},

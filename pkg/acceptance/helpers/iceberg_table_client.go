@@ -38,6 +38,16 @@ func (c *IcebergTableClient) CreateWithRequest(t *testing.T, request *sdk.Create
 	return obj, c.DropFunc(t, id)
 }
 
+func (c *IcebergTableClient) CreateFromIcebergFiles(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateFromIcebergFilesIcebergTableRequest) (*sdk.IcebergTable, func()) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.context.client.IcebergTables.CreateFromIcebergFiles(ctx, request)
+	require.NoError(t, err)
+	obj, err := c.context.client.IcebergTables.ShowByID(ctx, id)
+	require.NoError(t, err)
+	return obj, c.DropFunc(t, id)
+}
+
 func (c *IcebergTableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 

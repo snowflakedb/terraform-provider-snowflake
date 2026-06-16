@@ -209,6 +209,8 @@ func ReadIcebergTableFromFiles(ctx context.Context, d *schema.ResourceData, meta
 		d.Set(ParametersAttributeName, []map[string]any{schemas.IcebergTableParametersToSchema(parameters, providerCtx)}),
 		handleIcebergTableFromFilesParameterRead(d, parameters),
 	)
+	// TODO(SNOW-3663247): Read metadata_file_path from https://docs.snowflake.com/en/sql-reference/functions/system_get_iceberg_table_information.
+	// Currently, it returns the storage location concatenated with the path, so it's impossible to get the original path.
 	// `metadata_file_path` is not exposed by SHOW or DESCRIBE.
 	return diag.FromErr(errs)
 }
