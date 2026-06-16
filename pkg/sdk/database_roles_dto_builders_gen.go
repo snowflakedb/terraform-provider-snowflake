@@ -159,26 +159,20 @@ func (s *RevokeDatabaseRoleRequest) WithFrom(from DatabaseRoleKindOfRoleRequest)
 
 func NewGrantToShareDatabaseRoleRequest(
 	name DatabaseObjectIdentifier,
+	share AccountObjectIdentifier,
 ) *GrantToShareDatabaseRoleRequest {
 	s := GrantToShareDatabaseRoleRequest{}
 	s.name = name
-	return &s
-}
-
-func (s *GrantToShareDatabaseRoleRequest) WithShare(share AccountObjectIdentifier) *GrantToShareDatabaseRoleRequest {
 	s.Share = share
-	return s
+	return &s
 }
 
 func NewRevokeFromShareDatabaseRoleRequest(
 	name DatabaseObjectIdentifier,
+	share AccountObjectIdentifier,
 ) *RevokeFromShareDatabaseRoleRequest {
 	s := RevokeFromShareDatabaseRoleRequest{}
 	s.name = name
-	return &s
-}
-
-func (s *RevokeFromShareDatabaseRoleRequest) WithShare(share AccountObjectIdentifier) *RevokeFromShareDatabaseRoleRequest {
 	s.Share = share
-	return s
+	return &s
 }

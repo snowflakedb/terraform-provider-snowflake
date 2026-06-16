@@ -1,5 +1,3 @@
-//go:build sdk_generation
-
 package defs
 
 import (
@@ -115,7 +113,7 @@ var databaseRolesDef = g.NewInterface(
 		SQL("DATABASE ROLE").
 		Name().
 		SQL("TO SHARE").
-		Identifier("Share", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
+		Identifier("Share", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "Share"),
 ).CustomOperation(
@@ -126,7 +124,7 @@ var databaseRolesDef = g.NewInterface(
 		SQL("DATABASE ROLE").
 		Name().
 		SQL("FROM SHARE").
-		Identifier("Share", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
+		Identifier("Share", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "Share"),
 ).WithCustomInterfaceMethod(

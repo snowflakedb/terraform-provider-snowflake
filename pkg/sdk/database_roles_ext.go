@@ -54,10 +54,6 @@ func (s *RevokeDatabaseRoleRequest) WithDatabaseRole(databaseRole DatabaseObject
 	return s.WithFrom(*NewDatabaseRoleKindOfRoleRequest().WithDatabaseRoleName(databaseRole))
 }
 
-func (r databaseRoleDBRow) additionalConvert(_ *DatabaseRole) error {
-	return nil
-}
-
 func (opts *AlterDatabaseRoleOptions) additionalValidations() error {
 	if opts.Rename != nil {
 		if opts.name.DatabaseName() != opts.Rename.DatabaseName() {

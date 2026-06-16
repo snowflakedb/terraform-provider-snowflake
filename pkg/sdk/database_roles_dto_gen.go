@@ -66,10 +66,10 @@ type RevokeDatabaseRoleRequest struct {
 
 type GrantToShareDatabaseRoleRequest struct {
 	name  DatabaseObjectIdentifier // required
-	Share AccountObjectIdentifier
+	Share AccountObjectIdentifier  // required
 }
 
 type RevokeFromShareDatabaseRoleRequest struct {
 	name  DatabaseObjectIdentifier // required
-	Share AccountObjectIdentifier
+	Share AccountObjectIdentifier  // required
 }

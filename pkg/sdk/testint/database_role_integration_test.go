@@ -292,11 +292,11 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		err := client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{Database: testClientHelper().Ids.DatabaseId()}, share.ID())
 		require.NoError(t, err)
 
-		grantRequest := sdk.NewGrantToShareDatabaseRoleRequest(roleId).WithShare(share.ID())
+		grantRequest := sdk.NewGrantToShareDatabaseRoleRequest(roleId, share.ID())
 		err = client.DatabaseRoles.GrantToShare(ctx, grantRequest)
 		require.NoError(t, err)
 
-		revokeRequest := sdk.NewRevokeFromShareDatabaseRoleRequest(roleId).WithShare(share.ID())
+		revokeRequest := sdk.NewRevokeFromShareDatabaseRoleRequest(roleId, share.ID())
 		err = client.DatabaseRoles.RevokeFromShare(ctx, revokeRequest)
 		require.NoError(t, err)
 	})
