@@ -37,8 +37,13 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasName(expected string
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllowedAuthenticationSecrets(expected string) *ApiIntegrationGitRepositoryTokenResourceAssert {
-	a.StringValueSet("allowed_authentication_secrets", expected)
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllAllowedAuthenticationSecrets(expected bool) *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.BoolValueSet("all_allowed_authentication_secrets", expected)
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllowedAuthenticationSecrets(expected ...string) *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.SetContainsExactlyStringValues("allowed_authentication_secrets", expected...)
 	return a
 }
 
@@ -67,6 +72,11 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasFullyQualifiedName(e
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoAllowedAuthenticationSecrets(expected bool) *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.BoolValueSet("no_allowed_authentication_secrets", expected)
+	return a
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -76,8 +86,8 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNameString(expected 
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllowedAuthenticationSecretsString(expected string) *ApiIntegrationGitRepositoryTokenResourceAssert {
-	a.AddAssertion(assert.ValueSet("allowed_authentication_secrets", expected))
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllAllowedAuthenticationSecretsString(expected string) *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValueSet("all_allowed_authentication_secrets", expected))
 	return a
 }
 
@@ -96,6 +106,11 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasFullyQualifiedNameSt
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoAllowedAuthenticationSecretsString(expected string) *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValueSet("no_allowed_authentication_secrets", expected))
+	return a
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -105,8 +120,8 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoName() *ApiIntegra
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoAllowedAuthenticationSecrets() *ApiIntegrationGitRepositoryTokenResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("allowed_authentication_secrets"))
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoAllAllowedAuthenticationSecrets() *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValueNotSet("all_allowed_authentication_secrets"))
 	return a
 }
 
@@ -125,9 +140,24 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoFullyQualifiedName
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoNoAllowedAuthenticationSecrets() *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValueNotSet("no_allowed_authentication_secrets"))
+	return a
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllAllowedAuthenticationSecretsEmpty() *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValueSet("all_allowed_authentication_secrets", ""))
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllowedAuthenticationSecretsEmpty() *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValueSet("allowed_authentication_secrets.#", "0"))
+	return a
+}
 
 func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasApiBlockedPrefixesEmpty() *ApiIntegrationGitRepositoryTokenResourceAssert {
 	a.AddAssertion(assert.ValueSet("api_blocked_prefixes.#", "0"))
@@ -144,6 +174,11 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasFullyQualifiedNameEm
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoAllowedAuthenticationSecretsEmpty() *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValueSet("no_allowed_authentication_secrets", ""))
+	return a
+}
+
 ///////////////////////////////
 // Attribute presence checks //
 ///////////////////////////////
@@ -153,8 +188,8 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNameNotEmpty() *ApiI
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllowedAuthenticationSecretsNotEmpty() *ApiIntegrationGitRepositoryTokenResourceAssert {
-	a.AddAssertion(assert.ValuePresent("allowed_authentication_secrets"))
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasAllAllowedAuthenticationSecretsNotEmpty() *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValuePresent("all_allowed_authentication_secrets"))
 	return a
 }
 
@@ -170,5 +205,10 @@ func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasEnabledNotEmpty() *A
 
 func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiIntegrationGitRepositoryTokenResourceAssert {
 	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryTokenResourceAssert) HasNoAllowedAuthenticationSecretsNotEmpty() *ApiIntegrationGitRepositoryTokenResourceAssert {
+	a.AddAssertion(assert.ValuePresent("no_allowed_authentication_secrets"))
 	return a
 }

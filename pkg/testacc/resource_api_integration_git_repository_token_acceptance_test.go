@@ -27,14 +27,15 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 
 	const allowedPrefix = "https://github.com/my-org/"
 	const blockedPrefix = "https://github.com/my-org/blocked/"
-	const allowedSecrets = "ALL"
 	apiProvider := string(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi)
 
 	comment := random.Comment()
 	externalComment := random.Comment()
 
-	basic := model.ApiIntegrationGitRepositoryToken("t", id.Name(), allowedSecrets, []string{allowedPrefix}, true)
-	withOptionals := model.ApiIntegrationGitRepositoryToken("t", id.Name(), allowedSecrets, []string{allowedPrefix}, true).
+	basic := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+		WithAllAllowedAuthenticationSecrets(true)
+	withOptionals := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+		WithAllAllowedAuthenticationSecrets(true).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
 		WithComment(comment)
 
@@ -44,7 +45,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 		resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
-			HasAllowedAuthenticationSecretsString(allowedSecrets).
+			HasAllAllowedAuthenticationSecrets(true).
 			HasApiAllowedPrefixes(allowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty(),
@@ -54,12 +55,12 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.ApiIntegrationGitRepositoryTokenDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets(allowedSecrets).
+			HasAllowedAuthenticationSecrets("ALL").
 			HasComment(""),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasAllowedAuthenticationSecrets(allowedSecrets).
+			HasAllowedAuthenticationSecrets("ALL").
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(allowedPrefix).
@@ -71,7 +72,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 		resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
-			HasAllowedAuthenticationSecretsString(allowedSecrets).
+			HasAllAllowedAuthenticationSecrets(true).
 			HasApiAllowedPrefixes(allowedPrefix).
 			HasApiBlockedPrefixes(blockedPrefix).
 			HasCommentString(comment),
@@ -81,12 +82,12 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.ApiIntegrationGitRepositoryTokenDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets(allowedSecrets).
+			HasAllowedAuthenticationSecrets("ALL").
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasAllowedAuthenticationSecrets(allowedSecrets).
+			HasAllowedAuthenticationSecrets("ALL").
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(allowedPrefix).
@@ -183,10 +184,10 @@ func TestAcc_ApiIntegrationGitRepositoryToken_Import(t *testing.T) {
 
 	const allowedPrefix = "https://github.com/my-org/"
 	const blockedPrefix = "https://github.com/my-org/blocked/"
-	const allowedSecrets = "ALL"
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationGitRepositoryToken("t", id.Name(), allowedSecrets, []string{allowedPrefix}, true).
+	testModel := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+		WithAllAllowedAuthenticationSecrets(true).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
 		WithComment(comment)
 
@@ -232,8 +233,15 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 
 	const allowedPrefix = "https://github.com/my-org/"
 
-	withAll := model.ApiIntegrationGitRepositoryToken("t", id.Name(), "ALL", []string{allowedPrefix}, true)
-	withNone := model.ApiIntegrationGitRepositoryToken("t", id.Name(), "NONE", []string{allowedPrefix}, true)
+	secretId, cleanupSecret := testClient().Secret.CreateRandomPasswordSecret(t)
+	t.Cleanup(cleanupSecret)
+
+	withAll := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+		WithAllAllowedAuthenticationSecrets(true)
+	withNone := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+		WithNoAllowedAuthenticationSecrets(true)
+	withList := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+		WithAllowedAuthenticationSecrets([]string{secretId.FullyQualifiedName()})
 
 	ref := withAll.ResourceReference()
 
@@ -244,42 +252,90 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 		},
 		CheckDestroy: CheckDestroy(t, resources.ApiIntegrationGitRepositoryToken),
 		Steps: []resource.TestStep{
-			// Create with ALL secrets
+			// Create with ALL
 			{
 				Config: config.FromModels(t, withAll),
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
-						HasAllowedAuthenticationSecretsString("ALL"),
+						HasAllAllowedAuthenticationSecrets(true),
 					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 						HasAllowedAuthenticationSecrets("ALL"),
 				),
 			},
-			// Update to NONE
+			// ALL → NONE
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-					},
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
 				},
 				Config: config.FromModels(t, withNone),
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
-						HasAllowedAuthenticationSecretsString("NONE"),
+						HasNoAllowedAuthenticationSecrets(true),
 					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 						HasAllowedAuthenticationSecrets("NONE"),
 				),
 			},
-			// Update back to ALL
+			// NONE → specific list
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-					},
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
+				},
+				Config: config.FromModels(t, withList),
+				Check: assertThat(t,
+					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
+						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
+					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
+						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
+				),
+			},
+			// specific list → ALL
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
 				},
 				Config: config.FromModels(t, withAll),
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
-						HasAllowedAuthenticationSecretsString("ALL"),
+						HasAllAllowedAuthenticationSecrets(true),
+					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
+						HasAllowedAuthenticationSecrets("ALL"),
+				),
+			},
+			// ALL → specific list
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
+				},
+				Config: config.FromModels(t, withList),
+				Check: assertThat(t,
+					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
+						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
+					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
+						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
+				),
+			},
+			// specific list → NONE
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
+				},
+				Config: config.FromModels(t, withNone),
+				Check: assertThat(t,
+					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
+						HasNoAllowedAuthenticationSecrets(true),
+					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
+						HasAllowedAuthenticationSecrets("NONE"),
+				),
+			},
+			// NONE → ALL
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
+				},
+				Config: config.FromModels(t, withAll),
+				Check: assertThat(t,
+					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
+						HasAllAllowedAuthenticationSecrets(true),
 					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 						HasAllowedAuthenticationSecrets("ALL"),
 				),

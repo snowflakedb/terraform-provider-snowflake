@@ -11,13 +11,15 @@ import (
 )
 
 type ApiIntegrationGitRepositoryTokenModel struct {
-	Name                         tfconfig.Variable `json:"name,omitempty"`
-	AllowedAuthenticationSecrets tfconfig.Variable `json:"allowed_authentication_secrets,omitempty"`
-	ApiAllowedPrefixes           tfconfig.Variable `json:"api_allowed_prefixes,omitempty"`
-	ApiBlockedPrefixes           tfconfig.Variable `json:"api_blocked_prefixes,omitempty"`
-	Comment                      tfconfig.Variable `json:"comment,omitempty"`
-	Enabled                      tfconfig.Variable `json:"enabled,omitempty"`
-	FullyQualifiedName           tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	Name                            tfconfig.Variable `json:"name,omitempty"`
+	AllAllowedAuthenticationSecrets tfconfig.Variable `json:"all_allowed_authentication_secrets,omitempty"`
+	AllowedAuthenticationSecrets    tfconfig.Variable `json:"allowed_authentication_secrets,omitempty"`
+	ApiAllowedPrefixes              tfconfig.Variable `json:"api_allowed_prefixes,omitempty"`
+	ApiBlockedPrefixes              tfconfig.Variable `json:"api_blocked_prefixes,omitempty"`
+	Comment                         tfconfig.Variable `json:"comment,omitempty"`
+	Enabled                         tfconfig.Variable `json:"enabled,omitempty"`
+	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	NoAllowedAuthenticationSecrets  tfconfig.Variable `json:"no_allowed_authentication_secrets,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -31,13 +33,11 @@ type ApiIntegrationGitRepositoryTokenModel struct {
 func ApiIntegrationGitRepositoryToken(
 	resourceName string,
 	name string,
-	allowedAuthenticationSecrets string,
 	apiAllowedPrefixes []string,
 	enabled bool,
 ) *ApiIntegrationGitRepositoryTokenModel {
 	a := &ApiIntegrationGitRepositoryTokenModel{ResourceModelMeta: config.Meta(resourceName, resources.ApiIntegrationGitRepositoryToken)}
 	a.WithName(name)
-	a.WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets)
 	a.WithApiAllowedPrefixes(apiAllowedPrefixes)
 	a.WithEnabled(enabled)
 	return a
@@ -45,13 +45,11 @@ func ApiIntegrationGitRepositoryToken(
 
 func ApiIntegrationGitRepositoryTokenWithDefaultMeta(
 	name string,
-	allowedAuthenticationSecrets string,
 	apiAllowedPrefixes []string,
 	enabled bool,
 ) *ApiIntegrationGitRepositoryTokenModel {
 	a := &ApiIntegrationGitRepositoryTokenModel{ResourceModelMeta: config.DefaultMeta(resources.ApiIntegrationGitRepositoryToken)}
 	a.WithName(name)
-	a.WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets)
 	a.WithApiAllowedPrefixes(apiAllowedPrefixes)
 	a.WithEnabled(enabled)
 	return a
@@ -98,10 +96,12 @@ func (a *ApiIntegrationGitRepositoryTokenModel) WithName(name string) *ApiIntegr
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryTokenModel) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets string) *ApiIntegrationGitRepositoryTokenModel {
-	a.AllowedAuthenticationSecrets = tfconfig.StringVariable(allowedAuthenticationSecrets)
+func (a *ApiIntegrationGitRepositoryTokenModel) WithAllAllowedAuthenticationSecrets(allAllowedAuthenticationSecrets bool) *ApiIntegrationGitRepositoryTokenModel {
+	a.AllAllowedAuthenticationSecrets = tfconfig.BoolVariable(allAllowedAuthenticationSecrets)
 	return a
 }
+
+// allowed_authentication_secrets attribute type is not yet supported, so WithAllowedAuthenticationSecrets can't be generated
 
 // api_allowed_prefixes attribute type is not yet supported, so WithApiAllowedPrefixes can't be generated
 
@@ -122,12 +122,22 @@ func (a *ApiIntegrationGitRepositoryTokenModel) WithFullyQualifiedName(fullyQual
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryTokenModel) WithNoAllowedAuthenticationSecrets(noAllowedAuthenticationSecrets bool) *ApiIntegrationGitRepositoryTokenModel {
+	a.NoAllowedAuthenticationSecrets = tfconfig.BoolVariable(noAllowedAuthenticationSecrets)
+	return a
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
 
 func (a *ApiIntegrationGitRepositoryTokenModel) WithNameValue(value tfconfig.Variable) *ApiIntegrationGitRepositoryTokenModel {
 	a.Name = value
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryTokenModel) WithAllAllowedAuthenticationSecretsValue(value tfconfig.Variable) *ApiIntegrationGitRepositoryTokenModel {
+	a.AllAllowedAuthenticationSecrets = value
 	return a
 }
 
@@ -158,5 +168,10 @@ func (a *ApiIntegrationGitRepositoryTokenModel) WithEnabledValue(value tfconfig.
 
 func (a *ApiIntegrationGitRepositoryTokenModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ApiIntegrationGitRepositoryTokenModel {
 	a.FullyQualifiedName = value
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryTokenModel) WithNoAllowedAuthenticationSecretsValue(value tfconfig.Variable) *ApiIntegrationGitRepositoryTokenModel {
+	a.NoAllowedAuthenticationSecrets = value
 	return a
 }
