@@ -25,12 +25,12 @@ func main() {
 		filenameForPart(""),
 		[]*template.Template{genhelpers.PreambleTemplate, gen.InterfaceTemplate, gen.OperationStructIterateTemplate},
 	).
-		WithGenerationPart("dto", filenameForPart("dto"), []*template.Template{genhelpers.PreambleTemplate, gen.DtoTemplate}).
-		WithGenerationPart("dto_builders", filenameForPart("dto_builders"), []*template.Template{genhelpers.PreambleTemplate, gen.DtoBuildersTemplate}).
-		WithGenerationPart("impl", filenameForPart("impl"), []*template.Template{genhelpers.PreambleTemplate, gen.ImplementationTemplate}).
-		WithGenerationPart("unit_tests", testFilenameForPart(""), []*template.Template{genhelpers.PreambleTemplate, gen.UnitTestsTemplate}).
-		WithGenerationPart("validations", filenameForPart("validations"), []*template.Template{genhelpers.PreambleTemplate, gen.ValidationsTemplate}).
-		WithConditionalGenerationPart("enums", filenameForPart("enums"), []*template.Template{genhelpers.PreambleTemplate, gen.EnumTemplate}, func(i *gen.Interface) bool {
+		WithGenerationPart(gen.PartDto, filenameForPart("dto"), []*template.Template{genhelpers.PreambleTemplate, gen.DtoTemplate}).
+		WithGenerationPart(gen.PartDtoBuilders, filenameForPart("dto_builders"), []*template.Template{genhelpers.PreambleTemplate, gen.DtoBuildersTemplate}).
+		WithGenerationPart(gen.PartImpl, filenameForPart("impl"), []*template.Template{genhelpers.PreambleTemplate, gen.ImplementationTemplate}).
+		WithGenerationPart(gen.PartUnitTests, testFilenameForPart(""), []*template.Template{genhelpers.PreambleTemplate, gen.UnitTestsTemplate}).
+		WithGenerationPart(gen.PartValidations, filenameForPart("validations"), []*template.Template{genhelpers.PreambleTemplate, gen.ValidationsTemplate}).
+		WithConditionalGenerationPart(gen.PartEnums, filenameForPart("enums"), []*template.Template{genhelpers.PreambleTemplate, gen.EnumTemplate}, func(i *gen.Interface) bool {
 			return len(i.Enums) > 0
 		}).
 		WithDescription("Generate SDK objects based on the SQL definitions provided.").

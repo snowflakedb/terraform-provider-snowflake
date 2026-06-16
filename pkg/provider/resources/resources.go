@@ -105,6 +105,7 @@ const (
 	StorageIntegrationAws                                  resource = "snowflake_storage_integration_aws"
 	StorageIntegrationAzure                                resource = "snowflake_storage_integration_azure"
 	StorageIntegrationGcs                                  resource = "snowflake_storage_integration_gcs"
+	StorageLifecyclePolicy                                 resource = "snowflake_storage_lifecycle_policy"
 	StreamOnDirectoryTable                                 resource = "snowflake_stream_on_directory_table"
 	StreamOnExternalTable                                  resource = "snowflake_stream_on_external_table"
 	StreamOnTable                                          resource = "snowflake_stream_on_table"

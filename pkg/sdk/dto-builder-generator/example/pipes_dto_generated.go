@@ -4,6 +4,7 @@ package example
 
 import (
 	"bytes"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
