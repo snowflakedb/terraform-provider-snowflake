@@ -2,8 +2,38 @@ package sdk
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"strings"
+	"time"
 )
+
+// describeDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-database.
+type describeDatabaseOptions struct {
+	describe bool                    `ddl:"static" sql:"DESCRIBE"`
+	database bool                    `ddl:"static" sql:"DATABASE"`
+	name     AccountObjectIdentifier `ddl:"identifier"`
+}
+
+func (opts *describeDatabaseOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		return ErrInvalidObjectIdentifier
+	}
+	return nil
+}
+
+type DatabaseDetails struct {
+	Rows []DatabaseDetailsRow
+}
+
+type DatabaseDetailsRow struct {
+	CreatedOn time.Time
+	Name      string
+	Kind      string
+}
 
 func (v *Database) SetTransient(value string) {
 	parts := strings.Split(value, ", ")
@@ -48,4 +78,38 @@ func (v *databases) Describe(ctx context.Context, id AccountObjectIdentifier) (*
 		Rows: rows,
 	}
 	return &details, err
+}
+
+// additionalConvert handles manual field conversions for fields declared with WithManualConvert() in databases_def.go.
+// Called by the generated convert() in databases_impl_gen.go.
+func (r databaseRow) additionalConvert(db *Database) error {
+	if r.Origin.Valid && r.Origin.String != "" && r.Origin.String != "<revoked>" {
+		originId, err := ParseObjectIdentifierString(r.Origin.String)
+		if err != nil {
+			return fmt.Errorf("unable to parse origin ID: %w", err)
+		}
+		db.Origin = originId
+	}
+	if r.RetentionTime.Valid {
+		retentionTimeInt, err := strconv.Atoi(r.RetentionTime.String)
+		if err != nil {
+			return fmt.Errorf("unable to parse retention time: %w", err)
+		}
+		db.RetentionTime = retentionTimeInt
+	}
+	if r.Options.Valid {
+		db.SetTransient(r.Options.String)
+	}
+	return nil
+}
+
+func (opts *CloneDatabaseOptions) additionalValidations() error {
+	return opts.Clone.validate()
+}
+
+func (opts *CreateFromListingDatabaseOptions) additionalValidations() error {
+	if opts.FromListing == "" {
+		return fmt.Errorf("CreateFromListingDatabaseOptions: listing global name must not be empty")
+	}
+	return nil
 }
