@@ -12,7 +12,7 @@ func (s *StorageLifecyclePolicyResourceAssert) HasArguments(args []sdk.TableColu
 	s.AddAssertion(assert.ValueSet("argument.#", strconv.Itoa(len(args))))
 	for i, v := range args {
 		s.AddAssertion(assert.ValueSet(fmt.Sprintf("argument.%d.name", i), v.Name))
-		s.AddAssertion(assert.ValueSet(fmt.Sprintf("argument.%d.type", i), v.Type.ToSql()))
+		s.AddAssertion(assert.ValueSet(fmt.Sprintf("argument.%d.type", i), v.Type.ToSqlWithoutUnknowns()))
 	}
 	return s
 }

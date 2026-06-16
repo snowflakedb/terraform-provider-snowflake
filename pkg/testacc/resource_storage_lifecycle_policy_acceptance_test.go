@@ -18,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -27,11 +28,8 @@ import (
 )
 
 func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
-	secondSchema, secondSchemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, sdk.NewAccountObjectIdentifier(TestDatabaseName))
-	t.Cleanup(secondSchemaCleanup)
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
+	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(id.SchemaId())
 
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -49,7 +47,7 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 		},
 		{
 			Name: "ID",
-			Type: testdatatypes.DataTypeNumber_19_0,
+			Type: testdatatypes.DataTypeVectorFloat_768,
 		},
 	}
 
@@ -66,9 +64,10 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 		},
 		{
 			Name: "ID",
-			Type: testdatatypes.DataTypeNumber,
+			Type: testdatatypes.DataTypeVectorFloat_768,
 		},
 	}
+	importedArguments := expectedSignature
 
 	body := "LENGTH(VAL) > 0"
 	newBody := "LENGTH(VAL) > 5"
@@ -229,13 +228,20 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 			},
 			// Import without optionals
 			{
-				Config:            config.FromModels(t, basic),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Snowflake does not persist the VARCHAR length in the policy signature, so the configured
-				// VARCHAR(200) cannot be reproduced on import (DESCRIBE returns an unbounded VARCHAR).
-				ImportStateVerifyIgnore: []string{"argument.0.type"},
+				Config:       config.FromModels(t, basic),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedStorageLifecyclePolicyResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasName(id.Name()).
+						HasSchema(id.SchemaName()).
+						HasDatabase(id.DatabaseName()).
+						HasArguments(importedArguments).
+						HasBody(body).
+						HasArchiveTier("").
+						HasArchiveForDays(0).
+						HasComment(""),
+				),
 			},
 			// Set all optionals
 			{
@@ -299,13 +305,20 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 			},
 			// Import with all optionals
 			{
-				Config:            config.FromModels(t, complete),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Snowflake does not persist the VARCHAR length in the policy signature, so the configured
-				// VARCHAR(200) cannot be reproduced on import (DESCRIBE returns an unbounded VARCHAR).
-				ImportStateVerifyIgnore: []string{"argument.0.type"},
+				Config:       config.FromModels(t, complete),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedStorageLifecyclePolicyResource(t, helpers.EncodeResourceIdentifier(newId)).
+						HasName(newId.Name()).
+						HasSchema(newId.SchemaName()).
+						HasDatabase(newId.DatabaseName()).
+						HasArguments(importedArguments).
+						HasBody(newBody).
+						HasArchiveTier(archiveTier).
+						HasArchiveForDays(archiveForDays).
+						HasComment(comment),
+				),
 			},
 			// Change all props externally (except for archive_tier)
 			{

@@ -30,12 +30,14 @@ var storageLifecyclePolicySchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the storage lifecycle policy."),
+		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the storage lifecycle policy."),
+		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"argument": {
@@ -49,11 +51,10 @@ var storageLifecyclePolicySchema = map[string]*schema.Schema{
 					Description: "The argument name.",
 					ForceNew:    true,
 				},
-				// TODO(SNOW-1596962): Fully support VECTOR data type sdk.ParseFunctionArgumentsFromString could be a base for another function that takes argument names into consideration.
 				"type": {
 					Type:             schema.TypeString,
 					Required:         true,
-					Description:      dataTypeFieldDescription("The argument type. VECTOR data types are not yet supported."),
+					Description:      dataTypeFieldDescription("The argument type."),
 					DiffSuppressFunc: DiffSuppressDataTypes,
 					ValidateDiagFunc: IsDataTypeValid,
 					StateFunc:        DataTypeStateFunc,
@@ -235,8 +236,8 @@ func UpdateStorageLifecyclePolicy(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("name") || d.HasChange("database") || d.HasChange("schema") {
-		newId := sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string))
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
 		if err := client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).WithRenameTo(newId)); err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming storage lifecycle policy from %v to %v, err = %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))
