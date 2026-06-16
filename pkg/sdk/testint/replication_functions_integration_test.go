@@ -37,7 +37,8 @@ func TestInt_ShowReplicationDatabases(t *testing.T) {
 	err = client.Databases.AlterReplication(ctx, db2.ID(), &sdk.AlterDatabaseReplicationOptions{EnableReplication: &sdk.EnableReplication{ToAccounts: []sdk.AccountIdentifier{secondaryAccountId}}})
 	require.NoError(t, err)
 
-	db3, dbCleanup3 := secondaryTestClientHelper().Database.CreateSecondaryDatabaseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), sdk.NewExternalObjectIdentifier(accountId, db.ID()), &sdk.CreateSecondaryDatabaseOptions{})
+	id3 := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	db3, dbCleanup3 := secondaryTestClientHelper().Database.CreateSecondaryDatabaseWithOptions(t, id3, sdk.NewExternalObjectIdentifier(accountId, db.ID()), sdk.NewCreateSecondaryDatabaseRequest(id3, sdk.NewExternalObjectIdentifier(accountId, db.ID())))
 	t.Cleanup(dbCleanup3)
 
 	getByName := func(replicationDatabases []sdk.ReplicationDatabase, name sdk.AccountObjectIdentifier) *sdk.ReplicationDatabase {

@@ -11,9 +11,8 @@ func (c *TestClient) CreateTestDatabase(ctx context.Context, ifNotExists bool) (
 	cleanup := func() {
 		_ = c.context.client.Databases.DropSafely(ctx, id)
 	}
-	opts := c.Database.TestParametersSet()
-	opts.IfNotExists = sdk.Bool(ifNotExists)
-	err := c.context.client.Databases.Create(ctx, id, opts)
+	req := c.Database.TestParametersSet(id).WithIfNotExists(ifNotExists)
+	err := c.context.client.Databases.Create(ctx, req)
 	if err != nil {
 		return nil, cleanup, err
 	}

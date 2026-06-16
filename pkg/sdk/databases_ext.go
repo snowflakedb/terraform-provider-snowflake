@@ -113,3 +113,7 @@ func (opts *CreateFromListingDatabaseOptions) additionalValidations() error {
 	}
 	return nil
 }
+
+func (s *CreateDatabaseRequest) ID() AccountObjectIdentifier {
+	return s.name
+}

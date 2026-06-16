@@ -304,7 +304,7 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 			}
 		}
 
-		dbs, err := client.Databases.Show(ctx, new(sdk.ShowDatabasesOptions))
+		dbs, err := client.Databases.Show(ctx, sdk.NewShowDatabaseRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW DATABASES ended with error, err = %w", err)
 		}
