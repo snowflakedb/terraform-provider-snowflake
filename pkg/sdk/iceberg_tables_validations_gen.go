@@ -23,6 +23,9 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
+	if everyValueSet(opts.PartitionBy, opts.ClusterBy) {
+		errs = append(errs, errOneOf("CreateIcebergTableOptions", "PartitionBy", "ClusterBy"))
+	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.PartitionBy) {
 		for _, partitionBy := range opts.PartitionBy {

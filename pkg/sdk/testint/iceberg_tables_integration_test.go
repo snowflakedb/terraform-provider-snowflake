@@ -496,6 +496,26 @@ func TestInt_IcebergTables(t *testing.T) {
 		)
 	})
 
+	t.Run("create Snowflake managed: cluster by", func(t *testing.T) {
+		// PARTITION BY and CLUSTER BY are mutually exclusive for Iceberg tables (err 099207), so clustering is
+		// tested in a separate table from the partitioned "all options" one above.
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}).WithClusterBy([]string{"ID", "REGION"}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
+		clusteringInfo, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, "LINEAR(ID, REGION)", clusteringInfo.ClusterByKeys)
+	})
+
 	t.Run("create Snowflake managed: copy grants", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
@@ -1077,11 +1097,18 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithClusterBy([]string{"REGION"})))
 		require.NoError(t, err)
 
+		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
+
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithDropClusteringKey(true)))
 		require.NoError(t, err)
 
-		// TODO (next PR): verify the clustering key with SYSTEM$CLUSTERING_INFORMATION, as it is not returned from SHOW/DESCRIBE.
+		// After dropping the clustering key, the table is no longer clustered.
+		_, err = client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.ErrorContains(t, err, "is not clustered")
 	})
 
 	t.Run("alter: set and unset properties", func(t *testing.T) {

@@ -2,8 +2,6 @@
 
 package sdk
 
-import ()
-
 func NewGetForEntityPolicyReferenceRequest(
 	RefEntityName ObjectIdentifier,
 	RefEntityDomain PolicyEntityDomain,
