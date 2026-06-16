@@ -181,7 +181,7 @@ func warehouseParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.Accou
 	return c.Warehouses.ShowParameters
 }
 
-func handleWarehouseParametersChanges(d *schema.ResourceData, set *sdk.WarehouseSet, unset *sdk.WarehouseUnset) diag.Diagnostics {
+func handleWarehouseParametersChanges(d *schema.ResourceData, set *sdk.WarehouseSetRequest, unset *sdk.WarehouseUnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterUpdate(d, sdk.WarehouseParameterMaxConcurrencyLevel, &set.MaxConcurrencyLevel, &unset.MaxConcurrencyLevel),
 		handleParameterUpdate(d, sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, &set.StatementQueuedTimeoutInSeconds, &unset.StatementQueuedTimeoutInSeconds),
@@ -315,89 +315,89 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 	name := d.Get("name").(string)
 	id := sdk.NewAccountObjectIdentifier(name)
-	createOptions := &sdk.CreateWarehouseOptions{}
+	request := sdk.NewCreateWarehouseRequest(id)
 
 	if v, ok := d.GetOk("warehouse_type"); ok {
 		warehouseType, err := sdk.ToWarehouseTypeUserSettable(v.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.WarehouseType = &warehouseType
+		request.WithWarehouseType(warehouseType)
 	}
 	if v, ok := d.GetOk("warehouse_size"); ok {
 		size, err := sdk.ToWarehouseSize(v.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.WarehouseSize = &size
+		request.WithWarehouseSize(size)
 	}
 	if v, ok := d.GetOk("max_cluster_count"); ok {
-		createOptions.MaxClusterCount = sdk.Int(v.(int))
+		request.WithMaxClusterCount(v.(int))
 	}
 	if v, ok := d.GetOk("min_cluster_count"); ok {
-		createOptions.MinClusterCount = sdk.Int(v.(int))
+		request.WithMinClusterCount(v.(int))
 	}
 	if v, ok := d.GetOk("scaling_policy"); ok {
 		scalingPolicy, err := sdk.ToScalingPolicy(v.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.ScalingPolicy = &scalingPolicy
+		request.WithScalingPolicy(scalingPolicy)
 	}
 	if v := d.Get("auto_suspend").(int); v != IntDefault {
-		createOptions.AutoSuspend = sdk.Int(v)
+		request.WithAutoSuspend(v)
 	}
 	if v := d.Get("auto_resume").(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.AutoResume = sdk.Bool(parsed)
+		request.WithAutoResume(parsed)
 	}
 	if v, ok := d.GetOk("initially_suspended"); ok {
-		createOptions.InitiallySuspended = sdk.Bool(v.(bool))
+		request.WithInitiallySuspended(v.(bool))
 	}
 	if v, ok := d.GetOk("resource_monitor"); ok {
-		createOptions.ResourceMonitor = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+		request.WithResourceMonitor(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
 	if v, ok := d.GetOk("comment"); ok {
-		createOptions.Comment = sdk.String(v.(string))
+		request.WithComment(v.(string))
 	}
 	if v := d.Get("enable_query_acceleration").(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.EnableQueryAcceleration = sdk.Bool(parsed)
+		request.WithEnableQueryAcceleration(parsed)
 	}
 	if v := d.Get("query_acceleration_max_scale_factor").(int); v != IntDefault {
-		createOptions.QueryAccelerationMaxScaleFactor = sdk.Int(v)
+		request.WithQueryAccelerationMaxScaleFactor(v)
 	}
 	if v := d.Get("resource_constraint").(string); v != "" {
 		resourceConstraint, err := sdk.ToWarehouseResourceConstraint(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.ResourceConstraint = &resourceConstraint
+		request.WithResourceConstraint(resourceConstraint)
 	}
 	if v := d.Get("generation").(string); v != "" {
 		generation, err := sdk.ToWarehouseGeneration(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.Generation = &generation
+		request.WithGeneration(generation)
 	}
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
-		createOptions.MaxConcurrencyLevel = v
+		request.WithMaxConcurrencyLevel(*v)
 	}
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_queued_timeout_in_seconds"); v != nil {
-		createOptions.StatementQueuedTimeoutInSeconds = v
+		request.WithStatementQueuedTimeoutInSeconds(*v)
 	}
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_timeout_in_seconds"); v != nil {
-		createOptions.StatementTimeoutInSeconds = v
+		request.WithStatementTimeoutInSeconds(*v)
 	}
 
-	err := client.Warehouses.Create(ctx, id, createOptions)
+	err := client.Warehouses.Create(ctx, request)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -527,9 +527,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 	if d.HasChange("name") {
 		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
-		err := client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-			NewName: &newId,
-		})
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithNewName(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -539,17 +537,17 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 	}
 
 	// Batch SET operations and UNSET operations
-	set := sdk.WarehouseSet{}
-	unset := sdk.WarehouseUnset{}
+	set := sdk.NewWarehouseSetRequest()
+	unset := sdk.NewWarehouseUnsetRequest()
 	if d.HasChange("warehouse_type") {
 		if v, ok := d.GetOk("warehouse_type"); ok {
 			warehouseType, err := sdk.ToWarehouseTypeUserSettable(v.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			set.WarehouseType = &warehouseType
+			set.WithWarehouseType(warehouseType)
 		} else {
-			unset.WarehouseType = sdk.Bool(true)
+			unset.WithWarehouseType(true)
 		}
 	}
 	if d.HasChange("warehouse_size") {
@@ -558,22 +556,22 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		set.WarehouseSize = &size
+		set.WithWarehouseSize(size)
 		// For now, we always want to wait for the resize completion. In the future, we may parametrize it.
-		set.WaitForCompletion = sdk.Bool(true)
+		set.WithWaitForCompletion(true)
 	}
 	if d.HasChange("max_cluster_count") {
 		if v, ok := d.GetOk("max_cluster_count"); ok {
-			set.MaxClusterCount = sdk.Int(v.(int))
+			set.WithMaxClusterCount(v.(int))
 		} else {
-			unset.MaxClusterCount = sdk.Bool(true)
+			unset.WithMaxClusterCount(true)
 		}
 	}
 	if d.HasChange("min_cluster_count") {
 		if v, ok := d.GetOk("min_cluster_count"); ok {
-			set.MinClusterCount = sdk.Int(v.(int))
+			set.WithMinClusterCount(v.(int))
 		} else {
-			unset.MinClusterCount = sdk.Bool(true)
+			unset.WithMinClusterCount(true)
 		}
 	}
 	if d.HasChange("scaling_policy") {
@@ -582,18 +580,18 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			set.ScalingPolicy = &scalingPolicy
+			set.WithScalingPolicy(scalingPolicy)
 		} else {
-			unset.ScalingPolicy = sdk.Bool(true)
+			unset.WithScalingPolicy(true)
 		}
 	}
 	if d.HasChange("auto_suspend") {
 		if v := d.Get("auto_suspend").(int); v != IntDefault {
-			set.AutoSuspend = sdk.Int(v)
+			set.WithAutoSuspend(v)
 		} else {
 			// TODO [SNOW-1473453]: UNSET of auto suspend works incorrectly
-			// unset.AutoSuspend = sdk.Bool(true)
-			set.AutoSuspend = sdk.Int(600)
+			// unset.WithAutoSuspend(true)
+			set.WithAutoSuspend(600)
 		}
 	}
 	if d.HasChange("auto_resume") {
@@ -602,23 +600,23 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			set.AutoResume = sdk.Bool(parsed)
+			set.WithAutoResume(parsed)
 		} else {
-			unset.AutoResume = sdk.Bool(true)
+			unset.WithAutoResume(true)
 		}
 	}
 	if d.HasChange("resource_monitor") {
 		if v, ok := d.GetOk("resource_monitor"); ok {
-			set.ResourceMonitor = sdk.NewAccountObjectIdentifier(v.(string))
+			set.WithResourceMonitor(sdk.NewAccountObjectIdentifier(v.(string)))
 		} else {
-			unset.ResourceMonitor = sdk.Bool(true)
+			unset.WithResourceMonitor(true)
 		}
 	}
 	if d.HasChange("comment") {
 		if v, ok := d.GetOk("comment"); ok {
-			set.Comment = sdk.String(v.(string))
+			set.WithComment(v.(string))
 		} else {
-			unset.Comment = sdk.Bool(true)
+			unset.WithComment(true)
 		}
 	}
 	if d.HasChange("enable_query_acceleration") {
@@ -627,16 +625,16 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			set.EnableQueryAcceleration = sdk.Bool(parsed)
+			set.WithEnableQueryAcceleration(parsed)
 		} else {
-			unset.EnableQueryAcceleration = sdk.Bool(true)
+			unset.WithEnableQueryAcceleration(true)
 		}
 	}
 	if d.HasChange("query_acceleration_max_scale_factor") {
 		if v := d.Get("query_acceleration_max_scale_factor").(int); v != IntDefault {
-			set.QueryAccelerationMaxScaleFactor = sdk.Int(v)
+			set.WithQueryAccelerationMaxScaleFactor(v)
 		} else {
-			unset.QueryAccelerationMaxScaleFactor = sdk.Bool(true)
+			unset.WithQueryAccelerationMaxScaleFactor(true)
 		}
 	}
 	if d.HasChange("resource_constraint") {
@@ -654,9 +652,9 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 					if err != nil {
 						return diag.FromErr(err)
 					}
-					set.ResourceConstraint = &resourceConstraint
+					set.WithResourceConstraint(resourceConstraint)
 				} else {
-					unset.ResourceConstraint = sdk.Bool(true)
+					unset.WithResourceConstraint(true)
 				}
 			} else {
 				log.Printf("[DEBUG] resource constraint is not supported for %s warehouses, ignoring", warehouseType)
@@ -683,31 +681,27 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				set.Generation = &generation
+				set.WithGeneration(generation)
 			} else {
-				unset.Generation = sdk.Bool(true)
+				unset.WithGeneration(true)
 			}
 		} else {
 			log.Printf("[DEBUG] generation is not supported for %s warehouses, ignoring", warehouseTypeRaw)
 		}
 	}
-	if updateParamDiags := handleWarehouseParametersChanges(d, &set, &unset); len(updateParamDiags) > 0 {
+	if updateParamDiags := handleWarehouseParametersChanges(d, set, unset); len(updateParamDiags) > 0 {
 		return updateParamDiags
 	}
 
 	// Apply SET and UNSET changes
-	if (set != sdk.WarehouseSet{}) {
-		err := client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-			Set: &set,
-		})
+	if *set != *sdk.NewWarehouseSetRequest() {
+		err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*set))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if (unset != sdk.WarehouseUnset{}) {
-		err := client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-			Unset: &unset,
-		})
+	if *unset != *sdk.NewWarehouseUnsetRequest() {
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*unset))
 		if err != nil {
 			return diag.FromErr(err)
 		}

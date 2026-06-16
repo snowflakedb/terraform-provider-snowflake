@@ -39,7 +39,7 @@ func (c *TestClient) CreateTestWarehouse(ctx context.Context, ifNotExists bool) 
 	cleanup := func() {
 		_ = c.context.client.Warehouses.DropSafely(ctx, id)
 	}
-	err := c.context.client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{IfNotExists: sdk.Bool(ifNotExists)})
+	err := c.context.client.Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).WithIfNotExists(ifNotExists))
 	if err != nil {
 		return nil, cleanup, err
 	}

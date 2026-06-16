@@ -226,7 +226,7 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 			}
 		}
 
-		whs, err := client.Warehouses.Show(ctx, new(sdk.ShowWarehouseOptions))
+		whs, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW WAREHOUSES ended with error, err = %w", err)
 		}

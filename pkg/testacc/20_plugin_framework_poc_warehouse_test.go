@@ -486,31 +486,31 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 	name := data.Name.ValueString()
 	id := sdk.NewAccountObjectIdentifier(name)
 
-	opts := &sdk.CreateWarehouseOptions{}
+	createRequest := sdk.NewCreateWarehouseRequest(id)
 	errs := errors.Join(
-		testfunctional.StringEnumAttributeCreate(data.WarehouseType, &opts.WarehouseType),
-		testfunctional.StringEnumAttributeCreate(data.WarehouseSize, &opts.WarehouseSize),
-		testfunctional.Int64AttributeCreate(data.MaxClusterCount, &opts.MaxClusterCount),
-		testfunctional.Int64AttributeCreate(data.MinClusterCount, &opts.MinClusterCount),
-		testfunctional.StringEnumAttributeCreate(data.ScalingPolicy, &opts.ScalingPolicy),
-		testfunctional.Int64AttributeCreate(data.AutoSuspend, &opts.AutoSuspend),
-		testfunctional.BooleanAttributeCreate(data.AutoResume, &opts.AutoResume),
-		testfunctional.BooleanAttributeCreate(data.InitiallySuspended, &opts.InitiallySuspended),
-		testfunctional.IdAttributeCreate(data.ResourceMonitor, &opts.ResourceMonitor),
-		testfunctional.StringAttributeCreate(data.Comment, &opts.Comment),
-		testfunctional.BooleanAttributeCreate(data.EnableQueryAcceleration, &opts.EnableQueryAcceleration),
-		testfunctional.Int64AttributeCreate(data.QueryAccelerationMaxScaleFactor, &opts.QueryAccelerationMaxScaleFactor),
+		testfunctional.StringEnumAttributeCreate(data.WarehouseType, &createRequest.WarehouseType),
+		testfunctional.StringEnumAttributeCreate(data.WarehouseSize, &createRequest.WarehouseSize),
+		testfunctional.Int64AttributeCreate(data.MaxClusterCount, &createRequest.MaxClusterCount),
+		testfunctional.Int64AttributeCreate(data.MinClusterCount, &createRequest.MinClusterCount),
+		testfunctional.StringEnumAttributeCreate(data.ScalingPolicy, &createRequest.ScalingPolicy),
+		testfunctional.Int64AttributeCreate(data.AutoSuspend, &createRequest.AutoSuspend),
+		testfunctional.BooleanAttributeCreate(data.AutoResume, &createRequest.AutoResume),
+		testfunctional.BooleanAttributeCreate(data.InitiallySuspended, &createRequest.InitiallySuspended),
+		testfunctional.IdAttributeCreate(data.ResourceMonitor, &createRequest.ResourceMonitor),
+		testfunctional.StringAttributeCreate(data.Comment, &createRequest.Comment),
+		testfunctional.BooleanAttributeCreate(data.EnableQueryAcceleration, &createRequest.EnableQueryAcceleration),
+		testfunctional.Int64AttributeCreate(data.QueryAccelerationMaxScaleFactor, &createRequest.QueryAccelerationMaxScaleFactor),
 
-		testfunctional.Int64AttributeCreate(data.MaxConcurrencyLevel, &opts.MaxConcurrencyLevel),
-		testfunctional.Int64AttributeCreate(data.StatementQueuedTimeoutInSeconds, &opts.StatementQueuedTimeoutInSeconds),
-		testfunctional.Int64AttributeCreate(data.StatementTimeoutInSeconds, &opts.StatementTimeoutInSeconds),
+		testfunctional.Int64AttributeCreate(data.MaxConcurrencyLevel, &createRequest.MaxConcurrencyLevel),
+		testfunctional.Int64AttributeCreate(data.StatementQueuedTimeoutInSeconds, &createRequest.StatementQueuedTimeoutInSeconds),
+		testfunctional.Int64AttributeCreate(data.StatementTimeoutInSeconds, &createRequest.StatementTimeoutInSeconds),
 	)
 	if errs != nil {
 		response.Diagnostics.AddError("Error creating warehouse PoC", errs.Error())
 		return
 	}
 
-	response.Diagnostics.Append(r.create(ctx, id, opts)...)
+	response.Diagnostics.Append(r.create(ctx, createRequest)...)
 	if response.Diagnostics.HasError() {
 		return
 	}
@@ -534,10 +534,10 @@ func (r *WarehouseResource) Create(ctx context.Context, request resource.CreateR
 	response.Diagnostics.Append(response.Private.SetKey(ctx, privateStateSnowflakeObjectsStateKey, b)...)
 }
 
-func (r *WarehouseResource) create(ctx context.Context, id sdk.AccountObjectIdentifier, opts *sdk.CreateWarehouseOptions) diag.Diagnostics {
+func (r *WarehouseResource) create(ctx context.Context, request *sdk.CreateWarehouseRequest) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	err := r.client.Warehouses.Create(ctx, id, opts)
+	err := r.client.Warehouses.Create(ctx, request)
 	if err != nil {
 		diags.AddError("Could not create warehouse PoC", err.Error())
 	}
@@ -717,9 +717,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	if !plan.Name.Equal(state.Name) {
 		newId := sdk.NewAccountObjectIdentifier(plan.Name.ValueString())
 
-		err := r.client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-			NewName: &newId,
-		})
+		err := r.client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithNewName(newId))
 		if err != nil {
 			response.Diagnostics.AddError("Could not rename warehouse PoC", err.Error())
 			return
@@ -730,8 +728,8 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	}
 
 	// Batch SET operations and UNSET operations
-	set := sdk.WarehouseSet{}
-	unset := sdk.WarehouseUnset{}
+	set := sdk.NewWarehouseSetRequest()
+	unset := sdk.NewWarehouseUnsetRequest()
 
 	errs := errors.Join(
 		// name handled in rename
@@ -747,7 +745,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 		testfunctional.Int64AttributeUpdateSetDefaultInsteadOfUnset(plan.AutoSuspend, state.AutoSuspend, &set.AutoSuspend, 600),
 		// unset for auto_resume works incorrectly, setting the default instead
 		testfunctional.BooleanAttributeUpdateSetDefaultInsteadOfUnset(plan.AutoResume, state.AutoResume, &set.AutoResume, true),
-		testfunctional.IdAttributeUpdate(plan.ResourceMonitor, state.ResourceMonitor, &set.ResourceMonitor, &unset.ResourceMonitor),
+		testfunctional.IdPtrAttributeUpdate(plan.ResourceMonitor, state.ResourceMonitor, &set.ResourceMonitor, &unset.ResourceMonitor),
 		testfunctional.StringAttributeUpdate(plan.Comment, state.Comment, &set.Comment, &unset.Comment),
 		testfunctional.BooleanAttributeUpdate(plan.EnableQueryAcceleration, state.EnableQueryAcceleration, &set.EnableQueryAcceleration, &unset.EnableQueryAcceleration),
 		testfunctional.Int64AttributeUpdate(plan.QueryAccelerationMaxScaleFactor, state.QueryAccelerationMaxScaleFactor, &set.QueryAccelerationMaxScaleFactor, &unset.QueryAccelerationMaxScaleFactor),
@@ -763,23 +761,19 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	}
 	// workaround for WaitForCompletion
 	if set.WarehouseSize != nil {
-		set.WaitForCompletion = sdk.Bool(true)
+		set.WithWaitForCompletion(true)
 	}
 
 	// Apply SET and UNSET changes
-	if (set != sdk.WarehouseSet{}) {
-		err := r.client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-			Set: &set,
-		})
+	if *set != *sdk.NewWarehouseSetRequest() {
+		err := r.client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*set))
 		if err != nil {
 			response.Diagnostics.AddError("Could not update (alter set) warehouse PoC", err.Error())
 			return
 		}
 	}
-	if (unset != sdk.WarehouseUnset{}) {
-		err := r.client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-			Unset: &unset,
-		})
+	if *unset != *sdk.NewWarehouseUnsetRequest() {
+		err := r.client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*unset))
 		if err != nil {
 			response.Diagnostics.AddError("Could not update (alter unset) warehouse PoC", err.Error())
 			return

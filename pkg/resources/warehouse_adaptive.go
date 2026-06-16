@@ -158,7 +158,7 @@ func CreateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	opts := &sdk.CreateAdaptiveWarehouseOptions{}
+	opts := sdk.NewCreateAdaptiveWarehouseRequest(id)
 	errs := errors.Join(
 		stringAttributeCreate(d, "comment", &opts.Comment),
 		attributeMappedValueCreate(d, "max_query_performance_level", &opts.MaxQueryPerformanceLevel, func(v any) (*sdk.MaxQueryPerformanceLevel, error) {
@@ -177,7 +177,7 @@ func CreateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 	opts.StatementQueuedTimeoutInSeconds = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_queued_timeout_in_seconds")
 	opts.StatementTimeoutInSeconds = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_timeout_in_seconds")
 
-	if err := client.Warehouses.CreateAdaptive(ctx, id, opts); err != nil {
+	if err := client.Warehouses.CreateAdaptive(ctx, opts); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating adaptive warehouse %s: %w", id.FullyQualifiedName(), err))
 	}
 
@@ -268,18 +268,18 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 
 	if d.HasChange("name") {
 		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
-		if err := client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{NewName: &newId}); err != nil {
+		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithNewName(newId)); err != nil {
 			return diag.FromErr(err)
 		}
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
 
-	set := sdk.WarehouseSet{}
-	unset := sdk.WarehouseUnset{}
+	set := sdk.NewWarehouseSetRequest()
+	unset := sdk.NewWarehouseUnsetRequest()
 
 	if d.HasChange("warehouse_type") {
-		set.WarehouseType = sdk.Pointer(sdk.WarehouseTypeAdaptive)
+		set.WithWarehouseType(sdk.WarehouseTypeAdaptive)
 	}
 
 	if err := errors.Join(
@@ -297,14 +297,14 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 		return diags
 	}
 
-	if (set != sdk.WarehouseSet{}) {
-		if err := client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{Set: &set}); err != nil {
+	if *set != *sdk.NewWarehouseSetRequest() {
+		if err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting adaptive warehouse properties: %w", err))
 		}
 	}
 
-	if (unset != sdk.WarehouseUnset{}) {
-		if err := client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{Unset: &unset}); err != nil {
+	if *unset != *sdk.NewWarehouseUnsetRequest() {
+		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*unset)); err != nil {
 			return diag.FromErr(fmt.Errorf("error unsetting adaptive warehouse properties: %w", err))
 		}
 	}
