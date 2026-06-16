@@ -9,8 +9,7 @@ import (
 
 func TestCortexAgents_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	spec :=
-		`models:
+	spec := `models:
 	orchestration: claude-4-sonnet`
 	// Minimal valid CreateCortexAgentOptions
 	defaultOpts := func() *CreateCortexAgentOptions {
@@ -119,8 +118,7 @@ func TestCortexAgents_Alter(t *testing.T) {
 
 	t.Run("alter modify live version set", func(t *testing.T) {
 		opts := defaultOpts()
-		spec :=
-			`models:
+		spec := `models:
 	orchestration: claude-4-sonnet`
 		opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{
 			Specification: spec,

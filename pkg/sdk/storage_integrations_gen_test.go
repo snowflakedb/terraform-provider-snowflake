@@ -2,7 +2,7 @@
 
 package sdk
 
-// imports adjusted manualy
+// imports adjusted manually
 import (
 	"fmt"
 	"testing"

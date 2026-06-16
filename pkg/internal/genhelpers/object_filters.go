@@ -12,3 +12,12 @@ func filterObjectByNameProvider[T ObjectNameProvider](allowedObjectNames []strin
 		return slices.Contains(allowedObjectNames, object.ObjectName())
 	}
 }
+
+func excludeObjectByNameProvider[T ObjectNameProvider](excludedObjectNames []string) func(object T) bool {
+	return func(object T) bool {
+		if len(excludedObjectNames) == 0 {
+			return true
+		}
+		return !slices.Contains(excludedObjectNames, object.ObjectName())
+	}
+}

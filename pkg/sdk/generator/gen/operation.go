@@ -280,6 +280,9 @@ func (i *Interface) RevokeOperation(doc string, queryStruct *QueryStruct) *Inter
 }
 
 func (i *Interface) appendShowByID(filtering []ShowByIDFilteringKind) *Interface {
+	if len(filtering) == 1 && filtering[0] == ShowByIDSuppressed {
+		return i
+	}
 	if len(filtering) == 1 && filtering[0] == ShowByIDNoFiltering {
 		return i.ShowByIdOperationWithNoFiltering()
 	}

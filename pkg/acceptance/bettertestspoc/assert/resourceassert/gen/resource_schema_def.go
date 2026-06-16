@@ -154,6 +154,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.GitRepository().Schema,
 	},
 	{
+		name:   "HybridTable",
+		schema: resources.HybridTable().Schema,
+	},
+	{
 		name:   "ImageRepository",
 		schema: resources.ImageRepository().Schema,
 	},
@@ -320,6 +324,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "StorageIntegrationGcs",
 		schema: resources.StorageIntegrationGcs().Schema,
+	},
+	{
+		name:   "StorageLifecyclePolicy",
+		schema: resources.StorageLifecyclePolicy().Schema,
 	},
 	{
 		name:   "StreamOnDirectoryTable",

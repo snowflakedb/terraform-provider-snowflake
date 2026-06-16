@@ -116,16 +116,16 @@ func (r *CreateForJavaFunctionRequest) toOpts() *CreateForJavaFunctionOptions {
 		FunctionDefinition:         r.FunctionDefinition,
 	}
 	if r.Arguments != nil {
-		s := make([]FunctionArgument, len(r.Arguments))
+		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
-			s[i] = FunctionArgument{
+			arguments[i] = FunctionArgument{
 				ArgName:        v.ArgName,
 				ArgDataTypeOld: v.ArgDataTypeOld,
 				ArgDataType:    v.ArgDataType,
 				DefaultValue:   v.DefaultValue,
 			}
 		}
-		opts.Arguments = s
+		opts.Arguments = arguments
 	}
 	opts.Returns = FunctionReturns{}
 	if r.Returns.ResultDataType != nil {
@@ -137,34 +137,34 @@ func (r *CreateForJavaFunctionRequest) toOpts() *CreateForJavaFunctionOptions {
 	if r.Returns.Table != nil {
 		opts.Returns.Table = &FunctionReturnsTable{}
 		if r.Returns.Table.Columns != nil {
-			s := make([]FunctionColumn, len(r.Returns.Table.Columns))
+			columns := make([]FunctionColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
-				s[i] = FunctionColumn{
+				columns[i] = FunctionColumn{
 					ColumnName:        v.ColumnName,
 					ColumnDataTypeOld: v.ColumnDataTypeOld,
 					ColumnDataType:    v.ColumnDataType,
 				}
 			}
-			opts.Returns.Table.Columns = s
+			opts.Returns.Table.Columns = columns
 		}
 	}
 	if r.Imports != nil {
-		s := make([]FunctionImport, len(r.Imports))
+		imports := make([]FunctionImport, len(r.Imports))
 		for i, v := range r.Imports {
-			s[i] = FunctionImport{
+			imports[i] = FunctionImport{
 				FunctionImport: v.FunctionImport,
 			}
 		}
-		opts.Imports = s
+		opts.Imports = imports
 	}
 	if r.Packages != nil {
-		s := make([]FunctionPackage, len(r.Packages))
+		packages := make([]FunctionPackage, len(r.Packages))
 		for i, v := range r.Packages {
-			s[i] = FunctionPackage{
+			packages[i] = FunctionPackage{
 				FunctionPackage: v.FunctionPackage,
 			}
 		}
-		opts.Packages = s
+		opts.Packages = packages
 	}
 	return opts
 }
@@ -187,16 +187,16 @@ func (r *CreateForJavascriptFunctionRequest) toOpts() *CreateForJavascriptFuncti
 		FunctionDefinition:    r.FunctionDefinition,
 	}
 	if r.Arguments != nil {
-		s := make([]FunctionArgument, len(r.Arguments))
+		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
-			s[i] = FunctionArgument{
+			arguments[i] = FunctionArgument{
 				ArgName:        v.ArgName,
 				ArgDataTypeOld: v.ArgDataTypeOld,
 				ArgDataType:    v.ArgDataType,
 				DefaultValue:   v.DefaultValue,
 			}
 		}
-		opts.Arguments = s
+		opts.Arguments = arguments
 	}
 	opts.Returns = FunctionReturns{}
 	if r.Returns.ResultDataType != nil {
@@ -208,15 +208,15 @@ func (r *CreateForJavascriptFunctionRequest) toOpts() *CreateForJavascriptFuncti
 	if r.Returns.Table != nil {
 		opts.Returns.Table = &FunctionReturnsTable{}
 		if r.Returns.Table.Columns != nil {
-			s := make([]FunctionColumn, len(r.Returns.Table.Columns))
+			columns := make([]FunctionColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
-				s[i] = FunctionColumn{
+				columns[i] = FunctionColumn{
 					ColumnName:        v.ColumnName,
 					ColumnDataTypeOld: v.ColumnDataTypeOld,
 					ColumnDataType:    v.ColumnDataType,
 				}
 			}
-			opts.Returns.Table.Columns = s
+			opts.Returns.Table.Columns = columns
 		}
 	}
 	return opts
@@ -246,16 +246,16 @@ func (r *CreateForPythonFunctionRequest) toOpts() *CreateForPythonFunctionOption
 		FunctionDefinition:         r.FunctionDefinition,
 	}
 	if r.Arguments != nil {
-		s := make([]FunctionArgument, len(r.Arguments))
+		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
-			s[i] = FunctionArgument{
+			arguments[i] = FunctionArgument{
 				ArgName:        v.ArgName,
 				ArgDataTypeOld: v.ArgDataTypeOld,
 				ArgDataType:    v.ArgDataType,
 				DefaultValue:   v.DefaultValue,
 			}
 		}
-		opts.Arguments = s
+		opts.Arguments = arguments
 	}
 	opts.Returns = FunctionReturns{}
 	if r.Returns.ResultDataType != nil {
@@ -267,34 +267,34 @@ func (r *CreateForPythonFunctionRequest) toOpts() *CreateForPythonFunctionOption
 	if r.Returns.Table != nil {
 		opts.Returns.Table = &FunctionReturnsTable{}
 		if r.Returns.Table.Columns != nil {
-			s := make([]FunctionColumn, len(r.Returns.Table.Columns))
+			columns := make([]FunctionColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
-				s[i] = FunctionColumn{
+				columns[i] = FunctionColumn{
 					ColumnName:        v.ColumnName,
 					ColumnDataTypeOld: v.ColumnDataTypeOld,
 					ColumnDataType:    v.ColumnDataType,
 				}
 			}
-			opts.Returns.Table.Columns = s
+			opts.Returns.Table.Columns = columns
 		}
 	}
 	if r.Imports != nil {
-		s := make([]FunctionImport, len(r.Imports))
+		imports := make([]FunctionImport, len(r.Imports))
 		for i, v := range r.Imports {
-			s[i] = FunctionImport{
+			imports[i] = FunctionImport{
 				FunctionImport: v.FunctionImport,
 			}
 		}
-		opts.Imports = s
+		opts.Imports = imports
 	}
 	if r.Packages != nil {
-		s := make([]FunctionPackage, len(r.Packages))
+		packages := make([]FunctionPackage, len(r.Packages))
 		for i, v := range r.Packages {
-			s[i] = FunctionPackage{
+			packages[i] = FunctionPackage{
 				FunctionPackage: v.FunctionPackage,
 			}
 		}
-		opts.Packages = s
+		opts.Packages = packages
 	}
 	return opts
 }
@@ -325,34 +325,34 @@ func (r *CreateForScalaFunctionRequest) toOpts() *CreateForScalaFunctionOptions 
 		FunctionDefinition:         r.FunctionDefinition,
 	}
 	if r.Arguments != nil {
-		s := make([]FunctionArgument, len(r.Arguments))
+		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
-			s[i] = FunctionArgument{
+			arguments[i] = FunctionArgument{
 				ArgName:        v.ArgName,
 				ArgDataTypeOld: v.ArgDataTypeOld,
 				ArgDataType:    v.ArgDataType,
 				DefaultValue:   v.DefaultValue,
 			}
 		}
-		opts.Arguments = s
+		opts.Arguments = arguments
 	}
 	if r.Imports != nil {
-		s := make([]FunctionImport, len(r.Imports))
+		imports := make([]FunctionImport, len(r.Imports))
 		for i, v := range r.Imports {
-			s[i] = FunctionImport{
+			imports[i] = FunctionImport{
 				FunctionImport: v.FunctionImport,
 			}
 		}
-		opts.Imports = s
+		opts.Imports = imports
 	}
 	if r.Packages != nil {
-		s := make([]FunctionPackage, len(r.Packages))
+		packages := make([]FunctionPackage, len(r.Packages))
 		for i, v := range r.Packages {
-			s[i] = FunctionPackage{
+			packages[i] = FunctionPackage{
 				FunctionPackage: v.FunctionPackage,
 			}
 		}
-		opts.Packages = s
+		opts.Packages = packages
 	}
 	return opts
 }
@@ -375,16 +375,16 @@ func (r *CreateForSQLFunctionRequest) toOpts() *CreateForSQLFunctionOptions {
 		FunctionDefinition:    r.FunctionDefinition,
 	}
 	if r.Arguments != nil {
-		s := make([]FunctionArgument, len(r.Arguments))
+		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
-			s[i] = FunctionArgument{
+			arguments[i] = FunctionArgument{
 				ArgName:        v.ArgName,
 				ArgDataTypeOld: v.ArgDataTypeOld,
 				ArgDataType:    v.ArgDataType,
 				DefaultValue:   v.DefaultValue,
 			}
 		}
-		opts.Arguments = s
+		opts.Arguments = arguments
 	}
 	opts.Returns = FunctionReturns{}
 	if r.Returns.ResultDataType != nil {
@@ -396,15 +396,15 @@ func (r *CreateForSQLFunctionRequest) toOpts() *CreateForSQLFunctionOptions {
 	if r.Returns.Table != nil {
 		opts.Returns.Table = &FunctionReturnsTable{}
 		if r.Returns.Table.Columns != nil {
-			s := make([]FunctionColumn, len(r.Returns.Table.Columns))
+			columns := make([]FunctionColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
-				s[i] = FunctionColumn{
+				columns[i] = FunctionColumn{
 					ColumnName:        v.ColumnName,
 					ColumnDataTypeOld: v.ColumnDataTypeOld,
 					ColumnDataType:    v.ColumnDataType,
 				}
 			}
-			opts.Returns.Table.Columns = s
+			opts.Returns.Table.Columns = columns
 		}
 	}
 	return opts
@@ -431,9 +431,7 @@ func (r *AlterFunctionRequest) toOpts() *AlterFunctionOptions {
 			TraceLevel:                 r.Set.TraceLevel,
 		}
 		if r.Set.SecretsList != nil {
-			opts.Set.SecretsList = &SecretsList{
-				SecretsList: r.Set.SecretsList.SecretsList,
-			}
+			opts.Set.SecretsList = r.Set.SecretsList.toOpts()
 		}
 	}
 	if r.Unset != nil {
@@ -508,4 +506,10 @@ func (r functionDetailRow) convert() (*FunctionDetail, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func (r *SecretsListRequest) toOpts() *SecretsList {
+	return &SecretsList{
+		SecretsList: r.SecretsList,
+	}
 }

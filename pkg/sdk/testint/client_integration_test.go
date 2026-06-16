@@ -26,6 +26,8 @@ import (
 // TODO [SNOW-1827310]: use generated config for these tests
 // TODO [SNOW-2054366]: Use dedicated users for these tests.
 func TestInt_Client_NewClient(t *testing.T) {
+	restoreDriverLogLevelAfterTest(t)
+
 	t.Run("with default config (legacy)", func(t *testing.T) {
 		tmpServiceUser := testClientHelper().SetUpTemporaryServiceUser(t)
 		tmpServiceUserConfig := testClientHelper().StoreTempTomlConfigWithProfile(t, testprofiles.Default, func(profile string) string {
@@ -33,8 +35,9 @@ func TestInt_Client_NewClient(t *testing.T) {
 		})
 		t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 		config := sdk.DefaultConfig(sdk.WithUseLegacyTomlFormat(true))
-		_, err := sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		require.NoError(t, client.Close())
 	})
 
 	t.Run("with config", func(t *testing.T) {
@@ -46,8 +49,9 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile)
 		require.NoError(t, err)
-		_, err = sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		require.NoError(t, client.Close())
 	})
 
 	t.Run("with config (legacy)", func(t *testing.T) {
@@ -59,8 +63,9 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 		config, err := sdk.ProfileConfig(tmpServiceUserConfig.Profile, sdk.WithUseLegacyTomlFormat(true))
 		require.NoError(t, err)
-		_, err = sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		require.NoError(t, client.Close())
 	})
 
 	t.Run("with missing config", func(t *testing.T) {
@@ -127,8 +132,9 @@ func TestInt_Client_NewClient(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, config)
 
-		_, err = sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		require.NoError(t, client.Close())
 	})
 
 	t.Run("with missing config - should not care about correct env variables", func(t *testing.T) {
@@ -152,8 +158,11 @@ func TestInt_Client_NewClient(t *testing.T) {
 
 	t.Run("registers snowflake driver", func(t *testing.T) {
 		config := sdk.DefaultConfig()
-		_, err := sdk.NewClient(config)
+		client, err := sdk.NewClient(config)
 		require.NoError(t, err)
+		t.Cleanup(func() {
+			require.NoError(t, client.Close())
+		})
 
 		assert.ElementsMatch(t, sql.Drivers(), []string{"snowflake"})
 	})
@@ -209,4 +218,110 @@ func TestInt_Client_AdditionalMetadata(t *testing.T) {
 
 		assertQueryMetadata(t, <-queryIdChan)
 	})
+}
+
+func TestInt_Client(t *testing.T) {
+	restoreDriverLogLevelAfterTest(t)
+
+	t.Run("ping", func(t *testing.T) {
+		client := defaultTestClient(t)
+		err := client.Ping()
+		require.NoError(t, err)
+	})
+
+	t.Run("close", func(t *testing.T) {
+		client := defaultTestClient(t)
+		err := client.Close()
+		require.NoError(t, err)
+	})
+
+	t.Run("exec", func(t *testing.T) {
+		client := defaultTestClient(t)
+		ctx := context.Background()
+		_, err := client.ExecForTests(ctx, "SELECT 1")
+		require.NoError(t, err)
+	})
+
+	t.Run("query", func(t *testing.T) {
+		client := defaultTestClient(t)
+		ctx := context.Background()
+		rows := []struct {
+			One int `db:"ONE"`
+		}{}
+		err := client.QueryForTests(ctx, &rows, "SELECT 1 AS ONE")
+		require.NoError(t, err)
+		require.NotNil(t, rows)
+		require.Len(t, rows, 1)
+		require.Equal(t, 1, rows[0].One)
+	})
+
+	t.Run("queryOne", func(t *testing.T) {
+		client := defaultTestClient(t)
+		ctx := context.Background()
+		row := struct {
+			One int `db:"ONE"`
+		}{}
+		err := client.QueryOneForTests(ctx, &row, "SELECT 1 AS ONE")
+		require.NoError(t, err)
+		require.Equal(t, 1, row.One)
+	})
+
+	// TODO [SNOW-2054366]: Use dedicated users for these tests.
+	t.Run("newCLientDriverLoggingLevel", func(t *testing.T) {
+		t.Run("get default gosnowflake driver logging level", func(t *testing.T) {
+			config := sdk.DefaultConfig()
+			client, err := sdk.NewClient(config)
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				require.NoError(t, client.Close())
+			})
+
+			var expected string
+			if os.Getenv("GITHUB_ACTIONS") != "" {
+				expected = "FATAL"
+			} else {
+				expected = "ERROR"
+			}
+			assert.Equal(t, expected, gosnowflake.GetLogger().GetLogLevel())
+		})
+
+		t.Run("set gosnowflake driver logging level with config", func(t *testing.T) {
+			config := sdk.DefaultConfig()
+			config.Tracing = "trace"
+			client, err := sdk.NewClient(config)
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				require.NoError(t, client.Close())
+			})
+
+			assert.Equal(t, "TRACE", gosnowflake.GetLogger().GetLogLevel())
+		})
+	})
+}
+
+// restoreDriverLogLevelAfterTest snapshots the global gosnowflake logger level and restores it once the test finishes.
+// gosnowflake.GetLogger() is a single global logger for the whole test binary. The driver sets the global logger level
+// in its init, and every time a connection is opened with a non-empty Tracing the driver overwrites that global level.
+// Without restoring it, the level leaks into subsequent tests in the binary.
+func restoreDriverLogLevelAfterTest(t *testing.T) {
+	t.Helper()
+	defaultLogLevel := gosnowflake.GetLogger().GetLogLevel()
+	t.Cleanup(func() {
+		err := gosnowflake.GetLogger().SetLogLevel(defaultLogLevel)
+		require.NoError(t, err)
+	})
+}
+
+func defaultTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+
+	client, err := sdk.NewDefaultClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		require.NoError(t, client.Close())
+	})
+
+	return client
 }

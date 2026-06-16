@@ -599,7 +599,7 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 		synonyms := c["synonym"].(*schema.Set).List()
 		if len(synonyms) > 0 {
 			synonymList := collections.Map(synonyms, func(s any) sdk.Synonym { return sdk.Synonym{Synonym: s.(string)} })
-			logicalTableRequest = logicalTableRequest.WithSynonyms(*sdk.NewSynonymsRequest().WithWithSynonyms(synonymList))
+			logicalTableRequest = logicalTableRequest.WithSynonyms(*sdk.NewSynonymsRequest(synonymList))
 		}
 	}
 
@@ -620,10 +620,8 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 	switch {
 	case len(c["semantic_expression"].([]any)) > 0:
 		semanticExpression := c["semantic_expression"].([]any)[0].(map[string]any)
-		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
-			WithQualifiedExpressionName(semanticExpression["qualified_expression_name"].(string))
-		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
-			WithSqlExpression(semanticExpression["sql_expression"].(string))
+		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest(semanticExpression["qualified_expression_name"].(string))
+		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest(semanticExpression["sql_expression"].(string))
 		semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
 
 		if semanticExpression["comment"] != nil && semanticExpression["comment"].(string) != "" {
@@ -643,10 +641,8 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 		metricDefinitionRequest.WithSemanticExpression(*semExpRequest)
 	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
-		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
-			WithQualifiedExpressionName(windowFunctionDefinition["qualified_expression_name"].(string))
-		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
-			WithSqlExpression(windowFunctionDefinition["sql_expression"].(string))
+		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest(windowFunctionDefinition["qualified_expression_name"].(string))
+		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest(windowFunctionDefinition["sql_expression"].(string))
 		windowFuncRequest := sdk.NewWindowFunctionMetricDefinitionRequest(qualifiedExpNameRequest, sqlExpRequest)
 		if len(windowFunctionDefinition["over_clause"].([]any)) > 0 {
 			overClause, ok := windowFunctionDefinition["over_clause"].([]any)[0].(map[string]any)
@@ -709,15 +705,13 @@ func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, err
 	if qualifiedExpressionName == "" {
 		return nil, fmt.Errorf("qualified_expression_name is required")
 	}
-	qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
-		WithQualifiedExpressionName(qualifiedExpressionName)
+	qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest(qualifiedExpressionName)
 
 	sqlExpression := c["sql_expression"].(string)
 	if sqlExpression == "" {
 		return nil, fmt.Errorf("sql_expression is required")
 	}
-	sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
-		WithSqlExpression(sqlExpression)
+	sqlExpRequest := sdk.NewSemanticSqlExpressionRequest(sqlExpression)
 	semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
 
 	if c["comment"] != nil && c["comment"].(string) != "" {
@@ -781,7 +775,7 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 	request := sdk.NewSemanticViewRelationshipRequest(tableNameOrAliasRequest, relationshipColumnRequests, refTableNameOrAliasRequest)
 
 	if c["relationship_identifier"] != nil && c["relationship_identifier"].(string) != "" {
-		relAliasRequest := sdk.NewRelationshipAliasRequest().WithRelationshipAlias(c["relationship_identifier"].(string))
+		relAliasRequest := sdk.NewRelationshipAliasRequest(c["relationship_identifier"].(string))
 		request.WithRelationshipAlias(*relAliasRequest)
 	}
 
