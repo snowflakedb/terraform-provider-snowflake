@@ -63,3 +63,10 @@ func (c *HybridTableClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*
 	ctx := context.Background()
 	return c.context.client.HybridTables.ShowByID(ctx, id)
 }
+
+func (c *HybridTableClient) Alter(t *testing.T, req *sdk.AlterHybridTableRequest) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.context.client.HybridTables.Alter(ctx, req)
+	require.NoError(t, err)
+}

@@ -18,27 +18,57 @@ In our research, we tested different sets of configurations described [here](./o
 
 ### Recommendations
 
-For now, the only recommendation that shows real improvements is to keep your object in correct relations. Use the following order:
+The primary recommendation is to keep your objects in correct relations. Use the following order:
 - [Implicit dependency](https://developer.hashicorp.com/terraform/tutorials/configuration-language/dependencies#manage-implicit-dependencies)
 - [Explicit dependency (depends_on)](https://developer.hashicorp.com/terraform/tutorials/configuration-language/dependencies#manage-explicit-dependencies)
 - No dependency
 
-Currently, we do not support object renaming within hierarchies.
-However, we are planning to make a follow-up research that would enable it.
-If the research confirms that we will be able to implement it, and we decide to do so, maintaining the correct resource structure will not only be advisable but essential.
-It will be crucial for accurately determining the appropriate actions a resource should take when a high-level object is renamed.
+Maintaining proper resource dependencies is essential for the provider to accurately determine the appropriate actions when a high-level object is renamed.
 
-If you really need to perform, for example, a database rename with other resources referencing its name, you can first remove the dependent objects from the state.
+If you prefer to handle hierarchy renames without resource recreation, consider enabling the `HIERARCHY_RENAMES` experimental feature (see below).
+Otherwise, if you need to perform a database rename with other resources referencing its name, you can first remove the dependent objects from the state.
 Then, perform the actual rename, and after that, you can import the dependent objects back to the state, but with a different database.
 This is very time-consuming, so only consider this when the number of objects dependent on the object you want to rename is low.
 To see more or less how this could be implemented, take a look at the [migration guide](./resource_migration) we already described which has similar steps of execution.
 
-### Future plans
+### Experimental: In-place hierarchy renames
 
-In addition to the plans described in the [research summary](./object_renaming_research_summary#renaming-higher-hierarchy-objects), we would like to research what resources will be needed to handle high-level object renames in the future.
-The problem right now is that lower-level objects have fields that reference higher-level objects with the ForceNew option.
-A solution would be to remove this parameter and handle certain situations differently.
-The new solution should provide an easier way to conclude high-level object renames with our provider.
+The `HIERARCHY_RENAMES` experiment enables in-place handling of hierarchy renames and moves for supported resources.
+To enable it, add `HIERARCHY_RENAMES` to the `experimental_features_enabled` list in your provider configuration:
+
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["HIERARCHY_RENAMES"]
+}
+```
+
+Currently supported by: `snowflake_schema`.
+
+When enabled, changing the `database` field on `snowflake_schema` no longer forces resource recreation. Instead, the provider detects the scenario and handles it accordingly:
+
+#### Database rename (parent renamed)
+
+If the parent database was renamed (e.g. from `A` to `B`), the provider detects that the old database no longer exists while the new database and schema already exist under the new name. In this case, the provider simply updates the resource ID to reflect the new database name — no Snowflake modification is performed.
+
+**Conditions detected:**
+- New database `B` exists
+- Old database `A` does not exist
+- Schema `B.X` exists
+
+#### Schema move (move to a different database)
+
+If both the old and new databases exist, the provider treats this as a request to move the schema from one database to another. It executes `ALTER SCHEMA A.X RENAME TO B.X` in Snowflake, then updates the resource ID.
+
+**Conditions detected:**
+- New database `B` exists
+- Old database `A` exists
+- Schema `A.X` exists
+
+#### Requirements
+
+- Proper resource dependencies (implicit or explicit) between the database and schema resources are strongly recommended for correct behavior.
+- Both use cases can be combined with a simultaneous schema name change (e.g. moving from `A.X` to `B.Y`).
+- If the provider cannot determine the rename scenario (e.g. the new database does not exist), it returns an error with guidance.
 
 ## Issues with lists and sets
 

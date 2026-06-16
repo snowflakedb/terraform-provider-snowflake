@@ -59,7 +59,7 @@ func TestAcc_UserSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: sessionPoliciesProviderFactory,
+		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

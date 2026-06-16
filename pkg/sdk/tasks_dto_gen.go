@@ -14,10 +14,9 @@ var (
 )
 
 type CreateTaskRequest struct {
-	OrReplace   *bool
-	IfNotExists *bool
-	name        SchemaObjectIdentifier // required
-	// adjusted manually
+	OrReplace                               *bool
+	IfNotExists                             *bool
+	name                                    SchemaObjectIdentifier // required
 	Warehouse                               *CreateTaskWarehouseRequest
 	Schedule                                *string
 	Config                                  *string
@@ -39,9 +38,13 @@ type CreateTaskRequest struct {
 	sql                                     string // required
 }
 
+type CreateTaskWarehouseRequest struct {
+	Warehouse                           *AccountObjectIdentifier
+	UserTaskManagedInitialWarehouseSize *WarehouseSize
+}
+
 type CreateOrAlterTaskRequest struct {
-	name SchemaObjectIdentifier // required
-	// adjusted manually
+	name                        SchemaObjectIdentifier // required
 	Warehouse                   *CreateTaskWarehouseRequest
 	Schedule                    *string
 	Config                      *string

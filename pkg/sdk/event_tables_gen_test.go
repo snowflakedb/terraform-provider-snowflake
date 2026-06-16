@@ -38,6 +38,12 @@ func TestEventTables_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EVENT TABLE %s`, id.FullyQualifiedName())
 	})
 
+	t.Run("with empty cluster by slice", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusterBy = []string{}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE EVENT TABLE %s`, id.FullyQualifiedName())
+	})
+
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
@@ -262,7 +268,7 @@ func TestEventTables_Alter(t *testing.T) {
 		opts := defaultOpts()
 		cluster := []string{"a", "b"}
 		opts.ClusteringAction = &EventTableClusteringAction{
-			ClusterBy: &cluster,
+			ClusterBy: cluster,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s CLUSTER BY (a, b)`, id.FullyQualifiedName())
 

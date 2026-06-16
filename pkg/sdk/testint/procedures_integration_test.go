@@ -2868,6 +2868,7 @@ def filter_by_role(session, name, role):
 	// `The DECFLOAT data type isn’t supported in stored procedures or user-defined functions (UDFs) written in a language other than SQL, such as Python or Java.`
 	// is unclear. Confirming that DECFLOAT is not supported even for SQL procedures.
 	t.Run("document that DECFLOAT is not supported even for SQL procedures", func(t *testing.T) {
+		t.Skip("TODO(next prs): fix or remove the test now that DECFLOAT is supported for SQL procedures")
 		argName := "A"
 		dataType, err := datatypes.ParseDataType("DECFLOAT")
 		require.NoError(t, err)

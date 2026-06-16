@@ -185,8 +185,6 @@ type ProcedureSetRequest struct {
 	TraceLevel                 *TraceLevel
 }
 
-// SecretsListRequest removed manually - redeclaration with function
-
 type ProcedureUnsetRequest struct {
 	Comment                    *bool
 	ExternalAccessIntegrations *bool

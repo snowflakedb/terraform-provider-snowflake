@@ -135,7 +135,7 @@ func TestAcc_Schemas_CompleteUseCase(t *testing.T) {
 		WithDependsOn(schemaModel.ResourceReference(), viewModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

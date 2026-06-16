@@ -124,6 +124,7 @@ var RepositoryLabels = []string{
 	"resource:storage_integration_aws",
 	"resource:storage_integration_azure",
 	"resource:storage_integration_gcs",
+	"resource:storage_lifecycle_policy",
 	"resource:stream",
 	"resource:stream_on_directory_table",
 	"resource:stream_on_external_table",

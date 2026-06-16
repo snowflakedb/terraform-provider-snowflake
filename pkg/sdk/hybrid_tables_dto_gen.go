@@ -14,11 +14,13 @@ var (
 )
 
 type CreateHybridTableRequest struct {
-	OrReplace             *bool
-	IfNotExists           *bool
-	name                  SchemaObjectIdentifier                         // required
-	ColumnsAndConstraints HybridTableColumnsConstraintsAndIndexesRequest // required
-	Comment               *string
+	OrReplace                  *bool
+	IfNotExists                *bool
+	name                       SchemaObjectIdentifier                         // required
+	ColumnsAndConstraints      HybridTableColumnsConstraintsAndIndexesRequest // required
+	DataRetentionTimeInDays    *int
+	MaxDataExtensionTimeInDays *int
+	Comment                    *string
 }
 
 type HybridTableColumnsConstraintsAndIndexesRequest struct {
@@ -61,6 +63,7 @@ type AlterHybridTableRequest struct {
 	DropIndexAction   *HybridTableDropIndexActionRequest
 	ClusteringAction  *HybridTableClusteringActionRequest
 	Set               *HybridTableSetPropertiesRequest
+	Unset             *HybridTableUnsetPropertiesRequest
 }
 
 type HybridTableAddColumnActionRequest struct {
@@ -131,6 +134,12 @@ type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	Comment                    *string
+}
+
+type HybridTableUnsetPropertiesRequest struct {
+	Comment                    *bool
+	DataRetentionTimeInDays    *bool
+	MaxDataExtensionTimeInDays *bool
 }
 
 type DropHybridTableRequest struct {

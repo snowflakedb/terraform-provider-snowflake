@@ -82,14 +82,14 @@ func (r *CreateRowAccessPolicyRequest) toOpts() *CreateRowAccessPolicyOptions {
 		Comment:     r.Comment,
 	}
 	if r.args != nil {
-		s := make([]CreateRowAccessPolicyArgs, len(r.args))
+		args := make([]CreateRowAccessPolicyArgs, len(r.args))
 		for i, v := range r.args {
-			s[i] = CreateRowAccessPolicyArgs{
+			args[i] = CreateRowAccessPolicyArgs{
 				Name:     v.Name,
 				DataType: v.DataType,
 			}
 		}
-		opts.args = s
+		opts.args = args
 	}
 	return opts
 }
