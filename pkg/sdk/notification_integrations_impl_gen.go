@@ -125,14 +125,14 @@ func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationInteg
 			WebhookBodyTemplate: r.WebhookParams.WebhookBodyTemplate,
 		}
 		if r.WebhookParams.WebhookHeaders != nil {
-			s := make([]WebhookHeader, len(r.WebhookParams.WebhookHeaders))
+			webhookHeaders := make([]WebhookHeader, len(r.WebhookParams.WebhookHeaders))
 			for i, v := range r.WebhookParams.WebhookHeaders {
-				s[i] = WebhookHeader{
+				webhookHeaders[i] = WebhookHeader{
 					Header: v.Header,
 					Value:  v.Value,
 				}
 			}
-			opts.WebhookParams.WebhookHeaders = s
+			opts.WebhookParams.WebhookHeaders = webhookHeaders
 		}
 	}
 	return opts
@@ -182,14 +182,14 @@ func (r *AlterNotificationIntegrationRequest) toOpts() *AlterNotificationIntegra
 				WebhookBodyTemplate: r.Set.SetWebhookParams.WebhookBodyTemplate,
 			}
 			if r.Set.SetWebhookParams.WebhookHeaders != nil {
-				s := make([]WebhookHeader, len(r.Set.SetWebhookParams.WebhookHeaders))
+				webhookHeaders := make([]WebhookHeader, len(r.Set.SetWebhookParams.WebhookHeaders))
 				for i, v := range r.Set.SetWebhookParams.WebhookHeaders {
-					s[i] = WebhookHeader{
+					webhookHeaders[i] = WebhookHeader{
 						Header: v.Header,
 						Value:  v.Value,
 					}
 				}
-				opts.Set.SetWebhookParams.WebhookHeaders = s
+				opts.Set.SetWebhookParams.WebhookHeaders = webhookHeaders
 			}
 		}
 	}

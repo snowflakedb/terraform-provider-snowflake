@@ -272,8 +272,7 @@ func NewEventTableClusteringActionRequest() *EventTableClusteringActionRequest {
 	return &s
 }
 
-// adjusted manually
-func (s *EventTableClusteringActionRequest) WithClusterBy(clusterBy *[]string) *EventTableClusteringActionRequest {
+func (s *EventTableClusteringActionRequest) WithClusterBy(clusterBy []string) *EventTableClusteringActionRequest {
 	s.ClusterBy = clusterBy
 	return s
 }

@@ -91,9 +91,7 @@ func (r *CreateNotebookRequest) toOpts() *CreateNotebookOptions {
 		DefaultVersion:              r.DefaultVersion,
 	}
 	if r.Secrets != nil {
-		opts.Secrets = &SecretsList{
-			SecretsList: r.Secrets.SecretsList,
-		}
+		opts.Secrets = r.Secrets.toOpts()
 	}
 	return opts
 }
@@ -119,9 +117,7 @@ func (r *AlterNotebookRequest) toOpts() *AlterNotebookOptions {
 			RuntimeEnvironmentVersion:   r.Set.RuntimeEnvironmentVersion,
 		}
 		if r.Set.Secrets != nil {
-			opts.Set.Secrets = &SecretsList{
-				SecretsList: r.Set.Secrets.SecretsList,
-			}
+			opts.Set.Secrets = r.Set.Secrets.toOpts()
 		}
 	}
 	if r.Unset != nil {

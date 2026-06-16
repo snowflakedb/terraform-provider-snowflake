@@ -220,8 +220,6 @@ type ProcedureSet struct {
 	TraceLevel                 *TraceLevel               `ddl:"parameter,single_quotes" sql:"TRACE_LEVEL"`
 }
 
-// SecretsList removed manually - redeclared in functions
-
 type ProcedureUnset struct {
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 	ExternalAccessIntegrations *bool `ddl:"keyword" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
@@ -277,9 +275,9 @@ type Procedure struct {
 	IsAnsi                     bool
 	MinNumArguments            int
 	MaxNumArguments            int
-	ArgumentsOld               []DataType // added manually
-	ReturnTypeOld              DataType   // added manually
 	ArgumentsRaw               string
+	ArgumentsOld               []DataType
+	ReturnTypeOld              DataType
 	Description                string
 	CatalogName                string
 	IsTableFunction            bool

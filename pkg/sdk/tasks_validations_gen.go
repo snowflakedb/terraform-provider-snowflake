@@ -28,6 +28,11 @@ func (opts *CreateTaskOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateTaskOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.Warehouse) {
+		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
+			errs = append(errs, errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -42,6 +47,11 @@ func (opts *CreateOrAlterTaskOptions) validate() error {
 	}
 	if opts.ErrorIntegration != nil && !ValidObjectIdentifier(opts.ErrorIntegration) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.Warehouse) {
+		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
+			errs = append(errs, errExactlyOneOf("CreateOrAlterTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+		}
 	}
 	return JoinErrors(errs...)
 }

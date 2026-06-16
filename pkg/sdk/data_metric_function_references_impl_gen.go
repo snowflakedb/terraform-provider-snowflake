@@ -4,18 +4,21 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 )
 
-var _ DataMetricFunctionReferences = (*dataMetricFunctionReferences)(nil)
+var (
+	_ DataMetricFunctionReferences                = (*dataMetricFunctionReferences)(nil)
+	_ convertibleRow[DataMetricFunctionReference] = new(dataMetricFunctionReferencesRow)
+)
 
 type dataMetricFunctionReferences struct {
 	client *Client
 }
 
-// Manually edited return type
 func (v *dataMetricFunctionReferences) GetForEntity(ctx context.Context, request *GetForEntityDataMetricFunctionReferenceRequest) ([]DataMetricFunctionReference, error) {
 	opts := request.toOpts()
-	// Manually edited the implementation
 	dbRows, err := validateAndQuery[dataMetricFunctionReferencesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
@@ -35,4 +38,22 @@ func (r *GetForEntityDataMetricFunctionReferenceRequest) toOpts() *GetForEntityD
 		}
 	}
 	return opts
+}
+
+func (r dataMetricFunctionReferencesRow) convert() (*DataMetricFunctionReference, error) {
+	result := &DataMetricFunctionReference{
+		ArgumentSignature: r.MetricSignature,
+		DataType:          r.MetricDataType,
+		RefEntityDomain:   r.RefEntityDomain,
+		RefId:             r.RefId,
+		Schedule:          r.Schedule,
+		ScheduleStatus:    r.ScheduleStatus,
+	}
+	if err := json.Unmarshal([]byte(r.RefArguments), &result.RefArguments); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal RefArguments: %w", err)
+	}
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
