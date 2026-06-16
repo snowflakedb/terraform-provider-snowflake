@@ -121,20 +121,11 @@ func buildAllowedAuthSecretsRequestFromState(d *schema.ResourceData) (*sdk.ApiIn
 	}
 	if v, ok := d.GetOk("allowed_authentication_secrets"); ok {
 		rawList := expandStringList(v.(*schema.Set).List())
-		identifiers := make([]sdk.SchemaObjectIdentifier, 0, len(rawList))
-		errs := make([]error, 0)
-		for _, s := range rawList {
-			id, err := sdk.ParseSchemaObjectIdentifier(s)
-			if err != nil {
-				errs = append(errs, err)
-			} else {
-				identifiers = append(identifiers, id)
-			}
+		ids, err := collections.MapErr(rawList, sdk.ParseSchemaObjectIdentifier)
+		if err != nil {
+			return nil, err
 		}
-		if len(errs) > 0 {
-			return nil, fmt.Errorf("invalid secret identifiers: %v", errs)
-		}
-		return req.WithAllowedList(identifiers), nil
+		return req.WithAllowedList(ids), nil
 	}
 	return nil, fmt.Errorf("exactly one of all_allowed_authentication_secrets, no_allowed_authentication_secrets, or allowed_authentication_secrets must be set")
 }
