@@ -19,8 +19,6 @@ import (
 
 var apiIntegrationGitRepositoryGithubAppSchema = func() map[string]*schema.Schema {
 	apiIntegrationGitRepositoryGithubApp := map[string]*schema.Schema{
-		// api_provider intentionally omitted: git_https_api is the only valid value (gotcha #9).
-		// The value is visible in describe_output.
 		DescribeOutputAttributeName: {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -60,23 +58,6 @@ func ApiIntegrationGitRepositoryGithubApp() *schema.Resource {
 	}
 }
 
-func CreateApiIntegrationGitRepositoryGithubApp(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, request, err := handleApiIntegrationCommonCreate(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiGithubAppProviderParams(*sdk.NewGitHttpsApiGithubAppParamsRequest())); err != nil {
-		return diag.FromErr(fmt.Errorf("error creating git repository GitHub App API integration: %w", err))
-	}
-
-	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	return ReadApiIntegrationGitRepositoryGithubApp(ctx, d, meta)
-}
-
 func ImportApiIntegrationGitRepositoryGithubApp(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -99,6 +80,23 @@ func ImportApiIntegrationGitRepositoryGithubApp(ctx context.Context, d *schema.R
 	}
 
 	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+}
+
+func CreateApiIntegrationGitRepositoryGithubApp(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, request, err := handleApiIntegrationCommonCreate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiGithubAppProviderParams(*sdk.NewGitHttpsApiGithubAppParamsRequest())); err != nil {
+		return diag.FromErr(fmt.Errorf("error creating git repository GitHub App API integration: %w", err))
+	}
+
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+
+	return ReadApiIntegrationGitRepositoryGithubApp(ctx, d, meta)
 }
 
 func ReadApiIntegrationGitRepositoryGithubApp(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -130,7 +128,6 @@ func ReadApiIntegrationGitRepositoryGithubApp(ctx context.Context, d *schema.Res
 
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
-		// api_provider intentionally not set: git_https_api is the only valid value and not exposed in top-level schema.
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryGithubAppDetailsToSchema(gitDetails)}),
 	)
 	return diag.FromErr(errs)
