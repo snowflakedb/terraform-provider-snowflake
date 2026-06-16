@@ -37,8 +37,13 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasName(expected 
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllowedAuthenticationSecrets(expected string) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
-	a.StringValueSet("allowed_authentication_secrets", expected)
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllAllowedAuthenticationSecrets(expected bool) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.BoolValueSet("all_allowed_authentication_secrets", expected)
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllowedAuthenticationSecrets(expected ...string) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.SetContainsExactlyStringValues("allowed_authentication_secrets", expected...)
 	return a
 }
 
@@ -67,6 +72,11 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasFullyQualified
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoAllowedAuthenticationSecrets(expected bool) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.BoolValueSet("no_allowed_authentication_secrets", expected)
+	return a
+}
+
 func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasTlsTrustedCertificates(expected ...string) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
 	a.ListContainsExactlyStringValuesInOrder("tls_trusted_certificates", expected...)
 	return a
@@ -86,8 +96,8 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNameString(exp
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllowedAuthenticationSecretsString(expected string) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
-	a.AddAssertion(assert.ValueSet("allowed_authentication_secrets", expected))
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllAllowedAuthenticationSecretsString(expected string) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.AddAssertion(assert.ValueSet("all_allowed_authentication_secrets", expected))
 	return a
 }
 
@@ -106,6 +116,11 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasFullyQualified
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoAllowedAuthenticationSecretsString(expected string) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.AddAssertion(assert.ValueSet("no_allowed_authentication_secrets", expected))
+	return a
+}
+
 func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasUsePrivatelinkEndpointString(expected string) *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
 	a.AddAssertion(assert.ValueSet("use_privatelink_endpoint", expected))
 	return a
@@ -120,8 +135,8 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoName() *ApiI
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoAllowedAuthenticationSecrets() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("allowed_authentication_secrets"))
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoAllAllowedAuthenticationSecrets() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.AddAssertion(assert.ValueNotSet("all_allowed_authentication_secrets"))
 	return a
 }
 
@@ -140,6 +155,11 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoFullyQualifi
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoNoAllowedAuthenticationSecrets() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.AddAssertion(assert.ValueNotSet("no_allowed_authentication_secrets"))
+	return a
+}
+
 func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoUsePrivatelinkEndpoint() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
 	a.AddAssertion(assert.ValueNotSet("use_privatelink_endpoint"))
 	return a
@@ -149,8 +169,13 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoUsePrivateli
 // Attribute empty checks //
 ////////////////////////////
 
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllAllowedAuthenticationSecretsEmpty() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.AddAssertion(assert.ValueSet("all_allowed_authentication_secrets", ""))
+	return a
+}
+
 func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllowedAuthenticationSecretsEmpty() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
-	a.AddAssertion(assert.ValueSet("allowed_authentication_secrets", ""))
+	a.AddAssertion(assert.ValueSet("allowed_authentication_secrets.#", "0"))
 	return a
 }
 
@@ -169,6 +194,11 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasFullyQualified
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoAllowedAuthenticationSecretsEmpty() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.AddAssertion(assert.ValueSet("no_allowed_authentication_secrets", ""))
+	return a
+}
+
 func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasTlsTrustedCertificatesEmpty() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
 	a.AddAssertion(assert.ValueSet("tls_trusted_certificates.#", "0"))
 	return a
@@ -183,8 +213,8 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNameNotEmpty()
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllowedAuthenticationSecretsNotEmpty() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
-	a.AddAssertion(assert.ValuePresent("allowed_authentication_secrets"))
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasAllAllowedAuthenticationSecretsNotEmpty() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.AddAssertion(assert.ValuePresent("all_allowed_authentication_secrets"))
 	return a
 }
 
@@ -200,6 +230,11 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasEnabledNotEmpt
 
 func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
 	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryPrivateLinkResourceAssert) HasNoAllowedAuthenticationSecretsNotEmpty() *ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+	a.AddAssertion(assert.ValuePresent("no_allowed_authentication_secrets"))
 	return a
 }
 

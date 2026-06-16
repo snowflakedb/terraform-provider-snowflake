@@ -18,12 +18,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var apiIntegrationGitRepositoryPrivateLinkAllowedAuthConflicts = []string{
+	"all_allowed_authentication_secrets",
+	"no_allowed_authentication_secrets",
+	"allowed_authentication_secrets",
+}
+
 var apiIntegrationGitRepositoryPrivateLinkSchema = func() map[string]*schema.Schema {
 	apiIntegrationGitRepositoryPrivateLink := map[string]*schema.Schema{
+		"all_allowed_authentication_secrets": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			ConflictsWith: apiIntegrationGitRepositoryPrivateLinkAllowedAuthConflicts,
+			Description:   "When set to true, all authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `no_allowed_authentication_secrets` and `allowed_authentication_secrets`.",
+		},
+		"no_allowed_authentication_secrets": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			ConflictsWith: apiIntegrationGitRepositoryPrivateLinkAllowedAuthConflicts,
+			Description:   "When set to true, no authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `allowed_authentication_secrets`.",
+		},
 		"allowed_authentication_secrets": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Specifies which authentication secrets are allowed to be used when authenticating to the git repository over a private link endpoint. Valid values are: ALL, NONE, or a comma-separated list of fully-qualified secret identifiers (e.g. \"mydb.myschema.mysecret\").",
+			Type:             schema.TypeSet,
+			Optional:         true,
+			ConflictsWith:    apiIntegrationGitRepositoryPrivateLinkAllowedAuthConflicts,
+			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_authentication_secrets"),
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+			},
+			Description: "A list of fully-qualified secret identifiers (database.schema.secret) allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `no_allowed_authentication_secrets`.",
 		},
 		"use_privatelink_endpoint": {
 			Type:        schema.TypeBool,
@@ -70,49 +94,69 @@ func ApiIntegrationGitRepositoryPrivateLink() *schema.Resource {
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(apiIntegrationGitRepositoryPrivateLinkSchema, ShowOutputAttributeName, "enabled", "comment"),
-			ComputedIfAnyAttributeChanged(apiIntegrationGitRepositoryPrivateLinkSchema, DescribeOutputAttributeName, "enabled", "api_allowed_prefixes", "api_blocked_prefixes", "comment", "allowed_authentication_secrets", "use_privatelink_endpoint", "tls_trusted_certificates"),
+			ComputedIfAnyAttributeChanged(apiIntegrationGitRepositoryPrivateLinkSchema, DescribeOutputAttributeName, "enabled", "api_allowed_prefixes", "api_blocked_prefixes", "comment", "all_allowed_authentication_secrets", "no_allowed_authentication_secrets", "allowed_authentication_secrets", "use_privatelink_endpoint", "tls_trusted_certificates"),
 		),
 	}
 }
 
-func buildAllowedAuthenticationSecretsRequest(value string) (*sdk.ApiIntegrationAllowedAuthenticationSecretsRequest, error) {
+func buildAllowedAuthSecretsRequestFromStatePrivateLink(d *schema.ResourceData) (*sdk.ApiIntegrationAllowedAuthenticationSecretsRequest, error) {
 	req := sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest()
-	upper := strings.ToUpper(strings.TrimSpace(value))
-	switch upper {
-	case "ALL":
+	if v, ok := d.GetOk("all_allowed_authentication_secrets"); ok && v.(bool) {
 		return req.WithAllSecrets(true), nil
-	case "NONE":
+	}
+	if v, ok := d.GetOk("no_allowed_authentication_secrets"); ok && v.(bool) {
 		return req.WithNoSecrets(true), nil
+	}
+	if v, ok := d.GetOk("allowed_authentication_secrets"); ok && v.(*schema.Set).Len() > 0 {
+		ids, err := collections.MapErr(expandStringList(v.(*schema.Set).List()), sdk.ParseSchemaObjectIdentifier)
+		if err != nil {
+			return nil, err
+		}
+		return req.WithAllowedList(ids), nil
+	}
+	return nil, nil
+}
+
+func setAllowedAuthSecretFieldsFromDescribePrivateLink(d *schema.ResourceData, raw string) error {
+	switch strings.ToUpper(strings.TrimSpace(raw)) {
+	case "ALL":
+		return errors.Join(
+			d.Set("all_allowed_authentication_secrets", true),
+			d.Set("no_allowed_authentication_secrets", false),
+			d.Set("allowed_authentication_secrets", []any{}),
+		)
+	case "NONE":
+		return errors.Join(
+			d.Set("all_allowed_authentication_secrets", false),
+			d.Set("no_allowed_authentication_secrets", true),
+			d.Set("allowed_authentication_secrets", []any{}),
+		)
+	case "":
+		return errors.Join(
+			d.Set("all_allowed_authentication_secrets", false),
+			d.Set("no_allowed_authentication_secrets", false),
+			d.Set("allowed_authentication_secrets", []any{}),
+		)
 	default:
-		parts := strings.Split(value, ",")
-		identifiers := make([]sdk.SchemaObjectIdentifier, 0, len(parts))
-		for _, p := range parts {
-			p = strings.TrimSpace(p)
-			if p == "" {
-				continue
-			}
-			id, err := sdk.ParseSchemaObjectIdentifier(p)
-			if err != nil {
-				return nil, fmt.Errorf("invalid secret identifier %q in allowed_authentication_secrets: %w", p, err)
-			}
-			identifiers = append(identifiers, id)
+		ids, err := collections.MapErr(sdk.ParseCommaSeparatedStringArray(raw, true), sdk.ParseSchemaObjectIdentifier)
+		if err != nil {
+			return err
 		}
-		if len(identifiers) == 0 {
-			return nil, fmt.Errorf("allowed_authentication_secrets must be ALL, NONE, or a non-empty comma-separated list of secret identifiers")
-		}
-		return req.WithAllowedList(identifiers), nil
+		return errors.Join(
+			d.Set("all_allowed_authentication_secrets", false),
+			d.Set("no_allowed_authentication_secrets", false),
+			d.Set("allowed_authentication_secrets", ids),
+		)
 	}
 }
 
 func buildTlsTrustedCertificates(d *schema.ResourceData) ([]sdk.SchemaObjectIdentifier, error) {
-	raw := d.Get("tls_trusted_certificates").([]interface{})
-	ids := make([]sdk.SchemaObjectIdentifier, 0, len(raw))
-	for _, v := range raw {
-		id, err := sdk.ParseSchemaObjectIdentifier(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("invalid tls_trusted_certificates identifier %q: %w", v.(string), err)
-		}
-		ids = append(ids, id)
+	raw := d.Get("tls_trusted_certificates").([]any)
+	ids, err := collections.MapErr(raw, func(v any) (sdk.SchemaObjectIdentifier, error) {
+		return sdk.ParseSchemaObjectIdentifier(v.(string))
+	})
+	if err != nil {
+		return nil, err
 	}
 	return ids, nil
 }
@@ -127,11 +171,11 @@ func CreateApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema
 
 	gitParams := sdk.NewGitHttpsApiPrivateLinkParamsRequest(d.Get("use_privatelink_endpoint").(bool))
 
-	if v := d.Get("allowed_authentication_secrets").(string); v != "" {
-		secretsReq, err := buildAllowedAuthenticationSecretsRequest(v)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	secretsReq, err := buildAllowedAuthSecretsRequestFromStatePrivateLink(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if secretsReq != nil {
 		gitParams.WithAllowedAuthenticationSecrets(*secretsReq)
 	}
 
@@ -219,7 +263,7 @@ func ReadApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.R
 
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
-		d.Set("allowed_authentication_secrets", gitDetails.AllowedAuthenticationSecrets),
+		setAllowedAuthSecretFieldsFromDescribePrivateLink(d, gitDetails.AllowedAuthenticationSecrets),
 		d.Set("use_privatelink_endpoint", gitDetails.UsePrivatelinkEndpoint),
 		d.Set("tls_trusted_certificates", gitDetails.TlsTrustedCertificates),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryPrivateLinkDetailsToSchema(gitDetails)}),
@@ -243,16 +287,15 @@ func UpdateApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("allowed_authentication_secrets") {
-		v := d.Get("allowed_authentication_secrets").(string)
-		if v == "" {
-			gitUnset.WithAllowedAuthenticationSecrets(true)
-		} else {
-			secretsReq, err := buildAllowedAuthenticationSecretsRequest(v)
-			if err != nil {
-				return diag.FromErr(err)
-			}
+	if d.HasChanges("all_allowed_authentication_secrets", "no_allowed_authentication_secrets", "allowed_authentication_secrets") {
+		secretsReq, err := buildAllowedAuthSecretsRequestFromStatePrivateLink(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if secretsReq != nil {
 			gitSet.WithAllowedAuthenticationSecrets(*secretsReq)
+		} else {
+			gitUnset.WithAllowedAuthenticationSecrets(true)
 		}
 	}
 

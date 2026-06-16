@@ -11,15 +11,17 @@ import (
 )
 
 type ApiIntegrationGitRepositoryPrivateLinkModel struct {
-	Name                         tfconfig.Variable `json:"name,omitempty"`
-	AllowedAuthenticationSecrets tfconfig.Variable `json:"allowed_authentication_secrets,omitempty"`
-	ApiAllowedPrefixes           tfconfig.Variable `json:"api_allowed_prefixes,omitempty"`
-	ApiBlockedPrefixes           tfconfig.Variable `json:"api_blocked_prefixes,omitempty"`
-	Comment                      tfconfig.Variable `json:"comment,omitempty"`
-	Enabled                      tfconfig.Variable `json:"enabled,omitempty"`
-	FullyQualifiedName           tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	TlsTrustedCertificates       tfconfig.Variable `json:"tls_trusted_certificates,omitempty"`
-	UsePrivatelinkEndpoint       tfconfig.Variable `json:"use_privatelink_endpoint,omitempty"`
+	Name                            tfconfig.Variable `json:"name,omitempty"`
+	AllAllowedAuthenticationSecrets tfconfig.Variable `json:"all_allowed_authentication_secrets,omitempty"`
+	AllowedAuthenticationSecrets    tfconfig.Variable `json:"allowed_authentication_secrets,omitempty"`
+	ApiAllowedPrefixes              tfconfig.Variable `json:"api_allowed_prefixes,omitempty"`
+	ApiBlockedPrefixes              tfconfig.Variable `json:"api_blocked_prefixes,omitempty"`
+	Comment                         tfconfig.Variable `json:"comment,omitempty"`
+	Enabled                         tfconfig.Variable `json:"enabled,omitempty"`
+	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	NoAllowedAuthenticationSecrets  tfconfig.Variable `json:"no_allowed_authentication_secrets,omitempty"`
+	TlsTrustedCertificates          tfconfig.Variable `json:"tls_trusted_certificates,omitempty"`
+	UsePrivatelinkEndpoint          tfconfig.Variable `json:"use_privatelink_endpoint,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -100,10 +102,12 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithName(name string) *Api
 	return a
 }
 
-func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithAllowedAuthenticationSecrets(allowedAuthenticationSecrets string) *ApiIntegrationGitRepositoryPrivateLinkModel {
-	a.AllowedAuthenticationSecrets = tfconfig.StringVariable(allowedAuthenticationSecrets)
+func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithAllAllowedAuthenticationSecrets(allAllowedAuthenticationSecrets bool) *ApiIntegrationGitRepositoryPrivateLinkModel {
+	a.AllAllowedAuthenticationSecrets = tfconfig.BoolVariable(allAllowedAuthenticationSecrets)
 	return a
 }
+
+// allowed_authentication_secrets attribute type is not yet supported, so WithAllowedAuthenticationSecrets can't be generated
 
 // api_allowed_prefixes attribute type is not yet supported, so WithApiAllowedPrefixes can't be generated
 
@@ -124,6 +128,11 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithFullyQualifiedName(ful
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithNoAllowedAuthenticationSecrets(noAllowedAuthenticationSecrets bool) *ApiIntegrationGitRepositoryPrivateLinkModel {
+	a.NoAllowedAuthenticationSecrets = tfconfig.BoolVariable(noAllowedAuthenticationSecrets)
+	return a
+}
+
 // tls_trusted_certificates attribute type is not yet supported, so WithTlsTrustedCertificates can't be generated
 
 func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ApiIntegrationGitRepositoryPrivateLinkModel {
@@ -137,6 +146,11 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithUsePrivatelinkEndpoint
 
 func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithNameValue(value tfconfig.Variable) *ApiIntegrationGitRepositoryPrivateLinkModel {
 	a.Name = value
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithAllAllowedAuthenticationSecretsValue(value tfconfig.Variable) *ApiIntegrationGitRepositoryPrivateLinkModel {
+	a.AllAllowedAuthenticationSecrets = value
 	return a
 }
 
@@ -167,6 +181,11 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithEnabledValue(value tfc
 
 func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ApiIntegrationGitRepositoryPrivateLinkModel {
 	a.FullyQualifiedName = value
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithNoAllowedAuthenticationSecretsValue(value tfconfig.Variable) *ApiIntegrationGitRepositoryPrivateLinkModel {
+	a.NoAllowedAuthenticationSecrets = value
 	return a
 }
 

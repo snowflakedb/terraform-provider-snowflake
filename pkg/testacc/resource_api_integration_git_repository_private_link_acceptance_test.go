@@ -35,7 +35,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 
 	basic := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true)
 	withOptionals := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
-		WithAllowedAuthenticationSecrets("ALL").
+		WithAllAllowedAuthenticationSecrets(true).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
 		WithComment(comment)
 
@@ -46,6 +46,8 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
 			HasUsePrivatelinkEndpointString(r.BooleanTrue).
+			HasAllAllowedAuthenticationSecrets(false).
+			HasNoAllowedAuthenticationSecrets(false).
 			HasAllowedAuthenticationSecretsEmpty().
 			HasApiBlockedPrefixesEmpty().
 			HasTlsTrustedCertificatesEmpty().
@@ -78,7 +80,9 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
 			HasUsePrivatelinkEndpointString(r.BooleanTrue).
-			HasAllowedAuthenticationSecrets("ALL").
+			HasAllAllowedAuthenticationSecrets(true).
+			HasNoAllowedAuthenticationSecrets(false).
+			HasAllowedAuthenticationSecretsEmpty().
 			HasApiBlockedPrefixes(blockedPrefix).
 			HasTlsTrustedCertificatesEmpty().
 			HasCommentString(comment),
@@ -184,6 +188,118 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, withOptionals),
 				Check:  assertThat(t, assertWithOptionals...),
 			},
+		},
+	})
+}
+
+// TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update covers all directed transitions
+// between the four valid states: not-set, ALL, NONE, and a specific secrets list.
+func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	const allowedPrefix = "https://github.com/my-org/"
+
+	secretId, cleanupSecret := testClient().Secret.CreateRandomPasswordSecret(t)
+	t.Cleanup(cleanupSecret)
+
+	withNone := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
+		WithNoAllowedAuthenticationSecrets(true)
+	withAll := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
+		WithAllAllowedAuthenticationSecrets(true)
+	withList := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
+		WithAllowedAuthenticationSecrets([]string{secretId.FullyQualifiedName()})
+	withNotSet := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true)
+
+	ref := withNotSet.ResourceReference()
+
+	assertNotSet := func() []assert.TestCheckFuncProvider {
+		return []assert.TestCheckFuncProvider{
+			resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
+				HasAllAllowedAuthenticationSecrets(false).
+				HasNoAllowedAuthenticationSecrets(false).
+				HasAllowedAuthenticationSecretsEmpty(),
+			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+				HasAllowedAuthenticationSecrets(""),
+		}
+	}
+	assertAll := func() []assert.TestCheckFuncProvider {
+		return []assert.TestCheckFuncProvider{
+			resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
+				HasAllAllowedAuthenticationSecrets(true).
+				HasNoAllowedAuthenticationSecrets(false).
+				HasAllowedAuthenticationSecretsEmpty(),
+			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+				HasAllowedAuthenticationSecrets("ALL"),
+		}
+	}
+	assertNone := func() []assert.TestCheckFuncProvider {
+		return []assert.TestCheckFuncProvider{
+			resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
+				HasAllAllowedAuthenticationSecrets(false).
+				HasNoAllowedAuthenticationSecrets(true).
+				HasAllowedAuthenticationSecretsEmpty(),
+			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+				HasAllowedAuthenticationSecrets("NONE"),
+		}
+	}
+	assertList := func() []assert.TestCheckFuncProvider {
+		return []assert.TestCheckFuncProvider{
+			resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
+				HasAllAllowedAuthenticationSecrets(false).
+				HasNoAllowedAuthenticationSecrets(false).
+				HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
+			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+				HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
+		}
+	}
+
+	expectUpdate := func(m *model.ApiIntegrationGitRepositoryPrivateLinkModel, checks func() []assert.TestCheckFuncProvider) resource.TestStep {
+		return resource.TestStep{
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+				},
+			},
+			Config: config.FromModels(t, m),
+			Check:  assertThat(t, checks()...),
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ApiIntegrationGitRepositoryPrivateLink),
+		Steps: []resource.TestStep{
+			// Create with not-set state
+			{
+				Config: config.FromModels(t, withNotSet),
+				Check:  assertThat(t, assertNotSet()...),
+			},
+			// not-set → ALL
+			expectUpdate(withAll, assertAll),
+			// ALL → NONE
+			expectUpdate(withNone, assertNone),
+			// NONE → list
+			expectUpdate(withList, assertList),
+			// list → ALL
+			expectUpdate(withAll, assertAll),
+			// ALL → not-set
+			expectUpdate(withNotSet, assertNotSet),
+			// not-set → NONE
+			expectUpdate(withNone, assertNone),
+			// NONE → not-set
+			expectUpdate(withNotSet, assertNotSet),
+			// not-set → list
+			expectUpdate(withList, assertList),
+			// list → NONE
+			expectUpdate(withNone, assertNone),
+			// NONE → ALL
+			expectUpdate(withAll, assertAll),
+			// ALL → list
+			expectUpdate(withList, assertList),
+			// list → not-set
+			expectUpdate(withNotSet, assertNotSet),
 		},
 	})
 }

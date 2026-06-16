@@ -16,3 +16,9 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithApiBlockedPrefixes(api
 	a.WithApiBlockedPrefixesValue(tfconfig.ListVariable(prefixVars...))
 	return a
 }
+
+func (a *ApiIntegrationGitRepositoryPrivateLinkModel) WithAllowedAuthenticationSecrets(secrets []string) *ApiIntegrationGitRepositoryPrivateLinkModel {
+	secretVars := collections.Map(secrets, func(s string) tfconfig.Variable { return tfconfig.StringVariable(s) })
+	a.WithAllowedAuthenticationSecretsValue(tfconfig.SetVariable(secretVars...))
+	return a
+}
