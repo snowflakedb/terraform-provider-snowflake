@@ -8,13 +8,13 @@ import (
 )
 
 var DescribeExternalMcpDynamicClientApiIntegrationSchema = map[string]*schema.Schema{
-	"enabled":          {Type: schema.TypeBool, Computed: true},
-	"api_provider":     {Type: schema.TypeString, Computed: true},
-	"user_auth_type":   {Type: schema.TypeString, Computed: true},
+	"enabled":            {Type: schema.TypeBool, Computed: true},
+	"api_provider":       {Type: schema.TypeString, Computed: true},
+	"user_auth_type":     {Type: schema.TypeString, Computed: true},
 	"oauth_resource_url": {Type: schema.TypeString, Computed: true},
-	"allowed_prefixes": {Type: schema.TypeList, Elem: &schema.Schema{Type: schema.TypeString}, Computed: true},
-	"blocked_prefixes": {Type: schema.TypeList, Elem: &schema.Schema{Type: schema.TypeString}, Computed: true},
-	"comment":          {Type: schema.TypeString, Computed: true},
+	"allowed_prefixes":   {Type: schema.TypeList, Elem: &schema.Schema{Type: schema.TypeString}, Computed: true},
+	"blocked_prefixes":   {Type: schema.TypeList, Elem: &schema.Schema{Type: schema.TypeString}, Computed: true},
+	"comment":            {Type: schema.TypeString, Computed: true},
 }
 
 func ApiIntegrationExternalMcpDynamicClientDetailsToSchema(d *sdk.ApiIntegrationExternalMcpDetails) map[string]any {
