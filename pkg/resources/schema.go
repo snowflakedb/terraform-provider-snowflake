@@ -8,11 +8,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
@@ -32,7 +32,6 @@ var schemaSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the schema."),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"with_managed_access": {
@@ -107,9 +106,10 @@ func Schema() *schema.Resource {
 		Description:   "Resource used to manage schema objects. For more information, check [schema documentation](https://docs.snowflake.com/en/sql-reference/sql/create-schema).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Schema, customdiff.All(
-			ComputedIfAnyAttributeChanged(schemaSchema, ShowOutputAttributeName, "name", "comment", "with_managed_access", "is_transient"),
-			ComputedIfAnyAttributeChanged(schemaSchema, DescribeOutputAttributeName, "name"),
-			ComputedIfAnyAttributeChanged(schemaSchema, FullyQualifiedNameAttributeName, "name"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			ComputedIfAnyAttributeChanged(schemaSchema, ShowOutputAttributeName, "name", "database", "comment", "with_managed_access", "is_transient"),
+			ComputedIfAnyAttributeChanged(schemaSchema, DescribeOutputAttributeName, "name", "database"),
+			ComputedIfAnyAttributeChanged(schemaSchema, FullyQualifiedNameAttributeName, "name", "database"),
 			ComputedIfAnyAttributeChanged(schemaParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllSchemaParameters), strings.ToLower)...),
 			schemaParametersCustomDiff,
 		)),
@@ -308,11 +308,69 @@ func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 }
 
 func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
 	if err != nil {
 		d.Partial(true)
 		return diag.FromErr(err)
+	}
+
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && d.HasChange("database") {
+		oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
+		oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
+		oldSchemaName := id.Name()
+
+		oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
+		newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
+		newSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
+		oldSchemaId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
+
+		_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
+		newDatabaseExists := errNewDb == nil
+		_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
+		oldDatabaseExists := errOldDb == nil
+		_, errNewSchema := client.Schemas.ShowByID(ctx, newSchemaId)
+		newSchemaExists := errNewSchema == nil
+		_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
+		oldSchemaExists := errOldSchema == nil
+
+		// TODO [next PRs]: extract helper methods and generalize them to any non-leaf level; same with switch and error handling
+		isRenameOfTheGivenLevelInTheHierarchy := func() bool {
+			return newDatabaseExists && !oldDatabaseExists && newSchemaExists
+		}
+
+		isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func() bool {
+			return newDatabaseExists && oldDatabaseExists && oldSchemaExists
+		}
+
+		switch {
+		// Case 1: "Rename of the given level in the hierarchy"
+		case isRenameOfTheGivenLevelInTheHierarchy():
+			log.Printf("[DEBUG] Database was renamed for schema - no Snowflake modification needed, updating the id...")
+			// Just update the ID — no Snowflake modification needed
+			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
+			id = newSchemaId
+		// Case 2: "Move to a different object on the given level in the hierarchy"
+		case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
+			log.Printf("[DEBUG] Moving schema to different database - executing ALTER RENAME...")
+			// Perform the rename in Snowflake: ALTER SCHEMA A.X RENAME TO B.X
+			if renameErr := client.Schemas.Alter(ctx, oldSchemaId, &sdk.AlterSchemaOptions{NewName: &newSchemaId}); renameErr != nil {
+				d.Partial(true)
+				return diag.FromErr(fmt.Errorf("failed to move schema from %s to %s: %w", oldSchemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName(), renameErr))
+			}
+			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
+			id = newSchemaId
+		default:
+			d.Partial(true)
+			return diag.FromErr(fmt.Errorf(
+				"unknown rename use case: old database %s (exists: %t), new database %s (exists: %t), old schema %s (exists: %t), new schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
+				oldDatabaseId.FullyQualifiedName(), oldDatabaseExists,
+				newDatabaseId.FullyQualifiedName(), newDatabaseExists,
+				oldSchemaId.FullyQualifiedName(), oldSchemaExists,
+				newSchemaId.FullyQualifiedName(), newSchemaExists,
+			))
+		}
 	}
 
 	if d.HasChange("name") && !d.GetRawState().IsNull() {

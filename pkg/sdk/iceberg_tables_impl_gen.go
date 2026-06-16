@@ -650,18 +650,18 @@ func (r *DescribeIcebergTableRequest) toOpts() *DescribeIcebergTableOptions {
 
 func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 	result := &IcebergTableDetails{
-		Name:              r.Name,
-		SourceIcebergType: r.SourceIcebergType,
-		Kind:              r.Kind,
-		IsNullable:        r.Null == "Y",
-		PrimaryKey:        r.PrimaryKey == "Y",
-		UniqueKey:         r.UniqueKey == "Y",
+		Name:       r.Name,
+		Kind:       r.Kind,
+		IsNullable: r.Null == "Y",
+		PrimaryKey: r.PrimaryKey == "Y",
+		UniqueKey:  r.UniqueKey == "Y",
 	}
 	if v, err := datatypes.ParseDataType(r.Type); err != nil {
 		return nil, fmt.Errorf("parsing datatypes. data type: %w", err)
 	} else {
 		result.Type = v
 	}
+	mapNullString(&result.SourceIcebergType, r.SourceIcebergType)
 	mapNullString(&result.Default, r.Default)
 	mapNullString(&result.Check, r.Check)
 	mapNullString(&result.Expression, r.Expression)

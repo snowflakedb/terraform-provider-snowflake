@@ -109,7 +109,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tagsProviderFactory,
+		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -199,7 +199,7 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 	basicWithDifferentValues := model.TagBase("test", id).WithAllowedValues("", "bar", "foo")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tagsProviderFactory,
+		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -289,7 +289,7 @@ func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *test
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
 		Steps: []resource.TestStep{
 			// Step 1: create a tag with allowed_values + allowed_values_sequence on_conflict.
 			{

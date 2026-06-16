@@ -125,6 +125,29 @@ func ParseTableColumnSignature(signature string) ([]TableColumnSignature, error)
 	return arguments, nil
 }
 
+// ParseTableColumnSignatureWithVectorSupport parses a signature of the form
+// `(column <data_type>)` and, unlike ParseTableColumnSignature, supports types
+// whose attributes contain commas/spaces (e.g. VECTOR(FLOAT, 768)).
+// TODO(next-prs): Rename to ParseTableColumnSignature and remove old implementation
+func ParseTableColumnSignatureWithVectorSupport(signature string) ([]TableColumnSignature, error) {
+	parsedArgs, err := ParseFunctionAndProcedureArguments(signature)
+	if err != nil {
+		return nil, err
+	}
+	arguments := make([]TableColumnSignature, len(parsedArgs))
+	for i, arg := range parsedArgs {
+		dataType, err := datatypes.ParseDataType(arg.ArgType)
+		if err != nil {
+			return nil, err
+		}
+		arguments[i] = TableColumnSignature{
+			Name: arg.ArgName,
+			Type: dataType,
+		}
+	}
+	return arguments, nil
+}
+
 type StringProperty struct {
 	Value        string
 	DefaultValue string
