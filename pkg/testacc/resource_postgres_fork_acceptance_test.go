@@ -32,7 +32,7 @@ func createSourceForFork(t *testing.T) sdk.AccountObjectIdentifier {
 	return sourceId
 }
 
-func TestAcc_PostgresFork_Basic(t *testing.T) {
+func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 	sourceId := createSourceForFork(t)
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
@@ -121,7 +121,7 @@ func TestAcc_PostgresFork_Basic(t *testing.T) {
 	})
 }
 
-func TestAcc_PostgresFork_Complete(t *testing.T) {
+func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
 	sourceId := createSourceForFork(t)
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()

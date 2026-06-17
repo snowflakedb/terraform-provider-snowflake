@@ -32,7 +32,7 @@ func postgresShowOutputBaseAssert(t *testing.T, ref string, name string) *resour
 		HasOwnerRoleType("ROLE")
 }
 
-func TestAcc_PostgresInstance_Basic(t *testing.T) {
+func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	modelBasic := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
@@ -95,7 +95,7 @@ func TestAcc_PostgresInstance_Basic(t *testing.T) {
 	})
 }
 
-func TestAcc_PostgresInstance_Complete(t *testing.T) {
+func TestAcc_PostgresInstance_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	commentUpdated := random.Comment()
