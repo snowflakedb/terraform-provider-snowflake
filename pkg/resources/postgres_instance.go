@@ -92,9 +92,10 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		Description:      "Specifies the hour (0-23 UTC) at which the maintenance window starts.",
 	},
 	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the Postgres instance.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("comment"),
+		Description:      "Specifies a comment for the Postgres instance.",
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
