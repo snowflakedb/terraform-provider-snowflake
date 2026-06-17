@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -18,9 +20,9 @@ func PostgresForkFromId(
 	return p
 }
 
-func (p *PostgresForkModel) WithAtTimestamp(timestamp string) *PostgresForkModel {
+func (p *PostgresForkModel) WithAtTimestamp(timestamp time.Time) *PostgresForkModel {
 	p.At = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-		"timestamp": tfconfig.StringVariable(timestamp),
+		"timestamp": tfconfig.StringVariable(timestamp.UTC().Format("2006-01-02 15:04:05")),
 	})
 	return p
 }
@@ -32,9 +34,9 @@ func (p *PostgresForkModel) WithAtOffset(offset string) *PostgresForkModel {
 	return p
 }
 
-func (p *PostgresForkModel) WithBeforeTimestamp(timestamp string) *PostgresForkModel {
+func (p *PostgresForkModel) WithBeforeTimestamp(timestamp time.Time) *PostgresForkModel {
 	p.Before = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-		"timestamp": tfconfig.StringVariable(timestamp),
+		"timestamp": tfconfig.StringVariable(timestamp.UTC().Format("2006-01-02 15:04:05")),
 	})
 	return p
 }

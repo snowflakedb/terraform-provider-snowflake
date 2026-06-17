@@ -127,12 +127,14 @@ func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
 	comment := random.Comment()
 
 	// Use a recent timestamp (1 hour ago) — Snowflake requires fork timestamps within the past 10 days
-	recentTimestamp := time.Now().Add(-1 * time.Hour).UTC().Format("2006-01-02 15:04:05")
+	recentTime := time.Now().Add(-1 * time.Hour).UTC()
 
 	modelComplete := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
 		WithComment(comment).
-		WithAtTimestamp(recentTimestamp).
-		WithHighAvailability(false).
+		WithAtTimestamp(recentTime).
+		WithComputeFamily("STANDARD_M").
+		WithStorageSizeGb(20).
+		WithHighAvailability("false").
 		WithPostgresSettings(`{"work_mem": "64MB"}`)
 
 	assertComplete := []assert.TestCheckFuncProvider{
@@ -140,9 +142,13 @@ func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
 			HasNameString(forkId.Name()).
 			HasForkFromString(sourceId.Name()).
 			HasCommentString(comment).
+			HasComputeFamilyString("STANDARD_M").
+			HasStorageSizeGbString("20").
 			HasHighAvailabilityString("false").
+			HasPostgresSettingsString(`{"work_mem": "64MB"}`).
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
 		postgresShowOutputBaseAssert(t, modelComplete.ResourceReference(), forkId.Name()).
+			HasComputeFamily("STANDARD_M").
 			HasComment(comment),
 	}
 
@@ -158,7 +164,7 @@ func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, modelComplete),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assertThat(t, assertComplete...),
-					resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "at.0.timestamp", recentTimestamp),
+					resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "at.0.timestamp", recentTime.Format("2006-01-02 15:04:05")),
 				),
 			},
 			// Step 2: Import
@@ -183,8 +189,8 @@ func TestAcc_PostgresFork_Validations(t *testing.T) {
 
 	// Model with both at and before set — should fail validation
 	modelConflict := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
-		WithAtTimestamp("2025-01-15 12:00:00").
-		WithBeforeTimestamp("2025-01-15 11:00:00")
+		WithAtTimestamp(time.Date(2025, 1, 15, 12, 0, 0, 0, time.UTC)).
+		WithBeforeTimestamp(time.Date(2025, 1, 15, 11, 0, 0, 0, time.UTC))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
