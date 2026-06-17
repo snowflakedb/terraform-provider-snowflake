@@ -220,10 +220,10 @@ func CreatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 	if v := d.Get("at").([]any); len(v) > 0 {
 		atConfig := v[0].(map[string]any)
 		at := sdk.NewPostgresInstanceForkAtRequest()
-		if ts := atConfig["timestamp"].(string); len(ts) > 0 {
+		if ts, ok := atConfig["timestamp"].(string); ok && len(ts) > 0 {
 			at.WithTimestamp(ts)
 		}
-		if offset := atConfig["offset"].(string); len(offset) > 0 {
+		if offset, ok := atConfig["offset"].(string); ok && len(offset) > 0 {
 			at.WithOffset(offset)
 		}
 		request.WithAt(*at)
@@ -233,10 +233,10 @@ func CreatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 	if v := d.Get("before").([]any); len(v) > 0 {
 		beforeConfig := v[0].(map[string]any)
 		before := sdk.NewPostgresInstanceForkBeforeRequest()
-		if ts := beforeConfig["timestamp"].(string); len(ts) > 0 {
+		if ts, ok := beforeConfig["timestamp"].(string); ok && len(ts) > 0 {
 			before.WithTimestamp(ts)
 		}
-		if offset := beforeConfig["offset"].(string); len(offset) > 0 {
+		if offset, ok := beforeConfig["offset"].(string); ok && len(offset) > 0 {
 			before.WithOffset(offset)
 		}
 		request.WithBefore(*before)
