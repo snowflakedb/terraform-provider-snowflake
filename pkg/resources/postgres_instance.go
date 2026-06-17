@@ -133,7 +133,7 @@ func PostgresInstance() *schema.Resource {
 
 		Schema: postgresInstanceSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.PostgresInstance, ImportName[sdk.AccountObjectIdentifier]),
+			StateContext: TrackingImportWrapper(resources.PostgresInstance, ImportPostgresInstance),
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.PostgresInstance, customdiff.All(
@@ -143,6 +143,29 @@ func PostgresInstance() *schema.Resource {
 		)),
 		Timeouts: defaultTimeouts,
 	}
+}
+
+func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	client := meta.(*provider.Context).Client
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	pi, err := client.PostgresInstances.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if pi.Origin != nil && *pi.Origin != "" {
+		return nil, fmt.Errorf("postgres instance %s is a fork (origin: %s); use the snowflake_postgres_fork resource to import fork instances", id.FullyQualifiedName(), *pi.Origin)
+	}
+
+	if err := d.Set("name", id.Name()); err != nil {
+		return nil, err
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func CreatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
