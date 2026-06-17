@@ -14,6 +14,7 @@ const (
 	ShowByIDApplicationNameFiltering
 	ShowByIDServiceInFiltering
 	ShowByIDTableInFiltering
+	ShowByIDSchemaInFiltering
 
 	// ShowByIDNoFiltering causes the auto-generated ShowByID to use no filtering when passed as the sole filtering argument to ShowOperation
 	ShowByIDNoFiltering ShowByIDFilteringKind = 100
@@ -88,6 +89,10 @@ func newShowByIDTableInFiltering(identifierKind idPrefix) ShowByIDFiltering {
 	return newShowByIDFiltering("In", "TableIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
 }
 
+func newShowByIDSchemaInFiltering(identifierKind idPrefix) ShowByIDFiltering {
+	return newShowByIDFiltering("In", "SchemaIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
+}
+
 type showByIDApplicationFilter struct {
 	showByIDFilter
 }
@@ -117,6 +122,8 @@ func (s *Operation) withFiltering(filtering ...ShowByIDFilteringKind) *Operation
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDServiceInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDTableInFiltering:
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDTableInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
+		case ShowByIDSchemaInFiltering:
+			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDSchemaInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDLikeFiltering:
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDLikeFiltering())
 		case ShowByIDApplicationNameFiltering:
