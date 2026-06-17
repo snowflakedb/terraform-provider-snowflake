@@ -394,6 +394,17 @@ func TestInt_PostgresInstances(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+	t.Run("fork - validation: At and Before are mutually exclusive", func(t *testing.T) {
+		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewForkPostgresInstanceRequest(forkId, NonExistingAccountObjectIdentifier).
+			WithAt(*sdk.NewPostgresInstanceForkAtRequest().WithTimestamp("2025-01-15 12:00:00")).
+			WithBefore(*sdk.NewPostgresInstanceForkBeforeRequest().WithTimestamp("2025-01-15 12:00:00"))
+
+		err := client.PostgresInstances.Fork(ctx, request)
+		require.ErrorContains(t, err, "ForkPostgresInstanceOptions")
+		require.ErrorContains(t, err, "are incompatible and cannot be set at the same time")
+	})
+
 	// ==================
 	// Alter
 	// ==================
