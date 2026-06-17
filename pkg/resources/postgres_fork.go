@@ -382,8 +382,20 @@ func UpdatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	if !reflect.DeepEqual(pgSettingsSet, &sdk.PostgresInstanceSetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*pgSettingsSet)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting Postgres instance postgres_settings: %w", err))
+		var lastErr error
+		// Retry because a previous operation may still be in progress (up to 5 min)
+		if retryErr := util.Retry(60, 5*time.Second, func() (error, bool) {
+			lastErr = client.PostgresInstances.Alter(ctx, alterReq)
+			if lastErr != nil {
+				log.Printf("[DEBUG] retryable ALTER Postgres instance postgres_settings resulted in error: %v", lastErr)
+				return nil, false
+			}
+			return nil, true
+		}); retryErr != nil {
+			if lastErr != nil {
+				return diag.FromErr(fmt.Errorf("error setting Postgres instance postgres_settings: %w", lastErr))
+			}
+			return diag.FromErr(retryErr)
 		}
 	}
 
@@ -401,8 +413,20 @@ func UpdatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	if !reflect.DeepEqual(set, &sdk.PostgresInstanceSetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*set)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting Postgres instance properties: %w", err))
+		var lastErr error
+		// Retry because a previous postgres_settings operation may still be in progress (up to 2 min)
+		if retryErr := util.Retry(24, 5*time.Second, func() (error, bool) {
+			lastErr = client.PostgresInstances.Alter(ctx, alterReq)
+			if lastErr != nil {
+				log.Printf("[DEBUG] retryable ALTER Postgres instance properties resulted in error: %v", lastErr)
+				return nil, false
+			}
+			return nil, true
+		}); retryErr != nil {
+			if lastErr != nil {
+				return diag.FromErr(fmt.Errorf("error setting Postgres instance properties: %w", lastErr))
+			}
+			return diag.FromErr(retryErr)
 		}
 	}
 
@@ -417,23 +441,59 @@ func UpdatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	if !reflect.DeepEqual(highAvailabilitySet, &sdk.PostgresInstanceSetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*highAvailabilitySet)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting Postgres instance high_availability: %w", err))
+		var lastErr error
+		// Retry because a previous compute/storage or postgres_settings change may still be in progress (up to 6 min)
+		if retryErr := util.Retry(72, 5*time.Second, func() (error, bool) {
+			lastErr = client.PostgresInstances.Alter(ctx, alterReq)
+			if lastErr != nil {
+				log.Printf("[DEBUG] retryable ALTER Postgres instance high_availability resulted in error: %v", lastErr)
+				return nil, false
+			}
+			return nil, true
+		}); retryErr != nil {
+			if lastErr != nil {
+				return diag.FromErr(fmt.Errorf("error setting Postgres instance high_availability: %w", lastErr))
+			}
+			return diag.FromErr(retryErr)
 		}
 	}
 
 	// Unset operations
 	if !reflect.DeepEqual(pgSettingsUnset, &sdk.PostgresInstanceUnsetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithUnset(*pgSettingsUnset)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
-			return diag.FromErr(fmt.Errorf("error unsetting Postgres instance postgres_settings: %w", err))
+		var lastErr error
+		// Retry because a previous ALTER may still be in progress (up to 5 min)
+		if retryErr := util.Retry(60, 5*time.Second, func() (error, bool) {
+			lastErr = client.PostgresInstances.Alter(ctx, alterReq)
+			if lastErr != nil {
+				log.Printf("[DEBUG] retryable ALTER Postgres instance postgres_settings unset resulted in error: %v", lastErr)
+				return nil, false
+			}
+			return nil, true
+		}); retryErr != nil {
+			if lastErr != nil {
+				return diag.FromErr(fmt.Errorf("error unsetting Postgres instance postgres_settings: %w", lastErr))
+			}
+			return diag.FromErr(retryErr)
 		}
 	}
 
 	if !reflect.DeepEqual(unset, &sdk.PostgresInstanceUnsetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithUnset(*unset)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
-			return diag.FromErr(fmt.Errorf("error unsetting Postgres instance properties: %w", err))
+		var lastErr error
+		// Retry because a previous ALTER may still be in progress (up to 5 min)
+		if retryErr := util.Retry(60, 5*time.Second, func() (error, bool) {
+			lastErr = client.PostgresInstances.Alter(ctx, alterReq)
+			if lastErr != nil {
+				log.Printf("[DEBUG] retryable ALTER Postgres instance properties unset resulted in error: %v", lastErr)
+				return nil, false
+			}
+			return nil, true
+		}); retryErr != nil {
+			if lastErr != nil {
+				return diag.FromErr(fmt.Errorf("error unsetting Postgres instance properties: %w", lastErr))
+			}
+			return diag.FromErr(retryErr)
 		}
 	}
 
