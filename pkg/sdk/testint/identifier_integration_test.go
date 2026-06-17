@@ -78,9 +78,9 @@ func TestInt_IdentifiersForOnePartIdentifierAsNameAndReference(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = testClient(t).Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
-				ResourceMonitor: &id,
-			})
+			err = testClient(t).Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).
+				WithResourceMonitor(id),
+			)
 			if err == nil {
 				t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 			}

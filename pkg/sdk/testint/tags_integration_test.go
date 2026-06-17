@@ -691,14 +691,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Warehouse.CreateWarehouse(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-					SetTag: tags,
-				})
+				return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-					UnsetTag: tags,
-				})
+				return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnsetTags(tags))
 			},
 		},
 	}
