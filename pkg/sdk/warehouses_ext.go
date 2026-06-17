@@ -238,11 +238,6 @@ func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
 		}
 	}
 
-	// ResourceMonitor - "null" means not set
-	if r.ResourceMonitor != "null" {
-		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(r.ResourceMonitor)
-	}
-
 	// Generation
 	if r.Generation.Valid {
 		generation, err := ToWarehouseGeneration(r.Generation.String)

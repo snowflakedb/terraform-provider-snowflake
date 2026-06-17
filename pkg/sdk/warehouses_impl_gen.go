@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -126,7 +127,7 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 		Resume:          r.Resume,
 		IfSuspended:     r.IfSuspended,
 		AbortAllQueries: r.AbortAllQueries,
-		NewName:         r.NewName,
+		RenameTo:        r.RenameTo,
 		SetTags:         r.SetTags,
 		UnsetTags:       r.UnsetTags,
 	}
@@ -221,6 +222,11 @@ func (r warehouseDBRow) convert() (*Warehouse, error) {
 	mapNullInt(&result.AutoSuspend, r.AutoSuspend)
 	mapNullBool(&result.EnableQueryAcceleration, r.EnableQueryAcceleration)
 	mapNullInt(&result.QueryAccelerationMaxScaleFactor, r.QueryAccelerationMaxScaleFactor)
+	if v, err := ParseAccountObjectIdentifierExcludingExplicitNullString(r.ResourceMonitor); err != nil {
+		return nil, fmt.Errorf("parsing account object identifier: %w", err)
+	} else {
+		result.ResourceMonitor = v
+	}
 	mapNullStringWithMapping(&result.ScalingPolicy, r.ScalingPolicy, ToScalingPolicy)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringWithMapping(&result.MaxQueryPerformanceLevel, r.MaxQueryPerformanceLevel, ToMaxQueryPerformanceLevel)

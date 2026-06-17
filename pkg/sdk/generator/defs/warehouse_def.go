@@ -66,7 +66,7 @@ var warehousePairs = g.StructPair("warehouseDBRow", "Warehouse").
 	Text("comment").
 	OptionalBool("enable_query_acceleration").
 	OptionalNumber("query_acceleration_max_scale_factor").
-	Field("resource_monitor", "string", "AccountObjectIdentifier", g.WithManualConvert()).
+	Field("resource_monitor", "string", "AccountObjectIdentifier", g.WithCustomParser("ParseAccountObjectIdentifierExcludingExplicitNullString")).
 	Text("actives").
 	Text("pendings").
 	Text("failed").
@@ -163,7 +163,7 @@ var warehousesDef = g.NewInterface(
 		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateAdaptive",
-	"https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses",
+	"https://docs.snowflake.com/en/user-guide/warehouses-adaptive",
 	g.NewQueryStruct("CreateAdaptiveWarehouse").
 		Create().
 		OrReplace().
@@ -191,13 +191,13 @@ var warehousesDef = g.NewInterface(
 		OptionalSQL("RESUME").
 		OptionalSQL("IF SUSPENDED").
 		OptionalSQL("ABORT ALL QUERIES").
-		Identifier("NewName", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField("Set", warehouseSetStruct, g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset", warehouseUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "AbortAllQueries", "NewName", "Set", "Unset", "SetTags", "UnsetTags").
+		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags").
 		WithAdditionalValidations(),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-warehouse",

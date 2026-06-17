@@ -49,8 +49,8 @@ func (opts *AlterWarehouseOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.AbortAllQueries, opts.NewName, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "NewName", "Set", "Unset", "SetTags", "UnsetTags"))
+	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.AbortAllQueries, opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterWarehouseOptions", "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {

@@ -54,7 +54,7 @@ type AlterWarehouseRequest struct {
 	Resume          *bool
 	IfSuspended     *bool
 	AbortAllQueries *bool
-	NewName         *AccountObjectIdentifier
+	RenameTo        *AccountObjectIdentifier
 	Set             *WarehouseSetRequest
 	Unset           *WarehouseUnsetRequest
 	SetTags         []TagAssociation

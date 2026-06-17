@@ -191,8 +191,8 @@ func (s *AlterWarehouseRequest) WithAbortAllQueries(abortAllQueries bool) *Alter
 	return s
 }
 
-func (s *AlterWarehouseRequest) WithNewName(newName AccountObjectIdentifier) *AlterWarehouseRequest {
-	s.NewName = &newName
+func (s *AlterWarehouseRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterWarehouseRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

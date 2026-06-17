@@ -268,7 +268,7 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 
 	if d.HasChange("name") {
 		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
-		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithNewName(newId)); err != nil {
+		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newId)); err != nil {
 			return diag.FromErr(err)
 		}
 		d.SetId(helpers.EncodeResourceIdentifier(newId))

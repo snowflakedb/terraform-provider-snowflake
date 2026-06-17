@@ -717,7 +717,7 @@ func (r *WarehouseResource) Update(ctx context.Context, request resource.UpdateR
 	if !plan.Name.Equal(state.Name) {
 		newId := sdk.NewAccountObjectIdentifier(plan.Name.ValueString())
 
-		err := r.client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithNewName(newId))
+		err := r.client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newId))
 		if err != nil {
 			response.Diagnostics.AddError("Could not rename warehouse PoC", err.Error())
 			return

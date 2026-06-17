@@ -527,7 +527,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 	if d.HasChange("name") {
 		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
-		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithNewName(newId))
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}

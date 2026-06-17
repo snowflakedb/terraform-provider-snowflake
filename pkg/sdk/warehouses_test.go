@@ -239,8 +239,8 @@ func TestWarehouseAlter(t *testing.T) {
 	t.Run("rename", func(t *testing.T) {
 		newName := NewAccountObjectIdentifier("newName")
 		opts := &AlterWarehouseOptions{
-			name:    NewAccountObjectIdentifier("oldName"),
-			NewName: &newName,
+			name:     NewAccountObjectIdentifier("oldName"),
+			RenameTo: &newName,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "oldName" RENAME TO "newName"`)
 	})

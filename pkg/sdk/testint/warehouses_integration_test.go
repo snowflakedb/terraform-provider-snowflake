@@ -415,7 +415,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.Eventually(t, condition, 5*time.Second, time.Second)
 
 		// Change warehouse type from standard to adaptive
-		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+		err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
 			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeAdaptive)))
 		require.NoError(t, err)
 
@@ -436,7 +436,7 @@ func TestInt_Warehouses(t *testing.T) {
 		)
 
 		// Change warehouse type back from adaptive to standard
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+		err = client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
 			WithSet(*sdk.NewWarehouseSetRequest().
 				WithWarehouseType(sdk.WarehouseTypeStandard).
 				WithWarehouseSize(sdk.WarehouseSizeMedium)))
@@ -559,7 +559,7 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.Eventually(t, condition, 5*time.Second, time.Second)
 
-		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+		err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
 			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeSnowparkOptimized)))
 		require.NoError(t, err)
 
@@ -591,7 +591,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
 		assert.Contains(t, []any{sdk.WarehouseStateSuspended, sdk.WarehouseStateSuspending}, returnedWarehouse.State)
 
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+		err = client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
 			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeSnowparkOptimized)))
 		require.NoError(t, err)
 
@@ -705,7 +705,7 @@ func TestInt_Warehouses(t *testing.T) {
 
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
-			WithNewName(newID))
+			WithRenameTo(newID))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, newID))
 

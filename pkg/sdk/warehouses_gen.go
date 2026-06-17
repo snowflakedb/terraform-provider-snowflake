@@ -53,7 +53,7 @@ type CreateWarehouseOptions struct {
 	Tag                             []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
-// CreateAdaptiveWarehouseOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses.
+// CreateAdaptiveWarehouseOptions is based on https://docs.snowflake.com/en/user-guide/warehouses-adaptive.
 type CreateAdaptiveWarehouseOptions struct {
 	create                          bool                      `ddl:"static" sql:"CREATE"`
 	OrReplace                       *bool                     `ddl:"keyword" sql:"OR REPLACE"`
@@ -79,7 +79,7 @@ type AlterWarehouseOptions struct {
 	Resume          *bool                    `ddl:"keyword" sql:"RESUME"`
 	IfSuspended     *bool                    `ddl:"keyword" sql:"IF SUSPENDED"`
 	AbortAllQueries *bool                    `ddl:"keyword" sql:"ABORT ALL QUERIES"`
-	NewName         *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo        *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set             *WarehouseSet            `ddl:"keyword" sql:"SET"`
 	Unset           *WarehouseUnset          `ddl:"list,no_parentheses" sql:"UNSET"`
 	SetTags         []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
