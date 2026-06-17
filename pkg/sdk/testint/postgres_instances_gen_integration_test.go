@@ -294,24 +294,27 @@ func TestInt_PostgresInstances(t *testing.T) {
 		)
 	})
 
-	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance AT (TIMESTAMP => '2025-01-15 12:00:00'::TIMESTAMP_NTZ);
+	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance AT (TIMESTAMP => '<timestamp>'::TIMESTAMP_NTZ);
 	t.Run("fork - with time travel options", func(t *testing.T) {
 		sourceInstance := sharedInstance.instance
+
+		// Compute a timestamp guaranteed within the retention window: 1 minute after
+		// the source instance was created, so it is always in the past and within
+		// the instance's RetentionTime-day window.
+		validTimestamp := sourceInstance.CreatedOn.UTC().Add(time.Minute).Format("2006-01-02 15:04:05")
 
 		// AT with timestamp
 		forkId1 := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request1 := sdk.NewForkPostgresInstanceRequest(forkId1, sourceInstance.ID()).
-			WithAt(*sdk.NewPostgresInstanceForkAtRequest().WithTimestamp("2025-01-15 12:00:00"))
+			WithAt(*sdk.NewPostgresInstanceForkAtRequest().WithTimestamp(validTimestamp))
 
-		// This may fail if the timestamp is outside the retention period; that's expected
 		err := client.PostgresInstances.Fork(ctx, request1)
-		if err == nil {
-			t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId1))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId1))
 
-			forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId1)
-			require.NoError(t, showErr)
-			assert.Equal(t, forkId1.Name(), forkedInstance.Name)
-		}
+		forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId1)
+		require.NoError(t, showErr)
+		assert.Equal(t, forkId1.Name(), forkedInstance.Name)
 
 		// AT with offset and compute overrides
 		forkId2 := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -331,17 +334,15 @@ func TestInt_PostgresInstances(t *testing.T) {
 		// BEFORE with timestamp
 		forkId3 := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request3 := sdk.NewForkPostgresInstanceRequest(forkId3, sourceInstance.ID()).
-			WithBefore(*sdk.NewPostgresInstanceForkBeforeRequest().WithTimestamp("2025-01-15 12:00:00"))
+			WithBefore(*sdk.NewPostgresInstanceForkBeforeRequest().WithTimestamp(validTimestamp))
 
-		// This may fail if the timestamp is outside the retention period; that's expected
 		err = client.PostgresInstances.Fork(ctx, request3)
-		if err == nil {
-			t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId3))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId3))
 
-			forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId3)
-			require.NoError(t, showErr)
-			assert.Equal(t, forkId3.Name(), forkedInstance.Name)
-		}
+		forkedInstance, showErr = client.PostgresInstances.ShowByID(ctx, forkId3)
+		require.NoError(t, showErr)
+		assert.Equal(t, forkId3.Name(), forkedInstance.Name)
 
 		// BEFORE with offset
 		forkId4 := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -352,7 +353,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		if err == nil {
 			t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId4))
 
-			forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId4)
+			forkedInstance, showErr = client.PostgresInstances.ShowByID(ctx, forkId4)
 			require.NoError(t, showErr)
 			assert.Equal(t, forkId4.Name(), forkedInstance.Name)
 		}

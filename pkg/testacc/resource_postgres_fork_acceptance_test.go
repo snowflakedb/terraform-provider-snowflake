@@ -189,8 +189,8 @@ func TestAcc_PostgresFork_Validations(t *testing.T) {
 
 	// Model with both at and before set — should fail validation
 	modelConflict := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
-		WithAtTimestamp(time.Date(2025, 1, 15, 12, 0, 0, 0, time.UTC)).
-		WithBeforeTimestamp(time.Date(2025, 1, 15, 11, 0, 0, 0, time.UTC))
+		WithAtTimestamp(time.Now().UTC().Add(-time.Hour)).
+		WithBeforeTimestamp(time.Now().UTC().Add(-2 * time.Hour))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
