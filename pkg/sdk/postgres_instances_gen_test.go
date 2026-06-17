@@ -480,3 +480,49 @@ func TestPostgresInstances_ParseDetails(t *testing.T) {
 		assert.Equal(t, NewAccountObjectIdentifier("my_storage_integration"), *details.StorageIntegration)
 	})
 }
+
+func TestNormalizePostgresSettings(t *testing.T) {
+	t.Run("empty and whitespace only", func(t *testing.T) {
+		for _, s := range []string{"", "  ", "\t\n"} {
+			got, err := NormalizePostgresSettings(s)
+			require.NoError(t, err)
+			require.Equal(t, "", got)
+		}
+	})
+
+	t.Run("empty JSON object", func(t *testing.T) {
+		got, err := NormalizePostgresSettings("{}")
+		require.NoError(t, err)
+		require.Equal(t, "", got)
+	})
+
+	t.Run("equivalent JSON with different formatting", func(t *testing.T) {
+		want, err := NormalizePostgresSettings(`{"max_connections":"100","shared_buffers":"256MB"}`)
+		require.NoError(t, err)
+
+		equivalentForms := []string{
+			`{"shared_buffers":"256MB","max_connections":"100"}`,
+			`{  "max_connections"  :  "100"  ,  "shared_buffers"  :  "256MB"  }`,
+			"{\n  \"max_connections\": \"100\",\n  \"shared_buffers\": \"256MB\"\n}",
+		}
+		for _, s := range equivalentForms {
+			got, err := NormalizePostgresSettings(s)
+			require.NoError(t, err)
+			require.Equal(t, want, got)
+		}
+	})
+
+	t.Run("non-equivalent JSON", func(t *testing.T) {
+		want, err := NormalizePostgresSettings(`{"max_connections":"100"}`)
+		require.NoError(t, err)
+
+		got, err := NormalizePostgresSettings(`{"max_connections":"200"}`)
+		require.NoError(t, err)
+		require.NotEqual(t, want, got)
+	})
+
+	t.Run("invalid JSON returns error", func(t *testing.T) {
+		_, err := NormalizePostgresSettings("{broken")
+		require.Error(t, err)
+	})
+}

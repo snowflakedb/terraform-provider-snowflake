@@ -79,9 +79,10 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"postgres_settings": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies custom Postgres settings as a JSON string.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: NormalizeAndCompare(sdk.NormalizePostgresSettings),
+		Description:      "Specifies custom Postgres settings as a JSON string.",
 	},
 	"maintenance_window_start": {
 		Type:             schema.TypeInt,
@@ -391,12 +392,16 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 }
 
 // normalizePostgresSettings returns nil if the postgres_settings value is
-// an empty JSON object ("{}"), treating it as unset.
+// an empty JSON object ("{}") or empty string, treating it as unset.
 func normalizePostgresSettings(s *string) *string {
-	if s == nil || *s == "{}" {
+	if s == nil {
 		return nil
 	}
-	return s
+	normalized, err := sdk.NormalizePostgresSettings(*s)
+	if err != nil || normalized == "" {
+		return nil
+	}
+	return &normalized
 }
 
 // setOptionalFromNonEmptyStringPtr sets a key in resource data only if the

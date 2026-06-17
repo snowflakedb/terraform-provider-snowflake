@@ -108,9 +108,10 @@ var postgresForkSchema = map[string]*schema.Schema{
 		Default:          BooleanDefault,
 	},
 	"postgres_settings": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies custom Postgres settings as a JSON string.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: NormalizeAndCompare(sdk.NormalizePostgresSettings),
+		Description:      "Specifies custom Postgres settings as a JSON string.",
 	},
 	"comment": {
 		Type:        schema.TypeString,
