@@ -23,6 +23,10 @@ func (v *schemas) Use(ctx context.Context, id DatabaseObjectIdentifier) error {
 	return v.client.Sessions.UseSchema(ctx, id)
 }
 
+func (opts *CloneSchemaOptions) additionalValidations() error {
+	return opts.Clone.validate()
+}
+
 func (v *schemas) ShowParameters(ctx context.Context, id DatabaseObjectIdentifier) ([]*Parameter, error) {
 	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
 		In: &ParametersIn{

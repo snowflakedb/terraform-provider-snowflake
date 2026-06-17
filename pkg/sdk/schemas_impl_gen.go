@@ -8,108 +8,59 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-var _ Schemas = (*schemas)(nil)
+var (
+	_ Schemas                       = (*schemas)(nil)
+	_ convertibleRow[Schema]        = new(schemaRow)
+	_ convertibleRow[SchemaDetails] = new(schemaDetailRow)
+)
 
 type schemas struct {
 	client *Client
 }
 
-func (v *schemas) Create(ctx context.Context, id DatabaseObjectIdentifier, opts *CreateSchemaOptions) error {
-	if opts == nil {
-		opts = &CreateSchemaOptions{}
-	}
-	opts.name = id
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
+func (v *schemas) Create(ctx context.Context, request *CreateSchemaRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *schemas) Alter(ctx context.Context, id DatabaseObjectIdentifier, opts *AlterSchemaOptions) error {
-	if opts == nil {
-		opts = &AlterSchemaOptions{}
-	}
-	opts.name = id
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
+func (v *schemas) Clone(ctx context.Context, request *CloneSchemaRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *schemas) Drop(ctx context.Context, id DatabaseObjectIdentifier, opts *DropSchemaOptions) error {
-	if opts == nil {
-		opts = &DropSchemaOptions{}
-	}
-	opts.name = id
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
+func (v *schemas) Alter(ctx context.Context, request *AlterSchemaRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *schemas) Drop(ctx context.Context, request *DropSchemaRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
 }
 
 func (v *schemas) DropSafely(ctx context.Context, id DatabaseObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropSchemaOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropSchemaRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
-func (v *schemas) Undrop(ctx context.Context, id DatabaseObjectIdentifier) error {
-	opts := &undropSchemaOptions{
-		name: id,
-	}
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
+func (v *schemas) Undrop(ctx context.Context, request *UndropSchemaRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *schemas) Show(ctx context.Context, opts *ShowSchemaOptions) ([]Schema, error) {
-	if opts == nil {
-		opts = &ShowSchemaOptions{}
-	}
-	if err := opts.validate(); err != nil {
-		return nil, err
-	}
-	sql, err := structToSQL(opts)
+func (v *schemas) Show(ctx context.Context, request *ShowSchemaRequest) ([]Schema, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[schemaRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	var rows []schemaDBRow
-	err = v.client.query(ctx, &rows, sql)
-	schemas := make([]Schema, len(rows))
-	for i, row := range rows {
-		schemas[i] = row.toSchema()
-	}
-	return schemas, err
+	return convertRows[schemaRow, Schema](dbRows)
 }
 
 func (v *schemas) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*Schema, error) {
-	schemas, err := v.client.Schemas.Show(ctx, &ShowSchemaOptions{
-		In: &ExtendedIn{
-			In: In{Database: id.DatabaseId()},
-		},
-		Like: &Like{
-			Pattern: String(id.Name()),
-		},
-	})
+	request := NewShowSchemaRequest().
+		WithLike(Like{Pattern: String(id.Name())}).
+		WithIn(ExtendedIn{In: In{Database: id.DatabaseId()}})
+	schemas, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -121,20 +72,176 @@ func (v *schemas) ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifie
 }
 
 func (v *schemas) Describe(ctx context.Context, id DatabaseObjectIdentifier) ([]SchemaDetails, error) {
-	opts := &describeSchemaOptions{
+	opts := &DescribeSchemaOptions{
 		name: id,
 	}
-	if err := opts.validate(); err != nil {
-		return nil, err
-	}
-	sql, err := structToSQL(opts)
+	rows, err := validateAndQuery[schemaDetailRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	var details []SchemaDetails
-	err = v.client.query(ctx, &details, sql)
-	if err != nil {
-		return nil, err
+	return convertRows[schemaDetailRow, SchemaDetails](rows)
+}
+
+func (r *CreateSchemaRequest) toOpts() *CreateSchemaOptions {
+	opts := &CreateSchemaOptions{
+		OrReplace:                               r.OrReplace,
+		Transient:                               r.Transient,
+		IfNotExists:                             r.IfNotExists,
+		name:                                    r.name,
+		WithManagedAccess:                       r.WithManagedAccess,
+		DataRetentionTimeInDays:                 r.DataRetentionTimeInDays,
+		MaxDataExtensionTimeInDays:              r.MaxDataExtensionTimeInDays,
+		ExternalVolume:                          r.ExternalVolume,
+		Catalog:                                 r.Catalog,
+		PipeExecutionPaused:                     r.PipeExecutionPaused,
+		ReplaceInvalidCharacters:                r.ReplaceInvalidCharacters,
+		DefaultDdlCollation:                     r.DefaultDdlCollation,
+		StorageSerializationPolicy:              r.StorageSerializationPolicy,
+		LogLevel:                                r.LogLevel,
+		LogEventLevel:                           r.LogEventLevel,
+		TraceLevel:                              r.TraceLevel,
+		SuspendTaskAfterNumFailures:             r.SuspendTaskAfterNumFailures,
+		TaskAutoRetryAttempts:                   r.TaskAutoRetryAttempts,
+		UserTaskManagedInitialWarehouseSize:     r.UserTaskManagedInitialWarehouseSize,
+		UserTaskTimeoutMs:                       r.UserTaskTimeoutMs,
+		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
+		QuotedIdentifiersIgnoreCase:             r.QuotedIdentifiersIgnoreCase,
+		EnableConsoleOutput:                     r.EnableConsoleOutput,
+		Comment:                                 r.Comment,
+		Tag:                                     r.Tag,
 	}
-	return details, err
+	return opts
+}
+
+func (r *CloneSchemaRequest) toOpts() *CloneSchemaOptions {
+	opts := &CloneSchemaOptions{
+		OrReplace:   r.OrReplace,
+		Transient:   r.Transient,
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		Clone:       r.Clone,
+	}
+	return opts
+}
+
+func (r *AlterSchemaRequest) toOpts() *AlterSchemaOptions {
+	opts := &AlterSchemaOptions{
+		IfExists:             r.IfExists,
+		name:                 r.name,
+		NewName:              r.NewName,
+		SwapWith:             r.SwapWith,
+		SetTags:              r.SetTags,
+		UnsetTags:            r.UnsetTags,
+		EnableManagedAccess:  r.EnableManagedAccess,
+		DisableManagedAccess: r.DisableManagedAccess,
+	}
+	if r.Set != nil {
+		opts.Set = &SchemaSet{
+			DataRetentionTimeInDays:                 r.Set.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays:              r.Set.MaxDataExtensionTimeInDays,
+			ExternalVolume:                          r.Set.ExternalVolume,
+			Catalog:                                 r.Set.Catalog,
+			PipeExecutionPaused:                     r.Set.PipeExecutionPaused,
+			ReplaceInvalidCharacters:                r.Set.ReplaceInvalidCharacters,
+			DefaultDdlCollation:                     r.Set.DefaultDdlCollation,
+			StorageSerializationPolicy:              r.Set.StorageSerializationPolicy,
+			LogLevel:                                r.Set.LogLevel,
+			LogEventLevel:                           r.Set.LogEventLevel,
+			TraceLevel:                              r.Set.TraceLevel,
+			SuspendTaskAfterNumFailures:             r.Set.SuspendTaskAfterNumFailures,
+			TaskAutoRetryAttempts:                   r.Set.TaskAutoRetryAttempts,
+			UserTaskManagedInitialWarehouseSize:     r.Set.UserTaskManagedInitialWarehouseSize,
+			UserTaskTimeoutMs:                       r.Set.UserTaskTimeoutMs,
+			UserTaskMinimumTriggerIntervalInSeconds: r.Set.UserTaskMinimumTriggerIntervalInSeconds,
+			QuotedIdentifiersIgnoreCase:             r.Set.QuotedIdentifiersIgnoreCase,
+			EnableConsoleOutput:                     r.Set.EnableConsoleOutput,
+			Comment:                                 r.Set.Comment,
+		}
+	}
+	if r.Unset != nil {
+		opts.Unset = &SchemaUnset{
+			DataRetentionTimeInDays:                 r.Unset.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays:              r.Unset.MaxDataExtensionTimeInDays,
+			ExternalVolume:                          r.Unset.ExternalVolume,
+			Catalog:                                 r.Unset.Catalog,
+			PipeExecutionPaused:                     r.Unset.PipeExecutionPaused,
+			ReplaceInvalidCharacters:                r.Unset.ReplaceInvalidCharacters,
+			DefaultDdlCollation:                     r.Unset.DefaultDdlCollation,
+			StorageSerializationPolicy:              r.Unset.StorageSerializationPolicy,
+			LogLevel:                                r.Unset.LogLevel,
+			LogEventLevel:                           r.Unset.LogEventLevel,
+			TraceLevel:                              r.Unset.TraceLevel,
+			SuspendTaskAfterNumFailures:             r.Unset.SuspendTaskAfterNumFailures,
+			TaskAutoRetryAttempts:                   r.Unset.TaskAutoRetryAttempts,
+			UserTaskManagedInitialWarehouseSize:     r.Unset.UserTaskManagedInitialWarehouseSize,
+			UserTaskTimeoutMs:                       r.Unset.UserTaskTimeoutMs,
+			UserTaskMinimumTriggerIntervalInSeconds: r.Unset.UserTaskMinimumTriggerIntervalInSeconds,
+			QuotedIdentifiersIgnoreCase:             r.Unset.QuotedIdentifiersIgnoreCase,
+			EnableConsoleOutput:                     r.Unset.EnableConsoleOutput,
+			Comment:                                 r.Unset.Comment,
+		}
+	}
+	return opts
+}
+
+func (r *DropSchemaRequest) toOpts() *DropSchemaOptions {
+	opts := &DropSchemaOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+		Cascade:  r.Cascade,
+		Restrict: r.Restrict,
+	}
+	return opts
+}
+
+func (r *UndropSchemaRequest) toOpts() *UndropSchemaOptions {
+	opts := &UndropSchemaOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r *ShowSchemaRequest) toOpts() *ShowSchemaOptions {
+	opts := &ShowSchemaOptions{
+		Terse:      r.Terse,
+		History:    r.History,
+		Like:       r.Like,
+		In:         r.In,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
+	}
+	return opts
+}
+
+func (r schemaRow) convert() (*Schema, error) {
+	result := &Schema{
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		IsDefault:     r.IsDefault == "Y",
+		IsCurrent:     r.IsCurrent == "Y",
+		DatabaseName:  r.DatabaseName,
+		Owner:         r.Owner,
+		RetentionTime: r.RetentionTime,
+		OwnerRoleType: r.OwnerRoleType,
+	}
+	mapNullTimeToNonNullableField(&result.DroppedOn, r.DroppedOn)
+	mapNullStringToNonNullableField(&result.Comment, r.Comment)
+	mapNullString(&result.Options, r.Options)
+	return result, nil
+}
+
+func (r *DescribeSchemaRequest) toOpts() *DescribeSchemaOptions {
+	opts := &DescribeSchemaOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r schemaDetailRow) convert() (*SchemaDetails, error) {
+	result := &SchemaDetails{
+		CreatedOn: r.CreatedOn,
+		Name:      r.Name,
+		Kind:      r.Kind,
+	}
+	return result, nil
 }

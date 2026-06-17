@@ -2,178 +2,90 @@
 
 package sdk
 
-import "errors"
-
 var (
 	_ validatable = new(CreateSchemaOptions)
+	_ validatable = new(CloneSchemaOptions)
 	_ validatable = new(AlterSchemaOptions)
 	_ validatable = new(DropSchemaOptions)
-	_ validatable = new(undropSchemaOptions)
-	_ validatable = new(describeSchemaOptions)
+	_ validatable = new(UndropSchemaOptions)
 	_ validatable = new(ShowSchemaOptions)
+	_ validatable = new(DescribeSchemaOptions)
 )
 
 func (opts *CreateSchemaOptions) validate() error {
 	if opts == nil {
-		return errors.Join(ErrNilOptions)
+		return ErrNilOptions
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if valueSet(opts.Clone) {
-		if err := opts.Clone.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CreateSchemaOptions", "IfNotExists", "OrReplace"))
+		errs = append(errs, errOneOf("CreateSchemaOptions", "OrReplace", "IfNotExists"))
 	}
 	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"))
+		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
-		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "Catalog"))
+		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	return errors.Join(errs...)
+	return JoinErrors(errs...)
+}
+
+func (opts *CloneSchemaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CloneSchemaOptions", "OrReplace", "IfNotExists"))
+	}
+	errs = append(errs, opts.additionalValidations())
+	return JoinErrors(errs...)
 }
 
 func (opts *AlterSchemaOptions) validate() error {
 	if opts == nil {
-		return errors.Join(ErrNilOptions)
+		return ErrNilOptions
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !exactlyOneValueSet(opts.NewName, opts.SwapWith, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.EnableManagedAccess, opts.DisableManagedAccess) {
+		errs = append(errs, errExactlyOneOf("AlterSchemaOptions", "NewName", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
+	}
 	if opts.NewName != nil && !ValidObjectIdentifier(opts.NewName) {
-		errs = append(errs, errInvalidIdentifier("AlterSchemaOptions", "NewName"))
+		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
-		errs = append(errs, errInvalidIdentifier("AlterSchemaOptions", "SwapWith"))
-	}
-	if !exactlyOneValueSet(opts.NewName, opts.SwapWith, opts.Set, opts.Unset, opts.SetTag, opts.UnsetTag, opts.EnableManagedAccess, opts.DisableManagedAccess) {
-		errs = append(errs, errExactlyOneOf("AlterSchemaOptions", "NewName", "SwapWith", "Set", "Unset", "SetTag", "UnsetTag", "EnableManagedAccess", "DisableManagedAccess"))
+		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.Set) {
-		if err := opts.Set.validate(); err != nil {
-			errs = append(errs, err)
+		if opts.Set.ExternalVolume != nil && !ValidObjectIdentifier(opts.Set.ExternalVolume) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+		if opts.Set.Catalog != nil && !ValidObjectIdentifier(opts.Set.Catalog) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+		if !anyValueSet(opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ExternalVolume, opts.Set.Catalog, opts.Set.PipeExecutionPaused, opts.Set.ReplaceInvalidCharacters, opts.Set.DefaultDdlCollation, opts.Set.StorageSerializationPolicy, opts.Set.LogLevel, opts.Set.LogEventLevel, opts.Set.TraceLevel, opts.Set.SuspendTaskAfterNumFailures, opts.Set.TaskAutoRetryAttempts, opts.Set.UserTaskManagedInitialWarehouseSize, opts.Set.UserTaskTimeoutMs, opts.Set.UserTaskMinimumTriggerIntervalInSeconds, opts.Set.QuotedIdentifiersIgnoreCase, opts.Set.EnableConsoleOutput, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog", "PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "StorageSerializationPolicy", "LogLevel", "LogEventLevel", "TraceLevel", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize", "UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds", "QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if err := opts.Unset.validate(); err != nil {
-			errs = append(errs, err)
+		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ExternalVolume, opts.Unset.Catalog, opts.Unset.PipeExecutionPaused, opts.Unset.ReplaceInvalidCharacters, opts.Unset.DefaultDdlCollation, opts.Unset.StorageSerializationPolicy, opts.Unset.LogLevel, opts.Unset.LogEventLevel, opts.Unset.TraceLevel, opts.Unset.SuspendTaskAfterNumFailures, opts.Unset.TaskAutoRetryAttempts, opts.Unset.UserTaskManagedInitialWarehouseSize, opts.Unset.UserTaskTimeoutMs, opts.Unset.UserTaskMinimumTriggerIntervalInSeconds, opts.Unset.QuotedIdentifiersIgnoreCase, opts.Unset.EnableConsoleOutput, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog", "PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "StorageSerializationPolicy", "LogLevel", "LogEventLevel", "TraceLevel", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize", "UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds", "QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment"))
 		}
 	}
-	return errors.Join(errs...)
-}
-
-func (v *SchemaSet) validate() error {
-	var errs []error
-	if v.ExternalVolume != nil && !ValidObjectIdentifier(v.ExternalVolume) {
-		errs = append(errs, errInvalidIdentifier("SchemaSet", "ExternalVolume"))
-	}
-	if v.Catalog != nil && !ValidObjectIdentifier(v.Catalog) {
-		errs = append(errs, errInvalidIdentifier("SchemaSet", "Catalog"))
-	}
-	if !anyValueSet(
-		v.DataRetentionTimeInDays,
-		v.MaxDataExtensionTimeInDays,
-		v.ExternalVolume,
-		v.Catalog,
-		v.ReplaceInvalidCharacters,
-		v.DefaultDDLCollation,
-		v.StorageSerializationPolicy,
-		v.LogLevel,
-		v.LogEventLevel,
-		v.TraceLevel,
-		v.SuspendTaskAfterNumFailures,
-		v.TaskAutoRetryAttempts,
-		v.UserTaskManagedInitialWarehouseSize,
-		v.UserTaskTimeoutMs,
-		v.UserTaskMinimumTriggerIntervalInSeconds,
-		v.QuotedIdentifiersIgnoreCase,
-		v.EnableConsoleOutput,
-		v.PipeExecutionPaused,
-		v.Comment,
-	) {
-		errs = append(errs, errAtLeastOneOf(
-			"SchemaSet",
-			"DataRetentionTimeInDays",
-			"MaxDataExtensionTimeInDays",
-			"ExternalVolume",
-			"Catalog",
-			"ReplaceInvalidCharacters",
-			"DefaultDDLCollation",
-			"StorageSerializationPolicy",
-			"LogLevel",
-			"LogEventLevel",
-			"TraceLevel",
-			"SuspendTaskAfterNumFailures",
-			"TaskAutoRetryAttempts",
-			"UserTaskManagedInitialWarehouseSize",
-			"UserTaskTimeoutMs",
-			"UserTaskMinimumTriggerIntervalInSeconds",
-			"QuotedIdentifiersIgnoreCase",
-			"EnableConsoleOutput",
-			"PipeExecutionPaused",
-			"Comment",
-		))
-	}
-	return errors.Join(errs...)
-}
-
-func (v *SchemaUnset) validate() error {
-	if !anyValueSet(
-		v.DataRetentionTimeInDays,
-		v.MaxDataExtensionTimeInDays,
-		v.ExternalVolume,
-		v.Catalog,
-		v.ReplaceInvalidCharacters,
-		v.DefaultDDLCollation,
-		v.StorageSerializationPolicy,
-		v.LogLevel,
-		v.LogEventLevel,
-		v.TraceLevel,
-		v.SuspendTaskAfterNumFailures,
-		v.TaskAutoRetryAttempts,
-		v.UserTaskManagedInitialWarehouseSize,
-		v.UserTaskTimeoutMs,
-		v.UserTaskMinimumTriggerIntervalInSeconds,
-		v.QuotedIdentifiersIgnoreCase,
-		v.EnableConsoleOutput,
-		v.PipeExecutionPaused,
-		v.Comment,
-	) {
-		return errAtLeastOneOf(
-			"SchemaUnset",
-			"DataRetentionTimeInDays",
-			"MaxDataExtensionTimeInDays",
-			"ExternalVolume",
-			"Catalog",
-			"ReplaceInvalidCharacters",
-			"DefaultDDLCollation",
-			"StorageSerializationPolicy",
-			"LogLevel",
-			"LogEventLevel",
-			"TraceLevel",
-			"SuspendTaskAfterNumFailures",
-			"TaskAutoRetryAttempts",
-			"UserTaskManagedInitialWarehouseSize",
-			"UserTaskTimeoutMs",
-			"UserTaskMinimumTriggerIntervalInSeconds",
-			"QuotedIdentifiersIgnoreCase",
-			"EnableConsoleOutput",
-			"PipeExecutionPaused",
-			"Comment",
-		)
-	}
-	return nil
+	return JoinErrors(errs...)
 }
 
 func (opts *DropSchemaOptions) validate() error {
 	if opts == nil {
-		return errors.Join(ErrNilOptions)
+		return ErrNilOptions
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
@@ -182,32 +94,35 @@ func (opts *DropSchemaOptions) validate() error {
 	if everyValueSet(opts.Cascade, opts.Restrict) {
 		errs = append(errs, errOneOf("DropSchemaOptions", "Cascade", "Restrict"))
 	}
-	return errors.Join(errs...)
+	return JoinErrors(errs...)
 }
 
-func (opts *undropSchemaOptions) validate() error {
+func (opts *UndropSchemaOptions) validate() error {
 	if opts == nil {
-		return errors.Join(ErrNilOptions)
+		return ErrNilOptions
 	}
+	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		return errors.Join(ErrInvalidObjectIdentifier)
+		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	return nil
+	return JoinErrors(errs...)
 }
 
 func (opts *ShowSchemaOptions) validate() error {
 	if opts == nil {
-		return errors.Join(ErrNilOptions)
+		return ErrNilOptions
 	}
-	return nil
+	var errs []error
+	return JoinErrors(errs...)
 }
 
-func (opts *describeSchemaOptions) validate() error {
+func (opts *DescribeSchemaOptions) validate() error {
 	if opts == nil {
-		return errors.Join(ErrNilOptions)
+		return ErrNilOptions
 	}
+	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		return errors.Join(ErrInvalidObjectIdentifier)
+		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	return nil
+	return JoinErrors(errs...)
 }
