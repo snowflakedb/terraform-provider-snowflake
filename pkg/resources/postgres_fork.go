@@ -178,11 +178,10 @@ func ImportPostgresFork(ctx context.Context, d *schema.ResourceData, meta any) (
 		return nil, err
 	}
 
-	// Set fork_from from the origin field if available
-	forkFrom := ""
-	if pi.Origin != nil {
-		forkFrom = *pi.Origin
+	if pi.Origin == nil || *pi.Origin == "" {
+		return nil, fmt.Errorf("postgres instance %s is not a fork (origin is empty); use the snowflake_postgres_instance resource to import non-fork instances", id.FullyQualifiedName())
 	}
+	forkFrom := *pi.Origin
 
 	errs := errors.Join(
 		d.Set("name", pi.Name),
