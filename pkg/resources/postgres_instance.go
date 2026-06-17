@@ -255,6 +255,11 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			"authentication_authority",
 			"compute_family",
 			"high_availability",
+			"storage_size_gb",
+			"postgres_version",
+			"network_policy",
+			"storage_integration",
+			"maintenance_window_start",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -262,27 +267,14 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 		postgresSettings := normalizePostgresSettings(pi.PostgresSettings)
 		errs := errors.Join(
 			d.Set("name", pi.Name),
-			d.Set("compute_family", pi.ComputeFamily),
-			d.Set("storage_size_gb", pi.StorageSize),
-			d.Set("authentication_authority", pi.AuthenticationAuthority),
-			d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
 			setOptionalFromPtr(d, "comment", pi.Comment),
 			setOptionalFromPtr(d, "postgres_settings", postgresSettings),
-			d.Set("postgres_version", details.PostgresVersion),
-			setOptionalFromAccountObjectIdentifierPtr(d, "network_policy", details.NetworkPolicy),
-			setOptionalFromAccountObjectIdentifierPtr(d, "storage_integration", details.StorageIntegration),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresInstanceDetailsToSchema(details)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
-		}
-
-		if details.MaintenanceWindowStart != 0 || d.Get("maintenance_window_start").(int) != IntDefault {
-			if err := d.Set("maintenance_window_start", details.MaintenanceWindowStart); err != nil {
-				return diag.FromErr(err)
-			}
 		}
 
 		return nil
