@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new feature)* `snowflake_grant_ownership`: support for `AGENT` object type
+
+The `snowflake_grant_ownership` resource now supports granting ownership on `AGENT` objects. This includes single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`).
+
+No changes are required for existing configurations.
+
 ### *(new feature)* New storage lifecycle policy resource
 
 We have added a new preview resource for managing storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy).
