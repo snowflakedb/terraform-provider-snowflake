@@ -245,13 +245,11 @@ func CreatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 	// Handle optional fork-time parameters
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "compute_family", request.WithComputeFamily),
+		intAttributeCreateBuilder(d, "storage_size_gb", request.WithStorageSizeGb),
 		booleanStringAttributeCreateBuilder(d, "high_availability", request.WithHighAvailability),
 		stringAttributeCreateBuilder(d, "postgres_settings", request.WithPostgresSettings),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
-	if v, ok := d.GetOk("storage_size_gb"); ok {
-		request.WithStorageSizeGb(v.(int))
-	}
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
