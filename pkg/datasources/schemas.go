@@ -165,22 +165,22 @@ func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok {
 			if account := v.(bool); account {
-				opts.In = &sdk.SchemaIn{Account: sdk.Bool(account)}
+				opts.In = &sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}
 			}
 		}
 		if v, ok := in["database"]; ok {
 			if database := v.(string); database != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(database), Database: sdk.Pointer(true)}
+				opts.In = &sdk.ExtendedIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}}
 			}
 		}
 		if v, ok := in["application"]; ok {
 			if application := v.(string); application != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(application), Application: sdk.Pointer(true)}
+				opts.In = &sdk.ExtendedIn{Application: sdk.NewAccountObjectIdentifier(application)}
 			}
 		}
 		if v, ok := in["application_package"]; ok {
 			if applicationPackage := v.(string); applicationPackage != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(applicationPackage), ApplicationPackage: sdk.Pointer(true)}
+				opts.In = &sdk.ExtendedIn{ApplicationPackage: sdk.NewAccountObjectIdentifier(applicationPackage)}
 			}
 		}
 	}

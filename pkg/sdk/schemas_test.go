@@ -449,21 +449,19 @@ func TestSchemasShow(t *testing.T) {
 		opts := &ShowSchemaOptions{
 			Terse:   Bool(true),
 			History: Bool(true),
-			In: &SchemaIn{
-				Account: Bool(true),
-				Name:    NewAccountObjectIdentifier("account_name"),
+			In: &ExtendedIn{
+				In: In{Account: Bool(true)},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE SCHEMAS HISTORY IN ACCOUNT "account_name"`)
+		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE SCHEMAS HISTORY IN ACCOUNT`)
 	})
 
 	t.Run("in database", func(t *testing.T) {
 		opts := &ShowSchemaOptions{
 			Terse:   Bool(true),
 			History: Bool(true),
-			In: &SchemaIn{
-				Database: Bool(true),
-				Name:     NewAccountObjectIdentifier("database_name"),
+			In: &ExtendedIn{
+				In: In{Database: NewAccountObjectIdentifier("database_name")},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE SCHEMAS HISTORY IN DATABASE "database_name"`)

@@ -103,9 +103,8 @@ func (v *schemas) Show(ctx context.Context, opts *ShowSchemaOptions) ([]Schema, 
 
 func (v *schemas) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*Schema, error) {
 	schemas, err := v.client.Schemas.Show(ctx, &ShowSchemaOptions{
-		In: &SchemaIn{
-			Database: Bool(true),
-			Name:     id.DatabaseId(),
+		In: &ExtendedIn{
+			In: In{Database: id.DatabaseId()},
 		},
 		Like: &Like{
 			Pattern: String(id.Name()),

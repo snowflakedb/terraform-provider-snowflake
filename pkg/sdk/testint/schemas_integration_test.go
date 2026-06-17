@@ -542,8 +542,10 @@ func TestInt_Schemas(t *testing.T) {
 			Like: &sdk.Like{
 				Pattern: sdk.String(schema1.Name),
 			},
-			In: &sdk.SchemaIn{
-				Account: sdk.Bool(true),
+			In: &sdk.ExtendedIn{
+				In: sdk.In{
+					Account: sdk.Bool(true),
+				},
 			},
 			StartsWith: sdk.String(schema1.Name),
 			LimitFrom: &sdk.LimitFrom{
