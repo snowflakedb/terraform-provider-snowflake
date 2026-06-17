@@ -107,7 +107,7 @@ func PostgresInstanceToSchema(postgresInstance *sdk.PostgresInstance) map[string
 	if postgresInstance.PostgresSettings != nil {
 		s["postgres_settings"] = *postgresInstance.PostgresSettings
 	}
-	s["is_ha"] = postgresInstance.IsHighlyAvailable()
+	s["is_ha"] = postgresInstance.IsHighlyAvailable
 	s["retention_time"] = postgresInstance.RetentionTime
 	s["state"] = string(postgresInstance.State)
 	if postgresInstance.Comment != nil {

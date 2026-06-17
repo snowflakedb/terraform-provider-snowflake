@@ -188,7 +188,7 @@ func ImportPostgresFork(ctx context.Context, d *schema.ResourceData, meta any) (
 		d.Set("fork_from", forkFrom),
 		d.Set("compute_family", pi.ComputeFamily),
 		d.Set("storage_size_gb", pi.StorageSize),
-		d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable())),
+		d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
 		setOptionalFromPtr(d, "comment", pi.Comment),
 		setOptionalFromPtr(d, "postgres_settings", normalizePostgresSettings(pi.PostgresSettings)),
 	)
@@ -311,7 +311,7 @@ func ReadPostgresForkFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"compute_family", "compute_family", pi.ComputeFamily, pi.ComputeFamily, nil},
 				outputMapping{"storage_size", "storage_size_gb", pi.StorageSize, pi.StorageSize, nil},
-				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable(), booleanStringFromBool(pi.IsHighlyAvailable()), nil},
+				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable, booleanStringFromBool(pi.IsHighlyAvailable), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -328,7 +328,7 @@ func ReadPostgresForkFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			d.Set("name", pi.Name),
 			d.Set("compute_family", pi.ComputeFamily),
 			d.Set("storage_size_gb", pi.StorageSize),
-			d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable())),
+			d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
 			setOptionalFromPtr(d, "comment", pi.Comment),
 			setOptionalFromPtr(d, "postgres_settings", normalizePostgresSettings(pi.PostgresSettings)),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),

@@ -229,7 +229,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 				outputMapping{"compute_family", "compute_family", pi.ComputeFamily, pi.ComputeFamily, nil},
 				outputMapping{"storage_size", "storage_size_gb", pi.StorageSize, pi.StorageSize, nil},
 				outputMapping{"authentication_authority", "authentication_authority", pi.AuthenticationAuthority, pi.AuthenticationAuthority, nil},
-				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable(), booleanStringFromBool(pi.IsHighlyAvailable()), nil},
+				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable, booleanStringFromBool(pi.IsHighlyAvailable), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -264,7 +264,7 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			d.Set("compute_family", pi.ComputeFamily),
 			d.Set("storage_size_gb", pi.StorageSize),
 			d.Set("authentication_authority", pi.AuthenticationAuthority),
-			d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable())),
+			d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
 			setOptionalFromPtr(d, "comment", pi.Comment),
 			setOptionalFromPtr(d, "postgres_settings", postgresSettings),
 			d.Set("postgres_version", details.PostgresVersion),

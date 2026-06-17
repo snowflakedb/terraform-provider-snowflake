@@ -164,7 +164,7 @@ type PostgresInstance struct {
 	StorageSize                  int
 	PostgresVersion              string
 	PostgresSettings             *string
-	IsHa                         bool
+	IsHighlyAvailable            bool
 	RetentionTime                int
 	State                        PostgresInstanceState
 	Comment                      *string

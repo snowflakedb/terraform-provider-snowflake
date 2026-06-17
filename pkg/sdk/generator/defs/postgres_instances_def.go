@@ -43,7 +43,7 @@ var postgresInstancesPairs = g.StructPair("postgresInstancesRow", "PostgresInsta
 	Number("storage_size").
 	Text("postgres_version").
 	OptionalText("postgres_settings").
-	BoolFromText("is_ha", g.WithBoolTrueValue("true")).
+	BoolFromText("is_ha", g.WithBoolTrueValue("true"), g.WithPlainFieldName("IsHighlyAvailable")).
 	Number("retention_time").
 	Enum("state", PostgresInstanceStateEnumDef).
 	OptionalText("comment")
