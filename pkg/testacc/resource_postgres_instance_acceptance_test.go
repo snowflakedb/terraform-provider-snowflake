@@ -21,17 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// postgresShowOutputBaseAssert returns a show output assertion with the common fields
-// that every postgres instance (including forks) should have.
-func postgresShowOutputBaseAssert(t *testing.T, ref string, name string) *resourceshowoutputassert.PostgresInstanceShowOutputAssert {
-	t.Helper()
-	return resourceshowoutputassert.PostgresInstanceShowOutput(t, ref).
-		HasCreatedOnNotEmpty().
-		HasName(name).
-		HasOwner(snowflakeroles.Accountadmin.Name()).
-		HasOwnerRoleType("ROLE")
-}
-
 func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
@@ -50,7 +39,11 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasNoPostgresSettings().
 			HasNoMaintenanceWindowStart().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-		postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), id.Name()).
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
 			HasComputeFamily("STANDARD_M").
 			HasAuthenticationAuthority("POSTGRES"),
 	}
@@ -118,7 +111,11 @@ func TestAcc_PostgresInstance_CompleteUseCase(t *testing.T) {
 			HasNoStorageIntegration().
 			HasNoMaintenanceWindowStart().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-		postgresShowOutputBaseAssert(t, modelComplete.ResourceReference(), id.Name()).
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelComplete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
 			HasComputeFamily("STANDARD_M").
 			HasAuthenticationAuthority("POSTGRES").
 			HasComment(comment),
@@ -138,7 +135,11 @@ func TestAcc_PostgresInstance_CompleteUseCase(t *testing.T) {
 			HasPostgresSettingsString(`{"work_mem": "64MB"}`).
 			HasHighAvailabilityString("false").
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-		postgresShowOutputBaseAssert(t, modelWithMaintenance.ResourceReference(), id.Name()).
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelWithMaintenance.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
 			HasComment(commentUpdated),
 	}
 
@@ -155,7 +156,11 @@ func TestAcc_PostgresInstance_CompleteUseCase(t *testing.T) {
 			HasNoMaintenanceWindowStart().
 			HasNoPostgresSettings().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-		postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), id.Name()).
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
 			HasComment(""),
 	}
 
@@ -251,7 +256,11 @@ func TestAcc_PostgresInstance_Rename(t *testing.T) {
 						HasComputeFamilyString("STANDARD_M").
 						HasStorageSizeGbString("10").
 						HasAuthenticationAuthorityString("POSTGRES"),
-					postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), id.Name()).
+					resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
 						HasComputeFamily("STANDARD_M").
 						HasAuthenticationAuthority("POSTGRES"),
 				),

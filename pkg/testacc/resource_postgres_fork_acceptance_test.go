@@ -10,9 +10,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -45,7 +47,11 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 			HasForkFromString(sourceId.Name()).
 			HasNoComment().
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		postgresShowOutputBaseAssert(t, modelBasic.ResourceReference(), forkId.Name()),
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(forkId.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE"),
 	}
 
 	modelWithComment := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
@@ -57,7 +63,11 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 			HasForkFromString(sourceId.Name()).
 			HasCommentString(comment).
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		postgresShowOutputBaseAssert(t, modelWithComment.ResourceReference(), forkId.Name()).
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelWithComment.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(forkId.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
 			HasComment(comment),
 	}
 
@@ -147,7 +157,11 @@ func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
 			HasHighAvailabilityString("false").
 			HasPostgresSettingsString(`{"work_mem": "64MB"}`).
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		postgresShowOutputBaseAssert(t, modelComplete.ResourceReference(), forkId.Name()).
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelComplete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(forkId.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
 			HasComputeFamily("STANDARD_M").
 			HasComment(comment),
 	}
