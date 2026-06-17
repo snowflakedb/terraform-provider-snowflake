@@ -109,6 +109,7 @@ const (
 	StorageIntegrationGcsResource               feature = "snowflake_storage_integration_gcs_resource"
 	StorageIntegrationsDatasource               feature = "snowflake_storage_integrations_datasource"
 	StorageLifecyclePolicyResource              feature = "snowflake_storage_lifecycle_policy_resource"
+	StorageLifecyclePoliciesDatasource          feature = "snowflake_storage_lifecycle_policies_datasource"
 	SystemGenerateSCIMAccessTokenDatasource     feature = "snowflake_system_generate_scim_access_token_datasource"
 	SystemGetAWSSNSIAMPolicyDatasource          feature = "snowflake_system_get_aws_sns_iam_policy_datasource"
 	SystemGetPrivateLinkConfigDatasource        feature = "snowflake_system_get_privatelink_config_datasource"
@@ -215,6 +216,7 @@ var allPreviewFeatures = []feature{
 	StorageIntegrationGcsResource,
 	StorageIntegrationsDatasource,
 	StorageLifecyclePolicyResource,
+	StorageLifecyclePoliciesDatasource,
 	SystemGenerateSCIMAccessTokenDatasource,
 	SystemGetAWSSNSIAMPolicyDatasource,
 	SystemGetPrivateLinkConfigDatasource,

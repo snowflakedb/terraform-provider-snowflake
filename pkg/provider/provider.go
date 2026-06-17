@@ -747,6 +747,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_shares":                             datasources.Shares(),
 		"snowflake_stages":                             datasources.Stages(),
 		"snowflake_storage_integrations":               datasources.StorageIntegrations(),
+		"snowflake_storage_lifecycle_policies":         datasources.StorageLifecyclePolicies(),
 		"snowflake_streams":                            datasources.Streams(),
 		"snowflake_streamlits":                         datasources.Streamlits(),
 		"snowflake_system_generate_scim_access_token":  datasources.SystemGenerateSCIMAccessToken(),

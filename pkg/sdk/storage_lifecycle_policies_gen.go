@@ -76,10 +76,10 @@ type DropStorageLifecyclePolicyOptions struct {
 
 // ShowStorageLifecyclePolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-storage-lifecycle-policies.
 type ShowStorageLifecyclePolicyOptions struct {
-	show                     bool        `ddl:"static" sql:"SHOW"`
-	storageLifecyclePolicies bool        `ddl:"static" sql:"STORAGE LIFECYCLE POLICIES"`
-	Like                     *Like       `ddl:"keyword" sql:"LIKE"`
-	In                       *ExtendedIn `ddl:"keyword" sql:"IN"`
+	show                     bool  `ddl:"static" sql:"SHOW"`
+	storageLifecyclePolicies bool  `ddl:"static" sql:"STORAGE LIFECYCLE POLICIES"`
+	Like                     *Like `ddl:"keyword" sql:"LIKE"`
+	In                       *In   `ddl:"keyword" sql:"IN"`
 }
 
 type storageLifecyclePolicyDBRow struct {
