@@ -2,8 +2,10 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 )
 
 func (r *CreatePostgresInstanceRequest) GetName() AccountObjectIdentifier {
@@ -124,37 +126,28 @@ func (v *postgresInstances) DescribeDetails(ctx context.Context, id AccountObjec
 	return ParsePostgresInstanceDetails(properties)
 }
 
-func (v *PostgresInstance) IsHighlyAvailable() bool {
-	return v.IsHa
-}
-
-func (r postgresInstancesRow) convert() (*PostgresInstance, error) {
-	pi := &PostgresInstance{
-		Name:                    r.Name,
-		Owner:                   r.Owner,
-		OwnerRoleType:           r.OwnerRoleType,
-		CreatedOn:               r.CreatedOn,
-		UpdatedOn:               r.UpdatedOn,
-		Type:                    r.Type,
-		ComputeFamily:           r.ComputeFamily,
-		AuthenticationAuthority: r.AuthenticationAuthority,
-		StorageSize:             r.StorageSize,
-		PostgresVersion:         r.PostgresVersion,
-		IsHa:                    r.IsHa == "true",
-		RetentionTime:           r.RetentionTime,
+// NormalizePostgresSettings parses a postgres_settings JSON string into a canonical
+// form so Terraform can compare user input with Snowflake responses without spurious
+// diffs due to key ordering or whitespace. An empty string or an empty JSON object
+// ("{}") is normalized to "" to represent "not set".
+func NormalizePostgresSettings(s string) (string, error) {
+	trimmed := strings.TrimSpace(s)
+	if trimmed == "" {
+		return "", nil
 	}
-	mapNullString(&pi.Origin, r.Origin)
-	mapNullString(&pi.Host, r.Host)
-	mapNullString(&pi.PrivatelinkServiceIdentifier, r.PrivatelinkServiceIdentifier)
-	mapNullString(&pi.PostgresSettings, r.PostgresSettings)
-	mapNullString(&pi.Comment, r.Comment)
-	mapStringWithMapping(&pi.State, r.State, ToPostgresInstanceState)
-	return pi, nil
-}
 
-func (r postgresInstanceDetailsRow) convert() (*PostgresInstanceProperty, error) {
-	return &PostgresInstanceProperty{
-		Property: r.Property,
-		Value:    r.Value.String,
-	}, nil
+	var m map[string]any
+	if err := json.Unmarshal([]byte(trimmed), &m); err != nil {
+		return "", err
+	}
+
+	if len(m) == 0 {
+		return "", nil
+	}
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }

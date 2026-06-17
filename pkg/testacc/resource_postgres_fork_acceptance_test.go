@@ -7,13 +7,15 @@ import (
 	"testing"
 	"time"
 
+	tfjson "github.com/hashicorp/terraform-json"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -38,36 +40,55 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 	sourceId := createSourceForFork(t)
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
+	externalComment := random.Comment()
 
 	modelBasic := model.PostgresFork("test", forkId.Name(), sourceId.Name())
-
-	assertBasic := []assert.TestCheckFuncProvider{
-		resourceassert.PostgresForkResource(t, modelBasic.ResourceReference()).
-			HasNameString(forkId.Name()).
-			HasForkFromString(sourceId.Name()).
-			HasNoComment().
-			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelBasic.ResourceReference()).
-			HasCreatedOnNotEmpty().
-			HasName(forkId.Name()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"),
-	}
 
 	modelWithComment := model.PostgresFork("test", forkId.Name(), sourceId.Name()).
 		WithComment(comment)
 
+	ref := modelBasic.ResourceReference()
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		resourceassert.PostgresForkResource(t, ref).
+			HasNameString(forkId.Name()).
+			HasForkFromString(sourceId.Name()).
+			HasNoComment().
+			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, ref).
+			HasCreatedOnNotEmpty().
+			HasName(forkId.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE"),
+		resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
+			HasName(forkId.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComputeFamily("STANDARD_M").
+			HasStorageSizeGb(10).
+			HasHighAvailability(false).
+			HasNoComment(),
+	}
+
 	assertWithComment := []assert.TestCheckFuncProvider{
-		resourceassert.PostgresForkResource(t, modelWithComment.ResourceReference()).
+		resourceassert.PostgresForkResource(t, ref).
 			HasNameString(forkId.Name()).
 			HasForkFromString(sourceId.Name()).
 			HasCommentString(comment).
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelWithComment.ResourceReference()).
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
 			HasName(forkId.Name()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
+			HasComment(comment),
+		resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
+			HasName(forkId.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComputeFamily("STANDARD_M").
+			HasStorageSizeGb(10).
+			HasHighAvailability(false).
 			HasComment(comment),
 	}
 
@@ -81,12 +102,17 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 			// Step 1: Create fork with only required params
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check:  assertThat(t, assertBasic...),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Check: assertThat(t, assertBasic...),
 			},
 			// Step 2: Import
 			{
 				Config:            accconfig.FromModels(t, modelBasic),
-				ResourceName:      modelBasic.ResourceReference(),
+				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
@@ -97,35 +123,40 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 			},
 			// Step 3: Update — set comment
 			{
+				Config: accconfig.FromModels(t, modelWithComment),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithComment.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
+				},
+				Check: assertThat(t, assertWithComment...),
+			},
+			// Step 4: External drift — alter comment externally, Terraform reverts to configured value
+			{
+				PreConfig: func() {
+					testClient().PostgresInstance.Alter(t, sdk.NewAlterPostgresInstanceRequest(forkId).WithSet(
+						*sdk.NewPostgresInstanceSetRequest().
+							WithComment(externalComment)))
 				},
 				Config: accconfig.FromModels(t, modelWithComment),
-				Check:  assertThat(t, assertWithComment...),
-			},
-			// Step 4: Update — unset comment
-			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(ref, "comment", sdk.String(comment), sdk.String(externalComment)),
+						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(externalComment), sdk.String(comment)),
 					},
 				},
-				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
-					resourceassert.PostgresForkResource(t, modelBasic.ResourceReference()).
-						HasNameString(forkId.Name()).
-						HasCommentString(""),
-				),
+				Check: assertThat(t, assertWithComment...),
 			},
-			// Step 5: Destroy verification
+			// Step 5: Unset — back to basic model (no comment)
 			{
-				Destroy: true,
-				Config:  accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
-					invokeactionassert.PostgresInstanceDoesNotExist(t, forkId),
-				),
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, assertBasic...),
 			},
 		},
 	})
@@ -147,8 +178,10 @@ func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
 		WithHighAvailability("false").
 		WithPostgresSettings(`{"work_mem": "64MB"}`)
 
+	ref := modelComplete.ResourceReference()
+
 	assertComplete := []assert.TestCheckFuncProvider{
-		resourceassert.PostgresForkResource(t, modelComplete.ResourceReference()).
+		resourceassert.PostgresForkResource(t, ref).
 			HasNameString(forkId.Name()).
 			HasForkFromString(sourceId.Name()).
 			HasCommentString(comment).
@@ -157,12 +190,20 @@ func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
 			HasHighAvailabilityString("false").
 			HasPostgresSettingsString(`{"work_mem": "64MB"}`).
 			HasFullyQualifiedNameString(forkId.FullyQualifiedName()),
-		resourceshowoutputassert.PostgresInstanceShowOutput(t, modelComplete.ResourceReference()).
+		resourceshowoutputassert.PostgresInstanceShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
 			HasName(forkId.Name()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
 			HasComputeFamily("STANDARD_M").
+			HasComment(comment),
+		resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
+			HasName(forkId.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComputeFamily("STANDARD_M").
+			HasStorageSizeGb(20).
+			HasHighAvailability(false).
 			HasComment(comment),
 	}
 
@@ -176,15 +217,20 @@ func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
 			// Step 1: Create fork with all options
 			{
 				Config: accconfig.FromModels(t, modelComplete),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					assertThat(t, assertComplete...),
-					resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "at.0.timestamp", recentTime.Format("2006-01-02 15:04:05")),
+					resource.TestCheckResourceAttr(ref, "at.0.timestamp", recentTime.Format("2006-01-02 15:04:05")),
 				),
 			},
 			// Step 2: Import
 			{
 				Config:            accconfig.FromModels(t, modelComplete),
-				ResourceName:      modelComplete.ResourceReference(),
+				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
