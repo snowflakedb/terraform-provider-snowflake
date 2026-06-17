@@ -315,12 +315,13 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 	//   1. POSTGRES_SETTINGS (alone)
 	//   2. Upgrade ops (COMPUTE_FAMILY, STORAGE_SIZE_GB, POSTGRES_VERSION) + non-conflicting params
 	//   3. HIGH_AVAILABILITY (alone)
+	// UNSET fields have no mutual conflicts and are sent in a single combined call.
+	unset := sdk.NewPostgresInstanceUnsetRequest()
 
 	// Group 1: POSTGRES_SETTINGS
 	pgSettingsSet := sdk.NewPostgresInstanceSetRequest()
-	pgSettingsUnset := sdk.NewPostgresInstanceUnsetRequest()
 	errs := errors.Join(
-		stringAttributeUpdate(d, "postgres_settings", &pgSettingsSet.PostgresSettings, &pgSettingsUnset.PostgresSettings),
+		stringAttributeUpdate(d, "postgres_settings", &pgSettingsSet.PostgresSettings, &unset.PostgresSettings),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
@@ -335,7 +336,6 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 
 	// Group 2: Upgrade ops + non-conflicting params
 	set := sdk.NewPostgresInstanceSetRequest()
-	unset := sdk.NewPostgresInstanceUnsetRequest()
 	errs = errors.Join(
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		accountObjectIdentifierAttributeUpdate(d, "network_policy", &set.NetworkPolicy, &unset.NetworkPolicy),
@@ -370,14 +370,6 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*highAvailabilitySet)
 		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting Postgres instance high_availability: %w", err))
-		}
-	}
-
-	// Unset operations (non-conflicting, can be sent together)
-	if !reflect.DeepEqual(pgSettingsUnset, &sdk.PostgresInstanceUnsetRequest{}) {
-		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithUnset(*pgSettingsUnset)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
-			return diag.FromErr(fmt.Errorf("error unsetting Postgres instance postgres_settings: %w", err))
 		}
 	}
 
