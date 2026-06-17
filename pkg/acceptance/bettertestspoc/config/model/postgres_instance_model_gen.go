@@ -128,8 +128,8 @@ func (p *PostgresInstanceModel) WithHighAvailability(highAvailability string) *P
 	return p
 }
 
-func (p *PostgresInstanceModel) WithMaintenanceWindowStart(maintenanceWindowStart string) *PostgresInstanceModel {
-	p.MaintenanceWindowStart = tfconfig.StringVariable(maintenanceWindowStart)
+func (p *PostgresInstanceModel) WithMaintenanceWindowStart(maintenanceWindowStart int) *PostgresInstanceModel {
+	p.MaintenanceWindowStart = tfconfig.IntegerVariable(maintenanceWindowStart)
 	return p
 }
 

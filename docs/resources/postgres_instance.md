@@ -53,7 +53,7 @@ resource "snowflake_postgres_instance" "complete" {
 
 - `comment` (String) Specifies a comment for the Postgres instance.
 - `high_availability` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the Postgres instance should be configured for high availability. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `maintenance_window_start` (String) Specifies the hour (0-23 UTC) at which the maintenance window starts.
+- `maintenance_window_start` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the hour (0-23 UTC) at which the maintenance window starts.
 - `network_policy` (String) Specifies the network policy to associate with the Postgres instance.
 - `postgres_settings` (String) Specifies custom Postgres settings as a JSON string.
 - `postgres_version` (Number) Specifies the Postgres version for the instance.
