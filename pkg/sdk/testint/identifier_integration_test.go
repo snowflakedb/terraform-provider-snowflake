@@ -163,7 +163,7 @@ func TestInt_IdentifiersForTwoPartIdentifierAsReference(t *testing.T) {
 			ctx := context.Background()
 
 			id := sdk.NewDatabaseObjectIdentifier(testCase.Name, testCase.Name)
-			err := testClient(t).Databases.Create(ctx, id.DatabaseId(), new(sdk.CreateDatabaseOptions))
+			err := testClient(t).Databases.Create(ctx, sdk.NewCreateDatabaseRequest(id.DatabaseId()))
 			if err == nil {
 				t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, id.DatabaseId()))
 			}
