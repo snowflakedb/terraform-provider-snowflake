@@ -301,3 +301,25 @@ type PlanCheckFunc func(ctx context.Context, req plancheck.CheckPlanRequest, res
 func (fn PlanCheckFunc) CheckPlan(ctx context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse) {
 	fn(ctx, req, resp)
 }
+
+// normalizePostgresSettings returns nil if the postgres_settings value is
+// an empty JSON object ("{}") or empty string, treating it as unset.
+func normalizePostgresSettings(s *string) *string {
+	if s == nil {
+		return nil
+	}
+	normalized, err := sdk.NormalizePostgresSettings(*s)
+	if err != nil || normalized == "" {
+		return nil
+	}
+	return &normalized
+}
+
+// setOptionalFromAccountObjectIdentifierPtr sets a key in resource data only if the
+// pointer is non-nil.
+func setOptionalFromAccountObjectIdentifierPtr(d *schema.ResourceData, key string, ptr *sdk.AccountObjectIdentifier) error {
+	if ptr != nil {
+		return d.Set(key, ptr.Name())
+	}
+	return nil
+}

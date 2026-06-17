@@ -390,34 +390,3 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 
 	return ReadPostgresInstanceFunc(false)(ctx, d, meta)
 }
-
-// normalizePostgresSettings returns nil if the postgres_settings value is
-// an empty JSON object ("{}") or empty string, treating it as unset.
-func normalizePostgresSettings(s *string) *string {
-	if s == nil {
-		return nil
-	}
-	normalized, err := sdk.NormalizePostgresSettings(*s)
-	if err != nil || normalized == "" {
-		return nil
-	}
-	return &normalized
-}
-
-// setOptionalFromNonEmptyStringPtr sets a key in resource data only if the
-// pointer is non-nil and the pointed-to string is non-empty.
-func setOptionalFromNonEmptyStringPtr(d *schema.ResourceData, key string, ptr *string) error {
-	if ptr != nil && *ptr != "" {
-		return d.Set(key, *ptr)
-	}
-	return nil
-}
-
-// setOptionalFromAccountObjectIdentifierPtr sets a key in resource data only if the
-// pointer is non-nil.
-func setOptionalFromAccountObjectIdentifierPtr(d *schema.ResourceData, key string, ptr *sdk.AccountObjectIdentifier) error {
-	if ptr != nil {
-		return d.Set(key, ptr.Name())
-	}
-	return nil
-}
