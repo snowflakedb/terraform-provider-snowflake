@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -18,7 +20,7 @@ func TestPostgresInstances_Create(t *testing.T) {
 	defaultOpts := func() *CreatePostgresInstanceOptions {
 		return &CreatePostgresInstanceOptions{
 			name:                    id,
-			ComputeFamily:           "STANDARD_S",
+			ComputeFamily:           "STANDARD_M",
 			StorageSizeGb:           50,
 			AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
 		}
@@ -38,7 +40,7 @@ func TestPostgresInstances_Create(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts,
-			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_S' STORAGE_SIZE_GB = 50 AUTHENTICATION_AUTHORITY = POSTGRES`,
+			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 50 AUTHENTICATION_AUTHORITY = POSTGRES`,
 			id.FullyQualifiedName())
 	})
 
@@ -47,7 +49,7 @@ func TestPostgresInstances_Create(t *testing.T) {
 		tagId := NewAccountObjectIdentifier("tag1")
 		opts := &CreatePostgresInstanceOptions{
 			name:                    id,
-			ComputeFamily:           "STANDARD_S",
+			ComputeFamily:           "STANDARD_M",
 			StorageSizeGb:           50,
 			AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
 			PostgresVersion:         Pointer(17),
@@ -64,7 +66,7 @@ func TestPostgresInstances_Create(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts,
-			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_S' STORAGE_SIZE_GB = 50`+
+			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 50`+
 				` AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 17 NETWORK_POLICY = "my_policy"`+
 				` HIGH_AVAILABILITY = true STORAGE_INTEGRATION = "my_integration" POSTGRES_SETTINGS = '{}'`+
 				` COMMENT = '%s' TAG (%s = 'value1')`,
@@ -249,13 +251,14 @@ func TestPostgresInstances_Alter(t *testing.T) {
 			HighAvailability:        Pointer(true),
 			ComputeFamily:           Pointer("STANDARD_M"),
 			StorageSizeGb:           Pointer(100),
+			StorageIntegration:      Pointer(NewAccountObjectIdentifier("my_integration")),
 			PostgresVersion:         Pointer(18),
 			PostgresSettings:        Pointer("{}"),
 		}
 		assertOptsValidAndSQLEquals(t, opts,
 			`ALTER POSTGRES INSTANCE %s SET NETWORK_POLICY = "my_policy" AUTHENTICATION_AUTHORITY = POSTGRES_OR_SNOWFLAKE`+
 				` COMMENT = '%s' HIGH_AVAILABILITY = true COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 100`+
-				` POSTGRES_VERSION = 18 POSTGRES_SETTINGS = '{}'`,
+				` STORAGE_INTEGRATION = "my_integration" POSTGRES_VERSION = 18 POSTGRES_SETTINGS = '{}'`,
 			id.FullyQualifiedName(), comment)
 	})
 
@@ -451,5 +454,29 @@ func TestPostgresInstances_Describe(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE POSTGRES INSTANCE %s", id.FullyQualifiedName())
+	})
+}
+
+func TestPostgresInstances_ParseDetails(t *testing.T) {
+	t.Run("parse network policy into AccountObjectIdentifier", func(t *testing.T) {
+		properties := []PostgresInstanceProperty{
+			{Property: "name", Value: "test_instance"},
+			{Property: "network_policy", Value: "my_network_policy"},
+		}
+		details, err := ParsePostgresInstanceDetails(properties)
+		require.NoError(t, err)
+		require.NotNil(t, details.NetworkPolicy)
+		assert.Equal(t, NewAccountObjectIdentifier("my_network_policy"), *details.NetworkPolicy)
+	})
+
+	t.Run("parse storage integration into AccountObjectIdentifier", func(t *testing.T) {
+		properties := []PostgresInstanceProperty{
+			{Property: "name", Value: "test_instance"},
+			{Property: "storage_integration", Value: "my_storage_integration"},
+		}
+		details, err := ParsePostgresInstanceDetails(properties)
+		require.NoError(t, err)
+		require.NotNil(t, details.StorageIntegration)
+		assert.Equal(t, NewAccountObjectIdentifier("my_storage_integration"), *details.StorageIntegration)
 	})
 }
