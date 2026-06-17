@@ -444,7 +444,7 @@ func (v *schemas) Drop(ctx context.Context, id DatabaseObjectIdentifier, opts *D
 }
 
 func (v *schemas) DropSafely(ctx context.Context, id DatabaseObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropSchemaOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropSchemaOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // undropSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/undrop-schema.
@@ -571,11 +571,11 @@ func (v *schemas) Show(ctx context.Context, opts *ShowSchemaOptions) ([]Schema, 
 func (v *schemas) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*Schema, error) {
 	schemas, err := v.client.Schemas.Show(ctx, &ShowSchemaOptions{
 		In: &SchemaIn{
-			Database: Bool(true),
+			Database: new(true),
 			Name:     id.DatabaseId(),
 		},
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 	})
 	if err != nil {

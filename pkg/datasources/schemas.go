@@ -140,12 +140,12 @@ func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		opts.Like = &sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		}
 	}
 
 	if startsWith, ok := d.GetOk("starts_with"); ok {
-		opts.StartsWith = sdk.String(startsWith.(string))
+		opts.StartsWith = new(startsWith.(string))
 	}
 
 	if limit, ok := d.GetOk("limit"); ok && len(limit.([]any)) == 1 {
@@ -165,22 +165,22 @@ func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok {
 			if account := v.(bool); account {
-				opts.In = &sdk.SchemaIn{Account: sdk.Bool(account)}
+				opts.In = &sdk.SchemaIn{Account: new(account)}
 			}
 		}
 		if v, ok := in["database"]; ok {
 			if database := v.(string); database != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(database), Database: sdk.Pointer(true)}
+				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(database), Database: new(true)}
 			}
 		}
 		if v, ok := in["application"]; ok {
 			if application := v.(string); application != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(application), Application: sdk.Pointer(true)}
+				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(application), Application: new(true)}
 			}
 		}
 		if v, ok := in["application_package"]; ok {
 			if applicationPackage := v.(string); applicationPackage != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(applicationPackage), ApplicationPackage: sdk.Pointer(true)}
+				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(applicationPackage), ApplicationPackage: new(true)}
 			}
 		}
 	}
@@ -194,7 +194,6 @@ func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	flattenedSchemas := make([]map[string]any, len(schemas))
 
 	for i, schema := range schemas {
-		schema := schema
 		var schemaDescription []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Schemas.Describe(ctx, schema.ID())

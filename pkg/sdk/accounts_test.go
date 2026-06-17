@@ -17,7 +17,7 @@ func TestAccountCreate(t *testing.T) {
 		opts := &CreateAccountOptions{
 			name:          id,
 			AdminName:     "someadmin",
-			AdminPassword: String(password),
+			AdminPassword: new(password),
 			Email:         "admin@example.com",
 			Edition:       EditionBusinessCritical,
 		}
@@ -30,18 +30,18 @@ func TestAccountCreate(t *testing.T) {
 		opts := &CreateAccountOptions{
 			name:                     id,
 			AdminName:                "someadmin",
-			AdminRSAPublicKey:        String(key),
-			AdminUserType:            Pointer(UserTypeService),
-			FirstName:                String("Ad"),
-			LastName:                 String("Min"),
+			AdminRSAPublicKey:        new(key),
+			AdminUserType:            new(UserTypeService),
+			FirstName:                new("Ad"),
+			LastName:                 new("Min"),
 			Email:                    "admin@example.com",
-			MustChangePassword:       Bool(true),
+			MustChangePassword:       new(true),
 			Edition:                  EditionBusinessCritical,
-			RegionGroup:              String("groupid"),
-			Region:                   String("regionid"),
-			Comment:                  String("Test account"),
-			ConsumptionBillingEntity: String("be-name"),
-			Polaris:                  Bool(true),
+			RegionGroup:              new("groupid"),
+			Region:                   new("regionid"),
+			Comment:                  new("Test account"),
+			ConsumptionBillingEntity: new("be-name"),
+			Polaris:                  new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE ACCOUNT %s ADMIN_NAME = 'someadmin' ADMIN_RSA_PUBLIC_KEY = '%s' ADMIN_USER_TYPE = SERVICE FIRST_NAME = 'Ad' LAST_NAME = 'Min' EMAIL = 'admin@example.com' MUST_CHANGE_PASSWORD = true EDITION = BUSINESS_CRITICAL REGION_GROUP = groupid REGION = regionid COMMENT = 'Test account' CONSUMPTION_BILLING_ENTITY = "be-name" POLARIS = true`, id.FullyQualifiedName(), key)
 	})
@@ -52,15 +52,15 @@ func TestAccountCreate(t *testing.T) {
 		opts := &CreateAccountOptions{
 			name:               id,
 			AdminName:          "someadmin",
-			AdminPassword:      String(password),
-			FirstName:          String("Ad"),
-			LastName:           String("Min"),
+			AdminPassword:      new(password),
+			FirstName:          new("Ad"),
+			LastName:           new("Min"),
 			Email:              "admin@example.com",
-			MustChangePassword: Bool(false),
+			MustChangePassword: new(false),
 			Edition:            EditionBusinessCritical,
-			RegionGroup:        String("groupid"),
-			Region:             String("regionid"),
-			Comment:            String("Test account"),
+			RegionGroup:        new("groupid"),
+			Region:             new("regionid"),
+			Comment:            new("Test account"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE ACCOUNT %s ADMIN_NAME = 'someadmin' ADMIN_PASSWORD = '%s' FIRST_NAME = 'Ad' LAST_NAME = 'Min' EMAIL = 'admin@example.com' MUST_CHANGE_PASSWORD = false EDITION = BUSINESS_CRITICAL REGION_GROUP = groupid REGION = regionid COMMENT = 'Test account'`, id.FullyQualifiedName(), password)
 	})
@@ -82,7 +82,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: no name passed when setting consumption billing entity", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				ConsumptionBillingEntity: String("be-name"),
+				ConsumptionBillingEntity: new("be-name"),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
@@ -91,7 +91,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: no name passed when unsetting consumption billing entity", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				ConsumptionBillingEntity: Bool(true),
+				ConsumptionBillingEntity: new(true),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
@@ -116,9 +116,9 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: exactly one value set in AccountSet - multiple set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PasswordPolicy:       Pointer(randomSchemaObjectIdentifier()),
-				SessionPolicy:        Pointer(randomSchemaObjectIdentifier()),
-				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
+				PasswordPolicy:       new(randomSchemaObjectIdentifier()),
+				SessionPolicy:        new(randomSchemaObjectIdentifier()),
+				AuthenticationPolicy: new(randomSchemaObjectIdentifier()),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
@@ -134,9 +134,9 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: exactly one value set in AccountUnset - multiple set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				PasswordPolicy:       Bool(true),
-				SessionPolicy:        Bool(true),
-				AuthenticationPolicy: Bool(true),
+				PasswordPolicy:       new(true),
+				SessionPolicy:        new(true),
+				AuthenticationPolicy: new(true),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
@@ -147,14 +147,14 @@ func TestAccountAlter(t *testing.T) {
 			Set: &AccountSet{
 				LegacyParameters: &AccountLevelParameters{
 					AccountParameters: &LegacyAccountParameters{
-						ClientEncryptionKeySize:       Int(128),
-						PreventUnloadToInternalStages: Bool(true),
+						ClientEncryptionKeySize:       new(128),
+						PreventUnloadToInternalStages: new(true),
 					},
 					SessionParameters: &SessionParameters{
-						JsonIndent: Int(16),
+						JsonIndent: new(16),
 					},
 					ObjectParameters: &ObjectParameters{
-						MaxDataExtensionTimeInDays: Int(30),
+						MaxDataExtensionTimeInDays: new(30),
 					},
 				},
 			},
@@ -172,122 +172,122 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
 				Parameters: &AccountParameters{
-					AbortDetachedQuery:                               Bool(true),
-					ActivePythonProfiler:                             Pointer(ActivePythonProfilerMemory),
-					AllowClientMFACaching:                            Bool(true),
-					AllowIDToken:                                     Bool(true),
-					Autocommit:                                       Bool(false),
-					BaseLocationPrefix:                               String("STORAGE_BASE_URL/"),
-					BinaryInputFormat:                                Pointer(BinaryInputFormatBase64),
-					BinaryOutputFormat:                               Pointer(BinaryOutputFormatBase64),
-					Catalog:                                          String("SNOWFLAKE"),
-					CatalogSync:                                      String("CATALOG_SYNC"),
-					ClientEnableLogInfoStatementParameters:           Bool(true),
-					ClientEncryptionKeySize:                          Int(256),
-					ClientMemoryLimit:                                Int(1540),
-					ClientMetadataRequestUseConnectionCtx:            Bool(true),
-					ClientMetadataUseSessionDatabase:                 Bool(true),
-					ClientPrefetchThreads:                            Int(5),
-					ClientResultChunkSize:                            Int(159),
-					ClientResultColumnCaseInsensitive:                Bool(true),
-					ClientSessionKeepAlive:                           Bool(true),
-					ClientSessionKeepAliveHeartbeatFrequency:         Int(3599),
-					ClientTimestampTypeMapping:                       Pointer(ClientTimestampTypeMappingNtz),
-					CortexEnabledCrossRegion:                         String("ANY_REGION"),
-					CortexModelsAllowlist:                            String("All"),
-					CsvTimestampFormat:                               String("YYYY-MM-DD"),
-					DataRetentionTimeInDays:                          Int(2),
-					DateInputFormat:                                  String("YYYY-MM-DD"),
-					DateOutputFormat:                                 String("YYYY-MM-DD"),
-					DefaultDDLCollation:                              String("en-cs"),
-					DefaultNotebookComputePoolCpu:                    String("CPU_X64_S"),
-					DefaultNotebookComputePoolGpu:                    String("GPU_NV_S"),
-					DefaultNullOrdering:                              Pointer(DefaultNullOrderingFirst),
-					DefaultStreamlitNotebookWarehouse:                Pointer(warehouseId),
-					DisableUiDownloadButton:                          Bool(true),
-					DisableUserPrivilegeGrants:                       Bool(true),
-					EnableAutomaticSensitiveDataClassificationLog:    Bool(false),
-					EnableEgressCostOptimizer:                        Bool(false),
-					EnableIdentifierFirstLogin:                       Bool(false),
-					EnableInternalStagesPrivatelink:                  Bool(true),
-					EnableTriSecretAndRekeyOptOutForImageRepository:  Bool(true),
-					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: Bool(true),
-					EnableUnhandledExceptionsReporting:               Bool(false),
-					EnableUnloadPhysicalTypeOptimization:             Bool(false),
-					EnableUnredactedQuerySyntaxError:                 Bool(true),
-					EnableUnredactedSecureObjectError:                Bool(true),
-					EnforceNetworkRulesForInternalStages:             Bool(true),
-					ErrorOnNondeterministicMerge:                     Bool(false),
-					ErrorOnNondeterministicUpdate:                    Bool(true),
-					EventTable:                                       Pointer(eventTableId),
-					ExternalOAuthAddPrivilegedRolesToBlockedList:     Bool(false),
-					ExternalVolume:                                   Pointer(externalVolumeId),
-					GeographyOutputFormat:                            Pointer(GeographyOutputFormatWKT),
-					GeometryOutputFormat:                             Pointer(GeometryOutputFormatWKT),
-					HybridTableLockTimeout:                           Int(3599),
-					InitialReplicationSizeLimitInTB:                  String("9.9"),
-					JdbcTreatDecimalAsInt:                            Bool(false),
-					JdbcTreatTimestampNtzAsUtc:                       Bool(true),
-					JdbcUseSessionTimezone:                           Bool(false),
-					JsonIndent:                                       Int(4),
-					JsTreatIntegerAsBigInt:                           Bool(true),
-					ListingAutoFulfillmentReplicationRefreshSchedule: String("2 minutes"),
-					LockTimeout:                                      Int(43201),
-					LogLevel:                                         Pointer(LogLevelInfo),
-					MaxConcurrencyLevel:                              Int(7),
-					MaxDataExtensionTimeInDays:                       Int(13),
-					MetricLevel:                                      Pointer(MetricLevelAll),
-					MinDataRetentionTimeInDays:                       Int(1),
-					MultiStatementCount:                              Int(0),
-					NetworkPolicy:                                    Pointer(networkPolicyId),
-					NoorderSequenceAsDefault:                         Bool(false),
-					OAuthAddPrivilegedRolesToBlockedList:             Bool(false),
-					OdbcTreatDecimalAsInt:                            Bool(true),
-					PeriodicDataRekeying:                             Bool(false),
-					PipeExecutionPaused:                              Bool(true),
-					PreventUnloadToInlineURL:                         Bool(true),
-					PreventUnloadToInternalStages:                    Bool(true),
-					PythonProfilerModules:                            String("module1, module2"),
-					PythonProfilerTargetStage:                        Pointer(stageId),
-					QueryTag:                                         String("test-query-tag"),
-					QuotedIdentifiersIgnoreCase:                      Bool(true),
-					ReplaceInvalidCharacters:                         Bool(true),
-					RequireStorageIntegrationForStageCreation:        Bool(true),
-					RequireStorageIntegrationForStageOperation:       Bool(true),
-					RowsPerResultset:                                 Int(1000),
-					S3StageVpceDnsName:                               String("s3-vpce-dns-name"),
-					SearchPath:                                       String("$current, $public"),
-					ServerlessTaskMaxStatementSize:                   Pointer(WarehouseSizeXLarge),
-					ServerlessTaskMinStatementSize:                   Pointer(WarehouseSizeSmall),
-					SimulatedDataSharingConsumer:                     String("simulated-consumer"),
-					SsoLoginPage:                                     Bool(true),
-					StatementQueuedTimeoutInSeconds:                  Int(1),
-					StatementTimeoutInSeconds:                        Int(1),
-					StorageSerializationPolicy:                       Pointer(StorageSerializationPolicyOptimized),
-					StrictJsonOutput:                                 Bool(true),
-					SuspendTaskAfterNumFailures:                      Int(3),
-					TaskAutoRetryAttempts:                            Int(3),
-					TimestampDayIsAlways24h:                          Bool(true),
-					TimestampInputFormat:                             String("YYYY-MM-DD"),
-					TimestampLtzOutputFormat:                         String("YYYY-MM-DD"),
-					TimestampNtzOutputFormat:                         String("YYYY-MM-DD"),
-					TimestampOutputFormat:                            String("YYYY-MM-DD"),
-					TimestampTypeMapping:                             Pointer(TimestampTypeMappingLtz),
-					TimestampTzOutputFormat:                          String("YYYY-MM-DD"),
-					Timezone:                                         String("Europe/London"),
-					TimeInputFormat:                                  String("YYYY-MM-DD"),
-					TimeOutputFormat:                                 String("YYYY-MM-DD"),
-					TraceLevel:                                       Pointer(TraceLevelPropagate),
-					TransactionAbortOnError:                          Bool(true),
-					TransactionDefaultIsolationLevel:                 Pointer(TransactionDefaultIsolationLevelReadCommitted),
-					TwoDigitCenturyStart:                             Int(1971),
-					UnsupportedDdlAction:                             Pointer(UnsupportedDDLActionFail),
-					UserTaskManagedInitialWarehouseSize:              Pointer(WarehouseSizeSmall),
-					UserTaskMinimumTriggerIntervalInSeconds:          Int(10),
-					UserTaskTimeoutMs:                                Int(10),
-					UseCachedResult:                                  Bool(false),
-					WeekOfYearPolicy:                                 Int(1),
-					WeekStart:                                        Int(1),
+					AbortDetachedQuery:                               new(true),
+					ActivePythonProfiler:                             new(ActivePythonProfilerMemory),
+					AllowClientMFACaching:                            new(true),
+					AllowIDToken:                                     new(true),
+					Autocommit:                                       new(false),
+					BaseLocationPrefix:                               new("STORAGE_BASE_URL/"),
+					BinaryInputFormat:                                new(BinaryInputFormatBase64),
+					BinaryOutputFormat:                               new(BinaryOutputFormatBase64),
+					Catalog:                                          new("SNOWFLAKE"),
+					CatalogSync:                                      new("CATALOG_SYNC"),
+					ClientEnableLogInfoStatementParameters:           new(true),
+					ClientEncryptionKeySize:                          new(256),
+					ClientMemoryLimit:                                new(1540),
+					ClientMetadataRequestUseConnectionCtx:            new(true),
+					ClientMetadataUseSessionDatabase:                 new(true),
+					ClientPrefetchThreads:                            new(5),
+					ClientResultChunkSize:                            new(159),
+					ClientResultColumnCaseInsensitive:                new(true),
+					ClientSessionKeepAlive:                           new(true),
+					ClientSessionKeepAliveHeartbeatFrequency:         new(3599),
+					ClientTimestampTypeMapping:                       new(ClientTimestampTypeMappingNtz),
+					CortexEnabledCrossRegion:                         new("ANY_REGION"),
+					CortexModelsAllowlist:                            new("All"),
+					CsvTimestampFormat:                               new("YYYY-MM-DD"),
+					DataRetentionTimeInDays:                          new(2),
+					DateInputFormat:                                  new("YYYY-MM-DD"),
+					DateOutputFormat:                                 new("YYYY-MM-DD"),
+					DefaultDDLCollation:                              new("en-cs"),
+					DefaultNotebookComputePoolCpu:                    new("CPU_X64_S"),
+					DefaultNotebookComputePoolGpu:                    new("GPU_NV_S"),
+					DefaultNullOrdering:                              new(DefaultNullOrderingFirst),
+					DefaultStreamlitNotebookWarehouse:                new(warehouseId),
+					DisableUiDownloadButton:                          new(true),
+					DisableUserPrivilegeGrants:                       new(true),
+					EnableAutomaticSensitiveDataClassificationLog:    new(false),
+					EnableEgressCostOptimizer:                        new(false),
+					EnableIdentifierFirstLogin:                       new(false),
+					EnableInternalStagesPrivatelink:                  new(true),
+					EnableTriSecretAndRekeyOptOutForImageRepository:  new(true),
+					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: new(true),
+					EnableUnhandledExceptionsReporting:               new(false),
+					EnableUnloadPhysicalTypeOptimization:             new(false),
+					EnableUnredactedQuerySyntaxError:                 new(true),
+					EnableUnredactedSecureObjectError:                new(true),
+					EnforceNetworkRulesForInternalStages:             new(true),
+					ErrorOnNondeterministicMerge:                     new(false),
+					ErrorOnNondeterministicUpdate:                    new(true),
+					EventTable:                                       new(eventTableId),
+					ExternalOAuthAddPrivilegedRolesToBlockedList:     new(false),
+					ExternalVolume:                                   new(externalVolumeId),
+					GeographyOutputFormat:                            new(GeographyOutputFormatWKT),
+					GeometryOutputFormat:                             new(GeometryOutputFormatWKT),
+					HybridTableLockTimeout:                           new(3599),
+					InitialReplicationSizeLimitInTB:                  new("9.9"),
+					JdbcTreatDecimalAsInt:                            new(false),
+					JdbcTreatTimestampNtzAsUtc:                       new(true),
+					JdbcUseSessionTimezone:                           new(false),
+					JsonIndent:                                       new(4),
+					JsTreatIntegerAsBigInt:                           new(true),
+					ListingAutoFulfillmentReplicationRefreshSchedule: new("2 minutes"),
+					LockTimeout:                                      new(43201),
+					LogLevel:                                         new(LogLevelInfo),
+					MaxConcurrencyLevel:                              new(7),
+					MaxDataExtensionTimeInDays:                       new(13),
+					MetricLevel:                                      new(MetricLevelAll),
+					MinDataRetentionTimeInDays:                       new(1),
+					MultiStatementCount:                              new(0),
+					NetworkPolicy:                                    new(networkPolicyId),
+					NoorderSequenceAsDefault:                         new(false),
+					OAuthAddPrivilegedRolesToBlockedList:             new(false),
+					OdbcTreatDecimalAsInt:                            new(true),
+					PeriodicDataRekeying:                             new(false),
+					PipeExecutionPaused:                              new(true),
+					PreventUnloadToInlineURL:                         new(true),
+					PreventUnloadToInternalStages:                    new(true),
+					PythonProfilerModules:                            new("module1, module2"),
+					PythonProfilerTargetStage:                        new(stageId),
+					QueryTag:                                         new("test-query-tag"),
+					QuotedIdentifiersIgnoreCase:                      new(true),
+					ReplaceInvalidCharacters:                         new(true),
+					RequireStorageIntegrationForStageCreation:        new(true),
+					RequireStorageIntegrationForStageOperation:       new(true),
+					RowsPerResultset:                                 new(1000),
+					S3StageVpceDnsName:                               new("s3-vpce-dns-name"),
+					SearchPath:                                       new("$current, $public"),
+					ServerlessTaskMaxStatementSize:                   new(WarehouseSizeXLarge),
+					ServerlessTaskMinStatementSize:                   new(WarehouseSizeSmall),
+					SimulatedDataSharingConsumer:                     new("simulated-consumer"),
+					SsoLoginPage:                                     new(true),
+					StatementQueuedTimeoutInSeconds:                  new(1),
+					StatementTimeoutInSeconds:                        new(1),
+					StorageSerializationPolicy:                       new(StorageSerializationPolicyOptimized),
+					StrictJsonOutput:                                 new(true),
+					SuspendTaskAfterNumFailures:                      new(3),
+					TaskAutoRetryAttempts:                            new(3),
+					TimestampDayIsAlways24h:                          new(true),
+					TimestampInputFormat:                             new("YYYY-MM-DD"),
+					TimestampLtzOutputFormat:                         new("YYYY-MM-DD"),
+					TimestampNtzOutputFormat:                         new("YYYY-MM-DD"),
+					TimestampOutputFormat:                            new("YYYY-MM-DD"),
+					TimestampTypeMapping:                             new(TimestampTypeMappingLtz),
+					TimestampTzOutputFormat:                          new("YYYY-MM-DD"),
+					Timezone:                                         new("Europe/London"),
+					TimeInputFormat:                                  new("YYYY-MM-DD"),
+					TimeOutputFormat:                                 new("YYYY-MM-DD"),
+					TraceLevel:                                       new(TraceLevelPropagate),
+					TransactionAbortOnError:                          new(true),
+					TransactionDefaultIsolationLevel:                 new(TransactionDefaultIsolationLevelReadCommitted),
+					TwoDigitCenturyStart:                             new(1971),
+					UnsupportedDdlAction:                             new(UnsupportedDDLActionFail),
+					UserTaskManagedInitialWarehouseSize:              new(WarehouseSizeSmall),
+					UserTaskMinimumTriggerIntervalInSeconds:          new(10),
+					UserTaskTimeoutMs:                                new(10),
+					UseCachedResult:                                  new(false),
+					WeekOfYearPolicy:                                 new(1),
+					WeekStart:                                        new(1),
 				},
 			},
 		}
@@ -306,15 +306,15 @@ func TestAccountAlter(t *testing.T) {
 			Unset: &AccountUnset{
 				LegacyParameters: &AccountLevelParametersUnset{
 					AccountParameters: &LegacyAccountParametersUnset{
-						InitialReplicationSizeLimitInTB: Bool(true),
-						SSOLoginPage:                    Bool(true),
+						InitialReplicationSizeLimitInTB: new(true),
+						SSOLoginPage:                    new(true),
 					},
 					SessionParameters: &SessionParametersUnset{
-						SimulatedDataSharingConsumer: Bool(true),
-						Timezone:                     Bool(true),
+						SimulatedDataSharingConsumer: new(true),
+						Timezone:                     new(true),
 					},
 					ObjectParameters: &ObjectParametersUnset{
-						DefaultDDLCollation: Bool(true),
+						DefaultDDLCollation: new(true),
 					},
 				},
 			},
@@ -326,122 +326,122 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
 				Parameters: &AccountParametersUnset{
-					AbortDetachedQuery:                               Bool(true),
-					ActivePythonProfiler:                             Bool(true),
-					AllowClientMFACaching:                            Bool(true),
-					AllowIDToken:                                     Bool(true),
-					Autocommit:                                       Bool(true),
-					BaseLocationPrefix:                               Bool(true),
-					BinaryInputFormat:                                Bool(true),
-					BinaryOutputFormat:                               Bool(true),
-					Catalog:                                          Bool(true),
-					CatalogSync:                                      Bool(true),
-					ClientEnableLogInfoStatementParameters:           Bool(true),
-					ClientEncryptionKeySize:                          Bool(true),
-					ClientMemoryLimit:                                Bool(true),
-					ClientMetadataRequestUseConnectionCtx:            Bool(true),
-					ClientMetadataUseSessionDatabase:                 Bool(true),
-					ClientPrefetchThreads:                            Bool(true),
-					ClientResultChunkSize:                            Bool(true),
-					ClientResultColumnCaseInsensitive:                Bool(true),
-					ClientSessionKeepAlive:                           Bool(true),
-					ClientSessionKeepAliveHeartbeatFrequency:         Bool(true),
-					ClientTimestampTypeMapping:                       Bool(true),
-					CortexEnabledCrossRegion:                         Bool(true),
-					CortexModelsAllowlist:                            Bool(true),
-					CsvTimestampFormat:                               Bool(true),
-					DataRetentionTimeInDays:                          Bool(true),
-					DateInputFormat:                                  Bool(true),
-					DateOutputFormat:                                 Bool(true),
-					DefaultDDLCollation:                              Bool(true),
-					DefaultNotebookComputePoolCpu:                    Bool(true),
-					DefaultNotebookComputePoolGpu:                    Bool(true),
-					DefaultNullOrdering:                              Bool(true),
-					DefaultStreamlitNotebookWarehouse:                Bool(true),
-					DisableUiDownloadButton:                          Bool(true),
-					DisableUserPrivilegeGrants:                       Bool(true),
-					EnableAutomaticSensitiveDataClassificationLog:    Bool(true),
-					EnableEgressCostOptimizer:                        Bool(true),
-					EnableIdentifierFirstLogin:                       Bool(true),
-					EnableInternalStagesPrivatelink:                  Bool(true),
-					EnableTriSecretAndRekeyOptOutForImageRepository:  Bool(true),
-					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: Bool(true),
-					EnableUnhandledExceptionsReporting:               Bool(true),
-					EnableUnloadPhysicalTypeOptimization:             Bool(true),
-					EnableUnredactedQuerySyntaxError:                 Bool(true),
-					EnableUnredactedSecureObjectError:                Bool(true),
-					EnforceNetworkRulesForInternalStages:             Bool(true),
-					ErrorOnNondeterministicMerge:                     Bool(true),
-					ErrorOnNondeterministicUpdate:                    Bool(true),
-					EventTable:                                       Bool(true),
-					ExternalOAuthAddPrivilegedRolesToBlockedList:     Bool(true),
-					ExternalVolume:                                   Bool(true),
-					GeographyOutputFormat:                            Bool(true),
-					GeometryOutputFormat:                             Bool(true),
-					HybridTableLockTimeout:                           Bool(true),
-					InitialReplicationSizeLimitInTB:                  Bool(true),
-					JdbcTreatDecimalAsInt:                            Bool(true),
-					JdbcTreatTimestampNtzAsUtc:                       Bool(true),
-					JdbcUseSessionTimezone:                           Bool(true),
-					JsonIndent:                                       Bool(true),
-					JsTreatIntegerAsBigInt:                           Bool(true),
-					ListingAutoFulfillmentReplicationRefreshSchedule: Bool(true),
-					LockTimeout:                                      Bool(true),
-					LogLevel:                                         Bool(true),
-					MaxConcurrencyLevel:                              Bool(true),
-					MaxDataExtensionTimeInDays:                       Bool(true),
-					MetricLevel:                                      Bool(true),
-					MinDataRetentionTimeInDays:                       Bool(true),
-					MultiStatementCount:                              Bool(true),
-					NetworkPolicy:                                    Bool(true),
-					NoorderSequenceAsDefault:                         Bool(true),
-					OAuthAddPrivilegedRolesToBlockedList:             Bool(true),
-					OdbcTreatDecimalAsInt:                            Bool(true),
-					PeriodicDataRekeying:                             Bool(true),
-					PipeExecutionPaused:                              Bool(true),
-					PreventUnloadToInlineURL:                         Bool(true),
-					PreventUnloadToInternalStages:                    Bool(true),
-					PythonProfilerModules:                            Bool(true),
-					PythonProfilerTargetStage:                        Bool(true),
-					QueryTag:                                         Bool(true),
-					QuotedIdentifiersIgnoreCase:                      Bool(true),
-					ReplaceInvalidCharacters:                         Bool(true),
-					RequireStorageIntegrationForStageCreation:        Bool(true),
-					RequireStorageIntegrationForStageOperation:       Bool(true),
-					RowsPerResultset:                                 Bool(true),
-					S3StageVpceDnsName:                               Bool(true),
-					SearchPath:                                       Bool(true),
-					ServerlessTaskMaxStatementSize:                   Bool(true),
-					ServerlessTaskMinStatementSize:                   Bool(true),
-					SimulatedDataSharingConsumer:                     Bool(true),
-					SsoLoginPage:                                     Bool(true),
-					StatementQueuedTimeoutInSeconds:                  Bool(true),
-					StatementTimeoutInSeconds:                        Bool(true),
-					StorageSerializationPolicy:                       Bool(true),
-					StrictJsonOutput:                                 Bool(true),
-					SuspendTaskAfterNumFailures:                      Bool(true),
-					TaskAutoRetryAttempts:                            Bool(true),
-					TimestampDayIsAlways24h:                          Bool(true),
-					TimestampInputFormat:                             Bool(true),
-					TimestampLtzOutputFormat:                         Bool(true),
-					TimestampNtzOutputFormat:                         Bool(true),
-					TimestampOutputFormat:                            Bool(true),
-					TimestampTypeMapping:                             Bool(true),
-					TimestampTzOutputFormat:                          Bool(true),
-					Timezone:                                         Bool(true),
-					TimeInputFormat:                                  Bool(true),
-					TimeOutputFormat:                                 Bool(true),
-					TraceLevel:                                       Bool(true),
-					TransactionAbortOnError:                          Bool(true),
-					TransactionDefaultIsolationLevel:                 Bool(true),
-					TwoDigitCenturyStart:                             Bool(true),
-					UnsupportedDdlAction:                             Bool(true),
-					UserTaskManagedInitialWarehouseSize:              Bool(true),
-					UserTaskMinimumTriggerIntervalInSeconds:          Bool(true),
-					UserTaskTimeoutMs:                                Bool(true),
-					UseCachedResult:                                  Bool(true),
-					WeekOfYearPolicy:                                 Bool(true),
-					WeekStart:                                        Bool(true),
+					AbortDetachedQuery:                               new(true),
+					ActivePythonProfiler:                             new(true),
+					AllowClientMFACaching:                            new(true),
+					AllowIDToken:                                     new(true),
+					Autocommit:                                       new(true),
+					BaseLocationPrefix:                               new(true),
+					BinaryInputFormat:                                new(true),
+					BinaryOutputFormat:                               new(true),
+					Catalog:                                          new(true),
+					CatalogSync:                                      new(true),
+					ClientEnableLogInfoStatementParameters:           new(true),
+					ClientEncryptionKeySize:                          new(true),
+					ClientMemoryLimit:                                new(true),
+					ClientMetadataRequestUseConnectionCtx:            new(true),
+					ClientMetadataUseSessionDatabase:                 new(true),
+					ClientPrefetchThreads:                            new(true),
+					ClientResultChunkSize:                            new(true),
+					ClientResultColumnCaseInsensitive:                new(true),
+					ClientSessionKeepAlive:                           new(true),
+					ClientSessionKeepAliveHeartbeatFrequency:         new(true),
+					ClientTimestampTypeMapping:                       new(true),
+					CortexEnabledCrossRegion:                         new(true),
+					CortexModelsAllowlist:                            new(true),
+					CsvTimestampFormat:                               new(true),
+					DataRetentionTimeInDays:                          new(true),
+					DateInputFormat:                                  new(true),
+					DateOutputFormat:                                 new(true),
+					DefaultDDLCollation:                              new(true),
+					DefaultNotebookComputePoolCpu:                    new(true),
+					DefaultNotebookComputePoolGpu:                    new(true),
+					DefaultNullOrdering:                              new(true),
+					DefaultStreamlitNotebookWarehouse:                new(true),
+					DisableUiDownloadButton:                          new(true),
+					DisableUserPrivilegeGrants:                       new(true),
+					EnableAutomaticSensitiveDataClassificationLog:    new(true),
+					EnableEgressCostOptimizer:                        new(true),
+					EnableIdentifierFirstLogin:                       new(true),
+					EnableInternalStagesPrivatelink:                  new(true),
+					EnableTriSecretAndRekeyOptOutForImageRepository:  new(true),
+					EnableTriSecretAndRekeyOptOutForSpcsBlockStorage: new(true),
+					EnableUnhandledExceptionsReporting:               new(true),
+					EnableUnloadPhysicalTypeOptimization:             new(true),
+					EnableUnredactedQuerySyntaxError:                 new(true),
+					EnableUnredactedSecureObjectError:                new(true),
+					EnforceNetworkRulesForInternalStages:             new(true),
+					ErrorOnNondeterministicMerge:                     new(true),
+					ErrorOnNondeterministicUpdate:                    new(true),
+					EventTable:                                       new(true),
+					ExternalOAuthAddPrivilegedRolesToBlockedList:     new(true),
+					ExternalVolume:                                   new(true),
+					GeographyOutputFormat:                            new(true),
+					GeometryOutputFormat:                             new(true),
+					HybridTableLockTimeout:                           new(true),
+					InitialReplicationSizeLimitInTB:                  new(true),
+					JdbcTreatDecimalAsInt:                            new(true),
+					JdbcTreatTimestampNtzAsUtc:                       new(true),
+					JdbcUseSessionTimezone:                           new(true),
+					JsonIndent:                                       new(true),
+					JsTreatIntegerAsBigInt:                           new(true),
+					ListingAutoFulfillmentReplicationRefreshSchedule: new(true),
+					LockTimeout:                                      new(true),
+					LogLevel:                                         new(true),
+					MaxConcurrencyLevel:                              new(true),
+					MaxDataExtensionTimeInDays:                       new(true),
+					MetricLevel:                                      new(true),
+					MinDataRetentionTimeInDays:                       new(true),
+					MultiStatementCount:                              new(true),
+					NetworkPolicy:                                    new(true),
+					NoorderSequenceAsDefault:                         new(true),
+					OAuthAddPrivilegedRolesToBlockedList:             new(true),
+					OdbcTreatDecimalAsInt:                            new(true),
+					PeriodicDataRekeying:                             new(true),
+					PipeExecutionPaused:                              new(true),
+					PreventUnloadToInlineURL:                         new(true),
+					PreventUnloadToInternalStages:                    new(true),
+					PythonProfilerModules:                            new(true),
+					PythonProfilerTargetStage:                        new(true),
+					QueryTag:                                         new(true),
+					QuotedIdentifiersIgnoreCase:                      new(true),
+					ReplaceInvalidCharacters:                         new(true),
+					RequireStorageIntegrationForStageCreation:        new(true),
+					RequireStorageIntegrationForStageOperation:       new(true),
+					RowsPerResultset:                                 new(true),
+					S3StageVpceDnsName:                               new(true),
+					SearchPath:                                       new(true),
+					ServerlessTaskMaxStatementSize:                   new(true),
+					ServerlessTaskMinStatementSize:                   new(true),
+					SimulatedDataSharingConsumer:                     new(true),
+					SsoLoginPage:                                     new(true),
+					StatementQueuedTimeoutInSeconds:                  new(true),
+					StatementTimeoutInSeconds:                        new(true),
+					StorageSerializationPolicy:                       new(true),
+					StrictJsonOutput:                                 new(true),
+					SuspendTaskAfterNumFailures:                      new(true),
+					TaskAutoRetryAttempts:                            new(true),
+					TimestampDayIsAlways24h:                          new(true),
+					TimestampInputFormat:                             new(true),
+					TimestampLtzOutputFormat:                         new(true),
+					TimestampNtzOutputFormat:                         new(true),
+					TimestampOutputFormat:                            new(true),
+					TimestampTypeMapping:                             new(true),
+					TimestampTzOutputFormat:                          new(true),
+					Timezone:                                         new(true),
+					TimeInputFormat:                                  new(true),
+					TimeOutputFormat:                                 new(true),
+					TraceLevel:                                       new(true),
+					TransactionAbortOnError:                          new(true),
+					TransactionDefaultIsolationLevel:                 new(true),
+					TwoDigitCenturyStart:                             new(true),
+					UnsupportedDdlAction:                             new(true),
+					UserTaskManagedInitialWarehouseSize:              new(true),
+					UserTaskMinimumTriggerIntervalInSeconds:          new(true),
+					UserTaskTimeoutMs:                                new(true),
+					UseCachedResult:                                  new(true),
+					WeekOfYearPolicy:                                 new(true),
+					WeekStart:                                        new(true),
 				},
 			},
 		}
@@ -451,7 +451,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with set resource monitor", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				ResourceMonitor: Pointer(NewAccountObjectIdentifier("mymonitor")),
+				ResourceMonitor: new(NewAccountObjectIdentifier("mymonitor")),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET RESOURCE_MONITOR = "mymonitor"`)
@@ -482,7 +482,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
 				PackagesPolicy: &id,
-				Force:          Bool(true),
+				Force:          new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET PACKAGES POLICY %s FORCE`, id.FullyQualifiedName())
@@ -493,7 +493,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
 				PasswordPolicy: &id,
-				Force:          Bool(true),
+				Force:          new(true),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("force can only be set with PackagesPolicy and FeaturePolicy"))
@@ -534,7 +534,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Name: &id,
 			Set: &AccountSet{
-				ConsumptionBillingEntity: String("my_consumption_billing_entity"),
+				ConsumptionBillingEntity: new("my_consumption_billing_entity"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s SET CONSUMPTION_BILLING_ENTITY = "my_consumption_billing_entity"`, id.FullyQualifiedName())
@@ -545,7 +545,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Name: &id,
 			Unset: &AccountUnset{
-				ConsumptionBillingEntity: Bool(true),
+				ConsumptionBillingEntity: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s UNSET CONSUMPTION_BILLING_ENTITY`, id.FullyQualifiedName())
@@ -554,7 +554,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with unset packages policy", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				PackagesPolicy: Bool(true),
+				PackagesPolicy: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET PACKAGES POLICY`)
@@ -563,7 +563,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with unset feature policy", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				FeaturePolicyUnset: &AccountFeaturePolicyUnset{FeaturePolicy: Bool(true)},
+				FeaturePolicyUnset: &AccountFeaturePolicyUnset{FeaturePolicy: new(true)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET FEATURE POLICY FOR ALL APPLICATIONS`)
@@ -572,7 +572,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with unset password policy", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				PasswordPolicy: Bool(true),
+				PasswordPolicy: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET PASSWORD POLICY`)
@@ -581,7 +581,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with unset session policy", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				SessionPolicy: Bool(true),
+				SessionPolicy: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET SESSION POLICY`)
@@ -590,7 +590,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with unset authentication policy", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				AuthenticationPolicy: Bool(true),
+				AuthenticationPolicy: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET AUTHENTICATION POLICY`)
@@ -599,7 +599,7 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with unset resource monitor", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				ResourceMonitor: Bool(true),
+				ResourceMonitor: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET RESOURCE_MONITOR`)
@@ -637,7 +637,7 @@ func TestAccountAlter(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Name: &id,
-			Set:  &AccountSet{OrgAdmin: Bool(true)},
+			Set:  &AccountSet{OrgAdmin: new(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s SET IS_ORG_ADMIN = true`, id.FullyQualifiedName())
 	})
@@ -649,7 +649,7 @@ func TestAccountAlter(t *testing.T) {
 			Name: &oldName,
 			Rename: &AccountRename{
 				NewName:    newName,
-				SaveOldURL: Bool(false),
+				SaveOldURL: new(false),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s RENAME TO %s SAVE_OLD_URL = false`, oldName.FullyQualifiedName(), newName.FullyQualifiedName())
@@ -669,8 +669,8 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Name: &id,
 			Drop: &AccountDrop{
-				OldUrl:             Bool(true),
-				OldOrganizationUrl: Bool(true),
+				OldUrl:             new(true),
+				OldOrganizationUrl: new(true),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountDrop", "OldUrl", "OldOrganizationUrl"))
@@ -681,7 +681,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Name: &id,
 			Drop: &AccountDrop{
-				OldUrl: Bool(true),
+				OldUrl: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s DROP OLD URL`, id.FullyQualifiedName())
@@ -692,7 +692,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Name: &id,
 			Drop: &AccountDrop{
-				OldOrganizationUrl: Bool(true),
+				OldOrganizationUrl: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s DROP OLD ORGANIZATION URL`, id.FullyQualifiedName())
@@ -718,7 +718,7 @@ func TestAccountDrop(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &DropAccountOptions{
 			name:              id,
-			IfExists:          Bool(true),
+			IfExists:          new(true),
 			gracePeriodInDays: 10,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP ACCOUNT IF EXISTS %s GRACE_PERIOD_IN_DAYS = 10`, id.FullyQualifiedName())
@@ -733,9 +733,9 @@ func TestAccountShow(t *testing.T) {
 
 	t.Run("with history and like", func(t *testing.T) {
 		opts := &ShowAccountOptions{
-			History: Bool(true),
+			History: new(true),
 			Like: &Like{
-				Pattern: String("myaccount"),
+				Pattern: new("myaccount"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW ACCOUNTS HISTORY LIKE 'myaccount'`)
@@ -744,7 +744,7 @@ func TestAccountShow(t *testing.T) {
 	t.Run("with like", func(t *testing.T) {
 		opts := &ShowAccountOptions{
 			Like: &Like{
-				Pattern: String("myaccount"),
+				Pattern: new("myaccount"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW ACCOUNTS LIKE 'myaccount'`)
@@ -874,7 +874,7 @@ func TestGetAccountCreateResponse(t *testing.T) {
 			name: "successful case with all fields",
 			rows: []map[string]*any{
 				{
-					"status": Pointer(any(`{
+					"status": new(any(`{
 							"accountLocator": "ABC12345",
 							"accountLocatorUrl": "https://abc12345.snowflakecomputing.com",
 							"accountName": "full_account",
@@ -923,7 +923,7 @@ func TestGetAccountCreateResponse(t *testing.T) {
 			name: "error: status is not a string",
 			rows: []map[string]*any{
 				{
-					"status": Pointer(any(123)),
+					"status": new(any(123)),
 				},
 			},
 			expectedError: "could not convert status to string",
@@ -932,7 +932,7 @@ func TestGetAccountCreateResponse(t *testing.T) {
 			name: "error: invalid JSON in status",
 			rows: []map[string]*any{
 				{
-					"status": Pointer(any(`invalid json`)),
+					"status": new(any(`invalid json`)),
 				},
 			},
 			expectedError: "invalid character",
@@ -941,7 +941,7 @@ func TestGetAccountCreateResponse(t *testing.T) {
 			name: "error: empty JSON in status",
 			rows: []map[string]*any{
 				{
-					"status": Pointer(any("")),
+					"status": new(any("")),
 				},
 			},
 			expectedError: "unexpected end of JSON input",

@@ -50,7 +50,7 @@ func (v *pipes) Show(ctx context.Context, opts *ShowPipeOptions) ([]Pipe, error)
 func (v *pipes) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error) {
 	pipes, err := v.Show(ctx, &ShowPipeOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 		In: &In{
 			Schema: id.SchemaId(),

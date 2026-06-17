@@ -21,7 +21,7 @@ import (
 const enumHandlingDefaultValue = testfunctional.SomeEnumTypeVersion1
 
 var enumHandlingHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.EnumHandlingOpts](
-	testfunctional.EnumHandlingOpts{EnumValue: sdk.Pointer(enumHandlingDefaultValue)}, enumHandlingOptsUseDefaultsForNil,
+	testfunctional.EnumHandlingOpts{EnumValue: new(enumHandlingDefaultValue)}, enumHandlingOptsUseDefaultsForNil,
 )
 
 func enumHandlingOptsUseDefaultsForNil(base testfunctional.EnumHandlingOpts, defaults testfunctional.EnumHandlingOpts, replaceWith testfunctional.EnumHandlingOpts) testfunctional.EnumHandlingOpts {
@@ -59,7 +59,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
-						planchecks.ExpectChange(resourceReference, "enum_value", tfjson.ActionCreate, nil, sdk.String(value)),
+						planchecks.ExpectChange(resourceReference, "enum_value", tfjson.ActionCreate, nil, new(value)),
 						planchecks.ExpectComputed(resourceReference, "enum_value_backing_field", true),
 					},
 				},
@@ -175,7 +175,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_EnumHandling(t *testing.T) {
 			{
 				PreConfig: func() {
 					enumHandlingHandler.SetCurrentValue(testfunctional.EnumHandlingOpts{
-						EnumValue: sdk.Pointer(enumHandlingDefaultValue),
+						EnumValue: new(enumHandlingDefaultValue),
 					})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{

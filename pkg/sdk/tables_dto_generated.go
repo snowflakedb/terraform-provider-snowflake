@@ -323,12 +323,12 @@ func NewColumnIdentityRequest(
 }
 
 func (s *ColumnIdentityRequest) WithOrder() *ColumnIdentityRequest {
-	s.Order = Bool(true)
+	s.Order = new(true)
 	return s
 }
 
 func (s *ColumnIdentityRequest) WithNoorder() *ColumnIdentityRequest {
-	s.Noorder = Bool(true)
+	s.Noorder = new(true)
 	return s
 }
 
@@ -1140,7 +1140,7 @@ func (s *TableColumnActionRequest) WithUnsetTags(unsetTags *TableColumnAlterUnse
 }
 
 func (s *TableColumnActionRequest) WithDropColumnsIfExists() *TableColumnActionRequest {
-	s.DropColumnsIfExists = Bool(true)
+	s.DropColumnsIfExists = new(true)
 	return s
 }
 
@@ -1160,7 +1160,7 @@ func NewTableColumnAddActionRequest(
 }
 
 func (s *TableColumnAddActionRequest) WithIfNotExists() *TableColumnAddActionRequest {
-	s.IfNotExists = Bool(true)
+	s.IfNotExists = new(true)
 	return s
 }
 
@@ -1570,7 +1570,7 @@ func NewTableExternalTableColumnAddActionRequest() *TableExternalTableColumnAddA
 }
 
 func (s *TableExternalTableColumnAddActionRequest) WithIfNotExists() *TableExternalTableColumnAddActionRequest {
-	s.IfNotExists = Bool(true)
+	s.IfNotExists = new(true)
 	return s
 }
 
@@ -1615,7 +1615,7 @@ func NewTableExternalTableColumnDropActionRequest(columns []string) *TableExtern
 }
 
 func (s *TableExternalTableColumnDropActionRequest) WithIfExists() *TableExternalTableColumnDropActionRequest {
-	s.IfExists = Bool(true)
+	s.IfExists = new(true)
 	return s
 }
 
@@ -1745,19 +1745,19 @@ func (s *LegacyTableCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement
 
 // WithSkipFile sets SkipFile to "SKIP_FILE"
 func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFile() *LegacyTableCopyOnErrorOptionsRequest {
-	s.SkipFile = String("SKIP_FILE")
+	s.SkipFile = new("SKIP_FILE")
 	return s
 }
 
 // WithSkipFileX sets SkipFile to "SKIP_FILE_n" where n is the provided integer
 func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFileX(x int) *LegacyTableCopyOnErrorOptionsRequest {
-	s.SkipFile = String(fmt.Sprintf("SKIP_FILE_%d", x))
+	s.SkipFile = new(fmt.Sprintf("SKIP_FILE_%d", x))
 	return s
 }
 
 // WithSkipFileXPercent sets SkipFile to "'SKIP_FILE_n%'" where n is the provided integer
 func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFileXPercent(x int) *LegacyTableCopyOnErrorOptionsRequest {
-	s.SkipFile = String(fmt.Sprintf("'SKIP_FILE_%d%%'", x))
+	s.SkipFile = new(fmt.Sprintf("'SKIP_FILE_%d%%'", x))
 	return s
 }
 

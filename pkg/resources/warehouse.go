@@ -332,10 +332,10 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		createOptions.WarehouseSize = &size
 	}
 	if v, ok := d.GetOk("max_cluster_count"); ok {
-		createOptions.MaxClusterCount = sdk.Int(v.(int))
+		createOptions.MaxClusterCount = new(v.(int))
 	}
 	if v, ok := d.GetOk("min_cluster_count"); ok {
-		createOptions.MinClusterCount = sdk.Int(v.(int))
+		createOptions.MinClusterCount = new(v.(int))
 	}
 	if v, ok := d.GetOk("scaling_policy"); ok {
 		scalingPolicy, err := sdk.ToScalingPolicy(v.(string))
@@ -345,33 +345,33 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		createOptions.ScalingPolicy = &scalingPolicy
 	}
 	if v := d.Get("auto_suspend").(int); v != IntDefault {
-		createOptions.AutoSuspend = sdk.Int(v)
+		createOptions.AutoSuspend = new(v)
 	}
 	if v := d.Get("auto_resume").(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.AutoResume = sdk.Bool(parsed)
+		createOptions.AutoResume = new(parsed)
 	}
 	if v, ok := d.GetOk("initially_suspended"); ok {
-		createOptions.InitiallySuspended = sdk.Bool(v.(bool))
+		createOptions.InitiallySuspended = new(v.(bool))
 	}
 	if v, ok := d.GetOk("resource_monitor"); ok {
-		createOptions.ResourceMonitor = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+		createOptions.ResourceMonitor = new(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
 	if v, ok := d.GetOk("comment"); ok {
-		createOptions.Comment = sdk.String(v.(string))
+		createOptions.Comment = new(v.(string))
 	}
 	if v := d.Get("enable_query_acceleration").(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		createOptions.EnableQueryAcceleration = sdk.Bool(parsed)
+		createOptions.EnableQueryAcceleration = new(parsed)
 	}
 	if v := d.Get("query_acceleration_max_scale_factor").(int); v != IntDefault {
-		createOptions.QueryAccelerationMaxScaleFactor = sdk.Int(v)
+		createOptions.QueryAccelerationMaxScaleFactor = new(v)
 	}
 	if v := d.Get("resource_constraint").(string); v != "" {
 		resourceConstraint, err := sdk.ToWarehouseResourceConstraint(v)
@@ -549,7 +549,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			set.WarehouseType = &warehouseType
 		} else {
-			unset.WarehouseType = sdk.Bool(true)
+			unset.WarehouseType = new(true)
 		}
 	}
 	if d.HasChange("warehouse_size") {
@@ -560,20 +560,20 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		}
 		set.WarehouseSize = &size
 		// For now, we always want to wait for the resize completion. In the future, we may parametrize it.
-		set.WaitForCompletion = sdk.Bool(true)
+		set.WaitForCompletion = new(true)
 	}
 	if d.HasChange("max_cluster_count") {
 		if v, ok := d.GetOk("max_cluster_count"); ok {
-			set.MaxClusterCount = sdk.Int(v.(int))
+			set.MaxClusterCount = new(v.(int))
 		} else {
-			unset.MaxClusterCount = sdk.Bool(true)
+			unset.MaxClusterCount = new(true)
 		}
 	}
 	if d.HasChange("min_cluster_count") {
 		if v, ok := d.GetOk("min_cluster_count"); ok {
-			set.MinClusterCount = sdk.Int(v.(int))
+			set.MinClusterCount = new(v.(int))
 		} else {
-			unset.MinClusterCount = sdk.Bool(true)
+			unset.MinClusterCount = new(true)
 		}
 	}
 	if d.HasChange("scaling_policy") {
@@ -584,16 +584,16 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			set.ScalingPolicy = &scalingPolicy
 		} else {
-			unset.ScalingPolicy = sdk.Bool(true)
+			unset.ScalingPolicy = new(true)
 		}
 	}
 	if d.HasChange("auto_suspend") {
 		if v := d.Get("auto_suspend").(int); v != IntDefault {
-			set.AutoSuspend = sdk.Int(v)
+			set.AutoSuspend = new(v)
 		} else {
 			// TODO [SNOW-1473453]: UNSET of auto suspend works incorrectly
 			// unset.AutoSuspend = sdk.Bool(true)
-			set.AutoSuspend = sdk.Int(600)
+			set.AutoSuspend = new(600)
 		}
 	}
 	if d.HasChange("auto_resume") {
@@ -602,23 +602,23 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			set.AutoResume = sdk.Bool(parsed)
+			set.AutoResume = new(parsed)
 		} else {
-			unset.AutoResume = sdk.Bool(true)
+			unset.AutoResume = new(true)
 		}
 	}
 	if d.HasChange("resource_monitor") {
 		if v, ok := d.GetOk("resource_monitor"); ok {
 			set.ResourceMonitor = sdk.NewAccountObjectIdentifier(v.(string))
 		} else {
-			unset.ResourceMonitor = sdk.Bool(true)
+			unset.ResourceMonitor = new(true)
 		}
 	}
 	if d.HasChange("comment") {
 		if v, ok := d.GetOk("comment"); ok {
-			set.Comment = sdk.String(v.(string))
+			set.Comment = new(v.(string))
 		} else {
-			unset.Comment = sdk.Bool(true)
+			unset.Comment = new(true)
 		}
 	}
 	if d.HasChange("enable_query_acceleration") {
@@ -627,16 +627,16 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			set.EnableQueryAcceleration = sdk.Bool(parsed)
+			set.EnableQueryAcceleration = new(parsed)
 		} else {
-			unset.EnableQueryAcceleration = sdk.Bool(true)
+			unset.EnableQueryAcceleration = new(true)
 		}
 	}
 	if d.HasChange("query_acceleration_max_scale_factor") {
 		if v := d.Get("query_acceleration_max_scale_factor").(int); v != IntDefault {
-			set.QueryAccelerationMaxScaleFactor = sdk.Int(v)
+			set.QueryAccelerationMaxScaleFactor = new(v)
 		} else {
-			unset.QueryAccelerationMaxScaleFactor = sdk.Bool(true)
+			unset.QueryAccelerationMaxScaleFactor = new(true)
 		}
 	}
 	if d.HasChange("resource_constraint") {
@@ -656,7 +656,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 					}
 					set.ResourceConstraint = &resourceConstraint
 				} else {
-					unset.ResourceConstraint = sdk.Bool(true)
+					unset.ResourceConstraint = new(true)
 				}
 			} else {
 				log.Printf("[DEBUG] resource constraint is not supported for %s warehouses, ignoring", warehouseType)
@@ -685,7 +685,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 				}
 				set.Generation = &generation
 			} else {
-				unset.Generation = sdk.Bool(true)
+				unset.Generation = new(true)
 			}
 		} else {
 			log.Printf("[DEBUG] generation is not supported for %s warehouses, ignoring", warehouseTypeRaw)

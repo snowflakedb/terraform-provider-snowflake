@@ -306,7 +306,7 @@ func ImportExternalOauthIntegration(ctx context.Context, d *schema.ResourceData,
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	enabled := d.Get("enabled").(bool)
 	externalOauthIssuer := d.Get("external_oauth_issuer").(string)
@@ -407,7 +407,7 @@ func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 }
 
 func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		providerCtx := meta.(*provider.Context)
 		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -569,7 +569,7 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 	}
 }
 
-func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

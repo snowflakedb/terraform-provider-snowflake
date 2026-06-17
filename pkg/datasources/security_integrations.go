@@ -66,7 +66,7 @@ func ReadSecurityIntegrations(ctx context.Context, d *schema.ResourceData, meta 
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		showRequest.WithLike(sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		})
 	}
 
@@ -79,7 +79,6 @@ func ReadSecurityIntegrations(ctx context.Context, d *schema.ResourceData, meta 
 	flattenedSecurityIntegrations := make([]map[string]any, len(securityIntegrations))
 
 	for i, securityIntegration := range securityIntegrations {
-		securityIntegration := securityIntegration
 		var securityIntegrationDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			descriptions, err := client.SecurityIntegrations.Describe(ctx, securityIntegration.ID())

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
@@ -12,7 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testfunctional"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -498,9 +498,9 @@ func objectRenamingConfigList(listItems []map[string]any) string {
 `, name, item["string"].(string), item["int"].(int))
 	}
 
-	generatedListItems := ""
+	var generatedListItems strings.Builder
 	for _, item := range listItems {
-		generatedListItems += generateListItem(item)
+		generatedListItems.WriteString(generateListItem(item))
 	}
 
 	return fmt.Sprintf(`
@@ -511,7 +511,7 @@ func objectRenamingConfigList(listItems []map[string]any) string {
 		%[1]s
 	}
 
-`, generatedListItems, SdkV2FunctionalTestsProviderName)
+`, generatedListItems.String(), SdkV2FunctionalTestsProviderName)
 }
 
 type objectRenamingPlanCheck func(ctx context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse)
@@ -822,8 +822,8 @@ func TestAcc_SdkV2Functional_UnsupportedActions_AddItemsNotAtTheEnd(t *testing.T
 							"snowflake_test_resource_object_renaming.test",
 							"manually_ordered_list",
 							tfjson.ActionUpdate,
-							sdk.String("[map[name:nameOne order:10 type:TEXT] map[name:nameTwo order:20 type:STRING]]"),
-							sdk.String("[map[name:atTheBeginning order:15 type:TEXT] map[name:nameTwo order:20 type:STRING] map[name:inTheMiddle order:17 type:INT] map[name:nameTwo order:20 type:STRING]]"),
+							new("[map[name:nameOne order:10 type:TEXT] map[name:nameTwo order:20 type:STRING]]"),
+							new("[map[name:atTheBeginning order:15 type:TEXT] map[name:nameTwo order:20 type:STRING] map[name:inTheMiddle order:17 type:INT] map[name:nameTwo order:20 type:STRING]]"),
 						),
 					},
 					// PostChecks don't apply when the expected error is set
@@ -897,8 +897,8 @@ func TestAcc_SdkV2Functional_UnsupportedActions_ChangeItemTypeToIncompatibleOne(
 							"snowflake_test_resource_object_renaming.test",
 							"manually_ordered_list",
 							tfjson.ActionUpdate,
-							sdk.String("[map[name:nameOne order:10 type:TEXT] map[name:nameTwo order:20 type:STRING]]"),
-							sdk.String("[map[name:nameOne order:10 type:NUMBER] map[name:nameTwo order:20 type:STRING]]"),
+							new("[map[name:nameOne order:10 type:TEXT] map[name:nameTwo order:20 type:STRING]]"),
+							new("[map[name:nameOne order:10 type:NUMBER] map[name:nameTwo order:20 type:STRING]]"),
 						),
 					},
 					// PostChecks don't apply when the expected error is set
@@ -974,8 +974,8 @@ func TestAcc_SdkV2Functional_UnsupportedActions_ExternalChange_AddNewItem(t *tes
 							"snowflake_test_resource_object_renaming.test",
 							"manually_ordered_list",
 							tfjson.ActionUpdate,
-							sdk.String("[map[name:nameOne order:10 type:TEXT] map[name:nameTwo order:20 type:STRING]]"),
-							sdk.String("[map[name:nameOne order:10 type:NUMBER] map[name:nameTwo order:20 type:STRING] map[name:externalItem order:-1 type:INT]]"),
+							new("[map[name:nameOne order:10 type:TEXT] map[name:nameTwo order:20 type:STRING]]"),
+							new("[map[name:nameOne order:10 type:NUMBER] map[name:nameTwo order:20 type:STRING] map[name:externalItem order:-1 type:INT]]"),
 						),
 					},
 				},
@@ -1057,8 +1057,8 @@ func TestAcc_SdkV2Functional_UnsupportedActions_ExternalChange_RemoveItem(t *tes
 							"snowflake_test_resource_object_renaming.test",
 							"manually_ordered_list",
 							tfjson.ActionUpdate,
-							sdk.String("[map[name:nameOne order:10 type:NUMBER] map[name:nameTwo order:20 type:STRING] map[name:nameThree order:30 type:INT]]"),
-							sdk.String("[map[name:nameOne order:10 type:NUMBER] map[name:nameThree order:30 type:INT]]"),
+							new("[map[name:nameOne order:10 type:NUMBER] map[name:nameTwo order:20 type:STRING] map[name:nameThree order:30 type:INT]]"),
+							new("[map[name:nameOne order:10 type:NUMBER] map[name:nameThree order:30 type:INT]]"),
 						),
 					},
 				},
@@ -1192,9 +1192,9 @@ manually_ordered_list {
 `, name, itemType, order)
 	}
 
-	generatedListItems := ""
+	var generatedListItems strings.Builder
 	for _, item := range listItems {
-		generatedListItems += generateListItem(item["name"].(string), item["type"].(string), item["order"].(int))
+		generatedListItems.WriteString(generateListItem(item["name"].(string), item["type"].(string), item["order"].(int)))
 	}
 
 	return fmt.Sprintf(`
@@ -1203,5 +1203,5 @@ resource "snowflake_test_resource_object_renaming" "test" {
 
 	%[1]s
 }
-`, generatedListItems, SdkV2FunctionalTestsProviderName)
+`, generatedListItems.String(), SdkV2FunctionalTestsProviderName)
 }

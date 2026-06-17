@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -180,13 +179,13 @@ resource "%[3]s" "%[4]s" {
 				if tc.ExternalValue != "" {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, propertyName, sdk.String(expectedStateFirstStep), sdk.String(tc.ExternalValue)),
-						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, sdk.String(tc.ExternalValue), sdk.String(expectedStateFirstStep)),
+						planchecks.ExpectDrift(resourceReference, propertyName, new(expectedStateFirstStep), new(tc.ExternalValue)),
+						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, new(tc.ExternalValue), new(expectedStateFirstStep)),
 					}
 				} else {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, sdk.String(expectedStateFirstStep), sdk.String(expectedStateSecondStep)),
+						planchecks.ExpectChange(resourceReference, propertyName, tfjson.ActionUpdate, new(expectedStateFirstStep), new(expectedStateSecondStep)),
 					}
 				}
 			} else {

@@ -204,7 +204,7 @@ func (v *alerts) Drop(ctx context.Context, id SchemaObjectIdentifier, opts *Drop
 }
 
 func (v *alerts) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropAlertOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropAlertOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // ShowAlertOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-alerts.
@@ -299,7 +299,7 @@ func (v *alerts) Show(ctx context.Context, opts *ShowAlertOptions) ([]Alert, err
 func (v *alerts) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error) {
 	alerts, err := v.Show(ctx, &ShowAlertOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 		In: &In{
 			Schema: id.SchemaId(),

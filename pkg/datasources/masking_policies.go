@@ -144,7 +144,6 @@ func ReadMaskingPolicies(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	flattenedMaskingPolicies := make([]map[string]any, len(maskingPolicies))
 	for i, policy := range maskingPolicies {
-		policy := policy
 		var policyDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeOutput, err := client.MaskingPolicies.Describe(ctx, policy.ID())

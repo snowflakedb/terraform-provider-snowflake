@@ -7,7 +7,7 @@ import (
 
 func stringAttributeCreate(d *schema.ResourceData, key string, createField **string) error {
 	if v, ok := d.GetOk(key); ok {
-		*createField = sdk.String(v.(string))
+		*createField = new(v.(string))
 	}
 	return nil
 }
@@ -21,7 +21,7 @@ func stringAttributeCreateBuilder[T any](d *schema.ResourceData, key string, set
 
 func intAttributeCreate(d *schema.ResourceData, key string, createField **int) error {
 	if v, ok := d.GetOk(key); ok {
-		*createField = sdk.Int(v.(int))
+		*createField = new(v.(int))
 	}
 	return nil
 }
@@ -35,7 +35,7 @@ func intAttributeCreateBuilder[T any](d *schema.ResourceData, key string, setVal
 
 func intAttributeWithSpecialDefaultCreate(d *schema.ResourceData, key string, createField **int) error {
 	if v := d.Get(key).(int); v != IntDefault {
-		*createField = sdk.Int(v)
+		*createField = new(v)
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func booleanStringAttributeCreate(d *schema.ResourceData, key string, createFiel
 		if err != nil {
 			return err
 		}
-		*createField = sdk.Bool(parsed)
+		*createField = new(parsed)
 	}
 	return nil
 }
@@ -75,14 +75,14 @@ func schemaObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, c
 		if err != nil {
 			return err
 		}
-		*createField = sdk.Pointer(objectIdentifier)
+		*createField = new(objectIdentifier)
 	}
 	return nil
 }
 
 func accountObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, createField **sdk.AccountObjectIdentifier) error {
 	if v, ok := d.GetOk(key); ok {
-		*createField = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+		*createField = new(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
 	return nil
 }
@@ -93,7 +93,7 @@ func objectIdentifierAttributeCreate(d *schema.ResourceData, key string, createF
 		if err != nil {
 			return err
 		}
-		*createField = sdk.Pointer(objectIdentifier)
+		*createField = new(objectIdentifier)
 	}
 	return nil
 }
@@ -140,9 +140,9 @@ func attributeMappedValueCreateBuilderNested[MappedType any, RequestBuilder any]
 
 func copyGrantsAttributeCreate(d *schema.ResourceData, isOrReplace bool, orReplaceField, copyGrantsField **bool) error {
 	if isOrReplace {
-		*orReplaceField = sdk.Bool(true)
+		*orReplaceField = new(true)
 		if d.GetRawConfig().AsValueMap()["copy_grants"].True() {
-			*copyGrantsField = sdk.Bool(true)
+			*copyGrantsField = new(true)
 		}
 	}
 	return nil

@@ -86,7 +86,7 @@ func (c *TableClient) CreateWithChangeTrackingInSchema(t *testing.T, schemaId sd
 		*sdk.NewTableColumnRequest("id", "NUMBER"),
 	}
 
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), columns).WithChangeTracking(sdk.Pointer(true)))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), columns).WithChangeTracking(new(true)))
 }
 
 func (c *TableClient) CreateWithChangeTracking(t *testing.T) (*sdk.Table, func()) {
@@ -96,7 +96,7 @@ func (c *TableClient) CreateWithChangeTracking(t *testing.T) (*sdk.Table, func()
 		*sdk.NewTableColumnRequest("id", "NUMBER"),
 	}
 
-	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), columns).WithChangeTracking(sdk.Pointer(true)))
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), columns).WithChangeTracking(new(true)))
 }
 
 func (c *TableClient) CreateWithRequest(t *testing.T, req *sdk.CreateTableRequest) (*sdk.Table, func()) {
@@ -131,7 +131,7 @@ func (c *TableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func
 			return
 		}
 
-		dropErr := c.client().Drop(ctx, sdk.NewDropTableRequest(id).WithIfExists(sdk.Bool(true)))
+		dropErr := c.client().Drop(ctx, sdk.NewDropTableRequest(id).WithIfExists(new(true)))
 		require.NoError(t, dropErr)
 	}
 }
@@ -147,7 +147,7 @@ func (c *TableClient) SetDataRetentionTime(t *testing.T, id sdk.SchemaObjectIden
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(sdk.NewTableSetRequest().WithDataRetentionTimeInDays(sdk.Int(days))))
+	err := c.client().Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(sdk.NewTableSetRequest().WithDataRetentionTimeInDays(new(days))))
 	require.NoError(t, err)
 }
 

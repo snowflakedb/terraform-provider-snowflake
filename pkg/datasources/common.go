@@ -190,14 +190,14 @@ var limitFromSchema = &schema.Schema{
 func handleLike(d *schema.ResourceData, setField **sdk.Like) {
 	if likePattern, ok := d.GetOk("like"); ok {
 		*setField = &sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		}
 	}
 }
 
 func handleStartsWith(d *schema.ResourceData, setField **string) {
 	if startsWith, ok := d.GetOk("starts_with"); ok {
-		*setField = sdk.String(startsWith.(string))
+		*setField = new(startsWith.(string))
 	}
 }
 
@@ -207,11 +207,11 @@ func handleLimitFrom(d *schema.ResourceData, setField **sdk.LimitFrom) {
 		limit := &sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)
-			limit.Rows = sdk.Int(rows)
+			limit.Rows = new(rows)
 		}
 		if v, ok := l["from"]; ok {
 			from := v.(string)
-			limit.From = sdk.String(from)
+			limit.From = new(from)
 		}
 		*setField = limit
 	}
@@ -226,7 +226,7 @@ func handleIn(d *schema.ResourceData, setField **sdk.In) error {
 
 		switch {
 		case okAccount && accountValue.(bool):
-			*setField = &sdk.In{Account: sdk.Bool(true)}
+			*setField = &sdk.In{Account: new(true)}
 		case okDatabase && databaseValue.(string) != "":
 			*setField = &sdk.In{Database: sdk.NewAccountObjectIdentifier(databaseValue.(string))}
 		case okSchema && schemaValue.(string) != "":
@@ -249,7 +249,7 @@ func handleOn(d *schema.ResourceData, setField **sdk.On) error {
 		userValue, okUser := on["user"]
 		switch {
 		case okAccount && accountValue.(bool):
-			*setField = &sdk.On{Account: sdk.Bool(true)}
+			*setField = &sdk.On{Account: new(true)}
 		case okUser && userValue.(string) != "":
 			*setField = &sdk.On{User: sdk.NewAccountObjectIdentifier(userValue.(string))}
 		default:
@@ -261,7 +261,7 @@ func handleOn(d *schema.ResourceData, setField **sdk.On) error {
 
 func mapToSdkIn(in map[string]any) (*sdk.In, error) {
 	if v, ok := in["account"]; ok && v.(bool) {
-		return &sdk.In{Account: sdk.Bool(true)}, nil
+		return &sdk.In{Account: new(true)}, nil
 	}
 	if v, ok := in["database"]; ok {
 		if database := v.(string); database != "" {

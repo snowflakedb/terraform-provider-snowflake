@@ -37,7 +37,7 @@ func createDatabaseFromShare(t *testing.T) (*sdk.Database, func()) {
 	})
 
 	err = secondaryClient.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
-		IfExists: sdk.Bool(true),
+		IfExists: new(true),
 		Set: &sdk.ShareSet{
 			Accounts: []sdk.AccountIdentifier{
 				testClientHelper().Account.GetAccountIdentifier(t),
@@ -69,7 +69,7 @@ func createDatabaseReplica(t *testing.T) (*sdk.Database, func()) {
 			ToAccounts: []sdk.AccountIdentifier{
 				testClientHelper().Account.GetAccountIdentifier(t),
 			},
-			IgnoreEditionCheck: sdk.Bool(true),
+			IgnoreEditionCheck: new(true),
 		},
 	})
 	require.NoError(t, err)

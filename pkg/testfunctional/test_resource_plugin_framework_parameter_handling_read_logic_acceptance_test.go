@@ -19,7 +19,7 @@ const parameterHandlingReadLogicDefaultValue = "default value - parameter handli
 
 var parameterHandlingReadLogicHandler = common.NewDynamicHandlerWithDefaultValueAndReplaceWithFunc[testfunctional.ParameterHandlingReadLogicOpts](
 	testfunctional.ParameterHandlingReadLogicOpts{
-		StringValue: sdk.Pointer(parameterHandlingReadLogicDefaultValue),
+		StringValue: new(parameterHandlingReadLogicDefaultValue),
 		Level:       string(sdk.ParameterTypeSnowflakeDefault),
 	}, parameterHandlingReadLogicOptsUseDefaultsForNil,
 )
@@ -59,7 +59,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ReadLogic(t *t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionCreate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, sdk.String(value)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionCreate, nil, new(value)),
 					},
 				},
 				Config: parameterHandlingReadLogicAllSetConfig(id, resourceType, value),
@@ -96,7 +96,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ReadLogic(t *t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(value), sdk.String(newValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(value), new(newValue)),
 					},
 				},
 				Config: parameterHandlingReadLogicAllSetConfig(id, resourceType, newValue),
@@ -122,8 +122,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ReadLogic(t *t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), sdk.String(externalValue)),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(externalValue), sdk.String(newValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value", new(newValue), new(externalValue)),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(externalValue), new(newValue)),
 					},
 				},
 				Config: parameterHandlingReadLogicAllSetConfig(id, resourceType, newValue),
@@ -149,8 +149,8 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ReadLogic(t *t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(resourceReference, "string_value", sdk.String(newValue), nil),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, sdk.String(newValue)),
+						planchecks.ExpectDrift(resourceReference, "string_value", new(newValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, nil, new(newValue)),
 						planchecks.ExpectComputed(resourceReference, "string_value", false),
 					},
 				},
@@ -171,7 +171,7 @@ func TestAcc_TerraformPluginFrameworkFunctional_ParameterHandling_ReadLogic(t *t
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, sdk.String(newValue), nil),
+						planchecks.ExpectChange(resourceReference, "string_value", tfjson.ActionUpdate, new(newValue), nil),
 						planchecks.ExpectComputed(resourceReference, "string_value", true),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{

@@ -34,7 +34,7 @@ func (c *SchemaClient) CreateSchema(t *testing.T) (*sdk.Schema, func()) {
 // It's created only if it does not exist already.
 func (c *SchemaClient) CreateTestSchemaIfNotExists(t *testing.T) (*sdk.Schema, func()) {
 	t.Helper()
-	return c.CreateSchemaWithOpts(t, c.ids.SchemaId(), &sdk.CreateSchemaOptions{IfNotExists: sdk.Bool(true)})
+	return c.CreateSchemaWithOpts(t, c.ids.SchemaId(), &sdk.CreateSchemaOptions{IfNotExists: new(true)})
 }
 
 func (c *SchemaClient) CreateSchemaInDatabase(t *testing.T, databaseId sdk.AccountObjectIdentifier) (*sdk.Schema, func()) {
@@ -68,7 +68,7 @@ func (c *SchemaClient) DropSchemaFunc(t *testing.T, id sdk.DatabaseObjectIdentif
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropSchemaOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropSchemaOptions{IfExists: new(true)})
 		require.NoError(t, err)
 		err = c.context.client.Sessions.UseSchema(ctx, c.ids.SchemaId())
 		require.NoError(t, err)
@@ -88,7 +88,7 @@ func (c *SchemaClient) UpdateDataRetentionTime(t *testing.T, id sdk.DatabaseObje
 
 	c.Alter(t, id, &sdk.AlterSchemaOptions{
 		Set: &sdk.SchemaSet{
-			DataRetentionTimeInDays: sdk.Int(days),
+			DataRetentionTimeInDays: new(days),
 		},
 	})
 }
@@ -110,7 +110,7 @@ func (c *SchemaClient) UnsetDataRetentionTime(t *testing.T, id sdk.DatabaseObjec
 
 	c.Alter(t, id, &sdk.AlterSchemaOptions{
 		Unset: &sdk.SchemaUnset{
-			DataRetentionTimeInDays: sdk.Bool(true),
+			DataRetentionTimeInDays: new(true),
 		},
 	})
 }
@@ -120,7 +120,7 @@ func (c *SchemaClient) UnsetLogLevel(t *testing.T, id sdk.DatabaseObjectIdentifi
 
 	c.Alter(t, id, &sdk.AlterSchemaOptions{
 		Unset: &sdk.SchemaUnset{
-			LogLevel: sdk.Bool(true),
+			LogLevel: new(true),
 		},
 	})
 }

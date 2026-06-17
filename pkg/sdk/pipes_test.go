@@ -38,12 +38,12 @@ func TestPipesCreate(t *testing.T) {
 
 	t.Run("all optional", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.AutoIngest = Bool(true)
-		opts.ErrorIntegration = String("some_error_integration")
-		opts.AwsSnsTopic = String("some aws sns topic")
-		opts.Integration = String("some integration")
-		opts.Comment = String("some comment")
+		opts.IfNotExists = new(true)
+		opts.AutoIngest = new(true)
+		opts.ErrorIntegration = new("some_error_integration")
+		opts.AwsSnsTopic = new("some aws sns topic")
+		opts.Integration = new("some integration")
+		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE PIPE IF NOT EXISTS %s AUTO_INGEST = true ERROR_INTEGRATION = some_error_integration AWS_SNS_TOPIC = 'some aws sns topic' INTEGRATION = 'some integration' COMMENT = 'some comment' AS <copy_statement>`, id.FullyQualifiedName())
 	})
 }
@@ -76,10 +76,10 @@ func TestPipesAlter(t *testing.T) {
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &PipeSet{
-			ErrorIntegration: String("new_error_integration"),
+			ErrorIntegration: new("new_error_integration"),
 		}
 		opts.Unset = &PipeUnset{
-			Comment: Bool(true),
+			Comment: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPipeOptions", "Set", "Unset", "SetTag", "UnsetTag", "Refresh"))
 	})
@@ -124,11 +124,11 @@ func TestPipesAlter(t *testing.T) {
 
 	t.Run("set all", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &PipeSet{
-			ErrorIntegration:    String("new_error_integration"),
-			PipeExecutionPaused: Bool(true),
-			Comment:             String("new comment"),
+			ErrorIntegration:    new("new_error_integration"),
+			PipeExecutionPaused: new(true),
+			Comment:             new("new comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER PIPE IF EXISTS %s SET ERROR_INTEGRATION = new_error_integration, PIPE_EXECUTION_PAUSED = true, COMMENT = 'new comment'`, id.FullyQualifiedName())
 	})
@@ -152,11 +152,11 @@ func TestPipesAlter(t *testing.T) {
 
 	t.Run("unset all", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Unset = &PipeUnset{
-			ErrorIntegration:    Bool(true),
-			PipeExecutionPaused: Bool(true),
-			Comment:             Bool(true),
+			ErrorIntegration:    new(true),
+			PipeExecutionPaused: new(true),
+			Comment:             new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER PIPE IF EXISTS %s UNSET ERROR_INTEGRATION, PIPE_EXECUTION_PAUSED, COMMENT`, id.FullyQualifiedName())
 	})
@@ -169,10 +169,10 @@ func TestPipesAlter(t *testing.T) {
 
 	t.Run("refresh with all", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Refresh = &PipeRefresh{
-			Prefix:        String("/d1"),
-			ModifiedAfter: String("2018-07-30T13:56:46-07:00"),
+			Prefix:        new("/d1"),
+			ModifiedAfter: new("2018-07-30T13:56:46-07:00"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER PIPE IF EXISTS %s REFRESH PREFIX = '/d1' MODIFIED_AFTER = '2018-07-30T13:56:46-07:00'`, id.FullyQualifiedName())
 	})
@@ -205,7 +205,7 @@ func TestPipesDrop(t *testing.T) {
 
 	t.Run("with if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP PIPE IF EXISTS %s`, id.FullyQualifiedName())
 	})
 }
@@ -237,7 +237,7 @@ func TestPipesShow(t *testing.T) {
 	t.Run("validation: exactly one scope for in", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.In = &In{
-			Account:  Bool(true),
+			Account:  new(true),
 			Database: id.DatabaseId(),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ShowPipeOptions.In", "Account", "Database", "Schema"))
@@ -251,7 +251,7 @@ func TestPipesShow(t *testing.T) {
 	t.Run("with like", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW PIPES LIKE '%s'`, id.Name())
 	})
@@ -259,7 +259,7 @@ func TestPipesShow(t *testing.T) {
 	t.Run("in account", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.In = &In{
-			Account: Bool(true),
+			Account: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW PIPES IN ACCOUNT`)
 	})
@@ -283,10 +283,10 @@ func TestPipesShow(t *testing.T) {
 	t.Run("with like and in account", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		opts.In = &In{
-			Account: Bool(true),
+			Account: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW PIPES LIKE '%s' IN ACCOUNT`, id.Name())
 	})
@@ -294,7 +294,7 @@ func TestPipesShow(t *testing.T) {
 	t.Run("with like and in database", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		opts.In = &In{
 			Database: id.DatabaseId(),
@@ -305,7 +305,7 @@ func TestPipesShow(t *testing.T) {
 	t.Run("with like and in schema", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		opts.In = &In{
 			Schema: id.SchemaId(),

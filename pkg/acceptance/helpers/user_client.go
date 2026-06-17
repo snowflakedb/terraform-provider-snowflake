@@ -83,7 +83,7 @@ func (c *UserClient) DropUserFunc(t *testing.T, id sdk.AccountObjectIdentifier) 
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropUserOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropUserOptions{IfExists: new(true)})
 		require.NoError(t, err)
 	}
 }
@@ -110,7 +110,7 @@ func (c *UserClient) Disable(t *testing.T, id sdk.AccountObjectIdentifier) {
 		Set: &sdk.UserSet{
 			ObjectProperties: &sdk.UserAlterObjectProperties{
 				UserObjectProperties: sdk.UserObjectProperties{
-					Disable: sdk.Bool(true),
+					Disable: new(true),
 				},
 			},
 		},
@@ -126,7 +126,7 @@ func (c *UserClient) SetDaysToExpiry(t *testing.T, id sdk.AccountObjectIdentifie
 		Set: &sdk.UserSet{
 			ObjectProperties: &sdk.UserAlterObjectProperties{
 				UserObjectProperties: sdk.UserObjectProperties{
-					DaysToExpiry: sdk.Int(value),
+					DaysToExpiry: new(value),
 				},
 			},
 		},
@@ -142,7 +142,7 @@ func (c *UserClient) SetType(t *testing.T, id sdk.AccountObjectIdentifier, userT
 		Set: &sdk.UserSet{
 			ObjectProperties: &sdk.UserAlterObjectProperties{
 				UserObjectProperties: sdk.UserObjectProperties{
-					Type: sdk.Pointer(userType),
+					Type: new(userType),
 				},
 			},
 		},
@@ -157,7 +157,7 @@ func (c *UserClient) UnsetType(t *testing.T, id sdk.AccountObjectIdentifier) {
 	err := c.client().Alter(ctx, id, &sdk.AlterUserOptions{
 		Unset: &sdk.UserUnset{
 			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				Type: sdk.Bool(true),
+				Type: new(true),
 			},
 		},
 	})
@@ -172,7 +172,7 @@ func (c *UserClient) SetLoginName(t *testing.T, id sdk.AccountObjectIdentifier, 
 		Set: &sdk.UserSet{
 			ObjectProperties: &sdk.UserAlterObjectProperties{
 				UserObjectProperties: sdk.UserObjectProperties{
-					LoginName: sdk.String(newLoginName),
+					LoginName: new(newLoginName),
 				},
 			},
 		},
@@ -187,7 +187,7 @@ func (c *UserClient) UnsetDefaultSecondaryRoles(t *testing.T, id sdk.AccountObje
 	err := c.client().Alter(ctx, id, &sdk.AlterUserOptions{
 		Unset: &sdk.UserUnset{
 			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				DefaultSecondaryRoles: sdk.Bool(true),
+				DefaultSecondaryRoles: new(true),
 			},
 		},
 	})
@@ -277,8 +277,8 @@ func (c *UserClient) SetOidcWorkloadIdentity(t *testing.T, userId sdk.AccountObj
 				UserObjectProperties: sdk.UserObjectProperties{
 					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
-							Issuer:           sdk.String(issuer),
-							Subject:          sdk.String(subject),
+							Issuer:           new(issuer),
+							Subject:          new(subject),
 							OidcAudienceList: audiences,
 						},
 					},
@@ -300,7 +300,7 @@ func (c *UserClient) SetGcpWorkloadIdentity(t *testing.T, userId sdk.AccountObje
 				UserObjectProperties: sdk.UserObjectProperties{
 					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 						GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-							Subject: sdk.String(subject),
+							Subject: new(subject),
 						},
 					},
 				},
@@ -321,8 +321,8 @@ func (c *UserClient) SetAzureWorkloadIdentity(t *testing.T, userId sdk.AccountOb
 				UserObjectProperties: sdk.UserObjectProperties{
 					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 						AzureType: &sdk.UserObjectWorkloadIdentityAzure{
-							Issuer:  sdk.String(issuer),
-							Subject: sdk.String(subject),
+							Issuer:  new(issuer),
+							Subject: new(subject),
 						},
 					},
 				},
@@ -343,7 +343,7 @@ func (c *UserClient) SetAwsWorkloadIdentity(t *testing.T, userId sdk.AccountObje
 				UserObjectProperties: sdk.UserObjectProperties{
 					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 						AwsType: &sdk.UserObjectWorkloadIdentityAws{
-							Arn: sdk.String(arn),
+							Arn: new(arn),
 						},
 					},
 				},
@@ -361,7 +361,7 @@ func (c *UserClient) UnsetWorkloadIdentity(t *testing.T, userId sdk.AccountObjec
 	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
 		Unset: &sdk.UserUnset{
 			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				WorkloadIdentity: sdk.Bool(true),
+				WorkloadIdentity: new(true),
 			},
 		},
 	})
@@ -375,7 +375,7 @@ func (c *UserClient) UpdateEnableUnredactedQuerySyntaxError(t *testing.T, userId
 
 	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{Set: &sdk.UserSet{
 		ObjectParameters: &sdk.UserObjectParameters{
-			EnableUnredactedQuerySyntaxError: sdk.Bool(newValue),
+			EnableUnredactedQuerySyntaxError: new(newValue),
 		},
 	}})
 	require.NoError(t, err)

@@ -147,9 +147,9 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T
 			{
 				PreConfig: func() {
 					zeroValuesHandler.SetCurrentValue(testfunctional.ZeroValuesOpts{
-						BoolValue:   sdk.Pointer(true),
-						IntValue:    sdk.Pointer(10),
-						StringValue: sdk.Pointer("some external text"),
+						BoolValue:   new(true),
+						IntValue:    new(10),
+						StringValue: new("some external text"),
 					})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -208,9 +208,9 @@ func TestAcc_TerraformPluginFrameworkFunctional_ZeroValues_Optional(t *testing.T
 			{
 				PreConfig: func() {
 					zeroValuesHandler.SetCurrentValue(testfunctional.ZeroValuesOpts{
-						BoolValue:   sdk.Pointer(false),
-						IntValue:    sdk.Pointer(0),
-						StringValue: sdk.Pointer(""),
+						BoolValue:   new(false),
+						IntValue:    new(0),
+						StringValue: new(""),
 					})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{

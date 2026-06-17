@@ -70,7 +70,7 @@ func Procedures() *schema.Resource {
 	}
 }
 
-func ReadContextProcedures(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadContextProcedures(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	databaseName := d.Get("database").(string)
 	schemaName := d.Get("schema").(string)
@@ -95,10 +95,10 @@ func ReadContextProcedures(ctx context.Context, d *schema.ResourceData, meta int
 			},
 		}
 	}
-	proceduresList := []map[string]interface{}{}
+	proceduresList := []map[string]any{}
 
 	for _, procedure := range procedures {
-		procedureMap := map[string]interface{}{}
+		procedureMap := map[string]any{}
 		procedureMap["name"] = procedure.Name
 		procedureMap["database"] = procedure.CatalogName
 		procedureMap["schema"] = procedure.SchemaName

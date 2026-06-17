@@ -351,7 +351,7 @@ func (v *failoverGroups) Drop(ctx context.Context, id AccountObjectIdentifier, o
 }
 
 func (v *failoverGroups) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFailoverGroupOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFailoverGroupOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // ShowFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups.

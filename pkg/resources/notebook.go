@@ -320,12 +320,12 @@ func UpdateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if !reflect.DeepEqual(unset, &sdk.NotebookUnsetRequest{}) {
 		// Special case with unsetting warehouse and query_warehouse at the same time.
 		if (unset.Warehouse != nil && *unset.Warehouse == true) && (unset.QueryWarehouse != nil && *unset.QueryWarehouse == true) {
-			unset.Warehouse = sdk.Bool(false)
+			unset.Warehouse = new(false)
 			if err := client.Notebooks.Alter(ctx, sdk.NewAlterNotebookRequest(id).WithUnset(*unset)); err != nil {
 				d.Partial(true)
 				return diag.FromErr(err)
 			}
-			if err := client.Notebooks.Alter(ctx, sdk.NewAlterNotebookRequest(id).WithUnset(sdk.NotebookUnsetRequest{Warehouse: sdk.Bool(true)})); err != nil {
+			if err := client.Notebooks.Alter(ctx, sdk.NewAlterNotebookRequest(id).WithUnset(sdk.NotebookUnsetRequest{Warehouse: new(true)})); err != nil {
 				d.Partial(true)
 				return diag.FromErr(err)
 			}

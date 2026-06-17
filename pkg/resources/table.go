@@ -322,7 +322,7 @@ func (c columns) diffs(new columns) (removed columns, added columns, changed cha
 	return c.getNewIn(new), new.getNewIn(c), c.getChangedColumnProperties(new)
 }
 
-func getColumnDefault(def map[string]interface{}) *columnDefault {
+func getColumnDefault(def map[string]any) *columnDefault {
 	if c, ok := def["constant"]; ok {
 		if constant, ok := c.(string); ok && len(constant) > 0 {
 			return &columnDefault{
@@ -350,7 +350,7 @@ func getColumnDefault(def map[string]interface{}) *columnDefault {
 	return nil
 }
 
-func getColumnIdentity(identity map[string]interface{}) *columnIdentity {
+func getColumnIdentity(identity map[string]any) *columnIdentity {
 	if len(identity) > 0 {
 		startNum := identity["start_num"].(int)
 		stepNum := identity["step_num"].(int)
@@ -360,19 +360,19 @@ func getColumnIdentity(identity map[string]interface{}) *columnIdentity {
 	return nil
 }
 
-func getColumn(from interface{}) (to column) {
-	c := from.(map[string]interface{})
+func getColumn(from any) (to column) {
+	c := from.(map[string]any)
 	var cd *columnDefault
 	var id *columnIdentity
 
-	_default := c["default"].([]interface{})
-	identity := c["identity"].([]interface{})
+	_default := c["default"].([]any)
+	identity := c["identity"].([]any)
 
 	if len(_default) == 1 {
-		cd = getColumnDefault(_default[0].(map[string]interface{}))
+		cd = getColumnDefault(_default[0].(map[string]any))
 	}
 	if len(identity) == 1 {
-		id = getColumnIdentity(identity[0].(map[string]interface{}))
+		id = getColumnIdentity(identity[0].(map[string]any))
 	}
 
 	return column{
@@ -387,8 +387,8 @@ func getColumn(from interface{}) (to column) {
 	}
 }
 
-func getColumns(from interface{}) (to columns) {
-	cols := from.([]interface{})
+func getColumns(from any) (to columns) {
+	cols := from.([]any)
 	to = make(columns, len(cols))
 	for i, c := range cols {
 		to[i] = getColumn(c)
@@ -396,8 +396,8 @@ func getColumns(from interface{}) (to columns) {
 	return to
 }
 
-func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
-	c := from.(map[string]interface{})
+func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
+	c := from.(map[string]any)
 	_type := c["type"].(string)
 	dataType, err := datatypes.ParseDataType(_type)
 	if err != nil {
@@ -407,10 +407,10 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 	nameInQuotes := fmt.Sprintf(`"%v"`, snowflake.EscapeString(c["name"].(string)))
 	request := sdk.NewTableColumnRequest(nameInQuotes, sdk.DataType(_type))
 
-	_default := c["default"].([]interface{})
+	_default := c["default"].([]any)
 	var expression string
 	if len(_default) == 1 {
-		if c, ok := _default[0].(map[string]interface{})["constant"]; ok {
+		if c, ok := _default[0].(map[string]any)["constant"]; ok {
 			if constant, ok := c.(string); ok && len(constant) > 0 {
 				if datatypes.IsTextDataType(dataType) {
 					expression = snowflake.EscapeSnowflakeString(constant)
@@ -420,23 +420,23 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 			}
 		}
 
-		if e, ok := _default[0].(map[string]interface{})["expression"]; ok {
+		if e, ok := _default[0].(map[string]any)["expression"]; ok {
 			if expr, ok := e.(string); ok && len(expr) > 0 {
 				expression = expr
 			}
 		}
 
-		if s, ok := _default[0].(map[string]interface{})["sequence"]; ok {
+		if s, ok := _default[0].(map[string]any)["sequence"]; ok {
 			if seq, ok2 := s.(string); ok2 && len(seq) > 0 {
 				expression = fmt.Sprintf(`%v.NEXTVAL`, seq)
 			}
 		}
-		request.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithExpression(sdk.String(expression)))
+		request.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithExpression(new(expression)))
 	}
 
-	identity := c["identity"].([]interface{})
+	identity := c["identity"].([]any)
 	if len(identity) == 1 {
-		identityProp := identity[0].(map[string]interface{})
+		identityProp := identity[0].(map[string]any)
 		startNum := identityProp["start_num"].(int)
 		stepNum := identityProp["step_num"].(int)
 		request.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(startNum, stepNum)))
@@ -448,16 +448,16 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 	}
 
 	if datatypes.IsTextDataType(dataType) {
-		request.WithCollate(sdk.String(c["collate"].(string)))
+		request.WithCollate(new(c["collate"].(string)))
 	}
 
 	return request.
-		WithNotNull(sdk.Bool(!c["nullable"].(bool))).
-		WithComment(sdk.String(c["comment"].(string))), nil
+		WithNotNull(new(!c["nullable"].(bool))).
+		WithComment(new(c["comment"].(string))), nil
 }
 
-func getTableColumnRequests(from interface{}) ([]sdk.TableColumnRequest, error) {
-	cols := from.([]interface{})
+func getTableColumnRequests(from any) ([]sdk.TableColumnRequest, error) {
+	cols := from.([]any)
 	to := make([]sdk.TableColumnRequest, len(cols))
 	for i, c := range cols {
 		cReq, err := getTableColumnRequest(c)
@@ -474,13 +474,13 @@ type primarykey struct {
 	keys []string
 }
 
-func getPrimaryKey(from interface{}) (to primarykey) {
-	pk := from.([]interface{})
+func getPrimaryKey(from any) (to primarykey) {
+	pk := from.([]any)
 	to = primarykey{}
 	if len(pk) > 0 {
-		pkDetails := pk[0].(map[string]interface{})
+		pkDetails := pk[0].(map[string]any)
 		to.name = pkDetails["name"].(string)
-		to.keys = expandStringList(pkDetails["keys"].([]interface{}))
+		to.keys = expandStringList(pkDetails["keys"].([]any))
 		return to
 	}
 	return to
@@ -537,9 +537,9 @@ func toColumnDefaultConfig(td sdk.TableColumnDetails) map[string]any {
 
 	defaultRaw := *td.Default
 	def := map[string]any{}
-	if strings.HasSuffix(defaultRaw, ".NEXTVAL") {
+	if before, ok := strings.CutSuffix(defaultRaw, ".NEXTVAL"); ok {
 		// TODO [SNOW-867240]: SHOW TABLE returns last part of id without double quotes... we have to quote it again. Move it to SDK.
-		sequenceIdRaw := strings.TrimSuffix(defaultRaw, ".NEXTVAL")
+		sequenceIdRaw := before
 		def["sequence"] = sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(sequenceIdRaw).FullyQualifiedName()
 		return def
 	}
@@ -593,7 +593,7 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	name := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	tableColumnRequests, err := getTableColumnRequests(d.Get("column").([]interface{}))
+	tableColumnRequests, err := getTableColumnRequests(d.Get("column").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -601,32 +601,32 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	createRequest := sdk.NewCreateTableRequest(id, tableColumnRequests)
 
 	if v, ok := d.GetOk("comment"); ok {
-		createRequest.WithComment(sdk.String(v.(string)))
+		createRequest.WithComment(new(v.(string)))
 	}
 
 	if v, ok := d.GetOk("cluster_by"); ok {
-		createRequest.WithClusterBy(expandStringList(v.([]interface{})))
+		createRequest.WithClusterBy(expandStringList(v.([]any)))
 	}
 
 	if v, ok := d.GetOk("primary_key"); ok {
 		keysList := v.([]any)
 		if len(keysList) > 0 {
-			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]interface{}))
+			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]any))
 			constraintRequest := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(snowflake.QuoteStringList(keys))
 
 			keyName, isPresent := keysList[0].(map[string]any)["name"]
 			if isPresent && keyName != "" {
-				constraintRequest.WithName(sdk.String(keyName.(string)))
+				constraintRequest.WithName(new(keyName.(string)))
 			}
 		}
 	}
 
 	if v := d.Get("data_retention_time_in_days"); v.(int) != IntDefault {
-		createRequest.WithDataRetentionTimeInDays(sdk.Int(v.(int)))
+		createRequest.WithDataRetentionTimeInDays(new(v.(int)))
 	}
 
 	if v, ok := d.GetOk("change_tracking"); ok {
-		createRequest.WithChangeTracking(sdk.Bool(v.(bool)))
+		createRequest.WithChangeTracking(new(v.(bool)))
 	}
 
 	var tagAssociationRequests []sdk.TagAssociationRequest
@@ -698,7 +698,7 @@ func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	}
 
 	// Set the relevant data in the state
-	toSet := map[string]interface{}{
+	toSet := map[string]any{
 		"name":            table.Name,
 		"owner":           table.Owner,
 		"database":        table.DatabaseName,
@@ -750,20 +750,20 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			unsetRequest.WithComment(true)
 		} else {
 			runSetStatement = true
-			setRequest.WithComment(sdk.String(comment))
+			setRequest.WithComment(new(comment))
 		}
 	}
 
 	if d.HasChange("change_tracking") {
 		changeTracking := d.Get("change_tracking").(bool)
 		runSetStatement = true
-		setRequest.WithChangeTracking(sdk.Bool(changeTracking))
+		setRequest.WithChangeTracking(new(changeTracking))
 	}
 
 	if d.HasChange("data_retention_time_in_days") {
 		if days := d.Get("data_retention_time_in_days"); days.(int) != IntDefault {
 			runSetStatement = true
-			setRequest.WithDataRetentionTimeInDays(sdk.Int(days.(int)))
+			setRequest.WithDataRetentionTimeInDays(new(days.(int)))
 		} else {
 			runUnsetStatement = true
 			unsetRequest.WithDataRetentionTimeInDays(true)
@@ -785,7 +785,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 
 	if d.HasChange("cluster_by") {
-		cb := expandStringList(d.Get("cluster_by").([]interface{}))
+		cb := expandStringList(d.Get("cluster_by").([]any))
 
 		if len(cb) != 0 {
 			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(sdk.NewTableClusteringActionRequest().WithClusterBy(cb)))
@@ -793,7 +793,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 			}
 		} else {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(sdk.NewTableClusteringActionRequest().WithDropClusteringKey(sdk.Bool(true))))
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(sdk.NewTableClusteringActionRequest().WithDropClusteringKey(new(true))))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 			}
@@ -817,7 +817,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 		for _, cA := range added {
 			addRequest := sdk.NewTableColumnAddActionRequest(fmt.Sprintf("\"%s\"", cA.name), sdk.DataType(cA.dataType)).
-				WithInlineConstraint(sdk.NewTableColumnAddInlineConstraintRequest().WithNotNull(sdk.Bool(!cA.nullable)))
+				WithInlineConstraint(sdk.NewTableColumnAddInlineConstraintRequest().WithNotNull(new(!cA.nullable)))
 
 			if cA._default != nil {
 				if cA._default._type() != "constant" {
@@ -829,7 +829,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				} else {
 					expression = *cA._default.constant
 				}
-				addRequest.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithExpression(sdk.String(expression)))
+				addRequest.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithExpression(new(expression)))
 			}
 
 			if cA.identity != nil {
@@ -841,11 +841,11 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			}
 
 			if cA.comment != "" {
-				addRequest.WithComment(sdk.String(cA.comment))
+				addRequest.WithComment(new(cA.comment))
 			}
 
 			if cA.collate != "" && sdk.IsStringType(cA.dataType) {
-				addRequest.WithCollate(sdk.String(cA.collate))
+				addRequest.WithCollate(new(cA.collate))
 			}
 
 			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAdd(addRequest)))
@@ -857,9 +857,9 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if cA.changedDataType || cA.changedCollate {
 				var newCollation *string
 				if sdk.IsStringType(cA.newColumn.dataType) && cA.newColumn.collate != "" {
-					newCollation = sdk.String(cA.newColumn.collate)
+					newCollation = new(cA.newColumn.collate)
 				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithType(sdk.Pointer(sdk.DataType(cA.newColumn.dataType))).WithCollate(newCollation)})))
+				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithType(new(sdk.DataType(cA.newColumn.dataType))).WithCollate(newCollation)})))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
 				}
@@ -867,9 +867,9 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if cA.changedNullConstraint {
 				nullabilityRequest := sdk.NewTableColumnNotNullConstraintRequest()
 				if !cA.newColumn.nullable {
-					nullabilityRequest.WithSet(sdk.Bool(true))
+					nullabilityRequest.WithSet(new(true))
 				} else {
-					nullabilityRequest.WithDrop(sdk.Bool(true))
+					nullabilityRequest.WithDrop(new(true))
 				}
 				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithNotNullConstraint(nullabilityRequest)})))
 				if err != nil {
@@ -877,7 +877,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				}
 			}
 			if cA.droppedDefault {
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithDropDefault(sdk.Bool(true))})))
+				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithDropDefault(new(true))})))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
 				}
@@ -885,9 +885,9 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if cA.changedComment {
 				columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name))
 				if cA.newColumn.comment == "" {
-					columnAlterActionRequest.WithUnsetComment(sdk.Bool(true))
+					columnAlterActionRequest.WithUnsetComment(new(true))
 				} else {
-					columnAlterActionRequest.WithComment(sdk.String(cA.newColumn.comment))
+					columnAlterActionRequest.WithComment(new(cA.newColumn.comment))
 				}
 
 				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
@@ -900,7 +900,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				if strings.TrimSpace(cA.newColumn.maskingPolicy) == "" {
 					columnAction.WithUnsetMaskingPolicy(sdk.NewTableColumnAlterUnsetMaskingPolicyActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)))
 				} else {
-					columnAction.WithSetMaskingPolicy(sdk.NewTableColumnAlterSetMaskingPolicyActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name), sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.newColumn.maskingPolicy), []string{}).WithForce(sdk.Bool(true)))
+					columnAction.WithSetMaskingPolicy(sdk.NewTableColumnAlterSetMaskingPolicyActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name), sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.newColumn.maskingPolicy), []string{}).WithForce(new(true)))
 				}
 				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(columnAction))
 				if err != nil {
@@ -920,7 +920,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			// drop our pk if there was an old primary key, or pk has been removed
 			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
 				sdk.NewTableConstraintActionRequest().
-					WithDrop(sdk.NewTableConstraintDropActionRequest().WithPrimaryKey(sdk.Bool(true))),
+					WithDrop(sdk.NewTableConstraintDropActionRequest().WithPrimaryKey(new(true))),
 			))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
@@ -930,7 +930,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		if len(newKey.keys) > 0 {
 			constraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(snowflake.QuoteStringList(newKey.keys))
 			if newKey.name != "" {
-				constraint.WithName(sdk.String(newKey.name))
+				constraint.WithName(new(newKey.name))
 			}
 			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
 				sdk.NewTableConstraintActionRequest().WithAdd(constraint),

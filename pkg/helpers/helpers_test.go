@@ -95,7 +95,7 @@ func TestEncodeSnowflakeID(t *testing.T) {
 			expectedEncodedID: `data.base`,
 		},
 		"encodes pointer to account object identifier": {
-			identifier:        sdk.Pointer(sdk.NewAccountObjectIdentifier("database")),
+			identifier:        new(sdk.NewAccountObjectIdentifier("database")),
 			expectedEncodedID: `database`,
 		},
 		"encodes database object identifier": {
@@ -111,7 +111,7 @@ func TestEncodeSnowflakeID(t *testing.T) {
 			expectedEncodedID: `data.base|sche.ma`,
 		},
 		"encodes pointer to database object identifier": {
-			identifier:        sdk.Pointer(sdk.NewDatabaseObjectIdentifier("database", "schema")),
+			identifier:        new(sdk.NewDatabaseObjectIdentifier("database", "schema")),
 			expectedEncodedID: `database|schema`,
 		},
 		"encodes schema object identifier": {
@@ -127,7 +127,7 @@ func TestEncodeSnowflakeID(t *testing.T) {
 			expectedEncodedID: `data.base|sche.ma|tab.le`,
 		},
 		"encodes pointer to schema object identifier": {
-			identifier:        sdk.Pointer(sdk.NewSchemaObjectIdentifier("database", "schema", "table")),
+			identifier:        new(sdk.NewSchemaObjectIdentifier("database", "schema", "table")),
 			expectedEncodedID: `database|schema|table`,
 		},
 		"encodes table column identifier": {
@@ -143,7 +143,7 @@ func TestEncodeSnowflakeID(t *testing.T) {
 			expectedEncodedID: `data.base|sche.ma|tab.le|col.umn`,
 		},
 		"encodes pointer to table column identifier": {
-			identifier:        sdk.Pointer(sdk.NewTableColumnIdentifier("database", "schema", "table", "column")),
+			identifier:        new(sdk.NewTableColumnIdentifier("database", "schema", "table", "column")),
 			expectedEncodedID: `database|schema|table|column`,
 		},
 	}

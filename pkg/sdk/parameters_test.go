@@ -30,7 +30,7 @@ func TestUnsetObjectParameterNetworkPolicyOnAccount(t *testing.T) {
 		Unset: &AccountUnset{
 			LegacyParameters: &AccountLevelParametersUnset{
 				ObjectParameters: &ObjectParametersUnset{
-					NetworkPolicy: Bool(true),
+					NetworkPolicy: new(true),
 				},
 			},
 		},
@@ -45,7 +45,7 @@ func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 		name: NewAccountObjectIdentifierFromFullyQualifiedName("TEST_USER"),
 		Unset: &UserUnset{
 			ObjectParameters: &UserObjectParametersUnset{
-				NetworkPolicy: Bool(true),
+				NetworkPolicy: new(true),
 			},
 		},
 	}
@@ -60,7 +60,7 @@ func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
 		Set: &AccountSet{
 			LegacyParameters: &AccountLevelParameters{
 				AccountParameters: &LegacyAccountParameters{
-					EnforceNetworkRulesForInternalStages: Bool(true),
+					EnforceNetworkRulesForInternalStages: new(true),
 				},
 			},
 		},

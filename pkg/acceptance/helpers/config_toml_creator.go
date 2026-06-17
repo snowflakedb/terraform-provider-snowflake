@@ -46,7 +46,7 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithIncludeRetryReason(true).
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
-			"foo": sdk.Pointer("bar"),
+			"foo": new("bar"),
 		}).
 		WithOauthClientID("oauth_client_id").
 		WithOauthClientSecret("oauth_client_secret").
@@ -113,7 +113,7 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithIncludeRetryReason(true).
 		WithDisableConsoleLogin(true).
 		WithParams(map[string]*string{
-			"foo": sdk.Pointer("bar"),
+			"foo": new("bar"),
 		}).
 		WithOauthClientID("invalid").
 		WithOauthClientSecret("invalid").

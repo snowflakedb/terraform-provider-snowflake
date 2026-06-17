@@ -370,7 +370,7 @@ func CreateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 		grantOn,
 		sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(d.Get("database_role_name").(string)),
 		&sdk.GrantPrivilegesToDatabaseRoleOptions{
-			WithGrantOption: sdk.Bool(d.Get("with_grant_option").(bool)),
+			WithGrantOption: new(d.Get("with_grant_option").(bool)),
 		},
 	)
 	if err != nil {
@@ -415,7 +415,7 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 				return diag.FromErr(err)
 			}
 			err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, &sdk.DatabaseRoleGrantPrivileges{
-				AllPrivileges: sdk.Bool(true),
+				AllPrivileges: new(true),
 			},
 				grantOn,
 				id.DatabaseRoleName,
@@ -481,7 +481,7 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 
 				if !id.WithGrantOption {
 					if err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, privilegesToGrant, grantOn, id.DatabaseRoleName, &sdk.RevokePrivilegesFromDatabaseRoleOptions{
-						GrantOptionFor: sdk.Bool(true),
+						GrantOptionFor: new(true),
 					}); err != nil {
 						return diag.Diagnostics{
 							diag.Diagnostic{
@@ -493,7 +493,7 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 					}
 				}
 
-				err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, privilegesToGrant, grantOn, id.DatabaseRoleName, &sdk.GrantPrivilegesToDatabaseRoleOptions{WithGrantOption: sdk.Bool(id.WithGrantOption)})
+				err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, privilegesToGrant, grantOn, id.DatabaseRoleName, &sdk.GrantPrivilegesToDatabaseRoleOptions{WithGrantOption: new(id.WithGrantOption)})
 				if err != nil {
 					return diag.Diagnostics{
 						diag.Diagnostic{
@@ -544,7 +544,7 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 				return diag.FromErr(err)
 			}
 			err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, &sdk.DatabaseRoleGrantPrivileges{
-				AllPrivileges: sdk.Bool(true),
+				AllPrivileges: new(true),
 			},
 				grantOn,
 				id.DatabaseRoleName,
@@ -794,7 +794,7 @@ func prepareShowGrantsRequest(id GrantPrivilegesToDatabaseRoleId) (*sdk.ShowGran
 			log.Printf("[INFO] Show with on_schema.all_schemas_in_database option is skipped. No changes in privileges in Snowflake will be detected.")
 			return nil, ""
 		case OnFutureSchemasInDatabaseSchemaGrantKind:
-			opts.Future = sdk.Bool(true)
+			opts.Future = new(true)
 			opts.In = &sdk.ShowGrantsIn{
 				Database: data.DatabaseName,
 			}
@@ -813,7 +813,7 @@ func prepareShowGrantsRequest(id GrantPrivilegesToDatabaseRoleId) (*sdk.ShowGran
 			return nil, ""
 		case OnFutureSchemaObjectGrantKind:
 			grantedOn = data.OnAllOrFuture.ObjectNamePlural.Singular()
-			opts.Future = sdk.Bool(true)
+			opts.Future = new(true)
 
 			switch data.OnAllOrFuture.Kind {
 			case InDatabaseBulkOperationGrantKind:
@@ -849,7 +849,7 @@ func getDatabaseRolePrivileges(allPrivileges bool, privileges []string, onDataba
 	databaseRoleGrantPrivileges := new(sdk.DatabaseRoleGrantPrivileges)
 
 	if allPrivileges {
-		databaseRoleGrantPrivileges.AllPrivileges = sdk.Bool(true)
+		databaseRoleGrantPrivileges.AllPrivileges = new(true)
 		return databaseRoleGrantPrivileges
 	}
 
@@ -889,7 +889,7 @@ func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOn, e
 		if err != nil {
 			return nil, err
 		}
-		on.Database = sdk.Pointer(databaseId)
+		on.Database = new(databaseId)
 	case onSchemaOk:
 		onSchema := onSchemaBlock.([]any)[0].(map[string]any)
 
@@ -910,19 +910,19 @@ func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOn, e
 			if err != nil {
 				return nil, err
 			}
-			grantOnSchema.Schema = sdk.Pointer(schemaId)
+			grantOnSchema.Schema = new(schemaId)
 		case allSchemasInDatabaseOk:
 			databaseId, err := sdk.ParseAccountObjectIdentifier(allSchemasInDatabase)
 			if err != nil {
 				return nil, err
 			}
-			grantOnSchema.AllSchemasInDatabase = sdk.Pointer(databaseId)
+			grantOnSchema.AllSchemasInDatabase = new(databaseId)
 		case futureSchemasInDatabaseOk:
 			databaseId, err := sdk.ParseAccountObjectIdentifier(futureSchemasInDatabase)
 			if err != nil {
 				return nil, err
 			}
-			grantOnSchema.FutureSchemasInDatabase = sdk.Pointer(databaseId)
+			grantOnSchema.FutureSchemasInDatabase = new(databaseId)
 		}
 
 		on.Schema = grantOnSchema

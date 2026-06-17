@@ -20,14 +20,14 @@ func TestResourceMonitorCreate(t *testing.T) {
 	t.Run("validation: OrReplace and IfExists specified", func(t *testing.T) {
 		opts := &CreateResourceMonitorOptions{
 			name:        id,
-			OrReplace:   Bool(true),
-			IfNotExists: Bool(true),
+			OrReplace:   new(true),
+			IfNotExists: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateResourceMonitorOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("with complete options", func(t *testing.T) {
-		creditQuota := Int(100)
+		creditQuota := new(100)
 		frequency := FrequencyMonthly
 		startTimeStamp := "IMMIEDIATELY"
 		endTimeStamp := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).String()
@@ -44,7 +44,7 @@ func TestResourceMonitorCreate(t *testing.T) {
 		}
 
 		opts := &CreateResourceMonitorOptions{
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			With: &ResourceMonitorWith{
 				CreditQuota:    creditQuota,
 				Frequency:      &frequency,
@@ -87,7 +87,7 @@ func TestResourceMonitorAlter(t *testing.T) {
 	})
 
 	t.Run("with a single set", func(t *testing.T) {
-		newCreditQuota := Int(50)
+		newCreditQuota := new(50)
 		opts := &AlterResourceMonitorOptions{
 			name: id,
 			Set: &ResourceMonitorSet{
@@ -113,7 +113,7 @@ func TestResourceMonitorAlter(t *testing.T) {
 	})
 
 	t.Run("with a multitple set", func(t *testing.T) {
-		newCreditQuota := Int(50)
+		newCreditQuota := new(50)
 		newFrequency := FrequencyYearly
 		newStartTimeStamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC).String()
 		opts := &AlterResourceMonitorOptions{
@@ -131,8 +131,8 @@ func TestResourceMonitorAlter(t *testing.T) {
 		opts := &AlterResourceMonitorOptions{
 			name: id,
 			Unset: &ResourceMonitorUnset{
-				CreditQuota:  Bool(true),
-				EndTimestamp: Bool(true),
+				CreditQuota:  new(true),
+				EndTimestamp: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER RESOURCE MONITOR %s SET CREDIT_QUOTA = null END_TIMESTAMP = null", id.FullyQualifiedName())
@@ -157,7 +157,7 @@ func TestResourceMonitorDrop(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := &DropResourceMonitorOptions{
 			name:     id,
-			IfExists: Bool(true),
+			IfExists: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "DROP RESOURCE MONITOR IF EXISTS %s", id.FullyQualifiedName())
 	})
@@ -174,7 +174,7 @@ func TestResourceMonitorShow(t *testing.T) {
 	t.Run("with like", func(t *testing.T) {
 		opts := &ShowResourceMonitorOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW RESOURCE MONITORS LIKE '%s'", id.Name())

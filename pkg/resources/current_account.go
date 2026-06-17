@@ -91,7 +91,7 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 			return diag.FromErr(err)
 		}
 	} else {
-		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{ResourceMonitor: sdk.Bool(true)}}); err != nil {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{ResourceMonitor: new(true)}}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -104,7 +104,7 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		}
 
 		if hasForce {
-			set.Force = sdk.Bool(true)
+			set.Force = new(true)
 		} else {
 			log.Printf("[DEBUG] Unsetting %s as it doens't support setting with force", kind)
 			if err := client.Accounts.UnsetPolicySafely(ctx, kind); err != nil {
@@ -220,7 +220,7 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 				unset.FeaturePolicyUnset = new(sdk.AccountFeaturePolicyUnset)
 			}
 
-			setFieldPointer, unsetBoolFlag := setFieldGetter(set), sdk.Bool(false)
+			setFieldPointer, unsetBoolFlag := setFieldGetter(set), new(false)
 			log.Printf("[DEBUG] Checking for updates in %s", key)
 			if err := schemaObjectIdentifierAttributeUpdate(d, key, setFieldPointer, &unsetBoolFlag); err != nil {
 				return err
@@ -228,7 +228,7 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 
 			if *setFieldPointer != nil {
 				if hasForce {
-					set.Force = sdk.Bool(true)
+					set.Force = new(true)
 				} else {
 					log.Printf("[DEBUG] Unsetting %s as it doens't support setting with force", kind)
 					if err := client.Accounts.UnsetPolicySafely(ctx, kind); err != nil {

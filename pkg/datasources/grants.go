@@ -374,7 +374,7 @@ func buildOptsForGrantsOn(grantsOn map[string]any) (*sdk.ShowGrantOptions, error
 
 	if account {
 		opts.On = &sdk.ShowGrantsOn{
-			Account: sdk.Bool(true),
+			Account: new(true),
 		}
 	} else {
 		if objectType == "" || objectName == "" {
@@ -519,7 +519,7 @@ func buildOptsForGrantsOf(grantsOf map[string]any) (*sdk.ShowGrantOptions, error
 
 func buildOptsForFutureGrantsIn(futureGrantsIn map[string]any) (*sdk.ShowGrantOptions, error) {
 	opts := new(sdk.ShowGrantOptions)
-	opts.Future = sdk.Bool(true)
+	opts.Future = new(true)
 
 	if db := futureGrantsIn["database"].(string); db != "" {
 		databaseId, err := sdk.ParseAccountObjectIdentifier(db)
@@ -527,7 +527,7 @@ func buildOptsForFutureGrantsIn(futureGrantsIn map[string]any) (*sdk.ShowGrantOp
 			return nil, err
 		}
 		opts.In = &sdk.ShowGrantsIn{
-			Database: sdk.Pointer(databaseId),
+			Database: new(databaseId),
 		}
 	}
 	if sc := futureGrantsIn["schema"].(string); sc != "" {
@@ -536,7 +536,7 @@ func buildOptsForFutureGrantsIn(futureGrantsIn map[string]any) (*sdk.ShowGrantOp
 			return nil, err
 		}
 		opts.In = &sdk.ShowGrantsIn{
-			Schema: sdk.Pointer(schemaId),
+			Schema: new(schemaId),
 		}
 	}
 	return opts, nil
@@ -544,7 +544,7 @@ func buildOptsForFutureGrantsIn(futureGrantsIn map[string]any) (*sdk.ShowGrantOp
 
 func buildOptsForFutureGrantsTo(futureGrantsTo map[string]any) (*sdk.ShowGrantOptions, error) {
 	opts := new(sdk.ShowGrantOptions)
-	opts.Future = sdk.Bool(true)
+	opts.Future = new(true)
 
 	if accountRole := futureGrantsTo["account_role"].(string); accountRole != "" {
 		accountRoleId, err := sdk.ParseAccountObjectIdentifier(accountRole)

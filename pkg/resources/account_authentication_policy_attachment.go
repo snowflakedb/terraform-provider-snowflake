@@ -42,7 +42,7 @@ func AccountAuthenticationPolicyAttachment() *schema.Resource {
 }
 
 // CreateAccountAuthenticationPolicyAttachment implements schema.CreateFunc.
-func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	authenticationPolicy, ok := sdk.NewObjectIdentifierFromFullyQualifiedName(d.Get("authentication_policy").(string)).(sdk.SchemaObjectIdentifier)
@@ -64,7 +64,7 @@ func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 	return ReadAccountAuthenticationPolicyAttachment(ctx, d, meta)
 }
 
-func ReadAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	authenticationPolicy := helpers.DecodeSnowflakeIDLegacy(d.Id())
 	if err := d.Set("authentication_policy", authenticationPolicy.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
@@ -74,12 +74,12 @@ func ReadAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.Re
 }
 
 // DeleteAccountAuthenticationPolicyAttachment implements schema.DeleteFunc.
-func DeleteAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DeleteAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 		Unset: &sdk.AccountUnset{
-			AuthenticationPolicy: sdk.Bool(true),
+			AuthenticationPolicy: new(true),
 		},
 	})
 	if err != nil {

@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -184,15 +183,15 @@ resource "%[3]s" "%[4]s" {
 				if tc.ExternalValue != "" {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionDestroyBeforeCreate),
-						planchecks.ExpectDrift(resourceReference, nestedPropertyAddress, sdk.String(expectedStateFirstStep), sdk.String(tc.ExternalValue)),
+						planchecks.ExpectDrift(resourceReference, nestedPropertyAddress, new(expectedStateFirstStep), new(tc.ExternalValue)),
 						// TODO [SNOW-1473409]: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
-						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, sdk.String(tc.ExternalValue), sdk.String(expectedStateFirstStep)),
+						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, new(tc.ExternalValue), new(expectedStateFirstStep)),
 					}
 				} else {
 					checks = []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceReference, plancheck.ResourceActionDestroyBeforeCreate),
 						// TODO [SNOW-1473409]: expecting delete as currently this plan check does not offer setting multiple actions; we expect destroy and create here
-						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, sdk.String(expectedStateFirstStep), sdk.String(expectedStateSecondStep)),
+						planchecks.ExpectChange(resourceReference, nestedPropertyAddress, tfjson.ActionDelete, new(expectedStateFirstStep), new(expectedStateSecondStep)),
 					}
 				}
 			} else {

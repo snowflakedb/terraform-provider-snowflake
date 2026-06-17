@@ -67,7 +67,7 @@ func TestValidObjectName(t *testing.T) {
 
 func TestAnyValueSet(t *testing.T) {
 	t.Run("with one value set", func(t *testing.T) {
-		ok := anyValueSet(String("foo"))
+		ok := anyValueSet(new("foo"))
 		assert.True(t, ok)
 	})
 
@@ -77,19 +77,19 @@ func TestAnyValueSet(t *testing.T) {
 	})
 
 	t.Run("with multiple values set", func(t *testing.T) {
-		ok := anyValueSet(String("foo"), String("bar"))
+		ok := anyValueSet(new("foo"), new("bar"))
 		assert.True(t, ok)
 	})
 
 	t.Run("with multiple values set and nil", func(t *testing.T) {
-		ok := anyValueSet(String("foo"), nil, String("bar"))
+		ok := anyValueSet(new("foo"), nil, new("bar"))
 		assert.True(t, ok)
 	})
 }
 
 func TestExactlyOneValueSet(t *testing.T) {
 	t.Run("with one value set", func(t *testing.T) {
-		ok := exactlyOneValueSet(String("foo"))
+		ok := exactlyOneValueSet(new("foo"))
 		assert.True(t, ok)
 	})
 
@@ -99,19 +99,19 @@ func TestExactlyOneValueSet(t *testing.T) {
 	})
 
 	t.Run("with multiple values set", func(t *testing.T) {
-		ok := exactlyOneValueSet(String("foo"), String("bar"))
+		ok := exactlyOneValueSet(new("foo"), new("bar"))
 		assert.False(t, ok)
 	})
 
 	t.Run("with multiple values set and nil", func(t *testing.T) {
-		ok := exactlyOneValueSet(String("foo"), nil, String("bar"))
+		ok := exactlyOneValueSet(new("foo"), nil, new("bar"))
 		assert.False(t, ok)
 	})
 }
 
 func TestEveryValueSet(t *testing.T) {
 	t.Run("with one value set", func(t *testing.T) {
-		ok := everyValueSet(String("foo"))
+		ok := everyValueSet(new("foo"))
 		assert.True(t, ok)
 	})
 
@@ -121,19 +121,19 @@ func TestEveryValueSet(t *testing.T) {
 	})
 
 	t.Run("with multiple values set", func(t *testing.T) {
-		ok := everyValueSet(String("foo"), String("bar"))
+		ok := everyValueSet(new("foo"), new("bar"))
 		assert.True(t, ok)
 	})
 
 	t.Run("with multiple values set and nil", func(t *testing.T) {
-		ok := everyValueSet(String("foo"), nil, String("bar"))
+		ok := everyValueSet(new("foo"), nil, new("bar"))
 		assert.False(t, ok)
 	})
 }
 
 func TestEveryValueNil(t *testing.T) {
 	t.Run("with one value set", func(t *testing.T) {
-		ok := everyValueNil(String("foo"))
+		ok := everyValueNil(new("foo"))
 		assert.False(t, ok)
 	})
 
@@ -143,19 +143,19 @@ func TestEveryValueNil(t *testing.T) {
 	})
 
 	t.Run("with multiple values set", func(t *testing.T) {
-		ok := everyValueNil(String("foo"), String("bar"))
+		ok := everyValueNil(new("foo"), new("bar"))
 		assert.False(t, ok)
 	})
 
 	t.Run("with multiple values set and nil", func(t *testing.T) {
-		ok := everyValueNil(String("foo"), nil, String("bar"))
+		ok := everyValueNil(new("foo"), nil, new("bar"))
 		assert.False(t, ok)
 	})
 }
 
 func TestValueSet(t *testing.T) {
 	t.Run("with value set", func(t *testing.T) {
-		ok := valueSet(String("foo"))
+		ok := valueSet(new("foo"))
 		assert.True(t, ok)
 	})
 

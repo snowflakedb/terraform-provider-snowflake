@@ -64,7 +64,7 @@ func (c *FailoverGroupClient) DropFailoverGroupFunc(t *testing.T, id sdk.Account
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropFailoverGroupOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropFailoverGroupOptions{IfExists: new(true)})
 		require.NoError(t, err)
 	}
 }

@@ -344,9 +344,9 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 				case sdk.SecondaryRolesOptionDefault:
 					return nil
 				case sdk.SecondaryRolesOptionNone:
-					opts.ObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{None: sdk.Bool(true)}
+					opts.ObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{None: new(true)}
 				case sdk.SecondaryRolesOptionAll:
-					opts.ObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{All: sdk.Bool(true)}
+					opts.ObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{All: new(true)}
 				}
 				return nil
 			}(),
@@ -421,7 +421,7 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 						Summary:  fmt.Sprintf("Setting disable mfa failed after create for user %s, err: %v", id.FullyQualifiedName(), err),
 					})
 				}
-				alterDisableMfa := sdk.AlterUserOptions{Set: &sdk.UserSet{ObjectProperties: &sdk.UserAlterObjectProperties{DisableMfa: sdk.Bool(parsed)}}}
+				alterDisableMfa := sdk.AlterUserOptions{Set: &sdk.UserSet{ObjectProperties: &sdk.UserAlterObjectProperties{DisableMfa: new(parsed)}}}
 				err = client.Users.Alter(ctx, id, &alterDisableMfa)
 				if err != nil {
 					diags = append(diags, diag.Diagnostic{
@@ -633,11 +633,11 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 					}
 					switch defaultSecondaryRolesOption {
 					case sdk.SecondaryRolesOptionDefault:
-						unsetObjectProperties.DefaultSecondaryRoles = sdk.Bool(true)
+						unsetObjectProperties.DefaultSecondaryRoles = new(true)
 					case sdk.SecondaryRolesOptionNone:
-						setObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{None: sdk.Bool(true)}
+						setObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{None: new(true)}
 					case sdk.SecondaryRolesOptionAll:
-						setObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{All: sdk.Bool(true)}
+						setObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{All: new(true)}
 					}
 				}
 				return nil
@@ -787,22 +787,22 @@ func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityPropertie
 	if awsConfig, ok := config["aws"].([]any); ok && len(awsConfig) > 0 {
 		aws := awsConfig[0].(map[string]any)
 		wif.AwsType = &sdk.UserObjectWorkloadIdentityAws{
-			Arn: sdk.String(aws["arn"].(string)),
+			Arn: new(aws["arn"].(string)),
 		}
 	}
 
 	if gcpConfig, ok := config["gcp"].([]any); ok && len(gcpConfig) > 0 {
 		gcp := gcpConfig[0].(map[string]any)
 		wif.GcpType = &sdk.UserObjectWorkloadIdentityGcp{
-			Subject: sdk.String(gcp["subject"].(string)),
+			Subject: new(gcp["subject"].(string)),
 		}
 	}
 
 	if azureConfig, ok := config["azure"].([]any); ok && len(azureConfig) > 0 {
 		azure := azureConfig[0].(map[string]any)
 		wif.AzureType = &sdk.UserObjectWorkloadIdentityAzure{
-			Issuer:  sdk.String(azure["issuer"].(string)),
-			Subject: sdk.String(azure["subject"].(string)),
+			Issuer:  new(azure["issuer"].(string)),
+			Subject: new(azure["subject"].(string)),
 		}
 	}
 
@@ -817,8 +817,8 @@ func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityPropertie
 			}
 		}
 		wif.OidcType = &sdk.UserObjectWorkloadIdentityOidc{
-			Issuer:           sdk.String(oidc["issuer"].(string)),
-			Subject:          sdk.String(oidc["subject"].(string)),
+			Issuer:           new(oidc["issuer"].(string)),
+			Subject:          new(oidc["subject"].(string)),
 			OidcAudienceList: audiences,
 		}
 	}

@@ -74,7 +74,7 @@ func (c *MaskingPolicyClient) CreateOrReplaceMaskingPolicyWithOptions(t *testing
 	t.Helper()
 	ctx := context.Background()
 
-	options.OrReplace = sdk.Pointer(true)
+	options.OrReplace = new(true)
 
 	err := c.client().Create(ctx, id, signature, returns, expression, options)
 	require.NoError(t, err)
@@ -98,7 +98,7 @@ func (c *MaskingPolicyClient) DropMaskingPolicyFunc(t *testing.T, id sdk.SchemaO
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropMaskingPolicyOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropMaskingPolicyOptions{IfExists: new(true)})
 		assert.NoError(t, err)
 	}
 }

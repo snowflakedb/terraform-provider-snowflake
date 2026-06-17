@@ -17,16 +17,16 @@ func TestUnmarshalCortexAgentProfile(t *testing.T) {
 			name: "all fields present",
 			json: `{"display_name":"My Assistant","avatar":"assistant.png","color":"blue"}`,
 			expected: CortexAgentProfile{
-				DisplayName: String("My Assistant"),
-				Avatar:      String("assistant.png"),
-				Color:       String("blue"),
+				DisplayName: new("My Assistant"),
+				Avatar:      new("assistant.png"),
+				Color:       new("blue"),
 			},
 		},
 		{
 			name: "single field present",
 			json: `{"color":"green"}`,
 			expected: CortexAgentProfile{
-				Color: String("green"),
+				Color: new("green"),
 			},
 		},
 		{
@@ -73,16 +73,16 @@ func TestMarshalCortexAgentProfile(t *testing.T) {
 		{
 			name: "full profile",
 			profile: CortexAgentProfile{
-				DisplayName: String("My Assistant"),
-				Avatar:      String("assistant.png"),
-				Color:       String("blue"),
+				DisplayName: new("My Assistant"),
+				Avatar:      new("assistant.png"),
+				Color:       new("blue"),
 			},
 			want: `{"display_name":"My Assistant","avatar":"assistant.png","color":"blue"}`,
 		},
 		{
 			name: "partial profile",
 			profile: CortexAgentProfile{
-				Color: String("green"),
+				Color: new("green"),
 			},
 			want: `{"color":"green"}`,
 		},

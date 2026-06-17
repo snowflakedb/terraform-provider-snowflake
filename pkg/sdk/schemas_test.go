@@ -23,8 +23,8 @@ func TestSchemasCreate(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := &CreateSchemaOptions{
 			name:        id,
-			OrReplace:   Bool(true),
-			IfNotExists: Bool(true),
+			OrReplace:   new(true),
+			IfNotExists: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSchemaOptions", "IfNotExists", "OrReplace"))
 	})
@@ -32,8 +32,8 @@ func TestSchemasCreate(t *testing.T) {
 	t.Run("validation: invalid external volume and catalog", func(t *testing.T) {
 		opts := &CreateSchemaOptions{
 			name:           id,
-			ExternalVolume: Pointer(emptyAccountObjectIdentifier),
-			Catalog:        Pointer(emptyAccountObjectIdentifier),
+			ExternalVolume: new(emptyAccountObjectIdentifier),
+			Catalog:        new(emptyAccountObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts,
 			errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"),
@@ -44,11 +44,11 @@ func TestSchemasCreate(t *testing.T) {
 	t.Run("clone", func(t *testing.T) {
 		opts := &CreateSchemaOptions{
 			name:      id,
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			Clone: &Clone{
 				SourceObject: NewAccountObjectIdentifier("sch1"),
 				At: &TimeTravel{
-					Timestamp: Pointer(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)),
+					Timestamp: new(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)),
 				},
 			},
 		}
@@ -60,28 +60,28 @@ func TestSchemasCreate(t *testing.T) {
 		externalVolumeId := randomAccountObjectIdentifier()
 		catalogId := randomAccountObjectIdentifier()
 		opts := &CreateSchemaOptions{
-			Transient:                               Bool(true),
-			IfNotExists:                             Bool(true),
+			Transient:                               new(true),
+			IfNotExists:                             new(true),
 			name:                                    id,
-			WithManagedAccess:                       Bool(true),
-			DataRetentionTimeInDays:                 Int(1),
-			MaxDataExtensionTimeInDays:              Int(1),
+			WithManagedAccess:                       new(true),
+			DataRetentionTimeInDays:                 new(1),
+			MaxDataExtensionTimeInDays:              new(1),
 			ExternalVolume:                          &externalVolumeId,
 			Catalog:                                 &catalogId,
-			PipeExecutionPaused:                     Bool(true),
-			ReplaceInvalidCharacters:                Bool(true),
-			DefaultDDLCollation:                     Pointer(StringAllowEmpty{Value: "en_US-trim"}),
-			StorageSerializationPolicy:              Pointer(StorageSerializationPolicyCompatible),
-			LogLevel:                                Pointer(LogLevelInfo),
-			TraceLevel:                              Pointer(TraceLevelPropagate),
-			SuspendTaskAfterNumFailures:             Int(10),
-			TaskAutoRetryAttempts:                   Int(10),
-			UserTaskManagedInitialWarehouseSize:     Pointer(WarehouseSizeMedium),
-			UserTaskTimeoutMs:                       Int(12000),
-			UserTaskMinimumTriggerIntervalInSeconds: Int(30),
-			QuotedIdentifiersIgnoreCase:             Bool(true),
-			EnableConsoleOutput:                     Bool(true),
-			Comment:                                 String("comment"),
+			PipeExecutionPaused:                     new(true),
+			ReplaceInvalidCharacters:                new(true),
+			DefaultDDLCollation:                     new(StringAllowEmpty{Value: "en_US-trim"}),
+			StorageSerializationPolicy:              new(StorageSerializationPolicyCompatible),
+			LogLevel:                                new(LogLevelInfo),
+			TraceLevel:                              new(TraceLevelPropagate),
+			SuspendTaskAfterNumFailures:             new(10),
+			TaskAutoRetryAttempts:                   new(10),
+			UserTaskManagedInitialWarehouseSize:     new(WarehouseSizeMedium),
+			UserTaskTimeoutMs:                       new(12000),
+			UserTaskMinimumTriggerIntervalInSeconds: new(30),
+			QuotedIdentifiersIgnoreCase:             new(true),
+			EnableConsoleOutput:                     new(true),
+			Comment:                                 new("comment"),
 			Tag:                                     []TagAssociation{{Name: tagId, Value: "v1"}},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TRANSIENT SCHEMA IF NOT EXISTS %s WITH MANAGED ACCESS DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 `+
@@ -108,8 +108,8 @@ func TestSchemasAlter(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name: emptyDatabaseObjectIdentifier,
 			Set: &SchemaSet{
-				ExternalVolume: Pointer(emptyAccountObjectIdentifier),
-				Catalog:        Pointer(emptyAccountObjectIdentifier),
+				ExternalVolume: new(emptyAccountObjectIdentifier),
+				Catalog:        new(emptyAccountObjectIdentifier),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("SchemaSet", "ExternalVolume"), errInvalidIdentifier("SchemaSet", "Catalog"))
@@ -193,7 +193,7 @@ func TestSchemasAlter(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name: schemaId,
 			Set: &SchemaSet{
-				ExternalVolume: Pointer(emptyAccountObjectIdentifier),
+				ExternalVolume: new(emptyAccountObjectIdentifier),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("SchemaSet", "ExternalVolume"))
@@ -203,7 +203,7 @@ func TestSchemasAlter(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name: schemaId,
 			Set: &SchemaSet{
-				Catalog: Pointer(emptyAccountObjectIdentifier),
+				Catalog: new(emptyAccountObjectIdentifier),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("SchemaSet", "Catalog"))
@@ -212,7 +212,7 @@ func TestSchemasAlter(t *testing.T) {
 	t.Run("validation: invalid NewName identifier", func(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name:    schemaId,
-			NewName: Pointer(emptyDatabaseObjectIdentifier),
+			NewName: new(emptyDatabaseObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("AlterSchemaOptions", "NewName"))
 	})
@@ -220,15 +220,15 @@ func TestSchemasAlter(t *testing.T) {
 	t.Run("validation: invalid SwapWith identifier", func(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name:     schemaId,
-			SwapWith: Pointer(emptyDatabaseObjectIdentifier),
+			SwapWith: new(emptyDatabaseObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("AlterSchemaOptions", "SwapWith"))
 	})
 	t.Run("rename to", func(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name:     schemaId,
-			IfExists: Bool(true),
-			NewName:  Pointer(newSchemaId),
+			IfExists: new(true),
+			NewName:  new(newSchemaId),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA IF EXISTS %s RENAME TO %s`, schemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName())
 	})
@@ -236,8 +236,8 @@ func TestSchemasAlter(t *testing.T) {
 	t.Run("swap with", func(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name:     schemaId,
-			IfExists: Bool(false),
-			SwapWith: Pointer(newSchemaId),
+			IfExists: new(false),
+			SwapWith: new(newSchemaId),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA %s SWAP WITH %s`, schemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName())
 	})
@@ -248,24 +248,24 @@ func TestSchemasAlter(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name: schemaId,
 			Set: &SchemaSet{
-				DataRetentionTimeInDays:                 Int(1),
-				MaxDataExtensionTimeInDays:              Int(1),
+				DataRetentionTimeInDays:                 new(1),
+				MaxDataExtensionTimeInDays:              new(1),
 				ExternalVolume:                          &externalVolumeId,
 				Catalog:                                 &catalogId,
-				PipeExecutionPaused:                     Bool(true),
-				ReplaceInvalidCharacters:                Bool(true),
-				DefaultDDLCollation:                     Pointer(StringAllowEmpty{Value: "en_US-trim"}),
-				StorageSerializationPolicy:              Pointer(StorageSerializationPolicyCompatible),
-				LogLevel:                                Pointer(LogLevelInfo),
-				TraceLevel:                              Pointer(TraceLevelPropagate),
-				SuspendTaskAfterNumFailures:             Int(10),
-				TaskAutoRetryAttempts:                   Int(10),
-				UserTaskManagedInitialWarehouseSize:     Pointer(WarehouseSizeMedium),
-				UserTaskTimeoutMs:                       Int(12000),
-				UserTaskMinimumTriggerIntervalInSeconds: Int(30),
-				QuotedIdentifiersIgnoreCase:             Bool(true),
-				EnableConsoleOutput:                     Bool(true),
-				Comment:                                 String("comment"),
+				PipeExecutionPaused:                     new(true),
+				ReplaceInvalidCharacters:                new(true),
+				DefaultDDLCollation:                     new(StringAllowEmpty{Value: "en_US-trim"}),
+				StorageSerializationPolicy:              new(StorageSerializationPolicyCompatible),
+				LogLevel:                                new(LogLevelInfo),
+				TraceLevel:                              new(TraceLevelPropagate),
+				SuspendTaskAfterNumFailures:             new(10),
+				TaskAutoRetryAttempts:                   new(10),
+				UserTaskManagedInitialWarehouseSize:     new(WarehouseSizeMedium),
+				UserTaskTimeoutMs:                       new(12000),
+				UserTaskMinimumTriggerIntervalInSeconds: new(30),
+				QuotedIdentifiersIgnoreCase:             new(true),
+				EnableConsoleOutput:                     new(true),
+				Comment:                                 new("comment"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA %s SET DATA_RETENTION_TIME_IN_DAYS = 1, MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, `+
@@ -281,24 +281,24 @@ func TestSchemasAlter(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name: schemaId,
 			Unset: &SchemaUnset{
-				DataRetentionTimeInDays:                 Bool(true),
-				MaxDataExtensionTimeInDays:              Bool(true),
-				ExternalVolume:                          Bool(true),
-				Catalog:                                 Bool(true),
-				PipeExecutionPaused:                     Bool(true),
-				ReplaceInvalidCharacters:                Bool(true),
-				DefaultDDLCollation:                     Bool(true),
-				StorageSerializationPolicy:              Bool(true),
-				LogLevel:                                Bool(true),
-				TraceLevel:                              Bool(true),
-				SuspendTaskAfterNumFailures:             Bool(true),
-				TaskAutoRetryAttempts:                   Bool(true),
-				UserTaskManagedInitialWarehouseSize:     Bool(true),
-				UserTaskTimeoutMs:                       Bool(true),
-				UserTaskMinimumTriggerIntervalInSeconds: Bool(true),
-				QuotedIdentifiersIgnoreCase:             Bool(true),
-				EnableConsoleOutput:                     Bool(true),
-				Comment:                                 Bool(true),
+				DataRetentionTimeInDays:                 new(true),
+				MaxDataExtensionTimeInDays:              new(true),
+				ExternalVolume:                          new(true),
+				Catalog:                                 new(true),
+				PipeExecutionPaused:                     new(true),
+				ReplaceInvalidCharacters:                new(true),
+				DefaultDDLCollation:                     new(true),
+				StorageSerializationPolicy:              new(true),
+				LogLevel:                                new(true),
+				TraceLevel:                              new(true),
+				SuspendTaskAfterNumFailures:             new(true),
+				TaskAutoRetryAttempts:                   new(true),
+				UserTaskManagedInitialWarehouseSize:     new(true),
+				UserTaskTimeoutMs:                       new(true),
+				UserTaskMinimumTriggerIntervalInSeconds: new(true),
+				QuotedIdentifiersIgnoreCase:             new(true),
+				EnableConsoleOutput:                     new(true),
+				Comment:                                 new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, EXTERNAL_VOLUME, CATALOG, PIPE_EXECUTION_PAUSED, `+
@@ -337,7 +337,7 @@ func TestSchemasAlter(t *testing.T) {
 	t.Run("enable managed access", func(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name:                schemaId,
-			EnableManagedAccess: Bool(true),
+			EnableManagedAccess: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA %s ENABLE MANAGED ACCESS`, schemaId.FullyQualifiedName())
 	})
@@ -345,7 +345,7 @@ func TestSchemasAlter(t *testing.T) {
 	t.Run("disable managed access", func(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name:                 schemaId,
-			DisableManagedAccess: Bool(true),
+			DisableManagedAccess: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA %s DISABLE MANAGED ACCESS`, schemaId.FullyQualifiedName())
 	})
@@ -371,8 +371,8 @@ func TestSchemasDrop(t *testing.T) {
 	t.Run("all options - cascade", func(t *testing.T) {
 		opts := &DropSchemaOptions{
 			name:     schemaId,
-			IfExists: Bool(true),
-			Cascade:  Bool(true),
+			IfExists: new(true),
+			Cascade:  new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP SCHEMA IF EXISTS %s CASCADE`, opts.name.FullyQualifiedName())
 	})
@@ -380,8 +380,8 @@ func TestSchemasDrop(t *testing.T) {
 	t.Run("all options - restrict", func(t *testing.T) {
 		opts := &DropSchemaOptions{
 			name:     schemaId,
-			IfExists: Bool(true),
-			Restrict: Bool(true),
+			IfExists: new(true),
+			Restrict: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP SCHEMA IF EXISTS %s RESTRICT`, opts.name.FullyQualifiedName())
 	})
@@ -389,9 +389,9 @@ func TestSchemasDrop(t *testing.T) {
 	t.Run("validation: cascade and restrict set together", func(t *testing.T) {
 		opts := &DropSchemaOptions{
 			name:     schemaId,
-			IfExists: Bool(true),
-			Cascade:  Bool(true),
-			Restrict: Bool(true),
+			IfExists: new(true),
+			Cascade:  new(true),
+			Restrict: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("DropSchemaOptions", "Cascade", "Restrict"))
 	})
@@ -436,10 +436,10 @@ func TestSchemasDescribe(t *testing.T) {
 func TestSchemasShow(t *testing.T) {
 	t.Run("like", func(t *testing.T) {
 		opts := &ShowSchemaOptions{
-			Terse:   Bool(true),
-			History: Bool(true),
+			Terse:   new(true),
+			History: new(true),
 			Like: &Like{
-				Pattern: String("schema_pattern"),
+				Pattern: new("schema_pattern"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE SCHEMAS HISTORY LIKE 'schema_pattern'`)
@@ -447,10 +447,10 @@ func TestSchemasShow(t *testing.T) {
 
 	t.Run("in account", func(t *testing.T) {
 		opts := &ShowSchemaOptions{
-			Terse:   Bool(true),
-			History: Bool(true),
+			Terse:   new(true),
+			History: new(true),
 			In: &SchemaIn{
-				Account: Bool(true),
+				Account: new(true),
 				Name:    NewAccountObjectIdentifier("account_name"),
 			},
 		}
@@ -459,10 +459,10 @@ func TestSchemasShow(t *testing.T) {
 
 	t.Run("in database", func(t *testing.T) {
 		opts := &ShowSchemaOptions{
-			Terse:   Bool(true),
-			History: Bool(true),
+			Terse:   new(true),
+			History: new(true),
 			In: &SchemaIn{
-				Database: Bool(true),
+				Database: new(true),
 				Name:     NewAccountObjectIdentifier("database_name"),
 			},
 		}
@@ -471,20 +471,20 @@ func TestSchemasShow(t *testing.T) {
 
 	t.Run("starts with", func(t *testing.T) {
 		opts := &ShowSchemaOptions{
-			Terse:      Bool(true),
-			History:    Bool(true),
-			StartsWith: String("schema_pattern"),
+			Terse:      new(true),
+			History:    new(true),
+			StartsWith: new("schema_pattern"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE SCHEMAS HISTORY STARTS WITH 'schema_pattern'`)
 	})
 
 	t.Run("limit", func(t *testing.T) {
 		opts := &ShowSchemaOptions{
-			Terse:   Bool(true),
-			History: Bool(true),
+			Terse:   new(true),
+			History: new(true),
 			LimitFrom: &LimitFrom{
-				Rows: Int(3),
-				From: String("name_string"),
+				Rows: new(3),
+				From: new("name_string"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE SCHEMAS HISTORY LIMIT 3 FROM 'name_string'`)

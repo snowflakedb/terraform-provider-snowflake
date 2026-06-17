@@ -52,7 +52,7 @@ func (c *ShareClient) DropShareFunc(t *testing.T, id sdk.AccountObjectIdentifier
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropShareOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropShareOptions{IfExists: new(true)})
 		require.NoError(t, err)
 	}
 }

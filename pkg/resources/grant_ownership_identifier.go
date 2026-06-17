@@ -113,7 +113,7 @@ func ParseGrantOwnershipId(id string) (*GrantOwnershipId, error) {
 	if len(parts[2]) > 0 {
 		switch outboundPrivilegesBehavior := OutboundPrivilegesBehavior(parts[2]); outboundPrivilegesBehavior {
 		case CopyOutboundPrivilegesBehavior, RevokeOutboundPrivilegesBehavior:
-			grantOwnershipId.OutboundPrivilegesBehavior = sdk.Pointer(outboundPrivilegesBehavior)
+			grantOwnershipId.OutboundPrivilegesBehavior = new(outboundPrivilegesBehavior)
 		default:
 			return grantOwnershipId, sdk.NewError(fmt.Sprintf("unknown OutboundPrivilegesBehavior: %v, valid options are %v | %v", outboundPrivilegesBehavior, CopyOutboundPrivilegesBehavior, RevokeOutboundPrivilegesBehavior))
 		}
@@ -148,13 +148,13 @@ func ParseGrantOwnershipId(id string) (*GrantOwnershipId, error) {
 			if err != nil {
 				return nil, err
 			}
-			bulkOperationGrantData.Database = sdk.Pointer(databaseId)
+			bulkOperationGrantData.Database = new(databaseId)
 		case InSchemaBulkOperationGrantKind:
 			schemaId, err := sdk.ParseDatabaseObjectIdentifier(parts[6])
 			if err != nil {
 				return nil, err
 			}
-			bulkOperationGrantData.Schema = sdk.Pointer(schemaId)
+			bulkOperationGrantData.Schema = new(schemaId)
 		default:
 			return grantOwnershipId, sdk.NewError(fmt.Sprintf("invalid BulkOperationGrantKind: %s, valid options are %v | %v", bulkOperationGrantData.Kind, InDatabaseBulkOperationGrantKind, InSchemaBulkOperationGrantKind))
 		}

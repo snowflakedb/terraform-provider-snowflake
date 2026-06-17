@@ -246,7 +246,7 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 							Name:       wh.ID(),
 						}},
 						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+							AccountRoleName: new(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -324,7 +324,7 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 							Name:       db.ID(),
 						}},
 						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+							AccountRoleName: new(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -400,7 +400,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 
 			if !slices.Contains(protectedUsers, user.Name) && userDropCondition(user) {
 				log.Printf("[DEBUG] Dropping user %s", user.ID().FullyQualifiedName())
-				if err := client.Users.Drop(ctx, user.ID(), &sdk.DropUserOptions{IfExists: sdk.Bool(true)}); err != nil {
+				if err := client.Users.Drop(ctx, user.ID(), &sdk.DropUserOptions{IfExists: new(true)}); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping user %s ended with error, err = %w", user.ID().FullyQualifiedName(), err))
 				}
 			} else {
@@ -509,7 +509,7 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 							Name:       role.ID(),
 						}},
 						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+							AccountRoleName: new(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -673,7 +673,7 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 							Name:       rm.ID(),
 						}},
 						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+							AccountRoleName: new(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -751,7 +751,7 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 						Name:       fg.ID(),
 					}},
 					sdk.OwnershipGrantTo{
-						AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+						AccountRoleName: new(snowflakeroles.Accountadmin),
 					},
 					nil,
 				)

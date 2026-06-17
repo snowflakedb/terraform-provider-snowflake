@@ -51,7 +51,7 @@ func TestUserCreate(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
 			ObjectProperties: &UserObjectProperties{
-				DefaultSecondaryRoles: &SecondaryRoles{None: Bool(true)},
+				DefaultSecondaryRoles: &SecondaryRoles{None: new(true)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE USER %s DEFAULT_SECONDARY_ROLES = ()`, id.FullyQualifiedName())
@@ -72,8 +72,8 @@ func TestUserCreate(t *testing.T) {
 			name: id,
 			ObjectProperties: &UserObjectProperties{
 				DefaultSecondaryRoles: &SecondaryRoles{
-					All:  Bool(true),
-					None: Bool(true),
+					All:  new(true),
+					None: new(true),
 				},
 			},
 		}
@@ -84,7 +84,7 @@ func TestUserCreate(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
 			ObjectProperties: &UserObjectProperties{
-				Type: Pointer(UserTypeLegacyService),
+				Type: new(UserTypeLegacyService),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE USER %s TYPE = LEGACY_SERVICE`, id.FullyQualifiedName())
@@ -196,24 +196,24 @@ func TestUserCreate(t *testing.T) {
 		var defaultNamespaceId ObjectIdentifier = randomDatabaseObjectIdentifier()
 
 		opts := &CreateUserOptions{
-			OrReplace:   Bool(true),
+			OrReplace:   new(true),
 			name:        id,
-			IfNotExists: Bool(true),
+			IfNotExists: new(true),
 			ObjectProperties: &UserObjectProperties{
 				Password:              &password,
 				LoginName:             &loginName,
-				DefaultRole:           Pointer(defaultRoleId),
-				DefaultNamespace:      Pointer(defaultNamespaceId),
-				DefaultWarehouse:      Pointer(defaultWarehouseId),
-				DefaultSecondaryRoles: &SecondaryRoles{All: Bool(true)},
+				DefaultRole:           new(defaultRoleId),
+				DefaultNamespace:      new(defaultNamespaceId),
+				DefaultWarehouse:      new(defaultWarehouseId),
+				DefaultSecondaryRoles: &SecondaryRoles{All: new(true)},
 			},
 			ObjectParameters: &UserObjectParameters{
-				EnableUnredactedQuerySyntaxError: Bool(true),
+				EnableUnredactedQuerySyntaxError: new(true),
 			},
 			SessionParameters: &SessionParameters{
-				Autocommit: Bool(true),
+				Autocommit: new(true),
 			},
-			With: Bool(true),
+			With: new(true),
 			Tags: tags,
 		}
 
@@ -248,8 +248,8 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
-				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
-				PasswordPolicy:       Pointer(randomSchemaObjectIdentifier()),
+				AuthenticationPolicy: new(randomSchemaObjectIdentifier()),
+				PasswordPolicy:       new(randomSchemaObjectIdentifier()),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("UserSet", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
@@ -259,10 +259,10 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
-				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
-				SessionParameters:    &SessionParameters{AbortDetachedQuery: Bool(true)},
-				ObjectParameters:     &UserObjectParameters{EnableUnredactedQuerySyntaxError: Bool(true)},
-				ObjectProperties:     &UserAlterObjectProperties{DisableMfa: Bool(true)},
+				AuthenticationPolicy: new(randomSchemaObjectIdentifier()),
+				SessionParameters:    &SessionParameters{AbortDetachedQuery: new(true)},
+				ObjectParameters:     &UserObjectParameters{EnableUnredactedQuerySyntaxError: new(true)},
+				ObjectProperties:     &UserAlterObjectProperties{DisableMfa: new(true)},
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errors.New("policies cannot be set with user properties or parameters at the same time"))
@@ -272,8 +272,8 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
-				SessionParameters: &SessionParameters{AbortDetachedQuery: Bool(true)},
-				ObjectParameters:  &UserObjectParameters{EnableUnredactedQuerySyntaxError: Bool(true)},
+				SessionParameters: &SessionParameters{AbortDetachedQuery: new(true)},
+				ObjectParameters:  &UserObjectParameters{EnableUnredactedQuerySyntaxError: new(true)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true ABORT_DETACHED_QUERY = true", id.FullyQualifiedName())
@@ -283,7 +283,7 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
-				ObjectProperties: &UserAlterObjectProperties{UserObjectProperties: UserObjectProperties{Type: Pointer(UserTypeLegacyService)}},
+				ObjectProperties: &UserAlterObjectProperties{UserObjectProperties: UserObjectProperties{Type: new(UserTypeLegacyService)}},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET TYPE = LEGACY_SERVICE", id.FullyQualifiedName())
@@ -301,8 +301,8 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Unset: &UserUnset{
-				PasswordPolicy:   Bool(true),
-				ObjectParameters: &UserObjectParametersUnset{EnableUnredactedQuerySyntaxError: Bool(true)},
+				PasswordPolicy:   new(true),
+				ObjectParameters: &UserObjectParametersUnset{EnableUnredactedQuerySyntaxError: new(true)},
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errors.New("policies cannot be unset with user properties or parameters at the same time"))
@@ -343,7 +343,7 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Unset: &UserUnset{
-				ObjectProperties: &UserObjectPropertiesUnset{Type: Bool(true)},
+				ObjectProperties: &UserObjectPropertiesUnset{Type: new(true)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET TYPE", id.FullyQualifiedName())
@@ -353,8 +353,8 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Unset: &UserUnset{
-				PasswordPolicy:       Bool(true),
-				AuthenticationPolicy: Bool(true),
+				PasswordPolicy:       new(true),
+				AuthenticationPolicy: new(true),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("UserUnset", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
@@ -364,8 +364,8 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Unset: &UserUnset{
-				ObjectParameters:  &UserObjectParametersUnset{EnableUnredactedQuerySyntaxError: Bool(true)},
-				SessionParameters: &SessionParametersUnset{BinaryOutputFormat: Bool(true)},
+				ObjectParameters:  &UserObjectParametersUnset{EnableUnredactedQuerySyntaxError: new(true)},
+				SessionParameters: &SessionParametersUnset{BinaryOutputFormat: new(true)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR, BINARY_OUTPUT_FORMAT", id.FullyQualifiedName())
@@ -430,7 +430,7 @@ func TestUserAlter(t *testing.T) {
 			UserObjectProperties: UserObjectProperties{
 				Password: &password,
 				DefaultSecondaryRoles: &SecondaryRoles{
-					All: Bool(true),
+					All: new(true),
 				},
 			},
 		}
@@ -443,7 +443,7 @@ func TestUserAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET PASSWORD = '%s' DEFAULT_SECONDARY_ROLES = ('ALL')", id.FullyQualifiedName(), password)
 
 		objectParameters := UserObjectParameters{
-			EnableUnredactedQuerySyntaxError: Bool(true),
+			EnableUnredactedQuerySyntaxError: new(true),
 		}
 
 		opts = &AlterUserOptions{
@@ -455,7 +455,7 @@ func TestUserAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true", id.FullyQualifiedName())
 
 		sessionParameters := SessionParameters{
-			Autocommit: Bool(true),
+			Autocommit: new(true),
 		}
 		opts = &AlterUserOptions{
 			name: id,
@@ -469,9 +469,9 @@ func TestUserAlter(t *testing.T) {
 	t.Run("alter: set object properties", func(t *testing.T) {
 		objectProperties := UserAlterObjectProperties{
 			UserObjectProperties: UserObjectProperties{
-				FirstName: String("name"),
+				FirstName: new("name"),
 			},
-			DisableMfa: Bool(true),
+			DisableMfa: new(true),
 		}
 		opts := &AlterUserOptions{
 			name: id,
@@ -484,7 +484,7 @@ func TestUserAlter(t *testing.T) {
 
 	t.Run("alter: set disable mfa only", func(t *testing.T) {
 		objectProperties := UserAlterObjectProperties{
-			DisableMfa: Bool(true),
+			DisableMfa: new(true),
 		}
 		opts := &AlterUserOptions{
 			name: id,
@@ -499,7 +499,7 @@ func TestUserAlter(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterUserOptions{
 			name:          id,
-			ResetPassword: Bool(true),
+			ResetPassword: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s RESET PASSWORD", id.FullyQualifiedName())
 	})
@@ -508,7 +508,7 @@ func TestUserAlter(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &AlterUserOptions{
 			name:            id,
-			AbortAllQueries: Bool(true),
+			AbortAllQueries: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s ABORT ALL QUERIES", id.FullyQualifiedName())
 	})
@@ -547,7 +547,7 @@ func TestUserAlter(t *testing.T) {
 
 	t.Run("with unsetting properties", func(t *testing.T) {
 		objectProperties := UserObjectPropertiesUnset{
-			Password: Bool(true),
+			Password: new(true),
 		}
 		opts := &AlterUserOptions{
 			name: id,
@@ -562,7 +562,7 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Unset: &UserUnset{
-				SessionPolicy: Bool(true),
+				SessionPolicy: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET SESSION POLICY", id.FullyQualifiedName())
@@ -572,7 +572,7 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Unset: &UserUnset{
-				AuthenticationPolicy: Bool(true),
+				AuthenticationPolicy: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET AUTHENTICATION POLICY", id.FullyQualifiedName())
@@ -694,7 +694,7 @@ func TestUserAlter(t *testing.T) {
 			name: id,
 			Unset: &UserUnset{
 				ObjectProperties: &UserObjectPropertiesUnset{
-					WorkloadIdentity: Bool(true),
+					WorkloadIdentity: new(true),
 				},
 			},
 		}
@@ -735,8 +735,8 @@ func TestUserAlter(t *testing.T) {
 				ObjectProperties: &UserAlterObjectProperties{
 					UserObjectProperties: UserObjectProperties{
 						DefaultSecondaryRoles: &SecondaryRoles{
-							All:  Bool(true),
-							None: Bool(true),
+							All:  new(true),
+							None: new(true),
 						},
 					},
 				},
@@ -773,7 +773,7 @@ func TestUserShow(t *testing.T) {
 	t.Run("with like", func(t *testing.T) {
 		opts := &ShowUserOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW USERS LIKE '%s'", id.Name())
@@ -783,7 +783,7 @@ func TestUserShow(t *testing.T) {
 		fromPatern := random.String()
 		opts := &ShowUserOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 			From: &fromPatern,
 		}
@@ -794,7 +794,7 @@ func TestUserShow(t *testing.T) {
 		limit := 5
 		opts := &ShowUserOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 			Limit: &limit,
 		}
@@ -1179,7 +1179,6 @@ func Test_User_ToSecondaryRolesOption(t *testing.T) {
 	}
 
 	for _, tc := range valid {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToSecondaryRolesOption(tc.input)
 			require.NoError(t, err)
@@ -1188,7 +1187,6 @@ func Test_User_ToSecondaryRolesOption(t *testing.T) {
 	}
 
 	for _, tc := range invalid {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToSecondaryRolesOption(tc.input)
 			require.Error(t, err)
@@ -1212,7 +1210,6 @@ func Test_User_GetSecondaryRolesOptionFrom(t *testing.T) {
 	}
 
 	for _, tc := range valid {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got := GetSecondaryRolesOptionFrom(tc.input)
 			require.Equal(t, tc.want, got)
@@ -1220,7 +1217,6 @@ func Test_User_GetSecondaryRolesOptionFrom(t *testing.T) {
 	}
 
 	for _, tc := range valid {
-		tc := tc
 		t.Run(fmt.Sprintf("invoked from user: %s", tc.input), func(t *testing.T) {
 			user := User{DefaultSecondaryRoles: tc.input}
 			got := user.GetSecondaryRolesOption()

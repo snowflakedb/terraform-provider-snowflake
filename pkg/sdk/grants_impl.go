@@ -386,7 +386,7 @@ func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectId
 		if pipeExecutionState == RunningPipeExecutionState {
 			if err := v.client.Pipes.Alter(ctx, pipeId, &AlterPipeOptions{
 				Set: &PipeSet{
-					PipeExecutionPaused: Bool(true),
+					PipeExecutionPaused: new(true),
 				},
 			}); err != nil {
 				return err
@@ -431,7 +431,7 @@ func (v *grants) grantOwnershipOnTask(ctx context.Context, taskId SchemaObjectId
 
 	currentGrantsOnAccount, err := v.client.Grants.Show(ctx, &ShowGrantOptions{
 		On: &ShowGrantsOn{
-			Account: Bool(true),
+			Account: new(true),
 		},
 	})
 	if err != nil {

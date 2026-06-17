@@ -158,16 +158,16 @@ func UpdateUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 		}
 
 		if err := client.Users.Alter(ctx, *userName, &sdk.AlterUserOptions{
-			IfExists: sdk.Bool(true),
+			IfExists: new(true),
 			Unset: &sdk.UserUnset{
-				SessionPolicy: sdk.Bool(true),
+				SessionPolicy: new(true),
 			},
 		}); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while unsetting old session policy from user %v, err = %w", userName.FullyQualifiedName(), err))
 		}
 		if err := client.Users.Alter(ctx, *userName, &sdk.AlterUserOptions{
-			IfExists: sdk.Bool(true),
+			IfExists: new(true),
 			Set: &sdk.UserSet{
 				SessionPolicy: &newSessionPolicyName,
 			},
@@ -191,9 +191,9 @@ func DeleteUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 	}
 
 	err = client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
-		IfExists: sdk.Bool(true),
+		IfExists: new(true),
 		Unset: &sdk.UserUnset{
-			SessionPolicy: sdk.Bool(true),
+			SessionPolicy: new(true),
 		},
 	})
 	if err != nil {

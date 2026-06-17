@@ -141,7 +141,7 @@ func UpdateSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta a
 		if len(comment) > 0 {
 			databaseSetRequest.Comment = &comment
 		} else {
-			databaseUnsetRequest.Comment = sdk.Bool(true)
+			databaseUnsetRequest.Comment = new(true)
 		}
 	}
 
@@ -190,7 +190,7 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 
 	replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, &sdk.ShowReplicationDatabasesOptions{
 		Like: &sdk.Like{
-			Pattern: sdk.String(secondaryDatabaseId.Name()),
+			Pattern: new(secondaryDatabaseId.Name()),
 		},
 	})
 	if err != nil {
@@ -199,7 +199,6 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 
 	var replicationPrimaryDatabase *sdk.ReplicationDatabase
 	for _, replicationDatabase := range replicationDatabases {
-		replicationDatabase := replicationDatabase
 		if !replicationDatabase.IsPrimary &&
 			replicationDatabase.AccountLocator == client.GetAccountLocator() &&
 			replicationDatabase.Name == secondaryDatabaseId.Name() {

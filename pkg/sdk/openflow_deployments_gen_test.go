@@ -41,15 +41,15 @@ func TestOpenflowDeployments_Create(t *testing.T) {
 		comment := random.Comment()
 		vpcType := OpenflowVpcTypeManaged
 		opts := &CreateOpenflowDeploymentOptions{
-			IfNotExists:                Bool(true),
+			IfNotExists:                new(true),
 			name:                       id,
 			DeploymentType:             OpenflowDeploymentTypeByoc,
 			VpcType:                    &vpcType,
-			CustomIngressHostname:      String("ingress.example.com"),
-			UsePrivateLink:             Bool(true),
-			UseUserAuthOverPrivatelink: Bool(false),
-			EventTable:                 String("MY_DB.PUBLIC.EVENTS"),
-			DisplayName:                String("My Deployment"),
+			CustomIngressHostname:      new("ingress.example.com"),
+			UsePrivateLink:             new(true),
+			UseUserAuthOverPrivatelink: new(false),
+			EventTable:                 new("MY_DB.PUBLIC.EVENTS"),
+			DisplayName:                new("My Deployment"),
 			Comment:                    &comment,
 		}
 		assertOptsValidAndSQLEquals(t, opts,
@@ -105,13 +105,13 @@ func TestOpenflowDeployments_Alter(t *testing.T) {
 
 	t.Run("upgrade", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Upgrade = Bool(true)
+		opts.Upgrade = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW DEPLOYMENT %s UPGRADE", id.FullyQualifiedName())
 	})
 
 	t.Run("terminate", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Terminate = Bool(true)
+		opts.Terminate = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW DEPLOYMENT %s TERMINATE", id.FullyQualifiedName())
 	})
 
@@ -127,8 +127,8 @@ func TestOpenflowDeployments_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &OpenflowDeploymentSet{
 			Comment:     &comment,
-			DisplayName: String("My Deployment"),
-			EventTable:  String("MY_DB.PUBLIC.EVENTS"),
+			DisplayName: new("My Deployment"),
+			EventTable:  new("MY_DB.PUBLIC.EVENTS"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW DEPLOYMENT %s SET COMMENT = '%s' DISPLAY_NAME = 'My Deployment' EVENT_TABLE = 'MY_DB.PUBLIC.EVENTS'",
 			id.FullyQualifiedName(), comment)
@@ -137,9 +137,9 @@ func TestOpenflowDeployments_Alter(t *testing.T) {
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &OpenflowDeploymentUnset{
-			Comment:     Bool(true),
-			DisplayName: Bool(true),
-			EventTable:  Bool(true),
+			Comment:     new(true),
+			DisplayName: new(true),
+			EventTable:  new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW DEPLOYMENT %s UNSET COMMENT, DISPLAY_NAME, EVENT_TABLE", id.FullyQualifiedName())
 	})
@@ -171,7 +171,7 @@ func TestOpenflowDeployments_Drop(t *testing.T) {
 
 	t.Run("if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "DROP OPENFLOW DEPLOYMENT IF EXISTS %s", id.FullyQualifiedName())
 	})
 }
@@ -193,7 +193,7 @@ func TestOpenflowDeployments_Show(t *testing.T) {
 
 	t.Run("like", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("my-deployment%")}
+		opts.Like = &Like{Pattern: new("my-deployment%")}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW OPENFLOW DEPLOYMENTS LIKE 'my-deployment%%'")
 	})
 }

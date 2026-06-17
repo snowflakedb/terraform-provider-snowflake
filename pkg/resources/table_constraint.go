@@ -252,7 +252,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	}
 	constraintRequest := sdk.NewOutOfLineConstraintRequest(constraintType).WithName(&name)
 
-	cc := d.Get("columns").([]interface{})
+	cc := d.Get("columns").([]any)
 	columns := make([]string, 0, len(cc))
 	for _, c := range cc {
 		columns = append(columns, c.(string))
@@ -260,37 +260,37 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	constraintRequest.WithColumns(snowflake.QuoteStringList(columns))
 
 	if v, ok := d.GetOk("enforced"); ok {
-		constraintRequest.WithEnforced(sdk.Bool(v.(bool)))
+		constraintRequest.WithEnforced(new(v.(bool)))
 	}
 
 	if v, ok := d.GetOk("deferrable"); ok {
-		constraintRequest.WithDeferrable(sdk.Bool(v.(bool)))
+		constraintRequest.WithDeferrable(new(v.(bool)))
 	}
 
 	if v, ok := d.GetOk("initially"); ok {
 		if v.(string) == "DEFERRED" {
-			constraintRequest.WithInitiallyDeferred(sdk.Bool(true))
+			constraintRequest.WithInitiallyDeferred(new(true))
 		} else {
-			constraintRequest.WithInitiallyImmediate(sdk.Bool(true))
+			constraintRequest.WithInitiallyImmediate(new(true))
 		}
 	}
 
 	if v, ok := d.GetOk("enable"); ok {
-		constraintRequest.WithEnable(sdk.Bool(v.(bool)))
+		constraintRequest.WithEnable(new(v.(bool)))
 	}
 
 	if v, ok := d.GetOk("validate"); ok {
-		constraintRequest.WithValidate(sdk.Bool(v.(bool)))
+		constraintRequest.WithValidate(new(v.(bool)))
 	}
 
 	if v, ok := d.GetOk("rely"); ok {
-		constraintRequest.WithRely(sdk.Bool(v.(bool)))
+		constraintRequest.WithRely(new(v.(bool)))
 	}
 
 	// set foreign key specific settings
 	if v, ok := d.GetOk("foreign_key_properties"); ok {
-		foreignKeyProperties := v.([]interface{})[0].(map[string]interface{})
-		references := foreignKeyProperties["references"].([]interface{})[0].(map[string]interface{})
+		foreignKeyProperties := v.([]any)[0].(map[string]any)
+		references := foreignKeyProperties["references"].([]any)[0].(map[string]any)
 		fkTableID := references["table_id"].(string)
 		fkId, err := helpers.DecodeSnowflakeParameterID(fkTableID)
 		if err != nil {
@@ -301,7 +301,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 			return diag.FromErr(fmt.Errorf("table id is incorrect: %s", fkId))
 		}
 
-		cols := references["columns"].([]interface{})
+		cols := references["columns"].([]any)
 		var fkColumns []string
 		for _, c := range cols {
 			fkColumns = append(fkColumns, c.(string))
@@ -346,7 +346,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 }
 
 // ReadTableConstraint implements schema.ReadFunc.
-func ReadTableConstraint(ctx context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func ReadTableConstraint(ctx context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
 	// TODO(issue-2683): Implement read operation
 	// commenting this out since it requires an active warehouse to be set which may not be intuitive.
 	// also it takes a while for the database to reflect changes. Would likely need to add a validation

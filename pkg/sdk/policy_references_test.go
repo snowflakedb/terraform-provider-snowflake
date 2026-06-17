@@ -22,7 +22,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 		opts := &getForEntityPolicyReferenceOptions{
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
-					refEntityDomain: Pointer(PolicyEntityDomainUser),
+					refEntityDomain: new(PolicyEntityDomainUser),
 				},
 			},
 		}
@@ -45,7 +45,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{NewAccountObjectIdentifier("user_name")},
-					refEntityDomain: Pointer(PolicyEntityDomainUser),
+					refEntityDomain: new(PolicyEntityDomainUser),
 				},
 			},
 		}
@@ -58,7 +58,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{id},
-					refEntityDomain: Pointer(PolicyEntityDomainTable),
+					refEntityDomain: new(PolicyEntityDomainTable),
 				},
 			},
 		}
@@ -70,7 +70,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{NewAccountObjectIdentifier("account_name")},
-					refEntityDomain: Pointer(PolicyEntityDomainAccount),
+					refEntityDomain: new(PolicyEntityDomainAccount),
 				},
 			},
 		}
@@ -82,7 +82,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{NewAccountObjectIdentifier("integration_name")},
-					refEntityDomain: Pointer(PolicyEntityDomainIntegration),
+					refEntityDomain: new(PolicyEntityDomainIntegration),
 				},
 			},
 		}
@@ -95,7 +95,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{id},
-					refEntityDomain: Pointer(PolicyEntityDomainTag),
+					refEntityDomain: new(PolicyEntityDomainTag),
 				},
 			},
 		}
@@ -108,7 +108,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 			parameters: &policyReferenceParameters{
 				arguments: &policyReferenceFunctionArguments{
 					refEntityName:   []ObjectIdentifier{id},
-					refEntityDomain: Pointer(PolicyEntityDomainView),
+					refEntityDomain: new(PolicyEntityDomainView),
 				},
 			},
 		}

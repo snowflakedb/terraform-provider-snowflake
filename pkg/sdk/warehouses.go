@@ -544,12 +544,12 @@ func (c *warehouses) Alter(ctx context.Context, id AccountObjectIdentifier, opts
 			return err
 		}
 		if warehouse.State == WarehouseStateStarted {
-			err := c.Alter(ctx, id, &AlterWarehouseOptions{Suspend: Bool(true)})
+			err := c.Alter(ctx, id, &AlterWarehouseOptions{Suspend: new(true)})
 			if err != nil {
 				return err
 			}
 			defer func() {
-				err := c.Alter(ctx, id, &AlterWarehouseOptions{Resume: Bool(true), IfSuspended: Bool(true)})
+				err := c.Alter(ctx, id, &AlterWarehouseOptions{Resume: new(true), IfSuspended: new(true)})
 				if err != nil {
 					log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
 				}
@@ -622,7 +622,7 @@ func (c *warehouses) Drop(ctx context.Context, id AccountObjectIdentifier, opts 
 }
 
 func (c *warehouses) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(c.client, func() error { return c.Drop(ctx, id, &DropWarehouseOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(c.client, func() error { return c.Drop(ctx, id, &DropWarehouseOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // ShowWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-warehouses.
@@ -829,7 +829,7 @@ func (c *warehouses) Show(ctx context.Context, opts *ShowWarehouseOptions) ([]Wa
 func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
 	warehouses, err := c.Show(ctx, &ShowWarehouseOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 	})
 	if err != nil {
@@ -844,11 +844,11 @@ func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (
 func (c *warehouses) ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
 	warehouses, err := c.Show(ctx, &ShowWarehouseOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
-		StartsWith: String(id.Name()),
+		StartsWith: new(id.Name()),
 		LimitFrom: &LimitFrom{
-			Rows: Int(1),
+			Rows: new(1),
 		},
 	})
 	if err != nil {

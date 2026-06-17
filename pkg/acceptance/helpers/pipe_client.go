@@ -55,7 +55,7 @@ func (c *PipeClient) DropPipeFunc(t *testing.T, id sdk.SchemaObjectIdentifier) f
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropPipeOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropPipeOptions{IfExists: new(true)})
 		require.NoError(t, err)
 	}
 }

@@ -28,7 +28,7 @@ func booleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **bool, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		} else {
 			*setField = planned.ValueBoolPointer()
 		}
@@ -40,7 +40,7 @@ func BooleanAttributeUpdate(planned types.Bool, inState types.Bool, setField **b
 func BooleanAttributeUpdateSetDefaultInsteadOfUnset(planned types.Bool, inState types.Bool, setField **bool, defaultValue bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
-			*setField = sdk.Bool(defaultValue)
+			*setField = new(defaultValue)
 		} else {
 			*setField = planned.ValueBoolPointer()
 		}
@@ -50,7 +50,7 @@ func BooleanAttributeUpdateSetDefaultInsteadOfUnset(planned types.Bool, inState 
 
 func Int64AttributeCreate(int64Attribute types.Int64, createField **int) error {
 	if !int64Attribute.IsNull() {
-		*createField = sdk.Int(int(int64Attribute.ValueInt64()))
+		*createField = new(int(int64Attribute.ValueInt64()))
 	}
 	return nil
 }
@@ -63,7 +63,7 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 		if planned.IsNull() {
 			*unsetField = nil
 		} else {
-			*setField = sdk.Int(int(planned.ValueInt64()))
+			*setField = new(int(planned.ValueInt64()))
 		}
 	}
 }
@@ -72,9 +72,9 @@ func int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **int, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		} else {
-			*setField = sdk.Int(int(planned.ValueInt64()))
+			*setField = new(int(planned.ValueInt64()))
 		}
 	}
 	return nil
@@ -84,9 +84,9 @@ func Int64AttributeUpdate(planned types.Int64, inState types.Int64, setField **i
 func Int64AttributeUpdateSetDefaultInsteadOfUnset(planned types.Int64, inState types.Int64, setField **int, defaultValue int) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() {
-			*setField = sdk.Int(defaultValue)
+			*setField = new(defaultValue)
 		} else {
-			*setField = sdk.Int(int(planned.ValueInt64()))
+			*setField = new(int(planned.ValueInt64()))
 		}
 	}
 	return nil
@@ -102,7 +102,7 @@ func StringAttributeCreate(stringAttribute types.String, createField **string) e
 // TODO [SNOW-2296366]: test and adjust when adding identifier suppression
 func IdAttributeCreate(stringAttribute types.String, createField **sdk.AccountObjectIdentifier) error {
 	if !stringAttribute.IsNull() {
-		*createField = sdk.Pointer(sdk.NewAccountObjectIdentifier(stringAttribute.ValueString()))
+		*createField = new(sdk.NewAccountObjectIdentifier(stringAttribute.ValueString()))
 	}
 	return nil
 }
@@ -121,7 +121,7 @@ func stringAttributeUpdate(planned types.String, inState types.String, setField 
 func StringAttributeUpdate(planned types.String, inState types.String, setField **string, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() || planned.IsUnknown() {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		} else {
 			*setField = planned.ValueStringPointer()
 		}
@@ -133,7 +133,7 @@ func StringAttributeUpdate(planned types.String, inState types.String, setField 
 func IdAttributeUpdate(planned types.String, inState types.String, setField *sdk.AccountObjectIdentifier, unsetField **bool) error {
 	if !planned.Equal(inState) {
 		if planned.IsNull() || planned.IsUnknown() {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		} else {
 			*setField = sdk.NewAccountObjectIdentifier(planned.ValueString())
 		}

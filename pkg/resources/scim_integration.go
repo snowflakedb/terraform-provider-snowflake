@@ -184,7 +184,7 @@ func ImportScimIntegration(ctx context.Context, d *schema.ResourceData, meta any
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
@@ -360,7 +360,7 @@ func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadCont
 	}
 }
 
-func UpdateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

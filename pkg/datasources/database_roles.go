@@ -78,7 +78,7 @@ func ReadDatabaseRoles(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		req.WithLike(sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		})
 	}
 
@@ -111,7 +111,6 @@ func ReadDatabaseRoles(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	flattenedDatabaseRoles := make([]map[string]any, len(databaseRoles))
 	for i, databaseRole := range databaseRoles {
-		databaseRole := databaseRole
 		flattenedDatabaseRoles[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.DatabaseRoleToSchema(&databaseRole)},
 		}

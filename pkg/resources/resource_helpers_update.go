@@ -9,9 +9,9 @@ import (
 func stringAttributeUpdate(d *schema.ResourceData, key string, setField **string, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
-			*setField = sdk.String(v.(string))
+			*setField = new(v.(string))
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -19,7 +19,7 @@ func stringAttributeUpdate(d *schema.ResourceData, key string, setField **string
 
 func stringAttributeUpdateSetOnlyNotEmpty(d *schema.ResourceData, key string, setField **string) error {
 	if d.HasChange(key) {
-		*setField = sdk.String(d.Get(key).(string))
+		*setField = new(d.Get(key).(string))
 	}
 	return nil
 }
@@ -34,9 +34,9 @@ func stringAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField *
 func intAttributeUpdate(d *schema.ResourceData, key string, setField **int, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
-			*setField = sdk.Int(v.(int))
+			*setField = new(v.(int))
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -45,7 +45,7 @@ func intAttributeUpdate(d *schema.ResourceData, key string, setField **int, unse
 func intAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **int) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
-			*setField = sdk.Int(v.(int))
+			*setField = new(v.(int))
 		}
 	}
 	return nil
@@ -54,9 +54,9 @@ func intAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **in
 func intAttributeWithSpecialDefaultUpdate(d *schema.ResourceData, key string, setField **int, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(int); v != IntDefault {
-			*setField = sdk.Int(v)
+			*setField = new(v)
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -65,9 +65,9 @@ func intAttributeWithSpecialDefaultUpdate(d *schema.ResourceData, key string, se
 func intAttributeUnsetFallbackUpdateWithZeroDefault(d *schema.ResourceData, key string, setField **int, fallbackValue int) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(int); v != 0 {
-			*setField = sdk.Int(v)
+			*setField = new(v)
 		} else {
-			*setField = sdk.Int(fallbackValue)
+			*setField = new(fallbackValue)
 		}
 	}
 	return nil
@@ -76,9 +76,9 @@ func intAttributeUnsetFallbackUpdateWithZeroDefault(d *schema.ResourceData, key 
 func booleanAttributeUpdate(d *schema.ResourceData, key string, setField **bool, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
-			*setField = sdk.Bool(v.(bool))
+			*setField = new(v.(bool))
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -86,7 +86,7 @@ func booleanAttributeUpdate(d *schema.ResourceData, key string, setField **bool,
 
 func booleanAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **bool) error {
 	if d.HasChange(key) {
-		*setField = sdk.Bool(d.Get(key).(bool))
+		*setField = new(d.Get(key).(bool))
 	}
 	return nil
 }
@@ -98,9 +98,9 @@ func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField *
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Bool(parsed)
+			*setField = new(parsed)
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -113,7 +113,7 @@ func booleanStringAttributeUpdateSetOnly(d *schema.ResourceData, key string, set
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Bool(parsed)
+			*setField = new(parsed)
 		}
 	}
 	return nil
@@ -126,9 +126,9 @@ func booleanStringAttributeUnsetFallbackUpdate(d *schema.ResourceData, key strin
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Bool(parsed)
+			*setField = new(parsed)
 		} else {
-			*setField = sdk.Bool(fallbackValue)
+			*setField = new(fallbackValue)
 		}
 	}
 	return nil
@@ -152,7 +152,7 @@ func booleanStringAttributeUnsetFallbackUpdateBuilder[T any](d *schema.ResourceD
 func accountObjectIdentifierAttributeSetOnly(d *schema.ResourceData, key string, setField **sdk.AccountObjectIdentifier) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
-			*setField = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+			*setField = new(sdk.NewAccountObjectIdentifier(v.(string)))
 		}
 	}
 	return nil
@@ -161,9 +161,9 @@ func accountObjectIdentifierAttributeSetOnly(d *schema.ResourceData, key string,
 func accountObjectIdentifierAttributeUpdate(d *schema.ResourceData, key string, setField **sdk.AccountObjectIdentifier, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
-			*setField = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+			*setField = new(sdk.NewAccountObjectIdentifier(v.(string)))
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -176,9 +176,9 @@ func schemaObjectIdentifierAttributeUpdate(d *schema.ResourceData, key string, s
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(id)
+			*setField = new(id)
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -191,9 +191,9 @@ func objectIdentifierAttributeUpdate(d *schema.ResourceData, key string, setFiel
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(objectIdentifier)
+			*setField = new(objectIdentifier)
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -204,7 +204,7 @@ func attributeDirectValueUpdate[T any](d *schema.ResourceData, key string, setFi
 		if _, ok := d.GetOk(key); ok {
 			*setField = value
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -217,9 +217,9 @@ func attributeMappedValueUpdate[T, R any](d *schema.ResourceData, key string, se
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(mappedValue)
+			*setField = new(mappedValue)
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -236,7 +236,7 @@ func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, un
 		if len(mappedValue) > 0 {
 			*setField = mappedValue
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil
@@ -249,7 +249,7 @@ func attributeMappedValueUpdateSetOnly[T, R any](d *schema.ResourceData, key str
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(mappedValue)
+			*setField = new(mappedValue)
 		}
 	}
 	return nil
@@ -262,9 +262,9 @@ func attributeMappedValueUpdateSetOnlyFallback[T, R any](d *schema.ResourceData,
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(mappedValue)
+			*setField = new(mappedValue)
 		} else {
-			*setField = sdk.Pointer(fallbackValue)
+			*setField = new(fallbackValue)
 		}
 	}
 	return nil
@@ -277,9 +277,9 @@ func attributeMappedValueUpdateSetOnlyFallbackNested[R any](d *schema.ResourceDa
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(mappedValue)
+			*setField = new(mappedValue)
 		} else {
-			*setField = sdk.Pointer(fallbackValue)
+			*setField = new(fallbackValue)
 		}
 	}
 	return nil
@@ -293,9 +293,9 @@ func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, 
 			if err != nil {
 				return err
 			}
-			*setField = sdk.Pointer(mappedValue)
+			*setField = new(mappedValue)
 		} else {
-			*unsetField = sdk.Bool(true)
+			*unsetField = new(true)
 		}
 	}
 	return nil

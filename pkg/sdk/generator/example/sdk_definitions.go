@@ -159,7 +159,7 @@ func SafeDrop[ID ObjectIdentifierConstraint](
 }
 
 func String(s string) *string {
-	return sdk.String(s)
+	return new(s)
 }
 
 func conversionErrorWrapped[U any](_ *U, _ error) (*U, error) {

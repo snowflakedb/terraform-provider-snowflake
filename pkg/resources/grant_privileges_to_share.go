@@ -122,8 +122,8 @@ func GrantPrivilegesToShare() *schema.Resource {
 	}
 }
 
-func ImportGrantPrivilegesToShare() func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	return func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func ImportGrantPrivilegesToShare() func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	return func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 		id, err := ParseGrantPrivilegesToShareId(d.Id())
 		if err != nil {
 			return nil, err

@@ -434,7 +434,7 @@ func (r *WarehouseRestApiPocResource) Update(ctx context.Context, request resour
 
 	// workaround for WaitForCompletion
 	if warehouseModel.WarehouseSize != nil {
-		warehouseModel.WaitForCompletion = sdk.String("true")
+		warehouseModel.WaitForCompletion = new("true")
 	}
 
 	// Put (CoA)
@@ -461,28 +461,28 @@ func (r *WarehouseRestApiPocResource) planToApiModel(plan *warehousePocModelV0) 
 		Name: plan.Name.ValueString(),
 	}
 	if !plan.WarehouseType.IsNull() {
-		warehouseModel.WarehouseType = sdk.Pointer(sdk.WarehouseType(plan.WarehouseType.ValueString()))
+		warehouseModel.WarehouseType = new(sdk.WarehouseType(plan.WarehouseType.ValueString()))
 	}
 	if !plan.WarehouseSize.IsNull() {
-		warehouseModel.WarehouseSize = sdk.Pointer(sdk.WarehouseSize(plan.WarehouseSize.ValueString()))
+		warehouseModel.WarehouseSize = new(sdk.WarehouseSize(plan.WarehouseSize.ValueString()))
 	}
 	if !plan.MaxClusterCount.IsNull() {
-		warehouseModel.MaxClusterCount = sdk.Pointer(int(plan.MaxClusterCount.ValueInt64()))
+		warehouseModel.MaxClusterCount = new(int(plan.MaxClusterCount.ValueInt64()))
 	}
 	if !plan.MinClusterCount.IsNull() {
-		warehouseModel.MinClusterCount = sdk.Pointer(int(plan.MinClusterCount.ValueInt64()))
+		warehouseModel.MinClusterCount = new(int(plan.MinClusterCount.ValueInt64()))
 	}
 	if !plan.ScalingPolicy.IsNull() {
-		warehouseModel.ScalingPolicy = sdk.Pointer(sdk.ScalingPolicy(plan.ScalingPolicy.ValueString()))
+		warehouseModel.ScalingPolicy = new(sdk.ScalingPolicy(plan.ScalingPolicy.ValueString()))
 	}
 	if !plan.AutoSuspend.IsNull() {
-		warehouseModel.AutoSuspend = sdk.Pointer(int(plan.AutoSuspend.ValueInt64()))
+		warehouseModel.AutoSuspend = new(int(plan.AutoSuspend.ValueInt64()))
 	}
 	if !plan.AutoResume.IsNull() {
-		warehouseModel.AutoResume = sdk.Pointer(fmt.Sprintf("%t", plan.AutoResume.ValueBool()))
+		warehouseModel.AutoResume = new(fmt.Sprintf("%t", plan.AutoResume.ValueBool()))
 	}
 	if !plan.InitiallySuspended.IsNull() {
-		warehouseModel.InitiallySuspended = sdk.Pointer(fmt.Sprintf("%t", plan.InitiallySuspended.ValueBool()))
+		warehouseModel.InitiallySuspended = new(fmt.Sprintf("%t", plan.InitiallySuspended.ValueBool()))
 	}
 	if !plan.ResourceMonitor.IsNull() {
 		warehouseModel.ResourceMonitor = plan.ResourceMonitor.ValueStringPointer()
@@ -491,19 +491,19 @@ func (r *WarehouseRestApiPocResource) planToApiModel(plan *warehousePocModelV0) 
 		warehouseModel.Comment = plan.Comment.ValueStringPointer()
 	}
 	if !plan.EnableQueryAcceleration.IsNull() {
-		warehouseModel.EnableQueryAcceleration = sdk.Pointer(fmt.Sprintf("%t", plan.EnableQueryAcceleration.ValueBool()))
+		warehouseModel.EnableQueryAcceleration = new(fmt.Sprintf("%t", plan.EnableQueryAcceleration.ValueBool()))
 	}
 	if !plan.QueryAccelerationMaxScaleFactor.IsNull() {
-		warehouseModel.QueryAccelerationMaxScaleFactor = sdk.Pointer(int(plan.QueryAccelerationMaxScaleFactor.ValueInt64()))
+		warehouseModel.QueryAccelerationMaxScaleFactor = new(int(plan.QueryAccelerationMaxScaleFactor.ValueInt64()))
 	}
 	if !plan.MaxConcurrencyLevel.IsNull() {
-		warehouseModel.MaxConcurrencyLevel = sdk.Pointer(int(plan.MaxConcurrencyLevel.ValueInt64()))
+		warehouseModel.MaxConcurrencyLevel = new(int(plan.MaxConcurrencyLevel.ValueInt64()))
 	}
 	if !plan.StatementQueuedTimeoutInSeconds.IsNull() {
-		warehouseModel.StatementQueuedTimeoutInSeconds = sdk.Pointer(int(plan.StatementQueuedTimeoutInSeconds.ValueInt64()))
+		warehouseModel.StatementQueuedTimeoutInSeconds = new(int(plan.StatementQueuedTimeoutInSeconds.ValueInt64()))
 	}
 	if !plan.StatementTimeoutInSeconds.IsNull() {
-		warehouseModel.StatementTimeoutInSeconds = sdk.Pointer(int(plan.StatementTimeoutInSeconds.ValueInt64()))
+		warehouseModel.StatementTimeoutInSeconds = new(int(plan.StatementTimeoutInSeconds.ValueInt64()))
 	}
 	return warehouseModel
 }
@@ -518,7 +518,7 @@ func (r *WarehouseRestApiPocResource) Delete(ctx context.Context, request resour
 		return
 	}
 
-	err = r.client.Warehouses.Drop(ctx, id, sdk.Bool(true))
+	err = r.client.Warehouses.Drop(ctx, id, new(true))
 	if err != nil {
 		response.Diagnostics.AddError("Could not delete warehouse PoC", err.Error())
 		return

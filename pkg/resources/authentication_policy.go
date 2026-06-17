@@ -661,7 +661,7 @@ func ToMfaPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 	_, mfaConfigRaw := d.GetChange("mfa_policy")
 	mfaConfigList := mfaConfigRaw.([]any)
 	if len(mfaConfigList) == 0 {
-		*unset = sdk.Bool(true)
+		*unset = new(true)
 		return nil
 	}
 	mfaConfig := mfaConfigList[0].(map[string]any)
@@ -715,7 +715,7 @@ func ToPatPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 	_, patPolicyRaw := d.GetChange("pat_policy")
 	patConfigList := patPolicyRaw.([]any)
 	if len(patConfigList) == 0 {
-		*unset = sdk.Bool(true)
+		*unset = new(true)
 		return nil
 	}
 	patConfig := patConfigList[0].(map[string]any)
@@ -769,7 +769,7 @@ func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.Aut
 	_, workloadIdentityPolicyRaw := d.GetChange("workload_identity_policy")
 	workloadIdentityPolicyConfigList := workloadIdentityPolicyRaw.([]any)
 	if len(workloadIdentityPolicyConfigList) == 0 {
-		*unset = sdk.Bool(true)
+		*unset = new(true)
 		return nil
 	}
 	workloadIdentityPolicyConfig := workloadIdentityPolicyConfigList[0].(map[string]any)
@@ -1001,7 +1001,7 @@ func toClientPolicyEntries(rawList []any) ([]sdk.AuthenticationPolicyClientPolic
 		entries = append(entries, sdk.AuthenticationPolicyClientPolicyEntry{
 			ClientType: clientType,
 			Params: &sdk.AuthenticationPolicyClientPolicyEntryParams{
-				MinimumVersion: sdk.Pointer(m["minimum_version"].(string)),
+				MinimumVersion: new(m["minimum_version"].(string)),
 			},
 		})
 	}

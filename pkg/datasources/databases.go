@@ -107,12 +107,12 @@ func ReadDatabases(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		opts.Like = &sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		}
 	}
 
 	if startsWith, ok := d.GetOk("starts_with"); ok {
-		opts.StartsWith = sdk.String(startsWith.(string))
+		opts.StartsWith = new(startsWith.(string))
 	}
 
 	if limit, ok := d.GetOk("limit"); ok && len(limit.([]any)) == 1 {
@@ -137,7 +137,6 @@ func ReadDatabases(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	flattenedDatabases := make([]map[string]any, len(databases))
 
 	for i, database := range databases {
-		database := database
 		var databaseDescription []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Databases.Describe(ctx, database.ID())

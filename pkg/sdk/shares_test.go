@@ -17,9 +17,9 @@ func TestSharesCreate(t *testing.T) {
 	t.Run("with complete options", func(t *testing.T) {
 		comment := random.Comment()
 		opts := &CreateShareOptions{
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			name:      NewAccountObjectIdentifier("complete_share"),
-			Comment:   String(comment),
+			Comment:   new(comment),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SHARE "complete_share" COMMENT = '%s'`, comment)
 	})
@@ -36,11 +36,11 @@ func TestShareAlter(t *testing.T) {
 	t.Run("with add", func(t *testing.T) {
 		accounts := []AccountIdentifier{NewAccountIdentifier("my-org", "myaccount")}
 		opts := &AlterShareOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     NewAccountObjectIdentifier("myshare"),
 			Add: &ShareAdd{
 				Accounts:          accounts,
-				ShareRestrictions: Bool(true),
+				ShareRestrictions: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SHARE IF EXISTS "myshare" ADD ACCOUNTS = "my-org"."myaccount" SHARE_RESTRICTIONS = true`)
@@ -49,7 +49,7 @@ func TestShareAlter(t *testing.T) {
 	t.Run("with remove", func(t *testing.T) {
 		accounts := []AccountIdentifier{NewAccountIdentifier("my-org", "myaccount"), NewAccountIdentifier("my-org", "myaccount2")}
 		opts := &AlterShareOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     NewAccountObjectIdentifier("myshare"),
 			Remove: &ShareRemove{
 				Accounts: accounts,
@@ -62,7 +62,7 @@ func TestShareAlter(t *testing.T) {
 		accounts := []AccountIdentifier{NewAccountIdentifier("my-org", "myaccount")}
 		comment := random.Comment()
 		opts := &AlterShareOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     NewAccountObjectIdentifier("myshare"),
 			Set: &ShareSet{
 				Accounts: accounts,
@@ -75,7 +75,7 @@ func TestShareAlter(t *testing.T) {
 	t.Run("with set tag", func(t *testing.T) {
 		tagId := randomSchemaObjectIdentifier()
 		opts := &AlterShareOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     NewAccountObjectIdentifier("myshare"),
 			SetTag: []TagAssociation{
 				{
@@ -89,10 +89,10 @@ func TestShareAlter(t *testing.T) {
 
 	t.Run("with unset", func(t *testing.T) {
 		opts := &AlterShareOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     NewAccountObjectIdentifier("myshare"),
 			Unset: &ShareUnset{
-				Comment: Bool(true),
+				Comment: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SHARE IF EXISTS "myshare" UNSET COMMENT`)
@@ -101,7 +101,7 @@ func TestShareAlter(t *testing.T) {
 	t.Run("with unset tag", func(t *testing.T) {
 		tagId := randomSchemaObjectIdentifier()
 		opts := &AlterShareOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     NewAccountObjectIdentifier("myshare"),
 			UnsetTag: []ObjectIdentifier{
 				tagId,
@@ -115,12 +115,12 @@ func TestShareShow(t *testing.T) {
 	t.Run("complete", func(t *testing.T) {
 		opts := &ShowShareOptions{
 			Like: &Like{
-				Pattern: String("myshare"),
+				Pattern: new("myshare"),
 			},
-			StartsWith: String("my"),
+			StartsWith: new("my"),
 			Limit: &LimitFrom{
-				Rows: Int(10),
-				From: String("my_other_share"),
+				Rows: new(10),
+				From: new("my_other_share"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW SHARES LIKE 'myshare' STARTS WITH 'my' LIMIT 10 FROM 'my_other_share'`)
@@ -138,7 +138,7 @@ func TestShareDrop(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := &DropShareOptions{
 			name:     NewAccountObjectIdentifier("myshare"),
-			IfExists: Bool(true),
+			IfExists: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP SHARE IF EXISTS "myshare"`)
 	})

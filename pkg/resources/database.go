@@ -158,7 +158,7 @@ func CreateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if d.Get("drop_public_schema_on_creation").(bool) {
 		var dropSchemaErrs []error
 		err := util.Retry(3, time.Second, func() (error, bool) {
-			if err := client.Schemas.Drop(ctx, sdk.NewDatabaseObjectIdentifier(id.Name(), "PUBLIC"), &sdk.DropSchemaOptions{IfExists: sdk.Bool(true)}); err != nil {
+			if err := client.Schemas.Drop(ctx, sdk.NewDatabaseObjectIdentifier(id.Name(), "PUBLIC"), &sdk.DropSchemaOptions{IfExists: new(true)}); err != nil {
 				dropSchemaErrs = append(dropSchemaErrs, err)
 				return nil, false
 			}
@@ -178,7 +178,7 @@ func CreateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 		var ignoreEditionCheck *bool
 		if v, ok := replicationConfiguration["ignore_edition_check"]; ok {
-			ignoreEditionCheck = sdk.Pointer(v.(bool))
+			ignoreEditionCheck = new(v.(bool))
 		}
 
 		if enableToAccounts, ok := replicationConfiguration["enable_to_account"]; ok {
@@ -298,7 +298,7 @@ func UpdateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			err := client.Databases.AlterReplication(ctx, id, &sdk.AlterDatabaseReplicationOptions{
 				EnableReplication: &sdk.EnableReplication{
 					ToAccounts:         addedReplications,
-					IgnoreEditionCheck: sdk.Bool(d.Get("replication.0.ignore_edition_check").(bool)),
+					IgnoreEditionCheck: new(d.Get("replication.0.ignore_edition_check").(bool)),
 				},
 			})
 			if err != nil {
@@ -345,7 +345,7 @@ func UpdateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		if len(comment) > 0 {
 			databaseSetRequest.Comment = &comment
 		} else {
-			databaseUnsetRequest.Comment = sdk.Bool(true)
+			databaseUnsetRequest.Comment = new(true)
 		}
 	}
 
@@ -411,7 +411,7 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	currentAccountIdentifier := sdk.NewAccountIdentifier(sessionDetails.OrganizationName, sessionDetails.AccountName)
 	replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, &sdk.ShowReplicationDatabasesOptions{
-		WithPrimary: sdk.Pointer(sdk.NewExternalObjectIdentifier(currentAccountIdentifier, id)),
+		WithPrimary: new(sdk.NewExternalObjectIdentifier(currentAccountIdentifier, id)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -421,7 +421,7 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		replicationAllowedToAccounts := make([]sdk.AccountIdentifier, 0)
 		failoverAllowedToAccounts := make([]sdk.AccountIdentifier, 0)
 
-		for _, allowedAccount := range strings.Split(replicationDatabases[0].ReplicationAllowedToAccounts, ",") {
+		for allowedAccount := range strings.SplitSeq(replicationDatabases[0].ReplicationAllowedToAccounts, ",") {
 			allowedAccountIdentifier := sdk.NewAccountIdentifierFromFullyQualifiedName(strings.TrimSpace(allowedAccount))
 			if currentAccountIdentifier.FullyQualifiedName() == allowedAccountIdentifier.FullyQualifiedName() {
 				continue
@@ -429,7 +429,7 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 			replicationAllowedToAccounts = append(replicationAllowedToAccounts, allowedAccountIdentifier)
 		}
 
-		for _, allowedAccount := range strings.Split(replicationDatabases[0].FailoverAllowedToAccounts, ",") {
+		for allowedAccount := range strings.SplitSeq(replicationDatabases[0].FailoverAllowedToAccounts, ",") {
 			allowedAccountIdentifier := sdk.NewAccountIdentifierFromFullyQualifiedName(strings.TrimSpace(allowedAccount))
 			if currentAccountIdentifier.FullyQualifiedName() == allowedAccountIdentifier.FullyQualifiedName() {
 				continue

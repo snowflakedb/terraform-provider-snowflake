@@ -41,5 +41,5 @@ func (c *PolicyReferencesClient) GetPolicyReference(t *testing.T, id sdk.ObjectI
 	require.NoError(t, err)
 	require.Len(t, references, 1)
 
-	return sdk.Pointer(references[0]), nil
+	return new(references[0]), nil
 }

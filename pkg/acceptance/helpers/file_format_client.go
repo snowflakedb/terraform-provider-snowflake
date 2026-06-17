@@ -51,7 +51,7 @@ func (c *FileFormatClient) DropFileFormatFunc(t *testing.T, id sdk.SchemaObjectI
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: new(true)})
 		require.NoError(t, err)
 	}
 }

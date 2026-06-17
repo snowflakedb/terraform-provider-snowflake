@@ -108,33 +108,33 @@ func handleApiAuthUpdate(d *schema.ResourceData) (commonApiAuthSet, commonApiAut
 
 	if d.HasChange("enabled") {
 		// required field
-		set.enabled = sdk.Pointer(d.Get("enabled").(bool))
+		set.enabled = new(d.Get("enabled").(bool))
 	}
 
 	if d.HasChange("oauth_client_id") {
 		// required field
-		set.oauthClientId = sdk.Pointer(d.Get("oauth_client_id").(string))
+		set.oauthClientId = new(d.Get("oauth_client_id").(string))
 	}
 
 	if d.HasChange("oauth_client_secret") {
 		// required field
-		set.oauthClientSecret = sdk.Pointer(d.Get("oauth_client_secret").(string))
+		set.oauthClientSecret = new(d.Get("oauth_client_secret").(string))
 	}
 
 	if d.HasChange("comment") {
 		if v, ok := d.GetOk("comment"); ok {
-			set.comment = sdk.Pointer(v.(string))
+			set.comment = new(v.(string))
 		} else {
-			unset.comment = sdk.Pointer(true)
+			unset.comment = new(true)
 		}
 	}
 
 	if d.HasChange("oauth_access_token_validity") {
 		if v := d.Get("oauth_access_token_validity").(int); v != IntDefault {
-			set.oauthAccessTokenValidity = sdk.Pointer(v)
+			set.oauthAccessTokenValidity = new(v)
 		} else {
 			// TODO(SNOW-1515781): use UNSET
-			set.oauthAccessTokenValidity = sdk.Pointer(0)
+			set.oauthAccessTokenValidity = new(0)
 		}
 	}
 
@@ -145,23 +145,23 @@ func handleApiAuthUpdate(d *schema.ResourceData) (commonApiAuthSet, commonApiAut
 			if err != nil {
 				return commonApiAuthSet{}, commonApiAuthUnset{}, err
 			}
-			set.oauthClientAuthMethod = sdk.Pointer(value)
+			set.oauthClientAuthMethod = new(value)
 		}
 		// else: force new
 	}
 
 	if d.HasChange("oauth_refresh_token_validity") {
 		if v, ok := d.GetOk("oauth_refresh_token_validity"); ok {
-			set.oauthRefreshTokenValidity = sdk.Pointer(v.(int))
+			set.oauthRefreshTokenValidity = new(v.(int))
 		} else {
 			// TODO(SNOW-1515781): use UNSET
-			set.oauthRefreshTokenValidity = sdk.Pointer(7776000)
+			set.oauthRefreshTokenValidity = new(7776000)
 		}
 	}
 
 	if d.HasChange("oauth_token_endpoint") {
 		if v, ok := d.GetOk("oauth_token_endpoint"); ok {
-			set.oauthTokenEndpoint = sdk.Pointer(v.(string))
+			set.oauthTokenEndpoint = new(v.(string))
 		}
 		// else: force new
 	}
@@ -188,24 +188,24 @@ func handleApiAuthCreate(d *schema.ResourceData) (commonApiAuthCreate, error) {
 		oauthClientSecret: d.Get("oauth_client_secret").(string),
 	}
 	if v, ok := d.GetOk("comment"); ok {
-		create.comment = sdk.Pointer(v.(string))
+		create.comment = new(v.(string))
 	}
 
 	if v := d.Get("oauth_access_token_validity").(int); v != IntDefault {
-		create.oauthAccessTokenValidity = sdk.Pointer(v)
+		create.oauthAccessTokenValidity = new(v)
 	}
 	if v, ok := d.GetOk("oauth_refresh_token_validity"); ok {
-		create.oauthRefreshTokenValidity = sdk.Pointer(v.(int))
+		create.oauthRefreshTokenValidity = new(v.(int))
 	}
 	if v, ok := d.GetOk("oauth_token_endpoint"); ok {
-		create.oauthTokenEndpoint = sdk.Pointer(v.(string))
+		create.oauthTokenEndpoint = new(v.(string))
 	}
 	if v, ok := d.GetOk("oauth_client_auth_method"); ok {
 		value, err := sdk.ToApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption(v.(string))
 		if err != nil {
 			return commonApiAuthCreate{}, err
 		}
-		create.oauthClientAuthMethod = sdk.Pointer(value)
+		create.oauthClientAuthMethod = new(value)
 	}
 
 	return create, nil

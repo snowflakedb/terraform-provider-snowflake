@@ -71,7 +71,7 @@ func (c *AccountClient) Create(t *testing.T) (*sdk.Account, func()) {
 
 	return c.CreateWithRequest(t, id, &sdk.CreateAccountOptions{
 		AdminName:         name,
-		AdminRSAPublicKey: sdk.String(publicKey),
+		AdminRSAPublicKey: new(publicKey),
 		Email:             email,
 		Edition:           sdk.EditionStandard,
 	})
@@ -114,7 +114,7 @@ func (c *AccountClient) Drop(t *testing.T, id sdk.AccountObjectIdentifier) error
 	ctx := context.Background()
 	revertRole := c.UseOrgadmin(t)
 	defer revertRole()
-	return c.client().Drop(ctx, id, 3, &sdk.DropAccountOptions{IfExists: sdk.Bool(true)})
+	return c.client().Drop(ctx, id, 3, &sdk.DropAccountOptions{IfExists: new(true)})
 }
 
 type Region struct {
@@ -149,7 +149,7 @@ func (c *AccountClient) CreateAndLogIn(t *testing.T) (*sdk.Account, *sdk.Client,
 
 	account, accountCleanup := c.CreateWithRequest(t, id, &sdk.CreateAccountOptions{
 		AdminName:         name,
-		AdminRSAPublicKey: sdk.String(publicKey),
+		AdminRSAPublicKey: new(publicKey),
 		AdminUserType:     sdk.Pointer(sdk.UserTypeService),
 		Email:             email,
 		Edition:           sdk.EditionStandard,

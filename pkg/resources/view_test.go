@@ -58,7 +58,7 @@ func Test_handleColumns(t *testing.T) {
 			InputColumns: []sdk.ViewDetails{
 				{
 					Name:    "name",
-					Comment: sdk.String("comment"),
+					Comment: new("comment"),
 				},
 			},
 			InputPolicyReferences: []sdk.PolicyReference{},
@@ -75,11 +75,11 @@ func Test_handleColumns(t *testing.T) {
 			InputColumns: []sdk.ViewDetails{
 				{
 					Name:    "name",
-					Comment: sdk.String("comment"),
+					Comment: new("comment"),
 				},
 				{
 					Name:    "name2",
-					Comment: sdk.String("comment2"),
+					Comment: new("comment2"),
 				},
 			},
 			InputPolicyReferences: []sdk.PolicyReference{},
@@ -100,20 +100,20 @@ func Test_handleColumns(t *testing.T) {
 			InputColumns: []sdk.ViewDetails{
 				{
 					Name:    "name",
-					Comment: sdk.String("comment"),
+					Comment: new("comment"),
 				},
 				{
 					Name:    "name2",
-					Comment: sdk.String("comment2"),
+					Comment: new("comment2"),
 				},
 			},
 			InputPolicyReferences: []sdk.PolicyReference{
 				{
-					PolicyDb:      sdk.String("db"),
-					PolicySchema:  sdk.String("sch"),
+					PolicyDb:      new("db"),
+					PolicySchema:  new("sch"),
 					PolicyName:    "policyName",
 					PolicyKind:    sdk.PolicyKindProjectionPolicy,
-					RefColumnName: sdk.String("name"),
+					RefColumnName: new("name"),
 				},
 			},
 			Expected: map[string]any{
@@ -138,28 +138,28 @@ func Test_handleColumns(t *testing.T) {
 			InputColumns: []sdk.ViewDetails{
 				{
 					Name:    "name",
-					Comment: sdk.String("comment"),
+					Comment: new("comment"),
 				},
 				{
 					Name:    "name2",
-					Comment: sdk.String("comment2"),
+					Comment: new("comment2"),
 				},
 			},
 			InputPolicyReferences: []sdk.PolicyReference{
 				{
-					PolicyDb:      sdk.String("db"),
-					PolicySchema:  sdk.String("sch"),
+					PolicyDb:      new("db"),
+					PolicySchema:  new("sch"),
 					PolicyName:    "policyName",
 					PolicyKind:    sdk.PolicyKindProjectionPolicy,
-					RefColumnName: sdk.String("name"),
+					RefColumnName: new("name"),
 				},
 				{
-					PolicyDb:          sdk.String("db"),
-					PolicySchema:      sdk.String("sch"),
+					PolicyDb:          new("db"),
+					PolicySchema:      new("sch"),
 					PolicyName:        "policyName2",
 					PolicyKind:        sdk.PolicyKindMaskingPolicy,
-					RefColumnName:     sdk.String("name"),
-					RefArgColumnNames: sdk.String("[one,two]"),
+					RefColumnName:     new("name"),
+					RefArgColumnNames: new("[one,two]"),
 				},
 			},
 			Expected: map[string]any{

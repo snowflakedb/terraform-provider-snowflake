@@ -114,15 +114,15 @@ func ReadStreamlits(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		req.WithLike(sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		})
 	}
 	if v, ok := d.GetOk("in"); ok {
-		in := v.([]interface{})[0].(map[string]interface{})
+		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok {
 			account := v.(bool)
 			if account {
-				req.WithIn(sdk.In{Account: sdk.Bool(account)})
+				req.WithIn(sdk.In{Account: new(account)})
 			}
 		}
 		if v, ok := in["database"]; ok {
@@ -139,15 +139,15 @@ func ReadStreamlits(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 	if v, ok := d.GetOk("limit"); ok {
-		l := v.([]interface{})[0].(map[string]interface{})
+		l := v.([]any)[0].(map[string]any)
 		limit := sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)
-			limit.Rows = sdk.Int(rows)
+			limit.Rows = new(rows)
 		}
 		if v, ok := l["from"]; ok {
 			from := v.(string)
-			limit.From = sdk.String(from)
+			limit.From = new(from)
 		}
 		req.WithLimit(limit)
 	}
@@ -160,7 +160,6 @@ func ReadStreamlits(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	flattenedStreamlits := make([]map[string]any, len(streamlits))
 
 	for i, streamlit := range streamlits {
-		streamlit := streamlit
 		var streamlitDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			descriptions, err := client.Streamlits.Describe(ctx, streamlit.ID())

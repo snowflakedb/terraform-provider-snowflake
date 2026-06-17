@@ -73,16 +73,16 @@ func ReadShares(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	var opts sdk.ShowShareOptions
 	if pattern != "" {
 		opts.Like = &sdk.Like{
-			Pattern: sdk.String(pattern),
+			Pattern: new(pattern),
 		}
 	}
 	shares, err := client.Shares.Show(ctx, &opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	sharesFlatten := []map[string]interface{}{}
+	sharesFlatten := []map[string]any{}
 	for _, share := range shares {
-		m := map[string]interface{}{}
+		m := map[string]any{}
 		m["name"] = share.Name.Name()
 		m["comment"] = share.Comment
 		m["owner"] = share.Owner

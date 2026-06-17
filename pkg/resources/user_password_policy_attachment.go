@@ -124,7 +124,7 @@ func DeleteUserPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceD
 
 	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
 		Unset: &sdk.UserUnset{
-			PasswordPolicy: sdk.Bool(true),
+			PasswordPolicy: new(true),
 		},
 	})
 	if err != nil {

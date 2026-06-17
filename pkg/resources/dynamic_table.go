@@ -223,15 +223,15 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if err := d.Set("comment", dynamicTable.Comment); err != nil {
 		return diag.FromErr(err)
 	}
-	tl := map[string]interface{}{}
+	tl := map[string]any{}
 	if dynamicTable.TargetLag == "DOWNSTREAM" {
 		tl["downstream"] = true
-		if err := d.Set("target_lag", []interface{}{tl}); err != nil {
+		if err := d.Set("target_lag", []any{tl}); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
 		tl["maximum_duration"] = dynamicTable.TargetLag
-		if err := d.Set("target_lag", []interface{}{tl}); err != nil {
+		if err := d.Set("target_lag", []any{tl}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -334,15 +334,15 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	return nil
 }
 
-func parseTargetLag(v interface{}) sdk.TargetLag {
+func parseTargetLag(v any) sdk.TargetLag {
 	var result sdk.TargetLag
-	tl := v.([]interface{})[0].(map[string]interface{})
+	tl := v.([]any)[0].(map[string]any)
 	if v, ok := tl["maximum_duration"]; ok {
-		result.MaximumDuration = sdk.String(v.(string))
+		result.MaximumDuration = new(v.(string))
 	}
 	if v, ok := tl["downstream"]; ok && v.(bool) {
 		result.MaximumDuration = nil
-		result.Downstream = sdk.Bool(v.(bool))
+		result.Downstream = new(v.(bool))
 	}
 	return result
 }
@@ -362,7 +362,7 @@ func CreateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	request := sdk.NewCreateDynamicTableRequest(id, warehouse, tl, query)
 	if v, ok := d.GetOk("comment"); ok {
-		request.WithComment(sdk.String(v.(string)))
+		request.WithComment(new(v.(string)))
 	}
 	if v, ok := d.GetOk("or_replace"); ok && v.(bool) {
 		request.WithOrReplace(true)
@@ -412,7 +412,7 @@ func UpdateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 		err := client.Comments.Set(ctx, &sdk.SetCommentOptions{
 			ObjectType: sdk.ObjectTypeDynamicTable,
 			ObjectName: id,
-			Value:      sdk.String(d.Get("comment").(string)),
+			Value:      new(d.Get("comment").(string)),
 		})
 		if err != nil {
 			return diag.FromErr(err)

@@ -81,10 +81,10 @@ func ReadFileFormats(ctx context.Context, d *schema.ResourceData, meta any) diag
 		return diag.FromErr(err)
 	}
 
-	fileFormats := []map[string]interface{}{}
+	fileFormats := []map[string]any{}
 
 	for _, fileFormat := range result {
-		fileFormatMap := map[string]interface{}{}
+		fileFormatMap := map[string]any{}
 
 		fileFormatMap["name"] = fileFormat.Name.Name()
 		fileFormatMap["database"] = fileFormat.Name.DatabaseName()

@@ -124,16 +124,16 @@ func ReadCortexSearchServices(ctx context.Context, d *schema.ResourceData, meta 
 
 	if likePattern, ok := d.GetOk("like"); ok {
 		request.WithLike(sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
+			Pattern: new(likePattern.(string)),
 		})
 	}
 
 	if v, ok := d.GetOk("in"); ok {
-		in := v.([]interface{})[0].(map[string]interface{})
+		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok {
 			account := v.(bool)
 			if account {
-				request.WithIn(sdk.In{Account: sdk.Bool(account)})
+				request.WithIn(sdk.In{Account: new(account)})
 			}
 		}
 		if v, ok := in["database"]; ok {
@@ -154,15 +154,15 @@ func ReadCortexSearchServices(ctx context.Context, d *schema.ResourceData, meta 
 		request.WithStartsWith(startsWith)
 	}
 	if v, ok := d.GetOk("limit"); ok {
-		l := v.([]interface{})[0].(map[string]interface{})
+		l := v.([]any)[0].(map[string]any)
 		limit := sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)
-			limit.Rows = sdk.Int(rows)
+			limit.Rows = new(rows)
 		}
 		if v, ok := l["from"]; ok {
 			from := v.(string)
-			limit.From = sdk.String(from)
+			limit.From = new(from)
 		}
 		request.WithLimit(limit)
 	}
