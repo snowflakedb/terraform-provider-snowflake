@@ -52,22 +52,21 @@ var apiIntegrationGitRepositoryOauth2Schema = func() map[string]*schema.Schema {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.IntAtLeast(0),
+			ValidateFunc: validation.IntAtLeast(1),
 			Description:  "Specifies the validity period (in seconds) for the OAuth 2.0 access token.",
 		},
 		"oauth_refresh_token_validity": {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.IntAtLeast(0),
+			ValidateFunc: validation.IntAtLeast(1),
 			Description:  "Specifies the validity period (in seconds) for the OAuth 2.0 refresh token.",
 		},
 		"oauth_allowed_scopes": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: true,
-			Description: fmt.Sprintf("Specifies a list of scopes to use when making a request from the OAuth by a role with USAGE on the integration. Valid values are (case-insensitive): %s.",
-				possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationOauthAllowedScopes))),
+			Type:        schema.TypeList,
+			Optional:    true,
+			ForceNew:    true,
+			Description: fmt.Sprintf("Specifies a list of scopes to use when making a request from the OAuth by a role with USAGE on the integration. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationOauthAllowedScopes))),
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,
 				ValidateDiagFunc: sdkValidation(sdk.ToApiIntegrationOauthAllowedScope),
@@ -119,50 +118,6 @@ func ApiIntegrationGitRepositoryOauth2() *schema.Resource {
 	}
 }
 
-func CreateApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, request, err := handleApiIntegrationCommonCreate(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	authReq := sdk.NewOAuth2GitUserAuthenticationRequest(
-		d.Get("oauth_authorization_endpoint").(string),
-		d.Get("oauth_token_endpoint").(string),
-		d.Get("oauth_client_id").(string),
-		d.Get("oauth_client_secret").(string),
-	)
-
-	if v, ok := d.GetOk("oauth_access_token_validity"); ok {
-		authReq.WithOauthAccessTokenValidity(v.(int))
-	}
-	if v, ok := d.GetOk("oauth_refresh_token_validity"); ok {
-		authReq.WithOauthRefreshTokenValidity(v.(int))
-	}
-	if v, ok := d.GetOk("oauth_allowed_scopes"); ok {
-		rawScopes := v.([]any)
-		scopes := make([]sdk.ApiIntegrationOauthAllowedScopeItem, 0, len(rawScopes))
-		for _, s := range rawScopes {
-			scopes = append(scopes, sdk.ApiIntegrationOauthAllowedScopeItem{Scope: sdk.ApiIntegrationOauthAllowedScope(s.(string))})
-		}
-		authReq.WithOauthAllowedScopes(scopes)
-	}
-	if v, ok := d.GetOk("oauth_username"); ok {
-		authReq.WithOauthUsername(v.(string))
-	}
-
-	oauth2Params := sdk.NewGitHttpsApiOAuth2ParamsRequest().WithApiUserAuthentication(*authReq)
-
-	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiOAuth2ProviderParams(*oauth2Params)); err != nil {
-		return diag.FromErr(fmt.Errorf("error creating Git Repository OAuth2 API integration: %w", err))
-	}
-
-	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	return ReadApiIntegrationGitRepositoryOauth2(ctx, d, meta)
-}
-
 func ImportApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -185,6 +140,52 @@ func ImportApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.Reso
 	}
 
 	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+}
+
+func CreateApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, request, err := handleApiIntegrationCommonCreate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	authReq := sdk.NewOAuth2GitUserAuthenticationRequest(
+		d.Get("oauth_authorization_endpoint").(string),
+		d.Get("oauth_token_endpoint").(string),
+		d.Get("oauth_client_id").(string),
+		d.Get("oauth_client_secret").(string),
+	)
+
+	if scopesRaw, ok := d.GetOk("oauth_allowed_scopes"); ok {
+		scopes, err := collections.MapErr(scopesRaw.([]any), func(scope any) (sdk.ApiIntegrationOauthAllowedScope, error) {
+			return sdk.ToApiIntegrationOauthAllowedScope(scope.(string))
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		authReq.WithOauthAllowedScopes(collections.Map(scopes, func(scope sdk.ApiIntegrationOauthAllowedScope) sdk.ApiIntegrationOauthAllowedScopeItem {
+			return sdk.ApiIntegrationOauthAllowedScopeItem{Scope: scope}
+		}))
+	}
+	if err = errors.Join(
+		intAttributeCreate(d, "oauth_access_token_validity", &authReq.OauthAccessTokenValidity),
+		intAttributeCreate(d, "oauth_refresh_token_validity", &authReq.OauthRefreshTokenValidity),
+		stringAttributeCreate(d, "oauth_username", &authReq.OauthUsername),
+	); err != nil {
+		return diag.FromErr(err)
+	}
+
+	oauth2Params := sdk.NewGitHttpsApiOAuth2ParamsRequest().WithApiUserAuthentication(*authReq)
+
+	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiOAuth2ProviderParams(*oauth2Params)); err != nil {
+		return diag.FromErr(fmt.Errorf("error creating Git Repository OAuth2 API integration: %w", err))
+	}
+
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+
+	return ReadApiIntegrationGitRepositoryOauth2(ctx, d, meta)
 }
 
 func ReadApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

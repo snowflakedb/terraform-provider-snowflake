@@ -36,10 +36,21 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	externalComment := random.Comment()
 
+	const accessTokenValidity = 3600
+	const refreshTokenValidity = 86400
+	const oauthUsername = "test_user"
+
 	basic := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true, authorizationEndpoint, clientId, clientSecret, tokenEndpoint)
 	withOptionals := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true, authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
 		WithComment(comment)
+	withAllOptionals := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true, authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
+		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithComment(comment).
+		WithOauthAccessTokenValidity(accessTokenValidity).
+		WithOauthRefreshTokenValidity(refreshTokenValidity).
+		WithOauthAllowedScopes([]string{string(sdk.ApiIntegrationOauthAllowedScopeReadApi)}).
+		WithOauthUsername(oauthUsername)
 
 	ref := basic.ResourceReference()
 
@@ -102,6 +113,49 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasAllowedPrefixes(allowedPrefix).
+			HasBlockedPrefixes(blockedPrefix).
+			HasComment(comment),
+	}
+
+	assertWithAllOptionals := []assert.TestCheckFuncProvider{
+		resourceassert.ApiIntegrationGitRepositoryOauth2Resource(t, ref).
+			HasNameString(id.Name()).
+			HasEnabledString("true").
+			HasOauthAuthorizationEndpointString(authorizationEndpoint).
+			HasOauthTokenEndpointString(tokenEndpoint).
+			HasOauthClientIdString(clientId).
+			HasOauthClientSecret(clientSecret).
+			HasApiAllowedPrefixes(allowedPrefix).
+			HasApiBlockedPrefixes(blockedPrefix).
+			HasCommentString(comment).
+			HasOauthAccessTokenValidity(accessTokenValidity).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthAllowedScopes(string(sdk.ApiIntegrationOauthAllowedScopeReadApi)).
+			HasOauthUsername(oauthUsername),
+		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
+			HasName(id.Name()).
+			HasEnabled(true).
+			HasComment(comment),
+		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
+			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
+			HasOauthClientId(clientId).
+			HasOauthTokenEndpoint(tokenEndpoint).
+			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasOauthAccessTokenValidity(accessTokenValidity).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthUsername(oauthUsername).
+			HasComment(comment),
+		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
+			HasEnabled(true).
+			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+			HasOauthClientId(clientId).
+			HasOauthTokenEndpoint(tokenEndpoint).
+			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasOauthAccessTokenValidity(accessTokenValidity).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthAllowedScopes(sdk.ApiIntegrationOauthAllowedScopeReadApi).
+			HasOauthUsername(oauthUsername).
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
 			HasComment(comment),
@@ -175,7 +229,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
 			},
-			// Create - with optionals
+			// Create - with all optionals
 			{
 				PreConfig: func() {
 					_, err := testClient().ApiIntegration.Show(t, id)
@@ -186,8 +240,8 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
 					},
 				},
-				Config: config.FromModels(t, withOptionals),
-				Check:  assertThat(t, assertWithOptionals...),
+				Config: config.FromModels(t, withAllOptionals),
+				Check:  assertThat(t, assertWithAllOptionals...),
 			},
 		},
 	})
@@ -205,9 +259,17 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 
 	comment := random.Comment()
 
+	const accessTokenValidity = 3600
+	const refreshTokenValidity = 86400
+	const oauthUsername = "test_user"
+
 	allAttributes := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true, authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
-		WithComment(comment)
+		WithComment(comment).
+		WithOauthAccessTokenValidity(accessTokenValidity).
+		WithOauthRefreshTokenValidity(refreshTokenValidity).
+		WithOauthAllowedScopes([]string{string(sdk.ApiIntegrationOauthAllowedScopeReadApi)}).
+		WithOauthUsername(oauthUsername)
 
 	ref := allAttributes.ResourceReference()
 
@@ -221,7 +283,11 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasOauthClientSecret(clientSecret).
 			HasApiAllowedPrefixes(allowedPrefix).
 			HasApiBlockedPrefixes(blockedPrefix).
-			HasCommentString(comment),
+			HasCommentString(comment).
+			HasOauthAccessTokenValidity(accessTokenValidity).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthAllowedScopes(string(sdk.ApiIntegrationOauthAllowedScopeReadApi)).
+			HasOauthUsername(oauthUsername),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
 			HasEnabled(true).
@@ -231,6 +297,9 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasOauthAccessTokenValidity(accessTokenValidity).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthUsername(oauthUsername).
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
@@ -238,6 +307,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasOauthAccessTokenValidity(accessTokenValidity).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthAllowedScopes(sdk.ApiIntegrationOauthAllowedScopeReadApi).
+			HasOauthUsername(oauthUsername).
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
 			HasComment(comment),
@@ -353,8 +426,8 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_Import(t *testing.T) {
 				Config: config.FromModels(t, testModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(testModel.ResourceReference(), "oauth_client_secret", tfjson.ActionUpdate, nil, sdk.String(clientSecret)),
+						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(testModel.ResourceReference(), "oauth_client_secret", tfjson.ActionDelete, nil, sdk.String(clientSecret)),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

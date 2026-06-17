@@ -363,7 +363,7 @@ func parseUserAuthIntoGitHttpsApi(value string, details *ApiIntegrationGitHttpsA
 				details.OauthRefreshTokenValidity = int(val)
 			}
 		case "OAUTH_ALLOWED_SCOPES":
-			details.OauthAllowedScopes = ParseCommaSeparatedStringArray(v, false)
+			details.OauthAllowedScopes = ParseCommaSeparatedStringArray(emptyIfNull(v), false)
 		case "OAUTH_USERNAME":
 			details.OauthUsername = emptyIfNull(v)
 		case "OAUTH_ASSERTION_ISSUER":
@@ -408,7 +408,7 @@ func parseUserAuthIntoExternalMcp(value string, details *ApiIntegrationExternalM
 				details.OauthRefreshTokenValidity = int(val)
 			}
 		case "OAUTH_ALLOWED_SCOPES":
-			details.OauthAllowedScopes = ParseCommaSeparatedStringArray(v, false)
+			details.OauthAllowedScopes = ParseCommaSeparatedStringArray(emptyIfNull(v), false)
 		case "OAUTH_USERNAME":
 			details.OauthUsername = emptyIfNull(v)
 		case "OAUTH_ASSERTION_ISSUER":
