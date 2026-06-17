@@ -6,8 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	tfjson "github.com/hashicorp/terraform-json"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
@@ -26,61 +24,75 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
+func deltaLakeCatalog(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
+	t.Helper()
+	return testClient().CatalogIntegration.CreateFunc(t,
+		sdk.NewCreateCatalogIntegrationRequest(testClient().Ids.RandomAccountObjectIdentifier(), true).
+			WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta)),
+	)
+}
+
+func TestAcc_IcebergTableFromDeltaFiles_BasicUseCase(t *testing.T) {
 	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
 	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
 
 	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
 	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
-	baseLocationPrefix := "iceberg_test_table"
-	metadataFilePath := baseLocationPrefix + "/metadata/v1.metadata.json"
+	baseLocation := "delta_lake_test_table/"
 
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
 	t.Cleanup(externalVolumeCleanup)
 
-	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
+	catalogId, catalogCleanup := deltaLakeCatalog(t)
 	t.Cleanup(catalogCleanup)
 
 	externalVolumeId2, externalVolumeCleanup2 := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
 	t.Cleanup(externalVolumeCleanup2)
 
+	catalogId2, catalogCleanup2 := deltaLakeCatalog(t)
+	t.Cleanup(catalogCleanup2)
+
 	// Create a dedicated database with external_volume and catalog set at db level so the table
 	// can be created without specifying them explicitly (matching the "required fields only" test case).
-	dbForIcebergFiles, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(testClient().Ids.RandomAccountObjectIdentifier()).WithCatalog(catalogId).WithExternalVolume(externalVolumeId))
+	dbForDeltaFiles, dbCleanup := testClient().Database.CreateDatabaseWithOptions(t, testClient().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
+		Catalog:        new(catalogId),
+		ExternalVolume: new(externalVolumeId),
+	})
 	t.Cleanup(dbCleanup)
-	schemaIdForIcebergFiles := sdk.NewDatabaseObjectIdentifier(dbForIcebergFiles.ID().Name(), "PUBLIC")
+	schemaIdForDeltaFiles := sdk.NewDatabaseObjectIdentifier(dbForDeltaFiles.ID().Name(), "PUBLIC")
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForDeltaFiles)
 	comment := random.Comment()
 	externalComment := random.Comment()
 
 	// modelBasic relies on db-level external_volume and catalog defaults — no explicit values.
-	modelBasic := model.IcebergTableFromFilesWithDefaultMeta(
+	modelBasic := model.IcebergTableFromDeltaFilesWithDefaultMeta(
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
-		metadataFilePath,
+		baseLocation,
 	)
 
 	// modelWithAllOptional also relies on db-level defaults for external_volume/catalog.
-	modelWithAllOptional := model.IcebergTableFromFilesWithDefaultMeta(
+	modelWithAllOptional := model.IcebergTableFromDeltaFilesWithDefaultMeta(
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
-		metadataFilePath,
+		baseLocation,
 	).WithComment(comment).
-		WithReplaceInvalidCharacters(true)
+		WithReplaceInvalidCharacters(true).
+		WithAutoRefresh("true")
 
 	ref := modelBasic.ResourceReference()
 
 	// external_volume and catalog are inherited from the database (DATABASE level).
 	basicAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.IcebergTableFromFilesResource(t, ref).
+		resourceassert.IcebergTableFromDeltaFilesResource(t, ref).
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
 			HasNameString(id.Name()).
-			HasMetadataFilePathString(metadataFilePath).
+			HasBaseLocationString(baseLocation).
 			HasExternalVolume(externalVolumeId.Name()).
 			HasCatalog(catalogId.Name()).
 			HasCommentEmpty().
@@ -111,17 +123,18 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharactersLevel(sdk.ParameterTypeSnowflakeDefault),
 	}
 
-	// replace_invalid_characters is set explicitly at table level; external_volume/catalog stay at db level.
+	// replace_invalid_characters and auto_refresh are set explicitly at table level; external_volume/catalog stay at db level.
 	allOptionalAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.IcebergTableFromFilesResource(t, ref).
+		resourceassert.IcebergTableFromDeltaFilesResource(t, ref).
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
 			HasNameString(id.Name()).
-			HasMetadataFilePathString(metadataFilePath).
+			HasBaseLocationString(baseLocation).
 			HasExternalVolume(externalVolumeId.Name()).
 			HasCatalog(catalogId.Name()).
 			HasComment(comment).
 			HasReplaceInvalidCharacters(true).
+			HasAutoRefreshString("true").
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
 		resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 			HasName(id.Name()).
@@ -138,7 +151,11 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 			HasNameMapping("").
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatusEmpty(),
+			HasAutoRefreshStatus(sdk.IcebergTableAutoRefreshStatus{
+				CurrentSnapshotId:    0,
+				PendingSnapshotCount: 0,
+				ExecutionState:       "RUNNING",
+			}),
 		resourceparametersassert.IcebergTableResourceParameters(t, ref).
 			HasExternalVolume(externalVolumeId.Name()).
 			HasExternalVolumeLevel(sdk.ParameterTypeDatabase).
@@ -153,7 +170,7 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.IcebergTableFromFiles),
+		CheckDestroy: CheckDestroy(t, resources.IcebergTableFromDeltaFiles),
 		Steps: []resource.TestStep{
 			// Create with only required fields (external_volume and catalog come from db defaults)
 			{
@@ -167,7 +184,7 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"metadata_file_path",
+					"auto_refresh",
 				},
 			},
 			// Set all optional fields
@@ -187,38 +204,20 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"metadata_file_path",
+					"auto_refresh",
 				},
 			},
 			// Change alterable fields externally and detect drift
 			{
 				PreConfig: func() {
-					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).WithSet(
-						*sdk.NewIcebergTableSetPropertiesRequest().
-							WithReplaceInvalidCharacters(false).
-							WithComment(externalComment),
-					))
-				},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(ref, "comment", new(comment), new(externalComment)),
-						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, new(externalComment), new(comment)),
-						planchecks.ExpectDrift(ref, "replace_invalid_characters", new("true"), new("false")),
-						planchecks.ExpectChange(ref, "replace_invalid_characters", tfjson.ActionUpdate, new("false"), new("true")),
-					},
-				},
-				Config: accconfig.FromModels(t, modelWithAllOptional),
-				Check:  assertThat(t, allOptionalAssertions...),
-			},
-			// Change force new fields externally and detect drift
-			{
-				PreConfig: func() {
-					testClient().IcebergTable.CreateFromIcebergFiles(t, id,
-						sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath).
+					testClient().IcebergTable.CreateFromDeltaLake(t, id,
+						sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, baseLocation).
 							WithOrReplace(true).
 							WithComment(externalComment).
-							WithExternalVolume(externalVolumeId2),
+							WithExternalVolume(externalVolumeId2).
+							WithCatalog(catalogId2).
+							WithReplaceInvalidCharacters(false).
+							WithAutoRefresh(false),
 					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -243,55 +242,57 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 	})
 }
 
-func TestAcc_IcebergTableFromFiles_CompleteUseCase(t *testing.T) {
+func TestAcc_IcebergTableFromDeltaFiles_CompleteUseCase(t *testing.T) {
 	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
 	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
 
 	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
 	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
-	baseLocationPrefix := "iceberg_test_table"
-	metadataFilePath := baseLocationPrefix + "/metadata/v1.metadata.json"
+	// Here, the trailing slash is missing on purpose to test the diff suppression.
+	baseLocation := "delta_lake_test_table"
 
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
 	t.Cleanup(externalVolumeCleanup)
 
-	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
+	catalogId, catalogCleanup := deltaLakeCatalog(t)
 	t.Cleanup(catalogCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	modelComplete := model.IcebergTableFromFilesWithDefaultMeta(
+	modelComplete := model.IcebergTableFromDeltaFilesWithDefaultMeta(
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
-		metadataFilePath,
+		baseLocation,
 	).WithExternalVolume(externalVolumeId.Name()).
 		WithCatalog(catalogId.Name()).
 		WithComment(comment).
-		WithReplaceInvalidCharacters(true)
+		WithReplaceInvalidCharacters(true).
+		WithAutoRefresh("false")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.IcebergTableFromFiles),
+		CheckDestroy: CheckDestroy(t, resources.IcebergTableFromDeltaFiles),
 		Steps: []resource.TestStep{
 			// Create with all fields
 			{
 				Config: accconfig.FromModels(t, modelComplete),
 				Check: assertThat(t,
-					resourceassert.IcebergTableFromFilesResource(t, modelComplete.ResourceReference()).
+					resourceassert.IcebergTableFromDeltaFilesResource(t, modelComplete.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasNameString(id.Name()).
-						HasMetadataFilePathString(metadataFilePath).
+						HasBaseLocationString(baseLocation+"/").
 						HasExternalVolume(externalVolumeId.FullyQualifiedName()).
 						HasCatalog(catalogId.FullyQualifiedName()).
 						HasComment(comment).
 						HasReplaceInvalidCharacters(true).
+						HasAutoRefreshString("false").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.IcebergTableShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -311,40 +312,40 @@ func TestAcc_IcebergTableFromFiles_CompleteUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"metadata_file_path",
+					"auto_refresh",
 				},
 			},
 		},
 	})
 }
 
-func TestAcc_IcebergTableFromFiles_Import(t *testing.T) {
+func TestAcc_IcebergTableFromDeltaFiles_Import(t *testing.T) {
 	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
 	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
 
 	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
 	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
-	baseLocationPrefix := "iceberg_test_table"
-	metadataFilePath := baseLocationPrefix + "/metadata/v1.metadata.json"
+	baseLocation := "delta_lake_test_table"
 
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
 	t.Cleanup(externalVolumeCleanup)
 
-	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
+	catalogId, catalogCleanup := deltaLakeCatalog(t)
 	t.Cleanup(catalogCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	modelComplete := model.IcebergTableFromFilesWithDefaultMeta(
+	modelComplete := model.IcebergTableFromDeltaFilesWithDefaultMeta(
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
-		metadataFilePath,
+		baseLocation,
 	).WithExternalVolume(externalVolumeId.Name()).
 		WithCatalog(catalogId.Name()).
 		WithComment(comment).
+		WithAutoRefresh("false").
 		WithReplaceInvalidCharacters(true)
 
 	resource.Test(t, resource.TestCase{
@@ -352,13 +353,13 @@ func TestAcc_IcebergTableFromFiles_Import(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.IcebergTableFromFiles),
+		CheckDestroy: CheckDestroy(t, resources.IcebergTableFromDeltaFiles),
 		Steps: []resource.TestStep{
 			// Import the externally created resource
 			{
 				PreConfig: func() {
-					testClient().IcebergTable.CreateFromIcebergFiles(t, id,
-						sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath).
+					testClient().IcebergTable.CreateFromDeltaLake(t, id,
+						sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, baseLocation).
 							WithComment(comment).
 							WithExternalVolume(externalVolumeId).
 							WithCatalog(catalogId).
@@ -374,7 +375,8 @@ func TestAcc_IcebergTableFromFiles_Import(t *testing.T) {
 				Config: accconfig.FromModels(t, modelComplete),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionNoop),
+						planchecks.PrintPlanDetails(modelComplete.ResourceReference(), "auto_refresh", "replace_invalid_characters", "comment"),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

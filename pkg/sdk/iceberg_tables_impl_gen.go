@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -623,7 +624,6 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		CanWriteMetadata:          r.CanWriteMetadata == "Y",
 		OwnerRoleType:             r.OwnerRoleType,
 		CatalogSyncName:           r.CatalogSyncName,
-		AutoRefreshStatus:         r.AutoRefreshStatus,
 		PartitionSpecs:            r.PartitionSpecs,
 		CurrentPartitionSpecId:    r.CurrentPartitionSpecId,
 		IcebergTableFormatVersion: r.IcebergTableFormatVersion,
@@ -637,6 +637,11 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 	mapNullString(&result.BaseLocation, r.BaseLocation)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.NameMapping, r.NameMapping)
+	if r.AutoRefreshStatus != "" {
+		if err := json.Unmarshal([]byte(r.AutoRefreshStatus), &result.AutoRefreshStatus); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal AutoRefreshStatus: %w", err)
+		}
+	}
 	return result, nil
 }
 

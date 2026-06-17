@@ -58,11 +58,13 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
-### *(new preview resource)* New Iceberg Table resources
+### *(new feature)* New Iceberg Table resources
 
-We have added a new preview resource for Iceberg tables: [snowflake_iceberg_table_from_files](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_files) for managing Snowflake Iceberg Tables created from files ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files)).
+We have added new preview resources for Iceberg tables:
+- [snowflake_iceberg_table_from_files](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_files) for managing Snowflake Iceberg Tables created from files ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files)),
+- [snowflake_iceberg_table_from_delta_files](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_delta_files) for managing Snowflake Iceberg Tables created from Delta files ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-delta)).
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_iceberg_table_from_files_resource` to the `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_files_resource` or `snowflake_iceberg_table_from_delta_files_resource` to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
 
