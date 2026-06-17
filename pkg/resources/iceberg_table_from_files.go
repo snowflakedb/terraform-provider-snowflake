@@ -142,14 +142,13 @@ func CreateIcebergTableFromFiles(ctx context.Context, d *schema.ResourceData, me
 	if err := stringAttributeCreate(d, "comment", &req.Comment); err != nil {
 		return diag.FromErr(err)
 	}
-	for _, diags := range []diag.Diagnostics{
+	diags := JoinDiags(
 		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterExternalVolume, &req.ExternalVolume, sdk.ParseAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, sdk.IcebergTableParameterCatalog, &req.Catalog, sdk.ParseAccountObjectIdentifier),
 		handleParameterCreate(d, sdk.IcebergTableParameterReplaceInvalidCharacters, &req.ReplaceInvalidCharacters),
-	} {
-		if len(diags) > 0 {
-			return diags
-		}
+	)
+	if diags != nil {
+		return diags
 	}
 
 	if err := client.IcebergTables.CreateFromIcebergFiles(ctx, req); err != nil {

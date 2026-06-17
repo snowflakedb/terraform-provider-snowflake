@@ -15,12 +15,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -249,9 +247,6 @@ func TestAcc_IcebergTableFromFiles_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithPreviewFeaturesEnabled(string(previewfeatures.IcebergTableFromFilesResource))
-
 	modelComplete := model.IcebergTableFromFilesWithDefaultMeta(
 		id.DatabaseName(),
 		id.SchemaName(),
@@ -296,7 +291,7 @@ func TestAcc_IcebergTableFromFiles_CompleteUseCase(t *testing.T) {
 			},
 			// Import - complete
 			{
-				Config:            accconfig.FromModels(t, providerModel, modelComplete),
+				Config:            accconfig.FromModels(t, modelComplete),
 				ResourceName:      modelComplete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
