@@ -42,8 +42,8 @@ func handleHierarchyMove[T sdk.ObjectIdentifier](d *schema.ResourceData, encodeI
 // P is the parent identifier type, O is the probed object identifier type, M is the moved object type.
 // PR and OR are the return types of the ShowByID functions.
 func handleShallowHierarchyRename[P, O, M sdk.ObjectIdentifier, PR, OR any](
-	d *schema.ResourceData,
 	ctx context.Context,
+	d *schema.ResourceData,
 	parentShowByIDFn func(context.Context, P) (PR, error),
 	objectShowByIDFn func(context.Context, O) (OR, error),
 	newParentId, oldParentId P,
@@ -86,8 +86,8 @@ func handleShallowHierarchyRename[P, O, M sdk.ObjectIdentifier, PR, OR any](
 // for a schema-level object. It determines whether the database/schema were renamed
 // or moved and acts accordingly.
 func handleDeepHierarchyRename(
-	d *schema.ResourceData,
 	ctx context.Context,
+	d *schema.ResourceData,
 	client *sdk.Client,
 	newDatabaseId, oldDatabaseId sdk.AccountObjectIdentifier,
 	oldSchemaName, newSchemaName string,
@@ -155,8 +155,8 @@ func handleDeepHierarchyRename(
 // for a database-level object (database → object).
 // OR is the return type of objectShowByIDFn.
 func handleTwoLevelHierarchyRename[OR any](
-	d *schema.ResourceData,
 	ctx context.Context,
+	d *schema.ResourceData,
 	client *sdk.Client,
 	id *sdk.DatabaseObjectIdentifier,
 	objectRenameFn func(sdk.DatabaseObjectIdentifier, sdk.DatabaseObjectIdentifier) func() error,
@@ -187,15 +187,7 @@ func handleTwoLevelHierarchyRename[OR any](
 			description)
 	}
 
-	if diags := handleShallowHierarchyRename(d, ctx,
-		client.Databases.ShowByID,
-		objectShowByIDFn,
-		newDatabaseId, oldDatabaseId,
-		newObjectId, oldObjectId,
-		*id,
-		renameObj, moveObj,
-		"database", leafLevelName, leafLevelName,
-	); diags != nil {
+	if diags := handleShallowHierarchyRename(ctx, d, client.Databases.ShowByID, objectShowByIDFn, newDatabaseId, oldDatabaseId, newObjectId, oldObjectId, *id, renameObj, moveObj, "database", leafLevelName, leafLevelName); diags != nil {
 		return diags
 	}
 
@@ -207,8 +199,8 @@ func handleTwoLevelHierarchyRename[OR any](
 // for a schema-level object (database → schema → object).
 // OR is the return type of objectShowByIDFn.
 func handleThreeLevelHierarchyRename[OR any](
-	d *schema.ResourceData,
 	ctx context.Context,
+	d *schema.ResourceData,
 	client *sdk.Client,
 	id *sdk.SchemaObjectIdentifier,
 	objectRenameFn func(sdk.SchemaObjectIdentifier, sdk.SchemaObjectIdentifier) func() error,
@@ -248,39 +240,17 @@ func handleThreeLevelHierarchyRename[OR any](
 
 	switch {
 	case databaseChanged && !schemaChanged:
-		if diags := handleShallowHierarchyRename(d, ctx,
-			client.Databases.ShowByID,
-			client.Schemas.ShowByID,
-			newDatabaseId, oldDatabaseId,
-			newSchemaId, oldSchemaId,
-			*id,
-			renameObj, moveObj,
-			"database", "schema", leafLevelName,
-		); diags != nil {
+		if diags := handleShallowHierarchyRename(ctx, d, client.Databases.ShowByID, client.Schemas.ShowByID, newDatabaseId, oldDatabaseId, newSchemaId, oldSchemaId, *id, renameObj, moveObj, "database", "schema", leafLevelName); diags != nil {
 			return diags
 		}
 
 	case !databaseChanged && schemaChanged:
-		if diags := handleShallowHierarchyRename(d, ctx,
-			client.Schemas.ShowByID,
-			objectShowByIDFn,
-			newSchemaId, oldSchemaId,
-			newObjectId, oldObjectId,
-			*id,
-			renameObj, moveObj,
-			"schema", leafLevelName, leafLevelName,
-		); diags != nil {
+		if diags := handleShallowHierarchyRename(ctx, d, client.Schemas.ShowByID, objectShowByIDFn, newSchemaId, oldSchemaId, newObjectId, oldObjectId, *id, renameObj, moveObj, "schema", leafLevelName, leafLevelName); diags != nil {
 			return diags
 		}
 
 	default:
-		if diags := handleDeepHierarchyRename(d, ctx, client,
-			newDatabaseId, oldDatabaseId,
-			oldSchemaName, newSchemaName,
-			objectName,
-			renameObj, moveObj,
-			leafLevelName,
-		); diags != nil {
+		if diags := handleDeepHierarchyRename(ctx, d, client, newDatabaseId, oldDatabaseId, oldSchemaName, newSchemaName, objectName, renameObj, moveObj, leafLevelName); diags != nil {
 			return diags
 		}
 	}

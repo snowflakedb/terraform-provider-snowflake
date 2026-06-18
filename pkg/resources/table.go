@@ -737,12 +737,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			}
 		}
 
-		if diags := handleThreeLevelHierarchyRename(d, ctx, client, &id,
-			tableRenameFn,
-			client.Tables.ShowByID,
-			func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(id) },
-			"table",
-		); diags != nil {
+		if diags := handleThreeLevelHierarchyRename(ctx, d, client, &id, tableRenameFn, client.Tables.ShowByID, func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(id) }, "table"); diags != nil {
 			return diags
 		}
 	}

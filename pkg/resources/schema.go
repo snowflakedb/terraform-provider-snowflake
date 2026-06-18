@@ -324,12 +324,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			}
 		}
 
-		if diags := handleTwoLevelHierarchyRename(d, ctx, client, &id,
-			schemaRenameFn,
-			client.Schemas.ShowByID,
-			func(id sdk.DatabaseObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
-			"schema",
-		); diags != nil {
+		if diags := handleTwoLevelHierarchyRename(ctx, d, client, &id, schemaRenameFn, client.Schemas.ShowByID, func(id sdk.DatabaseObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) }, "schema"); diags != nil {
 			return diags
 		}
 	}
