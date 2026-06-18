@@ -16,4 +16,8 @@ const (
 	googleAudience      = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
 	googleAllowedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod"
 	googleBlockedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod/blocked/"
+
+	// Git constants
+	gitAllowedPrefix = "https://github.com/my-org/"
+	gitBlockedPrefix = "https://github.com/my-org/blocked/"
 )

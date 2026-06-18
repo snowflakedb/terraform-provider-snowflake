@@ -26,15 +26,12 @@ import (
 func TestAcc_ApiIntegrationGitRepositoryGithubApp_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://github.com/my-org/"
-	const blockedPrefix = "https://github.com/my-org/blocked/"
-
 	comment := random.Comment()
 	externalComment := random.Comment()
 
-	basic := model.ApiIntegrationGitRepositoryGithubApp("t", id.Name(), []string{allowedPrefix}, true)
-	withOptionals := model.ApiIntegrationGitRepositoryGithubApp("t", id.Name(), []string{allowedPrefix}, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	basic := model.ApiIntegrationGitRepositoryGithubApp("t", id.Name(), []string{gitAllowedPrefix}, true)
+	withOptionals := model.ApiIntegrationGitRepositoryGithubApp("t", id.Name(), []string{gitAllowedPrefix}, true).
+		WithApiBlockedPrefixes([]string{gitBlockedPrefix}).
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
@@ -43,7 +40,7 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_BasicUseCase(t *testing.T) {
 		resourceassert.ApiIntegrationGitRepositoryGithubAppResource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
-			HasApiAllowedPrefixes(allowedPrefix).
+			HasApiAllowedPrefixes(gitAllowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -58,7 +55,7 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
-			HasAllowedPrefixes(allowedPrefix).
+			HasAllowedPrefixes(gitAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
 	}
@@ -67,8 +64,8 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_BasicUseCase(t *testing.T) {
 		resourceassert.ApiIntegrationGitRepositoryGithubAppResource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiAllowedPrefixes(gitAllowedPrefix).
+			HasApiBlockedPrefixes(gitBlockedPrefix).
 			HasCommentString(comment),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -82,8 +79,8 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(gitAllowedPrefix).
+			HasBlockedPrefixes(gitBlockedPrefix).
 			HasComment(comment),
 	}
 
@@ -178,7 +175,7 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_Import_WrongAuthType(t *testin
 
 	githubAppId := testClient().Ids.RandomAccountObjectIdentifier()
 	githubAppModel := model.ApiIntegrationGitRepositoryGithubApp("t", githubAppId.Name(),
-		[]string{"https://github.com/my-org/"},
+		[]string{gitAllowedPrefix},
 		true,
 	)
 
@@ -204,12 +201,10 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_Import_WrongAuthType(t *testin
 func TestAcc_ApiIntegrationGitRepositoryGithubApp_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://github.com/my-org/"
-	const blockedPrefix = "https://github.com/my-org/blocked/"
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationGitRepositoryGithubApp("t", id.Name(), []string{allowedPrefix}, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	testModel := model.ApiIntegrationGitRepositoryGithubApp("t", id.Name(), []string{gitAllowedPrefix}, true).
+		WithApiBlockedPrefixes([]string{gitBlockedPrefix}).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -223,9 +218,9 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_Import(t *testing.T) {
 				PreConfig: func() {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithComment(comment).
-							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitBlockedPrefix}}).
 							WithGitHttpsApiGithubAppProviderParams(*sdk.NewGitHttpsApiGithubAppParamsRequest()),
 					)
 					t.Cleanup(cleanup)
