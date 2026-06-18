@@ -336,31 +336,22 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
 		oldSchemaExists := errOldSchema == nil
 
-		// TODO [next PRs]: extract helper methods and generalize them to any non-leaf level; same with switch and error handling
-		isRenameOfTheGivenLevelInTheHierarchy := func() bool {
-			return newDatabaseExists && !oldDatabaseExists && newSchemaExists
-		}
-
-		isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func() bool {
-			return newDatabaseExists && oldDatabaseExists && oldSchemaExists
-		}
-
 		switch {
-		// Case 1: "Rename of the given level in the hierarchy"
-		case isRenameOfTheGivenLevelInTheHierarchy():
-			log.Printf("[DEBUG] Database was renamed for schema - no Snowflake modification needed, updating the id...")
-			// Just update the ID — no Snowflake modification needed
-			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
+		case isRenameOfTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, newSchemaExists):
+			handleHierarchyRenameIdUpdate(d,
+				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
+				"Database was renamed for schema - no Snowflake modification needed, updating the id...")
 			id = newSchemaId
-		// Case 2: "Move to a different object on the given level in the hierarchy"
-		case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
-			log.Printf("[DEBUG] Moving schema to different database - executing ALTER RENAME...")
-			// Perform the rename in Snowflake: ALTER SCHEMA A.X RENAME TO B.X
-			if renameErr := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(oldSchemaId).WithNewName(newSchemaId)); renameErr != nil {
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf("failed to move schema from %s to %s: %w", oldSchemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName(), renameErr))
+		case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, oldSchemaExists):
+			if diags := handleHierarchyMove(d,
+				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
+				oldSchemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName(),
+				func() error {
+					return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(oldSchemaId).WithNewName(newSchemaId))
+				},
+				"Moving schema to different database - executing ALTER RENAME..."); diags != nil {
+				return diags
 			}
-			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
 			id = newSchemaId
 		default:
 			d.Partial(true)

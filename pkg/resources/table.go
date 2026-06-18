@@ -759,27 +759,20 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
 			oldSchemaExists := errOldSchema == nil
 
-			isRenameOfTheGivenLevelInTheHierarchy := func() bool {
-				return newDatabaseExists && !oldDatabaseExists && newSchemaExists
-			}
-			isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func() bool {
-				return newDatabaseExists && oldDatabaseExists && oldSchemaExists
-			}
-
 			switch {
-			// Case 1: "Rename of the given level in the hierarchy"
-			case isRenameOfTheGivenLevelInTheHierarchy():
-				log.Printf("[DEBUG] Database was renamed for table - no Snowflake modification needed, updating the id...")
-				// Just update the ID — no Snowflake modification needed
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
+			case isRenameOfTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, newSchemaExists):
+				handleHierarchyRenameIdUpdate(d,
+					func() string { return helpers.EncodeSnowflakeID(newTableId) },
+					"Database was renamed for table - no Snowflake modification needed, updating the id...")
 				id = newTableId
-			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
-				log.Printf("[DEBUG] Moving table to different database - executing ALTER TABLE RENAME TO...")
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", id.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
+			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, oldSchemaExists):
+				if diags := handleHierarchyMove(d,
+					func() string { return helpers.EncodeSnowflakeID(newTableId) },
+					id.FullyQualifiedName(), newTableId.FullyQualifiedName(),
+					func() error { return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)) },
+					"Moving table to different database - executing ALTER TABLE RENAME TO..."); diags != nil {
+					return diags
 				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
 				id = newTableId
 			default:
 				d.Partial(true)
@@ -803,28 +796,20 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			_, errOldTable := client.Tables.ShowByID(ctx, oldTableId)
 			oldTableExists := errOldTable == nil
 
-			isRenameOfTheGivenLevelInTheHierarchy := func() bool {
-				return newSchemaExists && !oldSchemaExists && newTableExists
-			}
-			isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func() bool {
-				return newSchemaExists && oldSchemaExists && oldTableExists
-			}
-
 			switch {
-			// Case 1: "Rename of the given level in the hierarchy"
-			case isRenameOfTheGivenLevelInTheHierarchy():
-				log.Printf("[DEBUG] Schema was renamed for table - no Snowflake modification needed, updating the id...")
-				// Just update the ID — no Snowflake modification needed
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
+			case isRenameOfTheGivenLevelInTheHierarchy(newSchemaExists, oldSchemaExists, newTableExists):
+				handleHierarchyRenameIdUpdate(d,
+					func() string { return helpers.EncodeSnowflakeID(newTableId) },
+					"Schema was renamed for table - no Snowflake modification needed, updating the id...")
 				id = newTableId
-			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
-				log.Printf("[DEBUG] Moving table to different schema - executing ALTER TABLE RENAME TO...")
-				// Perform the rename in Snowflake: ALTER TABLE A.X RENAME TO B.X
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", id.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
+			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newSchemaExists, oldSchemaExists, oldTableExists):
+				if diags := handleHierarchyMove(d,
+					func() string { return helpers.EncodeSnowflakeID(newTableId) },
+					id.FullyQualifiedName(), newTableId.FullyQualifiedName(),
+					func() error { return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)) },
+					"Moving table to different schema - executing ALTER TABLE RENAME TO..."); diags != nil {
+					return diags
 				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
 				id = newTableId
 			default:
 				d.Partial(true)
@@ -876,34 +861,42 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 			switch {
 			case isDbRenameSchemaRename():
-				log.Printf("[DEBUG] Database and schema were both renamed for table - no Snowflake modification needed, updating the id...")
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
+				handleHierarchyRenameIdUpdate(d,
+					func() string { return helpers.EncodeSnowflakeID(newTableId) },
+					"Database and schema were both renamed for table - no Snowflake modification needed, updating the id...")
 				id = newTableId
 			case isDbRenameSchemaMove():
-				log.Printf("[DEBUG] Database was renamed, moving table to different schema - executing ALTER TABLE RENAME TO...")
 				currentTableId := sdk.NewSchemaObjectIdentifier(newDatabaseName, oldSchemaName, tableName)
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentTableId).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", currentTableId.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
+				if diags := handleHierarchyMove(d,
+					func() string { return helpers.EncodeSnowflakeID(newTableId) },
+					currentTableId.FullyQualifiedName(), newTableId.FullyQualifiedName(),
+					func() error {
+						return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentTableId).WithNewName(&newTableId))
+					},
+					"Database was renamed, moving table to different schema - executing ALTER TABLE RENAME TO..."); diags != nil {
+					return diags
 				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
 				id = newTableId
 			case isDbMoveSchemaRename():
-				log.Printf("[DEBUG] Schema was renamed, moving table to different database - executing ALTER TABLE RENAME TO...")
 				currentTableId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, newSchemaName, tableName)
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentTableId).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", currentTableId.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
+				if diags := handleHierarchyMove(d,
+					func() string { return helpers.EncodeSnowflakeID(newTableId) },
+					currentTableId.FullyQualifiedName(), newTableId.FullyQualifiedName(),
+					func() error {
+						return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentTableId).WithNewName(&newTableId))
+					},
+					"Schema was renamed, moving table to different database - executing ALTER TABLE RENAME TO..."); diags != nil {
+					return diags
 				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
 				id = newTableId
 			case isDbMoveSchemaMove():
-				log.Printf("[DEBUG] Moving table to different database and schema - executing ALTER TABLE RENAME TO...")
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", id.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
+				if diags := handleHierarchyMove(d,
+					func() string { return helpers.EncodeSnowflakeID(newTableId) },
+					id.FullyQualifiedName(), newTableId.FullyQualifiedName(),
+					func() error { return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)) },
+					"Moving table to different database and schema - executing ALTER TABLE RENAME TO..."); diags != nil {
+					return diags
 				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
 				id = newTableId
 			default:
 				d.Partial(true)
