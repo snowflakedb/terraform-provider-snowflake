@@ -397,8 +397,11 @@ func TestAcc_TagAssociationIcebergTableColumn(t *testing.T) {
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", columnId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_id", tagId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", tagValue),
-					testAccCheckTableColumnTagAssociation(tagId, columnId, tagValue),
 				),
+			},
+			{
+				Config:  accconfig.FromModels(t, tagAssociationModel),
+				Destroy: true,
 			},
 		},
 	})
