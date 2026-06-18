@@ -37,10 +37,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	catalogForIcebergFilesId, catalogForIcebergFilesCleanup := testClientHelper().CatalogIntegration.Create(t)
 	t.Cleanup(catalogForIcebergFilesCleanup)
 
-	dbForIcebergFiles, dbForIcebergFilesCleanup := testClientHelper().Database.CreateDatabaseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
-		Catalog:        new(catalogForIcebergFilesId),
-		ExternalVolume: new(externalVolumeId),
-	})
+	dbForIcebergFilesId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	dbForIcebergFiles, dbForIcebergFilesCleanup := testClientHelper().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbForIcebergFilesId).WithCatalog(catalogForIcebergFilesId).WithExternalVolume(externalVolumeId))
 	t.Cleanup(dbForIcebergFilesCleanup)
 	schemaIdForIcebergFiles := sdk.NewDatabaseObjectIdentifier(dbForIcebergFiles.ID().Name(), "PUBLIC")
 
@@ -52,10 +50,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	)
 	t.Cleanup(catalogForDeltaLakeCleanup)
 
-	dbForDeltaLake, dbForDeltaLakeCleanup := testClientHelper().Database.CreateDatabaseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
-		Catalog:        new(catalogForDeltaLakeId),
-		ExternalVolume: new(externalVolumeId),
-	})
+	dbForDeltaLakeId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	dbForDeltaLake, dbForDeltaLakeCleanup := testClientHelper().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbForDeltaLakeId).WithCatalog(catalogForDeltaLakeId).WithExternalVolume(externalVolumeId))
 	t.Cleanup(dbForDeltaLakeCleanup)
 	schemaIdForDeltaLake := sdk.NewDatabaseObjectIdentifier(dbForDeltaLake.ID().Name(), "PUBLIC")
 

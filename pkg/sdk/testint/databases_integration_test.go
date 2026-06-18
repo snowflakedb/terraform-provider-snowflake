@@ -21,9 +21,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 
 	t.Run("minimal", func(t *testing.T) {
 		databaseID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Databases.Create(ctx, databaseID, &sdk.CreateDatabaseOptions{
-			OrReplace: sdk.Bool(true),
-		})
+		err := client.Databases.Create(ctx, sdk.NewCreateDatabaseRequest(databaseID).WithOrReplace(true))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, databaseID))
 
@@ -37,14 +35,12 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		t.Cleanup(cloneDatabaseCleanup)
 
 		databaseID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Databases.Create(ctx, databaseID, &sdk.CreateDatabaseOptions{
-			Clone: &sdk.Clone{
-				SourceObject: cloneDatabase.ID(),
-				At: &sdk.TimeTravel{
-					Offset: sdk.Int(0),
-				},
+		err := client.Databases.Clone(ctx, sdk.NewCloneDatabaseRequest(databaseID).WithClone(sdk.Clone{
+			SourceObject: cloneDatabase.ID(),
+			At: &sdk.TimeTravel{
+				Offset: sdk.Int(0),
 			},
-		})
+		}))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, databaseID))
 
@@ -76,28 +72,28 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		t.Cleanup(catalogCleanup)
 
 		comment := random.Comment()
-		err := client.Databases.Create(ctx, databaseId, &sdk.CreateDatabaseOptions{
-			Transient:                               sdk.Bool(true),
-			IfNotExists:                             sdk.Bool(true),
-			DataRetentionTimeInDays:                 sdk.Int(0),
-			MaxDataExtensionTimeInDays:              sdk.Int(10),
-			ExternalVolume:                          &externalVolume,
-			Catalog:                                 &catalog,
-			ReplaceInvalidCharacters:                sdk.Bool(true),
-			DefaultDDLCollation:                     sdk.String("en_US"),
-			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
-			LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-			LogEventLevel:                           sdk.Pointer(sdk.LogLevelInfo),
-			TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
-			SuspendTaskAfterNumFailures:             sdk.Int(10),
-			TaskAutoRetryAttempts:                   sdk.Int(10),
-			UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
-			UserTaskTimeoutMs:                       sdk.Int(12_000),
-			UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(30),
-			QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-			EnableConsoleOutput:                     sdk.Bool(true),
-			Comment:                                 sdk.String(comment),
-			Tag: []sdk.TagAssociation{
+		err := client.Databases.Create(ctx, sdk.NewCreateDatabaseRequest(databaseId).
+			WithTransient(true).
+			WithIfNotExists(true).
+			WithDataRetentionTimeInDays(0).
+			WithMaxDataExtensionTimeInDays(10).
+			WithExternalVolume(externalVolume).
+			WithCatalog(catalog).
+			WithReplaceInvalidCharacters(true).
+			WithDefaultDdlCollation("en_US").
+			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+			WithLogLevel(sdk.LogLevelInfo).
+			WithLogEventLevel(sdk.LogLevelInfo).
+			WithTraceLevel(sdk.TraceLevelPropagate).
+			WithSuspendTaskAfterNumFailures(10).
+			WithTaskAutoRetryAttempts(10).
+			WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			WithUserTaskTimeoutMs(12_000).
+			WithUserTaskMinimumTriggerIntervalInSeconds(30).
+			WithQuotedIdentifiersIgnoreCase(true).
+			WithEnableConsoleOutput(true).
+			WithComment(comment).
+			WithTag([]sdk.TagAssociation{
 				{
 					Name:  tagTest.ID(),
 					Value: "v1",
@@ -106,8 +102,8 @@ func TestInt_DatabasesCreate(t *testing.T) {
 					Name:  tag2Test.ID(),
 					Value: "v2",
 				},
-			},
-		})
+			}),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, databaseId))
 
@@ -196,32 +192,32 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 	require.NoError(t, err)
 
 	comment := random.Comment()
-	err = client.Databases.CreateShared(ctx, databaseId, shareTest.ExternalID(), &sdk.CreateSharedDatabaseOptions{
-		Transient:                               sdk.Bool(true),
-		IfNotExists:                             sdk.Bool(true),
-		ExternalVolume:                          &externalVolume,
-		Catalog:                                 &catalog,
-		LogLevel:                                sdk.Pointer(sdk.LogLevelDebug),
-		LogEventLevel:                           sdk.Pointer(sdk.LogLevelDebug),
-		TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
-		ReplaceInvalidCharacters:                sdk.Bool(true),
-		DefaultDDLCollation:                     sdk.String("en_US"),
-		StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyOptimized),
-		SuspendTaskAfterNumFailures:             sdk.Int(10),
-		TaskAutoRetryAttempts:                   sdk.Int(10),
-		UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
-		UserTaskTimeoutMs:                       sdk.Int(12_000),
-		UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(30),
-		QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-		EnableConsoleOutput:                     sdk.Bool(true),
-		Comment:                                 sdk.String(comment),
-		Tag: []sdk.TagAssociation{
+	err = client.Databases.CreateShared(ctx, sdk.NewCreateSharedDatabaseRequest(databaseId, shareTest.ExternalID()).
+		WithTransient(true).
+		WithIfNotExists(true).
+		WithExternalVolume(externalVolume).
+		WithCatalog(catalog).
+		WithLogLevel(sdk.LogLevelDebug).
+		WithLogEventLevel(sdk.LogLevelDebug).
+		WithTraceLevel(sdk.TraceLevelAlways).
+		WithReplaceInvalidCharacters(true).
+		WithDefaultDdlCollation("en_US").
+		WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+		WithSuspendTaskAfterNumFailures(10).
+		WithTaskAutoRetryAttempts(10).
+		WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+		WithUserTaskTimeoutMs(12_000).
+		WithUserTaskMinimumTriggerIntervalInSeconds(30).
+		WithQuotedIdentifiersIgnoreCase(true).
+		WithEnableConsoleOutput(true).
+		WithComment(comment).
+		WithTag([]sdk.TagAssociation{
 			{
 				Name:  testTag.ID(),
 				Value: "v1",
 			},
-		},
-	})
+		}),
+	)
 	require.NoError(t, err)
 	t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, databaseId))
 
@@ -269,14 +265,13 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 
 	databaseId := sharedDatabase.ID()
 
-	err := secondaryClient.Databases.AlterReplication(ctx, sharedDatabase.ID(), &sdk.AlterDatabaseReplicationOptions{
-		EnableReplication: &sdk.EnableReplication{
-			ToAccounts: []sdk.AccountIdentifier{
+	err := secondaryClient.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
+		WithEnableReplication(*sdk.NewEnableReplicationRequest().
+			WithToAccounts([]sdk.AccountIdentifier{
 				testClientHelper().Account.GetAccountIdentifier(t),
-			},
-			IgnoreEditionCheck: sdk.Bool(true),
-		},
-	})
+			}).
+			WithIgnoreEditionCheck(true)),
+	)
 	require.NoError(t, err)
 
 	externalVolume, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
@@ -288,27 +283,27 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	externalDatabaseId := sdk.NewExternalObjectIdentifier(secondaryTestClientHelper().Account.GetAccountIdentifier(t), sharedDatabase.ID())
 
 	comment := random.Comment()
-	err = client.Databases.CreateSecondary(ctx, databaseId, externalDatabaseId, &sdk.CreateSecondaryDatabaseOptions{
-		IfNotExists:                             sdk.Bool(true),
-		DataRetentionTimeInDays:                 sdk.Int(10),
-		MaxDataExtensionTimeInDays:              sdk.Int(10),
-		ExternalVolume:                          &externalVolume,
-		Catalog:                                 &catalog,
-		ReplaceInvalidCharacters:                sdk.Bool(true),
-		DefaultDDLCollation:                     sdk.String("en_US"),
-		StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyOptimized),
-		LogLevel:                                sdk.Pointer(sdk.LogLevelDebug),
-		LogEventLevel:                           sdk.Pointer(sdk.LogLevelDebug),
-		TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
-		SuspendTaskAfterNumFailures:             sdk.Int(10),
-		TaskAutoRetryAttempts:                   sdk.Int(10),
-		UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
-		UserTaskTimeoutMs:                       sdk.Int(12_000),
-		UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(30),
-		QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-		EnableConsoleOutput:                     sdk.Bool(true),
-		Comment:                                 sdk.String(comment),
-	})
+	err = client.Databases.CreateSecondary(ctx, sdk.NewCreateSecondaryDatabaseRequest(databaseId, externalDatabaseId).
+		WithIfNotExists(true).
+		WithDataRetentionTimeInDays(10).
+		WithMaxDataExtensionTimeInDays(10).
+		WithExternalVolume(externalVolume).
+		WithCatalog(catalog).
+		WithReplaceInvalidCharacters(true).
+		WithDefaultDdlCollation("en_US").
+		WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+		WithLogLevel(sdk.LogLevelDebug).
+		WithLogEventLevel(sdk.LogLevelDebug).
+		WithTraceLevel(sdk.TraceLevelAlways).
+		WithSuspendTaskAfterNumFailures(10).
+		WithTaskAutoRetryAttempts(10).
+		WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+		WithUserTaskTimeoutMs(12_000).
+		WithUserTaskMinimumTriggerIntervalInSeconds(30).
+		WithQuotedIdentifiersIgnoreCase(true).
+		WithEnableConsoleOutput(true).
+		WithComment(comment),
+	)
 	require.NoError(t, err)
 	t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, databaseId))
 
@@ -379,7 +374,7 @@ func TestInt_DatabasesCreateFromListing(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		databaseID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Databases.CreateFromListing(ctx, databaseID, listing.GlobalName, &sdk.CreateDatabaseFromListingOptions{})
+		err := client.Databases.CreateFromListing(ctx, sdk.NewCreateFromListingDatabaseRequest(databaseID, listing.GlobalName))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, databaseID))
 
@@ -437,9 +432,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			t.Cleanup(databaseTestCleanup)
 			newName := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			err := client.Databases.Alter(ctx, databaseTest.ID(), &sdk.AlterDatabaseOptions{
-				NewName: &newName,
-			})
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithNewName(newName))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, newName))
 
@@ -462,27 +455,26 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			catalogIntegrationTest, catalogIntegrationTestCleanup := testClientHelper().CatalogIntegration.Create(t)
 			t.Cleanup(catalogIntegrationTestCleanup)
 
-			err := client.Databases.Alter(ctx, databaseTest.ID(), &sdk.AlterDatabaseOptions{
-				Set: &sdk.DatabaseSet{
-					DataRetentionTimeInDays:                 sdk.Int(42),
-					MaxDataExtensionTimeInDays:              sdk.Int(42),
-					ExternalVolume:                          &externalVolumeTest,
-					Catalog:                                 &catalogIntegrationTest,
-					ReplaceInvalidCharacters:                sdk.Bool(true),
-					DefaultDDLCollation:                     sdk.String("en_US"),
-					StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
-					LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-					LogEventLevel:                           sdk.Pointer(sdk.LogLevelInfo),
-					TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
-					SuspendTaskAfterNumFailures:             sdk.Int(10),
-					TaskAutoRetryAttempts:                   sdk.Int(10),
-					UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
-					UserTaskTimeoutMs:                       sdk.Int(12_000),
-					UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(30),
-					QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-					EnableConsoleOutput:                     sdk.Bool(true),
-				},
-			})
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithSet(
+				*sdk.NewDatabaseSetRequest().
+					WithDataRetentionTimeInDays(42).
+					WithMaxDataExtensionTimeInDays(42).
+					WithExternalVolume(externalVolumeTest).
+					WithCatalog(catalogIntegrationTest).
+					WithReplaceInvalidCharacters(true).
+					WithDefaultDdlCollation("en_US").
+					WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+					WithLogLevel(sdk.LogLevelInfo).
+					WithLogEventLevel(sdk.LogLevelInfo).
+					WithTraceLevel(sdk.TraceLevelPropagate).
+					WithSuspendTaskAfterNumFailures(10).
+					WithTaskAutoRetryAttempts(10).
+					WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+					WithUserTaskTimeoutMs(12_000).
+					WithUserTaskMinimumTriggerIntervalInSeconds(30).
+					WithQuotedIdentifiersIgnoreCase(true).
+					WithEnableConsoleOutput(true),
+			))
 			require.NoError(t, err)
 
 			params, err := client.Databases.ShowParameters(ctx, databaseTest.ID())
@@ -505,27 +497,26 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterQuotedIdentifiersIgnoreCase, "true")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterEnableConsoleOutput, "true")
 
-			err = client.Databases.Alter(ctx, databaseTest.ID(), &sdk.AlterDatabaseOptions{
-				Unset: &sdk.DatabaseUnset{
-					DataRetentionTimeInDays:                 sdk.Bool(true),
-					MaxDataExtensionTimeInDays:              sdk.Bool(true),
-					ExternalVolume:                          sdk.Bool(true),
-					Catalog:                                 sdk.Bool(true),
-					ReplaceInvalidCharacters:                sdk.Bool(true),
-					DefaultDDLCollation:                     sdk.Bool(true),
-					StorageSerializationPolicy:              sdk.Bool(true),
-					LogLevel:                                sdk.Bool(true),
-					LogEventLevel:                           sdk.Bool(true),
-					TraceLevel:                              sdk.Bool(true),
-					SuspendTaskAfterNumFailures:             sdk.Bool(true),
-					TaskAutoRetryAttempts:                   sdk.Bool(true),
-					UserTaskManagedInitialWarehouseSize:     sdk.Bool(true),
-					UserTaskTimeoutMs:                       sdk.Bool(true),
-					UserTaskMinimumTriggerIntervalInSeconds: sdk.Bool(true),
-					QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-					EnableConsoleOutput:                     sdk.Bool(true),
-				},
-			})
+			err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithUnset(
+				*sdk.NewDatabaseUnsetRequest().
+					WithDataRetentionTimeInDays(true).
+					WithMaxDataExtensionTimeInDays(true).
+					WithExternalVolume(true).
+					WithCatalog(true).
+					WithReplaceInvalidCharacters(true).
+					WithDefaultDdlCollation(true).
+					WithStorageSerializationPolicy(true).
+					WithLogLevel(true).
+					WithLogEventLevel(true).
+					WithTraceLevel(true).
+					WithSuspendTaskAfterNumFailures(true).
+					WithTaskAutoRetryAttempts(true).
+					WithUserTaskManagedInitialWarehouseSize(true).
+					WithUserTaskTimeoutMs(true).
+					WithUserTaskMinimumTriggerIntervalInSeconds(true).
+					WithQuotedIdentifiersIgnoreCase(true).
+					WithEnableConsoleOutput(true),
+			))
 			require.NoError(t, err)
 
 			params, err = client.Databases.ShowParameters(ctx, databaseTest.ID())
@@ -553,11 +544,9 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			databaseTest, databaseTestCleanup := testCase.CreateFn(t)
 			t.Cleanup(databaseTestCleanup)
 
-			err := client.Databases.Alter(ctx, databaseTest.ID(), &sdk.AlterDatabaseOptions{
-				Set: &sdk.DatabaseSet{
-					Comment: sdk.String("test comment"),
-				},
-			})
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithSet(
+				*sdk.NewDatabaseSetRequest().WithComment("test comment"),
+			))
 			require.NoError(t, err)
 
 			database, err := client.Databases.ShowByID(ctx, databaseTest.ID())
@@ -565,11 +554,9 @@ func TestInt_DatabasesAlter(t *testing.T) {
 
 			assert.Equal(t, "test comment", database.Comment)
 
-			err = client.Databases.Alter(ctx, databaseTest.ID(), &sdk.AlterDatabaseOptions{
-				Unset: &sdk.DatabaseUnset{
-					Comment: sdk.Bool(true),
-				},
-			})
+			err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithUnset(
+				*sdk.NewDatabaseUnsetRequest().WithComment(true),
+			))
 			require.NoError(t, err)
 
 			database, err = client.Databases.ShowByID(ctx, databaseTest.ID())
@@ -584,9 +571,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			databaseTest2, databaseCleanup2 := testClientHelper().Database.CreateDatabase(t)
 			t.Cleanup(databaseCleanup2)
 
-			err := client.Databases.Alter(ctx, databaseTest.ID(), &sdk.AlterDatabaseOptions{
-				SwapWith: sdk.Pointer(databaseTest2.ID()),
-			})
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithSwapWith(databaseTest2.ID()))
 			require.NoError(t, err)
 		})
 	}
@@ -599,23 +584,21 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 		database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(databaseCleanup)
 
-		err := testClient(t).Databases.AlterReplication(ctx, database.ID(), &sdk.AlterDatabaseReplicationOptions{
-			EnableReplication: &sdk.EnableReplication{
-				ToAccounts: []sdk.AccountIdentifier{
+		err := testClient(t).Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(database.ID()).
+			WithEnableReplication(*sdk.NewEnableReplicationRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
 					secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(),
-				},
-				IgnoreEditionCheck: sdk.Bool(true),
-			},
-		})
+				}).
+				WithIgnoreEditionCheck(true)),
+		)
 		require.NoError(t, err)
 
-		err = testClient(t).Databases.AlterReplication(ctx, database.ID(), &sdk.AlterDatabaseReplicationOptions{
-			DisableReplication: &sdk.DisableReplication{
-				ToAccounts: []sdk.AccountIdentifier{
+		err = testClient(t).Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(database.ID()).
+			WithDisableReplication(*sdk.NewDisableReplicationRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
 					secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(),
-				},
-			},
-		})
+				})),
+		)
 		require.NoError(t, err)
 	})
 
@@ -627,14 +610,13 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 		sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(sharedDatabaseCleanup)
 
-		err := secondaryClient.Databases.AlterReplication(ctx, sharedDatabase.ID(), &sdk.AlterDatabaseReplicationOptions{
-			EnableReplication: &sdk.EnableReplication{
-				ToAccounts: []sdk.AccountIdentifier{
+		err := secondaryClient.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
+			WithEnableReplication(*sdk.NewEnableReplicationRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
 					testClientHelper().Account.GetAccountIdentifier(t),
-				},
-				IgnoreEditionCheck: sdk.Bool(true),
-			},
-		})
+				}).
+				WithIgnoreEditionCheck(true)),
+		)
 		require.NoError(t, err)
 
 		externalVolume, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
@@ -645,25 +627,23 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 
 		externalDatabaseId := sdk.NewExternalObjectIdentifier(secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(), sharedDatabase.ID())
 		comment := random.Comment()
-		err = client.Databases.CreateSecondary(ctx, sharedDatabase.ID(), externalDatabaseId, &sdk.CreateSecondaryDatabaseOptions{
-			IfNotExists:                sdk.Bool(true),
-			DataRetentionTimeInDays:    sdk.Int(1),
-			MaxDataExtensionTimeInDays: sdk.Int(10),
-			ExternalVolume:             &externalVolume,
-			Catalog:                    &catalog,
-			DefaultDDLCollation:        sdk.String("en_US"),
-			LogLevel:                   sdk.Pointer(sdk.LogLevelDebug),
-			TraceLevel:                 sdk.Pointer(sdk.TraceLevelAlways),
-			Comment:                    sdk.String(comment),
-		})
+		err = client.Databases.CreateSecondary(ctx, sdk.NewCreateSecondaryDatabaseRequest(sharedDatabase.ID(), externalDatabaseId).
+			WithIfNotExists(true).
+			WithDataRetentionTimeInDays(1).
+			WithMaxDataExtensionTimeInDays(10).
+			WithExternalVolume(externalVolume).
+			WithCatalog(catalog).
+			WithDefaultDdlCollation("en_US").
+			WithLogLevel(sdk.LogLevelDebug).
+			WithTraceLevel(sdk.TraceLevelAlways).
+			WithComment(comment),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, sharedDatabase.ID()))
 
-		err = secondaryClient.Databases.Alter(ctx, sharedDatabase.ID(), &sdk.AlterDatabaseOptions{
-			Set: &sdk.DatabaseSet{
-				Comment: sdk.String("some comment"),
-			},
-		})
+		err = secondaryClient.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(sharedDatabase.ID()).WithSet(
+			*sdk.NewDatabaseSetRequest().WithComment("some comment"),
+		))
 		require.NoError(t, err)
 
 		database, err := client.Databases.ShowByID(ctx, sharedDatabase.ID())
@@ -673,9 +653,7 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 		assert.Equal(t, 1, database.RetentionTime)
 		assert.Equal(t, comment, database.Comment)
 
-		err = client.Databases.AlterReplication(ctx, sharedDatabase.ID(), &sdk.AlterDatabaseReplicationOptions{
-			Refresh: sdk.Bool(true),
-		})
+		err = client.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).WithRefresh(true))
 		require.NoError(t, err)
 
 		database, err = client.Databases.ShowByID(ctx, sharedDatabase.ID())
@@ -694,32 +672,29 @@ func TestInt_DatabasesAlterFailover(t *testing.T) {
 		database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(databaseCleanup)
 
-		err := testClient(t).Databases.AlterReplication(ctx, database.ID(), &sdk.AlterDatabaseReplicationOptions{
-			EnableReplication: &sdk.EnableReplication{
-				ToAccounts: []sdk.AccountIdentifier{
+		err := testClient(t).Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(database.ID()).
+			WithEnableReplication(*sdk.NewEnableReplicationRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
 					secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(),
-				},
-				IgnoreEditionCheck: sdk.Bool(true),
-			},
-		})
+				}).
+				WithIgnoreEditionCheck(true)),
+		)
 		require.NoError(t, err)
 
-		err = testClient(t).Databases.AlterFailover(ctx, database.ID(), &sdk.AlterDatabaseFailoverOptions{
-			EnableFailover: &sdk.EnableFailover{
-				ToAccounts: []sdk.AccountIdentifier{
+		err = testClient(t).Databases.AlterFailover(ctx, sdk.NewAlterFailoverDatabaseRequest(database.ID()).
+			WithEnableFailover(*sdk.NewEnableFailoverRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
 					secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(),
-				},
-			},
-		})
+				})),
+		)
 		require.NoError(t, err)
 
-		err = testClient(t).Databases.AlterFailover(ctx, database.ID(), &sdk.AlterDatabaseFailoverOptions{
-			DisableFailover: &sdk.DisableFailover{
-				ToAccounts: []sdk.AccountIdentifier{
+		err = testClient(t).Databases.AlterFailover(ctx, sdk.NewAlterFailoverDatabaseRequest(database.ID()).
+			WithDisableFailover(*sdk.NewDisableFailoverRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
 					secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(),
-				},
-			},
-		})
+				})),
+		)
 		require.NoError(t, err)
 	})
 
@@ -731,28 +706,24 @@ func TestInt_DatabasesAlterFailover(t *testing.T) {
 		database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(databaseCleanup)
 
-		err := testClient(t).Databases.AlterReplication(ctx, database.ID(), &sdk.AlterDatabaseReplicationOptions{
-			EnableReplication: &sdk.EnableReplication{
-				ToAccounts: []sdk.AccountIdentifier{
+		err := testClient(t).Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(database.ID()).
+			WithEnableReplication(*sdk.NewEnableReplicationRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
 					secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(),
-				},
-				IgnoreEditionCheck: sdk.Bool(true),
-			},
-		})
+				}).
+				WithIgnoreEditionCheck(true)),
+		)
 		require.NoError(t, err)
 
-		err = testClient(t).Databases.AlterFailover(ctx, database.ID(), &sdk.AlterDatabaseFailoverOptions{
-			EnableFailover: &sdk.EnableFailover{
-				ToAccounts: []sdk.AccountIdentifier{
+		err = testClient(t).Databases.AlterFailover(ctx, sdk.NewAlterFailoverDatabaseRequest(database.ID()).
+			WithEnableFailover(*sdk.NewEnableFailoverRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
 					secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(),
-				},
-			},
-		})
+				})),
+		)
 		require.NoError(t, err)
 
-		err = testClient(t).Databases.AlterFailover(ctx, database.ID(), &sdk.AlterDatabaseFailoverOptions{
-			Primary: sdk.Bool(true),
-		})
+		err = testClient(t).Databases.AlterFailover(ctx, sdk.NewAlterFailoverDatabaseRequest(database.ID()).WithPrimary(true))
 		require.NoError(t, err)
 	})
 }
@@ -765,7 +736,7 @@ func TestInt_DatabasesDrop(t *testing.T) {
 		databaseTest, databaseTestCleanup := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(databaseTestCleanup)
 
-		err := client.Databases.Drop(ctx, databaseTest.ID(), nil)
+		err := client.Databases.Drop(ctx, sdk.NewDropDatabaseRequest(databaseTest.ID()))
 		require.NoError(t, err)
 	})
 
@@ -773,7 +744,7 @@ func TestInt_DatabasesDrop(t *testing.T) {
 		databaseTest, databaseTestCleanup := testClientHelper().Database.CreateDatabase(t)
 		databaseTestCleanup()
 
-		err := client.Databases.Drop(ctx, databaseTest.ID(), &sdk.DropDatabaseOptions{IfExists: sdk.Bool(true)})
+		err := client.Databases.Drop(ctx, sdk.NewDropDatabaseRequest(databaseTest.ID()).WithIfExists(true))
 		require.NoError(t, err)
 	})
 
@@ -781,10 +752,9 @@ func TestInt_DatabasesDrop(t *testing.T) {
 		databaseTest, databaseTestCleanup := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(databaseTestCleanup)
 
-		err := client.Databases.Drop(ctx, databaseTest.ID(), &sdk.DropDatabaseOptions{
-			IfExists: sdk.Bool(true),
-			Cascade:  sdk.Bool(true),
-		})
+		err := client.Databases.Drop(ctx, sdk.NewDropDatabaseRequest(databaseTest.ID()).
+			WithIfExists(true).
+			WithCascade(true))
 		require.NoError(t, err)
 	})
 
@@ -792,10 +762,9 @@ func TestInt_DatabasesDrop(t *testing.T) {
 		databaseTest, databaseTestCleanup := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(databaseTestCleanup)
 
-		err := client.Databases.Drop(ctx, databaseTest.ID(), &sdk.DropDatabaseOptions{
-			IfExists: sdk.Bool(true),
-			Restrict: sdk.Bool(true),
-		})
+		err := client.Databases.Drop(ctx, sdk.NewDropDatabaseRequest(databaseTest.ID()).
+			WithIfExists(true).
+			WithRestrict(true))
 		require.NoError(t, err)
 	})
 }
@@ -810,7 +779,7 @@ func TestInt_DatabasesUndrop(t *testing.T) {
 	_, err := client.Databases.ShowByID(ctx, databaseTest.ID())
 	require.Error(t, err)
 
-	err = client.Databases.Undrop(ctx, databaseTest.ID())
+	err = client.Databases.Undrop(ctx, sdk.NewUndropDatabaseRequest(databaseTest.ID()))
 	require.NoError(t, err)
 
 	database, err := client.Databases.ShowByID(ctx, databaseTest.ID())
@@ -830,7 +799,7 @@ func TestInt_DatabasesShow(t *testing.T) {
 	t.Cleanup(databaseCleanup2)
 
 	t.Run("without show options", func(t *testing.T) {
-		databases, err := client.Databases.Show(ctx, nil)
+		databases, err := client.Databases.Show(ctx, sdk.NewShowDatabaseRequest())
 		require.NoError(t, err)
 
 		assert.GreaterOrEqual(t, len(databases), 2)
@@ -844,12 +813,10 @@ func TestInt_DatabasesShow(t *testing.T) {
 	})
 
 	t.Run("with terse", func(t *testing.T) {
-		databases, err := client.Databases.Show(ctx, &sdk.ShowDatabasesOptions{
-			Terse: sdk.Bool(true),
-			Like: &sdk.Like{
-				Pattern: sdk.String(databaseTest.Name),
-			},
-		})
+		databases, err := client.Databases.Show(ctx, sdk.NewShowDatabaseRequest().
+			WithTerse(true).
+			WithLike(sdk.Like{Pattern: sdk.String(databaseTest.Name)}),
+		)
 		require.NoError(t, err)
 
 		database, err := collections.FindFirst(databases, func(database sdk.Database) bool { return database.Name == databaseTest.Name })
@@ -865,12 +832,10 @@ func TestInt_DatabasesShow(t *testing.T) {
 		databaseTest3, databaseCleanup3 := testClientHelper().Database.CreateDatabase(t)
 		databaseCleanup3()
 
-		databases, err := client.Databases.Show(ctx, &sdk.ShowDatabasesOptions{
-			History: sdk.Bool(true),
-			Like: &sdk.Like{
-				Pattern: sdk.String(databaseTest3.Name),
-			},
-		})
+		databases, err := client.Databases.Show(ctx, sdk.NewShowDatabaseRequest().
+			WithHistory(true).
+			WithLike(sdk.Like{Pattern: sdk.String(databaseTest3.Name)}),
+		)
 		require.NoError(t, err)
 
 		droppedDatabase, err := collections.FindFirst(databases, func(database sdk.Database) bool { return database.Name == databaseTest3.Name })
@@ -881,12 +846,10 @@ func TestInt_DatabasesShow(t *testing.T) {
 	})
 
 	t.Run("with like starts with", func(t *testing.T) {
-		databases, err := client.Databases.Show(ctx, &sdk.ShowDatabasesOptions{
-			StartsWith: sdk.String(databaseTest.Name),
-			LimitFrom: &sdk.LimitFrom{
-				Rows: sdk.Int(1),
-			},
-		})
+		databases, err := client.Databases.Show(ctx, sdk.NewShowDatabaseRequest().
+			WithStartsWith(databaseTest.Name).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}),
+		)
 		require.NoError(t, err)
 
 		database, err := collections.FindFirst(databases, func(database sdk.Database) bool { return database.Name == databaseTest.Name })
@@ -896,11 +859,9 @@ func TestInt_DatabasesShow(t *testing.T) {
 	})
 
 	t.Run("when searching a non-existent database", func(t *testing.T) {
-		databases, err := client.Databases.Show(ctx, &sdk.ShowDatabasesOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String("non-existent"),
-			},
-		})
+		databases, err := client.Databases.Show(ctx, sdk.NewShowDatabaseRequest().
+			WithLike(sdk.Like{Pattern: sdk.String("non-existent")}),
+		)
 		require.NoError(t, err)
 
 		assert.Equal(t, 0, len(databases))
