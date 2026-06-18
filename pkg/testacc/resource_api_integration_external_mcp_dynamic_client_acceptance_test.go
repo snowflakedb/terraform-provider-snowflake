@@ -26,7 +26,7 @@ import (
 func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const oauthResourceUrl = "https://mcp.example.com/api/"
+	const oauthResourceUrl = "https://mcp.atlassian.com/v1/mcp"
 	const allowedPrefix = "https://mcp.example.com/api/"
 	const blockedPrefix = "https://mcp.example.com/api/blocked/"
 	apiProvider := string(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp)
@@ -58,7 +58,7 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient)).
 			HasOauthResourceUrl(oauthResourceUrl).
 			HasNoBlockedPrefixes().
-			HasNoComment(),
+			HasComment(""),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
@@ -185,7 +185,7 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationExternalMcpDynamicClient_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const oauthResourceUrl = "https://mcp.example.com/api/"
+	const oauthResourceUrl = "https://mcp.atlassian.com/v1/mcp"
 	const allowedPrefix = "https://mcp.example.com/api/"
 	const blockedPrefix = "https://mcp.example.com/api/blocked/"
 	comment := random.Comment()
