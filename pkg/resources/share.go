@@ -111,13 +111,13 @@ func setShareAccounts(ctx context.Context, client *sdk.Client, shareID sdk.Accou
 	// 1. Create new temporary DB
 	tempName := fmt.Sprintf("TEMP_%v_%d", shareID.Name(), time.Now().Unix())
 	tempDatabaseID := sdk.NewAccountObjectIdentifier(tempName)
-	err := client.Databases.Create(ctx, tempDatabaseID, nil)
+	err := client.Databases.Create(ctx, sdk.NewCreateDatabaseRequest(tempDatabaseID))
 	if err != nil {
 		return fmt.Errorf("error creating temporary DB %v err = %w", tempName, err)
 	}
 	defer func() {
 		// drop the temporary DB during cleanup
-		err = client.Databases.Drop(ctx, tempDatabaseID, nil)
+		err = client.Databases.Drop(ctx, sdk.NewDropDatabaseRequest(tempDatabaseID))
 		if err != nil {
 			log.Printf("[WARN] error dropping temporary DB %v err = %v", tempName, err)
 		}

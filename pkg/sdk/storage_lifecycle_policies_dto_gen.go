@@ -57,7 +57,7 @@ type DropStorageLifecyclePolicyRequest struct {
 
 type ShowStorageLifecyclePolicyRequest struct {
 	Like *Like
-	In   *ExtendedIn
+	In   *In
 }
 
 type DescribeStorageLifecyclePolicyRequest struct {

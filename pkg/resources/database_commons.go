@@ -194,14 +194,14 @@ func init() {
 	}
 }
 
-func handleDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateDatabaseOptions) diag.Diagnostics {
+func handleDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateDatabaseRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterCreate(d, sdk.ObjectParameterDataRetentionTimeInDays, &createOpts.DataRetentionTimeInDays),
 		handleParameterCreate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &createOpts.MaxDataExtensionTimeInDays),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &createOpts.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDDLCollation),
+		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDdlCollation),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &createOpts.LogLevel, sdk.ToLogLevel),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &createOpts.LogEventLevel, sdk.ToLogLevel),
@@ -216,14 +216,14 @@ func handleDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.Crea
 	)
 }
 
-func handleSecondaryDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateSecondaryDatabaseOptions) diag.Diagnostics {
+func handleSecondaryDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateSecondaryDatabaseRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterCreate(d, sdk.ObjectParameterDataRetentionTimeInDays, &createOpts.DataRetentionTimeInDays),
 		handleParameterCreate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &createOpts.MaxDataExtensionTimeInDays),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &createOpts.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDDLCollation),
+		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDdlCollation),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &createOpts.LogLevel, sdk.ToLogLevel),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &createOpts.LogEventLevel, sdk.ToLogLevel),
@@ -238,12 +238,12 @@ func handleSecondaryDatabaseParametersCreate(d *schema.ResourceData, createOpts 
 	)
 }
 
-func handleSharedDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateSharedDatabaseOptions) diag.Diagnostics {
+func handleSharedDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateSharedDatabaseRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &createOpts.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDDLCollation),
+		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDdlCollation),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &createOpts.LogLevel, sdk.ToLogLevel),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &createOpts.LogEventLevel, sdk.ToLogLevel),
@@ -258,14 +258,14 @@ func handleSharedDatabaseParametersCreate(d *schema.ResourceData, createOpts *sd
 	)
 }
 
-func handleDatabaseParametersChanges(d *schema.ResourceData, set *sdk.DatabaseSet, unset *sdk.DatabaseUnset) diag.Diagnostics {
+func handleDatabaseParametersChanges(d *schema.ResourceData, set *sdk.DatabaseSetRequest, unset *sdk.DatabaseUnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterUpdate(d, sdk.ObjectParameterDataRetentionTimeInDays, &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays),
 		handleParameterUpdate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &set.MaxDataExtensionTimeInDays, &unset.MaxDataExtensionTimeInDays),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterExternalVolume, &set.ExternalVolume, &unset.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterCatalog, &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),
 		handleParameterUpdate(d, sdk.ObjectParameterReplaceInvalidCharacters, &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
-		handleParameterUpdate(d, sdk.ObjectParameterDefaultDDLCollation, &set.DefaultDDLCollation, &unset.DefaultDDLCollation),
+		handleParameterUpdate(d, sdk.ObjectParameterDefaultDDLCollation, &set.DefaultDdlCollation, &unset.DefaultDdlCollation),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &set.StorageSerializationPolicy, &unset.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogLevel, &set.LogLevel, &unset.LogLevel, sdk.ToLogLevel),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, sdk.ToLogLevel),

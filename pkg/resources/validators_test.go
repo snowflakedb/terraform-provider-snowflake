@@ -44,7 +44,7 @@ func Test_sdkValidation(t *testing.T) {
 	})
 
 	t.Run("invalid warehouse size", func(t *testing.T) {
-		invalid := "SMALLa"
+		invalid := "SMALLA"
 
 		diag := sdkValidation(sdk.ToWarehouseSize)(invalid, cty.IndexStringPath("path"))
 

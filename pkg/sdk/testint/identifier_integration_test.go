@@ -78,9 +78,9 @@ func TestInt_IdentifiersForOnePartIdentifierAsNameAndReference(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = testClient(t).Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
-				ResourceMonitor: &id,
-			})
+			err = testClient(t).Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).
+				WithResourceMonitor(id),
+			)
 			if err == nil {
 				t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 			}
@@ -163,7 +163,7 @@ func TestInt_IdentifiersForTwoPartIdentifierAsReference(t *testing.T) {
 			ctx := context.Background()
 
 			id := sdk.NewDatabaseObjectIdentifier(testCase.Name, testCase.Name)
-			err := testClient(t).Databases.Create(ctx, id.DatabaseId(), new(sdk.CreateDatabaseOptions))
+			err := testClient(t).Databases.Create(ctx, sdk.NewCreateDatabaseRequest(id.DatabaseId()))
 			if err == nil {
 				t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, id.DatabaseId()))
 			}

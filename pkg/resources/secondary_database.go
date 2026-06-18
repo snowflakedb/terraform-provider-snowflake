@@ -87,15 +87,18 @@ func CreateSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	opts := &sdk.CreateSecondaryDatabaseOptions{
-		Transient: GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "is_transient"),
-		Comment:   GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"),
+	req := sdk.NewCreateSecondaryDatabaseRequest(secondaryDatabaseId, primaryDatabaseId)
+	if v := GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "is_transient"); v != nil {
+		req.WithTransient(*v)
 	}
-	if parametersCreateDiags := handleSecondaryDatabaseParametersCreate(d, opts); len(parametersCreateDiags) > 0 {
+	if v := GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"); v != nil {
+		req.WithComment(*v)
+	}
+	if parametersCreateDiags := handleSecondaryDatabaseParametersCreate(d, req); len(parametersCreateDiags) > 0 {
 		return parametersCreateDiags
 	}
 
-	err = client.Databases.CreateSecondary(ctx, secondaryDatabaseId, primaryDatabaseId, opts)
+	err = client.Databases.CreateSecondary(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -118,9 +121,7 @@ func UpdateSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta a
 			return diag.FromErr(err)
 		}
 
-		err = client.Databases.Alter(ctx, secondaryDatabaseId, &sdk.AlterDatabaseOptions{
-			NewName: &newId,
-		})
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(secondaryDatabaseId).WithNewName(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -129,8 +130,8 @@ func UpdateSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta a
 		secondaryDatabaseId = newId
 	}
 
-	databaseSetRequest := new(sdk.DatabaseSet)
-	databaseUnsetRequest := new(sdk.DatabaseUnset)
+	databaseSetRequest := sdk.NewDatabaseSetRequest()
+	databaseUnsetRequest := sdk.NewDatabaseUnsetRequest()
 
 	if updateParamDiags := handleDatabaseParametersChanges(d, databaseSetRequest, databaseUnsetRequest); len(updateParamDiags) > 0 {
 		return updateParamDiags
@@ -139,25 +140,21 @@ func UpdateSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta a
 	if d.HasChange("comment") {
 		comment := d.Get("comment").(string)
 		if len(comment) > 0 {
-			databaseSetRequest.Comment = &comment
+			databaseSetRequest.WithComment(comment)
 		} else {
-			databaseUnsetRequest.Comment = sdk.Bool(true)
+			databaseUnsetRequest.WithComment(true)
 		}
 	}
 
-	if (*databaseSetRequest != sdk.DatabaseSet{}) {
-		err := client.Databases.Alter(ctx, secondaryDatabaseId, &sdk.AlterDatabaseOptions{
-			Set: databaseSetRequest,
-		})
+	if (*databaseSetRequest != sdk.DatabaseSetRequest{}) {
+		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(secondaryDatabaseId).WithSet(*databaseSetRequest))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if (*databaseUnsetRequest != sdk.DatabaseUnset{}) {
-		err := client.Databases.Alter(ctx, secondaryDatabaseId, &sdk.AlterDatabaseOptions{
-			Unset: databaseUnsetRequest,
-		})
+	if (*databaseUnsetRequest != sdk.DatabaseUnsetRequest{}) {
+		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(secondaryDatabaseId).WithUnset(*databaseUnsetRequest))
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -28,17 +28,14 @@ import (
 func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const awsRoleArn = "arn:aws:iam::000000000001:role/test"
-	const allowedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/"
-	const blockedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/blocked/"
 	apiProvider := string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway)
 
 	comment := random.Comment()
 	externalComment := random.Comment()
 
-	basic := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, apiProvider, true)
-	withOptionals := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, apiProvider, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	basic := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{awsAllowedPrefix}, awsRoleArn, apiProvider, true)
+	withOptionals := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{awsAllowedPrefix}, awsRoleArn, apiProvider, true).
+		WithApiBlockedPrefixes([]string{awsBlockedPrefix}).
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
@@ -49,7 +46,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 			HasEnabledString(r.BooleanTrue).
 			HasApiProviderString(apiProvider).
 			HasApiAwsRoleArnString(awsRoleArn).
-			HasApiAllowedPrefixes(allowedPrefix).
+			HasApiAllowedPrefixes(awsAllowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty().
 			HasNoApiKey(),
@@ -66,7 +63,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(awsRoleArn).
-			HasAllowedPrefixes(allowedPrefix).
+			HasAllowedPrefixes(awsAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasApiKey("").
 			HasComment("").
@@ -80,8 +77,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 			HasEnabledString(r.BooleanTrue).
 			HasApiProviderString(apiProvider).
 			HasApiAwsRoleArnString(awsRoleArn).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiAllowedPrefixes(awsAllowedPrefix).
+			HasApiBlockedPrefixes(awsBlockedPrefix).
 			HasCommentString(comment).
 			HasNoApiKey(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -97,8 +94,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(awsRoleArn).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(awsAllowedPrefix).
+			HasBlockedPrefixes(awsBlockedPrefix).
 			HasApiKey("").
 			HasComment(comment).
 			HasApiAwsIamUserArnNotEmpty().
@@ -192,16 +189,13 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const awsRoleArn = "arn:aws:iam::000000000001:role/test"
-	const allowedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/"
-	const blockedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/blocked/"
 	apiProvider := string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway)
 
 	comment := random.Comment()
 	apiKey := random.AlphanumericN(10)
 
-	allAttributes := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, apiProvider, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	allAttributes := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{awsAllowedPrefix}, awsRoleArn, apiProvider, true).
+		WithApiBlockedPrefixes([]string{awsBlockedPrefix}).
 		WithApiKey(apiKey).
 		WithComment(comment)
 
@@ -213,8 +207,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 			HasEnabledString(r.BooleanTrue).
 			HasApiProviderString(apiProvider).
 			HasApiAwsRoleArnString(awsRoleArn).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiAllowedPrefixes(awsAllowedPrefix).
+			HasApiBlockedPrefixes(awsBlockedPrefix).
 			HasCommentString(comment).
 			HasApiKey(apiKey),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -230,8 +224,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(awsRoleArn).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(awsAllowedPrefix).
+			HasBlockedPrefixes(awsBlockedPrefix).
 			HasApiKeyNotEmpty().
 			HasComment(comment).
 			HasApiAwsIamUserArnNotEmpty().
@@ -270,10 +264,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationAmazonApiGateway_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const awsRoleArn = "arn:aws:iam::000000000001:role/test"
-	const allowedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/"
-
-	invalidProvider := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, "INVALID_PROVIDER", true)
+	invalidProvider := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{awsAllowedPrefix}, awsRoleArn, "INVALID_PROVIDER", true)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -298,8 +289,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import_WrongProviderType(t *testing.
 
 	awsId := testClient().Ids.RandomAccountObjectIdentifier()
 	awsModel := model.ApiIntegrationAmazonApiGateway("t", awsId.Name(),
-		[]string{"https://123456.execute-api.us-west-2.amazonaws.com/dev/"},
-		"arn:aws:iam::000000000001:role/test",
+		[]string{awsAllowedPrefix},
+		awsRoleArn,
 		string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway),
 		true,
 	)
@@ -328,14 +319,11 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import_WrongProviderType(t *testing.
 func TestAcc_ApiIntegrationAmazonApiGateway_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const awsRoleArn = "arn:aws:iam::000000000001:role/test"
-	const allowedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/"
-	const blockedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/blocked/"
 	apiProvider := string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway)
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, apiProvider, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	testModel := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{awsAllowedPrefix}, awsRoleArn, apiProvider, true).
+		WithApiBlockedPrefixes([]string{awsBlockedPrefix}).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -349,9 +337,9 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import(t *testing.T) {
 				PreConfig: func() {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}}, true).
 							WithComment(comment).
-							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: awsBlockedPrefix}}).
 							WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(
 								sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway,
 								awsRoleArn,
@@ -383,13 +371,11 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import(t *testing.T) {
 func TestAcc_ApiIntegrationAmazonApiGateway_Import_WithApiKey(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const awsRoleArn = "arn:aws:iam::000000000001:role/test"
-	const allowedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/"
 	apiProvider := string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway)
 
 	apiKey := random.AlphanumericN(10)
 
-	testModel := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, awsRoleArn, apiProvider, true).
+	testModel := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{awsAllowedPrefix}, awsRoleArn, apiProvider, true).
 		WithApiKey(apiKey)
 
 	resource.Test(t, resource.TestCase{
@@ -403,7 +389,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import_WithApiKey(t *testing.T) {
 				PreConfig: func() {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}}, true).
 							WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(
 								sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway,
 								awsRoleArn,
@@ -436,10 +422,9 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import_WithApiKey(t *testing.T) {
 func TestAcc_ApiIntegrationAmazonApiGateway_ExternalProviderTypeMismatch(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://123456.execute-api.us-west-2.amazonaws.com/dev/"
 	apiProvider := string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway)
 
-	awsModel := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{allowedPrefix}, "arn:aws:iam::000000000001:role/test", apiProvider, true)
+	awsModel := model.ApiIntegrationAmazonApiGateway("t", id.Name(), []string{awsAllowedPrefix}, awsRoleArn, apiProvider, true)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -459,8 +444,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_ExternalProviderTypeMismatch(t *test
 					testClient().ApiIntegration.DropApiIntegrationFunc(t, id)()
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://apim-hello-world.azure-api.net/dev"}}, true).
-							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest("00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111")),
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}}, true).
+							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId)),
 					)
 					t.Cleanup(cleanup)
 				},

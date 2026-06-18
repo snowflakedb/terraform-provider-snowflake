@@ -1585,6 +1585,77 @@ func TestInt_GrantOwnership(t *testing.T) {
 		assert.Equal(t, roleId, returnedGrants[0].GranteeName)
 	})
 
+	t.Run("on agent - with ownership", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		agentId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		agentCleanup := testClientHelper().CortexAgent.CreateWithId(t, agentId)
+		t.Cleanup(agentCleanup)
+
+		on := ownershipGrantOnObject(sdk.ObjectTypeAgent, agentId)
+
+		err := client.Grants.GrantOwnership(
+			ctx,
+			on,
+			sdk.OwnershipGrantTo{
+				AccountRoleName: new(role.ID()),
+			},
+			new(sdk.GrantOwnershipOptions),
+		)
+		require.NoError(t, err)
+
+		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			On: &sdk.ShowGrantsOn{
+				Object: on.Object,
+			},
+		})
+		require.NoError(t, err)
+
+		ownership, err := collections.FindFirst(returnedGrants, func(g sdk.Grant) bool { return g.Privilege == sdk.SchemaObjectOwnership.String() })
+		require.NoError(t, err)
+		assert.Equal(t, sdk.ObjectTypeAgent, ownership.GrantedOn)
+		assert.Equal(t, sdk.ObjectTypeRole, ownership.GrantedTo)
+		assert.Equal(t, role.ID().Name(), ownership.GranteeName.Name())
+
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		grantOwnershipToRole(t, currentRole, on, nil)
+		checkOwnershipOnObjectToRole(t, on, currentRole)
+	})
+
+	t.Run("on future agents - with ownership", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+		roleId := role.ID()
+
+		on := sdk.OwnershipGrantOn{
+			Future: &sdk.GrantOnSchemaObjectIn{
+				PluralObjectType: sdk.PluralObjectTypeAgents,
+				InDatabase:       new(testClientHelper().Ids.DatabaseId()),
+			},
+		}
+		to := sdk.OwnershipGrantTo{
+			AccountRoleName: &roleId,
+		}
+
+		err := client.Grants.GrantOwnership(ctx, on, to, nil)
+		require.NoError(t, err)
+
+		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Future: new(true),
+			To: &sdk.ShowGrantsTo{
+				Role: roleId,
+			},
+		})
+		require.NoError(t, err)
+		require.Len(t, returnedGrants, 1)
+
+		assert.Equal(t, sdk.SchemaObjectOwnership.String(), returnedGrants[0].Privilege)
+		assert.Equal(t, sdk.ObjectTypeAgent, returnedGrants[0].GrantOn)
+		assert.Equal(t, sdk.ObjectTypeRole, returnedGrants[0].GrantTo)
+		assert.Equal(t, roleId, returnedGrants[0].GranteeName)
+	})
+
 	t.Run("on pipe - with operate and monitor privileges granted", func(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRoleGrantedToCurrentUser(t)
 		t.Cleanup(roleCleanup)

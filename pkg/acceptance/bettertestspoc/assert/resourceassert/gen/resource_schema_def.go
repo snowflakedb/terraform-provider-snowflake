@@ -54,8 +54,16 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationAmazonApiGateway().Schema,
 	},
 	{
+		name:   "ApiIntegrationAzureApiManagement",
+		schema: resources.ApiIntegrationAzureApiManagement().Schema,
+	},
+	{
 		name:   "ApiIntegrationGitRepositoryGithubApp",
 		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
+	},
+	{
+		name:   "ApiIntegrationGoogleCloudApiGateway",
+		schema: resources.ApiIntegrationGoogleCloudApiGateway().Schema,
 	},
 	{
 		name:   "AuthenticationPolicy",
@@ -156,6 +164,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "HybridTable",
 		schema: resources.HybridTable().Schema,
+	},
+	{
+		name:   "IcebergTableFromFiles",
+		schema: resources.IcebergTableFromFiles().Schema,
 	},
 	{
 		name:   "ImageRepository",
