@@ -18,53 +18,59 @@ var frequencyEnum = g.NewEnum("Frequency", "Frequencies",
 	"MONTHLY", "DAILY", "WEEKLY", "YEARLY", "NEVER",
 )
 
-var triggerDefinitionStruct = g.NewQueryStruct("TriggerDefinition").
-	WithField(g.NewField("Threshold", "int", nil, g.ParameterOptions().NoEquals().SQL("ON").Required())).
-	WithField(g.NewField("TriggerAction", "TriggerAction", nil, g.ParameterOptions().NoEquals().SQL("PERCENT DO").Required()))
+func notifyUsersStruct() *g.QueryStruct {
+	return g.NewQueryStruct("NotifyUsers").
+		ListQueryStructField("Users", notifiedUserStruct(), g.ListOptions().Parentheses())
+}
 
-var notifyUsersStruct = g.NewQueryStruct("NotifyUsers").
-	NamedList("Users", "NotifiedUser", g.KeywordOptions())
+func notifiedUserStruct() *g.QueryStruct {
+	return g.NewQueryStruct("NotifiedUser").
+		Identifier("Name", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required())
+}
 
-var notifiedUserStruct = g.NewQueryStruct("NotifiedUser").
-	Identifier("Name", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required())
+func triggerDefinitions() *g.QueryStruct {
+	return g.NewQueryStruct("TriggerDefinition").
+		WithField(g.NewField("Threshold", "int", nil, g.ParameterOptions().NoEquals().SQL("ON").Required())).
+		WithField(g.NewField("TriggerAction", "TriggerAction", nil, g.ParameterOptions().NoEquals().SQL("PERCENT DO").Required()))
+}
 
 var resourceMonitorWithStruct = g.NewQueryStruct("ResourceMonitorWith").
 	OptionalNumberAssignment("CREDIT_QUOTA", g.ParameterOptions()).
 	OptionalEnumAssignment("FREQUENCY", frequencyEnum, g.ParameterOptions()).
 	OptionalTextAssignment("START_TIMESTAMP", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("END_TIMESTAMP", g.ParameterOptions().SingleQuotes()).
-	OptionalQueryStructField("NotifyUsers", notifyUsersStruct, g.ParameterOptions().SQL("NOTIFY_USERS")).
-	ListQueryStructField("Triggers", triggerDefinitionStruct, g.KeywordOptions().SQL("TRIGGERS").NoComma())
+	OptionalQueryStructField("NotifyUsers", notifyUsersStruct(), g.ParameterOptions().SQL("NOTIFY_USERS")).
+	ListQueryStructField("Triggers", triggerDefinitions(), g.KeywordOptions().SQL("TRIGGERS").NoComma())
 
 var resourceMonitorSetStruct = g.NewQueryStruct("ResourceMonitorSet").
 	OptionalNumberAssignment("CREDIT_QUOTA", g.ParameterOptions()).
 	OptionalEnumAssignment("FREQUENCY", frequencyEnum, g.ParameterOptions()).
 	OptionalTextAssignment("START_TIMESTAMP", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("END_TIMESTAMP", g.ParameterOptions().SingleQuotes()).
-	OptionalQueryStructField("NotifyUsers", notifyUsersStruct, g.ParameterOptions().SQL("NOTIFY_USERS")).
+	OptionalQueryStructField("NotifyUsers", notifyUsersStruct(), g.ParameterOptions().SQL("NOTIFY_USERS")).
 	WithValidation(g.AtLeastOneValueSet, "CreditQuota", "Frequency", "StartTimestamp", "EndTimestamp", "NotifyUsers")
 
 var resourceMonitorUnsetStruct = g.NewQueryStruct("ResourceMonitorUnset").
-	OptionalSQL("CREDIT_QUOTA = null").
-	OptionalSQL("END_TIMESTAMP = null").
-	OptionalSQL("NOTIFY_USERS = ()")
+	OptionalSQLWithCustomFieldName("CreditQuota", "CREDIT_QUOTA = null").
+	OptionalSQLWithCustomFieldName("EndTimestamp", "END_TIMESTAMP = null").
+	OptionalSQLWithCustomFieldName("NotifyUsers", "NOTIFY_USERS = ()")
 
 var resourceMonitorPairs = g.StructPair("resourceMonitorRow", "ResourceMonitor").
 	Text("name").
 	Field("credit_quota", "sql.NullString", "float64", g.WithManualConvert()).
 	Field("used_credits", "sql.NullString", "float64", g.WithManualConvert()).
 	Field("remaining_credits", "sql.NullString", "float64", g.WithManualConvert()).
-	Field("level", "sql.NullString", "*ResourceMonitorLevel", g.WithManualConvert()).
-	Field("frequency", "sql.NullString", "Frequency", g.WithManualConvert()).
-	Field("start_time", "sql.NullString", "string", g.WithManualConvert()).
-	Field("end_time", "sql.NullString", "string", g.WithManualConvert()).
+	OptionalEnum("level", resourceMonitorLevelEnum).
+	OptionalEnum("frequency", frequencyEnum).
+	OptionalText("start_time", g.WithRequiredInPlain()).
+	OptionalText("end_time", g.WithRequiredInPlain()).
 	Field("notify_at", "sql.NullString", "[]int", g.WithManualConvert()).
 	Field("suspend_at", "sql.NullString", "*int", g.WithManualConvert()).
 	Field("suspend_immediately_at", "sql.NullString", "*int", g.WithManualConvert()).
 	Time("created_on").
 	Text("owner").
-	Field("comment", "sql.NullString", "string", g.WithManualConvert()).
-	Field("notify_users", "sql.NullString", "[]string", g.WithManualConvert())
+	OptionalText("comment", g.WithRequiredInPlain()).
+	OptionalPlainField("notify_users", "[]string")
 
 var resourceMonitorsDef = g.NewInterface(
 	"ResourceMonitors",
@@ -91,7 +97,7 @@ var resourceMonitorsDef = g.NewInterface(
 		Name().
 		OptionalQueryStructField("Set", resourceMonitorSetStruct, g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset", resourceMonitorUnsetStruct, g.KeywordOptions().SQL("SET")).
-		ListQueryStructField("Triggers", triggerDefinitionStruct, g.KeywordOptions().SQL("TRIGGERS").NoComma()).
+		ListQueryStructField("Triggers", triggerDefinitions(), g.KeywordOptions().SQL("TRIGGERS").NoComma()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.AtLeastOneValueSet, "Set", "Unset", "Triggers").
 		WithAdditionalValidations(),
@@ -111,4 +117,8 @@ var resourceMonitorsDef = g.NewInterface(
 		SQL("RESOURCE MONITORS").
 		OptionalLike(),
 	g.ShowByIDLikeFiltering,
+).WithEnums(
+	resourceMonitorLevelEnum,
+	triggerActionEnum,
+	frequencyEnum,
 )
