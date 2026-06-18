@@ -28,12 +28,13 @@ import (
 func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const oauthClientId = "oauth-client-id-123"
-	const oauthClientSecret = "oauth-client-secret-456"
-	const oauthTokenEndpoint = "https://auth.example.com/token"
-	const oauthAuthorizationEndpoint = "https://auth.example.com/authorize"
-	const allowedPrefix = "https://mcp.example.com/api/"
-	const blockedPrefix = "https://mcp.example.com/api/blocked/"
+	oauthClientId := "oauth-client-id-123"
+	oauthClientSecret := "oauth-client-secret-456"
+	oauthTokenEndpoint := "https://auth.example.com/token"
+	oauthAuthorizationEndpoint := "https://auth.example.com/authorize"
+	refreshTokenValidity := 7200
+	allowedPrefix := "https://mcp.example.com/api/"
+	blockedPrefix := "https://mcp.example.com/api/blocked/"
 	apiProvider := string(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp)
 
 	comment := random.Comment()
@@ -42,6 +43,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 	basic := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{allowedPrefix}, true, oauthAuthorizationEndpoint, oauthClientId, oauthClientSecret, oauthTokenEndpoint)
 	withOptionals := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{allowedPrefix}, true, oauthAuthorizationEndpoint, oauthClientId, oauthClientSecret, oauthTokenEndpoint).
 		WithOauthClientAuthMethod(string(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost)).
+		WithOauthRefreshTokenValidity(refreshTokenValidity).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
 		WithComment(comment)
 
@@ -56,6 +58,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasOauthTokenEndpointString(oauthTokenEndpoint).
 			HasOauthAuthorizationEndpointString(oauthAuthorizationEndpoint).
 			HasOauthClientAuthMethodEmpty().
+			HasOauthRefreshTokenValidity(0).
 			HasApiAllowedPrefixes(allowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty(),
@@ -70,9 +73,9 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasOauthClientId(oauthClientId).
 			HasOauthTokenEndpoint(oauthTokenEndpoint).
 			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
-			HasNoOauthClientAuthMethod().
+			HasOauthClientAuthMethod("").
 			HasNoBlockedPrefixes().
-			HasNoComment(),
+			HasComment(""),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
@@ -95,6 +98,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasOauthTokenEndpointString(oauthTokenEndpoint).
 			HasOauthAuthorizationEndpointString(oauthAuthorizationEndpoint).
 			HasOauthClientAuthMethodString(string(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost)).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
 			HasApiAllowedPrefixes(allowedPrefix).
 			HasApiBlockedPrefixes(blockedPrefix).
 			HasCommentString(comment),
@@ -110,6 +114,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasOauthTokenEndpoint(oauthTokenEndpoint).
 			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 			HasOauthClientAuthMethod(string(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost)).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
 			HasComment(comment),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
@@ -120,6 +125,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasOauthTokenEndpoint(oauthTokenEndpoint).
 			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 			HasOauthClientAuthMethod(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost).
+			HasOauthRefreshTokenValidity(refreshTokenValidity).
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
 			HasComment(comment),
@@ -163,11 +169,13 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"oauth_client_secret"},
 			},
-			// Update - unset optionals
+			// Update - unset optionals (requires recreate: Snowflake retains unspecified optional auth fields in ALTER)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(ref, "oauth_client_auth_method", tfjson.ActionDelete, sdk.String(string(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost)), nil),
+						planchecks.ExpectChange(ref, "oauth_refresh_token_validity", tfjson.ActionDelete, sdk.String("7200"), nil),
 					},
 				},
 				Config: config.FromModels(t, basic),
@@ -216,13 +224,21 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationExternalMcpOAuth2_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const oauthClientId = "oauth-client-id-123"
-	const oauthClientSecret = "oauth-client-secret-456"
-	const oauthTokenEndpoint = "https://auth.example.com/token"
-	const oauthAuthorizationEndpoint = "https://auth.example.com/authorize"
-	const allowedPrefix = "https://mcp.example.com/api/"
+	oauthClientId := "oauth-client-id-123"
+	oauthClientSecret := "oauth-client-secret-456"
+	oauthTokenEndpoint := "https://auth.example.com/token"
+	oauthAuthorizationEndpoint := "https://auth.example.com/authorize"
+	allowedPrefix := "https://mcp.example.com/api/"
+	blockedPrefix := "https://mcp.example.com/api/blocked/"
+	oauthClientAuthMethod := sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost
+	refreshTokenValidity := 7200
+	comment := random.Comment()
 
-	testModel := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{allowedPrefix}, true, oauthAuthorizationEndpoint, oauthClientId, oauthClientSecret, oauthTokenEndpoint)
+	testModel := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{allowedPrefix}, true, oauthAuthorizationEndpoint, oauthClientId, oauthClientSecret, oauthTokenEndpoint).
+		WithOauthClientAuthMethod(string(oauthClientAuthMethod)).
+		WithOauthRefreshTokenValidity(refreshTokenValidity).
+		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -233,10 +249,14 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					auth := sdk.NewOAuth2McpUserAuthenticationRequest(oauthClientId, oauthClientSecret, oauthTokenEndpoint, oauthAuthorizationEndpoint)
+					auth := sdk.NewOAuth2McpUserAuthenticationRequest(oauthClientId, oauthClientSecret, oauthTokenEndpoint, oauthAuthorizationEndpoint).
+						WithOauthClientAuthMethod(oauthClientAuthMethod).
+						WithOauthRefreshTokenValidity(refreshTokenValidity)
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithComment(comment).
 							WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)),
 					)
 					t.Cleanup(cleanup)
@@ -252,7 +272,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_Import(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(testModel.ResourceReference(), "oauth_client_secret", tfjson.ActionUpdate, nil, sdk.String(oauthClientSecret)),
+						planchecks.ExpectChange(testModel.ResourceReference(), "oauth_client_secret", tfjson.ActionUpdate, nil, new(oauthClientSecret)),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

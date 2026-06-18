@@ -1042,6 +1042,46 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
 	})
 
+	// Prove that OAUTH_CLIENT_AUTH_METHOD and OAUTH_REFRESH_TOKEN_VALIDITY cannot be unset via ALTER once they have been set.
+	// There is no UNSET clause for these fields in ApiIntegrationUnset, and omitting them from the auth block
+	// in ALTER API INTEGRATION SET does not reset them - Snowflake silently retains the existing values.
+	t.Run("external_mcp oauth2 optional auth fields cannot be unset via alter", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		authMethod := sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost
+		refreshTokenValidity := 3600
+
+		auth := sdk.NewOAuth2McpUserAuthenticationRequest("oauth-client-id-123", "oauth-client-secret-456", oauthTokenEndpoint, oauthAuthorizationEndpoint).
+			WithOauthClientAuthMethod(authMethod).
+			WithOauthRefreshTokenValidity(refreshTokenValidity)
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+			[]sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
+			WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)),
+		)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
+
+		// Confirm the initial state: both optional fields are set.
+		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
+			HasOauthClientAuthMethod(authMethod).
+			HasOauthRefreshTokenValidity(refreshTokenValidity),
+		)
+
+		// Attempt to "unset" by sending an ALTER with required fields only — OAUTH_CLIENT_AUTH_METHOD and
+		// OAUTH_REFRESH_TOKEN_VALIDITY are intentionally absent. Snowflake accepts the request without error.
+		authRequiredOnly := sdk.NewOAuth2McpUserAuthenticationRequest("oauth-client-id-123", "oauth-client-secret-456", oauthTokenEndpoint, oauthAuthorizationEndpoint)
+		err = client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+			WithSet(*sdk.NewApiIntegrationSetRequest().
+				WithExternalMcpOAuth2Params(*sdk.NewSetExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*authRequiredOnly))),
+		)
+		require.NoError(t, err)
+
+		// Despite the ALTER succeeding, the values are unchanged — they cannot be removed this way.
+		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
+			HasOauthClientAuthMethod(authMethod).
+			HasOauthRefreshTokenValidity(refreshTokenValidity),
+		)
+	})
+
 	t.Run("drop: existing", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 

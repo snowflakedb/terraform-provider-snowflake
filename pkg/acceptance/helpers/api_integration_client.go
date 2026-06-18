@@ -155,7 +155,7 @@ func (c *ApiIntegrationClient) CreateMcpDynamicClient(t *testing.T) (*sdk.ApiInt
 	t.Helper()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	auth := sdk.NewDynamicClientMcpUserAuthenticationRequest("https://resource.example.com")
+	auth := sdk.NewDynamicClientMcpUserAuthenticationRequest("https://mcp.atlassian.com/v1/mcp")
 	return c.CreateWithRequest(t, sdk.NewCreateApiIntegrationRequest(id,
 		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp.example.com/api/"}}, true).
 		WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)),

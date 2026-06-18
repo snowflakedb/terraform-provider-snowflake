@@ -51,6 +51,7 @@ var apiIntegrationExternalMcpOAuth2Schema = func() map[string]*schema.Schema {
 			DiffSuppressFunc: NormalizeAndCompare(sdk.ToApiIntegrationOauthClientAuthMethod),
 			Description:      fmt.Sprintf("Specifies the OAuth 2.0 client authentication method. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationOauthClientAuthMethods))),
 		},
+		// oauth_discovery_url is intentionally omitted: the field is documented but does not work in Snowflake.
 		"oauth_refresh_token_validity": {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -91,6 +92,15 @@ func ApiIntegrationExternalMcpOAuth2() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(apiIntegrationExternalMcpOAuth2Schema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(apiIntegrationExternalMcpOAuth2Schema, DescribeOutputAttributeName, "enabled", "api_allowed_prefixes", "api_blocked_prefixes", "comment", "oauth_client_id", "oauth_client_secret", "oauth_token_endpoint", "oauth_authorization_endpoint", "oauth_client_auth_method", "oauth_refresh_token_validity"),
+			// Snowflake retains unspecified optional auth fields in ALTER, so removing them requires recreate.
+			customdiff.ForceNewIf("oauth_client_auth_method", func(_ context.Context, d *schema.ResourceDiff, _ any) bool {
+				old, new := d.GetChange("oauth_client_auth_method")
+				return old.(string) != "" && new.(string) == ""
+			}),
+			customdiff.ForceNewIf("oauth_refresh_token_validity", func(_ context.Context, d *schema.ResourceDiff, _ any) bool {
+				old, new := d.GetChange("oauth_refresh_token_validity")
+				return old.(int) != 0 && new.(int) == 0
+			}),
 		),
 	}
 }
@@ -102,42 +112,13 @@ func buildExternalMcpOAuth2Auth(d *schema.ResourceData) (*sdk.OAuth2McpUserAuthe
 		d.Get("oauth_token_endpoint").(string),
 		d.Get("oauth_authorization_endpoint").(string),
 	)
-	if v, ok := d.GetOk("oauth_client_auth_method"); ok {
-		method, err := sdk.ToApiIntegrationOauthClientAuthMethod(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("invalid oauth_client_auth_method: %w", err)
-		}
-		auth.WithOauthClientAuthMethod(method)
-	}
-	if v, ok := d.GetOk("oauth_refresh_token_validity"); ok {
-		val := v.(int)
-		auth.WithOauthRefreshTokenValidity(val)
+	if errs := errors.Join(
+		attributeMappedValueCreateBuilder(d, "oauth_client_auth_method", auth.WithOauthClientAuthMethod, sdk.ToApiIntegrationOauthClientAuthMethod),
+		intAttributeCreateBuilder(d, "oauth_refresh_token_validity", auth.WithOauthRefreshTokenValidity),
+	); errs != nil {
+		return nil, errs
 	}
 	return auth, nil
-}
-
-func CreateApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	id, request, err := handleApiIntegrationCommonCreate(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	auth, err := buildExternalMcpOAuth2Auth(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	mcpParams := sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)
-
-	if err = client.ApiIntegrations.Create(ctx, request.WithExternalMcpOAuth2ProviderParams(*mcpParams)); err != nil {
-		return diag.FromErr(fmt.Errorf("error creating external MCP OAuth2 API integration: %w", err))
-	}
-
-	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	return ReadApiIntegrationExternalMcpOAuth2(ctx, d, meta)
 }
 
 func ImportApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
@@ -169,6 +150,30 @@ func ImportApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.Resour
 	}
 
 	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+}
+
+func CreateApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, request, err := handleApiIntegrationCommonCreate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	auth, err := buildExternalMcpOAuth2Auth(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	mcpParams := sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)
+
+	if err = client.ApiIntegrations.Create(ctx, request.WithExternalMcpOAuth2ProviderParams(*mcpParams)); err != nil {
+		return diag.FromErr(fmt.Errorf("error creating external MCP OAuth2 API integration: %w", err))
+	}
+
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+
+	return ReadApiIntegrationExternalMcpOAuth2(ctx, d, meta)
 }
 
 func ReadApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
