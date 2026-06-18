@@ -151,6 +151,58 @@ func handleDeepHierarchyRename(
 	}
 }
 
+// handleTwoLevelHierarchyRename handles the full 2-level hierarchy rename/move
+// for a database-level object (database → object).
+// OR is the return type of objectShowByIDFn.
+func handleTwoLevelHierarchyRename[OR any](
+	d *schema.ResourceData,
+	ctx context.Context,
+	client *sdk.Client,
+	id *sdk.DatabaseObjectIdentifier,
+	objectRenameFn func(sdk.DatabaseObjectIdentifier, sdk.DatabaseObjectIdentifier) func() error,
+	objectShowByIDFn func(context.Context, sdk.DatabaseObjectIdentifier) (OR, error),
+	encodeIdFn func(sdk.DatabaseObjectIdentifier) string,
+	leafLevelName string,
+) diag.Diagnostics {
+	oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
+	oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
+	objectName := id.Name()
+
+	oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
+	newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
+	oldObjectId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, objectName)
+	newObjectId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, objectName)
+
+	renameObj := func(description string) {
+		handleHierarchyRenameIdUpdate(d,
+			func() string { return encodeIdFn(newObjectId) },
+			description)
+	}
+
+	moveObj := func(currentId sdk.DatabaseObjectIdentifier, description string) diag.Diagnostics {
+		return handleHierarchyMove(d,
+			func() string { return encodeIdFn(newObjectId) },
+			currentId, newObjectId,
+			objectRenameFn,
+			description)
+	}
+
+	if diags := handleShallowHierarchyRename(d, ctx,
+		client.Databases.ShowByID,
+		objectShowByIDFn,
+		newDatabaseId, oldDatabaseId,
+		newObjectId, oldObjectId,
+		*id,
+		renameObj, moveObj,
+		"database", leafLevelName, leafLevelName,
+	); diags != nil {
+		return diags
+	}
+
+	*id = newObjectId
+	return nil
+}
+
 // handleThreeLevelHierarchyRename handles the full 3-level hierarchy rename/move
 // for a schema-level object (database → schema → object).
 // OR is the return type of objectShowByIDFn.

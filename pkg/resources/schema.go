@@ -318,48 +318,20 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && d.HasChange("database") {
-		oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
-		oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
-		oldSchemaName := id.Name()
-
-		oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
-		newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
-		newSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
-		oldSchemaId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
-
 		schemaRenameFn := func(currentId, targetId sdk.DatabaseObjectIdentifier) func() error {
 			return func() error {
 				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(oldSchemaId).WithNewName(newSchemaId))
 			}
 		}
 
-		renameSchema := func(description string) {
-			handleHierarchyRenameIdUpdate(d,
-				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
-				description)
-		}
-
-		moveSchema := func(currentId sdk.DatabaseObjectIdentifier, description string) diag.Diagnostics {
-			return handleHierarchyMove(d,
-				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
-				currentId, newSchemaId,
-				schemaRenameFn,
-				description)
-		}
-
-		if diags := handleShallowHierarchyRename(d, ctx,
-			client.Databases.ShowByID,
+		if diags := handleTwoLevelHierarchyRename(d, ctx, client, &id,
+			schemaRenameFn,
 			client.Schemas.ShowByID,
-			newDatabaseId, oldDatabaseId,
-			newSchemaId, oldSchemaId,
-			oldSchemaId,
-			renameSchema, moveSchema,
-			"database", "schema", "schema",
+			func(id sdk.DatabaseObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
+			"schema",
 		); diags != nil {
 			return diags
 		}
-
-		id = newSchemaId
 	}
 
 	if d.HasChange("name") && !d.GetRawState().IsNull() {
