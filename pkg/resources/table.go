@@ -770,58 +770,30 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		switch {
 		// Case A: Only database changes (same as schema resource's 2-level logic)
 		case databaseChanged && !schemaChanged:
-			_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
-			newDatabaseExists := errNewDb == nil
-			_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
-			oldDatabaseExists := errOldDb == nil
-			_, errNewSchema := client.Schemas.ShowByID(ctx, newSchemaId)
-			newSchemaExists := errNewSchema == nil
-			_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
-			oldSchemaExists := errOldSchema == nil
-
-			switch {
-			case isRenameOfTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, newSchemaExists):
-				renameTable("Database was renamed for table")
-			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, oldSchemaExists):
-				if diags := moveTable(id, "Moving table to different database"); diags != nil {
-					return diags
-				}
-			default:
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf(
-					"unknown rename use case: old database %s (exists: %t), new database %s (exists: %t), old schema %s (exists: %t), new schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
-					oldDatabaseId.FullyQualifiedName(), oldDatabaseExists,
-					newDatabaseId.FullyQualifiedName(), newDatabaseExists,
-					oldSchemaId.FullyQualifiedName(), oldSchemaExists,
-					newSchemaId.FullyQualifiedName(), newSchemaExists,
-				))
+			if diags := handleShallowHierarchyRename(d, ctx,
+				client.Databases.ShowByID,
+				client.Schemas.ShowByID,
+				newDatabaseId, oldDatabaseId,
+				newSchemaId, oldSchemaId,
+				id,
+				renameTable, moveTable,
+				"database", "schema", "table",
+			); diags != nil {
+				return diags
 			}
 
 		// Case B: Only schema changes (similar to schema resource's 2-level logic, but schema-table instead of database-schema)
 		case !databaseChanged && schemaChanged:
-			_, errNewSchema := client.Schemas.ShowByID(ctx, newSchemaId)
-			newSchemaExists := errNewSchema == nil
-			_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
-			oldSchemaExists := errOldSchema == nil
-			_, errNewTable := client.Tables.ShowByID(ctx, newTableId)
-			newTableExists := errNewTable == nil
-			_, errOldTable := client.Tables.ShowByID(ctx, oldTableId)
-			oldTableExists := errOldTable == nil
-
-			switch {
-			case isRenameOfTheGivenLevelInTheHierarchy(newSchemaExists, oldSchemaExists, newTableExists):
-				renameTable("Schema was renamed for table")
-			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newSchemaExists, oldSchemaExists, oldTableExists):
-				if diags := moveTable(id, "Moving table to different schema"); diags != nil {
-					return diags
-				}
-			default:
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf(
-					"unknown rename use case: old schema %s (exists: %t), new schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
-					oldSchemaId.FullyQualifiedName(), oldSchemaExists,
-					newSchemaId.FullyQualifiedName(), newSchemaExists,
-				))
+			if diags := handleShallowHierarchyRename(d, ctx,
+				client.Schemas.ShowByID,
+				client.Tables.ShowByID,
+				newSchemaId, oldSchemaId,
+				newTableId, oldTableId,
+				id,
+				renameTable, moveTable,
+				"schema", "table", "table",
+			); diags != nil {
+				return diags
 			}
 
 		// Case C: Both database AND schema change (full 4-scenario algorithm)
