@@ -68,7 +68,7 @@ func TestInt_IdentifiersForOnePartIdentifierAsNameAndReference(t *testing.T) {
 			ctx := context.Background()
 
 			id := sdk.NewAccountObjectIdentifier(testCase.Name)
-			err := testClient(t).ResourceMonitors.Create(ctx, id, new(sdk.CreateResourceMonitorOptions))
+			err := testClient(t).ResourceMonitors.Create(ctx, sdk.NewCreateResourceMonitorRequest(id))
 			if err == nil {
 				t.Cleanup(testClientHelper().ResourceMonitor.DropResourceMonitorFunc(t, id))
 			}

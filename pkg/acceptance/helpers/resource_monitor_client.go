@@ -26,10 +26,11 @@ func (c *ResourceMonitorClient) client() sdk.ResourceMonitors {
 
 func (c *ResourceMonitorClient) CreateResourceMonitor(t *testing.T) (*sdk.ResourceMonitor, func()) {
 	t.Helper()
-	return c.CreateResourceMonitorWithOptions(t, &sdk.CreateResourceMonitorOptions{
-		With: &sdk.ResourceMonitorWith{
+	id := c.ids.RandomAccountObjectIdentifier()
+	req := sdk.NewCreateResourceMonitorRequest(id).
+		WithWith(sdk.ResourceMonitorWithRequest{
 			CreditQuota: sdk.Pointer(100),
-			Triggers: []sdk.TriggerDefinition{
+			Triggers: []sdk.TriggerDefinitionRequest{
 				{
 					Threshold:     100,
 					TriggerAction: sdk.TriggerActionSuspend,
@@ -43,17 +44,16 @@ func (c *ResourceMonitorClient) CreateResourceMonitor(t *testing.T) (*sdk.Resour
 					TriggerAction: sdk.TriggerActionNotify,
 				},
 			},
-		},
-	})
+		})
+	return c.CreateResourceMonitorWithRequest(t, req)
 }
 
-func (c *ResourceMonitorClient) CreateResourceMonitorWithOptions(t *testing.T, opts *sdk.CreateResourceMonitorOptions) (*sdk.ResourceMonitor, func()) {
+func (c *ResourceMonitorClient) CreateResourceMonitorWithRequest(t *testing.T, req *sdk.CreateResourceMonitorRequest) (*sdk.ResourceMonitor, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	id := c.ids.RandomAccountObjectIdentifier()
-
-	err := c.client().Create(ctx, id, opts)
+	id := req.ID()
+	err := c.client().Create(ctx, req)
 	require.NoError(t, err)
 
 	resourceMonitor, err := c.client().ShowByID(ctx, id)
@@ -62,10 +62,10 @@ func (c *ResourceMonitorClient) CreateResourceMonitorWithOptions(t *testing.T, o
 	return resourceMonitor, c.DropResourceMonitorFunc(t, id)
 }
 
-func (c *ResourceMonitorClient) Alter(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.AlterResourceMonitorOptions) {
+func (c *ResourceMonitorClient) Alter(t *testing.T, req *sdk.AlterResourceMonitorRequest) {
 	t.Helper()
 	ctx := context.Background()
-	err := c.client().Alter(ctx, id, opts)
+	err := c.client().Alter(ctx, req)
 	require.NoError(t, err)
 }
 
@@ -74,7 +74,7 @@ func (c *ResourceMonitorClient) DropResourceMonitorFunc(t *testing.T, id sdk.Acc
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropResourceMonitorOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, sdk.NewDropResourceMonitorRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

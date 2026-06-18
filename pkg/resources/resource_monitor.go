@@ -45,9 +45,9 @@ var resourceMonitorSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
 		RequiredWith:     []string{"start_timestamp"},
-		ValidateDiagFunc: sdkValidation(sdk.ToResourceMonitorFrequency),
-		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToResourceMonitorFrequency), IgnoreChangeToCurrentSnowflakeValueInShow("frequency")),
-		Description:      fmt.Sprintf("The frequency interval at which the credit usage resets to 0. Valid values are (case-insensitive): %s. If you set a `frequency` for a resource monitor, you must also set `start_timestamp`. If you specify `NEVER` for the frequency, the credit usage for the warehouse does not reset. After removing this field from the config, the previously set value will be preserved on the Snowflake side, not the default value. That's due to Snowflake limitation and the lack of unset functionality for this parameter.", possibleValuesListed(sdk.AllFrequencyValues)),
+		ValidateDiagFunc: sdkValidation(sdk.ToFrequency),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToFrequency), IgnoreChangeToCurrentSnowflakeValueInShow("frequency")),
+		Description:      fmt.Sprintf("The frequency interval at which the credit usage resets to 0. Valid values are (case-insensitive): %s. If you set a `frequency` for a resource monitor, you must also set `start_timestamp`. If you specify `NEVER` for the frequency, the credit usage for the warehouse does not reset. After removing this field from the config, the previously set value will be preserved on the Snowflake side, not the default value. That's due to Snowflake limitation and the lack of unset functionality for this parameter.", possibleValuesListed(sdk.AllFrequencies)),
 	},
 	"start_timestamp": {
 		Type:             schema.TypeString,
@@ -149,8 +149,10 @@ func ImportResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 	if err := d.Set("credit_quota", resourceMonitor.CreditQuota); err != nil {
 		return nil, err
 	}
-	if err := d.Set("frequency", resourceMonitor.Frequency); err != nil {
-		return nil, err
+	if resourceMonitor.Frequency != nil {
+		if err := d.Set("frequency", string(*resourceMonitor.Frequency)); err != nil {
+			return nil, err
+		}
 	}
 	if err := d.Set("start_timestamp", resourceMonitor.StartTime); err != nil {
 		return nil, err
@@ -164,7 +166,7 @@ func ImportResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 	if err := d.Set("suspend_trigger", resourceMonitor.SuspendAt); err != nil {
 		return nil, err
 	}
-	if err := d.Set("suspend_immediate_trigger", resourceMonitor.SuspendImmediateAt); err != nil {
+	if err := d.Set("suspend_immediate_trigger", resourceMonitor.SuspendImmediatelyAt); err != nil {
 		return nil, err
 	}
 
@@ -175,73 +177,62 @@ func CreateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 	client := meta.(*provider.Context).Client
 	id := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
-	opts := new(sdk.CreateResourceMonitorOptions)
-	with := new(sdk.ResourceMonitorWith)
+	req := sdk.NewCreateResourceMonitorRequest(id)
+	with := sdk.NewResourceMonitorWithRequest()
 
 	if v, ok := d.GetOk("credit_quota"); ok {
-		with.CreditQuota = sdk.Pointer(v.(int))
+		with.WithCreditQuota(v.(int))
 	}
 
 	if v, ok := d.GetOk("notify_users"); ok {
 		userIds := expandStringList(v.(*schema.Set).List())
-		users := make([]sdk.NotifiedUser, len(userIds))
+		users := make([]sdk.NotifiedUserRequest, len(userIds))
 		for i, userId := range userIds {
-			users[i] = sdk.NotifiedUser{
-				Name: sdk.NewAccountObjectIdentifier(userId),
-			}
+			users[i] = *sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier(userId))
 		}
-		with.NotifyUsers = &sdk.NotifyUsers{Users: users}
+		with.WithNotifyUsers(*sdk.NewNotifyUsersRequest().WithUsers(users))
 	}
 
 	if v, ok := d.GetOk("frequency"); ok {
-		frequency, err := sdk.ToResourceMonitorFrequency(v.(string))
+		frequency, err := sdk.ToFrequency(v.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		with.Frequency = frequency
+		with.WithFrequency(frequency)
 	}
 
 	if v, ok := d.GetOk("start_timestamp"); ok {
-		with.StartTimestamp = sdk.Pointer(v.(string))
+		with.WithStartTimestamp(v.(string))
 	}
 
 	if v, ok := d.GetOk("end_timestamp"); ok {
-		with.EndTimestamp = sdk.Pointer(v.(string))
+		with.WithEndTimestamp(v.(string))
 	}
 
-	triggers := make([]sdk.TriggerDefinition, 0)
+	triggers := make([]sdk.TriggerDefinitionRequest, 0)
 	if notifyTriggers, ok := d.GetOk("notify_triggers"); ok {
 		for _, triggerThreshold := range notifyTriggers.(*schema.Set).List() {
-			triggers = append(triggers, sdk.TriggerDefinition{
-				Threshold:     triggerThreshold.(int),
-				TriggerAction: sdk.TriggerActionNotify,
-			})
+			triggers = append(triggers, *sdk.NewTriggerDefinitionRequest(triggerThreshold.(int), sdk.TriggerActionNotify))
 		}
 	}
 
 	if suspendTriggerThreshold, ok := d.GetOk("suspend_trigger"); ok {
-		triggers = append(triggers, sdk.TriggerDefinition{
-			Threshold:     suspendTriggerThreshold.(int),
-			TriggerAction: sdk.TriggerActionSuspend,
-		})
+		triggers = append(triggers, *sdk.NewTriggerDefinitionRequest(suspendTriggerThreshold.(int), sdk.TriggerActionSuspend))
 	}
 
 	if suspendImmediateTriggerThreshold, ok := d.GetOk("suspend_immediate_trigger"); ok {
-		triggers = append(triggers, sdk.TriggerDefinition{
-			Threshold:     suspendImmediateTriggerThreshold.(int),
-			TriggerAction: sdk.TriggerActionSuspendImmediate,
-		})
+		triggers = append(triggers, *sdk.NewTriggerDefinitionRequest(suspendImmediateTriggerThreshold.(int), sdk.TriggerActionSuspendImmediate))
 	}
 
 	if len(triggers) > 0 {
-		with.Triggers = triggers
+		with.WithTriggers(triggers)
 	}
 
-	if !reflect.DeepEqual(*with, sdk.ResourceMonitorWith{}) {
-		opts.With = with
+	if !reflect.DeepEqual(with, sdk.NewResourceMonitorWithRequest()) {
+		req.WithWith(*with)
 	}
 
-	err := client.ResourceMonitors.Create(ctx, id, opts)
+	err := client.ResourceMonitors.Create(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -279,14 +270,18 @@ func ReadResourceMonitor(withExternalChangesMarking bool) schema.ReadContextFunc
 		}
 
 		if withExternalChangesMarking {
+			var frequencyStr string
+			if resourceMonitor.Frequency != nil {
+				frequencyStr = string(*resourceMonitor.Frequency)
+			}
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"credit_quota", "credit_quota", resourceMonitor.CreditQuota, resourceMonitor.CreditQuota, nil},
-				outputMapping{"frequency", "frequency", string(resourceMonitor.Frequency), resourceMonitor.Frequency, nil},
+				outputMapping{"frequency", "frequency", frequencyStr, resourceMonitor.Frequency, nil},
 				outputMapping{"start_time", "start_timestamp", resourceMonitor.StartTime, resourceMonitor.StartTime, nil},
 				outputMapping{"end_time", "end_timestamp", resourceMonitor.EndTime, resourceMonitor.EndTime, nil},
 				outputMapping{"notify_at", "notify_triggers", resourceMonitor.NotifyAt, resourceMonitor.NotifyAt, nil},
 				outputMapping{"suspend_at", "suspend_trigger", resourceMonitor.SuspendAt, resourceMonitor.SuspendAt, nil},
-				outputMapping{"suspend_immediately_at", "suspend_immediate_trigger", resourceMonitor.SuspendImmediateAt, resourceMonitor.SuspendImmediateAt, nil},
+				outputMapping{"suspend_immediately_at", "suspend_immediate_trigger", resourceMonitor.SuspendImmediatelyAt, resourceMonitor.SuspendImmediatelyAt, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -324,106 +319,96 @@ func UpdateResourceMonitor(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	opts := sdk.AlterResourceMonitorOptions{}
-	set := sdk.ResourceMonitorSet{}
-	unset := sdk.ResourceMonitorUnset{}
+	set := sdk.NewResourceMonitorSetRequest()
+	unset := sdk.NewResourceMonitorUnsetRequest()
+	var triggers []sdk.TriggerDefinitionRequest
 
 	if d.HasChange("credit_quota") {
 		if v, ok := d.GetOk("credit_quota"); ok {
-			set.CreditQuota = sdk.Pointer(v.(int))
+			set.WithCreditQuota(v.(int))
 		} else {
-			unset.CreditQuota = sdk.Bool(true)
+			unset.WithCreditQuota(true)
 		}
 	}
 
 	if (d.HasChange("frequency") || d.HasChange("start_timestamp")) &&
 		(d.Get("frequency").(string) != "" && d.Get("start_timestamp").(string) != "") {
-		frequency, err := sdk.ToResourceMonitorFrequency(d.Get("frequency").(string))
+		frequency, err := sdk.ToFrequency(d.Get("frequency").(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		set.Frequency = frequency
-		set.StartTimestamp = sdk.Pointer(d.Get("start_timestamp").(string))
+		set.WithFrequency(frequency)
+		set.WithStartTimestamp(d.Get("start_timestamp").(string))
 	}
 
 	if d.HasChange("end_timestamp") {
 		if v, ok := d.GetOk("end_timestamp"); ok {
-			set.EndTimestamp = sdk.Pointer(v.(string))
+			set.WithEndTimestamp(v.(string))
 		} else {
-			unset.EndTimestamp = sdk.Bool(true)
+			unset.WithEndTimestamp(true)
 		}
 	}
 
 	if d.HasChange("notify_users") {
 		userIds := expandStringList(d.Get("notify_users").(*schema.Set).List())
 		if len(userIds) > 0 {
-			users := make([]sdk.NotifiedUser, len(userIds))
+			users := make([]sdk.NotifiedUserRequest, len(userIds))
 			for i, userId := range userIds {
-				users[i] = sdk.NotifiedUser{
-					Name: sdk.NewAccountObjectIdentifier(userId),
-				}
+				users[i] = *sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier(userId))
 			}
-			set.NotifyUsers = &sdk.NotifyUsers{
-				Users: users,
-			}
+			set.WithNotifyUsers(*sdk.NewNotifyUsersRequest().WithUsers(users))
 		} else {
-			unset.NotifyUsers = sdk.Bool(true)
+			unset.WithNotifyUsers(true)
 		}
 	}
 
 	if d.HasChanges("notify_triggers", "suspend_trigger", "suspend_immediate_trigger") {
-		triggers := make([]sdk.TriggerDefinition, 0)
+		triggers = make([]sdk.TriggerDefinitionRequest, 0)
 
 		if notifyTriggers, ok := d.GetOk("notify_triggers"); ok {
 			for _, triggerThreshold := range notifyTriggers.(*schema.Set).List() {
-				triggers = append(triggers, sdk.TriggerDefinition{
-					Threshold:     triggerThreshold.(int),
-					TriggerAction: sdk.TriggerActionNotify,
-				})
+				triggers = append(triggers, *sdk.NewTriggerDefinitionRequest(triggerThreshold.(int), sdk.TriggerActionNotify))
 			}
 		}
 
 		if suspendTriggerThreshold, ok := d.GetOk("suspend_trigger"); ok {
-			triggers = append(triggers, sdk.TriggerDefinition{
-				Threshold:     suspendTriggerThreshold.(int),
-				TriggerAction: sdk.TriggerActionSuspend,
-			})
+			triggers = append(triggers, *sdk.NewTriggerDefinitionRequest(suspendTriggerThreshold.(int), sdk.TriggerActionSuspend))
 		}
 
 		if suspendImmediateTriggerThreshold, ok := d.GetOk("suspend_immediate_trigger"); ok {
-			triggers = append(triggers, sdk.TriggerDefinition{
-				Threshold:     suspendImmediateTriggerThreshold.(int),
-				TriggerAction: sdk.TriggerActionSuspendImmediate,
-			})
+			triggers = append(triggers, *sdk.NewTriggerDefinitionRequest(suspendImmediateTriggerThreshold.(int), sdk.TriggerActionSuspendImmediate))
 		}
 
-		if len(triggers) > 0 {
-			opts.Triggers = triggers
-		}
 		// Else ForceNew, because Snowflake doesn't allow fully unsetting the triggers
 	}
 
 	// This is to prevent SQL compilation errors from Snowflake, because you cannot only alter triggers.
 	// It's going to set credit quota to the same value as before making it pass SQL compilation stage.
-	if len(opts.Triggers) > 0 && (set == (sdk.ResourceMonitorSet{})) && (unset == (sdk.ResourceMonitorUnset{})) {
+	if len(triggers) > 0 && reflect.DeepEqual(set, sdk.NewResourceMonitorSetRequest()) && reflect.DeepEqual(unset, sdk.NewResourceMonitorUnsetRequest()) {
 		if creditQuota, ok := d.GetOk("credit_quota"); ok {
-			set.CreditQuota = sdk.Pointer(creditQuota.(int))
+			set.WithCreditQuota(creditQuota.(int))
 		} else {
-			unset.CreditQuota = sdk.Bool(true)
+			unset.WithCreditQuota(true)
 		}
 	}
 
-	if set != (sdk.ResourceMonitorSet{}) {
-		opts.Set = &set
-		if err := client.ResourceMonitors.Alter(ctx, id, &opts); err != nil {
+	if !reflect.DeepEqual(set, sdk.NewResourceMonitorSetRequest()) {
+		req := sdk.NewAlterResourceMonitorRequest(id).WithSet(*set)
+		if len(triggers) > 0 {
+			req.WithTriggers(triggers)
+		}
+		if err := client.ResourceMonitors.Alter(ctx, req); err != nil {
 			d.Partial(true)
 			return diag.FromErr(err)
 		}
 	}
 
-	if unset != (sdk.ResourceMonitorUnset{}) {
-		opts.Unset = &unset
-		if err := client.ResourceMonitors.Alter(ctx, id, &opts); err != nil {
+	if !reflect.DeepEqual(unset, sdk.NewResourceMonitorUnsetRequest()) {
+		req := sdk.NewAlterResourceMonitorRequest(id).WithUnset(*unset)
+		if len(triggers) > 0 {
+			req.WithTriggers(triggers)
+		}
+		if err := client.ResourceMonitors.Alter(ctx, req); err != nil {
 			d.Partial(true)
 			return diag.FromErr(err)
 		}

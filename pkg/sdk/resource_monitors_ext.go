@@ -93,3 +93,7 @@ func (opts *AlterResourceMonitorOptions) additionalValidations() error {
 	}
 	return errors.Join(errs...)
 }
+
+func (s *CreateResourceMonitorRequest) ID() AccountObjectIdentifier {
+	return s.name
+}

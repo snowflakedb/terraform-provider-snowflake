@@ -84,7 +84,9 @@ func ResourceMonitorToSchema(resourceMonitor *sdk.ResourceMonitor) map[string]an
 	if resourceMonitor.Level != nil {
 		resourceMonitorSchema["level"] = string((*resourceMonitor.Level))
 	}
-	resourceMonitorSchema["frequency"] = string(resourceMonitor.Frequency)
+	if resourceMonitor.Frequency != nil {
+		resourceMonitorSchema["frequency"] = string(*resourceMonitor.Frequency)
+	}
 	resourceMonitorSchema["start_time"] = resourceMonitor.StartTime
 	resourceMonitorSchema["end_time"] = resourceMonitor.EndTime
 	// Adjusted manually: commented out - slice type not supported by generator.
@@ -92,8 +94,8 @@ func ResourceMonitorToSchema(resourceMonitor *sdk.ResourceMonitor) map[string]an
 	if resourceMonitor.SuspendAt != nil {
 		resourceMonitorSchema["suspend_at"] = (*resourceMonitor.SuspendAt)
 	}
-	if resourceMonitor.SuspendImmediateAt != nil {
-		resourceMonitorSchema["suspend_immediate_at"] = (*resourceMonitor.SuspendImmediateAt)
+	if resourceMonitor.SuspendImmediatelyAt != nil {
+		resourceMonitorSchema["suspend_immediate_at"] = (*resourceMonitor.SuspendImmediatelyAt)
 	}
 	resourceMonitorSchema["created_on"] = resourceMonitor.CreatedOn.String()
 	resourceMonitorSchema["owner"] = resourceMonitor.Owner
