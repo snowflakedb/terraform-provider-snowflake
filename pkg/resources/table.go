@@ -753,18 +753,17 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			}
 		}
 
-		renameTable := func(description string) {
-			handleHierarchyRenameIdUpdate(d,
-				func() string { return helpers.EncodeSnowflakeID(newTableId) },
-				description)
+		parentRename := func(description string) {
+			handleHierarchyRenameIdUpdate(d, func() string { return helpers.EncodeSnowflakeID(newTableId) }, description)
 		}
 
-		moveTable := func(currentId sdk.SchemaObjectIdentifier, description string) diag.Diagnostics {
+		parentMove := func(currentId sdk.SchemaObjectIdentifier, description string) diag.Diagnostics {
 			return handleHierarchyMove(d,
 				func() string { return helpers.EncodeSnowflakeID(newTableId) },
 				currentId, newTableId,
 				tableRenameFn,
-				description)
+				description,
+			)
 		}
 
 		switch {
@@ -776,7 +775,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				newDatabaseId, oldDatabaseId,
 				newSchemaId, oldSchemaId,
 				id,
-				renameTable, moveTable,
+				parentRename, parentMove,
 				"database", "schema", "table",
 			); diags != nil {
 				return diags
@@ -790,7 +789,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				newSchemaId, oldSchemaId,
 				newTableId, oldTableId,
 				id,
-				renameTable, moveTable,
+				parentRename, parentMove,
 				"schema", "table", "table",
 			); diags != nil {
 				return diags
@@ -802,7 +801,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				newDatabaseId, oldDatabaseId,
 				oldSchemaName, newSchemaName,
 				tableName,
-				renameTable, moveTable,
+				parentRename, parentMove,
 				"table",
 			); diags != nil {
 				return diags
