@@ -55,10 +55,9 @@ func TestAcc_IcebergTableFromDeltaFiles_BasicUseCase(t *testing.T) {
 
 	// Create a dedicated database with external_volume and catalog set at db level so the table
 	// can be created without specifying them explicitly (matching the "required fields only" test case).
-	dbForDeltaFiles, dbCleanup := testClient().Database.CreateDatabaseWithOptions(t, testClient().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
-		Catalog:        new(catalogId),
-		ExternalVolume: new(externalVolumeId),
-	})
+	dbForDeltaFiles, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(testClient().Ids.RandomAccountObjectIdentifier()).
+		WithCatalog(catalogId).
+		WithExternalVolume(externalVolumeId))
 	t.Cleanup(dbCleanup)
 	schemaIdForDeltaFiles := sdk.NewDatabaseObjectIdentifier(dbForDeltaFiles.ID().Name(), "PUBLIC")
 

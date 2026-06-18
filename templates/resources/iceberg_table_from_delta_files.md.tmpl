@@ -24,8 +24,6 @@ description: |-
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
-~> **Note** External changes to `auto_refresh` are not detected. This value is not read back from Snowflake during refresh (only `auto_refresh_status` is exposed by `SHOW`), so changing it outside of Terraform will not produce a drift in the Terraform plan. After import, the first `terraform plan` may show an in-place update to reconcile this write-only field with the configuration. Run `terraform apply` once to sync the value into state.
-
 {{ .SchemaMarkdown | trimspace }}
 {{- if .HasImport }}
 
