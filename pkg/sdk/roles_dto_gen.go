@@ -213,23 +213,3 @@ func (s *RevokeRoleRequest) toOpts() *RevokeRoleOptions {
 		Revoke: s.Revoke,
 	}
 }
-
-type UseRoleRequest struct {
-	id AccountObjectIdentifier // required
-}
-
-func NewUseRoleRequest(id AccountObjectIdentifier) *UseRoleRequest {
-	return &UseRoleRequest{
-		id: id,
-	}
-}
-
-type UseSecondaryRolesRequest struct {
-	option SecondaryRoleOption // required
-}
-
-func NewUseSecondaryRolesRequest(option SecondaryRoleOption) *UseSecondaryRolesRequest {
-	return &UseSecondaryRolesRequest{
-		option: option,
-	}
-}
