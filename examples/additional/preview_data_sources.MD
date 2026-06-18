@@ -2,6 +2,7 @@
 ### Currently preview data sources 
 
 - [snowflake_alerts](./docs/data-sources/alerts)
+- [snowflake_api_integrations](./docs/data-sources/api_integrations)
 - [snowflake_authentication_policies](./docs/data-sources/authentication_policies)
 - [snowflake_catalog_integrations](./docs/data-sources/catalog_integrations)
 - [snowflake_cortex_agents](./docs/data-sources/cortex_agents)

@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new feature)* New `snowflake_api_integrations` data source
+
+We have added a new preview data source for querying API integrations: [snowflake_api_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/api_integrations).
+
+The data source supports filtering with `like` and returns both `show_output` and `describe_output` for each integration. The unified `describe_output` covers all API integration provider types (AWS, Azure, Google, Git HTTPS, and External MCP) in a single schema — fields not applicable to a given provider are empty.
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_api_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(new feature)* New storage lifecycle policy resource
 
 We have added a new preview resource for managing storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy).
