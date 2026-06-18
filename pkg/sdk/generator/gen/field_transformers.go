@@ -30,6 +30,7 @@ type KeywordTransformer struct {
 	sqlPrefix   string
 	quotes      string
 	parentheses string
+	comma       string
 }
 
 func KeywordOptions() *KeywordTransformer {
@@ -76,6 +77,11 @@ func (v *KeywordTransformer) MustParentheses() *KeywordTransformer {
 	return v
 }
 
+func (v *KeywordTransformer) NoComma() *KeywordTransformer {
+	v.comma = "no_comma"
+	return v
+}
+
 func (v *KeywordTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "ddl", "keyword")
 	if v.required {
@@ -84,6 +90,7 @@ func (v *KeywordTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "sql", v.sqlPrefix)
 	addTagIfMissing(f.Tags, "ddl", v.quotes)
 	addTagIfMissing(f.Tags, "ddl", v.parentheses)
+	addTagIfMissing(f.Tags, "ddl", v.comma)
 	return f
 }
 
