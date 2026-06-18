@@ -367,6 +367,43 @@ func TestAcc_TagAssociationColumn(t *testing.T) {
 	})
 }
 
+func TestAcc_TagAssociationIcebergTableColumn(t *testing.T) {
+	tag, tagCleanup := testClient().Tag.CreateTag(t)
+	t.Cleanup(tagCleanup)
+
+	icebergTable, icebergTableCleanup := testClient().IcebergTable.Create(t)
+	t.Cleanup(icebergTableCleanup)
+
+	tagId := tag.ID()
+	icebergTableId := icebergTable.ID()
+	columnId := sdk.NewTableColumnIdentifier(icebergTableId.DatabaseName(), icebergTableId.SchemaName(), icebergTableId.Name(), "ID")
+	tagValue := "TAG_VALUE"
+
+	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{columnId}, string(sdk.ObjectTypeIcebergTableColumn), tag.ID().FullyQualifiedName(), tagValue)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tagAssociationModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeIcebergTableColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeIcebergTableColumn)),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
+					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", columnId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_id", tagId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", tagValue),
+					testAccCheckTableColumnTagAssociation(tagId, columnId, tagValue),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_TagAssociationIssue1202(t *testing.T) {
 	tag, tagCleanup := testClient().Tag.CreateTag(t)
 	t.Cleanup(tagCleanup)

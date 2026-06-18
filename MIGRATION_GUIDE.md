@@ -110,6 +110,22 @@ With the experiment enabled, renaming `snowflake_database.example` from `my_data
 
 For more details, see the [Object Renaming Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).
 
+### *(new feature)* Tagging support for iceberg table columns
+
+Tagging support for iceberg table columns is now supported. We added a new `ICEBERG TABLE COLUMN` value to the allowed `object_type` values of the `snowflake_tag_association` resource. Use it to tag a column of an Iceberg table:
+
+```terraform
+resource "snowflake_tag_association" "example" {
+  # For now, column fully qualified names have to be constructed manually.
+  object_identifiers = [format("%s.\"column1\"", snowflake_iceberg_table.example.fully_qualified_name)]
+  object_type        = "ICEBERG TABLE COLUMN"
+  tag_id             = snowflake_tag.example.fully_qualified_name
+  tag_value          = "example"
+}
+```
+
+Do not use the `COLUMN` object type, as it is reserved for table columns.
+
 ## v2.16.0 ➞ v2.17.0
 
 ### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` and `snowflake_catalog_integration_open_catalog`: import fix for ForceNew fields

@@ -1118,20 +1118,6 @@ func TestInt_TagsAssociations(t *testing.T) {
 		unsetTags   func(sdk.TableColumnIdentifier, []sdk.ObjectIdentifier) error
 	}{
 		{
-			name: "IcebergTable",
-			setupObject: func() (sdk.TableColumnIdentifier, func()) {
-				object, objectCleanup := testClientHelper().IcebergTable.Create(t)
-				columnId := sdk.NewTableColumnIdentifier(object.ID().DatabaseName(), object.ID().SchemaName(), object.ID().Name(), "ID")
-				return columnId, objectCleanup
-			},
-			setTags: func(id sdk.TableColumnIdentifier, tags []sdk.TagAssociation) error {
-				return client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithSetTagsOnColumn(*sdk.NewTableSetColumnTagsRequest(id.Name(), tags)))
-			},
-			unsetTags: func(id sdk.TableColumnIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithUnsetTagsOnColumn(*sdk.NewTableUnsetColumnTagsRequest(id.Name(), tags)))
-			},
-		},
-		{
 			name: "Table",
 			setupObject: func() (sdk.TableColumnIdentifier, func()) {
 				object, objectCleanup := testClientHelper().Table.Create(t)
@@ -1187,6 +1173,24 @@ func TestInt_TagsAssociations(t *testing.T) {
 		})
 	}
 
+	t.Run("iceberg table column", func(t *testing.T) {
+		// Iceberg table columns are handled separately because they use a dedicated object type.
+		object, objectCleanup := testClientHelper().IcebergTable.Create(t)
+		id := sdk.NewTableColumnIdentifier(object.ID().DatabaseName(), object.ID().SchemaName(), object.ID().Name(), "ID")
+		t.Cleanup(objectCleanup)
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithSetTagsOnColumn(*sdk.NewTableSetColumnTagsRequest(id.Name(), tags)))
+		require.NoError(t, err)
+
+		assertTagSet(id, sdk.ObjectTypeColumn)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithUnsetTagsOnColumn(*sdk.NewTableUnsetColumnTagsRequest(id.Name(), unsetTags)))
+		require.NoError(t, err)
+
+		assertTagUnset(id, sdk.ObjectTypeColumn)
+
+		// test object methods
+		testTagSet(id, sdk.ObjectTypeIcebergTableColumn)
+	})
 	schemaObjectWithArgumentsTestCases := []struct {
 		name        string
 		objectType  sdk.ObjectType
