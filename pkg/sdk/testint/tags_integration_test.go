@@ -765,14 +765,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Schema.CreateSchema(t)
 			},
 			setTags: func(id sdk.DatabaseObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-					SetTag: tags,
-				})
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.DatabaseObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-					UnsetTag: tags,
-				})
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnsetTags(tags))
 			},
 		},
 	}
@@ -1268,11 +1264,9 @@ func TestInt_TagsPropagation(t *testing.T) {
 		)
 		t.Cleanup(tagCleanup)
 
-		schema, schemaCleanup := testClientHelper().Schema.CreateSchemaWithOpts(t, testClientHelper().Ids.RandomDatabaseObjectIdentifier(), &sdk.CreateSchemaOptions{
-			Tag: []sdk.TagAssociation{
-				{Name: tag.ID(), Value: "schema_value"},
-			},
-		})
+		schemaId := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
+		schema, schemaCleanup := testClientHelper().Schema.CreateSchemaWithRequest(t, schemaId, sdk.NewCreateSchemaRequest(schemaId).
+			WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: "schema_value"}}))
 		t.Cleanup(schemaCleanup)
 
 		table, tableCleanup := testClientHelper().Table.CreateInSchema(t, schema.ID())
