@@ -58,6 +58,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationAzureApiManagement().Schema,
 	},
 	{
+		name:   "ApiIntegrationGitRepositoryGithubApp",
+		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
+	},
+	{
 		name:   "ApiIntegrationGoogleCloudApiGateway",
 		schema: resources.ApiIntegrationGoogleCloudApiGateway().Schema,
 	},

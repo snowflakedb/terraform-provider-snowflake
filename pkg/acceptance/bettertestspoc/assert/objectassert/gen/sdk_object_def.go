@@ -233,6 +233,11 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationGitHttpsApiDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationGoogleDetails{},
 		IsDataSourceOutput: true,
 	},

@@ -19,6 +19,7 @@ const (
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
 	ApiIntegrationAmazonApiGatewayResource        feature = "snowflake_api_integration_amazon_api_gateway_resource"
 	ApiIntegrationAzureApiManagementResource      feature = "snowflake_api_integration_azure_api_management_resource"
+	ApiIntegrationGitRepositoryGithubAppResource  feature = "snowflake_api_integration_git_repository_github_app_resource"
 	ApiIntegrationGoogleCloudApiGatewayResource   feature = "snowflake_api_integration_google_cloud_api_gateway_resource"
 	AuthenticationPolicyResource                  feature = "snowflake_authentication_policy_resource"
 	AuthenticationPoliciesDatasource              feature = "snowflake_authentication_policies_datasource"
@@ -139,6 +140,7 @@ var allPreviewFeatures = []feature{
 	ApiIntegrationResource,
 	// TODO(next api integration prs): ApiIntegrationAmazonApiGatewayResource,
 	// TODO(next api integration prs): ApiIntegrationAzureApiManagementResource,
+	// TODO(next api integration prs): ApiIntegrationGitRepositoryGithubAppResource,
 	// TODO(next api integration prs): ApiIntegrationGoogleCloudApiGatewayResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
