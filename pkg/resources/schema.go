@@ -333,6 +333,20 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			}
 		}
 
+		renameSchema := func(description string) {
+			handleHierarchyRenameIdUpdate(d,
+				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
+				description)
+		}
+
+		moveSchema := func(currentId sdk.DatabaseObjectIdentifier, description string) diag.Diagnostics {
+			return handleHierarchyMove(d,
+				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
+				currentId, newSchemaId,
+				schemaRenameFn,
+				description)
+		}
+
 		_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
 		newDatabaseExists := errNewDb == nil
 		_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
@@ -344,19 +358,11 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 
 		switch {
 		case isRenameOfTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, newSchemaExists):
-			handleHierarchyRenameIdUpdate(d,
-				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
-				"Database was renamed for schema")
-			id = newSchemaId
+			renameSchema("Database was renamed for schema")
 		case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, oldSchemaExists):
-			if diags := handleHierarchyMove(d,
-				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
-				oldSchemaId, newSchemaId,
-				schemaRenameFn,
-				"Moving schema to different database"); diags != nil {
+			if diags := moveSchema(oldSchemaId, "Moving schema to different database"); diags != nil {
 				return diags
 			}
-			id = newSchemaId
 		default:
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf(
@@ -367,6 +373,8 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 				newSchemaId.FullyQualifiedName(), newSchemaExists,
 			))
 		}
+
+		id = newSchemaId
 	}
 
 	if d.HasChange("name") && !d.GetRawState().IsNull() {

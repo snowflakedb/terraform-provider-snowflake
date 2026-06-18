@@ -782,12 +782,10 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			switch {
 			case isRenameOfTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, newSchemaExists):
 				renameTable("Database was renamed for table")
-				id = newTableId
 			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, oldSchemaExists):
 				if diags := moveTable(id, "Moving table to different database"); diags != nil {
 					return diags
 				}
-				id = newTableId
 			default:
 				d.Partial(true)
 				return diag.FromErr(fmt.Errorf(
@@ -813,12 +811,10 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			switch {
 			case isRenameOfTheGivenLevelInTheHierarchy(newSchemaExists, oldSchemaExists, newTableExists):
 				renameTable("Schema was renamed for table")
-				id = newTableId
 			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newSchemaExists, oldSchemaExists, oldTableExists):
 				if diags := moveTable(id, "Moving table to different schema"); diags != nil {
 					return diags
 				}
-				id = newTableId
 			default:
 				d.Partial(true)
 				return diag.FromErr(fmt.Errorf(
@@ -870,25 +866,21 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			switch {
 			case isDbRenameSchemaRename():
 				renameTable("Database and schema were both renamed for table")
-				id = newTableId
 			case isDbRenameSchemaMove():
 				currentTableId := sdk.NewSchemaObjectIdentifier(newDatabaseName, oldSchemaName, tableName)
 				if diags := moveTable(currentTableId, "Database was renamed, moving table to different schema"); diags != nil {
 					return diags
 				}
-				id = newTableId
 			case isDbMoveSchemaRename():
 				currentTableId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, newSchemaName, tableName)
 				if diags := moveTable(currentTableId, "Schema was renamed, moving table to different database"); diags != nil {
 					return diags
 				}
-				id = newTableId
 			case isDbMoveSchemaMove():
 				currentTableId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, oldSchemaName, tableName)
 				if diags := moveTable(currentTableId, "Moving table to different database and schema"); diags != nil {
 					return diags
 				}
-				id = newTableId
 			default:
 				d.Partial(true)
 				return diag.FromErr(fmt.Errorf(
@@ -902,6 +894,8 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				))
 			}
 		}
+
+		id = newTableId
 	}
 
 	if d.HasChange("name") {
