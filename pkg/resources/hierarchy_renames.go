@@ -202,35 +202,35 @@ func handleBothParentsChangeRename(
 	oldDatabaseExists := errOldDb == nil
 
 	// Probe schemas (4 combinations)
-	schemaInNewDbOldName := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
-	schemaInNewDbNewName := sdk.NewDatabaseObjectIdentifier(newDatabaseName, newSchemaName)
-	schemaInOldDbOldName := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
-	schemaInOldDbNewName := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, newSchemaName)
+	newDbOldSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
+	newDbNewSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, newSchemaName)
+	oldDbOldSchemaId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
+	oldDbNewSchemaId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, newSchemaName)
 
-	_, errSchemaNewDbOld := client.Schemas.ShowByID(ctx, schemaInNewDbOldName)
-	schemaNewDbOldExists := errSchemaNewDbOld == nil
-	_, errSchemaNewDbNew := client.Schemas.ShowByID(ctx, schemaInNewDbNewName)
-	schemaNewDbNewExists := errSchemaNewDbNew == nil
-	_, errSchemaOldDbOld := client.Schemas.ShowByID(ctx, schemaInOldDbOldName)
-	schemaOldDbOldExists := errSchemaOldDbOld == nil
-	_, errSchemaOldDbNew := client.Schemas.ShowByID(ctx, schemaInOldDbNewName)
-	schemaOldDbNewExists := errSchemaOldDbNew == nil
+	_, errNewDbOldSchema := client.Schemas.ShowByID(ctx, newDbOldSchemaId)
+	newDbOldSchemaExists := errNewDbOldSchema == nil
+	_, errNewDbNewSchema := client.Schemas.ShowByID(ctx, newDbNewSchemaId)
+	newDbNewSchemaExists := errNewDbNewSchema == nil
+	_, errOldDbOldSchemaId := client.Schemas.ShowByID(ctx, oldDbOldSchemaId)
+	oldDbOldSchemaExists := errOldDbOldSchemaId == nil
+	_, errOldDbNewSchemaId := client.Schemas.ShowByID(ctx, oldDbNewSchemaId)
+	oldDbNewSchemaExists := errOldDbNewSchemaId == nil
 
 	switch {
 	// Scenario 1: DB rename + Schema rename → just update ID
-	case !oldDatabaseExists && newDatabaseExists && !schemaNewDbOldExists && schemaNewDbNewExists:
+	case !oldDatabaseExists && newDatabaseExists && !newDbOldSchemaExists && newDbNewSchemaExists:
 		renameFn(fmt.Sprintf("Database and schema were both renamed for %s", leafLevelName))
 		return nil
 	// Scenario 2: DB rename + Schema move → object is at (newDb, oldSchema)
-	case !oldDatabaseExists && newDatabaseExists && schemaNewDbOldExists:
+	case !oldDatabaseExists && newDatabaseExists && newDbOldSchemaExists:
 		currentId := sdk.NewSchemaObjectIdentifier(newDatabaseName, oldSchemaName, objectName)
 		return moveFn(currentId, fmt.Sprintf("Database was renamed, moving %s to different schema", leafLevelName))
 	// Scenario 3: DB move + Schema rename → object is at (oldDb, newSchema)
-	case oldDatabaseExists && newDatabaseExists && !schemaOldDbOldExists && schemaOldDbNewExists:
+	case oldDatabaseExists && newDatabaseExists && !oldDbOldSchemaExists && oldDbNewSchemaExists:
 		currentId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, newSchemaName, objectName)
 		return moveFn(currentId, fmt.Sprintf("Schema was renamed, moving %s to different database", leafLevelName))
 	// Scenario 4: DB move + Schema move → object is at (oldDb, oldSchema)
-	case oldDatabaseExists && newDatabaseExists && schemaOldDbOldExists:
+	case oldDatabaseExists && newDatabaseExists && oldDbOldSchemaExists:
 		currentId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, oldSchemaName, objectName)
 		return moveFn(currentId, fmt.Sprintf("Moving %s to different database and schema", leafLevelName))
 	default:
@@ -239,10 +239,10 @@ func handleBothParentsChangeRename(
 			"unknown rename use case: old database %s (exists: %t), new database %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
 			oldDatabaseId.FullyQualifiedName(), oldDatabaseExists,
 			newDatabaseId.FullyQualifiedName(), newDatabaseExists,
-			schemaInNewDbOldName.FullyQualifiedName(), schemaNewDbOldExists,
-			schemaInNewDbNewName.FullyQualifiedName(), schemaNewDbNewExists,
-			schemaInOldDbOldName.FullyQualifiedName(), schemaOldDbOldExists,
-			schemaInOldDbNewName.FullyQualifiedName(), schemaOldDbNewExists,
+			newDbOldSchemaId.FullyQualifiedName(), newDbOldSchemaExists,
+			newDbNewSchemaId.FullyQualifiedName(), newDbNewSchemaExists,
+			oldDbOldSchemaId.FullyQualifiedName(), oldDbOldSchemaExists,
+			oldDbNewSchemaId.FullyQualifiedName(), oldDbNewSchemaExists,
 		))
 	}
 }
