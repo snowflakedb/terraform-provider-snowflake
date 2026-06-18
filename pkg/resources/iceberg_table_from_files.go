@@ -49,7 +49,7 @@ var icebergTableFromFilesSchema = map[string]*schema.Schema{
 		Required:     true,
 		ForceNew:     true,
 		ValidateFunc: validation.StringIsNotEmpty,
-		Description:  "Specifies the relative path of the Iceberg metadata file in the external volume. Cannot be changed after creation.",
+		Description:  externalChangesNotDetectedFieldDescription("Specifies the relative path of the Iceberg metadata file in the external volume. Cannot be changed after creation."),
 	},
 	"comment": {
 		Type:        schema.TypeString,
@@ -233,14 +233,13 @@ func UpdateIcebergTableFromFiles(ctx context.Context, d *schema.ResourceData, me
 		return diags
 	}
 
-	alterReq := sdk.NewAlterIcebergTableRequest(id)
 	if !reflect.DeepEqual(*set, *sdk.NewIcebergTableSetPropertiesRequest()) {
-		if err := client.IcebergTables.Alter(ctx, alterReq.WithSet(*set)); err != nil {
+		if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 	if !reflect.DeepEqual(*unset, *sdk.NewIcebergTableUnsetPropertiesRequest()) {
-		if err := client.IcebergTables.Alter(ctx, alterReq.WithUnset(*unset)); err != nil {
+		if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnset(*unset)); err != nil {
 			return diag.FromErr(err)
 		}
 	}

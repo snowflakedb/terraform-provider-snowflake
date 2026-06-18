@@ -44,10 +44,7 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 
 	// Create a dedicated database with external_volume and catalog set at db level so the table
 	// can be created without specifying them explicitly (matching the "required fields only" test case).
-	dbForIcebergFiles, dbCleanup := testClient().Database.CreateDatabaseWithOptions(t, testClient().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
-		Catalog:        new(catalogId),
-		ExternalVolume: new(externalVolumeId),
-	})
+	dbForIcebergFiles, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(testClient().Ids.RandomAccountObjectIdentifier()).WithCatalog(catalogId).WithExternalVolume(externalVolumeId))
 	t.Cleanup(dbCleanup)
 	schemaIdForIcebergFiles := sdk.NewDatabaseObjectIdentifier(dbForIcebergFiles.ID().Name(), "PUBLIC")
 
