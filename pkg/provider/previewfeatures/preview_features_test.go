@@ -114,6 +114,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_storage_integration_gcs_resource", want: StorageIntegrationGcsResource},
 		{input: "snowflake_storage_integrations_datasource", want: StorageIntegrationsDatasource},
 		{input: "snowflake_storage_lifecycle_policy_resource", want: StorageLifecyclePolicyResource},
+		{input: "snowflake_storage_lifecycle_policies_datasource", want: StorageLifecyclePoliciesDatasource},
 		{input: "snowflake_system_generate_scim_access_token_datasource", want: SystemGenerateSCIMAccessTokenDatasource},
 		{input: "snowflake_system_get_aws_sns_iam_policy_datasource", want: SystemGetAWSSNSIAMPolicyDatasource},
 		{input: "snowflake_system_get_privatelink_config_datasource", want: SystemGetPrivateLinkConfigDatasource},

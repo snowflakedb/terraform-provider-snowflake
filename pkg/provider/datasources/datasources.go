@@ -50,6 +50,7 @@ const (
 	Shares                         datasource = "snowflake_shares"
 	Stages                         datasource = "snowflake_stages"
 	StorageIntegrations            datasource = "snowflake_storage_integrations"
+	StorageLifecyclePolicies       datasource = "snowflake_storage_lifecycle_policies"
 	Streams                        datasource = "snowflake_streams"
 	Streamlits                     datasource = "snowflake_streamlits"
 	SystemGenerateScimAccessToken  datasource = "snowflake_system_generate_scim_access_token"
