@@ -51,7 +51,7 @@ func (v *storageLifecyclePolicies) Show(ctx context.Context, request *ShowStorag
 func (v *storageLifecyclePolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicy, error) {
 	request := NewShowStorageLifecyclePolicyRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+		WithIn(In{Schema: id.SchemaId()})
 	storageLifecyclePolicies, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err

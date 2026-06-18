@@ -22,6 +22,7 @@ func init() {
 		cortexAgentsDef,
 		cortexSearchServicesDef,
 		databaseRolesDef,
+		databasesDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
 		externalFunctionsDef,
@@ -62,6 +63,7 @@ func init() {
 		tasksDef,
 		userProgrammaticAccessTokensDef,
 		viewsDef,
+		warehousesDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

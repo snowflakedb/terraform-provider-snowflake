@@ -478,14 +478,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Database.CreateDatabase(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-					SetTag: tags,
-				})
+				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-					UnsetTag: tags,
-				})
+				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{
@@ -495,14 +491,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return createDatabaseFromShare(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-					SetTag: tags,
-				})
+				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-					UnsetTag: tags,
-				})
+				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithUnsetTags(tags))
 			},
 		},
 		// TODO [SNOW-1002023]: Add a test for failover groups; Business Critical Snowflake Edition needed
@@ -691,14 +683,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Warehouse.CreateWarehouse(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-					SetTag: tags,
-				})
+				return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-					UnsetTag: tags,
-				})
+				return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnsetTags(tags))
 			},
 		},
 	}
@@ -746,9 +734,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 		t.Cleanup(dbCleanup)
 		id := db.ID()
 
-		err := client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-			SetTag: tags,
-		})
+		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSetTags(tags))
 		require.ErrorContains(t, err, "is a read-only secondary database and cannot be modified.")
 	})
 

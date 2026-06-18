@@ -2,6 +2,7 @@ package sdkcommons
 
 type (
 	ColumnConstraintType                                     string
+	WarehouseGeneration                                      string
 	AutoEventLogging                                         string
 	ComputePoolInstanceFamily                                string
 	DataType                                                 string

@@ -283,11 +283,7 @@ func TestAcc_Alert_Issue3117_IgnoreQuotedIdentifierCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					testClient().Database.Alter(t, database.ID(), &sdk.AlterDatabaseOptions{
-						Set: &sdk.DatabaseSet{
-							QuotedIdentifiersIgnoreCase: sdk.Bool(true),
-						},
-					})
+					testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(database.ID()).WithSet(*sdk.NewDatabaseSetRequest().WithQuotedIdentifiersIgnoreCase(true)))
 				},
 				Config: alertIssue3117Config(id, testClient().Ids.WarehouseId(), "test_alert"),
 				Check: resource.ComposeTestCheckFunc(

@@ -198,6 +198,7 @@ var RepositoryLabels = []string{
 	"data_source:shares",
 	"data_source:stages",
 	"data_source:storage_integrations",
+	"data_source:storage_lifecycle_policies",
 	"data_source:streamlits",
 	"data_source:streams",
 	"data_source:system_generate_scim_access_token",
