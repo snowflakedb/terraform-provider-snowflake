@@ -25,18 +25,16 @@ import (
 func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://github.com/my-org/"
-	const blockedPrefix = "https://github.com/my-org/blocked/"
 	apiProvider := string(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi)
 
 	comment := random.Comment()
 	externalComment := random.Comment()
 
-	basic := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+	basic := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{gitAllowedPrefix}, true).
 		WithAllAllowedAuthenticationSecrets(true)
-	withOptionals := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+	withOptionals := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{gitAllowedPrefix}, true).
 		WithAllAllowedAuthenticationSecrets(true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithApiBlockedPrefixes([]string{gitBlockedPrefix}).
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
@@ -46,7 +44,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
 			HasAllAllowedAuthenticationSecrets(true).
-			HasApiAllowedPrefixes(allowedPrefix).
+			HasApiAllowedPrefixes(gitAllowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -63,7 +61,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasAllowedAuthenticationSecrets("ALL").
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
-			HasAllowedPrefixes(allowedPrefix).
+			HasAllowedPrefixes(gitAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
 	}
@@ -73,8 +71,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
 			HasAllAllowedAuthenticationSecrets(true).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiAllowedPrefixes(gitAllowedPrefix).
+			HasApiBlockedPrefixes(gitBlockedPrefix).
 			HasCommentString(comment),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -90,8 +88,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasAllowedAuthenticationSecrets("ALL").
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(gitAllowedPrefix).
+			HasBlockedPrefixes(gitBlockedPrefix).
 			HasComment(comment),
 	}
 
@@ -182,13 +180,11 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationGitRepositoryToken_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://github.com/my-org/"
-	const blockedPrefix = "https://github.com/my-org/blocked/"
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+	testModel := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{gitAllowedPrefix}, true).
 		WithAllAllowedAuthenticationSecrets(true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithApiBlockedPrefixes([]string{gitBlockedPrefix}).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -202,9 +198,9 @@ func TestAcc_ApiIntegrationGitRepositoryToken_Import(t *testing.T) {
 				PreConfig: func() {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithComment(comment).
-							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitBlockedPrefix}}).
 							WithGitHttpsApiTokenBasedProviderParams(*sdk.NewGitHttpsApiTokenBasedParamsRequest().
 								WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))),
 					)
@@ -231,16 +227,14 @@ func TestAcc_ApiIntegrationGitRepositoryToken_Import(t *testing.T) {
 func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://github.com/my-org/"
-
 	secretId, cleanupSecret := testClient().Secret.CreateRandomPasswordSecret(t)
 	t.Cleanup(cleanupSecret)
 
-	withAll := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+	withAll := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{gitAllowedPrefix}, true).
 		WithAllAllowedAuthenticationSecrets(true)
-	withNone := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+	withNone := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{gitAllowedPrefix}, true).
 		WithNoAllowedAuthenticationSecrets(true)
-	withList := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{allowedPrefix}, true).
+	withList := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{gitAllowedPrefix}, true).
 		WithAllowedAuthenticationSecrets([]string{secretId.FullyQualifiedName()})
 
 	ref := withAll.ResourceReference()
