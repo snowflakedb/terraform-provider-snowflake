@@ -82,6 +82,75 @@ func handleShallowHierarchyRename[P, O, M sdk.ObjectIdentifier, PR, OR any](
 	}
 }
 
+// handleDeepHierarchyRename handles the case where both database AND schema change
+// for a schema-level object. It determines whether the database/schema were renamed
+// or moved and acts accordingly.
+func handleDeepHierarchyRename(
+	d *schema.ResourceData,
+	ctx context.Context,
+	client *sdk.Client,
+	newDatabaseId, oldDatabaseId sdk.AccountObjectIdentifier,
+	oldSchemaName, newSchemaName string,
+	objectName string,
+	renameFn func(string),
+	moveFn func(sdk.SchemaObjectIdentifier, string) diag.Diagnostics,
+	leafLevelName string,
+) diag.Diagnostics {
+	oldDatabaseName := oldDatabaseId.Name()
+	newDatabaseName := newDatabaseId.Name()
+
+	// Probe databases
+	_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
+	newDatabaseExists := errNewDb == nil
+	_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
+	oldDatabaseExists := errOldDb == nil
+
+	// Probe schemas (4 combinations)
+	schemaInNewDbOldName := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
+	schemaInNewDbNewName := sdk.NewDatabaseObjectIdentifier(newDatabaseName, newSchemaName)
+	schemaInOldDbOldName := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
+	schemaInOldDbNewName := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, newSchemaName)
+
+	_, errSchemaNewDbOld := client.Schemas.ShowByID(ctx, schemaInNewDbOldName)
+	schemaNewDbOldExists := errSchemaNewDbOld == nil
+	_, errSchemaNewDbNew := client.Schemas.ShowByID(ctx, schemaInNewDbNewName)
+	schemaNewDbNewExists := errSchemaNewDbNew == nil
+	_, errSchemaOldDbOld := client.Schemas.ShowByID(ctx, schemaInOldDbOldName)
+	schemaOldDbOldExists := errSchemaOldDbOld == nil
+	_, errSchemaOldDbNew := client.Schemas.ShowByID(ctx, schemaInOldDbNewName)
+	schemaOldDbNewExists := errSchemaOldDbNew == nil
+
+	switch {
+	// Scenario 1: DB rename + Schema rename → just update ID
+	case !oldDatabaseExists && newDatabaseExists && !schemaNewDbOldExists && schemaNewDbNewExists:
+		renameFn(fmt.Sprintf("Database and schema were both renamed for %s", leafLevelName))
+		return nil
+	// Scenario 2: DB rename + Schema move → object is at (newDb, oldSchema)
+	case !oldDatabaseExists && newDatabaseExists && schemaNewDbOldExists:
+		currentId := sdk.NewSchemaObjectIdentifier(newDatabaseName, oldSchemaName, objectName)
+		return moveFn(currentId, fmt.Sprintf("Database was renamed, moving %s to different schema", leafLevelName))
+	// Scenario 3: DB move + Schema rename → object is at (oldDb, newSchema)
+	case oldDatabaseExists && newDatabaseExists && !schemaOldDbOldExists && schemaOldDbNewExists:
+		currentId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, newSchemaName, objectName)
+		return moveFn(currentId, fmt.Sprintf("Schema was renamed, moving %s to different database", leafLevelName))
+	// Scenario 4: DB move + Schema move → object is at (oldDb, oldSchema)
+	case oldDatabaseExists && newDatabaseExists && schemaOldDbOldExists:
+		currentId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, oldSchemaName, objectName)
+		return moveFn(currentId, fmt.Sprintf("Moving %s to different database and schema", leafLevelName))
+	default:
+		d.Partial(true)
+		return diag.FromErr(fmt.Errorf(
+			"unknown rename use case: old database %s (exists: %t), new database %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
+			oldDatabaseId.FullyQualifiedName(), oldDatabaseExists,
+			newDatabaseId.FullyQualifiedName(), newDatabaseExists,
+			schemaInNewDbOldName.FullyQualifiedName(), schemaNewDbOldExists,
+			schemaInNewDbNewName.FullyQualifiedName(), schemaNewDbNewExists,
+			schemaInOldDbOldName.FullyQualifiedName(), schemaOldDbOldExists,
+			schemaInOldDbNewName.FullyQualifiedName(), schemaOldDbNewExists,
+		))
+	}
+}
+
 func capitalize(s string) string {
 	if len(s) == 0 {
 		return s
