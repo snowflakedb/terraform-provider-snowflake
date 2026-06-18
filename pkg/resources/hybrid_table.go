@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -61,6 +63,10 @@ var hybridTableSchema = map[string]*schema.Schema{
 					Description:      "Column type. See [Snowflake data types](https://docs.snowflake.com/en/sql-reference-data-types) for supported values. Example: VARCHAR(256), NUMBER(38,0).",
 					ValidateDiagFunc: IsDataTypeValid,
 					DiffSuppressFunc: DiffSuppressDataTypes,
+					// Matches the data-type field pattern. StateFunc does not reliably fire for
+					// nested TypeList fields, so buildHybridColumnStateFromDescribe is the actual
+					// Read-path normalizer — keep it.
+					StateFunc: DataTypeStateFunc,
 				},
 				"nullable": {
 					Type:        schema.TypeBool,
@@ -124,8 +130,9 @@ var hybridTableSchema = map[string]*schema.Schema{
 				"name": {
 					Type:        schema.TypeString,
 					Optional:    true,
+					Computed:    true,
 					ForceNew:    true,
-					Description: "Constraint name. If omitted, Snowflake auto-generates one.",
+					Description: "Constraint name. If omitted, Snowflake auto-generates one (visible in state after the first apply).",
 				},
 				"keys": {
 					Type:        schema.TypeList,
@@ -142,14 +149,16 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Optional:    true,
 		ForceNew:    true,
+		Set:         uniqueConstraintHash,
 		Description: "Defines UNIQUE constraints. Can only be set at creation time. Any change forces recreation.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
 					Type:        schema.TypeString,
 					Optional:    true,
+					Computed:    true,
 					ForceNew:    true,
-					Description: "Constraint name.",
+					Description: "Constraint name. If omitted, Snowflake auto-generates one (visible in state after the first apply).",
 				},
 				"columns": {
 					Type:        schema.TypeList,
@@ -166,14 +175,16 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Optional:    true,
 		ForceNew:    true,
+		Set:         foreignKeyHash,
 		Description: "Defines FOREIGN KEY constraints. Can only be set at creation time. Any change forces recreation.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
 					Type:        schema.TypeString,
 					Optional:    true,
+					Computed:    true,
 					ForceNew:    true,
-					Description: "Constraint name.",
+					Description: "Constraint name. If omitted, Snowflake auto-generates one (visible in state after the first apply).",
 				},
 				"columns": {
 					Type:        schema.TypeList,
@@ -210,6 +221,39 @@ var hybridTableSchema = map[string]*schema.Schema{
 							},
 						},
 					},
+				},
+			},
+		},
+	},
+	"index": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		ForceNew:    true,
+		Set:         indexHash,
+		Description: "Defines secondary indexes on the hybrid table. Can only be set at creation time (declared inline in CREATE HYBRID TABLE). Any change to an index forces recreation of the table.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"name": {
+					Type:        schema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "Name of the secondary index. Snowflake requires an explicit name for inline indexes.",
+				},
+				"columns": {
+					Type:        schema.TypeList,
+					Required:    true,
+					ForceNew:    true,
+					MinItems:    1,
+					Elem:        &schema.Schema{Type: schema.TypeString, DiffSuppressFunc: ignoreCaseSuppressFunc},
+					Description: "Index key columns, in order. Order is semantically meaningful.",
+				},
+				"include_columns": {
+					Type:        schema.TypeSet,
+					Optional:    true,
+					ForceNew:    true,
+					Set:         indexIncludeColumnsHash,
+					Elem:        &schema.Schema{Type: schema.TypeString, DiffSuppressFunc: ignoreCaseSuppressFunc},
+					Description: "Columns included in the index payload via INCLUDE (...). Order carries no meaning.",
 				},
 			},
 		},
@@ -264,6 +308,92 @@ func HybridTable() *schema.Resource {
 
 		Timeouts: defaultTimeouts,
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Set hash functions for TypeSet constraint blocks
+// ---------------------------------------------------------------------------
+
+// uniqueConstraintHash hashes a unique_constraint set element on its columns only,
+// excluding name so an auto-generated server name does not churn the set element.
+func uniqueConstraintHash(v any) int {
+	m := v.(map[string]any)
+	var b strings.Builder
+	for _, col := range m["columns"].([]any) {
+		b.WriteString(col.(string))
+		b.WriteByte(',')
+	}
+	return schema.HashString(b.String())
+}
+
+// foreignKeyHash hashes a foreign_key set element on its stable identity: local
+// columns + referenced table + referenced columns. name is excluded (same reason as
+// uniqueConstraintHash). table_id is normalized so a quoted read-back value and an
+// unquoted config value hash identically; a parse failure falls back to the raw string.
+func foreignKeyHash(v any) int {
+	m := v.(map[string]any)
+	var b strings.Builder
+	for _, col := range m["columns"].([]any) {
+		b.WriteString(col.(string))
+		b.WriteByte(',')
+	}
+	if refList, ok := m["references"].([]any); ok && len(refList) > 0 {
+		ref := refList[0].(map[string]any)
+		tableId := ref["table_id"].(string)
+		if parsed, err := sdk.ParseSchemaObjectIdentifier(tableId); err == nil {
+			tableId = parsed.FullyQualifiedName()
+		}
+		b.WriteByte('|')
+		b.WriteString(tableId)
+		b.WriteByte('|')
+		for _, col := range ref["columns"].([]any) {
+			b.WriteString(col.(string))
+			b.WriteByte(',')
+		}
+	}
+	return schema.HashString(b.String())
+}
+
+// indexIncludeColumnsHash hashes a single include_column string (uppercased) so
+// that a lowercase config value and its uppercase SHOW INDEXES read-back land in
+// the same set bucket. Used as the Set function for the include_columns TypeSet.
+func indexIncludeColumnsHash(v any) int {
+	return schema.HashString(strings.ToUpper(v.(string)))
+}
+
+// indexHash hashes an index set element on its stable identity: the user-supplied
+// name plus the index columns and include columns, with column names uppercased.
+// Uppercasing is required because SHOW INDEXES returns uppercase column names while
+// a config may use any case; the TypeSet element identity is resolved via this hash
+// before DiffSuppressFunc runs, so without normalization a lowercase config element
+// and its uppercase read-back would hash differently and churn the set (spurious
+// ForceNew). name is included verbatim — it is user-supplied and round-trips exactly
+// (no server auto-naming, unlike the constraint blocks).
+func indexHash(v any) int {
+	m := v.(map[string]any)
+	var b strings.Builder
+	b.WriteString(m["name"].(string))
+	b.WriteByte('|')
+	for _, col := range m["columns"].([]any) {
+		b.WriteString(strings.ToUpper(col.(string)))
+		b.WriteByte(',')
+	}
+	b.WriteByte('|')
+	if inc, ok := m["include_columns"]; ok && inc != nil {
+		incSet, ok := inc.(*schema.Set)
+		if ok {
+			incCols := make([]string, 0, incSet.Len())
+			for _, c := range incSet.List() {
+				incCols = append(incCols, strings.ToUpper(c.(string)))
+			}
+			sort.Strings(incCols)
+			for _, c := range incCols {
+				b.WriteString(c)
+				b.WriteByte(',')
+			}
+		}
+	}
+	return schema.HashString(b.String())
 }
 
 // ---------------------------------------------------------------------------
@@ -617,6 +747,27 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 	return constraints, nil
 }
 
+// buildOutOfLineIndexes builds the inline secondary-index requests from the
+// `index` TypeSet. Mirrors the optional-constraint loops in buildOutOfLineConstraints.
+// The block is create-only and ForceNew, so there is no corresponding update path.
+func buildOutOfLineIndexes(d *schema.ResourceData) []sdk.HybridTableOutOfLineIndexRequest {
+	indexes := make([]sdk.HybridTableOutOfLineIndexRequest, 0)
+	if v, ok := d.GetOk("index"); ok {
+		for _, idxRaw := range v.(*schema.Set).List() {
+			idxMap := idxRaw.(map[string]any)
+			req := sdk.NewHybridTableOutOfLineIndexRequest(
+				idxMap["name"].(string),
+				expandStringList(idxMap["columns"].([]any)),
+			)
+			if incRaw, ok := idxMap["include_columns"].(*schema.Set); ok && incRaw.Len() > 0 {
+				req.WithIncludeColumns(expandStringList(incRaw.List()))
+			}
+			indexes = append(indexes, *req)
+		}
+	}
+	return indexes
+}
+
 // ---------------------------------------------------------------------------
 // CRUD
 // ---------------------------------------------------------------------------
@@ -641,6 +792,7 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	columnsAndConstraints := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 		Columns:             columnRequests,
 		OutOfLineConstraint: constraints,
+		OutOfLineIndex:      buildOutOfLineIndexes(d),
 	}
 	request := sdk.NewCreateHybridTableRequest(id, columnsAndConstraints)
 
@@ -710,13 +862,33 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 			return diag.FromErr(err)
 		}
 
+		constraints, err := client.HybridTables.GetConstraints(ctx, id)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("reading hybrid table constraints: %w", err))
+		}
+
+		// Index read-back is best-effort: a SHOW INDEXES failure must not fail Read of
+		// an otherwise-healthy table. This mirrors the non-fatal SHOW IMPORTED KEYS sub-call
+		// inside GetConstraints, not the fatal GetConstraints call above.
+		var indexState []map[string]any
+		indexes, indexErr := client.HybridTables.ShowIndexes(ctx,
+			sdk.NewShowIndexesHybridTableRequest().WithIn(sdk.TableIn{Table: id}))
+		if indexErr != nil {
+			log.Printf("[WARN] SHOW INDEXES failed for %s; skipping index read-back: %v", id.FullyQualifiedName(), indexErr)
+		} else {
+			indexState = buildIndexesStateFromShowIndexes(indexes)
+		}
+
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.HybridTableToSchema(hybridTable)}),
 			d.Set(DescribeOutputAttributeName, schemas.HybridTableDetailsListToSchema(details)),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set("comment", hybridTable.Comment),
 			d.Set("column", columnState),
-			d.Set("primary_key", buildPrimaryKeyStateFromDescribe(details, d)),
+			d.Set("primary_key", buildPrimaryKeyStateFromConstraints(constraints)),
+			d.Set("unique_constraint", buildUniqueConstraintsStateFromConstraints(constraints)),
+			d.Set("foreign_key", buildForeignKeysStateFromConstraints(constraints)),
+			d.Set("index", indexState),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -979,37 +1151,83 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 	return flattened, nil
 }
 
-// buildPrimaryKeyStateFromDescribe reconstructs the primary_key block from DESCRIBE output.
-// Called unconditionally on every Read (not just import) so that PK column drift is visible.
-func buildPrimaryKeyStateFromDescribe(details []sdk.HybridTableDetails, d *schema.ResourceData) []map[string]any {
-	pkKeys := make([]string, 0)
-	for _, detail := range details {
-		if detail.PrimaryKey {
-			pkKeys = append(pkKeys, detail.Name)
+// buildPrimaryKeyStateFromConstraints returns the primary_key block (at most one) from
+// the merged constraint list, including the server-side name (possibly auto-generated).
+func buildPrimaryKeyStateFromConstraints(constraints []sdk.HybridTableConstraint) []map[string]any {
+	for _, c := range constraints {
+		if c.Kind == sdk.ColumnConstraintTypePrimaryKey {
+			return []map[string]any{{"name": c.Name, "keys": c.Columns}}
 		}
 	}
-	if len(pkKeys) == 0 {
-		return nil
-	}
+	return nil
+}
 
-	// Preserve constraint name from config if available
-	pkName := ""
-	if configPK, ok := d.GetOk("primary_key"); ok {
-		pkList := configPK.([]any)
-		if len(pkList) > 0 {
-			pkMap := pkList[0].(map[string]any)
-			if n, ok := pkMap["name"].(string); ok {
-				pkName = n
-			}
+// buildUniqueConstraintsStateFromConstraints returns the unique_constraint blocks from
+// the merged constraint list, including the server-side name (possibly auto-generated).
+func buildUniqueConstraintsStateFromConstraints(constraints []sdk.HybridTableConstraint) []map[string]any {
+	var result []map[string]any
+	for _, c := range constraints {
+		if c.Kind == sdk.ColumnConstraintTypeUnique {
+			result = append(result, map[string]any{"name": c.Name, "columns": c.Columns})
 		}
 	}
+	return result
+}
 
-	return []map[string]any{
-		{
-			"name": pkName,
-			"keys": pkKeys,
-		},
+// buildForeignKeysStateFromConstraints returns the foreign_key blocks from the merged
+// constraint list, including the server-side name (possibly auto-generated). The inner
+// []map[string]any matches the references TypeList (MaxItems 1) schema block.
+func buildForeignKeysStateFromConstraints(constraints []sdk.HybridTableConstraint) []map[string]any {
+	var result []map[string]any
+	for _, c := range constraints {
+		if c.Kind == sdk.ColumnConstraintTypeForeignKey {
+			// DeleteRule/UpdateRule are intentionally not mapped — the schema does not expose FK rules.
+			result = append(result, map[string]any{
+				"name":    c.Name,
+				"columns": c.Columns,
+				"references": []map[string]any{{
+					"table_id": c.ReferencedTable.FullyQualifiedName(),
+					"columns":  c.ReferencedColumns,
+				}},
+			})
+		}
 	}
+	return result
+}
+
+// parseIndexColumnsString parses the bracketed, uppercase column list that
+// SHOW INDEXES returns for the `columns` and `included_columns` fields, e.g.
+// "[A, B, C]" -> {"A","B","C"} and the literal "[]" -> empty slice. The SDK does
+// not pre-split these (see hybridTableIndexRow.convert), so the resource layer
+// parses them here.
+func parseIndexColumnsString(raw string) []string {
+	return sdk.ParseCommaSeparatedStringArray(raw, false)
+}
+
+// buildIndexesStateFromShowIndexes converts SHOW INDEXES rows into the `index`
+// block state. It keeps only user secondary indexes — rows where IsUnique is
+// non-nil and false. PK- and UNIQUE-backed indexes report is_unique="Y" (IsUnique
+// true) and are surfaced through the constraint blocks instead, so they are
+// excluded here. A nil IsUnique is also excluded: without the discriminator we
+// cannot confirm the row is a provider-managed secondary index.
+func buildIndexesStateFromShowIndexes(indexes []sdk.HybridTableIndex) []map[string]any {
+	var result []map[string]any
+	for _, idx := range indexes {
+		if idx.IsUnique == nil || *idx.IsUnique {
+			continue
+		}
+		var columns []string
+		if idx.Columns != nil {
+			columns = parseIndexColumnsString(*idx.Columns)
+		}
+		result = append(result, map[string]any{
+			"name":    idx.Name,
+			"columns": columns,
+			// IncludedColumns is a non-nil string ("" when the server returns NULL), so no nil-guard is needed (unlike Columns, a *string).
+			"include_columns": parseIndexColumnsString(idx.IncludedColumns),
+		})
+	}
+	return result
 }
 
 // toHybridColumnDefaultConfig converts HybridTableDetails.Default (string, not *string)

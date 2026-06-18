@@ -134,6 +134,43 @@ func (h *HybridTableModel) WithUniqueConstraint(columns []string) *HybridTableMo
 	return h
 }
 
+// HybridTableIndexConfig is a single secondary-index definition for tests.
+// IncludeColumns is optional (the INCLUDE payload).
+type HybridTableIndexConfig struct {
+	Name           string
+	Columns        []string // required; the schema enforces MinItems:1
+	IncludeColumns []string // optional (the INCLUDE payload)
+}
+
+// WithIndex sets the index block from one or more index definitions.
+//
+// Uses ObjectVariable rather than MapVariable because each index block mixes a
+// string (name) with list values (columns, include_columns), which MapVariable's
+// MarshalJSON rejects ("maps must contain the same type").
+func (h *HybridTableModel) WithIndex(indexes ...HybridTableIndexConfig) *HybridTableModel {
+	objs := make([]tfconfig.Variable, len(indexes))
+	for i, idx := range indexes {
+		colVars := make([]tfconfig.Variable, len(idx.Columns))
+		for j, c := range idx.Columns {
+			colVars[j] = tfconfig.StringVariable(c)
+		}
+		m := map[string]tfconfig.Variable{
+			"name":    tfconfig.StringVariable(idx.Name),
+			"columns": tfconfig.ListVariable(colVars...),
+		}
+		if len(idx.IncludeColumns) > 0 {
+			incVars := make([]tfconfig.Variable, len(idx.IncludeColumns))
+			for j, c := range idx.IncludeColumns {
+				incVars[j] = tfconfig.StringVariable(c)
+			}
+			m["include_columns"] = tfconfig.SetVariable(incVars...)
+		}
+		objs[i] = tfconfig.ObjectVariable(m)
+	}
+	h.Index = tfconfig.SetVariable(objs...)
+	return h
+}
+
 // WithForeignKey sets a single foreign key constraint. localColumns are the columns
 // in this table, refTableId is the fully-qualified name of the referenced table,
 // and refColumns are the columns in the referenced table.

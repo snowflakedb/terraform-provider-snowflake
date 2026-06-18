@@ -21,6 +21,7 @@ type HybridTables interface {
 	DropIndex(ctx context.Context, request *DropIndexHybridTableRequest) error
 	ShowIndexes(ctx context.Context, request *ShowIndexesHybridTableRequest) ([]HybridTableIndex, error)
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	GetConstraints(ctx context.Context, id SchemaObjectIdentifier) ([]HybridTableConstraint, error)
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.

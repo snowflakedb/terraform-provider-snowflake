@@ -51,4 +51,15 @@ resource "snowflake_hybrid_table" "complete" {
     name = "pk_hybrid_table"
     keys = ["ID"]
   }
+
+  index {
+    name    = "idx_name"
+    columns = ["NAME"]
+  }
+
+  index {
+    name            = "idx_name_created_at"
+    columns         = ["NAME"]
+    include_columns = ["CREATED_AT"]
+  }
 }
