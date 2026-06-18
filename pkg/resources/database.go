@@ -138,15 +138,18 @@ func CreateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	opts := &sdk.CreateDatabaseOptions{
-		Transient: GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "is_transient"),
-		Comment:   GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"),
+	req := sdk.NewCreateDatabaseRequest(id)
+	if v := GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "is_transient"); v != nil {
+		req.WithTransient(*v)
 	}
-	if parametersCreateDiags := handleDatabaseParametersCreate(d, opts); len(parametersCreateDiags) > 0 {
+	if v := GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"); v != nil {
+		req.WithComment(*v)
+	}
+	if parametersCreateDiags := handleDatabaseParametersCreate(d, req); len(parametersCreateDiags) > 0 {
 		return parametersCreateDiags
 	}
 
-	err = client.Databases.Create(ctx, id, opts)
+	err = client.Databases.Create(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -199,12 +202,11 @@ func CreateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 				}
 
 				if len(replicationToAccounts) > 0 {
-					err := client.Databases.AlterReplication(ctx, id, &sdk.AlterDatabaseReplicationOptions{
-						EnableReplication: &sdk.EnableReplication{
-							ToAccounts:         replicationToAccounts,
-							IgnoreEditionCheck: ignoreEditionCheck,
-						},
-					})
+					enableReq := sdk.NewEnableReplicationRequest().WithToAccounts(replicationToAccounts)
+					if ignoreEditionCheck != nil {
+						enableReq.WithIgnoreEditionCheck(*ignoreEditionCheck)
+					}
+					err := client.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(id).WithEnableReplication(*enableReq))
 					if err != nil {
 						diags = append(diags, diag.Diagnostic{
 							Severity: diag.Warning,
@@ -214,11 +216,9 @@ func CreateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 				}
 
 				if len(failoverToAccounts) > 0 {
-					err = client.Databases.AlterFailover(ctx, id, &sdk.AlterDatabaseFailoverOptions{
-						EnableFailover: &sdk.EnableFailover{
-							ToAccounts: failoverToAccounts,
-						},
-					})
+					err = client.Databases.AlterFailover(ctx, sdk.NewAlterFailoverDatabaseRequest(id).WithEnableFailover(
+						*sdk.NewEnableFailoverRequest().WithToAccounts(failoverToAccounts),
+					))
 					if err != nil {
 						diags = append(diags, diag.Diagnostic{
 							Severity: diag.Warning,
@@ -246,9 +246,7 @@ func UpdateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.FromErr(err)
 		}
 
-		err = client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-			NewName: &newId,
-		})
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithNewName(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -257,8 +255,8 @@ func UpdateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		id = newId
 	}
 
-	databaseSetRequest := new(sdk.DatabaseSet)
-	databaseUnsetRequest := new(sdk.DatabaseUnset)
+	databaseSetRequest := sdk.NewDatabaseSetRequest()
+	databaseUnsetRequest := sdk.NewDatabaseUnsetRequest()
 
 	if updateParamDiags := handleDatabaseParametersChanges(d, databaseSetRequest, databaseUnsetRequest); len(updateParamDiags) > 0 {
 		return updateParamDiags
@@ -295,45 +293,36 @@ func UpdateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		removedFailovers = slices.DeleteFunc(removedFailovers, func(identifier sdk.AccountIdentifier) bool { return slices.Contains(removedReplications, identifier) })
 
 		if len(addedReplications) > 0 {
-			err := client.Databases.AlterReplication(ctx, id, &sdk.AlterDatabaseReplicationOptions{
-				EnableReplication: &sdk.EnableReplication{
-					ToAccounts:         addedReplications,
-					IgnoreEditionCheck: sdk.Bool(d.Get("replication.0.ignore_edition_check").(bool)),
-				},
-			})
+			err := client.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(id).WithEnableReplication(
+				*sdk.NewEnableReplicationRequest().WithToAccounts(addedReplications).WithIgnoreEditionCheck(d.Get("replication.0.ignore_edition_check").(bool)),
+			))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if len(addedFailovers) > 0 {
-			err := client.Databases.AlterFailover(ctx, id, &sdk.AlterDatabaseFailoverOptions{
-				EnableFailover: &sdk.EnableFailover{
-					ToAccounts: addedFailovers,
-				},
-			})
+			err := client.Databases.AlterFailover(ctx, sdk.NewAlterFailoverDatabaseRequest(id).WithEnableFailover(
+				*sdk.NewEnableFailoverRequest().WithToAccounts(addedFailovers),
+			))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if len(removedReplications) > 0 {
-			err := client.Databases.AlterReplication(ctx, id, &sdk.AlterDatabaseReplicationOptions{
-				DisableReplication: &sdk.DisableReplication{
-					ToAccounts: removedReplications,
-				},
-			})
+			err := client.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(id).WithDisableReplication(
+				*sdk.NewDisableReplicationRequest().WithToAccounts(removedReplications),
+			))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if len(removedFailovers) > 0 {
-			err := client.Databases.AlterFailover(ctx, id, &sdk.AlterDatabaseFailoverOptions{
-				DisableFailover: &sdk.DisableFailover{
-					ToAccounts: removedFailovers,
-				},
-			})
+			err := client.Databases.AlterFailover(ctx, sdk.NewAlterFailoverDatabaseRequest(id).WithDisableFailover(
+				*sdk.NewDisableFailoverRequest().WithToAccounts(removedFailovers),
+			))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -343,25 +332,21 @@ func UpdateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if d.HasChange("comment") {
 		comment := d.Get("comment").(string)
 		if len(comment) > 0 {
-			databaseSetRequest.Comment = &comment
+			databaseSetRequest.WithComment(comment)
 		} else {
-			databaseUnsetRequest.Comment = sdk.Bool(true)
+			databaseUnsetRequest.WithComment(true)
 		}
 	}
 
-	if (*databaseSetRequest != sdk.DatabaseSet{}) {
-		err := client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-			Set: databaseSetRequest,
-		})
+	if (*databaseSetRequest != sdk.DatabaseSetRequest{}) {
+		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSet(*databaseSetRequest))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if (*databaseUnsetRequest != sdk.DatabaseUnset{}) {
-		err := client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-			Unset: databaseUnsetRequest,
-		})
+	if (*databaseUnsetRequest != sdk.DatabaseUnsetRequest{}) {
+		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithUnset(*databaseUnsetRequest))
 		if err != nil {
 			return diag.FromErr(err)
 		}
