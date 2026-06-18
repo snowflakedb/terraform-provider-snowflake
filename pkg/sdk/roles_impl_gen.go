@@ -58,3 +58,53 @@ func (v *roles) Grant(ctx context.Context, req *GrantRoleRequest) error {
 func (v *roles) Revoke(ctx context.Context, req *RevokeRoleRequest) error {
 	return validateAndExec(v.client, ctx, req.toOpts())
 }
+
+func (s *CreateRoleRequest) toOpts() *CreateRoleOptions {
+	return &CreateRoleOptions{
+		OrReplace:   s.OrReplace,
+		IfNotExists: s.IfNotExists,
+		name:        s.name,
+		Comment:     s.Comment,
+		Tag:         s.Tag,
+	}
+}
+
+func (s *AlterRoleRequest) toOpts() *AlterRoleOptions {
+	return &AlterRoleOptions{
+		IfExists:     s.IfExists,
+		name:         s.name,
+		RenameTo:     s.RenameTo,
+		SetComment:   s.SetComment,
+		SetTags:      s.SetTags,
+		UnsetComment: s.UnsetComment,
+		UnsetTags:    s.UnsetTags,
+	}
+}
+
+func (s *DropRoleRequest) toOpts() *DropRoleOptions {
+	return &DropRoleOptions{
+		IfExists: s.IfExists,
+		name:     s.name,
+	}
+}
+
+func (s *ShowRoleRequest) toOpts() *ShowRoleOptions {
+	return &ShowRoleOptions{
+		Like:    s.Like,
+		InClass: s.InClass,
+	}
+}
+
+func (s *GrantRoleRequest) toOpts() *GrantRoleOptions {
+	return &GrantRoleOptions{
+		name:  s.name,
+		Grant: s.Grant,
+	}
+}
+
+func (s *RevokeRoleRequest) toOpts() *RevokeRoleOptions {
+	return &RevokeRoleOptions{
+		name:   s.name,
+		Revoke: s.Revoke,
+	}
+}
