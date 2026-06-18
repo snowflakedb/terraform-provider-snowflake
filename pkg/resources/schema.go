@@ -340,16 +340,16 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		case isRenameOfTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, newSchemaExists):
 			handleHierarchyRenameIdUpdate(d,
 				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
-				"Database was renamed for schema - no Snowflake modification needed, updating the id...")
+				"Database was renamed for schema")
 			id = newSchemaId
 		case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newDatabaseExists, oldDatabaseExists, oldSchemaExists):
 			if diags := handleHierarchyMove(d,
 				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
-				oldSchemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName(),
+				oldSchemaId, newSchemaId,
 				func() error {
 					return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(oldSchemaId).WithNewName(newSchemaId))
 				},
-				"Moving schema to different database - executing ALTER RENAME..."); diags != nil {
+				"Moving schema to different database"); diags != nil {
 				return diags
 			}
 			id = newSchemaId
