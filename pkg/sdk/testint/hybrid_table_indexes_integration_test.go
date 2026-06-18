@@ -26,7 +26,7 @@ func TestInt_HybridTableShowIndexes(t *testing.T) {
 		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 			Columns: []sdk.HybridTableColumnRequest{
 				{
-					Name:     "id",
+					Name:     "ID",
 					DataType: sdk.DataType("NUMBER NOT NULL"),
 					InlineConstraint: &sdk.ColumnInlineConstraint{
 						Name: sdk.String("pk_fixture"),
@@ -34,7 +34,7 @@ func TestInt_HybridTableShowIndexes(t *testing.T) {
 					},
 				},
 				{
-					Name:     "email",
+					Name:     "EMAIL",
 					DataType: sdk.DataType("VARCHAR(256)"),
 					InlineConstraint: &sdk.ColumnInlineConstraint{
 						Name: sdk.String("uq_email"),
@@ -42,22 +42,22 @@ func TestInt_HybridTableShowIndexes(t *testing.T) {
 					},
 				},
 				{
-					Name:     "status",
+					Name:     "STATUS",
 					DataType: sdk.DataType("VARCHAR(50)"),
 				},
 				{
-					Name:     "region",
+					Name:     "REGION",
 					DataType: sdk.DataType("VARCHAR(50)"),
 				},
 				{
-					Name:     "score",
+					Name:     "SCORE",
 					DataType: sdk.DataType("NUMBER(38,0)"),
 				},
 			},
 			OutOfLineIndex: []sdk.HybridTableOutOfLineIndexRequest{
-				*sdk.NewHybridTableOutOfLineIndexRequest("idx_status", []string{"status"}),
-				*sdk.NewHybridTableOutOfLineIndexRequest("idx_region_inc", []string{"region"}).
-					WithIncludeColumns([]string{"score"}),
+				*sdk.NewHybridTableOutOfLineIndexRequest("IDX_STATUS", []string{"STATUS"}),
+				*sdk.NewHybridTableOutOfLineIndexRequest("IDX_REGION_INC", []string{"REGION"}).
+					WithIncludeColumns([]string{"SCORE"}),
 			},
 		},
 	)

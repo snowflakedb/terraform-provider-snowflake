@@ -22,7 +22,7 @@ func TestInt_HybridTableConstraints(t *testing.T) {
 		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 			Columns: []sdk.HybridTableColumnRequest{
 				{
-					Name:     "id",
+					Name:     "ID",
 					DataType: sdk.DataType("NUMBER NOT NULL"),
 					InlineConstraint: &sdk.ColumnInlineConstraint{
 						Name: sdk.String("pk_parent"),
@@ -30,7 +30,7 @@ func TestInt_HybridTableConstraints(t *testing.T) {
 					},
 				},
 				{
-					Name:     "code",
+					Name:     "CODE",
 					DataType: sdk.DataType("VARCHAR(50)"),
 				},
 			},
