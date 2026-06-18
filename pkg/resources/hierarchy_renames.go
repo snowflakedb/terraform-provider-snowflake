@@ -26,9 +26,9 @@ func handleHierarchyRenameIdUpdate(d *schema.ResourceData, encodeIdFn func() str
 
 // handleHierarchyMove handles the "move" case: performs the ALTER to move the object
 // to its new location and updates the Terraform state ID.
-func handleHierarchyMove(d *schema.ResourceData, encodeIdFn func() string, currentId, targetId sdk.ObjectIdentifier, alterFn func() error, caseDescription string) diag.Diagnostics {
+func handleHierarchyMove[T sdk.ObjectIdentifier](d *schema.ResourceData, encodeIdFn func() string, currentId, targetId T, renameFn func(T, T) func() error, caseDescription string) diag.Diagnostics {
 	log.Printf("[DEBUG] %s - executing ALTER RENAME TO from %s to %s...", caseDescription, currentId.FullyQualifiedName(), targetId.FullyQualifiedName())
-	if err := alterFn(); err != nil {
+	if err := renameFn(currentId, targetId)(); err != nil {
 		d.Partial(true)
 		return diag.FromErr(fmt.Errorf("failed to move from %s to %s: %w", currentId.FullyQualifiedName(), targetId.FullyQualifiedName(), err))
 	}

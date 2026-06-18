@@ -747,6 +747,12 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		oldTableId := sdk.NewSchemaObjectIdentifierInSchema(oldSchemaId, tableName)
 		newTableId := sdk.NewSchemaObjectIdentifierInSchema(newSchemaId, tableName)
 
+		tableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithNewName(&targetId))
+			}
+		}
+
 		switch {
 		// Case A: Only database changes (same as schema resource's 2-level logic)
 		case databaseChanged && !schemaChanged:
@@ -769,7 +775,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				if diags := handleHierarchyMove(d,
 					func() string { return helpers.EncodeSnowflakeID(newTableId) },
 					id, newTableId,
-					func() error { return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)) },
+					tableRenameFn,
 					"Moving table to different database"); diags != nil {
 					return diags
 				}
@@ -806,7 +812,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				if diags := handleHierarchyMove(d,
 					func() string { return helpers.EncodeSnowflakeID(newTableId) },
 					id, newTableId,
-					func() error { return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)) },
+					tableRenameFn,
 					"Moving table to different schema"); diags != nil {
 					return diags
 				}
@@ -870,9 +876,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				if diags := handleHierarchyMove(d,
 					func() string { return helpers.EncodeSnowflakeID(newTableId) },
 					currentTableId, newTableId,
-					func() error {
-						return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentTableId).WithNewName(&newTableId))
-					},
+					tableRenameFn,
 					"Database was renamed, moving table to different schema"); diags != nil {
 					return diags
 				}
@@ -882,18 +886,17 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				if diags := handleHierarchyMove(d,
 					func() string { return helpers.EncodeSnowflakeID(newTableId) },
 					currentTableId, newTableId,
-					func() error {
-						return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentTableId).WithNewName(&newTableId))
-					},
+					tableRenameFn,
 					"Schema was renamed, moving table to different database"); diags != nil {
 					return diags
 				}
 				id = newTableId
 			case isDbMoveSchemaMove():
+				currentTableId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, oldSchemaName, tableName)
 				if diags := handleHierarchyMove(d,
 					func() string { return helpers.EncodeSnowflakeID(newTableId) },
-					id, newTableId,
-					func() error { return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)) },
+					currentTableId, newTableId,
+					tableRenameFn,
 					"Moving table to different database and schema"); diags != nil {
 					return diags
 				}

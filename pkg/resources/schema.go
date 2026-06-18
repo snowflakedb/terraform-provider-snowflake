@@ -327,6 +327,12 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		newSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
 		oldSchemaId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
 
+		schemaRenameFn := func(currentId, targetId sdk.DatabaseObjectIdentifier) func() error {
+			return func() error {
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(oldSchemaId).WithNewName(newSchemaId))
+			}
+		}
+
 		_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
 		newDatabaseExists := errNewDb == nil
 		_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
@@ -346,9 +352,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			if diags := handleHierarchyMove(d,
 				func() string { return helpers.EncodeResourceIdentifier(newSchemaId) },
 				oldSchemaId, newSchemaId,
-				func() error {
-					return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(oldSchemaId).WithNewName(newSchemaId))
-				},
+				schemaRenameFn,
 				"Moving schema to different database"); diags != nil {
 				return diags
 			}
