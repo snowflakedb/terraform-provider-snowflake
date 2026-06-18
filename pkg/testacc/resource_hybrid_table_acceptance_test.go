@@ -1549,9 +1549,10 @@ func TestAcc_HybridTable_Index(t *testing.T) {
 			model.HybridTableIndexConfig{Name: "IDX_STATUS", Columns: []string{"STATUS"}},
 			// IDX_REGION_INC is declared with LOWERCASE config columns on purpose: SHOW
 			// INDEXES reads them back uppercased, so this exercises the case-suppression
-			// path (indexHash uppercasing + ignoreCaseSuppressFunc) end-to-end. The state
-			// assertions below still check the uppercase read-back values, and step 2's
-			// zero-diff re-plan is the proof that the lowercase config does not churn.
+			// path (indexHash uppercasing + ignoreCaseSuppressFunc) end-to-end.
+			// TypeSet matching preserves the config-supplied casing in state (not the
+			// Snowflake read-back casing), so assertions below use lowercase values.
+			// Step 2's zero-diff re-plan is the proof that no spurious ForceNew fires.
 			model.HybridTableIndexConfig{Name: "IDX_REGION_INC", Columns: []string{"region"}, IncludeColumns: []string{"score"}},
 		)
 
@@ -1577,10 +1578,10 @@ func TestAcc_HybridTable_Index(t *testing.T) {
 					assert.Check(resource.TestCheckTypeSetElemNestedAttrs(tableModel.ResourceReference(), "index.*", map[string]string{
 						"name":              "IDX_REGION_INC",
 						"columns.#":         "1",
-						"columns.0":         "REGION",
+						"columns.0":         "region",
 						"include_columns.#": "1",
 					})),
-					assert.Check(resource.TestCheckTypeSetElemAttr(tableModel.ResourceReference(), "index.*.include_columns.*", "SCORE")),
+					assert.Check(resource.TestCheckTypeSetElemAttr(tableModel.ResourceReference(), "index.*.include_columns.*", "score")),
 				),
 			},
 			{

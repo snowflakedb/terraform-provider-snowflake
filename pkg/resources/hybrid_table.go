@@ -876,7 +876,31 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 		if indexErr != nil {
 			log.Printf("[WARN] SHOW INDEXES failed for %s; skipping index read-back: %v", id.FullyQualifiedName(), indexErr)
 		} else {
-			indexState = buildIndexesStateFromShowIndexes(indexes)
+			// FK constraints create a system-managed backing index in Snowflake that
+			// SHOW INDEXES returns as a non-unique secondary index. That index is NOT
+			// a user-defined secondary index (it's implicit in the foreign_key block),
+			// so including it in the `index` state would produce a spurious ForceNew
+			// on every refresh. Two naming patterns must be excluded:
+			//   - Named FK: backing index shares the FK constraint name (e.g. "my_fk")
+			//   - Anonymous FK: backing index is named SYS_INDEX_..._FOREIGN_KEY_...
+			// PK- and UNIQUE-backed indexes are already excluded by the IsUnique filter
+			// in buildIndexesStateFromShowIndexes, so SYS_INDEX_..._PRIMARY and
+			// SYS_INDEX_..._UNIQUE are never reached here.
+			fkNames := make(map[string]bool, len(constraints))
+			for _, c := range constraints {
+				if c.Kind == sdk.ColumnConstraintTypeForeignKey {
+					fkNames[strings.ToUpper(c.Name)] = true
+				}
+			}
+			var userIndexes []sdk.HybridTableIndex
+			for _, idx := range indexes {
+				upper := strings.ToUpper(idx.Name)
+				if fkNames[upper] || strings.HasPrefix(upper, "SYS_INDEX_") {
+					continue
+				}
+				userIndexes = append(userIndexes, idx)
+			}
+			indexState = buildIndexesStateFromShowIndexes(userIndexes)
 		}
 
 		errs := errors.Join(
