@@ -58,6 +58,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationAzureApiManagement().Schema,
 	},
 	{
+		name:   "ApiIntegrationGoogleCloudApiGateway",
+		schema: resources.ApiIntegrationGoogleCloudApiGateway().Schema,
+	},
+	{
 		name:   "AuthenticationPolicy",
 		schema: resources.AuthenticationPolicy().Schema,
 	},

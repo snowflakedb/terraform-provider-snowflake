@@ -213,37 +213,27 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().Database.AlterReplication(t, id, &sdk.AlterDatabaseReplicationOptions{
-						EnableReplication: &sdk.EnableReplication{
-							ToAccounts:         []sdk.AccountIdentifier{secondaryAccountId},
-							IgnoreEditionCheck: sdk.Bool(true),
-						},
-					})
-					testClient().Database.AlterFailover(t, id, &sdk.AlterDatabaseFailoverOptions{
-						EnableFailover: &sdk.EnableFailover{
-							ToAccounts: []sdk.AccountIdentifier{secondaryAccountId},
-						},
-					})
-					testClient().Database.Alter(t, id, &sdk.AlterDatabaseOptions{
-						Set: &sdk.DatabaseSet{
-							DataRetentionTimeInDays:                 sdk.Int(2),
-							MaxDataExtensionTimeInDays:              sdk.Int(15),
-							ExternalVolume:                          sdk.Pointer(externalVolumeId),
-							Catalog:                                 sdk.Pointer(catalogId),
-							ReplaceInvalidCharacters:                sdk.Bool(true),
-							DefaultDDLCollation:                     sdk.String("en_US"),
-							StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
-							LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-							TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
-							SuspendTaskAfterNumFailures:             sdk.Int(11),
-							TaskAutoRetryAttempts:                   sdk.Int(1),
-							UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeSmall),
-							UserTaskTimeoutMs:                       sdk.Int(3600001),
-							UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(31),
-							EnableConsoleOutput:                     sdk.Bool(true),
-							Comment:                                 sdk.String(random.Comment()),
-						},
-					})
+					testClient().Database.AlterReplication(t, sdk.NewAlterReplicationDatabaseRequest(id).WithEnableReplication(*sdk.NewEnableReplicationRequest().WithToAccounts([]sdk.AccountIdentifier{secondaryAccountId}).WithIgnoreEditionCheck(true)))
+					testClient().Database.AlterFailover(t, sdk.NewAlterFailoverDatabaseRequest(id).WithEnableFailover(*sdk.NewEnableFailoverRequest().WithToAccounts([]sdk.AccountIdentifier{secondaryAccountId})))
+					testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(id).WithSet(
+						*sdk.NewDatabaseSetRequest().
+							WithDataRetentionTimeInDays(2).
+							WithMaxDataExtensionTimeInDays(15).
+							WithExternalVolume(externalVolumeId).
+							WithCatalog(catalogId).
+							WithReplaceInvalidCharacters(true).
+							WithDefaultDdlCollation("en_US").
+							WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+							WithLogLevel(sdk.LogLevelInfo).
+							WithTraceLevel(sdk.TraceLevelAlways).
+							WithSuspendTaskAfterNumFailures(11).
+							WithTaskAutoRetryAttempts(1).
+							WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+							WithUserTaskTimeoutMs(3600001).
+							WithUserTaskMinimumTriggerIntervalInSeconds(31).
+							WithEnableConsoleOutput(true).
+							WithComment(random.Comment()),
+					))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

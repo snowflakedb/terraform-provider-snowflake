@@ -686,12 +686,12 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Validations(t *testing.T) 
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidType)),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("invalid warehouse type: unknown"),
+				ExpectError: regexp.MustCompile("invalid warehouse type: UNKNOWN"),
 			},
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidSize)),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("invalid warehouse size: SMALLa"),
+				ExpectError: regexp.MustCompile("invalid warehouse size: SMALLA"),
 			},
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidMaxClusterCount)),
@@ -706,7 +706,7 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Validations(t *testing.T) 
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidScalingPolicy)),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("invalid scaling policy: unknown"),
+				ExpectError: regexp.MustCompile("invalid scaling policy: UNKNOWN"),
 			},
 			{
 				Config:      replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModelInvalidAutoResume)),

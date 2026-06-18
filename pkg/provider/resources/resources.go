@@ -16,6 +16,7 @@ const (
 	ApiIntegration                                         resource = "snowflake_api_integration"
 	ApiIntegrationAmazonApiGateway                         resource = "snowflake_api_integration_amazon_api_gateway"
 	ApiIntegrationAzureApiManagement                       resource = "snowflake_api_integration_azure_api_management"
+	ApiIntegrationGoogleCloudApiGateway                    resource = "snowflake_api_integration_google_cloud_api_gateway"
 	AuthenticationPolicy                                   resource = "snowflake_authentication_policy"
 	CatalogIntegrationAwsGlue                              resource = "snowflake_catalog_integration_aws_glue"
 	CatalogIntegrationObjectStorage                        resource = "snowflake_catalog_integration_object_storage"

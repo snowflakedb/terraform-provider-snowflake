@@ -97,8 +97,8 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			Show().
 			SQL("STORAGE LIFECYCLE POLICIES").
 			OptionalLike().
-			OptionalExtendedIn(),
-		g.ShowByIDExtendedInFiltering,
+			OptionalIn(),
+		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
 	DescribeOperationWithPairedStructs(

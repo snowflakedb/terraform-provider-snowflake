@@ -56,6 +56,18 @@ func (e *Enum) IsLowercase() bool {
 	return true
 }
 
+// IsMixedCase returns true if any enum value contains both upper and lowercase characters.
+// When true, the generated conversion function wraps case expressions with the normalization function
+// to ensure case-insensitive matching works correctly.
+func (e *Enum) IsMixedCase() bool {
+	for _, v := range e.Values {
+		if v != strings.ToUpper(v) && v != strings.ToLower(v) {
+			return true
+		}
+	}
+	return false
+}
+
 // Kind should be used in SDK object definitions instead of KindOfT
 func (e *Enum) Kind() string {
 	return e.Name
@@ -70,6 +82,7 @@ func (e *Enum) KindPtr() string {
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
 func (e *Enum) valueName(value string) string {
 	value = strings.ReplaceAll(value, " ", "_")
+	value = strings.ReplaceAll(value, "-", "_")
 	return e.Name + genhelpers.SnakeCaseToCamel(value)
 }
 

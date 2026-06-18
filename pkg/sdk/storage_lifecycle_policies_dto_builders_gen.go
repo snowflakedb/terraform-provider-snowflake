@@ -152,7 +152,7 @@ func (s *ShowStorageLifecyclePolicyRequest) WithLike(like Like) *ShowStorageLife
 	return s
 }
 
-func (s *ShowStorageLifecyclePolicyRequest) WithIn(in ExtendedIn) *ShowStorageLifecyclePolicyRequest {
+func (s *ShowStorageLifecyclePolicyRequest) WithIn(in In) *ShowStorageLifecyclePolicyRequest {
 	s.In = &in
 	return s
 }
