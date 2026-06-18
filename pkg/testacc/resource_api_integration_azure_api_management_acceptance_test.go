@@ -28,17 +28,12 @@ import (
 func TestAcc_ApiIntegrationAzureApiManagement_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const azureTenantId = "00000000-0000-0000-0000-000000000000"
-	const azureAdApplicationId = "11111111-1111-1111-1111-111111111111"
-	const allowedPrefix = "https://apim-hello-world.azure-api.net/dev"
-	const blockedPrefix = "https://apim-hello-world.azure-api.net/blocked"
-
 	comment := random.Comment()
 	externalComment := random.Comment()
 
-	basic := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{allowedPrefix}, azureAdApplicationId, azureTenantId, true)
-	withOptionals := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{allowedPrefix}, azureAdApplicationId, azureTenantId, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	basic := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{azureAllowedPrefix}, azureAdApplicationId, azureTenantId, true)
+	withOptionals := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{azureAllowedPrefix}, azureAdApplicationId, azureTenantId, true).
+		WithApiBlockedPrefixes([]string{azureBlockedPrefix}).
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
@@ -49,7 +44,7 @@ func TestAcc_ApiIntegrationAzureApiManagement_BasicUseCase(t *testing.T) {
 			HasEnabledString(r.BooleanTrue).
 			HasAzureTenantIdString(azureTenantId).
 			HasAzureAdApplicationIdString(azureAdApplicationId).
-			HasApiAllowedPrefixes(allowedPrefix).
+			HasApiAllowedPrefixes(azureAllowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty().
 			HasNoApiKey(),
@@ -68,7 +63,7 @@ func TestAcc_ApiIntegrationAzureApiManagement_BasicUseCase(t *testing.T) {
 			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
-			HasAllowedPrefixes(allowedPrefix).
+			HasAllowedPrefixes(azureAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasApiKey("").
 			HasComment("").
@@ -82,8 +77,8 @@ func TestAcc_ApiIntegrationAzureApiManagement_BasicUseCase(t *testing.T) {
 			HasEnabledString(r.BooleanTrue).
 			HasAzureTenantIdString(azureTenantId).
 			HasAzureAdApplicationIdString(azureAdApplicationId).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiAllowedPrefixes(azureAllowedPrefix).
+			HasApiBlockedPrefixes(azureBlockedPrefix).
 			HasCommentString(comment).
 			HasNoApiKey(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -101,8 +96,8 @@ func TestAcc_ApiIntegrationAzureApiManagement_BasicUseCase(t *testing.T) {
 			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(azureAllowedPrefix).
+			HasBlockedPrefixes(azureBlockedPrefix).
 			HasApiKey("").
 			HasComment(comment).
 			HasAzureMultiTenantAppNameNotEmpty().
@@ -196,16 +191,11 @@ func TestAcc_ApiIntegrationAzureApiManagement_BasicUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationAzureApiManagement_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const azureTenantId = "00000000-0000-0000-0000-000000000000"
-	const azureAdApplicationId = "11111111-1111-1111-1111-111111111111"
-	const allowedPrefix = "https://apim-hello-world.azure-api.net/dev"
-	const blockedPrefix = "https://apim-hello-world.azure-api.net/blocked"
-
 	comment := random.Comment()
 	apiKey := random.AlphanumericN(10)
 
-	allAttributes := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{allowedPrefix}, azureAdApplicationId, azureTenantId, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	allAttributes := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{azureAllowedPrefix}, azureAdApplicationId, azureTenantId, true).
+		WithApiBlockedPrefixes([]string{azureBlockedPrefix}).
 		WithApiKey(apiKey).
 		WithComment(comment)
 
@@ -217,8 +207,8 @@ func TestAcc_ApiIntegrationAzureApiManagement_CompleteUseCase(t *testing.T) {
 			HasEnabledString(r.BooleanTrue).
 			HasAzureTenantIdString(azureTenantId).
 			HasAzureAdApplicationIdString(azureAdApplicationId).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiAllowedPrefixes(azureAllowedPrefix).
+			HasApiBlockedPrefixes(azureBlockedPrefix).
 			HasCommentString(comment).
 			HasApiKey(apiKey),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -236,8 +226,8 @@ func TestAcc_ApiIntegrationAzureApiManagement_CompleteUseCase(t *testing.T) {
 			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(azureAllowedPrefix).
+			HasBlockedPrefixes(azureBlockedPrefix).
 			HasApiKeyNotEmpty().
 			HasComment(comment).
 			HasAzureMultiTenantAppNameNotEmpty().
@@ -282,9 +272,9 @@ func TestAcc_ApiIntegrationAzureApiManagement_Import_WrongApiProvider(t *testing
 	t.Cleanup(awsCleanup)
 
 	azureModel := model.ApiIntegrationAzureApiManagement("t", azureId.Name(),
-		[]string{"https://apim-hello-world.azure-api.net/dev"},
-		"11111111-1111-1111-1111-111111111111",
-		"00000000-0000-0000-0000-000000000000",
+		[]string{azureAllowedPrefix},
+		azureAdApplicationId,
+		azureTenantId,
 		true,
 	)
 
@@ -315,14 +305,10 @@ func TestAcc_ApiIntegrationAzureApiManagement_Import_WrongApiProvider(t *testing
 func TestAcc_ApiIntegrationAzureApiManagement_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const azureTenantId = "00000000-0000-0000-0000-000000000000"
-	const azureAdApplicationId = "11111111-1111-1111-1111-111111111111"
-	const allowedPrefix = "https://apim-hello-world.azure-api.net/dev"
-	const blockedPrefix = "https://apim-hello-world.azure-api.net/blocked"
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{allowedPrefix}, azureAdApplicationId, azureTenantId, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	testModel := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{azureAllowedPrefix}, azureAdApplicationId, azureTenantId, true).
+		WithApiBlockedPrefixes([]string{azureBlockedPrefix}).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -336,9 +322,9 @@ func TestAcc_ApiIntegrationAzureApiManagement_Import(t *testing.T) {
 				PreConfig: func() {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}}, true).
 							WithComment(comment).
-							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: azureBlockedPrefix}}).
 							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(
 								azureTenantId,
 								azureAdApplicationId,
@@ -370,13 +356,9 @@ func TestAcc_ApiIntegrationAzureApiManagement_Import(t *testing.T) {
 func TestAcc_ApiIntegrationAzureApiManagement_Import_WithApiKey(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const azureTenantId = "00000000-0000-0000-0000-000000000000"
-	const azureAdApplicationId = "11111111-1111-1111-1111-111111111111"
-	const allowedPrefix = "https://apim-hello-world.azure-api.net/dev"
-
 	apiKey := random.AlphanumericN(10)
 
-	testModel := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{allowedPrefix}, azureAdApplicationId, azureTenantId, true).
+	testModel := model.ApiIntegrationAzureApiManagement("t", id.Name(), []string{azureAllowedPrefix}, azureAdApplicationId, azureTenantId, true).
 		WithApiKey(apiKey)
 
 	resource.Test(t, resource.TestCase{
@@ -390,7 +372,7 @@ func TestAcc_ApiIntegrationAzureApiManagement_Import_WithApiKey(t *testing.T) {
 				PreConfig: func() {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}}, true).
 							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(
 								azureTenantId,
 								azureAdApplicationId,

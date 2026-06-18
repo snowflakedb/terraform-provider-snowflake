@@ -26,17 +26,14 @@ import (
 func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const googleAudience = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
-	const allowedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod"
-	const blockedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod/blocked/"
 	apiProvider := string(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway)
 
 	comment := random.Comment()
 	externalComment := random.Comment()
 
-	basic := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{allowedPrefix}, true, googleAudience)
-	withOptionals := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{allowedPrefix}, true, googleAudience).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	basic := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{googleAllowedPrefix}, true, googleAudience)
+	withOptionals := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{googleAllowedPrefix}, true, googleAudience).
+		WithApiBlockedPrefixes([]string{googleBlockedPrefix}).
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
@@ -46,7 +43,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
 			HasGoogleAudienceString(googleAudience).
-			HasApiAllowedPrefixes(allowedPrefix).
+			HasApiAllowedPrefixes(googleAllowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -62,7 +59,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
-			HasAllowedPrefixes(allowedPrefix).
+			HasAllowedPrefixes(googleAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasApiKeyEmpty().
 			HasComment("").
@@ -74,8 +71,8 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
 			HasGoogleAudienceString(googleAudience).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiAllowedPrefixes(googleAllowedPrefix).
+			HasApiBlockedPrefixes(googleBlockedPrefix).
 			HasCommentString(comment),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -90,8 +87,8 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(googleAllowedPrefix).
+			HasBlockedPrefixes(googleBlockedPrefix).
 			HasApiKeyEmpty().
 			HasComment(comment).
 			HasGoogleApiServiceAccountNotEmpty(),
@@ -184,15 +181,12 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationGoogleCloudApiGateway_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const googleAudience = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
-	const allowedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod"
-	const blockedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod/blocked/"
 	apiProvider := string(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway)
 
 	comment := random.Comment()
 
-	allAttributes := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{allowedPrefix}, true, googleAudience).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	allAttributes := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{googleAllowedPrefix}, true, googleAudience).
+		WithApiBlockedPrefixes([]string{googleBlockedPrefix}).
 		WithComment(comment)
 
 	ref := allAttributes.ResourceReference()
@@ -202,8 +196,8 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_CompleteUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
 			HasGoogleAudienceString(googleAudience).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiAllowedPrefixes(googleAllowedPrefix).
+			HasApiBlockedPrefixes(googleBlockedPrefix).
 			HasCommentString(comment),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -219,8 +213,8 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_CompleteUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(googleAllowedPrefix).
+			HasBlockedPrefixes(googleBlockedPrefix).
 			HasApiKeyEmpty().
 			HasComment(comment).
 			HasGoogleApiServiceAccountNotEmpty(),
@@ -261,9 +255,9 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_Import_WrongProviderType(t *tes
 
 	googleId := testClient().Ids.RandomAccountObjectIdentifier()
 	googleModel := model.ApiIntegrationGoogleCloudApiGateway("t", googleId.Name(),
-		[]string{"https://gateway-id-123456.uc.gateway.dev/prod"},
+		[]string{googleAllowedPrefix},
 		true,
-		"api-gateway-id-123456.apigateway.gcp-project.cloud.goog",
+		googleAudience,
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -290,14 +284,10 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_Import_WrongProviderType(t *tes
 func TestAcc_ApiIntegrationGoogleCloudApiGateway_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const googleAudience = "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
-	const allowedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod"
-	const blockedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod/blocked/"
-
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{allowedPrefix}, true, googleAudience).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	testModel := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{googleAllowedPrefix}, true, googleAudience).
+		WithApiBlockedPrefixes([]string{googleBlockedPrefix}).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -311,9 +301,9 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_Import(t *testing.T) {
 				PreConfig: func() {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: googleAllowedPrefix}}, true).
 							WithComment(comment).
-							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: googleBlockedPrefix}}).
 							WithGoogleApiProviderParams(*sdk.NewGoogleApiParamsRequest(googleAudience)),
 					)
 					t.Cleanup(cleanup)
@@ -339,9 +329,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_Import(t *testing.T) {
 func TestAcc_ApiIntegrationGoogleCloudApiGateway_ExternalProviderTypeMismatch(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://gateway-id-123456.uc.gateway.dev/prod"
-
-	googleModel := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{allowedPrefix}, true, "api-gateway-id-123456.apigateway.gcp-project.cloud.goog")
+	googleModel := model.ApiIntegrationGoogleCloudApiGateway("t", id.Name(), []string{googleAllowedPrefix}, true, googleAudience)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -361,8 +349,8 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_ExternalProviderTypeMismatch(t 
 					testClient().ApiIntegration.DropApiIntegrationFunc(t, id)()
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://apim-hello-world.azure-api.net/dev"}}, true).
-							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest("00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111")),
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}}, true).
+							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId)),
 					)
 					t.Cleanup(cleanup)
 				},
