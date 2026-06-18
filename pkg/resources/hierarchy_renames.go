@@ -11,37 +11,118 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func isRenameOfTheGivenLevelInTheHierarchy(newParentExists, oldParentExists, objectAtTargetLocationExists bool) bool {
-	return newParentExists && !oldParentExists && objectAtTargetLocationExists
-}
+// handleTwoLevelHierarchyRename handles the full 2-level hierarchy rename/move
+// for a database-level object (database → object).
+// OR is the return type of objectShowByIDFn.
+func handleTwoLevelHierarchyRename[OR any](
+	ctx context.Context,
+	d *schema.ResourceData,
+	client *sdk.Client,
+	id *sdk.DatabaseObjectIdentifier,
+	objectRenameFn func(sdk.DatabaseObjectIdentifier, sdk.DatabaseObjectIdentifier) func() error,
+	objectShowByIDFn func(context.Context, sdk.DatabaseObjectIdentifier) (OR, error),
+	encodeIdFn func(sdk.DatabaseObjectIdentifier) string,
+	leafLevelName string,
+) diag.Diagnostics {
+	oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
+	oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
+	objectName := id.Name()
 
-func isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy(newParentExists, oldParentExists, objectAtSourceLocationExists bool) bool {
-	return newParentExists && oldParentExists && objectAtSourceLocationExists
-}
+	oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
+	newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
+	oldObjectId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, objectName)
+	newObjectId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, objectName)
 
-// handleHierarchyRenameIdUpdate handles the "rename" case: a parent was renamed,
-// so only the Terraform state ID needs updating (no Snowflake ALTER needed).
-func handleHierarchyRenameIdUpdate(d *schema.ResourceData, encodeIdFn func() string, caseDescription string) {
-	log.Printf("[DEBUG] %s - no Snowflake modification needed, updating the id...", caseDescription)
-	d.SetId(encodeIdFn())
-}
-
-// handleHierarchyMove handles the "move" case: performs the ALTER to move the object
-// to its new location and updates the Terraform state ID.
-func handleHierarchyMove[T sdk.ObjectIdentifier](d *schema.ResourceData, encodeIdFn func() string, currentId, targetId T, renameFn func(T, T) func() error, caseDescription string) diag.Diagnostics {
-	log.Printf("[DEBUG] %s - executing ALTER RENAME TO from %s to %s...", caseDescription, currentId.FullyQualifiedName(), targetId.FullyQualifiedName())
-	if err := renameFn(currentId, targetId)(); err != nil {
-		d.Partial(true)
-		return diag.FromErr(fmt.Errorf("failed to move from %s to %s: %w", currentId.FullyQualifiedName(), targetId.FullyQualifiedName(), err))
+	renameObj := func(description string) {
+		handleHierarchyRenameIdUpdate(d,
+			func() string { return encodeIdFn(newObjectId) },
+			description)
 	}
-	d.SetId(encodeIdFn())
+
+	moveObj := func(currentId sdk.DatabaseObjectIdentifier, description string) diag.Diagnostics {
+		return handleHierarchyMove(d,
+			func() string { return encodeIdFn(newObjectId) },
+			currentId, newObjectId,
+			objectRenameFn,
+			description)
+	}
+
+	if diags := handleOneParentChangeRename(ctx, d, client.Databases.ShowByID, objectShowByIDFn, newDatabaseId, oldDatabaseId, newObjectId, oldObjectId, *id, renameObj, moveObj, "database", leafLevelName, leafLevelName); diags != nil {
+		return diags
+	}
+
+	*id = newObjectId
 	return nil
 }
 
-// handleShallowHierarchyRename handles the complete single-level rename/move detection.
+// handleThreeLevelHierarchyRename handles the full 3-level hierarchy rename/move
+// for a schema-level object (database → schema → object).
+// OR is the return type of objectShowByIDFn.
+func handleThreeLevelHierarchyRename[OR any](
+	ctx context.Context,
+	d *schema.ResourceData,
+	client *sdk.Client,
+	id *sdk.SchemaObjectIdentifier,
+	objectRenameFn func(sdk.SchemaObjectIdentifier, sdk.SchemaObjectIdentifier) func() error,
+	objectShowByIDFn func(context.Context, sdk.SchemaObjectIdentifier) (OR, error),
+	encodeIdFn func(sdk.SchemaObjectIdentifier) string,
+	leafLevelName string,
+) diag.Diagnostics {
+	oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
+	oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
+	oldSchemaNameRaw, newSchemaNameRaw := d.GetChange("schema")
+	oldSchemaName, newSchemaName := oldSchemaNameRaw.(string), newSchemaNameRaw.(string)
+	objectName := id.Name()
+
+	databaseChanged := d.HasChange("database")
+	schemaChanged := d.HasChange("schema")
+
+	oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
+	newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
+	oldSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(oldDatabaseId, oldSchemaName)
+	newSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(newDatabaseId, newSchemaName)
+	oldObjectId := sdk.NewSchemaObjectIdentifierInSchema(oldSchemaId, objectName)
+	newObjectId := sdk.NewSchemaObjectIdentifierInSchema(newSchemaId, objectName)
+
+	renameObj := func(description string) {
+		handleHierarchyRenameIdUpdate(d,
+			func() string { return encodeIdFn(newObjectId) },
+			description)
+	}
+
+	moveObj := func(currentId sdk.SchemaObjectIdentifier, description string) diag.Diagnostics {
+		return handleHierarchyMove(d,
+			func() string { return encodeIdFn(newObjectId) },
+			currentId, newObjectId,
+			objectRenameFn,
+			description)
+	}
+
+	switch {
+	case databaseChanged && !schemaChanged:
+		if diags := handleOneParentChangeRename(ctx, d, client.Databases.ShowByID, client.Schemas.ShowByID, newDatabaseId, oldDatabaseId, newSchemaId, oldSchemaId, *id, renameObj, moveObj, "database", "schema", leafLevelName); diags != nil {
+			return diags
+		}
+
+	case !databaseChanged && schemaChanged:
+		if diags := handleOneParentChangeRename(ctx, d, client.Schemas.ShowByID, objectShowByIDFn, newSchemaId, oldSchemaId, newObjectId, oldObjectId, *id, renameObj, moveObj, "schema", leafLevelName, leafLevelName); diags != nil {
+			return diags
+		}
+
+	default:
+		if diags := handleBothParentsChangeRename(ctx, d, client, newDatabaseId, oldDatabaseId, oldSchemaName, newSchemaName, objectName, renameObj, moveObj, leafLevelName); diags != nil {
+			return diags
+		}
+	}
+
+	*id = newObjectId
+	return nil
+}
+
+// handleOneParentChangeRename handles the complete single-level rename/move detection.
 // P is the parent identifier type, O is the probed object identifier type, M is the moved object type.
 // PR and OR are the return types of the ShowByID functions.
-func handleShallowHierarchyRename[P, O, M sdk.ObjectIdentifier, PR, OR any](
+func handleOneParentChangeRename[P, O, M sdk.ObjectIdentifier, PR, OR any](
 	ctx context.Context,
 	d *schema.ResourceData,
 	parentShowByIDFn func(context.Context, P) (PR, error),
@@ -64,6 +145,21 @@ func handleShallowHierarchyRename[P, O, M sdk.ObjectIdentifier, PR, OR any](
 	_, errCurrentObject := objectShowByIDFn(ctx, currentObjectId)
 	objectAtSourceExists := errCurrentObject == nil
 
+	capitalize := func(s string) string {
+		if len(s) == 0 {
+			return s
+		}
+		return strings.ToUpper(s[:1]) + s[1:]
+	}
+
+	isRenameOfTheGivenLevelInTheHierarchy := func(newParentExists, oldParentExists, objectAtTargetLocationExists bool) bool {
+		return newParentExists && !oldParentExists && objectAtTargetLocationExists
+	}
+
+	isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func(newParentExists, oldParentExists, objectAtSourceLocationExists bool) bool {
+		return newParentExists && oldParentExists && objectAtSourceLocationExists
+	}
+
 	switch {
 	case isRenameOfTheGivenLevelInTheHierarchy(newParentExists, oldParentExists, objectAtTargetExists):
 		renameFn(fmt.Sprintf("%s was renamed for %s", capitalize(parentLevelName), leafLevelName))
@@ -82,10 +178,10 @@ func handleShallowHierarchyRename[P, O, M sdk.ObjectIdentifier, PR, OR any](
 	}
 }
 
-// handleDeepHierarchyRename handles the case where both database AND schema change
+// handleBothParentsChangeRename handles the case where both database AND schema change
 // for a schema-level object. It determines whether the database/schema were renamed
 // or moved and acts accordingly.
-func handleDeepHierarchyRename(
+func handleBothParentsChangeRename(
 	ctx context.Context,
 	d *schema.ResourceData,
 	client *sdk.Client,
@@ -151,117 +247,21 @@ func handleDeepHierarchyRename(
 	}
 }
 
-// handleTwoLevelHierarchyRename handles the full 2-level hierarchy rename/move
-// for a database-level object (database → object).
-// OR is the return type of objectShowByIDFn.
-func handleTwoLevelHierarchyRename[OR any](
-	ctx context.Context,
-	d *schema.ResourceData,
-	client *sdk.Client,
-	id *sdk.DatabaseObjectIdentifier,
-	objectRenameFn func(sdk.DatabaseObjectIdentifier, sdk.DatabaseObjectIdentifier) func() error,
-	objectShowByIDFn func(context.Context, sdk.DatabaseObjectIdentifier) (OR, error),
-	encodeIdFn func(sdk.DatabaseObjectIdentifier) string,
-	leafLevelName string,
-) diag.Diagnostics {
-	oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
-	oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
-	objectName := id.Name()
-
-	oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
-	newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
-	oldObjectId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, objectName)
-	newObjectId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, objectName)
-
-	renameObj := func(description string) {
-		handleHierarchyRenameIdUpdate(d,
-			func() string { return encodeIdFn(newObjectId) },
-			description)
-	}
-
-	moveObj := func(currentId sdk.DatabaseObjectIdentifier, description string) diag.Diagnostics {
-		return handleHierarchyMove(d,
-			func() string { return encodeIdFn(newObjectId) },
-			currentId, newObjectId,
-			objectRenameFn,
-			description)
-	}
-
-	if diags := handleShallowHierarchyRename(ctx, d, client.Databases.ShowByID, objectShowByIDFn, newDatabaseId, oldDatabaseId, newObjectId, oldObjectId, *id, renameObj, moveObj, "database", leafLevelName, leafLevelName); diags != nil {
-		return diags
-	}
-
-	*id = newObjectId
-	return nil
+// handleHierarchyRenameIdUpdate handles the "rename" case: a parent was renamed,
+// so only the Terraform state ID needs updating (no Snowflake ALTER needed).
+func handleHierarchyRenameIdUpdate(d *schema.ResourceData, encodeIdFn func() string, caseDescription string) {
+	log.Printf("[DEBUG] %s - no Snowflake modification needed, updating the id...", caseDescription)
+	d.SetId(encodeIdFn())
 }
 
-// handleThreeLevelHierarchyRename handles the full 3-level hierarchy rename/move
-// for a schema-level object (database → schema → object).
-// OR is the return type of objectShowByIDFn.
-func handleThreeLevelHierarchyRename[OR any](
-	ctx context.Context,
-	d *schema.ResourceData,
-	client *sdk.Client,
-	id *sdk.SchemaObjectIdentifier,
-	objectRenameFn func(sdk.SchemaObjectIdentifier, sdk.SchemaObjectIdentifier) func() error,
-	objectShowByIDFn func(context.Context, sdk.SchemaObjectIdentifier) (OR, error),
-	encodeIdFn func(sdk.SchemaObjectIdentifier) string,
-	leafLevelName string,
-) diag.Diagnostics {
-	oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
-	oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
-	oldSchemaNameRaw, newSchemaNameRaw := d.GetChange("schema")
-	oldSchemaName, newSchemaName := oldSchemaNameRaw.(string), newSchemaNameRaw.(string)
-	objectName := id.Name()
-
-	databaseChanged := d.HasChange("database")
-	schemaChanged := d.HasChange("schema")
-
-	oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
-	newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
-	oldSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(oldDatabaseId, oldSchemaName)
-	newSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(newDatabaseId, newSchemaName)
-	oldObjectId := sdk.NewSchemaObjectIdentifierInSchema(oldSchemaId, objectName)
-	newObjectId := sdk.NewSchemaObjectIdentifierInSchema(newSchemaId, objectName)
-
-	renameObj := func(description string) {
-		handleHierarchyRenameIdUpdate(d,
-			func() string { return encodeIdFn(newObjectId) },
-			description)
+// handleHierarchyMove handles the "move" case: performs the ALTER to move the object
+// to its new location and updates the Terraform state ID.
+func handleHierarchyMove[T sdk.ObjectIdentifier](d *schema.ResourceData, encodeIdFn func() string, currentId, targetId T, renameFn func(T, T) func() error, caseDescription string) diag.Diagnostics {
+	log.Printf("[DEBUG] %s - executing ALTER RENAME TO from %s to %s...", caseDescription, currentId.FullyQualifiedName(), targetId.FullyQualifiedName())
+	if err := renameFn(currentId, targetId)(); err != nil {
+		d.Partial(true)
+		return diag.FromErr(fmt.Errorf("failed to move from %s to %s: %w", currentId.FullyQualifiedName(), targetId.FullyQualifiedName(), err))
 	}
-
-	moveObj := func(currentId sdk.SchemaObjectIdentifier, description string) diag.Diagnostics {
-		return handleHierarchyMove(d,
-			func() string { return encodeIdFn(newObjectId) },
-			currentId, newObjectId,
-			objectRenameFn,
-			description)
-	}
-
-	switch {
-	case databaseChanged && !schemaChanged:
-		if diags := handleShallowHierarchyRename(ctx, d, client.Databases.ShowByID, client.Schemas.ShowByID, newDatabaseId, oldDatabaseId, newSchemaId, oldSchemaId, *id, renameObj, moveObj, "database", "schema", leafLevelName); diags != nil {
-			return diags
-		}
-
-	case !databaseChanged && schemaChanged:
-		if diags := handleShallowHierarchyRename(ctx, d, client.Schemas.ShowByID, objectShowByIDFn, newSchemaId, oldSchemaId, newObjectId, oldObjectId, *id, renameObj, moveObj, "schema", leafLevelName, leafLevelName); diags != nil {
-			return diags
-		}
-
-	default:
-		if diags := handleDeepHierarchyRename(ctx, d, client, newDatabaseId, oldDatabaseId, oldSchemaName, newSchemaName, objectName, renameObj, moveObj, leafLevelName); diags != nil {
-			return diags
-		}
-	}
-
-	*id = newObjectId
+	d.SetId(encodeIdFn())
 	return nil
-}
-
-func capitalize(s string) string {
-	if len(s) == 0 {
-		return s
-	}
-	return strings.ToUpper(s[:1]) + s[1:]
 }
