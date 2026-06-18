@@ -329,6 +329,10 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.TagReference{},
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.PolicyReference{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

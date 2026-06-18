@@ -654,6 +654,16 @@ func (s *AlterTableRequest) WithDropAllAccessRowPolicies(dropAllAccessRowPolicie
 	return s
 }
 
+func (s *AlterTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePolicy *TableAddStorageLifecyclePolicyRequest) *AlterTableRequest {
+	s.AddStorageLifecyclePolicy = addStorageLifecyclePolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithDropStorageLifecyclePolicy(dropStorageLifecyclePolicy *bool) *AlterTableRequest {
+	s.DropStorageLifecyclePolicy = dropStorageLifecyclePolicy
+	return s
+}
+
 func NewDropTableRequest(
 	name SchemaObjectIdentifier,
 ) *DropTableRequest {
@@ -702,6 +712,16 @@ func NewTableDropAndAddRowAccessPolicyRequest(
 	s := TableDropAndAddRowAccessPolicyRequest{}
 	s.Drop = drop
 	s.Add = add
+	return &s
+}
+
+func NewTableAddStorageLifecyclePolicyRequest(
+	storageLifecyclePolicy SchemaObjectIdentifier,
+	on []string,
+) *TableAddStorageLifecyclePolicyRequest {
+	s := TableAddStorageLifecyclePolicyRequest{}
+	s.StorageLifecyclePolicy = storageLifecyclePolicy
+	s.On = on
 	return &s
 }
 
