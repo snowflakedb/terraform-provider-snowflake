@@ -731,84 +731,20 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && (d.HasChange("database") || d.HasChange("schema")) {
-		oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
-		oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
-		oldSchemaNameRaw, newSchemaNameRaw := d.GetChange("schema")
-		oldSchemaName, newSchemaName := oldSchemaNameRaw.(string), newSchemaNameRaw.(string)
-		tableName := id.Name()
-
-		databaseChanged := d.HasChange("database")
-		schemaChanged := d.HasChange("schema")
-
-		oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
-		newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
-		oldSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(oldDatabaseId, oldSchemaName)
-		newSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(newDatabaseId, newSchemaName)
-		oldTableId := sdk.NewSchemaObjectIdentifierInSchema(oldSchemaId, tableName)
-		newTableId := sdk.NewSchemaObjectIdentifierInSchema(newSchemaId, tableName)
-
 		tableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
 			return func() error {
 				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithNewName(&targetId))
 			}
 		}
 
-		parentRename := func(description string) {
-			handleHierarchyRenameIdUpdate(d, func() string { return helpers.EncodeSnowflakeID(newTableId) }, description)
+		if diags := handleThreeLevelHierarchyRename(d, ctx, client, &id,
+			tableRenameFn,
+			client.Tables.ShowByID,
+			func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(id) },
+			"table",
+		); diags != nil {
+			return diags
 		}
-
-		parentMove := func(currentId sdk.SchemaObjectIdentifier, description string) diag.Diagnostics {
-			return handleHierarchyMove(d,
-				func() string { return helpers.EncodeSnowflakeID(newTableId) },
-				currentId, newTableId,
-				tableRenameFn,
-				description,
-			)
-		}
-
-		switch {
-		// Case A: Only database changes (same as schema resource's 2-level logic)
-		case databaseChanged && !schemaChanged:
-			if diags := handleShallowHierarchyRename(d, ctx,
-				client.Databases.ShowByID,
-				client.Schemas.ShowByID,
-				newDatabaseId, oldDatabaseId,
-				newSchemaId, oldSchemaId,
-				id,
-				parentRename, parentMove,
-				"database", "schema", "table",
-			); diags != nil {
-				return diags
-			}
-
-		// Case B: Only schema changes (similar to schema resource's 2-level logic, but schema-table instead of database-schema)
-		case !databaseChanged && schemaChanged:
-			if diags := handleShallowHierarchyRename(d, ctx,
-				client.Schemas.ShowByID,
-				client.Tables.ShowByID,
-				newSchemaId, oldSchemaId,
-				newTableId, oldTableId,
-				id,
-				parentRename, parentMove,
-				"schema", "table", "table",
-			); diags != nil {
-				return diags
-			}
-
-		// Case C: Both database AND schema change (full 4-scenario algorithm)
-		default:
-			if diags := handleDeepHierarchyRename(d, ctx, client,
-				newDatabaseId, oldDatabaseId,
-				oldSchemaName, newSchemaName,
-				tableName,
-				parentRename, parentMove,
-				"table",
-			); diags != nil {
-				return diags
-			}
-		}
-
-		id = newTableId
 	}
 
 	if d.HasChange("name") {

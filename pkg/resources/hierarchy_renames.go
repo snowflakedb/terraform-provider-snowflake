@@ -151,6 +151,92 @@ func handleDeepHierarchyRename(
 	}
 }
 
+// handleThreeLevelHierarchyRename handles the full 3-level hierarchy rename/move
+// for a schema-level object (database → schema → object).
+// OR is the return type of objectShowByIDFn.
+func handleThreeLevelHierarchyRename[OR any](
+	d *schema.ResourceData,
+	ctx context.Context,
+	client *sdk.Client,
+	id *sdk.SchemaObjectIdentifier,
+	objectRenameFn func(sdk.SchemaObjectIdentifier, sdk.SchemaObjectIdentifier) func() error,
+	objectShowByIDFn func(context.Context, sdk.SchemaObjectIdentifier) (OR, error),
+	encodeIdFn func(sdk.SchemaObjectIdentifier) string,
+	leafLevelName string,
+) diag.Diagnostics {
+	oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
+	oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
+	oldSchemaNameRaw, newSchemaNameRaw := d.GetChange("schema")
+	oldSchemaName, newSchemaName := oldSchemaNameRaw.(string), newSchemaNameRaw.(string)
+	objectName := id.Name()
+
+	databaseChanged := d.HasChange("database")
+	schemaChanged := d.HasChange("schema")
+
+	oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
+	newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
+	oldSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(oldDatabaseId, oldSchemaName)
+	newSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(newDatabaseId, newSchemaName)
+	oldObjectId := sdk.NewSchemaObjectIdentifierInSchema(oldSchemaId, objectName)
+	newObjectId := sdk.NewSchemaObjectIdentifierInSchema(newSchemaId, objectName)
+
+	renameObj := func(description string) {
+		handleHierarchyRenameIdUpdate(d,
+			func() string { return encodeIdFn(newObjectId) },
+			description)
+	}
+
+	moveObj := func(currentId sdk.SchemaObjectIdentifier, description string) diag.Diagnostics {
+		return handleHierarchyMove(d,
+			func() string { return encodeIdFn(newObjectId) },
+			currentId, newObjectId,
+			objectRenameFn,
+			description)
+	}
+
+	switch {
+	case databaseChanged && !schemaChanged:
+		if diags := handleShallowHierarchyRename(d, ctx,
+			client.Databases.ShowByID,
+			client.Schemas.ShowByID,
+			newDatabaseId, oldDatabaseId,
+			newSchemaId, oldSchemaId,
+			*id,
+			renameObj, moveObj,
+			"database", "schema", leafLevelName,
+		); diags != nil {
+			return diags
+		}
+
+	case !databaseChanged && schemaChanged:
+		if diags := handleShallowHierarchyRename(d, ctx,
+			client.Schemas.ShowByID,
+			objectShowByIDFn,
+			newSchemaId, oldSchemaId,
+			newObjectId, oldObjectId,
+			*id,
+			renameObj, moveObj,
+			"schema", leafLevelName, leafLevelName,
+		); diags != nil {
+			return diags
+		}
+
+	default:
+		if diags := handleDeepHierarchyRename(d, ctx, client,
+			newDatabaseId, oldDatabaseId,
+			oldSchemaName, newSchemaName,
+			objectName,
+			renameObj, moveObj,
+			leafLevelName,
+		); diags != nil {
+			return diags
+		}
+	}
+
+	*id = newObjectId
+	return nil
+}
+
 func capitalize(s string) string {
 	if len(s) == 0 {
 		return s
