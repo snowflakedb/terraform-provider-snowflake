@@ -111,30 +111,30 @@ func handleSchemaParameterRead(d *schema.ResourceData, schemaParameters []*sdk.P
 	return nil
 }
 
-func handleSchemaParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateSchemaOptions) diag.Diagnostics {
+func handleSchemaParametersCreate(d *schema.ResourceData, req *sdk.CreateSchemaRequest) diag.Diagnostics {
 	return JoinDiags(
-		handleParameterCreate(d, sdk.ObjectParameterDataRetentionTimeInDays, &createOpts.DataRetentionTimeInDays),
-		handleParameterCreate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &createOpts.MaxDataExtensionTimeInDays),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &createOpts.Catalog, stringToAccountObjectIdentifier),
-		handleParameterCreate(d, sdk.ObjectParameterPipeExecutionPaused, &createOpts.PipeExecutionPaused),
-		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDDLCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &createOpts.LogLevel, sdk.ToLogLevel),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &createOpts.LogEventLevel, sdk.ToLogLevel),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterTraceLevel, &createOpts.TraceLevel, sdk.ToTraceLevel),
-		handleParameterCreate(d, sdk.ObjectParameterSuspendTaskAfterNumFailures, &createOpts.SuspendTaskAfterNumFailures),
-		handleParameterCreate(d, sdk.ObjectParameterTaskAutoRetryAttempts, &createOpts.TaskAutoRetryAttempts),
-		handleParameterCreateWithMapping(d, sdk.ObjectParameterUserTaskManagedInitialWarehouseSize, &createOpts.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
-		handleParameterCreate(d, sdk.ObjectParameterUserTaskTimeoutMs, &createOpts.UserTaskTimeoutMs),
-		handleParameterCreate(d, sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds, &createOpts.UserTaskMinimumTriggerIntervalInSeconds),
-		handleParameterCreate(d, sdk.ObjectParameterQuotedIdentifiersIgnoreCase, &createOpts.QuotedIdentifiersIgnoreCase),
-		handleParameterCreate(d, sdk.ObjectParameterEnableConsoleOutput, &createOpts.EnableConsoleOutput),
+		handleParameterCreate(d, sdk.ObjectParameterDataRetentionTimeInDays, &req.DataRetentionTimeInDays),
+		handleParameterCreate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &req.MaxDataExtensionTimeInDays),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &req.ExternalVolume, stringToAccountObjectIdentifier),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &req.Catalog, stringToAccountObjectIdentifier),
+		handleParameterCreate(d, sdk.ObjectParameterPipeExecutionPaused, &req.PipeExecutionPaused),
+		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &req.ReplaceInvalidCharacters),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterDefaultDDLCollation, &req.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &req.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &req.LogLevel, sdk.ToLogLevel),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &req.LogEventLevel, sdk.ToLogLevel),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterTraceLevel, &req.TraceLevel, sdk.ToTraceLevel),
+		handleParameterCreate(d, sdk.ObjectParameterSuspendTaskAfterNumFailures, &req.SuspendTaskAfterNumFailures),
+		handleParameterCreate(d, sdk.ObjectParameterTaskAutoRetryAttempts, &req.TaskAutoRetryAttempts),
+		handleParameterCreateWithMapping(d, sdk.ObjectParameterUserTaskManagedInitialWarehouseSize, &req.UserTaskManagedInitialWarehouseSize, sdk.ToWarehouseSize),
+		handleParameterCreate(d, sdk.ObjectParameterUserTaskTimeoutMs, &req.UserTaskTimeoutMs),
+		handleParameterCreate(d, sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds, &req.UserTaskMinimumTriggerIntervalInSeconds),
+		handleParameterCreate(d, sdk.ObjectParameterQuotedIdentifiersIgnoreCase, &req.QuotedIdentifiersIgnoreCase),
+		handleParameterCreate(d, sdk.ObjectParameterEnableConsoleOutput, &req.EnableConsoleOutput),
 	)
 }
 
-func handleSchemaParametersChanges(d *schema.ResourceData, set *sdk.SchemaSet, unset *sdk.SchemaUnset) diag.Diagnostics {
+func handleSchemaParametersChanges(d *schema.ResourceData, set *sdk.SchemaSetRequest, unset *sdk.SchemaUnsetRequest) diag.Diagnostics {
 	return JoinDiags(
 		handleParameterUpdate(d, sdk.ObjectParameterDataRetentionTimeInDays, &set.DataRetentionTimeInDays, &unset.DataRetentionTimeInDays),
 		handleParameterUpdate(d, sdk.ObjectParameterMaxDataExtensionTimeInDays, &set.MaxDataExtensionTimeInDays, &unset.MaxDataExtensionTimeInDays),
@@ -142,7 +142,7 @@ func handleSchemaParametersChanges(d *schema.ResourceData, set *sdk.SchemaSet, u
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterCatalog, &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),
 		handleParameterUpdate(d, sdk.ObjectParameterPipeExecutionPaused, &set.PipeExecutionPaused, &unset.PipeExecutionPaused),
 		handleParameterUpdate(d, sdk.ObjectParameterReplaceInvalidCharacters, &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
-		handleParameterUpdateWithMapping(d, sdk.ObjectParameterDefaultDDLCollation, &set.DefaultDDLCollation, &unset.DefaultDDLCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
+		handleParameterUpdateWithMapping(d, sdk.ObjectParameterDefaultDDLCollation, &set.DefaultDdlCollation, &unset.DefaultDdlCollation, func(value string) (sdk.StringAllowEmpty, error) { return sdk.StringAllowEmpty{Value: value}, nil }),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &set.StorageSerializationPolicy, &unset.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogLevel, &set.LogLevel, &unset.LogLevel, sdk.ToLogLevel),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, sdk.ToLogLevel),

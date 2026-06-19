@@ -147,6 +147,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.StorageIntegrations().Schema,
 	},
 	{
+		name:   "StorageLifecyclePolicies",
+		schema: datasources.StorageLifecyclePolicies().Schema,
+	},
+	{
 		name:   "Stages",
 		schema: datasources.Stages().Schema,
 	},

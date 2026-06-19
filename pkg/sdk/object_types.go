@@ -115,6 +115,9 @@ const (
 	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
 	ObjectTypeApiIntegration     ObjectType = "API INTEGRATION"
 	ObjectTypeCatalogIntegration ObjectType = "CATALOG INTEGRATION"
+	// ObjectTypeIcebergTableColumn is a pseudo-object, only used in in handling iceberg table column tags - in generic SET and UNSET,
+	// and as a helper in GET TAG.
+	ObjectTypeIcebergTableColumn ObjectType = "ICEBERG TABLE COLUMN"
 )
 
 func (o ObjectType) String() string {
@@ -182,6 +185,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeOnlineFeatureTable,
 	ObjectTypeColumn,
 	ObjectTypeIcebergTable,
+	ObjectTypeIcebergTableColumn,
 	ObjectTypeJoinPolicy,
 	ObjectTypeExternalVolume,
 	ObjectTypeNetworkRule,

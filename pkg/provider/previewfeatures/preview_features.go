@@ -18,7 +18,11 @@ const (
 	AlertsDatasource                               feature = "snowflake_alerts_datasource"
 	ApiIntegrationResource                         feature = "snowflake_api_integration_resource"
 	ApiIntegrationAmazonApiGatewayResource         feature = "snowflake_api_integration_amazon_api_gateway_resource"
+	ApiIntegrationAzureApiManagementResource       feature = "snowflake_api_integration_azure_api_management_resource"
+	ApiIntegrationExternalMcpDynamicClientResource feature = "snowflake_api_integration_external_mcp_dynamic_client_resource"
+	ApiIntegrationGitRepositoryGithubAppResource   feature = "snowflake_api_integration_git_repository_github_app_resource"
 	ApiIntegrationGitRepositoryPrivateLinkResource feature = "snowflake_api_integration_git_repository_private_link_resource"
+	ApiIntegrationGoogleCloudApiGatewayResource    feature = "snowflake_api_integration_google_cloud_api_gateway_resource"
 	AuthenticationPolicyResource                   feature = "snowflake_authentication_policy_resource"
 	AuthenticationPoliciesDatasource               feature = "snowflake_authentication_policies_datasource"
 	CatalogIntegrationAwsGlueResource              feature = "snowflake_catalog_integration_aws_glue_resource"
@@ -64,6 +68,7 @@ const (
 	GitRepositoriesDatasource                      feature = "snowflake_git_repositories_datasource"
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource                           feature = "snowflake_hybrid_table_resource"
+	IcebergTableFromFilesResource               feature = "snowflake_iceberg_table_from_files_resource"
 	ImageRepositoryResource                     feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                 feature = "snowflake_image_repositories_datasource"
 	InternalStageResource                       feature = "snowflake_stage_internal_resource"
@@ -110,6 +115,7 @@ const (
 	StorageIntegrationGcsResource               feature = "snowflake_storage_integration_gcs_resource"
 	StorageIntegrationsDatasource               feature = "snowflake_storage_integrations_datasource"
 	StorageLifecyclePolicyResource              feature = "snowflake_storage_lifecycle_policy_resource"
+	StorageLifecyclePoliciesDatasource          feature = "snowflake_storage_lifecycle_policies_datasource"
 	SystemGenerateSCIMAccessTokenDatasource     feature = "snowflake_system_generate_scim_access_token_datasource"
 	SystemGetAWSSNSIAMPolicyDatasource          feature = "snowflake_system_get_aws_sns_iam_policy_datasource"
 	SystemGetPrivateLinkConfigDatasource        feature = "snowflake_system_get_privatelink_config_datasource"
@@ -135,6 +141,10 @@ var allPreviewFeatures = []feature{
 	AlertsDatasource,
 	ApiIntegrationResource,
 	// TODO(next api integration prs): ApiIntegrationAmazonApiGatewayResource,
+	// TODO(next api integration prs): ApiIntegrationAzureApiManagementResource,
+	// TODO(next api integration prs): ApiIntegrationGitRepositoryGithubAppResource,
+	// TODO(next api integration prs): ApiIntegrationGoogleCloudApiGatewayResource,
+	// TODO(next api integration prs): ApiIntegrationExternalMcpDynamicClientResource,
 	// TODO(next api integration prs): ApiIntegrationGitRepositoryPrivateLinkResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
@@ -176,6 +186,7 @@ var allPreviewFeatures = []feature{
 	FunctionsDatasource,
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource,
+	IcebergTableFromFilesResource,
 	InternalStageResource,
 	JobServiceResource,
 	ListingsDatasource,
@@ -217,6 +228,7 @@ var allPreviewFeatures = []feature{
 	StorageIntegrationGcsResource,
 	StorageIntegrationsDatasource,
 	StorageLifecyclePolicyResource,
+	StorageLifecyclePoliciesDatasource,
 	SystemGenerateSCIMAccessTokenDatasource,
 	SystemGetAWSSNSIAMPolicyDatasource,
 	SystemGetPrivateLinkConfigDatasource,
