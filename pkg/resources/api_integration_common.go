@@ -2,12 +2,39 @@ package resources
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+var apiIntegrationAllowedAuthSecretsSchema = map[string]*schema.Schema{
+	"all_allowed_authentication_secrets": {
+		Type:          schema.TypeBool,
+		Optional:      true,
+		ConflictsWith: []string{"no_allowed_authentication_secrets", "allowed_authentication_secrets"},
+		Description:   "When set to true, all authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `no_allowed_authentication_secrets` and `allowed_authentication_secrets`.",
+	},
+	"no_allowed_authentication_secrets": {
+		Type:          schema.TypeBool,
+		Optional:      true,
+		ConflictsWith: []string{"all_allowed_authentication_secrets", "allowed_authentication_secrets"},
+		Description:   "When set to true, no authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `allowed_authentication_secrets`.",
+	},
+	"allowed_authentication_secrets": {
+		Type:             schema.TypeSet,
+		Optional:         true,
+		ConflictsWith:    []string{"all_allowed_authentication_secrets", "no_allowed_authentication_secrets"},
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_authentication_secrets"),
+		Elem: &schema.Schema{
+			Type:             schema.TypeString,
+			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+		},
+		Description: "A list of fully-qualified secret identifiers (database.schema.secret) allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `no_allowed_authentication_secrets`.",
+	},
+}
 
 var apiIntegrationCommonSchema = map[string]*schema.Schema{
 	"name": {
@@ -111,4 +138,55 @@ func handleApiIntegrationCommonRead(
 		d.Set("comment", integration.Comment),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ApiIntegrationToSchema(integration)}),
 	)
+}
+
+func buildAllowedAuthSecretsRequestFromState(d *schema.ResourceData) (*sdk.ApiIntegrationAllowedAuthenticationSecretsRequest, error) {
+	req := sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest()
+	if v, ok := d.GetOk("all_allowed_authentication_secrets"); ok && v.(bool) {
+		return req.WithAllSecrets(true), nil
+	}
+	if v, ok := d.GetOk("no_allowed_authentication_secrets"); ok && v.(bool) {
+		return req.WithNoSecrets(true), nil
+	}
+	if v, ok := d.GetOk("allowed_authentication_secrets"); ok && v.(*schema.Set).Len() > 0 {
+		ids, err := collections.MapErr(expandStringList(v.(*schema.Set).List()), sdk.ParseSchemaObjectIdentifier)
+		if err != nil {
+			return nil, err
+		}
+		return req.WithAllowedList(ids), nil
+	}
+	return nil, nil
+}
+
+func setAllowedAuthSecretFieldsFromDescribe(d *schema.ResourceData, raw string) error {
+	switch strings.ToUpper(strings.TrimSpace(raw)) {
+	case "ALL":
+		return errors.Join(
+			d.Set("all_allowed_authentication_secrets", true),
+			d.Set("no_allowed_authentication_secrets", false),
+			d.Set("allowed_authentication_secrets", []any{}),
+		)
+	case "NONE":
+		return errors.Join(
+			d.Set("all_allowed_authentication_secrets", false),
+			d.Set("no_allowed_authentication_secrets", true),
+			d.Set("allowed_authentication_secrets", []any{}),
+		)
+	case "":
+		return errors.Join(
+			d.Set("all_allowed_authentication_secrets", false),
+			d.Set("no_allowed_authentication_secrets", false),
+			d.Set("allowed_authentication_secrets", []any{}),
+		)
+	default:
+		ids, err := collections.MapErr(sdk.ParseCommaSeparatedStringArray(raw, true), sdk.ParseSchemaObjectIdentifier)
+		if err != nil {
+			return err
+		}
+		return errors.Join(
+			d.Set("all_allowed_authentication_secrets", false),
+			d.Set("no_allowed_authentication_secrets", false),
+			d.Set("allowed_authentication_secrets", collections.Map(ids, sdk.SchemaObjectIdentifier.FullyQualifiedName)),
+		)
+	}
 }
