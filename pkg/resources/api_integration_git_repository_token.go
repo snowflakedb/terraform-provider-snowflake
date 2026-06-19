@@ -152,7 +152,7 @@ func setAllowedAuthSecretFieldsFromDescribe(d *schema.ResourceData, raw string) 
 		return errors.Join(
 			d.Set("all_allowed_authentication_secrets", false),
 			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", ids),
+			d.Set("allowed_authentication_secrets", collections.Map(ids, sdk.SchemaObjectIdentifier.FullyQualifiedName)),
 		)
 	}
 }
