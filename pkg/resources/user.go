@@ -497,19 +497,6 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			}
 		}
 
-		fieldsToSetStateToValueFromConfig := []string{
-			"login_name",
-			"display_name",
-			"disabled",
-			"default_namespace",
-		}
-		if userType == sdk.UserTypePerson {
-			fieldsToSetStateToValueFromConfig = append(fieldsToSetStateToValueFromConfig, "must_change_password")
-		}
-		if err = setStateToValuesFromConfig(d, userSchema, fieldsToSetStateToValueFromConfig); err != nil {
-			return diag.FromErr(err)
-		}
-
 		errs := errors.Join(
 			// not reading name on purpose (we never update the name externally)
 			// can't read password

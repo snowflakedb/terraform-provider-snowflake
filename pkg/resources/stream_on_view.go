@@ -189,12 +189,6 @@ func ReadStreamOnView(withExternalChangesMarking bool) schema.ReadContextFunc {
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, StreamOnViewSchema, []string{
-			"append_only",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		return nil
 	}
 }

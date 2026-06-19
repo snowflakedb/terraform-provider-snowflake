@@ -56,7 +56,7 @@ func JobService() *schema.Resource {
 }
 
 func ReadJobServiceFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return ReadServiceCommonFunc(withExternalChangesMarking, jobServiceOutputMappingsFunc, nil)
+	return ReadServiceCommonFunc(withExternalChangesMarking, jobServiceOutputMappingsFunc)
 }
 
 func CreateJobService(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

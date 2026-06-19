@@ -12,7 +12,3 @@ import (
 func SdkValidation[T any](normalize func(string) (T, error)) schema.SchemaValidateDiagFunc {
 	return sdkValidation(normalize)
 }
-
-func SetStateToValuesFromConfig(d *schema.ResourceData, resourceSchema map[string]*schema.Schema, fields []string) error {
-	return setStateToValuesFromConfig(d, resourceSchema, fields)
-}
