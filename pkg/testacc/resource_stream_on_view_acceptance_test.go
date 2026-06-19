@@ -343,13 +343,8 @@ func TestAcc_StreamOnView_CheckGrantsAfterRecreation(t *testing.T) {
 }
 
 func TestAcc_StreamOnView_PermadiffWhenIsStaleAndHasNoRetentionTime(t *testing.T) {
-	schema, cleanupSchema := testClient().Schema.CreateSchemaWithOpts(t,
-		testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(testClient().Ids.DatabaseId()),
-		&sdk.CreateSchemaOptions{
-			DataRetentionTimeInDays:    sdk.Pointer(0),
-			MaxDataExtensionTimeInDays: sdk.Pointer(0),
-		},
-	)
+	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(testClient().Ids.DatabaseId())
+	schema, cleanupSchema := testClient().Schema.CreateSchemaWithRequest(t, schemaId, sdk.NewCreateSchemaRequest(schemaId).WithDataRetentionTimeInDays(0).WithMaxDataExtensionTimeInDays(0))
 	t.Cleanup(cleanupSchema)
 
 	table, cleanupTable := testClient().Table.CreateWithChangeTrackingInSchema(t, schema.ID())
@@ -420,13 +415,8 @@ func TestAcc_StreamOnView_PermadiffWhenIsStaleAndHasNoRetentionTime(t *testing.T
 }
 
 func TestAcc_StreamOnView_StaleWithExternalChanges(t *testing.T) {
-	schema, cleanupSchema := testClient().Schema.CreateSchemaWithOpts(t,
-		testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(testClient().Ids.DatabaseId()),
-		&sdk.CreateSchemaOptions{
-			DataRetentionTimeInDays:    sdk.Pointer(1),
-			MaxDataExtensionTimeInDays: sdk.Pointer(1),
-		},
-	)
+	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(testClient().Ids.DatabaseId())
+	schema, cleanupSchema := testClient().Schema.CreateSchemaWithRequest(t, schemaId, sdk.NewCreateSchemaRequest(schemaId).WithDataRetentionTimeInDays(1).WithMaxDataExtensionTimeInDays(1))
 	t.Cleanup(cleanupSchema)
 
 	table, cleanupTable := testClient().Table.CreateWithChangeTrackingInSchema(t, schema.ID())
@@ -465,23 +455,13 @@ func TestAcc_StreamOnView_StaleWithExternalChanges(t *testing.T) {
 			// changing the value externally on schema
 			{
 				PreConfig: func() {
-					testClient().Schema.Alter(t, schema.ID(), &sdk.AlterSchemaOptions{
-						Set: &sdk.SchemaSet{
-							DataRetentionTimeInDays:    sdk.Int(0),
-							MaxDataExtensionTimeInDays: sdk.Int(0),
-						},
-					})
+					testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithSet(sdk.SchemaSetRequest{DataRetentionTimeInDays: sdk.Int(0), MaxDataExtensionTimeInDays: sdk.Int(0)}))
 					assertThatObject(t, objectassert.Stream(t, id).
 						HasName(id.Name()).
 						HasStale(true),
 					)
 
-					testClient().Schema.Alter(t, schema.ID(), &sdk.AlterSchemaOptions{
-						Set: &sdk.SchemaSet{
-							DataRetentionTimeInDays:    sdk.Int(1),
-							MaxDataExtensionTimeInDays: sdk.Int(1),
-						},
-					})
+					testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithSet(sdk.SchemaSetRequest{DataRetentionTimeInDays: sdk.Int(1), MaxDataExtensionTimeInDays: sdk.Int(1)}))
 					assertThatObject(t, objectassert.Stream(t, id).
 						HasName(id.Name()).
 						HasStale(false),

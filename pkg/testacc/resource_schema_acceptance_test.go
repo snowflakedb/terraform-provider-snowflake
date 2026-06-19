@@ -221,28 +221,26 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().Schema.Alter(t, id, &sdk.AlterSchemaOptions{
-						Set: &sdk.SchemaSet{
-							DataRetentionTimeInDays:                 sdk.Int(2),
-							MaxDataExtensionTimeInDays:              sdk.Int(15),
-							ExternalVolume:                          sdk.Pointer(externalVolumeId),
-							Catalog:                                 sdk.Pointer(catalogId),
-							ReplaceInvalidCharacters:                sdk.Bool(true),
-							DefaultDDLCollation:                     &sdk.StringAllowEmpty{Value: "en_US"},
-							StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
-							LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-							TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
-							SuspendTaskAfterNumFailures:             sdk.Int(11),
-							TaskAutoRetryAttempts:                   sdk.Int(1),
-							UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeSmall),
-							UserTaskTimeoutMs:                       sdk.Int(3600001),
-							UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(31),
-							EnableConsoleOutput:                     sdk.Bool(true),
-							PipeExecutionPaused:                     sdk.Bool(true),
-							QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-							Comment:                                 sdk.String(random.Comment()),
-						},
-					})
+					testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(id).WithSet(sdk.SchemaSetRequest{
+						DataRetentionTimeInDays:                 sdk.Int(2),
+						MaxDataExtensionTimeInDays:              sdk.Int(15),
+						ExternalVolume:                          sdk.Pointer(externalVolumeId),
+						Catalog:                                 sdk.Pointer(catalogId),
+						ReplaceInvalidCharacters:                sdk.Bool(true),
+						DefaultDdlCollation:                     &sdk.StringAllowEmpty{Value: "en_US"},
+						StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
+						LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
+						TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
+						SuspendTaskAfterNumFailures:             sdk.Int(11),
+						TaskAutoRetryAttempts:                   sdk.Int(1),
+						UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeSmall),
+						UserTaskTimeoutMs:                       sdk.Int(3600001),
+						UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(31),
+						EnableConsoleOutput:                     sdk.Bool(true),
+						PipeExecutionPaused:                     sdk.Bool(true),
+						QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
+						Comment:                                 sdk.String(random.Comment()),
+					}))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -466,12 +464,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.0"),
 				PreConfig: func() {
 					// In v0.94 `CREATE OR REPLACE` was called, so we should see a DROP event.
-					schemas := testClient().Schema.ShowWithOptions(t, &sdk.ShowSchemaOptions{
-						History: sdk.Pointer(true),
-						Like: &sdk.Like{
-							Pattern: sdk.String(schemaId.Name()),
-						},
-					})
+					schemas := testClient().Schema.ShowWithOptions(t, sdk.NewShowSchemaRequest().WithHistory(true).WithLike(sdk.Like{Pattern: sdk.String(schemaId.Name())}))
 					require.Len(t, schemas, 2)
 					slices.SortFunc(schemas, func(x, y sdk.Schema) int {
 						return cmp.Compare(x.DroppedOn.Unix(), y.DroppedOn.Unix())
@@ -530,12 +523,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_1(t *testing.T) {
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					// In newer versions, ALTER was called, so we should not see a DROP event.
-					schemas := testClient().Schema.ShowWithOptions(t, &sdk.ShowSchemaOptions{
-						History: sdk.Pointer(true),
-						Like: &sdk.Like{
-							Pattern: sdk.String(schemaId.Name()),
-						},
-					})
+					schemas := testClient().Schema.ShowWithOptions(t, sdk.NewShowSchemaRequest().WithHistory(true).WithLike(sdk.Like{Pattern: sdk.String(schemaId.Name())}))
 					require.Len(t, schemas, 1)
 					require.Zero(t, schemas[0].DroppedOn)
 				},

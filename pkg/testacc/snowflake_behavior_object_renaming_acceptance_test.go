@@ -699,9 +699,7 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 			if testCase.ExpectedFirstStepError == nil {
 				testSteps = append(testSteps, resource.TestStep{
 					PreConfig: func() {
-						testClient().Schema.Alter(t, schemaId, &sdk.AlterSchemaOptions{
-							NewName: &newSchemaId,
-						})
+						testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schemaId).WithNewName(newSchemaId))
 					},
 					Config: config.FromModels(t, databaseConfigModel) +
 						configSchemaWithReferences(t, databaseConfigModel.ResourceReference(), testCase.DatabaseInSchemaDependency, databaseId.Name(), newSchemaId.Name()) +
@@ -817,9 +815,7 @@ func TestAcc_DeepHierarchy_AreNotInConfig_SchemaRenamedExternally(t *testing.T) 
 					},
 					{
 						PreConfig: func() {
-							testClient().Schema.Alter(t, schema.ID(), &sdk.AlterSchemaOptions{
-								NewName: &newSchemaId,
-							})
+							testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithNewName(newSchemaId))
 						},
 						Config:      configTableWithReferences(t, "", NoDependency, "", NoDependency, database.ID().Name(), secondStepSchemaName, tableName),
 						ExpectError: testCase.ExpectedSecondStepError,
