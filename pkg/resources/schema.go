@@ -320,7 +320,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && d.HasChange("database") {
 		schemaRenameFn := func(currentId, targetId sdk.DatabaseObjectIdentifier) func() error {
 			return func() error {
-				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(oldSchemaId).WithNewName(newSchemaId))
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(currentId).WithNewName(targetId))
 			}
 		}
 
