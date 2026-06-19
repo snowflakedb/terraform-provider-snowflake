@@ -78,15 +78,15 @@ func Warehouses() *schema.Resource {
 func ReadWarehouses(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
-	var opts sdk.ShowWarehouseOptions
+	request := sdk.NewShowWarehouseRequest()
 
 	if likePattern, ok := d.GetOk("like"); ok {
-		opts.Like = &sdk.Like{
+		request.WithLike(sdk.Like{
 			Pattern: sdk.String(likePattern.(string)),
-		}
+		})
 	}
 
-	warehouses, err := client.Warehouses.Show(ctx, &opts)
+	warehouses, err := client.Warehouses.Show(ctx, request)
 	if err != nil {
 		return diag.FromErr(err)
 	}

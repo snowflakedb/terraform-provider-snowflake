@@ -88,16 +88,17 @@ func CreateSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(err)
 	}
 
-	opts := &sdk.CreateSharedDatabaseOptions{
-		// TODO(SNOW-1843347)
-		// Transient:                  GetPropertyAsPointer[bool](d, "is_transient"),
-		Comment: GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"),
+	req := sdk.NewCreateSharedDatabaseRequest(id, externalShareId)
+	// TODO(SNOW-1843347)
+	// if v := GetConfigPropertyAsPointerAllowingZeroValue[bool](d, "is_transient"); v != nil { req.WithTransient(*v) }
+	if v := GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"); v != nil {
+		req.WithComment(*v)
 	}
-	if parametersCreateDiags := handleSharedDatabaseParametersCreate(d, opts); len(parametersCreateDiags) > 0 {
+	if parametersCreateDiags := handleSharedDatabaseParametersCreate(d, req); len(parametersCreateDiags) > 0 {
 		return parametersCreateDiags
 	}
 
-	err = client.Databases.CreateShared(ctx, id, externalShareId, opts)
+	err = client.Databases.CreateShared(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -120,9 +121,7 @@ func UpdateSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any)
 			return diag.FromErr(err)
 		}
 
-		err = client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-			NewName: &newId,
-		})
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithNewName(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -134,20 +133,16 @@ func UpdateSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any)
 	if d.HasChange("comment") {
 		comment := d.Get("comment").(string)
 		if len(comment) > 0 {
-			err := client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-				Set: &sdk.DatabaseSet{
-					Comment: &comment,
-				},
-			})
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSet(
+				*sdk.NewDatabaseSetRequest().WithComment(comment),
+			))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
-			err := client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-				Unset: &sdk.DatabaseUnset{
-					Comment: sdk.Bool(true),
-				},
-			})
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithUnset(
+				*sdk.NewDatabaseUnsetRequest().WithComment(true),
+			))
 			if err != nil {
 				return diag.FromErr(err)
 			}

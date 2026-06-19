@@ -46,7 +46,7 @@ func createDatabaseFromShare(t *testing.T) (*sdk.Database, func()) {
 	})
 	require.NoError(t, err)
 
-	err = client.Databases.CreateShared(ctx, databaseId, shareTest.ExternalID(), &sdk.CreateSharedDatabaseOptions{})
+	err = client.Databases.CreateShared(ctx, sdk.NewCreateSharedDatabaseRequest(databaseId, shareTest.ExternalID()))
 	require.NoError(t, err)
 
 	database, err := client.Databases.ShowByID(ctx, databaseId)
@@ -64,18 +64,17 @@ func createDatabaseReplica(t *testing.T) (*sdk.Database, func()) {
 	sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
 	t.Cleanup(sharedDatabaseCleanup)
 
-	err := secondaryClient.Databases.AlterReplication(ctx, sharedDatabase.ID(), &sdk.AlterDatabaseReplicationOptions{
-		EnableReplication: &sdk.EnableReplication{
-			ToAccounts: []sdk.AccountIdentifier{
+	err := secondaryClient.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
+		WithEnableReplication(*sdk.NewEnableReplicationRequest().
+			WithToAccounts([]sdk.AccountIdentifier{
 				testClientHelper().Account.GetAccountIdentifier(t),
-			},
-			IgnoreEditionCheck: sdk.Bool(true),
-		},
-	})
+			}).
+			WithIgnoreEditionCheck(true)),
+	)
 	require.NoError(t, err)
 
 	externalDatabaseId := sdk.NewExternalObjectIdentifier(secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(), sharedDatabase.ID())
-	err = client.Databases.CreateSecondary(ctx, sharedDatabase.ID(), externalDatabaseId, &sdk.CreateSecondaryDatabaseOptions{})
+	err = client.Databases.CreateSecondary(ctx, sdk.NewCreateSecondaryDatabaseRequest(sharedDatabase.ID(), externalDatabaseId))
 	require.NoError(t, err)
 
 	database, err := client.Databases.ShowByID(ctx, sharedDatabase.ID())

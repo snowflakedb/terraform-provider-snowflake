@@ -8,7 +8,7 @@ permissions:
 
 # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/control-the-concurrency-of-workflows-and-jobs#example-only-cancel-in-progress-jobs-or-runs-for-the-current-workflow
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.pull_request.number) || (github.event_name == 'pull_request' && github.event.pull_request.number) }}
   cancel-in-progress: true
 
 on:

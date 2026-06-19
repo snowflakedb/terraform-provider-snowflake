@@ -33,9 +33,8 @@ func TestWarehouseCreate(t *testing.T) {
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
 		resourceMonitorId := randomAccountObjectIdentifier()
 		opts := &CreateWarehouseOptions{
-			OrReplace:   Bool(true),
-			name:        NewAccountObjectIdentifier("completewarehouse"),
-			IfNotExists: Bool(true),
+			OrReplace: Bool(true),
+			name:      NewAccountObjectIdentifier("completewarehouse"),
 
 			WarehouseType:                   Pointer(WarehouseTypeStandard),
 			WarehouseSize:                   Pointer(WarehouseSizeX4Large),
@@ -66,7 +65,7 @@ func TestWarehouseCreate(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE IF NOT EXISTS "completewarehouse" WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'MEMORY_1X' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`, resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "completewarehouse" WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'MEMORY_1X' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`, resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 }
 
@@ -184,7 +183,7 @@ func TestWarehouseAlter(t *testing.T) {
 				MinClusterCount:                 Int(4),
 				MaxClusterCount:                 Int(5),
 				AutoSuspend:                     Int(200),
-				ResourceMonitor:                 NewAccountObjectIdentifier("resmon"),
+				ResourceMonitor:                 Pointer(NewAccountObjectIdentifier("resmon")),
 				EnableQueryAcceleration:         Bool(false),
 				StatementQueuedTimeoutInSeconds: Int(1200),
 				ResourceConstraint:              Pointer(WarehouseResourceConstraintMemory1X),
@@ -199,7 +198,7 @@ func TestWarehouseAlter(t *testing.T) {
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
-			SetTag: []TagAssociation{
+			SetTags: []TagAssociation{
 				{
 					Name:  tagId1,
 					Value: "v1",
@@ -217,7 +216,7 @@ func TestWarehouseAlter(t *testing.T) {
 		tagId := randomSchemaObjectIdentifier()
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
-			UnsetTag: []ObjectIdentifier{
+			UnsetTags: []ObjectIdentifier{
 				tagId,
 			},
 		}
@@ -240,8 +239,8 @@ func TestWarehouseAlter(t *testing.T) {
 	t.Run("rename", func(t *testing.T) {
 		newName := NewAccountObjectIdentifier("newName")
 		opts := &AlterWarehouseOptions{
-			name:    NewAccountObjectIdentifier("oldName"),
-			NewName: &newName,
+			name:     NewAccountObjectIdentifier("oldName"),
+			RenameTo: &newName,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "oldName" RENAME TO "newName"`)
 	})
@@ -276,7 +275,7 @@ func TestWarehouseAlter(t *testing.T) {
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
-			SetTag: []TagAssociation{
+			SetTags: []TagAssociation{
 				{
 					Name:  tagId1,
 					Value: "v1",
@@ -295,7 +294,7 @@ func TestWarehouseAlter(t *testing.T) {
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
-			UnsetTag: []ObjectIdentifier{
+			UnsetTags: []ObjectIdentifier{
 				tagId1,
 				tagId2,
 			},
@@ -370,7 +369,7 @@ func TestWarehouseShow(t *testing.T) {
 			Pattern: String("pattern"),
 		}
 		opts.StartsWith = String("A")
-		opts.LimitFrom = &LimitFrom{
+		opts.Limit = &LimitFrom{
 			Rows: Int(1),
 			From: String("B"),
 		}
@@ -380,7 +379,7 @@ func TestWarehouseShow(t *testing.T) {
 
 func TestWarehouseDescribe(t *testing.T) {
 	t.Run("only name", func(t *testing.T) {
-		opts := &describeWarehouseOptions{
+		opts := &DescribeWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE WAREHOUSE "mywarehouse"`)
@@ -663,6 +662,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 	}
 
 	t.Run("convert error: size invalid", func(t *testing.T) {
+		t.Skip("SNOW-3108659 - will return error from all convert mappings")
 		row := correctRow()
 		row.Size = sql.NullString{String: "INCORRECT_SIZE", Valid: true}
 

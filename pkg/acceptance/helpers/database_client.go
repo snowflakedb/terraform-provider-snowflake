@@ -34,7 +34,7 @@ func (c *DatabaseClient) client() sdk.Databases {
 
 func (c *DatabaseClient) CreateDatabase(t *testing.T) (*sdk.Database, func()) {
 	t.Helper()
-	return c.CreateDatabaseWithOptions(t, c.ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{})
+	return c.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(c.ids.RandomAccountObjectIdentifier()))
 }
 
 // CreateDatabaseWithParametersSet should be used to create database which sets the parameters that can be altered on the account level in other tests; this way, the test is not affected by the changes.
@@ -46,7 +46,7 @@ func (c *DatabaseClient) CreateDatabaseWithParametersSet(t *testing.T) (*sdk.Dat
 // CreateDatabaseWithParametersSetWithId should be used to create database which sets the parameters that can be altered on the account level in other tests; this way, the test is not affected by the changes.
 func (c *DatabaseClient) CreateDatabaseWithParametersSetWithId(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Database, func()) {
 	t.Helper()
-	return c.CreateDatabaseWithOptions(t, id, c.TestParametersSet())
+	return c.CreateDatabaseWithRequest(t, c.TestParametersSet(id))
 }
 
 // CreateTestDatabaseIfNotExists should be used to create the main database used throughout the acceptance tests.
@@ -54,31 +54,31 @@ func (c *DatabaseClient) CreateDatabaseWithParametersSetWithId(t *testing.T, id 
 func (c *DatabaseClient) CreateTestDatabaseIfNotExists(t *testing.T) (*sdk.Database, func()) {
 	t.Helper()
 
-	opts := c.TestParametersSet()
-	opts.IfNotExists = sdk.Bool(true)
+	id := c.ids.DatabaseId()
+	req := c.TestParametersSet(id).WithIfNotExists(true)
 
-	return c.CreateDatabaseWithOptions(t, c.ids.DatabaseId(), opts)
+	return c.CreateDatabaseWithRequest(t, req)
 }
 
-func (c *DatabaseClient) TestParametersSet() *sdk.CreateDatabaseOptions {
-	return &sdk.CreateDatabaseOptions{
-		DataRetentionTimeInDays:    sdk.Int(testDatabaseDataRetentionTimeInDays),
-		MaxDataExtensionTimeInDays: sdk.Int(testDatabaseMaxDataExtensionTimeInDays),
+func (c *DatabaseClient) TestParametersSet(id sdk.AccountObjectIdentifier) *sdk.CreateDatabaseRequest {
+	return sdk.NewCreateDatabaseRequest(id).
+		WithDataRetentionTimeInDays(testDatabaseDataRetentionTimeInDays).
+		WithMaxDataExtensionTimeInDays(testDatabaseMaxDataExtensionTimeInDays).
 		// according to the docs SNOWFLAKE is a valid value (https://docs.snowflake.com/en/sql-reference/parameters#catalog)
-		Catalog: sdk.Pointer(TestDatabaseCatalog),
-	}
+		WithCatalog(TestDatabaseCatalog)
 }
 
 func (c *DatabaseClient) CreateDatabaseWithIdentifier(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Database, func()) {
 	t.Helper()
-	return c.CreateDatabaseWithOptions(t, id, &sdk.CreateDatabaseOptions{})
+	return c.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(id))
 }
 
-func (c *DatabaseClient) CreateDatabaseWithOptions(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.CreateDatabaseOptions) (*sdk.Database, func()) {
+func (c *DatabaseClient) CreateDatabaseWithRequest(t *testing.T, request *sdk.CreateDatabaseRequest) (*sdk.Database, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Create(ctx, id, opts)
+	id := request.ID()
+	err := c.client().Create(ctx, request)
 	require.NoError(t, err)
 
 	database, err := c.client().ShowByID(ctx, id)
@@ -96,7 +96,7 @@ func (c *DatabaseClient) DropDatabase(t *testing.T, id sdk.AccountObjectIdentifi
 	t.Helper()
 	ctx := context.Background()
 
-	if err := c.client().Drop(ctx, id, &sdk.DropDatabaseOptions{IfExists: sdk.Bool(true)}); err != nil {
+	if err := c.client().Drop(ctx, sdk.NewDropDatabaseRequest(id).WithIfExists(true)); err != nil {
 		return err
 	}
 	if err := c.context.client.Sessions.UseSchema(ctx, c.ids.SchemaId()); err != nil {
@@ -105,7 +105,7 @@ func (c *DatabaseClient) DropDatabase(t *testing.T, id sdk.AccountObjectIdentifi
 	return nil
 }
 
-func (c *DatabaseClient) CreateSecondaryDatabaseWithOptions(t *testing.T, id sdk.AccountObjectIdentifier, externalId sdk.ExternalObjectIdentifier, opts *sdk.CreateSecondaryDatabaseOptions) (*sdk.Database, func()) {
+func (c *DatabaseClient) CreateSecondaryDatabaseWithOptions(t *testing.T, id sdk.AccountObjectIdentifier, externalId sdk.ExternalObjectIdentifier, request *sdk.CreateSecondaryDatabaseRequest) (*sdk.Database, func()) {
 	t.Helper()
 	ctx := context.Background()
 
@@ -113,7 +113,7 @@ func (c *DatabaseClient) CreateSecondaryDatabaseWithOptions(t *testing.T, id sdk
 	// waiting because sometimes creating secondary db right after primary creation resulted in error
 	time.Sleep(1 * time.Second)
 
-	err := c.client().CreateSecondary(ctx, id, externalId, opts)
+	err := c.client().CreateSecondary(ctx, request)
 	require.NoError(t, err)
 
 	// TODO [926148]: make this wait better with tests stabilization
@@ -123,7 +123,7 @@ func (c *DatabaseClient) CreateSecondaryDatabaseWithOptions(t *testing.T, id sdk
 	database, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 	return database, func() {
-		err := c.client().Drop(ctx, id, nil)
+		err := c.client().Drop(ctx, sdk.NewDropDatabaseRequest(id))
 		require.NoError(t, err)
 
 		// TODO [926148]: make this wait better with tests stabilization
@@ -140,12 +140,9 @@ func (c *DatabaseClient) CreatePrimaryDatabase(t *testing.T, enableReplicationTo
 
 	primaryDatabase, primaryDatabaseCleanup := c.CreateDatabase(t)
 
-	err := c.client().AlterReplication(ctx, primaryDatabase.ID(), &sdk.AlterDatabaseReplicationOptions{
-		EnableReplication: &sdk.EnableReplication{
-			ToAccounts:         enableReplicationTo,
-			IgnoreEditionCheck: sdk.Bool(true),
-		},
-	})
+	err := c.client().AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(primaryDatabase.ID()).WithEnableReplication(
+		*sdk.NewEnableReplicationRequest().WithToAccounts(enableReplicationTo).WithIgnoreEditionCheck(true),
+	))
 	require.NoError(t, err)
 
 	sessionDetails, err := c.context.client.ContextFunctions.CurrentSessionDetails(ctx)
@@ -159,11 +156,9 @@ func (c *DatabaseClient) UpdateDataRetentionTime(t *testing.T, id sdk.AccountObj
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterDatabaseOptions{
-		Set: &sdk.DatabaseSet{
-			DataRetentionTimeInDays: sdk.Int(days),
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSet(
+		*sdk.NewDatabaseSetRequest().WithDataRetentionTimeInDays(days),
+	))
 	require.NoError(t, err)
 }
 
@@ -171,11 +166,9 @@ func (c *DatabaseClient) UpdateLogLevel(t *testing.T, id sdk.AccountObjectIdenti
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterDatabaseOptions{
-		Set: &sdk.DatabaseSet{
-			LogLevel: &level,
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSet(
+		*sdk.NewDatabaseSetRequest().WithLogLevel(level),
+	))
 	require.NoError(t, err)
 }
 
@@ -183,11 +176,9 @@ func (c *DatabaseClient) UnsetCatalog(t *testing.T, id sdk.AccountObjectIdentifi
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterDatabaseOptions{
-		Unset: &sdk.DatabaseUnset{
-			Catalog: sdk.Bool(true),
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithUnset(
+		*sdk.NewDatabaseUnsetRequest().WithCatalog(true),
+	))
 	require.NoError(t, err)
 }
 
@@ -221,20 +212,15 @@ func (c *DatabaseClient) CreateDatabaseFromShare(t *testing.T, externalShareId s
 	t.Helper()
 
 	databaseId := c.ids.RandomAccountObjectIdentifier()
-	err := c.client().CreateShared(context.Background(), databaseId, externalShareId, c.testParametersSetSharedDatabase())
+	err := c.client().CreateShared(context.Background(), sdk.NewCreateSharedDatabaseRequest(databaseId, externalShareId).
+		// according to the docs SNOWFLAKE is a valid value (https://docs.snowflake.com/en/sql-reference/parameters#catalog)
+		WithCatalog(TestDatabaseCatalog))
 	require.NoError(t, err)
 
 	database, err := c.Show(t, databaseId)
 	require.NoError(t, err)
 
 	return database, c.DropDatabaseFunc(t, databaseId)
-}
-
-func (c *DatabaseClient) testParametersSetSharedDatabase() *sdk.CreateSharedDatabaseOptions {
-	return &sdk.CreateSharedDatabaseOptions{
-		// according to the docs SNOWFLAKE is a valid value (https://docs.snowflake.com/en/sql-reference/parameters#catalog)
-		Catalog: sdk.Pointer(TestDatabaseCatalog),
-	}
 }
 
 func (c *DatabaseClient) ShowAllReplicationDatabases(t *testing.T) ([]sdk.ReplicationDatabase, error) {
@@ -244,27 +230,27 @@ func (c *DatabaseClient) ShowAllReplicationDatabases(t *testing.T) ([]sdk.Replic
 	return c.context.client.ReplicationFunctions.ShowReplicationDatabases(ctx, nil)
 }
 
-func (c *DatabaseClient) Alter(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.AlterDatabaseOptions) {
+func (c *DatabaseClient) Alter(t *testing.T, request *sdk.AlterDatabaseRequest) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, opts)
+	err := c.client().Alter(ctx, request)
 	require.NoError(t, err)
 }
 
-func (c *DatabaseClient) AlterReplication(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.AlterDatabaseReplicationOptions) {
+func (c *DatabaseClient) AlterReplication(t *testing.T, request *sdk.AlterReplicationDatabaseRequest) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().AlterReplication(ctx, id, opts)
+	err := c.client().AlterReplication(ctx, request)
 	require.NoError(t, err)
 }
 
-func (c *DatabaseClient) AlterFailover(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.AlterDatabaseFailoverOptions) {
+func (c *DatabaseClient) AlterFailover(t *testing.T, request *sdk.AlterFailoverDatabaseRequest) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().AlterFailover(ctx, id, opts)
+	err := c.client().AlterFailover(ctx, request)
 	require.NoError(t, err)
 }
 
