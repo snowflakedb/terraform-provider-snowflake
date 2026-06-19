@@ -19,6 +19,10 @@ func NewUseSecondaryRolesRequest(option SecondaryRoleOption) *UseSecondaryRolesR
 	return &UseSecondaryRolesRequest{option: option}
 }
 
+func (s *CreateRoleRequest) GetName() AccountObjectIdentifier {
+	return s.name
+}
+
 func (opts *ShowRoleOptions) additionalValidations() error {
 	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
 		return ErrPatternRequiredForLikeKeyword

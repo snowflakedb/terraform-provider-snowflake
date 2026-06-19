@@ -102,9 +102,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		parentRoleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parentRoleName.(string))
 		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleIdentifier.FullyQualifiedName())
 		if !safePublicRole {
-			req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
-				Role: &parentRoleIdentifier,
-			})
+			req := sdk.NewGrantRoleRequest(roleIdentifier, *sdk.NewGrantRoleToRequest().WithRole(parentRoleIdentifier))
 			if err := client.Roles.Grant(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
@@ -113,9 +111,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		userIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(userName.(string))
 		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), userIdentifier.FullyQualifiedName())
 		if !safePublicRole {
-			req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
-				User: &userIdentifier,
-			})
+			req := sdk.NewGrantRoleRequest(roleIdentifier, *sdk.NewGrantRoleToRequest().WithUser(userIdentifier))
 			if err := client.Roles.Grant(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
@@ -205,9 +201,9 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	var err error
 	switch objectType {
 	case "ROLE":
-		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{Role: &granteeIdentifier}))
+		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, *sdk.NewRevokeRoleFromRequest().WithRole(granteeIdentifier)))
 	case "USER":
-		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{User: &granteeIdentifier}))
+		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, *sdk.NewRevokeRoleFromRequest().WithUser(granteeIdentifier)))
 	default:
 		return diag.FromErr(fmt.Errorf("invalid object type specified: %v, expected ROLE or USER", objectType))
 	}
