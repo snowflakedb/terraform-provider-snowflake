@@ -58,6 +58,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationAzureApiManagement().Schema,
 	},
 	{
+		name:   "ApiIntegrationExternalMcpDynamicClient",
+		schema: resources.ApiIntegrationExternalMcpDynamicClient().Schema,
+	},
+	{
 		name:   "ApiIntegrationGitRepositoryGithubApp",
 		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
 	},
