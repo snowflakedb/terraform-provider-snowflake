@@ -79,7 +79,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasOauthAccessTokenValidity(0).
+			HasOauthRefreshTokenValidity(0).
 			HasNoOauthAllowedScopes().
+			HasOauthUsername("").
 			HasAllowedPrefixes(allowedPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -89,6 +92,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasOauthAccessTokenValidity(0).
+			HasOauthRefreshTokenValidity(0).
+			HasOauthAllowedScopes().
+			HasOauthUsername("").
 			HasAllowedPrefixes(allowedPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -115,7 +122,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasOauthAccessTokenValidity(0).
+			HasOauthRefreshTokenValidity(0).
 			HasNoOauthAllowedScopes().
+			HasOauthUsername("").
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
 			HasComment(comment),
@@ -125,6 +135,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasOauthAccessTokenValidity(0).
+			HasOauthRefreshTokenValidity(0).
+			HasOauthAllowedScopes().
+			HasOauthUsername("").
 			HasAllowedPrefixes(allowedPrefix).
 			HasBlockedPrefixes(blockedPrefix).
 			HasComment(comment),
