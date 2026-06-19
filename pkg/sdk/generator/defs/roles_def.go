@@ -81,7 +81,8 @@ var rolesDef = g.NewInterface(
 				Identifier("Class", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions()).
 				WithValidation(g.ValidIdentifier, "Class"),
 			g.KeywordOptions().SQL("IN CLASS"),
-		),
+		).
+		WithAdditionalValidations(),
 	g.ShowByIDLikeFiltering,
 ).CustomOperation(
 	"Grant",
@@ -90,8 +91,9 @@ var rolesDef = g.NewInterface(
 		Grant().
 		SQL("ROLE").
 		Name().
-		QueryStructField("Grant", grantRoleTo(), g.KeywordOptions().SQL("TO")).
-		WithValidation(g.ValidIdentifier, "name"),
+		QueryStructField("Grant", grantRoleTo(), g.KeywordOptions().SQL("TO").Required()).
+		WithValidation(g.ValidIdentifier, "name").
+		WithAdditionalValidations(),
 ).CustomOperation(
 	"Revoke",
 	"https://docs.snowflake.com/en/sql-reference/sql/revoke-role",
@@ -99,7 +101,7 @@ var rolesDef = g.NewInterface(
 		Revoke().
 		SQL("ROLE").
 		Name().
-		QueryStructField("Revoke", revokeRoleFrom(), g.KeywordOptions().SQL("FROM")).
+		QueryStructField("Revoke", revokeRoleFrom(), g.KeywordOptions().SQL("FROM").Required()).
 		WithValidation(g.ValidIdentifier, "name"),
 ).WithCustomInterfaceMethod(
 	"RevokeSafely", "",

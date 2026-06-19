@@ -19,6 +19,23 @@ func NewUseSecondaryRolesRequest(option SecondaryRoleOption) *UseSecondaryRolesR
 	return &UseSecondaryRolesRequest{option: option}
 }
 
+func (opts *ShowRoleOptions) additionalValidations() error {
+	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
+		return ErrPatternRequiredForLikeKeyword
+	}
+	return nil
+}
+
+func (opts *GrantRoleOptions) additionalValidations() error {
+	if opts.Grant.Role != nil && !ValidObjectIdentifier(opts.Grant.Role) {
+		return errInvalidIdentifier("GrantRoleOptions.Grant", "Role")
+	}
+	if opts.Grant.User != nil && !ValidObjectIdentifier(opts.Grant.User) {
+		return errInvalidIdentifier("GrantRoleOptions.Grant", "User")
+	}
+	return nil
+}
+
 func (v *roles) RevokeSafely(ctx context.Context, req *RevokeRoleRequest) error {
 	return SafeRevokePrivileges(func() error { return v.Revoke(ctx, req) })
 }
