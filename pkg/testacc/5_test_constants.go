@@ -20,4 +20,9 @@ const (
 	// Git constants
 	gitAllowedPrefix = "https://github.com/my-org/"
 	gitBlockedPrefix = "https://github.com/my-org/blocked/"
+
+	// MCP constants
+	mcpAllowedPrefix    = "https://mcp.example.com/api/"
+	mcpBlockedPrefix    = "https://mcp.example.com/api/blocked/"
+	mcpOauthResourceUrl = "https://mcp.atlassian.com/v1/mcp"
 )

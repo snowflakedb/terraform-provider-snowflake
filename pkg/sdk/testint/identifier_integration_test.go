@@ -173,7 +173,7 @@ func TestInt_IdentifiersForTwoPartIdentifierAsReference(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = testClient(t).Schemas.Create(ctx, id, new(sdk.CreateSchemaOptions))
+			err = testClient(t).Schemas.Create(ctx, sdk.NewCreateSchemaRequest(id))
 			if err == nil {
 				t.Cleanup(testClientHelper().Schema.DropSchemaFunc(t, id))
 			}

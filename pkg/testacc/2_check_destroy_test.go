@@ -190,6 +190,12 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ApiIntegrationAzureApiManagement: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},
+	resources.ApiIntegrationExternalMcpDynamicClient: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
+	resources.ApiIntegrationGitRepositoryGithubApp: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
 	resources.ApiIntegrationGitRepositoryToken: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},
@@ -282,6 +288,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.GitRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.GitRepositories.ShowByID)
+	},
+	resources.IcebergTableFromFiles: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
 	},
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ImageRepositories.ShowByID)

@@ -11,6 +11,8 @@ description: |-
 
 -> **Note** If you want to change tag value to a value that is already present in another `tag_association` resource, first remove the relevant `object_identifiers` from the resource with the old value, run `terraform apply`, then add the relevant `object_identifiers` in the resource with new value, and run `terraform apply` once again. Removing and adding object identifier from one `snowflake_tag_association` resource to another may not work due to Terraform executing changes for non-dependent resources simultaneously. The same applies to an object being specified in multiple `snowflake_tag_association` resources for the same `tag_id`, but different `tag_value`s.
 
+-> **Note** Use `ICEBERG TABLE COLUMN` object type to tag iceberg table columns. The `COLUMN` object type cannot be used to tag iceberg table columns.
+
 -> **Note** Default timeout is set to 70 minutes for Terraform Create operation.
 
 # snowflake_tag_association (Resource)
@@ -91,7 +93,7 @@ resource "snowflake_tag_association" "account_association" {
 ### Required
 
 - `object_identifiers` (Set of String) Specifies the object identifiers for the tag association.
-- `object_type` (String) Specifies the type of object to add a tag. Allowed object types: `ACCOUNT` | `APPLICATION` | `APPLICATION PACKAGE` | `COMPUTE POOL` | `DATABASE` | `FAILOVER GROUP` | `INTEGRATION` | `NETWORK POLICY` | `REPLICATION GROUP` | `ROLE` | `SHARE` | `USER` | `WAREHOUSE` | `DATABASE ROLE` | `SCHEMA` | `ALERT` | `SNOWFLAKE.CORE.BUDGET` | `SNOWFLAKE.ML.CLASSIFICATION` | `EXTERNAL FUNCTION` | `EXTERNAL TABLE` | `FUNCTION` | `IMAGE REPOSITORY` | `GIT REPOSITORY` | `ICEBERG TABLE` | `MATERIALIZED VIEW` | `PIPE` | `MASKING POLICY` | `PASSWORD POLICY` | `ROW ACCESS POLICY` | `SESSION POLICY` | `STORAGE LIFECYCLE POLICY` | `PRIVACY POLICY` | `PROCEDURE` | `SERVICE` | `STAGE` | `STREAM` | `TABLE` | `TASK` | `VIEW` | `COLUMN` | `EVENT TABLE`.
+- `object_type` (String) Specifies the type of object to add a tag. Allowed object types: `ACCOUNT` | `APPLICATION` | `APPLICATION PACKAGE` | `COMPUTE POOL` | `DATABASE` | `FAILOVER GROUP` | `INTEGRATION` | `NETWORK POLICY` | `REPLICATION GROUP` | `ROLE` | `SHARE` | `USER` | `WAREHOUSE` | `DATABASE ROLE` | `SCHEMA` | `ALERT` | `SNOWFLAKE.CORE.BUDGET` | `SNOWFLAKE.ML.CLASSIFICATION` | `EXTERNAL FUNCTION` | `EXTERNAL TABLE` | `FUNCTION` | `IMAGE REPOSITORY` | `GIT REPOSITORY` | `ICEBERG TABLE` | `MATERIALIZED VIEW` | `PIPE` | `MASKING POLICY` | `PASSWORD POLICY` | `ROW ACCESS POLICY` | `SESSION POLICY` | `STORAGE LIFECYCLE POLICY` | `PRIVACY POLICY` | `PROCEDURE` | `SERVICE` | `STAGE` | `STREAM` | `TABLE` | `TASK` | `VIEW` | `COLUMN` | `EVENT TABLE` | `ICEBERG TABLE COLUMN`.
 - `tag_id` (String) Specifies the identifier for the tag.
 - `tag_value` (String) Specifies the value of the tag, (e.g. 'finance' or 'engineering')
 

@@ -161,7 +161,7 @@ func CreateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	if d.Get("drop_public_schema_on_creation").(bool) {
 		var dropSchemaErrs []error
 		err := util.Retry(3, time.Second, func() (error, bool) {
-			if err := client.Schemas.Drop(ctx, sdk.NewDatabaseObjectIdentifier(id.Name(), "PUBLIC"), &sdk.DropSchemaOptions{IfExists: sdk.Bool(true)}); err != nil {
+			if err := client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(sdk.NewDatabaseObjectIdentifier(id.Name(), "PUBLIC")).WithIfExists(true)); err != nil {
 				dropSchemaErrs = append(dropSchemaErrs, err)
 				return nil, false
 			}

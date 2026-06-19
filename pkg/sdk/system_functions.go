@@ -35,6 +35,11 @@ func (c *systemFunctions) GetTag(ctx context.Context, tagID ObjectIdentifier, ob
 	if err != nil {
 		return nil, err
 	}
+	// ObjectTypeIcebergTableColumn is a dedicated type for handling iceberg table column tags.
+	// However, Snowflake expects just the column type.
+	if objectType == ObjectTypeIcebergTableColumn {
+		objectType = ObjectTypeColumn
+	}
 
 	s := &struct {
 		Tag sql.NullString `db:"TAG"`
@@ -64,6 +69,7 @@ func normalizeGetTagObjectType(objectType ObjectType) (ObjectType, error) {
 	if slices.Contains([]ObjectType{ObjectTypeExternalFunction}, objectType) {
 		return ObjectTypeFunction, nil
 	}
+
 	return objectType, nil
 }
 

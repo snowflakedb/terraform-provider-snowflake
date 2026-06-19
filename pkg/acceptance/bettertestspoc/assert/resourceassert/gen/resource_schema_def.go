@@ -58,6 +58,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationAzureApiManagement().Schema,
 	},
 	{
+		name:   "ApiIntegrationExternalMcpDynamicClient",
+		schema: resources.ApiIntegrationExternalMcpDynamicClient().Schema,
+	},
+	{
+		name:   "ApiIntegrationGitRepositoryGithubApp",
+		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
+	},
+	{
 		name:   "ApiIntegrationGitRepositoryToken",
 		schema: resources.ApiIntegrationGitRepositoryToken().Schema,
 	},
@@ -164,6 +172,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "HybridTable",
 		schema: resources.HybridTable().Schema,
+	},
+	{
+		name:   "IcebergTableFromFiles",
+		schema: resources.IcebergTableFromFiles().Schema,
 	},
 	{
 		name:   "ImageRepository",

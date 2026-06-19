@@ -78,6 +78,7 @@ body:
         - resource:grant_privileges_to_account_role
         - resource:grant_privileges_to_database_role
         - resource:grant_privileges_to_share
+        - resource:iceberg_table_from_files
         - resource:image_repository
         - resource:job_service
         - resource:legacy_service_user
