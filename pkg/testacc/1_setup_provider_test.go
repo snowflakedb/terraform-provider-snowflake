@@ -77,6 +77,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	p.ResourcesMap["snowflake_api_integration_google_cloud_api_gateway"] = resources.ApiIntegrationGoogleCloudApiGateway()
 	p.ResourcesMap["snowflake_api_integration_external_mcp_dynamic_client"] = resources.ApiIntegrationExternalMcpDynamicClient()
 	p.ResourcesMap["snowflake_api_integration_git_repository_private_link"] = resources.ApiIntegrationGitRepositoryPrivateLink()
+	p.ResourcesMap["snowflake_api_integration_git_repository_token"] = resources.ApiIntegrationGitRepositoryToken()
 	return p
 }
 
