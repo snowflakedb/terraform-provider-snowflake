@@ -40,6 +40,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 	const refreshTokenValidity = 86400
 	const oauthUsername = "test_user"
 
+	const externalAuthorizationEndpoint = "https://different.example.com/authorize"
+	const externalTokenEndpoint = "https://different.example.com/token"
+	const externalClientId = "different-client-id"
+
 	basic := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true, authorizationEndpoint, clientId, clientSecret, tokenEndpoint)
 	withOptionals := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true, authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
@@ -70,10 +74,14 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasComment(""),
 		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
+			HasEnabled(true).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasNoOauthAllowedScopes().
+			HasAllowedPrefixes(allowedPrefix).
+			HasNoBlockedPrefixes().
 			HasComment(""),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
@@ -102,10 +110,14 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasComment(comment),
 		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
+			HasEnabled(true).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
+			HasNoOauthAllowedScopes().
+			HasAllowedPrefixes(allowedPrefix).
+			HasBlockedPrefixes(blockedPrefix).
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
@@ -138,13 +150,17 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasComment(comment),
 		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
+			HasEnabled(true).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
 			HasOauthAccessTokenValidity(accessTokenValidity).
 			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthAllowedScopes(string(sdk.ApiIntegrationOauthAllowedScopeReadApi)).
 			HasOauthUsername(oauthUsername).
+			HasAllowedPrefixes(allowedPrefix).
+			HasBlockedPrefixes(blockedPrefix).
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
@@ -224,6 +240,48 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
+			// Update - external changes to non-ForceNew fields (enabled, api_allowed_prefixes, api_blocked_prefixes)
+			{
+				PreConfig: func() {
+					testClient().ApiIntegration.Alter(t, sdk.NewAlterApiIntegrationRequest(id).WithSet(
+						*sdk.NewApiIntegrationSetRequest().
+							WithEnabled(false).
+							WithApiAllowedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: "https://github.com/other-org/"}}).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: "https://github.com/blocked-externally/"}}),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Plan check - external changes to ForceNew fields (oauth_authorization_endpoint, oauth_token_endpoint, oauth_client_id)
+			{
+				PreConfig: func() {
+					testClient().ApiIntegration.DropApiIntegrationFunc(t, id)()
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+						sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().
+								WithApiUserAuthentication(*sdk.NewOAuth2GitUserAuthenticationRequest(
+									externalAuthorizationEndpoint, externalTokenEndpoint, externalClientId, clientSecret,
+								))),
+					)
+					t.Cleanup(cleanup)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(ref, "oauth_authorization_endpoint", tfjson.ActionDelete, new(externalAuthorizationEndpoint), new(authorizationEndpoint)),
+						planchecks.ExpectChange(ref, "oauth_token_endpoint", tfjson.ActionDelete, new(externalTokenEndpoint), new(tokenEndpoint)),
+						planchecks.ExpectChange(ref, "oauth_client_id", tfjson.ActionDelete, new(externalClientId), new(clientId)),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
 			// Destroy
 			{
 				Destroy: true,
@@ -263,6 +321,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 	const refreshTokenValidity = 86400
 	const oauthUsername = "test_user"
 
+	const externalAuthorizationEndpoint = "https://different.example.com/authorize"
+	const externalTokenEndpoint = "https://different.example.com/token"
+	const externalClientId = "different-client-id"
+
 	allAttributes := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true, authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
 		WithApiBlockedPrefixes([]string{blockedPrefix}).
 		WithComment(comment).
@@ -293,13 +355,17 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasComment(comment),
 		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
+			HasEnabled(true).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
 			HasOauthClientId(clientId).
 			HasOauthTokenEndpoint(tokenEndpoint).
 			HasOauthAuthorizationEndpoint(authorizationEndpoint).
 			HasOauthAccessTokenValidity(accessTokenValidity).
 			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthAllowedScopes(string(sdk.ApiIntegrationOauthAllowedScopeReadApi)).
 			HasOauthUsername(oauthUsername).
+			HasAllowedPrefixes(allowedPrefix).
+			HasBlockedPrefixes(blockedPrefix).
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
@@ -328,6 +394,30 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, allAttributes),
+				Check:  assertThat(t, completeAssertions...),
+			},
+			// Plan check - external changes to ForceNew fields (oauth_authorization_endpoint, oauth_token_endpoint, oauth_client_id)
+			{
+				PreConfig: func() {
+					testClient().ApiIntegration.DropApiIntegrationFunc(t, id)()
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+						sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().
+								WithApiUserAuthentication(*sdk.NewOAuth2GitUserAuthenticationRequest(
+									externalAuthorizationEndpoint, externalTokenEndpoint, externalClientId, clientSecret,
+								))),
+					)
+					t.Cleanup(cleanup)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(ref, "oauth_authorization_endpoint", tfjson.ActionDelete, sdk.String(externalAuthorizationEndpoint), sdk.String(authorizationEndpoint)),
+						planchecks.ExpectChange(ref, "oauth_token_endpoint", tfjson.ActionDelete, sdk.String(externalTokenEndpoint), sdk.String(tokenEndpoint)),
+						planchecks.ExpectChange(ref, "oauth_client_id", tfjson.ActionDelete, sdk.String(externalClientId), sdk.String(clientId)),
 					},
 				},
 				Config: config.FromModels(t, allAttributes),
@@ -433,6 +523,52 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_Import(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
+			},
+		},
+	})
+}
+
+func TestAcc_ApiIntegrationGitRepositoryOauth2_Validations(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	const authorizationEndpoint = "https://auth.example.com/authorize"
+	const tokenEndpoint = "https://auth.example.com/token"
+	const clientId = "oauth-client-id-123"
+	const clientSecret = "oauth-client-secret-456"
+	const allowedPrefix = "https://github.com/my-org/"
+
+	invalidScope := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true,
+		authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
+		WithOauthAllowedScopes([]string{"INVALID_SCOPE"})
+
+	invalidAccessTokenValidity := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true,
+		authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
+		WithOauthAccessTokenValidity(0)
+
+	invalidRefreshTokenValidity := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{allowedPrefix}, true,
+		authorizationEndpoint, clientId, clientSecret, tokenEndpoint).
+		WithOauthRefreshTokenValidity(0)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, invalidScope),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("invalid api integration oauth allowed scope"),
+			},
+			{
+				Config:      config.FromModels(t, invalidAccessTokenValidity),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("expected oauth_access_token_validity to be at least"),
+			},
+			{
+				Config:      config.FromModels(t, invalidRefreshTokenValidity),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("expected oauth_refresh_token_validity to be at least"),
 			},
 		},
 	})

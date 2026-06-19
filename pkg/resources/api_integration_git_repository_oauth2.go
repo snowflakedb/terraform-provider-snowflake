@@ -38,6 +38,7 @@ var apiIntegrationGitRepositoryOauth2Schema = func() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
+			Sensitive:    true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  "The client ID for the OAuth 2.0 application.",
 		},
@@ -66,7 +67,7 @@ var apiIntegrationGitRepositoryOauth2Schema = func() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			ForceNew:    true,
-			Description: fmt.Sprintf("Specifies a list of scopes to use when making a request from the OAuth by a role with USAGE on the integration. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationOauthAllowedScopes))),
+			Description: "Specifies a list of scopes to use when making a request from the OAuth by a role with USAGE on the integration. " + enumValuesDescription(sdk.AllApiIntegrationOauthAllowedScopes),
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,
 				ValidateDiagFunc: sdkValidation(sdk.ToApiIntegrationOauthAllowedScope),
