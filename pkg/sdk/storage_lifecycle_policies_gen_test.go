@@ -251,10 +251,8 @@ func TestStorageLifecyclePolicies_Show(t *testing.T) {
 		opts.Like = &Like{
 			Pattern: String("like-pattern"),
 		}
-		opts.In = &ExtendedIn{
-			In: In{
-				Account: new(true),
-			},
+		opts.In = &In{
+			Account: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW STORAGE LIFECYCLE POLICIES LIKE 'like-pattern' IN ACCOUNT")
 	})

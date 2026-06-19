@@ -67,6 +67,7 @@ func Test_ToObjectType(t *testing.T) {
 		{input: "STREAMLIT", want: ObjectTypeStreamlit},
 		{input: "COLUMN", want: ObjectTypeColumn},
 		{input: "ICEBERG TABLE", want: ObjectTypeIcebergTable},
+		{input: "ICEBERG TABLE COLUMN", want: ObjectTypeIcebergTableColumn},
 		{input: "EXTERNAL VOLUME", want: ObjectTypeExternalVolume},
 		{input: "NETWORK RULE", want: ObjectTypeNetworkRule},
 		{input: "NOTEBOOK", want: ObjectTypeNotebook},

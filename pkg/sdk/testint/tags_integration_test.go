@@ -478,14 +478,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Database.CreateDatabase(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-					SetTag: tags,
-				})
+				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-					UnsetTag: tags,
-				})
+				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{
@@ -495,14 +491,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return createDatabaseFromShare(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-					SetTag: tags,
-				})
+				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-					UnsetTag: tags,
-				})
+				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithUnsetTags(tags))
 			},
 		},
 		// TODO [SNOW-1002023]: Add a test for failover groups; Business Critical Snowflake Edition needed
@@ -691,14 +683,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Warehouse.CreateWarehouse(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-					SetTag: tags,
-				})
+				return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Warehouses.Alter(ctx, id, &sdk.AlterWarehouseOptions{
-					UnsetTag: tags,
-				})
+				return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnsetTags(tags))
 			},
 		},
 	}
@@ -746,9 +734,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 		t.Cleanup(dbCleanup)
 		id := db.ID()
 
-		err := client.Databases.Alter(ctx, id, &sdk.AlterDatabaseOptions{
-			SetTag: tags,
-		})
+		err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithSetTags(tags))
 		require.ErrorContains(t, err, "is a read-only secondary database and cannot be modified.")
 	})
 
@@ -779,14 +765,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().Schema.CreateSchema(t)
 			},
 			setTags: func(id sdk.DatabaseObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-					SetTag: tags,
-				})
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.DatabaseObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-					UnsetTag: tags,
-				})
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnsetTags(tags))
 			},
 		},
 	}
@@ -1122,20 +1104,6 @@ func TestInt_TagsAssociations(t *testing.T) {
 		unsetTags   func(sdk.TableColumnIdentifier, []sdk.ObjectIdentifier) error
 	}{
 		{
-			name: "IcebergTable",
-			setupObject: func() (sdk.TableColumnIdentifier, func()) {
-				object, objectCleanup := testClientHelper().IcebergTable.Create(t)
-				columnId := sdk.NewTableColumnIdentifier(object.ID().DatabaseName(), object.ID().SchemaName(), object.ID().Name(), "ID")
-				return columnId, objectCleanup
-			},
-			setTags: func(id sdk.TableColumnIdentifier, tags []sdk.TagAssociation) error {
-				return client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithSetTagsOnColumn(*sdk.NewTableSetColumnTagsRequest(id.Name(), tags)))
-			},
-			unsetTags: func(id sdk.TableColumnIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithUnsetTagsOnColumn(*sdk.NewTableUnsetColumnTagsRequest(id.Name(), tags)))
-			},
-		},
-		{
 			name: "Table",
 			setupObject: func() (sdk.TableColumnIdentifier, func()) {
 				object, objectCleanup := testClientHelper().Table.Create(t)
@@ -1191,6 +1159,24 @@ func TestInt_TagsAssociations(t *testing.T) {
 		})
 	}
 
+	t.Run("iceberg table column", func(t *testing.T) {
+		// Iceberg table columns are handled separately because they use a dedicated object type.
+		object, objectCleanup := testClientHelper().IcebergTable.Create(t)
+		id := sdk.NewTableColumnIdentifier(object.ID().DatabaseName(), object.ID().SchemaName(), object.ID().Name(), "ID")
+		t.Cleanup(objectCleanup)
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithSetTagsOnColumn(*sdk.NewTableSetColumnTagsRequest(id.Name(), tags)))
+		require.NoError(t, err)
+
+		assertTagSet(id, sdk.ObjectTypeColumn)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id.SchemaObjectId()).WithUnsetTagsOnColumn(*sdk.NewTableUnsetColumnTagsRequest(id.Name(), unsetTags)))
+		require.NoError(t, err)
+
+		assertTagUnset(id, sdk.ObjectTypeColumn)
+
+		// test object methods
+		testTagSet(id, sdk.ObjectTypeIcebergTableColumn)
+	})
 	schemaObjectWithArgumentsTestCases := []struct {
 		name        string
 		objectType  sdk.ObjectType
@@ -1278,11 +1264,9 @@ func TestInt_TagsPropagation(t *testing.T) {
 		)
 		t.Cleanup(tagCleanup)
 
-		schema, schemaCleanup := testClientHelper().Schema.CreateSchemaWithOpts(t, testClientHelper().Ids.RandomDatabaseObjectIdentifier(), &sdk.CreateSchemaOptions{
-			Tag: []sdk.TagAssociation{
-				{Name: tag.ID(), Value: "schema_value"},
-			},
-		})
+		schemaId := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
+		schema, schemaCleanup := testClientHelper().Schema.CreateSchemaWithRequest(t, schemaId, sdk.NewCreateSchemaRequest(schemaId).
+			WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: "schema_value"}}))
 		t.Cleanup(schemaCleanup)
 
 		table, tableCleanup := testClientHelper().Table.CreateInSchema(t, schema.ID())

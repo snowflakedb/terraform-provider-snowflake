@@ -196,7 +196,7 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 		t.Run("like", func(t *testing.T) {
 			policies, err := client.StorageLifecyclePolicies.Show(ctx, sdk.NewShowStorageLifecyclePolicyRequest().
 				WithLike(sdk.Like{Pattern: sdk.String(id1.Name())}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.In{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, policies, 1)
 			assert.Equal(t, id1.Name(), policies[0].Name)
@@ -204,21 +204,21 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 
 		t.Run("in_account", func(t *testing.T) {
 			policies, err := client.StorageLifecyclePolicies.Show(ctx, sdk.NewShowStorageLifecyclePolicyRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
+				WithIn(sdk.In{Account: sdk.Bool(true)}))
 			require.NoError(t, err)
 			assert.GreaterOrEqual(t, len(policies), 3)
 		})
 
 		t.Run("in_database", func(t *testing.T) {
 			policies, err := client.StorageLifecyclePolicies.Show(ctx, sdk.NewShowStorageLifecyclePolicyRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Database: id1.DatabaseId()}}))
+				WithIn(sdk.In{Database: id1.DatabaseId()}))
 			require.NoError(t, err)
 			assert.Len(t, policies, 2)
 		})
 
 		t.Run("in_schema", func(t *testing.T) {
 			policies, err := client.StorageLifecyclePolicies.Show(ctx, sdk.NewShowStorageLifecyclePolicyRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.In{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, policies, 2)
 		})
