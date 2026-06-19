@@ -52,7 +52,8 @@ func TestAcc_ApiIntegrations_BasicUseCase(t *testing.T) {
 						HasApiProvider(string(apiProvider)).
 						HasApiAwsRoleArn(awsRoleArn).
 						HasApiAwsIamUserArnNotEmpty().
-						HasApiAwsExternalIdNotEmpty(),
+						HasApiAwsExternalIdNotEmpty().
+						HasAllowedPrefixes(allowedPrefix),
 				),
 			},
 			{
@@ -60,6 +61,120 @@ func TestAcc_ApiIntegrations_BasicUseCase(t *testing.T) {
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutDescribe.DatasourceReference(), "api_integrations.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutDescribe.DatasourceReference(), "api_integrations.0.describe_output.#", "0")),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_ApiIntegrations_AzureProviderType(t *testing.T) {
+	azureTenantId := "00000000-0000-0000-0000-000000000000"
+	azureAdApplicationId := "11111111-1111-1111-1111-111111111111"
+	allowedPrefix := "https://apim-hello-world.azure-api.net/dev"
+
+	integration, cleanup := testClient().ApiIntegration.CreateAzure(t)
+	t.Cleanup(cleanup)
+
+	datasourceModel := datasourcemodel.ApiIntegrations("test").
+		WithLike(integration.Name)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, datasourceModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "api_integrations.#", "1")),
+					resourceshowoutputassert.ApiIntegrationsDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
+						HasName(integration.Name).
+						HasApiType("EXTERNAL_API").
+						HasEnabled(true),
+					resourceshowoutputassert.ApiIntegrationsDatasourceDescribeOutput(t, datasourceModel.DatasourceReference()).
+						HasEnabled(true).
+						HasApiProvider(string(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement)).
+						HasAzureTenantId(azureTenantId).
+						HasAzureAdApplicationId(azureAdApplicationId).
+						HasAllowedPrefixes(allowedPrefix),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_ApiIntegrations_GoogleProviderType(t *testing.T) {
+	googleAudience := "api-gateway-id-123456.apigateway.gcp-project.cloud.goog"
+	allowedPrefix := "https://gateway-id-123456.uc.gateway.dev/prod"
+
+	integration, cleanup := testClient().ApiIntegration.CreateGoogle(t)
+	t.Cleanup(cleanup)
+
+	datasourceModel := datasourcemodel.ApiIntegrations("test").
+		WithLike(integration.Name)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, datasourceModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "api_integrations.#", "1")),
+					resourceshowoutputassert.ApiIntegrationsDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
+						HasName(integration.Name).
+						HasApiType("EXTERNAL_API").
+						HasEnabled(true),
+					resourceshowoutputassert.ApiIntegrationsDatasourceDescribeOutput(t, datasourceModel.DatasourceReference()).
+						HasEnabled(true).
+						HasApiProvider(string(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway)).
+						HasGoogleAudience(googleAudience).
+						HasGoogleApiServiceAccountNotEmpty().
+						HasAllowedPrefixes(allowedPrefix),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_ApiIntegrations_GitHttpsProviderType(t *testing.T) {
+	oauthAuthorizationEndpoint := "https://auth.example.com/authorize"
+	oauthTokenEndpoint := "https://auth.example.com/token"
+	oauthClientId := "oauth-client-id-123"
+	allowedPrefix := "https://github.com/my-org/"
+
+	integration, cleanup := testClient().ApiIntegration.CreateGitOAuth2(t)
+	t.Cleanup(cleanup)
+
+	datasourceModel := datasourcemodel.ApiIntegrations("test").
+		WithLike(integration.Name)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, datasourceModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "api_integrations.#", "1")),
+					resourceshowoutputassert.ApiIntegrationsDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
+						HasName(integration.Name).
+						HasApiType("EXTERNAL_API").
+						HasEnabled(true),
+					resourceshowoutputassert.ApiIntegrationsDatasourceDescribeOutput(t, datasourceModel.DatasourceReference()).
+						HasEnabled(true).
+						HasApiProvider(string(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi)).
+						HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
+						HasOauthGrant("AUTHORIZATION_CODE").
+						HasOauthClientId(oauthClientId).
+						HasOauthTokenEndpoint(oauthTokenEndpoint).
+						HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
+						HasAllowedPrefixes(allowedPrefix),
 				),
 			},
 		},

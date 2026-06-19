@@ -42,11 +42,17 @@ func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasComment(expected strin
 
 func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasAllowedPrefixes(expected ...string) *ApiIntegrationAllDetailsDescribeOutputAssert {
 	a.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_prefixes.#", fmt.Sprintf("%d", len(expected))))
+	for i, v := range expected {
+		a.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("allowed_prefixes.%d", i), v))
+	}
 	return a
 }
 
 func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasBlockedPrefixes(expected ...string) *ApiIntegrationAllDetailsDescribeOutputAssert {
 	a.AddAssertion(assert.ResourceDescribeOutputValueSet("blocked_prefixes.#", fmt.Sprintf("%d", len(expected))))
+	for i, v := range expected {
+		a.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("blocked_prefixes.%d", i), v))
+	}
 	return a
 }
 
@@ -100,5 +106,25 @@ func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasUserAuthType(expected 
 
 func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasAllowedAuthenticationSecrets(expected string) *ApiIntegrationAllDetailsDescribeOutputAssert {
 	a.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_authentication_secrets", expected))
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasOauthGrant(expected string) *ApiIntegrationAllDetailsDescribeOutputAssert {
+	a.AddAssertion(assert.ResourceDescribeOutputValueSet("oauth_grant", expected))
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasOauthClientId(expected string) *ApiIntegrationAllDetailsDescribeOutputAssert {
+	a.AddAssertion(assert.ResourceDescribeOutputValueSet("oauth_client_id", expected))
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasOauthTokenEndpoint(expected string) *ApiIntegrationAllDetailsDescribeOutputAssert {
+	a.AddAssertion(assert.ResourceDescribeOutputValueSet("oauth_token_endpoint", expected))
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsDescribeOutputAssert) HasOauthAuthorizationEndpoint(expected string) *ApiIntegrationAllDetailsDescribeOutputAssert {
+	a.AddAssertion(assert.ResourceDescribeOutputValueSet("oauth_authorization_endpoint", expected))
 	return a
 }
