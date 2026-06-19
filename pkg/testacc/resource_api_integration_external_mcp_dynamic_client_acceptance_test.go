@@ -26,17 +26,14 @@ import (
 func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const oauthResourceUrl = "https://mcp.atlassian.com/v1/mcp"
-	const allowedPrefix = "https://mcp.example.com/api/"
-	const blockedPrefix = "https://mcp.example.com/api/blocked/"
 	apiProvider := string(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp)
 
 	comment := random.Comment()
 	externalComment := random.Comment()
 
-	basic := model.ApiIntegrationExternalMcpDynamicClient("t", id.Name(), []string{allowedPrefix}, true, oauthResourceUrl)
-	withOptionals := model.ApiIntegrationExternalMcpDynamicClient("t", id.Name(), []string{allowedPrefix}, true, oauthResourceUrl).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	basic := model.ApiIntegrationExternalMcpDynamicClient("t", id.Name(), []string{mcpAllowedPrefix}, true, mcpOauthResourceUrl)
+	withOptionals := model.ApiIntegrationExternalMcpDynamicClient("t", id.Name(), []string{mcpAllowedPrefix}, true, mcpOauthResourceUrl).
+		WithApiBlockedPrefixes([]string{mcpBlockedPrefix}).
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
@@ -45,8 +42,8 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 		resourceassert.ApiIntegrationExternalMcpDynamicClientResource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
-			HasOauthResourceUrlString(oauthResourceUrl).
-			HasApiAllowedPrefixes(allowedPrefix).
+			HasOauthResourceUrlString(mcpOauthResourceUrl).
+			HasApiAllowedPrefixes(mcpAllowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -56,15 +53,15 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.ApiIntegrationExternalMcpDynamicClientDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient)).
-			HasOauthResourceUrl(oauthResourceUrl).
+			HasOauthResourceUrl(mcpOauthResourceUrl).
 			HasNoBlockedPrefixes().
 			HasComment(""),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient).
-			HasOauthResourceUrl(oauthResourceUrl).
-			HasAllowedPrefixes(allowedPrefix).
+			HasOauthResourceUrl(mcpOauthResourceUrl).
+			HasAllowedPrefixes(mcpAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
 	}
@@ -73,9 +70,9 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 		resourceassert.ApiIntegrationExternalMcpDynamicClientResource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
-			HasOauthResourceUrlString(oauthResourceUrl).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasOauthResourceUrlString(mcpOauthResourceUrl).
+			HasApiAllowedPrefixes(mcpAllowedPrefix).
+			HasApiBlockedPrefixes(mcpBlockedPrefix).
 			HasCommentString(comment),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -84,15 +81,15 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.ApiIntegrationExternalMcpDynamicClientDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient)).
-			HasOauthResourceUrl(oauthResourceUrl).
+			HasOauthResourceUrl(mcpOauthResourceUrl).
 			HasComment(comment),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient).
-			HasOauthResourceUrl(oauthResourceUrl).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasOauthResourceUrl(mcpOauthResourceUrl).
+			HasAllowedPrefixes(mcpAllowedPrefix).
+			HasBlockedPrefixes(mcpBlockedPrefix).
 			HasComment(comment),
 	}
 
@@ -185,13 +182,10 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationExternalMcpDynamicClient_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const oauthResourceUrl = "https://mcp.atlassian.com/v1/mcp"
-	const allowedPrefix = "https://mcp.example.com/api/"
-	const blockedPrefix = "https://mcp.example.com/api/blocked/"
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationExternalMcpDynamicClient("t", id.Name(), []string{allowedPrefix}, true, oauthResourceUrl).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	testModel := model.ApiIntegrationExternalMcpDynamicClient("t", id.Name(), []string{mcpAllowedPrefix}, true, mcpOauthResourceUrl).
+		WithApiBlockedPrefixes([]string{mcpBlockedPrefix}).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -203,12 +197,12 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					auth := sdk.NewDynamicClientMcpUserAuthenticationRequest(oauthResourceUrl)
+					auth := sdk.NewDynamicClientMcpUserAuthenticationRequest(mcpOauthResourceUrl)
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: mcpAllowedPrefix}}, true).
 							WithComment(comment).
-							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: mcpBlockedPrefix}}).
 							WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)),
 					)
 					t.Cleanup(cleanup)
@@ -238,9 +232,9 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_Import_WrongProviderType(t *
 
 	dynamicClientId := testClient().Ids.RandomAccountObjectIdentifier()
 	dynamicClientModel := model.ApiIntegrationExternalMcpDynamicClient("t", dynamicClientId.Name(),
-		[]string{"https://mcp.example.com/api/"},
+		[]string{mcpAllowedPrefix},
 		true,
-		"https://mcp.example.com/api/",
+		mcpOauthResourceUrl,
 	)
 
 	resource.Test(t, resource.TestCase{
