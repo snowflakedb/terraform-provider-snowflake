@@ -28,6 +28,7 @@ func Test_StringToFeature(t *testing.T) {
 		// TODO(next api integration prs): {input: "snowflake_api_integration_azure_api_management_resource", want: ApiIntegrationAzureApiManagementResource},
 		// TODO(next api integration prs): {input: "snowflake_api_integration_external_mcp_dynamic_client_resource", want: ApiIntegrationExternalMcpDynamicClientResource},
 		// TODO(next api integration prs): {input: "snowflake_api_integration_git_repository_github_app_resource", want: ApiIntegrationGitRepositoryGithubAppResource},
+		// TODO(next api integration prs): {input: "snowflake_api_integration_git_repository_token_resource", want: ApiIntegrationGitRepositoryTokenResource},
 		// TODO(next api integration prs): {input: "snowflake_api_integration_google_cloud_api_gateway_resource", want: ApiIntegrationGoogleCloudApiGatewayResource},
 		{input: "snowflake_authentication_policy_resource", want: AuthenticationPolicyResource},
 		{input: "snowflake_authentication_policies_datasource", want: AuthenticationPoliciesDatasource},
