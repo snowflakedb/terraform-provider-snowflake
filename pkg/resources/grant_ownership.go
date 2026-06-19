@@ -494,7 +494,8 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 		sdk.ObjectTypeFunction,
 		sdk.ObjectTypeProcedure:
 		return sdk.ParseSchemaObjectIdentifierWithArguments(objectName)
-	case sdk.ObjectTypeColumn:
+	case sdk.ObjectTypeColumn,
+		sdk.ObjectTypeIcebergTableColumn:
 		return sdk.ParseTableColumnIdentifier(objectName)
 
 	default:

@@ -180,6 +180,28 @@ func TestInt_PipeForceResume(t *testing.T) {
 	require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
 }
 
+func TestInt_GetIcebergTableInformation(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	// We test only one variant of the iceberg tables here. See more tests in the iceberg table integration tests.
+	icebergTable, icebergTableCleanup := testClientHelper().IcebergTable.Create(t)
+	t.Cleanup(icebergTableCleanup)
+
+	t.Run("get iceberg table information", func(t *testing.T) {
+		info, err := client.SystemFunctions.GetIcebergTableInformation(ctx, icebergTable.ID())
+		require.NoError(t, err)
+		require.NotNil(t, info)
+		// Assert not empty because Snowflake returns a temporary location like
+		// s3://sfc-prod2-xyz/iceberg/path/to/file/file.metadata.json
+		assert.NotEmpty(t, info.MetadataLocation)
+	})
+	t.Run("get iceberg table information fails when the table does not exist", func(t *testing.T) {
+		_, err := client.SystemFunctions.GetIcebergTableInformation(ctx, testClientHelper().Ids.RandomSchemaObjectIdentifier())
+		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+}
+
 func TestInt_BcrBundles(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)

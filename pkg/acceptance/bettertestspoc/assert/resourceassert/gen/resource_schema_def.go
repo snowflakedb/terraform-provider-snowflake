@@ -50,6 +50,22 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiAuthenticationIntegrationWithJwtBearer().Schema,
 	},
 	{
+		name:   "ApiIntegrationAmazonApiGateway",
+		schema: resources.ApiIntegrationAmazonApiGateway().Schema,
+	},
+	{
+		name:   "ApiIntegrationAzureApiManagement",
+		schema: resources.ApiIntegrationAzureApiManagement().Schema,
+	},
+	{
+		name:   "ApiIntegrationGitRepositoryGithubApp",
+		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
+	},
+	{
+		name:   "ApiIntegrationGoogleCloudApiGateway",
+		schema: resources.ApiIntegrationGoogleCloudApiGateway().Schema,
+	},
+	{
 		name:   "AuthenticationPolicy",
 		schema: resources.AuthenticationPolicy().Schema,
 	},
@@ -148,6 +164,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "HybridTable",
 		schema: resources.HybridTable().Schema,
+	},
+	{
+		name:   "IcebergTableFromFiles",
+		schema: resources.IcebergTableFromFiles().Schema,
 	},
 	{
 		name:   "ImageRepository",
@@ -316,6 +336,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "StorageIntegrationGcs",
 		schema: resources.StorageIntegrationGcs().Schema,
+	},
+	{
+		name:   "StorageLifecyclePolicy",
+		schema: resources.StorageLifecyclePolicy().Schema,
 	},
 	{
 		name:   "StreamOnDirectoryTable",

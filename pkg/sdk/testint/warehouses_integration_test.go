@@ -24,9 +24,9 @@ func TestInt_Warehouses(t *testing.T) {
 	precreatedWarehouseId := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 	precreatedWarehouseId2 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 	// new warehouses created on purpose
-	_, precreatedWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, precreatedWarehouseId, nil)
+	_, precreatedWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(precreatedWarehouseId))
 	t.Cleanup(precreatedWarehouseCleanup)
-	_, precreatedWarehouse2Cleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, precreatedWarehouseId2, nil)
+	_, precreatedWarehouse2Cleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(precreatedWarehouseId2))
 	t.Cleanup(precreatedWarehouse2Cleanup)
 
 	tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
@@ -50,29 +50,21 @@ func TestInt_Warehouses(t *testing.T) {
 	}
 
 	t.Run("show: without options", func(t *testing.T) {
-		warehouses, err := client.Warehouses.Show(ctx, nil)
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest())
 		require.NoError(t, err)
 		assert.LessOrEqual(t, 2, len(warehouses))
 	})
 
 	t.Run("show: like", func(t *testing.T) {
-		showOptions := &sdk.ShowWarehouseOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.Pointer(prefix + "%"),
-			},
-		}
-		warehouses, err := client.Warehouses.Show(ctx, showOptions)
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithLike(sdk.Like{Pattern: sdk.Pointer(prefix + "%")}))
 		require.NoError(t, err)
 		assert.Len(t, warehouses, 2)
 	})
 
 	t.Run("show: with options", func(t *testing.T) {
-		showOptions := &sdk.ShowWarehouseOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.Pointer(precreatedWarehouseId.Name()),
-			},
-		}
-		warehouses, err := client.Warehouses.Show(ctx, showOptions)
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithLike(sdk.Like{Pattern: sdk.Pointer(precreatedWarehouseId.Name())}))
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(warehouses))
 		assert.Equal(t, precreatedWarehouseId.Name(), warehouses[0].Name)
@@ -81,25 +73,16 @@ func TestInt_Warehouses(t *testing.T) {
 	})
 
 	t.Run("show: when searching a non-existent warehouse", func(t *testing.T) {
-		showOptions := &sdk.ShowWarehouseOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String("non-existent"),
-			},
-		}
-		warehouses, err := client.Warehouses.Show(ctx, showOptions)
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithLike(sdk.Like{Pattern: sdk.String("non-existent")}))
 		require.NoError(t, err)
 		assert.Len(t, warehouses, 0)
 	})
 
 	t.Run("show: with starts with, and limit", func(t *testing.T) {
-		showOptions := &sdk.ShowWarehouseOptions{
-			StartsWith: sdk.String(precreatedWarehouseId.Name()),
-			LimitFrom: &sdk.LimitFrom{
-				Rows: sdk.Int(1),
-			},
-		}
-
-		warehouses, err := client.Warehouses.Show(ctx, showOptions)
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithStartsWith(precreatedWarehouseId.Name()).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
 
 		require.Len(t, warehouses, 1)
@@ -108,11 +91,10 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("create: with resource constraint", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
-			ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintMemory1X),
-			WarehouseType:      sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized),
-			WarehouseSize:      sdk.Pointer(sdk.WarehouseSizeMedium),
-		})
+		err := client.Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).
+			WithResourceConstraint(sdk.WarehouseResourceConstraintMemory1X).
+			WithWarehouseType(sdk.WarehouseTypeSnowparkOptimized).
+			WithWarehouseSize(sdk.WarehouseSizeMedium))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
@@ -128,25 +110,25 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("create: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
-			OrReplace:                       sdk.Bool(true),
-			WarehouseType:                   sdk.Pointer(sdk.WarehouseTypeStandard),
-			WarehouseSize:                   sdk.Pointer(sdk.WarehouseSizeSmall),
-			MaxClusterCount:                 sdk.Int(8),
-			MinClusterCount:                 sdk.Int(2),
-			ScalingPolicy:                   sdk.Pointer(sdk.ScalingPolicyEconomy),
-			AutoSuspend:                     sdk.Int(1000),
-			AutoResume:                      sdk.Bool(true),
-			InitiallySuspended:              sdk.Bool(false),
-			ResourceMonitor:                 sdk.Pointer(resourceMonitor.ID()),
-			Comment:                         sdk.String("comment"),
-			EnableQueryAcceleration:         sdk.Bool(true),
-			QueryAccelerationMaxScaleFactor: sdk.Int(90),
-			MaxConcurrencyLevel:             sdk.Int(10),
-			StatementQueuedTimeoutInSeconds: sdk.Int(2000),
-			StatementTimeoutInSeconds:       sdk.Int(3000),
-			Generation:                      sdk.Pointer(sdk.WarehouseGenerationStandardGen2),
-			Tag: []sdk.TagAssociation{
+		err := client.Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).
+			WithOrReplace(true).
+			WithWarehouseType(sdk.WarehouseTypeStandard).
+			WithWarehouseSize(sdk.WarehouseSizeSmall).
+			WithMaxClusterCount(8).
+			WithMinClusterCount(2).
+			WithScalingPolicy(sdk.ScalingPolicyEconomy).
+			WithAutoSuspend(1000).
+			WithAutoResume(true).
+			WithInitiallySuspended(false).
+			WithResourceMonitor(resourceMonitor.ID()).
+			WithComment("comment").
+			WithEnableQueryAcceleration(true).
+			WithQueryAccelerationMaxScaleFactor(90).
+			WithMaxConcurrencyLevel(10).
+			WithStatementQueuedTimeoutInSeconds(2000).
+			WithStatementTimeoutInSeconds(3000).
+			WithGeneration(sdk.WarehouseGenerationStandardGen2).
+			WithTag([]sdk.TagAssociation{
 				{
 					Name:  tag.ID(),
 					Value: "v1",
@@ -155,8 +137,7 @@ func TestInt_Warehouses(t *testing.T) {
 					Name:  tag2.ID(),
 					Value: "v2",
 				},
-			},
-		})
+			}))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
@@ -231,7 +212,7 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("create: no options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.Create(ctx, id, nil)
+		err := client.Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
@@ -258,7 +239,7 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("create: empty comment", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{Comment: sdk.String("")})
+		err := client.Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).WithComment(""))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
@@ -269,7 +250,7 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("create adaptive: minimal", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.CreateAdaptive(ctx, id, &sdk.CreateAdaptiveWarehouseOptions{})
+		err := client.Warehouses.CreateAdaptive(ctx, sdk.NewCreateAdaptiveWarehouseRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
@@ -298,13 +279,12 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("create adaptive: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.CreateAdaptive(ctx, id, &sdk.CreateAdaptiveWarehouseOptions{
-			Comment:                         sdk.String("test adaptive warehouse"),
-			MaxQueryPerformanceLevel:        sdk.Pointer(sdk.MaxQueryPerformanceLevelMedium),
-			QueryThroughputMultiplier:       sdk.Int(22),
-			StatementQueuedTimeoutInSeconds: sdk.Int(30),
-			StatementTimeoutInSeconds:       sdk.Int(60),
-		})
+		err := client.Warehouses.CreateAdaptive(ctx, sdk.NewCreateAdaptiveWarehouseRequest(id).
+			WithComment("test adaptive warehouse").
+			WithMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+			WithQueryThroughputMultiplier(22).
+			WithStatementQueuedTimeoutInSeconds(30).
+			WithStatementTimeoutInSeconds(60))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
@@ -352,24 +332,21 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouse.MaxQueryPerformanceLevel)
 		assert.Nil(t, warehouse.QueryThroughputMultiplier)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			// WarehouseType omitted on purpose - it requires suspending the warehouse (separate test cases)
-			// ResourceConstraint omitted on purpose - it requires setting WarehouseType to SNOWPARK_OPTIMIZED (separate test cases)
-			Set: &sdk.WarehouseSet{
-				WarehouseSize:                   sdk.Pointer(sdk.WarehouseSizeMedium),
-				WaitForCompletion:               sdk.Bool(true),
-				MaxClusterCount:                 sdk.Int(3),
-				MinClusterCount:                 sdk.Int(2),
-				ScalingPolicy:                   sdk.Pointer(sdk.ScalingPolicyEconomy),
-				AutoSuspend:                     sdk.Int(1234),
-				AutoResume:                      sdk.Bool(false),
-				ResourceMonitor:                 resourceMonitor.ID(),
-				Comment:                         sdk.String("new comment"),
-				EnableQueryAcceleration:         sdk.Bool(true),
-				QueryAccelerationMaxScaleFactor: sdk.Int(2),
-			},
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		// WarehouseType omitted on purpose - it requires suspending the warehouse (separate test cases)
+		// ResourceConstraint omitted on purpose - it requires setting WarehouseType to SNOWPARK_OPTIMIZED (separate test cases)
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().
+				WithWarehouseSize(sdk.WarehouseSizeMedium).
+				WithWaitForCompletion(true).
+				WithMaxClusterCount(3).
+				WithMinClusterCount(2).
+				WithScalingPolicy(sdk.ScalingPolicyEconomy).
+				WithAutoSuspend(1234).
+				WithAutoResume(false).
+				WithResourceMonitor(resourceMonitor.ID()).
+				WithComment("new comment").
+				WithEnableQueryAcceleration(true).
+				WithQueryAccelerationMaxScaleFactor(2)))
 		require.NoError(t, err)
 
 		warehouseAfterSet, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -390,23 +367,20 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouseAfterSet.MaxQueryPerformanceLevel)
 		assert.Nil(t, warehouseAfterSet.QueryThroughputMultiplier)
 
-		alterOptions = &sdk.AlterWarehouseOptions{
-			// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
-			// AutoSuspend omitted on purpose - UNSET works incorrectly (returns 0 instead of default 600)
-			// WaitForCompletion omitted on purpose - no unset
-			Unset: &sdk.WarehouseUnset{
-				MaxClusterCount:                 sdk.Bool(true),
-				MinClusterCount:                 sdk.Bool(true),
-				ResourceMonitor:                 sdk.Bool(true),
-				Comment:                         sdk.Bool(true),
-				EnableQueryAcceleration:         sdk.Bool(true),
-				QueryAccelerationMaxScaleFactor: sdk.Bool(true),
-				WarehouseType:                   sdk.Bool(true),
-				ScalingPolicy:                   sdk.Bool(true),
-				AutoResume:                      sdk.Bool(true),
-			},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
+		// AutoSuspend omitted on purpose - UNSET works incorrectly (returns 0 instead of default 600)
+		// WaitForCompletion omitted on purpose - no unset
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().
+				WithMaxClusterCount(true).
+				WithMinClusterCount(true).
+				WithResourceMonitor(true).
+				WithComment(true).
+				WithEnableQueryAcceleration(true).
+				WithQueryAccelerationMaxScaleFactor(true).
+				WithWarehouseType(true).
+				WithScalingPolicy(true).
+				WithAutoResume(true)))
 		require.NoError(t, err)
 
 		warehouseAfterUnset, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -429,9 +403,9 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("alter adaptive: change warehouse type", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{
-			WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
-		})
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(id).
+			WithWarehouseSize(sdk.WarehouseSizeMedium),
+		)
 		t.Cleanup(warehouseCleanup)
 
 		// Wait for the warehouse to be started and confirm it's standard type
@@ -441,9 +415,8 @@ func TestInt_Warehouses(t *testing.T) {
 		require.Eventually(t, condition, 5*time.Second, time.Second)
 
 		// Change warehouse type from standard to adaptive
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(sdk.WarehouseTypeAdaptive)},
-		})
+		err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeAdaptive)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
@@ -463,12 +436,10 @@ func TestInt_Warehouses(t *testing.T) {
 		)
 
 		// Change warehouse type back from adaptive to standard
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{
-				WarehouseType: sdk.Pointer(sdk.WarehouseTypeStandard),
-				WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
-			},
-		})
+		err = client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().
+				WithWarehouseType(sdk.WarehouseTypeStandard).
+				WithWarehouseSize(sdk.WarehouseSizeMedium)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
@@ -501,14 +472,12 @@ func TestInt_Warehouses(t *testing.T) {
 			HasStatementTimeoutInSeconds(172800),
 		)
 
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{
-				MaxQueryPerformanceLevel:        sdk.Pointer(sdk.MaxQueryPerformanceLevelXSmall),
-				QueryThroughputMultiplier:       sdk.Int(5),
-				StatementQueuedTimeoutInSeconds: sdk.Int(100),
-				StatementTimeoutInSeconds:       sdk.Int(200),
-			},
-		})
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().
+				WithMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
+				WithQueryThroughputMultiplier(5).
+				WithStatementQueuedTimeoutInSeconds(100).
+				WithStatementTimeoutInSeconds(200)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
@@ -520,14 +489,12 @@ func TestInt_Warehouses(t *testing.T) {
 			HasStatementTimeoutInSeconds(200),
 		)
 
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{
-				MaxQueryPerformanceLevel:        sdk.Bool(true),
-				QueryThroughputMultiplier:       sdk.Bool(true),
-				StatementQueuedTimeoutInSeconds: sdk.Bool(true),
-				StatementTimeoutInSeconds:       sdk.Bool(true),
-			},
-		})
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().
+				WithMaxQueryPerformanceLevel(true).
+				WithQueryThroughputMultiplier(true).
+				WithStatementQueuedTimeoutInSeconds(true).
+				WithStatementTimeoutInSeconds(true)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
@@ -552,14 +519,11 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "0", helpers.FindParameter(t, parameters, sdk.AccountParameterStatementQueuedTimeoutInSeconds).Value)
 		assert.Equal(t, "172800", helpers.FindParameter(t, parameters, sdk.AccountParameterStatementTimeoutInSeconds).Value)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{
-				MaxConcurrencyLevel:             sdk.Int(4),
-				StatementQueuedTimeoutInSeconds: sdk.Int(2),
-				StatementTimeoutInSeconds:       sdk.Int(86400),
-			},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().
+				WithMaxConcurrencyLevel(4).
+				WithStatementQueuedTimeoutInSeconds(2).
+				WithStatementTimeoutInSeconds(86400)))
 		require.NoError(t, err)
 
 		parametersAfterSet, err := client.Warehouses.ShowParameters(ctx, warehouse.ID())
@@ -568,14 +532,11 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "2", helpers.FindParameter(t, parametersAfterSet, sdk.AccountParameterStatementQueuedTimeoutInSeconds).Value)
 		assert.Equal(t, "86400", helpers.FindParameter(t, parametersAfterSet, sdk.AccountParameterStatementTimeoutInSeconds).Value)
 
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{
-				MaxConcurrencyLevel:             sdk.Bool(true),
-				StatementQueuedTimeoutInSeconds: sdk.Bool(true),
-				StatementTimeoutInSeconds:       sdk.Bool(true),
-			},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().
+				WithMaxConcurrencyLevel(true).
+				WithStatementQueuedTimeoutInSeconds(true).
+				WithStatementTimeoutInSeconds(true)))
 		require.NoError(t, err)
 
 		parametersAfterUnset, err := client.Warehouses.ShowParameters(ctx, warehouse.ID())
@@ -588,9 +549,9 @@ func TestInt_Warehouses(t *testing.T) {
 	t.Run("alter: set and unset warehouse type with started warehouse", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose - we need medium to be able to use snowpark-optimized type
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{
-			WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
-		})
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(id).
+			WithWarehouseSize(sdk.WarehouseSizeMedium),
+		)
 		t.Cleanup(warehouseCleanup)
 
 		condition := warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool {
@@ -598,10 +559,8 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.Eventually(t, condition, 5*time.Second, time.Second)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized)},
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeSnowparkOptimized)))
 		require.NoError(t, err)
 
 		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -609,10 +568,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
 		assert.Contains(t, []any{sdk.WarehouseStateStarted, sdk.WarehouseStateResuming}, returnedWarehouse.State)
 
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{WarehouseType: sdk.Bool(true)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().WithWarehouseType(true)))
 		require.NoError(t, err)
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -623,10 +580,10 @@ func TestInt_Warehouses(t *testing.T) {
 	t.Run("alter: set and unset warehouse type with suspended warehouse", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose - we need medium to be able to use snowpark-optimized type
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{
-			WarehouseSize:      sdk.Pointer(sdk.WarehouseSizeMedium),
-			InitiallySuspended: sdk.Bool(true),
-		})
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(id).
+			WithWarehouseSize(sdk.WarehouseSizeMedium).
+			WithInitiallySuspended(true),
+		)
 		t.Cleanup(warehouseCleanup)
 
 		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -634,10 +591,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
 		assert.Contains(t, []any{sdk.WarehouseStateSuspended, sdk.WarehouseStateSuspending}, returnedWarehouse.State)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeSnowparkOptimized)))
 		require.NoError(t, err)
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -645,10 +600,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
 		assert.Equal(t, sdk.WarehouseStateSuspended, returnedWarehouse.State)
 
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{WarehouseType: sdk.Bool(true)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().WithWarehouseType(true)))
 		require.NoError(t, err)
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -659,10 +612,10 @@ func TestInt_Warehouses(t *testing.T) {
 	t.Run("alter: set and unset resource constraint", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose - we need medium to be able to use snowpark-optimized type
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{
-			WarehouseType: sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized),
-			WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
-		})
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(id).
+			WithWarehouseType(sdk.WarehouseTypeSnowparkOptimized).
+			WithWarehouseSize(sdk.WarehouseSizeMedium),
+		)
 		t.Cleanup(warehouseCleanup)
 
 		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -672,10 +625,8 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NotNil(t, returnedWarehouse.ResourceConstraint)
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintMemory1X)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().WithResourceConstraint(sdk.WarehouseResourceConstraintMemory1X)))
 		require.NoError(t, err)
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -687,10 +638,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasSize(sdk.WarehouseSizeMedium),
 		)
 
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().WithResourceConstraint(true)))
 		require.NoError(t, err)
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -702,7 +651,7 @@ func TestInt_Warehouses(t *testing.T) {
 	t.Run("alter: set and unset generation", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(id))
 		t.Cleanup(warehouseCleanup)
 
 		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -712,10 +661,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.NotNil(t, returnedWarehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *returnedWarehouse.Generation)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{Generation: sdk.Pointer(sdk.WarehouseGenerationStandardGen1)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().WithGeneration(sdk.WarehouseGenerationStandardGen1)))
 		require.NoError(t, err)
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -726,10 +673,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasType(sdk.WarehouseTypeStandard),
 		)
 
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{Generation: sdk.Bool(true)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().WithGeneration(true)))
 		require.NoError(t, err)
 
 		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -742,10 +687,9 @@ func TestInt_Warehouses(t *testing.T) {
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{AutoSuspend: sdk.Bool(true)},
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().WithAutoSuspend(true)))
 		require.NoError(t, err)
 		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
@@ -760,10 +704,8 @@ func TestInt_Warehouses(t *testing.T) {
 		t.Cleanup(warehouseCleanup)
 
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		alterOptions := &sdk.AlterWarehouseOptions{
-			NewName: &newID,
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithRenameTo(newID))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, newID))
 
@@ -775,7 +717,7 @@ func TestInt_Warehouses(t *testing.T) {
 	// This proves that we don't have to handle empty comment inside the resource.
 	t.Run("alter: set empty comment versus unset", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{Comment: sdk.String("abc")})
+		err := client.Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).WithComment("abc"))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
@@ -787,20 +729,12 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "", warehouse.Comment)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{
-				Comment: sdk.String("abc"),
-			},
-		}
-		err = client.Warehouses.Alter(ctx, id, alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
+			WithSet(*sdk.NewWarehouseSetRequest().WithComment("abc")))
 		require.NoError(t, err)
 
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{
-				Comment: sdk.Bool(true),
-			},
-		}
-		err = client.Warehouses.Alter(ctx, id, alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().WithComment(true)))
 		require.NoError(t, err)
 
 		warehouse, err = client.Warehouses.ShowByID(ctx, id)
@@ -813,10 +747,8 @@ func TestInt_Warehouses(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Suspend: sdk.Bool(true),
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSuspend(true))
 		require.NoError(t, err)
 
 		result, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -824,20 +756,20 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Contains(t, []sdk.WarehouseState{sdk.WarehouseStateSuspended, sdk.WarehouseStateSuspending}, result.State)
 
 		// check what happens if we suspend the already suspended warehouse
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSuspend(true))
 		require.ErrorContains(t, err, "090064 (22000): Invalid state.")
 
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Resume: sdk.Bool(true),
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithResume(true))
 		require.NoError(t, err)
 		result, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
 		assert.Contains(t, []sdk.WarehouseState{sdk.WarehouseStateStarted, sdk.WarehouseStateResuming}, result.State)
 
 		// check what happens if we resume the already started warehouse
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithResume(true))
 		require.ErrorContains(t, err, "090063 (22000): Invalid state.")
 	})
 
@@ -846,11 +778,9 @@ func TestInt_Warehouses(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
 
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Resume:      sdk.Bool(true),
-			IfSuspended: sdk.Bool(true),
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithResume(true).
+			WithIfSuspended(true))
 		require.NoError(t, err)
 
 		result, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
@@ -872,10 +802,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.Pointer(0), result.Queued)
 
 		// Abort all queries
-		alterOptions := &sdk.AlterWarehouseOptions{
-			AbortAllQueries: sdk.Bool(true),
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithAbortAllQueries(true))
 		require.NoError(t, err)
 
 		// Wait for abort to be effective
@@ -896,10 +824,8 @@ func TestInt_Warehouses(t *testing.T) {
 		startLongRunningQuery()
 
 		// Suspend the warehouse
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Suspend: sdk.Bool(true),
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSuspend(true))
 		require.NoError(t, err)
 
 		// check the state - it seems that the warehouse is suspended despite having a running query on it
@@ -920,9 +846,8 @@ func TestInt_Warehouses(t *testing.T) {
 		startLongRunningQuery()
 
 		// Resize the warehouse
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium)},
-		})
+		err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseSize(sdk.WarehouseSizeMedium)))
 		require.NoError(t, err)
 
 		// check the state - it seems it's resized despite query being run on it
@@ -953,14 +878,14 @@ func TestInt_Warehouses(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
 
-		err := client.Warehouses.Drop(ctx, warehouse.ID(), nil)
+		err := client.Warehouses.Drop(ctx, sdk.NewDropWarehouseRequest(warehouse.ID()))
 		require.NoError(t, err)
 		_, err = client.Warehouses.Describe(ctx, warehouse.ID())
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 
 	t.Run("drop: when warehouse does not exist", func(t *testing.T) {
-		err := client.Warehouses.Drop(ctx, NonExistingAccountObjectIdentifier, nil)
+		err := client.Warehouses.Drop(ctx, sdk.NewDropWarehouseRequest(NonExistingAccountObjectIdentifier))
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }
@@ -973,11 +898,11 @@ func TestInt_Warehouses_Experimental(t *testing.T) {
 	warehouseId1 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 	warehouseId2 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 	warehouseId3 := testClientHelper().Ids.RandomAccountObjectIdentifier()
-	_, warehouse1Cleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, warehouseId1, nil)
+	_, warehouse1Cleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(warehouseId1))
 	t.Cleanup(warehouse1Cleanup)
-	_, warehouse2Cleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, warehouseId2, nil)
+	_, warehouse2Cleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(warehouseId2))
 	t.Cleanup(warehouse2Cleanup)
-	_, warehouse3Cleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, warehouseId3, nil)
+	_, warehouse3Cleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(warehouseId3))
 	t.Cleanup(warehouse3Cleanup)
 
 	t.Run("show experimental", func(t *testing.T) {
@@ -1009,15 +934,10 @@ func TestInt_Warehouses_Experimental(t *testing.T) {
 	})
 
 	t.Run("show using starts with prefix", func(t *testing.T) {
-		showOptions := &sdk.ShowWarehouseOptions{
-			Like:       &sdk.Like{Pattern: sdk.String(warehouseId2.Name())},
-			StartsWith: sdk.String(prefix),
-			LimitFrom: &sdk.LimitFrom{
-				Rows: sdk.Int(1),
-			},
-		}
-
-		warehouses, err := client.Warehouses.Show(ctx, showOptions)
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithLike(sdk.Like{Pattern: sdk.String(warehouseId2.Name())}).
+			WithStartsWith(prefix).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
 		require.Len(t, warehouses, 1)
 		assert.Equal(t, warehouseId2.Name(), warehouses[0].Name)

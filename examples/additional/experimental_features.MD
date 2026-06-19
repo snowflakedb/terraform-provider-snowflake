@@ -83,4 +83,13 @@ Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake docume
 
 With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.
 
+#### HIERARCHY_RENAMES
+When enabled, allows in-place handling of hierarchy renames and moves for supported resources.
+
+Currently supported by: `snowflake_schema`, `snowflake_table`.
+
+Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on `snowflake_table` forces resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.
+
+For more information, see the [object renaming guide](./guides/object_renaming_guide).
+
 

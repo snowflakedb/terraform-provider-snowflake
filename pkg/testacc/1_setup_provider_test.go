@@ -59,6 +59,8 @@ var (
 	tagAssociationSafeDestroyProviderFactory         = providerFactoryUsingCache("TagAssociationSafeDestroy")
 	grantAccountRoleSafePublicRoleProviderFactory    = providerFactoryUsingCache("GrantAccountRoleSafePublicRole")
 	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
+	experimentalHierarchyRenamesProviderFactory      = providerFactoryUsingCache("ExperimentalHierarchyRenames")
+	activeWarehouseSetOnUserProviderFactory          = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate
@@ -69,6 +71,10 @@ func acceptanceTestsProvider() *schema.Provider {
 	// add resources and data sources that are not ready here like:
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	p.ResourcesMap["snowflake_hybrid_table"] = resources.HybridTable()
+	p.ResourcesMap["snowflake_api_integration_amazon_api_gateway"] = resources.ApiIntegrationAmazonApiGateway()
+	p.ResourcesMap["snowflake_api_integration_azure_api_management"] = resources.ApiIntegrationAzureApiManagement()
+	p.ResourcesMap["snowflake_api_integration_git_repository_github_app"] = resources.ApiIntegrationGitRepositoryGithubApp()
+	p.ResourcesMap["snowflake_api_integration_google_cloud_api_gateway"] = resources.ApiIntegrationGoogleCloudApiGateway()
 	return p
 }
 

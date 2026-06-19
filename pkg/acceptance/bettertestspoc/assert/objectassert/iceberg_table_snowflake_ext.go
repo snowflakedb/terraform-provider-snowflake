@@ -126,3 +126,14 @@ func (i *IcebergTableAssert) HasBaseLocationPrefix(prefix string) *IcebergTableA
 	})
 	return i
 }
+
+func (i *IcebergTableAssert) HasAutoRefreshStatusNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.AutoRefreshStatus == "" {
+			return fmt.Errorf("expected auto refresh status to be not empty; got: %v", o.AutoRefreshStatus)
+		}
+		return nil
+	})
+	return i
+}

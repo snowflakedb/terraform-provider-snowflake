@@ -97,8 +97,8 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			Show().
 			SQL("STORAGE LIFECYCLE POLICIES").
 			OptionalLike().
-			OptionalExtendedIn(),
-		g.ShowByIDExtendedInFiltering,
+			OptionalIn(),
+		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
 	DescribeOperationWithPairedStructs(
@@ -106,11 +106,11 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-storage-lifecycle-policy",
 		g.StructPair("describeStorageLifecyclePolicyDBRow", "StorageLifecyclePolicyDetails").
 			Text("name").
-			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
+			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignatureWithVectorSupport")).
 			DataType("return_type").
 			Text("body").
 			OptionalNumber("archive_for_days").
-			Text("archive_tier"),
+			Text("archive_tier", g.WithValueAdjuster("normalizeStorageLifecyclePolicyArchiveTier")),
 		g.NewQueryStruct("DescribeStorageLifecyclePolicy").
 			Describe().
 			SQL("STORAGE LIFECYCLE POLICY").

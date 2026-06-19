@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -196,12 +197,16 @@ func (s *SetTagRequest) toOpts() *setTagOptions {
 		SetTags:    s.SetTags,
 	}
 	// TODO [SNOW-1022645]: discuss how we handle situation like this in the SDK
-	if o.objectType == ObjectTypeColumn {
+	if slices.Contains([]ObjectType{ObjectTypeColumn, ObjectTypeIcebergTableColumn}, o.objectType) {
 		id, ok := o.objectName.(TableColumnIdentifier)
 		if ok {
-			o.objectType = ObjectTypeTable
+			if o.objectType == ObjectTypeColumn {
+				o.objectType = ObjectTypeTable
+			} else {
+				o.objectType = ObjectTypeIcebergTable
+			}
 			o.objectName = id.SchemaObjectId()
-			o.column = String(id.Name())
+			o.column = new(id.Name())
 		}
 	}
 	// TODO(SNOW-1818976): Remove this workaround. Currently ALTER "ORGNAME"."ACCOUNTNAME" SET TAG does not work, but ALTER "ACCOUNTNAME" does.
@@ -223,12 +228,16 @@ func (s *UnsetTagRequest) toOpts() *unsetTagOptions {
 		UnsetTags:  s.UnsetTags,
 	}
 	// TODO [SNOW-1022645]: discuss how we handle situation like this in the SDK
-	if o.objectType == ObjectTypeColumn {
+	if slices.Contains([]ObjectType{ObjectTypeColumn, ObjectTypeIcebergTableColumn}, o.objectType) {
 		id, ok := o.objectName.(TableColumnIdentifier)
 		if ok {
-			o.objectType = ObjectTypeTable
+			if o.objectType == ObjectTypeColumn {
+				o.objectType = ObjectTypeTable
+			} else {
+				o.objectType = ObjectTypeIcebergTable
+			}
 			o.objectName = id.SchemaObjectId()
-			o.column = String(id.Name())
+			o.column = new(id.Name())
 		}
 	}
 

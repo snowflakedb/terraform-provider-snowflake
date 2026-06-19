@@ -38,6 +38,16 @@ func (c *IcebergTableClient) CreateWithRequest(t *testing.T, request *sdk.Create
 	return obj, c.DropFunc(t, id)
 }
 
+func (c *IcebergTableClient) CreateFromIcebergFiles(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateFromIcebergFilesIcebergTableRequest) (*sdk.IcebergTable, func()) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.context.client.IcebergTables.CreateFromIcebergFiles(ctx, request)
+	require.NoError(t, err)
+	obj, err := c.context.client.IcebergTables.ShowByID(ctx, id)
+	require.NoError(t, err)
+	return obj, c.DropFunc(t, id)
+}
+
 func (c *IcebergTableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 
@@ -58,4 +68,19 @@ func (c *IcebergTableClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifie
 	t.Helper()
 	ctx := context.Background()
 	return c.context.client.IcebergTables.Describe(ctx, id)
+}
+
+func (c *IcebergTableClient) GetIcebergTableInformation(t *testing.T, id sdk.SchemaObjectIdentifier) sdk.IcebergTableInformation {
+	t.Helper()
+	ctx := context.Background()
+	info, err := c.context.client.SystemFunctions.GetIcebergTableInformation(ctx, id)
+	require.NoError(t, err)
+	require.NotNil(t, info)
+	return *info
+}
+
+func (c *IcebergTableClient) Alter(t *testing.T, request *sdk.AlterIcebergTableRequest) {
+	t.Helper()
+	ctx := context.Background()
+	require.NoError(t, c.context.client.IcebergTables.Alter(ctx, request))
 }

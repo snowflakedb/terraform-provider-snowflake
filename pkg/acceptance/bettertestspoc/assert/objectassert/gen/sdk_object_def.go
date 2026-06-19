@@ -222,6 +222,26 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.ApiIntegration{},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationAwsDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationAzureDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationGitHttpsApiDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationGoogleDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.CatalogIntegration{},
 	},

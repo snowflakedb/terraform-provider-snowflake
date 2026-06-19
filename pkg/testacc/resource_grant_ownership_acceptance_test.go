@@ -3,19 +3,15 @@
 package testacc
 
 import (
-	"context"
 	"fmt"
 	"regexp"
-	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -1192,92 +1188,6 @@ func TestAcc_GrantOwnership_OnTask(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantOwnership_OnTask_Discussion2877(t *testing.T) {
-	taskId := testClient().Ids.RandomSchemaObjectIdentifier()
-	childId := testClient().Ids.RandomSchemaObjectIdentifier()
-	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
-
-	configVariables := config.Variables{
-		"account_role_name": config.StringVariable(accountRoleId.Name()),
-		"database":          config.StringVariable(taskId.DatabaseName()),
-		"schema":            config.StringVariable(taskId.SchemaName()),
-		"task":              config.StringVariable(taskId.Name()),
-		"child":             config.StringVariable(childId.Name()),
-		"warehouse":         config.StringVariable(TestWarehouseName),
-	}
-
-	resourceName := "snowflake_grant_ownership.test"
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnTask_Discussion2877/1"),
-				ConfigVariables: configVariables,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_task.test", "name", taskId.Name()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TASK|%s", accountRoleId.FullyQualifiedName(), taskId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       taskId,
-							},
-						},
-					}, sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
-				),
-			},
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnTask_Discussion2877/2"),
-				ConfigVariables: configVariables,
-				ExpectError:     regexp.MustCompile("cannot have the given predecessor since they do not share the same owner role"),
-			},
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnTask_Discussion2877/3"),
-				ConfigVariables: configVariables,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_task.test", "name", taskId.Name()),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       taskId,
-							},
-						},
-					}, sdk.ObjectTypeTask, testClient().Context.CurrentRole(t).Name(), taskId.FullyQualifiedName()),
-				),
-			},
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantOwnership/OnTask_Discussion2877/4"),
-				ConfigVariables: configVariables,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_task.test", "name", taskId.Name()),
-					resource.TestCheckResourceAttr("snowflake_task.child", "name", childId.Name()),
-					resource.TestCheckResourceAttr("snowflake_task.child", "after.0", taskId.FullyQualifiedName()),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       taskId,
-							},
-						},
-					}, sdk.ObjectTypeTask, accountRoleId.Name(), taskId.FullyQualifiedName()),
-					checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
-						On: &sdk.ShowGrantsOn{
-							Object: &sdk.Object{
-								ObjectType: sdk.ObjectTypeTask,
-								Name:       childId,
-							},
-						},
-					}, sdk.ObjectTypeTask, accountRoleId.Name(), childId.FullyQualifiedName()),
-				),
-			},
-		},
-	})
-}
-
 func TestAcc_GrantOwnership_OnAllTasks(t *testing.T) {
 	taskId := testClient().Ids.RandomSchemaObjectIdentifier()
 	secondTaskId := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -1404,34 +1314,6 @@ func TestAcc_GrantOwnership_OnDatabaseRole(t *testing.T) {
 			},
 		},
 	})
-}
-
-func checkResourceOwnershipIsGranted(opts *sdk.ShowGrantOptions, grantOn sdk.ObjectType, roleName string, objectNames ...string) func(s *terraform.State) error {
-	return func(s *terraform.State) error {
-		client := TestAccProvider.Meta().(*provider.Context).Client
-		ctx := context.Background()
-
-		grants, err := client.Grants.Show(ctx, opts)
-		if err != nil {
-			return err
-		}
-
-		found := make([]string, 0)
-		for _, grant := range grants {
-			if grant.Privilege == "OWNERSHIP" &&
-				(grant.GrantedOn == grantOn || grant.GrantOn == grantOn) &&
-				grant.GranteeName.Name() == roleName &&
-				slices.Contains(objectNames, grant.Name.FullyQualifiedName()) {
-				found = append(found, grant.Name.FullyQualifiedName())
-			}
-		}
-
-		if len(found) != len(objectNames) {
-			return fmt.Errorf("unable to find ownership privilege on %s granted to %s, expected names: %v, found: %v", grantOn, roleName, objectNames, found)
-		}
-
-		return nil
-	}
 }
 
 func TestAcc_GrantOwnership_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {

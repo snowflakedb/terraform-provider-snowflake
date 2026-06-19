@@ -722,11 +722,7 @@ func TestAcc_Execute_QueryResultsRecomputedWithoutQueryChanges(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					testClient().Database.Alter(t, id, &sdk.AlterDatabaseOptions{
-						Set: &sdk.DatabaseSet{
-							Comment: sdk.String("some comment"),
-						},
-					})
+					testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(id).WithSet(*sdk.NewDatabaseSetRequest().WithComment("some comment")))
 				},
 				Config: executeConfigCreateDatabase(id),
 				Check: resource.ComposeTestCheckFunc(

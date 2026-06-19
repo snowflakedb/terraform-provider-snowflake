@@ -51,7 +51,7 @@ func (v *storageLifecyclePolicies) Show(ctx context.Context, request *ShowStorag
 func (v *storageLifecyclePolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicy, error) {
 	request := NewShowStorageLifecyclePolicyRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+		WithIn(In{Schema: id.SchemaId()})
 	storageLifecyclePolicies, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
@@ -164,9 +164,9 @@ func (r describeStorageLifecyclePolicyDBRow) convert() (*StorageLifecyclePolicyD
 	result := &StorageLifecyclePolicyDetails{
 		Name:        r.Name,
 		Body:        r.Body,
-		ArchiveTier: r.ArchiveTier,
+		ArchiveTier: normalizeStorageLifecyclePolicyArchiveTier(r.ArchiveTier),
 	}
-	if v, err := ParseTableColumnSignature(r.Signature); err != nil {
+	if v, err := ParseTableColumnSignatureWithVectorSupport(r.Signature); err != nil {
 		return nil, fmt.Errorf("parsing table column signature: %w", err)
 	} else {
 		result.Signature = v
