@@ -18,30 +18,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var apiIntegrationGitRepositoryPrivateLinkAllowedAuthConflicts = []string{
-	"all_allowed_authentication_secrets",
-	"no_allowed_authentication_secrets",
-	"allowed_authentication_secrets",
-}
-
 var apiIntegrationGitRepositoryPrivateLinkSchema = func() map[string]*schema.Schema {
 	apiIntegrationGitRepositoryPrivateLink := map[string]*schema.Schema{
 		"all_allowed_authentication_secrets": {
 			Type:          schema.TypeBool,
 			Optional:      true,
-			ConflictsWith: apiIntegrationGitRepositoryPrivateLinkAllowedAuthConflicts,
+			ConflictsWith: []string{"no_allowed_authentication_secrets", "allowed_authentication_secrets"},
 			Description:   "When set to true, all authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `no_allowed_authentication_secrets` and `allowed_authentication_secrets`.",
 		},
 		"no_allowed_authentication_secrets": {
 			Type:          schema.TypeBool,
 			Optional:      true,
-			ConflictsWith: apiIntegrationGitRepositoryPrivateLinkAllowedAuthConflicts,
+			ConflictsWith: []string{"all_allowed_authentication_secrets", "allowed_authentication_secrets"},
 			Description:   "When set to true, no authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `allowed_authentication_secrets`.",
 		},
 		"allowed_authentication_secrets": {
 			Type:             schema.TypeSet,
 			Optional:         true,
-			ConflictsWith:    apiIntegrationGitRepositoryPrivateLinkAllowedAuthConflicts,
+			ConflictsWith:    []string{"all_allowed_authentication_secrets", "no_allowed_authentication_secrets"},
 			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_authentication_secrets"),
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,

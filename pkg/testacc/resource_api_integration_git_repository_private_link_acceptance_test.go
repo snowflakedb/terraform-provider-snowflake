@@ -27,8 +27,6 @@ import (
 func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://github.com/my-org/"
-	const blockedPrefix = "https://github.com/my-org/blocked/"
 	apiProvider := string(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi)
 
 	comment := random.Comment()
@@ -38,10 +36,10 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 	_, cleanupCert := testClient().Secret.CreateWithGenericString(t, certSecretId, random.GenerateX509(t))
 	t.Cleanup(cleanupCert)
 
-	basic := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true)
-	withOptionals := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
+	basic := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{gitAllowedPrefix}, true, true)
+	withOptionals := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{gitAllowedPrefix}, true, true).
 		WithAllAllowedAuthenticationSecrets(true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithApiBlockedPrefixes([]string{gitBlockedPrefix}).
 		WithTlsTrustedCertificates([]string{certSecretId.FullyQualifiedName()}).
 		WithComment(comment)
 
@@ -63,10 +61,12 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasComment(""),
 		resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			HasEnabled(true).
 			HasApiProvider(apiProvider).
 			HasAllowedAuthenticationSecrets("").
 			HasUsePrivatelinkEndpoint(true).
 			HasNoTlsTrustedCertificates().
+			HasAllowedPrefixes(gitAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
@@ -75,7 +75,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasNoUserAuthType().
 			HasAllowedAuthenticationSecrets("").
 			HasUsePrivatelinkEndpoint(true).
-			HasAllowedPrefixes(allowedPrefix).
+			HasAllowedPrefixes(gitAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasNoTlsTrustedCertificates().
 			HasComment(""),
@@ -89,7 +89,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasAllAllowedAuthenticationSecrets(true).
 			HasNoAllowedAuthenticationSecrets(false).
 			HasAllowedAuthenticationSecretsEmpty().
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasApiBlockedPrefixes(gitBlockedPrefix).
 			HasTlsTrustedCertificates(certSecretId.FullyQualifiedName()).
 			HasCommentString(comment),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -97,9 +97,13 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasComment(comment),
 		resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			HasEnabled(true).
 			HasApiProvider(apiProvider).
 			HasAllowedAuthenticationSecrets("ALL").
 			HasUsePrivatelinkEndpoint(true).
+			HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())).
+			HasAllowedPrefixes(gitAllowedPrefix).
+			HasBlockedPrefixes(gitBlockedPrefix).
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
@@ -107,8 +111,8 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasNoUserAuthType().
 			HasAllowedAuthenticationSecrets("ALL").
 			HasUsePrivatelinkEndpoint(true).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasAllowedPrefixes(gitAllowedPrefix).
+			HasBlockedPrefixes(gitBlockedPrefix).
 			HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())).
 			HasComment(comment),
 	}
@@ -201,18 +205,17 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 // between the four valid states: not-set, ALL, NONE, and a specific secrets list.
 func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	const allowedPrefix = "https://github.com/my-org/"
 
 	secretId, cleanupSecret := testClient().Secret.CreateRandomPasswordSecret(t)
 	t.Cleanup(cleanupSecret)
 
-	withNone := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
+	withNone := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{gitAllowedPrefix}, true, true).
 		WithNoAllowedAuthenticationSecrets(true)
-	withAll := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
+	withAll := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{gitAllowedPrefix}, true, true).
 		WithAllAllowedAuthenticationSecrets(true)
-	withList := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
+	withList := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{gitAllowedPrefix}, true, true).
 		WithAllowedAuthenticationSecrets([]string{secretId.FullyQualifiedName()})
-	withNotSet := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true)
+	withNotSet := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{gitAllowedPrefix}, true, true)
 
 	ref := withNotSet.ResourceReference()
 
@@ -314,12 +317,10 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 func TestAcc_ApiIntegrationGitRepositoryPrivateLink_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	const allowedPrefix = "https://github.com/my-org/"
-	const blockedPrefix = "https://github.com/my-org/blocked/"
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{allowedPrefix}, true, true).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+	testModel := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(), []string{gitAllowedPrefix}, true, true).
+		WithApiBlockedPrefixes([]string{gitBlockedPrefix}).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -333,9 +334,9 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_Import(t *testing.T) {
 				PreConfig: func() {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithComment(comment).
-							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitBlockedPrefix}}).
 							WithGitHttpsApiPrivateLinkProviderParams(*sdk.NewGitHttpsApiPrivateLinkParamsRequest(true)),
 					)
 					t.Cleanup(cleanup)
@@ -366,7 +367,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_Import_WrongProviderType(t *
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	dummyModel := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(),
-		[]string{"https://github.com/my-org/"}, true, true)
+		[]string{gitAllowedPrefix}, true, true)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
