@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestShowGrantsOfRoleCache_MissCallsLoadFn(t *testing.T) {
-	cache := NewShowGrantsOfRoleCache()
+func TestCache_MissCallsLoadFn(t *testing.T) {
+	cache := NewCache[[]sdk.Grant]()
 	calls := 0
 	grants := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 
@@ -25,8 +25,8 @@ func TestShowGrantsOfRoleCache_MissCallsLoadFn(t *testing.T) {
 	assert.Equal(t, 1, calls)
 }
 
-func TestShowGrantsOfRoleCache_HitSkipsLoadFn(t *testing.T) {
-	cache := NewShowGrantsOfRoleCache()
+func TestCache_HitSkipsLoadFn(t *testing.T) {
+	cache := NewCache[[]sdk.Grant]()
 	calls := 0
 	grants := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 
@@ -41,8 +41,8 @@ func TestShowGrantsOfRoleCache_HitSkipsLoadFn(t *testing.T) {
 	assert.Equal(t, 1, calls, "loadFn should be called exactly once for repeated reads of the same key")
 }
 
-func TestShowGrantsOfRoleCache_InvalidateForcesMiss(t *testing.T) {
-	cache := NewShowGrantsOfRoleCache()
+func TestCache_InvalidateForcesMiss(t *testing.T) {
+	cache := NewCache[[]sdk.Grant]()
 	calls := 0
 
 	_, _ = cache.GetOrLoad("ROLE_A", func() ([]sdk.Grant, error) { calls++; return nil, nil })
@@ -52,13 +52,13 @@ func TestShowGrantsOfRoleCache_InvalidateForcesMiss(t *testing.T) {
 	assert.Equal(t, 2, calls, "loadFn should be called again after invalidation")
 }
 
-func TestShowGrantsOfRoleCache_InvalidateUnknownKeyIsNoop(t *testing.T) {
-	cache := NewShowGrantsOfRoleCache()
+func TestCache_InvalidateUnknownKeyIsNoop(t *testing.T) {
+	cache := NewCache[[]sdk.Grant]()
 	assert.NotPanics(t, func() { cache.Invalidate("NONEXISTENT") })
 }
 
-func TestShowGrantsOfRoleCache_ErrorNotCached(t *testing.T) {
-	cache := NewShowGrantsOfRoleCache()
+func TestCache_ErrorNotCached(t *testing.T) {
+	cache := NewCache[[]sdk.Grant]()
 	calls := 0
 	boom := errors.New("snowflake unavailable")
 
@@ -72,8 +72,8 @@ func TestShowGrantsOfRoleCache_ErrorNotCached(t *testing.T) {
 	assert.Equal(t, 2, calls, "errors must not be cached; loadFn must be called on every miss")
 }
 
-func TestShowGrantsOfRoleCache_KeysAreIndependent(t *testing.T) {
-	cache := NewShowGrantsOfRoleCache()
+func TestCache_KeysAreIndependent(t *testing.T) {
+	cache := NewCache[[]sdk.Grant]()
 	grantsA := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 	grantsB := []sdk.Grant{{GrantedTo: sdk.ObjectTypeUser}}
 
@@ -88,8 +88,8 @@ func TestShowGrantsOfRoleCache_KeysAreIndependent(t *testing.T) {
 	assert.Equal(t, grantsA, resultA2)
 }
 
-func TestShowGrantsOfRoleCache_ConcurrentReadsAreSafe(t *testing.T) {
-	cache := NewShowGrantsOfRoleCache()
+func TestCache_ConcurrentReadsAreSafe(t *testing.T) {
+	cache := NewCache[[]sdk.Grant]()
 	grants := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 	// Prime the cache.
 	_, _ = cache.GetOrLoad("ROLE_A", func() ([]sdk.Grant, error) { return grants, nil })
@@ -107,8 +107,8 @@ func TestShowGrantsOfRoleCache_ConcurrentReadsAreSafe(t *testing.T) {
 	wg.Wait()
 }
 
-func TestShowGrantsOfRoleCache_ConcurrentWritesAreSafe(t *testing.T) {
-	cache := NewShowGrantsOfRoleCache()
+func TestCache_ConcurrentWritesAreSafe(t *testing.T) {
+	cache := NewCache[[]sdk.Grant]()
 	grants := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 
 	var wg sync.WaitGroup
@@ -123,4 +123,27 @@ func TestShowGrantsOfRoleCache_ConcurrentWritesAreSafe(t *testing.T) {
 		}(i)
 	}
 	wg.Wait()
+}
+
+// TestCache_GenericValueType verifies the cache works for value types other than []sdk.Grant,
+// confirming the parametrization is genuinely generic and reusable for future lookups.
+func TestCache_GenericValueType(t *testing.T) {
+	cache := NewCache[int]()
+	calls := 0
+
+	for range 3 {
+		result, err := cache.GetOrLoad("answer", func() (int, error) {
+			calls++
+			return 42, nil
+		})
+		require.NoError(t, err)
+		assert.Equal(t, 42, result)
+	}
+	assert.Equal(t, 1, calls, "loadFn should be called exactly once for repeated reads of the same key")
+
+	// Error path returns the zero value of the type parameter.
+	boom := errors.New("boom")
+	result, err := cache.GetOrLoad("missing", func() (int, error) { return 7, boom })
+	assert.ErrorIs(t, err, boom)
+	assert.Equal(t, 0, result, "error path must return the zero value of T")
 }

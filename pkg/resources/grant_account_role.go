@@ -125,7 +125,13 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		return nil
 	}
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		// The trailing Read only re-confirms the grant we just created; this resource has no
+		// computed/server-default fields to populate, so the Read is redundant here. With caching
+		// enabled we skip it to avoid an extra SHOW GRANTS during apply. We still invalidate so any
+		// later Read for this role in the same plan observes the new grant.
 		providerCtx.GrantShowOfRoleCache.Invalidate(roleIdentifier.FullyQualifiedName())
+		log.Printf("[DEBUG] skipping trailing SHOW GRANTS read after create (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleShowCaching)
+		return nil
 	}
 	return ReadGrantAccountRole(ctx, d, meta)
 }

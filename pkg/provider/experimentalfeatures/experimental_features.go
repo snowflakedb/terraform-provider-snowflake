@@ -148,7 +148,8 @@ var allExperiments = []Experiment{
 			"Enables per-plan in-memory caching of `SHOW GRANTS OF ROLE` results for the `snowflake_grant_account_role` resource.",
 			"Without caching, every resource instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same role, this results in N identical round-trips returning the same full result set — only 1 is needed.",
 			"When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain visible to subsequent Reads.",
-			"Intended for large configurations (thousands of `snowflake_grant_account_role` resources) where plan time is dominated by redundant `SHOW GRANTS OF ROLE` calls.",
+			"Additionally, the trailing Read at the end of Create is skipped (this resource has no computed or server-default fields to populate), removing a redundant `SHOW GRANTS OF ROLE` call per grant during apply.",
+			"Intended for large configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.",
 		),
 	},
 	{

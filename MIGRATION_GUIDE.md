@@ -72,7 +72,7 @@ A new experiment `GRANT_ACCOUNT_ROLE_SHOW_CACHING` is now available for the `sno
 
 Without caching, every `snowflake_grant_account_role` instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same set of roles (a common RBAC topology), this produces N identical round-trips that each return the same full result set — only 1 is needed per unique role per plan.
 
-When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain correctly visible to subsequent Reads.
+When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain correctly visible to subsequent Reads. The trailing Read at the end of Create is also skipped (this resource has no computed or server-default fields to populate), removing a redundant `SHOW GRANTS OF ROLE` call per grant during apply.
 
 To enable, add `GRANT_ACCOUNT_ROLE_SHOW_CACHING` to the `experimental_features_enabled` field in the provider configuration:
 
@@ -82,7 +82,7 @@ provider "snowflake" {
 }
 ```
 
-No changes to existing configurations are required. The experiment is intended for large RBAC configurations (thousands of `snowflake_grant_account_role` resources) where plan time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
+No changes to existing configurations are required. The experiment is intended for large RBAC configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
 
 ### *(new feature)* `log_event_level` parameter support
 

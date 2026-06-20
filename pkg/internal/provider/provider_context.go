@@ -6,5 +6,5 @@ type Context struct {
 	Client               *sdk.Client
 	EnabledFeatures      []string
 	EnabledExperiments   []string
-	GrantShowOfRoleCache *ShowGrantsOfRoleCache
+	GrantShowOfRoleCache *Cache[[]sdk.Grant]
 }

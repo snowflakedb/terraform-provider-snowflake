@@ -58,6 +58,7 @@ var (
 	grantsSafeDestroyProviderFactory                 = providerFactoryUsingCache("GrantsSafeDestroy")
 	tagAssociationSafeDestroyProviderFactory         = providerFactoryUsingCache("TagAssociationSafeDestroy")
 	grantAccountRoleSafePublicRoleProviderFactory    = providerFactoryUsingCache("GrantAccountRoleSafePublicRole")
+	grantAccountRoleShowCachingProviderFactory       = providerFactoryUsingCache("GrantAccountRoleShowCaching")
 	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
 	experimentalHierarchyRenamesProviderFactory      = providerFactoryUsingCache("ExperimentalHierarchyRenames")
 	activeWarehouseSetOnUserProviderFactory          = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
