@@ -15,13 +15,13 @@ var apiIntegrationAllowedAuthSecretsSchema = map[string]*schema.Schema{
 		Type:          schema.TypeBool,
 		Optional:      true,
 		ConflictsWith: []string{"no_allowed_authentication_secrets", "allowed_authentication_secrets"},
-		Description:   "When set to true, all authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `no_allowed_authentication_secrets` and `allowed_authentication_secrets`.",
+		Description:   externalChangesNotDetectedFieldDescription("When set to true, all authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `no_allowed_authentication_secrets` and `allowed_authentication_secrets`."),
 	},
 	"no_allowed_authentication_secrets": {
 		Type:          schema.TypeBool,
 		Optional:      true,
 		ConflictsWith: []string{"all_allowed_authentication_secrets", "allowed_authentication_secrets"},
-		Description:   "When set to true, no authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `allowed_authentication_secrets`.",
+		Description:   externalChangesNotDetectedFieldDescription("When set to true, no authentication secrets are allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `allowed_authentication_secrets`."),
 	},
 	"allowed_authentication_secrets": {
 		Type:             schema.TypeSet,
@@ -32,7 +32,7 @@ var apiIntegrationAllowedAuthSecretsSchema = map[string]*schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		},
-		Description: "A list of fully-qualified secret identifiers (database.schema.secret) allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `no_allowed_authentication_secrets`.",
+		Description: externalChangesNotDetectedFieldDescription("A list of fully-qualified secret identifiers (database.schema.secret) allowed to be used when authenticating to the git repository. Conflicts with `all_allowed_authentication_secrets` and `no_allowed_authentication_secrets`."),
 	},
 }
 

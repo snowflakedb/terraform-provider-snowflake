@@ -4,6 +4,7 @@
 package resourceshowoutputassert
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -102,8 +103,32 @@ func (a *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert) HasNoUsePri
 	return a
 }
 
+func (a *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert) HasTlsTrustedCertificates(expected ...string) *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert {
+	a.AddAssertion(assert.ResourceDescribeOutputValueSet("tls_trusted_certificates.#", fmt.Sprintf("%d", len(expected))))
+	for i, v := range expected {
+		a.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("tls_trusted_certificates.%d", i), v))
+	}
+	return a
+}
+
 func (a *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert) HasNoTlsTrustedCertificates() *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert {
 	a.AddAssertion(assert.ResourceDescribeOutputValueSet("tls_trusted_certificates.#", "0"))
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert) HasAllowedPrefixes(expected ...string) *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert {
+	a.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_prefixes.#", fmt.Sprintf("%d", len(expected))))
+	for i, v := range expected {
+		a.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("allowed_prefixes.%d", i), v))
+	}
+	return a
+}
+
+func (a *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert) HasBlockedPrefixes(expected ...string) *ApiIntegrationGitRepositoryPrivateLinkDescribeOutputAssert {
+	a.AddAssertion(assert.ResourceDescribeOutputValueSet("blocked_prefixes.#", fmt.Sprintf("%d", len(expected))))
+	for i, v := range expected {
+		a.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("blocked_prefixes.%d", i), v))
+	}
 	return a
 }
 

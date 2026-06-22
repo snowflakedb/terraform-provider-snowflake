@@ -99,7 +99,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
 			HasEnabled(true).
 			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets("ALL").
+			HasAllowedAuthenticationSecrets("").
 			HasUsePrivatelinkEndpoint(true).
 			HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())).
 			HasAllowedPrefixes(gitAllowedPrefix).
@@ -109,7 +109,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasNoUserAuthType().
-			HasAllowedAuthenticationSecrets("ALL").
+			HasAllowedAuthenticationSecrets("").
 			HasUsePrivatelinkEndpoint(true).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).
@@ -129,7 +129,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Import - without optionals
+			// Import - without optionals (basic has no auth secrets, so import round-trips cleanly)
 			{
 				Config:            config.FromModels(t, basic),
 				ResourceName:      ref,
@@ -146,12 +146,13 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, withOptionals),
 				Check:  assertThat(t, assertWithOptionals...),
 			},
-			// Import - with optionals
+			// Import - with optionals (auth secrets cannot be read back from Snowflake, so ignore those fields)
 			{
-				Config:            config.FromModels(t, withOptionals),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, withOptionals),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"all_allowed_authentication_secrets", "no_allowed_authentication_secrets", "allowed_authentication_secrets"},
 			},
 			// Update - unset optionals
 			{
@@ -236,7 +237,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecretsEmpty(),
 			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets("ALL"),
+				HasAllowedAuthenticationSecrets(""),
 		}
 	}
 	assertNone := func() []assert.TestCheckFuncProvider {
@@ -246,7 +247,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoAllowedAuthenticationSecrets(true).
 				HasAllowedAuthenticationSecretsEmpty(),
 			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets("NONE"),
+				HasAllowedAuthenticationSecrets(""),
 		}
 	}
 	assertList := func() []assert.TestCheckFuncProvider {
@@ -256,7 +257,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
 			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
+				HasAllowedAuthenticationSecrets(""),
 		}
 	}
 

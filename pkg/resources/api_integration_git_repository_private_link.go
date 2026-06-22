@@ -167,7 +167,6 @@ func ReadApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.R
 
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
-		setAllowedAuthSecretFieldsFromDescribe(d, gitDetails.AllowedAuthenticationSecrets),
 		d.Set("use_privatelink_endpoint", gitDetails.UsePrivatelinkEndpoint),
 		d.Set("tls_trusted_certificates", gitDetails.TlsTrustedCertificates),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryPrivateLinkDetailsToSchema(gitDetails)}),
