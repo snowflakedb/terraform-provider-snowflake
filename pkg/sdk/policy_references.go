@@ -24,16 +24,18 @@ type policyReferenceParameters struct {
 type PolicyEntityDomain string
 
 const (
-	PolicyEntityDomainAccount     PolicyEntityDomain = "ACCOUNT"
-	PolicyEntityDomainIntegration PolicyEntityDomain = "INTEGRATION"
-	PolicyEntityDomainTable       PolicyEntityDomain = "TABLE"
-	PolicyEntityDomainTag         PolicyEntityDomain = "TAG"
-	PolicyEntityDomainUser        PolicyEntityDomain = "USER"
-	PolicyEntityDomainView        PolicyEntityDomain = "VIEW"
+	PolicyEntityDomainAccount      PolicyEntityDomain = "ACCOUNT"
+	PolicyEntityDomainIcebergTable PolicyEntityDomain = "ICEBERG_TABLE"
+	PolicyEntityDomainIntegration  PolicyEntityDomain = "INTEGRATION"
+	PolicyEntityDomainTable        PolicyEntityDomain = "TABLE"
+	PolicyEntityDomainTag          PolicyEntityDomain = "TAG"
+	PolicyEntityDomainUser         PolicyEntityDomain = "USER"
+	PolicyEntityDomainView         PolicyEntityDomain = "VIEW"
 )
 
 var AllPolicyEntityDomains = []PolicyEntityDomain{
 	PolicyEntityDomainAccount,
+	PolicyEntityDomainIcebergTable,
 	PolicyEntityDomainIntegration,
 	PolicyEntityDomainTable,
 	PolicyEntityDomainTag,
@@ -46,6 +48,8 @@ func ToPolicyEntityDomain(s string) (PolicyEntityDomain, error) {
 	switch s {
 	case string(PolicyEntityDomainAccount):
 		return PolicyEntityDomainAccount, nil
+	case string(PolicyEntityDomainIcebergTable):
+		return PolicyEntityDomainIcebergTable, nil
 	case string(PolicyEntityDomainIntegration):
 		return PolicyEntityDomainIntegration, nil
 	case string(PolicyEntityDomainTable):
@@ -69,15 +73,16 @@ type policyReferenceFunctionArguments struct {
 type PolicyKind string
 
 const (
-	PolicyKindAggregationPolicy    PolicyKind = "AGGREGATION_POLICY"
-	PolicyKindAuthenticationPolicy PolicyKind = "AUTHENTICATION_POLICY"
-	PolicyKindFeaturePolicy        PolicyKind = "FEATURE_POLICY"
-	PolicyKindMaskingPolicy        PolicyKind = "MASKING_POLICY"
-	PolicyKindPackagesPolicy       PolicyKind = "PACKAGES_POLICY"
-	PolicyKindPasswordPolicy       PolicyKind = "PASSWORD_POLICY"
-	PolicyKindProjectionPolicy     PolicyKind = "PROJECTION_POLICY"
-	PolicyKindRowAccessPolicy      PolicyKind = "ROW_ACCESS_POLICY"
-	PolicyKindSessionPolicy        PolicyKind = "SESSION_POLICY"
+	PolicyKindAggregationPolicy      PolicyKind = "AGGREGATION_POLICY"
+	PolicyKindAuthenticationPolicy   PolicyKind = "AUTHENTICATION_POLICY"
+	PolicyKindFeaturePolicy          PolicyKind = "FEATURE_POLICY"
+	PolicyKindMaskingPolicy          PolicyKind = "MASKING_POLICY"
+	PolicyKindPackagesPolicy         PolicyKind = "PACKAGES_POLICY"
+	PolicyKindPasswordPolicy         PolicyKind = "PASSWORD_POLICY"
+	PolicyKindProjectionPolicy       PolicyKind = "PROJECTION_POLICY"
+	PolicyKindRowAccessPolicy        PolicyKind = "ROW_ACCESS_POLICY"
+	PolicyKindSessionPolicy          PolicyKind = "SESSION_POLICY"
+	PolicyKindStorageLifecyclePolicy PolicyKind = "STORAGE_LIFECYCLE_POLICY"
 )
 
 type PolicyReference struct {

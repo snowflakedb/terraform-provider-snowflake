@@ -68,17 +68,22 @@ func TestInt_IcebergTables(t *testing.T) {
 		refColumnName *string,
 	) {
 		t.Helper()
-		assert.Equal(t, policyId.Name(), policyRef.PolicyName)
-		assert.Equal(t, policyKind, policyRef.PolicyKind)
-		assert.Equal(t, tableId.Name(), policyRef.RefEntityName)
-		assert.Equal(t, "ICEBERG_TABLE", policyRef.RefEntityDomain)
-		assert.Equal(t, "ACTIVE", *policyRef.PolicyStatus)
+		ass := objectassert.PolicyReferenceFromObject(t, &policyRef).
+			HasPolicyDb(policyId.DatabaseName()).
+			HasPolicySchema(policyId.SchemaName()).
+			HasPolicyName(policyId.Name()).
+			HasPolicyKind(policyKind).
+			HasRefDatabaseName(tableId.DatabaseName()).
+			HasRefSchemaName(tableId.SchemaName()).
+			HasRefEntityName(tableId.Name()).
+			HasRefEntityDomain(string(sdk.PolicyEntityDomainIcebergTable)).
+			HasPolicyStatus("ACTIVE")
 		if refColumnName != nil {
-			assert.NotNil(t, policyRef.RefColumnName)
-			assert.Equal(t, *refColumnName, *policyRef.RefColumnName)
+			ass.HasRefColumnName(*refColumnName)
 		} else {
-			assert.Nil(t, policyRef.RefColumnName)
+			ass.HasNoRefColumnName()
 		}
+		assertThatObject(t, ass)
 	}
 
 	snowflakeCatalog := sdk.IcebergTableCatalogSnowflake
