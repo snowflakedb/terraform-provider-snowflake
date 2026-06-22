@@ -731,192 +731,20 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && (d.HasChange("database") || d.HasChange("schema")) {
-		oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
-		oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
-		oldSchemaNameRaw, newSchemaNameRaw := d.GetChange("schema")
-		oldSchemaName, newSchemaName := oldSchemaNameRaw.(string), newSchemaNameRaw.(string)
-		tableName := id.Name()
-
-		databaseChanged := d.HasChange("database")
-		schemaChanged := d.HasChange("schema")
-
-		oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
-		newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
-		oldSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(oldDatabaseId, oldSchemaName)
-		newSchemaId := sdk.NewDatabaseObjectIdentifierInDatabase(newDatabaseId, newSchemaName)
-		oldTableId := sdk.NewSchemaObjectIdentifierInSchema(oldSchemaId, tableName)
-		newTableId := sdk.NewSchemaObjectIdentifierInSchema(newSchemaId, tableName)
-
-		switch {
-		// Case A: Only database changes (same as schema resource's 2-level logic)
-		case databaseChanged && !schemaChanged:
-			_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
-			newDatabaseExists := errNewDb == nil
-			_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
-			oldDatabaseExists := errOldDb == nil
-			_, errNewSchema := client.Schemas.ShowByID(ctx, newSchemaId)
-			newSchemaExists := errNewSchema == nil
-			_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
-			oldSchemaExists := errOldSchema == nil
-
-			isRenameOfTheGivenLevelInTheHierarchy := func() bool {
-				return newDatabaseExists && !oldDatabaseExists && newSchemaExists
+		tableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithNewName(&targetId))
 			}
-			isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func() bool {
-				return newDatabaseExists && oldDatabaseExists && oldSchemaExists
-			}
+		}
 
-			switch {
-			// Case 1: "Rename of the given level in the hierarchy"
-			case isRenameOfTheGivenLevelInTheHierarchy():
-				log.Printf("[DEBUG] Database was renamed for table - no Snowflake modification needed, updating the id...")
-				// Just update the ID — no Snowflake modification needed
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
-				id = newTableId
-			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
-				log.Printf("[DEBUG] Moving table to different database - executing ALTER TABLE RENAME TO...")
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", id.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
-				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
-				id = newTableId
-			default:
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf(
-					"unknown rename use case: old database %s (exists: %t), new database %s (exists: %t), old schema %s (exists: %t), new schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
-					oldDatabaseId.FullyQualifiedName(), oldDatabaseExists,
-					newDatabaseId.FullyQualifiedName(), newDatabaseExists,
-					oldSchemaId.FullyQualifiedName(), oldSchemaExists,
-					newSchemaId.FullyQualifiedName(), newSchemaExists,
-				))
-			}
-
-		// Case B: Only schema changes (similar to schema resource's 2-level logic, but schema-table instead of database-schema)
-		case !databaseChanged && schemaChanged:
-			_, errNewSchema := client.Schemas.ShowByID(ctx, newSchemaId)
-			newSchemaExists := errNewSchema == nil
-			_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
-			oldSchemaExists := errOldSchema == nil
-			_, errNewTable := client.Tables.ShowByID(ctx, newTableId)
-			newTableExists := errNewTable == nil
-			_, errOldTable := client.Tables.ShowByID(ctx, oldTableId)
-			oldTableExists := errOldTable == nil
-
-			isRenameOfTheGivenLevelInTheHierarchy := func() bool {
-				return newSchemaExists && !oldSchemaExists && newTableExists
-			}
-			isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func() bool {
-				return newSchemaExists && oldSchemaExists && oldTableExists
-			}
-
-			switch {
-			// Case 1: "Rename of the given level in the hierarchy"
-			case isRenameOfTheGivenLevelInTheHierarchy():
-				log.Printf("[DEBUG] Schema was renamed for table - no Snowflake modification needed, updating the id...")
-				// Just update the ID — no Snowflake modification needed
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
-				id = newTableId
-			case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
-				log.Printf("[DEBUG] Moving table to different schema - executing ALTER TABLE RENAME TO...")
-				// Perform the rename in Snowflake: ALTER TABLE A.X RENAME TO B.X
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", id.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
-				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
-				id = newTableId
-			default:
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf(
-					"unknown rename use case: old schema %s (exists: %t), new schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
-					oldSchemaId.FullyQualifiedName(), oldSchemaExists,
-					newSchemaId.FullyQualifiedName(), newSchemaExists,
-				))
-			}
-
-		// Case C: Both database AND schema change (full 4-scenario algorithm)
-		default:
-			_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
-			newDatabaseExists := errNewDb == nil
-			_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
-			oldDatabaseExists := errOldDb == nil
-
-			// Probe schemas
-			schemaInNewDbOldName := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
-			schemaInNewDbNewName := sdk.NewDatabaseObjectIdentifier(newDatabaseName, newSchemaName)
-			schemaInOldDbOldName := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
-			schemaInOldDbNewName := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, newSchemaName)
-
-			_, errSchemaNewDbOld := client.Schemas.ShowByID(ctx, schemaInNewDbOldName)
-			schemaNewDbOldExists := errSchemaNewDbOld == nil
-			_, errSchemaNewDbNew := client.Schemas.ShowByID(ctx, schemaInNewDbNewName)
-			schemaNewDbNewExists := errSchemaNewDbNew == nil
-			_, errSchemaOldDbOld := client.Schemas.ShowByID(ctx, schemaInOldDbOldName)
-			schemaOldDbOldExists := errSchemaOldDbOld == nil
-			_, errSchemaOldDbNew := client.Schemas.ShowByID(ctx, schemaInOldDbNewName)
-			schemaOldDbNewExists := errSchemaOldDbNew == nil
-
-			// Scenario 1: DB rename + Schema rename
-			isDbRenameSchemaRename := func() bool {
-				return !oldDatabaseExists && newDatabaseExists && !schemaNewDbOldExists && schemaNewDbNewExists
-			}
-			// Scenario 2: DB rename + Schema move
-			isDbRenameSchemaMove := func() bool {
-				return !oldDatabaseExists && newDatabaseExists && schemaNewDbOldExists
-			}
-			// Scenario 3: DB move + Schema rename
-			isDbMoveSchemaRename := func() bool {
-				return oldDatabaseExists && newDatabaseExists && !schemaOldDbOldExists && schemaOldDbNewExists
-			}
-			// Scenario 4: DB move + Schema move
-			isDbMoveSchemaMove := func() bool {
-				return oldDatabaseExists && newDatabaseExists && schemaOldDbOldExists
-			}
-
-			switch {
-			case isDbRenameSchemaRename():
-				log.Printf("[DEBUG] Database and schema were both renamed for table - no Snowflake modification needed, updating the id...")
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
-				id = newTableId
-			case isDbRenameSchemaMove():
-				log.Printf("[DEBUG] Database was renamed, moving table to different schema - executing ALTER TABLE RENAME TO...")
-				currentTableId := sdk.NewSchemaObjectIdentifier(newDatabaseName, oldSchemaName, tableName)
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentTableId).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", currentTableId.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
-				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
-				id = newTableId
-			case isDbMoveSchemaRename():
-				log.Printf("[DEBUG] Schema was renamed, moving table to different database - executing ALTER TABLE RENAME TO...")
-				currentTableId := sdk.NewSchemaObjectIdentifier(oldDatabaseName, newSchemaName, tableName)
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentTableId).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", currentTableId.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
-				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
-				id = newTableId
-			case isDbMoveSchemaMove():
-				log.Printf("[DEBUG] Moving table to different database and schema - executing ALTER TABLE RENAME TO...")
-				if renameErr := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newTableId)); renameErr != nil {
-					d.Partial(true)
-					return diag.FromErr(fmt.Errorf("failed to move table from %s to %s: %w", id.FullyQualifiedName(), newTableId.FullyQualifiedName(), renameErr))
-				}
-				d.SetId(helpers.EncodeSnowflakeID(newTableId))
-				id = newTableId
-			default:
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf(
-					"unknown rename use case: old database %s (exists: %t), new database %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t), schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
-					oldDatabaseId.FullyQualifiedName(), oldDatabaseExists,
-					newDatabaseId.FullyQualifiedName(), newDatabaseExists,
-					schemaInNewDbOldName.FullyQualifiedName(), schemaNewDbOldExists,
-					schemaInNewDbNewName.FullyQualifiedName(), schemaNewDbNewExists,
-					schemaInOldDbOldName.FullyQualifiedName(), schemaOldDbOldExists,
-					schemaInOldDbNewName.FullyQualifiedName(), schemaOldDbNewExists,
-				))
-			}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			tableRenameFn,
+			client.Tables.ShowByID,
+			func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(id) },
+			"table",
+		); diags != nil {
+			return diags
 		}
 	}
 

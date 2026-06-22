@@ -318,59 +318,20 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && d.HasChange("database") {
-		oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
-		oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
-		oldSchemaName := id.Name()
-
-		oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
-		newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
-		newSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
-		oldSchemaId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
-
-		_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
-		newDatabaseExists := errNewDb == nil
-		_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
-		oldDatabaseExists := errOldDb == nil
-		_, errNewSchema := client.Schemas.ShowByID(ctx, newSchemaId)
-		newSchemaExists := errNewSchema == nil
-		_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
-		oldSchemaExists := errOldSchema == nil
-
-		// TODO [next PRs]: extract helper methods and generalize them to any non-leaf level; same with switch and error handling
-		isRenameOfTheGivenLevelInTheHierarchy := func() bool {
-			return newDatabaseExists && !oldDatabaseExists && newSchemaExists
-		}
-
-		isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func() bool {
-			return newDatabaseExists && oldDatabaseExists && oldSchemaExists
-		}
-
-		switch {
-		// Case 1: "Rename of the given level in the hierarchy"
-		case isRenameOfTheGivenLevelInTheHierarchy():
-			log.Printf("[DEBUG] Database was renamed for schema - no Snowflake modification needed, updating the id...")
-			// Just update the ID — no Snowflake modification needed
-			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
-			id = newSchemaId
-		// Case 2: "Move to a different object on the given level in the hierarchy"
-		case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
-			log.Printf("[DEBUG] Moving schema to different database - executing ALTER RENAME...")
-			// Perform the rename in Snowflake: ALTER SCHEMA A.X RENAME TO B.X
-			if renameErr := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(oldSchemaId).WithNewName(newSchemaId)); renameErr != nil {
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf("failed to move schema from %s to %s: %w", oldSchemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName(), renameErr))
+		schemaRenameFn := func(currentId, targetId sdk.DatabaseObjectIdentifier) func() error {
+			return func() error {
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(currentId).WithNewName(targetId))
 			}
-			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
-			id = newSchemaId
-		default:
-			d.Partial(true)
-			return diag.FromErr(fmt.Errorf(
-				"unknown rename use case: old database %s (exists: %t), new database %s (exists: %t), old schema %s (exists: %t), new schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
-				oldDatabaseId.FullyQualifiedName(), oldDatabaseExists,
-				newDatabaseId.FullyQualifiedName(), newDatabaseExists,
-				oldSchemaId.FullyQualifiedName(), oldSchemaExists,
-				newSchemaId.FullyQualifiedName(), newSchemaExists,
-			))
+		}
+
+		if diags := handleTwoLevelHierarchyRename(
+			ctx, d, client, &id,
+			schemaRenameFn,
+			client.Schemas.ShowByID,
+			func(id sdk.DatabaseObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
+			"schema",
+		); diags != nil {
+			return diags
 		}
 	}
 
