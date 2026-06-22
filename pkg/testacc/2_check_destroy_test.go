@@ -196,6 +196,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ApiIntegrationGitRepositoryGithubApp: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},
+	resources.ApiIntegrationGitRepositoryOauth2: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
 	resources.ApiIntegrationGitRepositoryPrivateLink: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},
