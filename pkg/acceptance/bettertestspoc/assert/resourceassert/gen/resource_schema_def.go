@@ -70,6 +70,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationGitRepositoryOauth2().Schema,
 	},
 	{
+		name:   "ApiIntegrationGitRepositoryPrivateLink",
+		schema: resources.ApiIntegrationGitRepositoryPrivateLink().Schema,
+	},
+	{
+		name:   "ApiIntegrationGitRepositoryToken",
+		schema: resources.ApiIntegrationGitRepositoryToken().Schema,
+	},
+	{
 		name:   "ApiIntegrationGoogleCloudApiGateway",
 		schema: resources.ApiIntegrationGoogleCloudApiGateway().Schema,
 	},

@@ -22,6 +22,8 @@ const (
 	ApiIntegrationExternalMcpDynamicClientResource feature = "snowflake_api_integration_external_mcp_dynamic_client_resource"
 	ApiIntegrationGitRepositoryGithubAppResource   feature = "snowflake_api_integration_git_repository_github_app_resource"
 	ApiIntegrationGitRepositoryOauth2Resource      feature = "snowflake_api_integration_git_repository_oauth2_resource"
+	ApiIntegrationGitRepositoryPrivateLinkResource feature = "snowflake_api_integration_git_repository_private_link_resource"
+	ApiIntegrationGitRepositoryTokenResource       feature = "snowflake_api_integration_git_repository_token_resource"
 	ApiIntegrationGoogleCloudApiGatewayResource    feature = "snowflake_api_integration_google_cloud_api_gateway_resource"
 	AuthenticationPolicyResource                   feature = "snowflake_authentication_policy_resource"
 	AuthenticationPoliciesDatasource               feature = "snowflake_authentication_policies_datasource"
@@ -143,9 +145,11 @@ var allPreviewFeatures = []feature{
 	// TODO(next api integration prs): ApiIntegrationAmazonApiGatewayResource,
 	// TODO(next api integration prs): ApiIntegrationAzureApiManagementResource,
 	// TODO(next api integration prs): ApiIntegrationGitRepositoryGithubAppResource,
+	// TODO(next api integration prs): ApiIntegrationGitRepositoryTokenResource,
 	// TODO(next api integration prs): ApiIntegrationGoogleCloudApiGatewayResource,
 	// TODO(next api integration prs): ApiIntegrationExternalMcpDynamicClientResource,
 	// TODO(next api integration prs): ApiIntegrationGitRepositoryOauth2Resource,
+	// TODO(next api integration prs): ApiIntegrationGitRepositoryPrivateLinkResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
 	CatalogIntegrationAwsGlueResource,
