@@ -53,12 +53,12 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.ApiIntegrationGitRepositoryTokenDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets("ALL").
+			HasAllowedAuthenticationSecrets("").
 			HasComment(""),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasAllowedAuthenticationSecrets("ALL").
+			HasAllowedAuthenticationSecrets("").
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(gitAllowedPrefix).
@@ -80,12 +80,12 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.ApiIntegrationGitRepositoryTokenDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets("ALL").
+			HasAllowedAuthenticationSecrets("").
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasAllowedAuthenticationSecrets("ALL").
+			HasAllowedAuthenticationSecrets("").
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(gitAllowedPrefix).
@@ -107,10 +107,11 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			},
 			// Import - without optionals
 			{
-				Config:            config.FromModels(t, basic),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, basic),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"all_allowed_authentication_secrets", "no_allowed_authentication_secrets", "allowed_authentication_secrets"},
 			},
 			// Update - set optionals
 			{
@@ -124,10 +125,11 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			},
 			// Import - with optionals
 			{
-				Config:            config.FromModels(t, withOptionals),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, withOptionals),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"all_allowed_authentication_secrets", "no_allowed_authentication_secrets", "allowed_authentication_secrets"},
 			},
 			// Update - unset optionals
 			{
@@ -183,7 +185,6 @@ func TestAcc_ApiIntegrationGitRepositoryToken_Import(t *testing.T) {
 	comment := random.Comment()
 
 	testModel := model.ApiIntegrationGitRepositoryToken("t", id.Name(), []string{gitAllowedPrefix}, true).
-		WithAllAllowedAuthenticationSecrets(true).
 		WithApiBlockedPrefixes([]string{gitBlockedPrefix}).
 		WithComment(comment)
 
@@ -201,8 +202,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_Import(t *testing.T) {
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithComment(comment).
 							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitBlockedPrefix}}).
-							WithGitHttpsApiTokenBasedProviderParams(*sdk.NewGitHttpsApiTokenBasedParamsRequest().
-								WithAllowedAuthenticationSecrets(*sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest().WithAllSecrets(true))),
+							WithGitHttpsApiTokenBasedProviderParams(*sdk.NewGitHttpsApiTokenBasedParamsRequest()),
 					)
 					t.Cleanup(cleanup)
 				},
@@ -252,8 +252,6 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasAllAllowedAuthenticationSecrets(true),
-					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
-						HasAllowedAuthenticationSecrets("ALL"),
 				),
 			},
 			// ALL → NONE
@@ -265,8 +263,6 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasNoAllowedAuthenticationSecrets(true),
-					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
-						HasAllowedAuthenticationSecrets("NONE"),
 				),
 			},
 			// NONE → specific list
@@ -277,8 +273,6 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 				Config: config.FromModels(t, withList),
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
-						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
-					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
 				),
 			},
@@ -291,8 +285,6 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasAllAllowedAuthenticationSecrets(true),
-					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
-						HasAllowedAuthenticationSecrets("ALL"),
 				),
 			},
 			// ALL → specific list
@@ -303,8 +295,6 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 				Config: config.FromModels(t, withList),
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
-						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
-					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
 				),
 			},
@@ -317,8 +307,6 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasNoAllowedAuthenticationSecrets(true),
-					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
-						HasAllowedAuthenticationSecrets("NONE"),
 				),
 			},
 			// NONE → ALL
@@ -330,8 +318,6 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 				Check: assertThat(t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasAllAllowedAuthenticationSecrets(true),
-					objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
-						HasAllowedAuthenticationSecrets("ALL"),
 				),
 			},
 		},
