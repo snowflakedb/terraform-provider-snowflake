@@ -28,14 +28,14 @@ const (
 
 	// Git OAuth2 constants
 	gitOauth2AuthorizationEndpoint         = "https://auth.example.com/authorize"
-	gitOauth2TokenEndpoint                 = "https://auth.example.com/token"
+	gitOauth2TokenEndpoint                 = "https://auth.example.com/token" //nolint:gosec
 	gitOauth2ClientId                      = "oauth-client-id-123"
-	gitOauth2ClientSecret                  = "oauth-client-secret-456"
+	gitOauth2ClientSecret                  = "oauth-client-secret-456" //nolint:gosec
 	gitOauth2ExternalAuthorizationEndpoint = "https://different.example.com/authorize"
-	gitOauth2ExternalTokenEndpoint         = "https://different.example.com/token"
+	gitOauth2ExternalTokenEndpoint         = "https://different.example.com/token" //nolint:gosec
 	gitOauth2ExternalClientId              = "different-client-id"
 	gitOauth2UpdatedAuthorizationEndpoint  = "https://updated.example.com/authorize"
-	gitOauth2UpdatedTokenEndpoint          = "https://updated.example.com/token"
+	gitOauth2UpdatedTokenEndpoint          = "https://updated.example.com/token" //nolint:gosec
 	gitOauth2AccessTokenValidity           = 3600
 	gitOauth2RefreshTokenValidity          = 86400
 	gitOauth2Username                      = "test_user"
