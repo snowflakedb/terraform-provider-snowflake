@@ -83,7 +83,7 @@ func TestResourceMonitorAlter(t *testing.T) {
 			name: id,
 			Set:  &ResourceMonitorSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("ResourceMonitorSet", "CreditQuota", "Frequency", "StartTimestamp", "EndTimestamp", "NotifyUsers"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterResourceMonitorOptions.Set", "CreditQuota", "Frequency", "StartTimestamp", "EndTimestamp", "NotifyUsers"))
 	})
 
 	t.Run("with a single set", func(t *testing.T) {
