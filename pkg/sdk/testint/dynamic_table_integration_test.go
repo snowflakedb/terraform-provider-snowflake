@@ -11,7 +11,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -215,6 +217,49 @@ func TestInt_DynamicTableAlter(t *testing.T) {
 			require.Len(t, entities, 1)
 			require.Equal(t, value, entities[0].TargetLag)
 		}
+	})
+
+	t.Run("alter with add and drop storage lifecycle policy", func(t *testing.T) {
+		storageLifecyclePolicyId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		storageLifecyclePolicyCleanup := testClientHelper().StorageLifecyclePolicy.CreateWithRequest(t, storageLifecyclePolicyId, sdk.NewCreateStorageLifecyclePolicyRequest(
+			storageLifecyclePolicyId,
+			[]sdk.CreateStorageLifecyclePolicyArgsRequest{*sdk.NewCreateStorageLifecyclePolicyArgsRequest("VAL", testdatatypes.DataTypeNumber)},
+			"VAL > 0",
+		))
+		t.Cleanup(storageLifecyclePolicyCleanup)
+
+		dynamicTable, dynamicTableCleanup := testClientHelper().DynamicTable.CreateDynamicTable(t, table.ID())
+		t.Cleanup(dynamicTableCleanup)
+		dynamicTableId := dynamicTable.ID()
+
+		addRequest := sdk.NewAlterDynamicTableRequest(dynamicTableId).WithAddStorageLifecyclePolicy(
+			sdk.NewDynamicTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "ID"}}))
+		err := client.DynamicTables.Alter(ctx, addRequest)
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, dynamicTableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertThatObject(t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
+			HasPolicyDb(storageLifecyclePolicyId.DatabaseName()).
+			HasPolicySchema(storageLifecyclePolicyId.SchemaName()).
+			HasPolicyName(storageLifecyclePolicyId.Name()).
+			HasPolicyKind(sdk.PolicyKindStorageLifecyclePolicy).
+			HasRefDatabaseName(dynamicTableId.DatabaseName()).
+			HasRefSchemaName(dynamicTableId.SchemaName()).
+			HasRefEntityName(dynamicTableId.Name()).
+			HasRefEntityDomain(string(sdk.PolicyEntityDomainDynamicTable)).
+			HasRefArgColumnNames(`[ "ID" ]`).
+			HasPolicyStatus("ACTIVE"),
+		)
+
+		dropRequest := sdk.NewAlterDynamicTableRequest(dynamicTableId).WithDropStorageLifecyclePolicy(new(true))
+		err = client.DynamicTables.Alter(ctx, dropRequest)
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, dynamicTableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Empty(t, references)
 	})
 }
 
