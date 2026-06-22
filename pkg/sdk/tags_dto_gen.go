@@ -1,7 +1,5 @@
 package sdk
 
-//go:generate go run ./dto-builder-generator/main.go
-
 var (
 	_ optionsProvider[createTagOptions] = new(CreateTagRequest)
 	_ optionsProvider[alterTagOptions]  = new(AlterTagRequest)
@@ -48,10 +46,6 @@ type CreateTagRequest struct {
 	comment       *string
 	allowedValues []string
 	propagate     *TagPropagateRequest
-}
-
-func (r *CreateTagRequest) GetName() SchemaObjectIdentifier {
-	return r.name
 }
 
 type AlterTagRequest struct {
