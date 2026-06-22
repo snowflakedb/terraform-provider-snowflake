@@ -190,10 +190,11 @@ func CreateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 	}
 
-	opts := &sdk.CreateSchemaOptions{
-		Comment: GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"),
+	req := sdk.NewCreateSchemaRequest(id)
+	if v := GetConfigPropertyAsPointerAllowingZeroValue[string](d, "comment"); v != nil {
+		req.WithComment(*v)
 	}
-	if parametersCreateDiags := handleSchemaParametersCreate(d, opts); len(parametersCreateDiags) > 0 {
+	if parametersCreateDiags := handleSchemaParametersCreate(d, req); len(parametersCreateDiags) > 0 {
 		return parametersCreateDiags
 	}
 
@@ -202,16 +203,16 @@ func CreateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		opts.Transient = sdk.Bool(parsed)
+		req.WithTransient(parsed)
 	}
 	if v := d.Get("with_managed_access").(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		opts.WithManagedAccess = sdk.Bool(parsed)
+		req.WithWithManagedAccess(parsed)
 	}
-	if err := client.Schemas.Create(ctx, id, opts); err != nil {
+	if err := client.Schemas.Create(ctx, req); err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Error,
@@ -317,67 +318,26 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && d.HasChange("database") {
-		oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
-		oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
-		oldSchemaName := id.Name()
-
-		oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
-		newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
-		newSchemaId := sdk.NewDatabaseObjectIdentifier(newDatabaseName, oldSchemaName)
-		oldSchemaId := sdk.NewDatabaseObjectIdentifier(oldDatabaseName, oldSchemaName)
-
-		_, errNewDb := client.Databases.ShowByID(ctx, newDatabaseId)
-		newDatabaseExists := errNewDb == nil
-		_, errOldDb := client.Databases.ShowByID(ctx, oldDatabaseId)
-		oldDatabaseExists := errOldDb == nil
-		_, errNewSchema := client.Schemas.ShowByID(ctx, newSchemaId)
-		newSchemaExists := errNewSchema == nil
-		_, errOldSchema := client.Schemas.ShowByID(ctx, oldSchemaId)
-		oldSchemaExists := errOldSchema == nil
-
-		// TODO [next PRs]: extract helper methods and generalize them to any non-leaf level; same with switch and error handling
-		isRenameOfTheGivenLevelInTheHierarchy := func() bool {
-			return newDatabaseExists && !oldDatabaseExists && newSchemaExists
-		}
-
-		isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy := func() bool {
-			return newDatabaseExists && oldDatabaseExists && oldSchemaExists
-		}
-
-		switch {
-		// Case 1: "Rename of the given level in the hierarchy"
-		case isRenameOfTheGivenLevelInTheHierarchy():
-			log.Printf("[DEBUG] Database was renamed for schema - no Snowflake modification needed, updating the id...")
-			// Just update the ID — no Snowflake modification needed
-			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
-			id = newSchemaId
-		// Case 2: "Move to a different object on the given level in the hierarchy"
-		case isMoveToADifferentObjectOnTheGivenLevelInTheHierarchy():
-			log.Printf("[DEBUG] Moving schema to different database - executing ALTER RENAME...")
-			// Perform the rename in Snowflake: ALTER SCHEMA A.X RENAME TO B.X
-			if renameErr := client.Schemas.Alter(ctx, oldSchemaId, &sdk.AlterSchemaOptions{NewName: &newSchemaId}); renameErr != nil {
-				d.Partial(true)
-				return diag.FromErr(fmt.Errorf("failed to move schema from %s to %s: %w", oldSchemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName(), renameErr))
+		schemaRenameFn := func(currentId, targetId sdk.DatabaseObjectIdentifier) func() error {
+			return func() error {
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(currentId).WithNewName(targetId))
 			}
-			d.SetId(helpers.EncodeResourceIdentifier(newSchemaId))
-			id = newSchemaId
-		default:
-			d.Partial(true)
-			return diag.FromErr(fmt.Errorf(
-				"unknown rename use case: old database %s (exists: %t), new database %s (exists: %t), old schema %s (exists: %t), new schema %s (exists: %t). See https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide",
-				oldDatabaseId.FullyQualifiedName(), oldDatabaseExists,
-				newDatabaseId.FullyQualifiedName(), newDatabaseExists,
-				oldSchemaId.FullyQualifiedName(), oldSchemaExists,
-				newSchemaId.FullyQualifiedName(), newSchemaExists,
-			))
+		}
+
+		if diags := handleTwoLevelHierarchyRename(
+			ctx, d, client, &id,
+			schemaRenameFn,
+			client.Schemas.ShowByID,
+			func(id sdk.DatabaseObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
+			"schema",
+		); diags != nil {
+			return diags
 		}
 	}
 
 	if d.HasChange("name") && !d.GetRawState().IsNull() {
 		newId := sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string))
-		err := client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-			NewName: sdk.Pointer(newId),
-		})
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithNewName(newId))
 		if err != nil {
 			d.Partial(true)
 			return diag.FromErr(err)
@@ -395,13 +355,9 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 				return diag.FromErr(err)
 			}
 			if parsed {
-				err = client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-					EnableManagedAccess: sdk.Pointer(true),
-				})
+				err = client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithEnableManagedAccess(true))
 			} else {
-				err = client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-					DisableManagedAccess: sdk.Pointer(true),
-				})
+				err = client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithDisableManagedAccess(true))
 			}
 			if err != nil {
 				d.Partial(true)
@@ -409,17 +365,15 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 			}
 		} else {
 			// managed access can not be UNSET to a default value
-			if err := client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-				DisableManagedAccess: sdk.Pointer(true),
-			}); err != nil {
+			if err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithDisableManagedAccess(true)); err != nil {
 				d.Partial(true)
 				return diag.FromErr(fmt.Errorf("error handling with_managed_access on %v err = %w", d.Id(), err))
 			}
 		}
 	}
 
-	set := new(sdk.SchemaSet)
-	unset := new(sdk.SchemaUnset)
+	set := sdk.NewSchemaSetRequest()
+	unset := sdk.NewSchemaUnsetRequest()
 
 	if d.HasChange("comment") {
 		comment := d.Get("comment").(string)
@@ -434,20 +388,16 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 		d.Partial(true)
 		return updateParamDiags
 	}
-	if (*set != sdk.SchemaSet{}) {
-		err := client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-			Set: set,
-		})
+	if *set != *sdk.NewSchemaSetRequest() {
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSet(*set))
 		if err != nil {
 			d.Partial(true)
 			return diag.FromErr(err)
 		}
 	}
 
-	if (*unset != sdk.SchemaUnset{}) {
-		err := client.Schemas.Alter(ctx, id, &sdk.AlterSchemaOptions{
-			Unset: unset,
-		})
+	if *unset != *sdk.NewSchemaUnsetRequest() {
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnset(*unset))
 		if err != nil {
 			d.Partial(true)
 			return diag.FromErr(err)

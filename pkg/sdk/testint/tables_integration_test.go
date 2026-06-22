@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
@@ -560,6 +561,48 @@ func TestInt_Table(t *testing.T) {
 
 		require.Len(t, tableDetails, 2)
 		assert.Empty(t, tableDetails[0].PolicyName)
+	})
+
+	t.Run("alter table: add and drop storage lifecycle policy", func(t *testing.T) {
+		storageLifecyclePolicyId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		storageLifecyclePolicyCleanup := testClientHelper().StorageLifecyclePolicy.CreateWithId(t, storageLifecyclePolicyId)
+		t.Cleanup(storageLifecyclePolicyCleanup)
+
+		tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(tableId, []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
+		}))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(tableId))
+
+		addRequest := sdk.NewAlterTableRequest(tableId).WithAddStorageLifecyclePolicy(
+			sdk.NewTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "COLUMN_1"}}))
+		err = client.Tables.Alter(ctx, addRequest)
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertThatObject(t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
+			HasPolicyDb(storageLifecyclePolicyId.DatabaseName()).
+			HasPolicySchema(storageLifecyclePolicyId.SchemaName()).
+			HasPolicyName(storageLifecyclePolicyId.Name()).
+			HasPolicyKind(sdk.PolicyKindStorageLifecyclePolicy).
+			HasRefDatabaseName(tableId.DatabaseName()).
+			HasRefSchemaName(tableId.SchemaName()).
+			HasRefEntityName(tableId.Name()).
+			HasRefEntityDomain(string(sdk.PolicyEntityDomainTable)).
+			HasRefArgColumnNames(`[ "COLUMN_1" ]`).
+			HasPolicyStatus("ACTIVE"),
+		)
+
+		dropRequest := sdk.NewAlterTableRequest(tableId).WithDropStorageLifecyclePolicy(new(true))
+		err = client.Tables.Alter(ctx, dropRequest)
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Empty(t, references)
 	})
 
 	t.Run("alter table: drop columns", func(t *testing.T) {

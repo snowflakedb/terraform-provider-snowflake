@@ -31,6 +31,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.AccountRoles().Schema,
 	},
 	{
+		name:   "ApiIntegrations",
+		schema: datasources.ApiIntegrations().Schema,
+	},
+	{
 		name:   "AuthenticationPolicies",
 		schema: datasources.AuthenticationPolicies().Schema,
 	},
@@ -145,6 +149,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "StorageIntegrations",
 		schema: datasources.StorageIntegrations().Schema,
+	},
+	{
+		name:   "StorageLifecyclePolicies",
+		schema: datasources.StorageLifecyclePolicies().Schema,
 	},
 	{
 		name:   "Stages",

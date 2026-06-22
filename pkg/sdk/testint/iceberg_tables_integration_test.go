@@ -37,10 +37,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	catalogForIcebergFilesId, catalogForIcebergFilesCleanup := testClientHelper().CatalogIntegration.Create(t)
 	t.Cleanup(catalogForIcebergFilesCleanup)
 
-	dbForIcebergFiles, dbForIcebergFilesCleanup := testClientHelper().Database.CreateDatabaseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
-		Catalog:        new(catalogForIcebergFilesId),
-		ExternalVolume: new(externalVolumeId),
-	})
+	dbForIcebergFilesId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	dbForIcebergFiles, dbForIcebergFilesCleanup := testClientHelper().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbForIcebergFilesId).WithCatalog(catalogForIcebergFilesId).WithExternalVolume(externalVolumeId))
 	t.Cleanup(dbForIcebergFilesCleanup)
 	schemaIdForIcebergFiles := sdk.NewDatabaseObjectIdentifier(dbForIcebergFiles.ID().Name(), "PUBLIC")
 
@@ -52,10 +50,8 @@ func TestInt_IcebergTables(t *testing.T) {
 	)
 	t.Cleanup(catalogForDeltaLakeCleanup)
 
-	dbForDeltaLake, dbForDeltaLakeCleanup := testClientHelper().Database.CreateDatabaseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateDatabaseOptions{
-		Catalog:        new(catalogForDeltaLakeId),
-		ExternalVolume: new(externalVolumeId),
-	})
+	dbForDeltaLakeId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	dbForDeltaLake, dbForDeltaLakeCleanup := testClientHelper().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbForDeltaLakeId).WithCatalog(catalogForDeltaLakeId).WithExternalVolume(externalVolumeId))
 	t.Cleanup(dbForDeltaLakeCleanup)
 	schemaIdForDeltaLake := sdk.NewDatabaseObjectIdentifier(dbForDeltaLake.ID().Name(), "PUBLIC")
 
@@ -72,17 +68,22 @@ func TestInt_IcebergTables(t *testing.T) {
 		refColumnName *string,
 	) {
 		t.Helper()
-		assert.Equal(t, policyId.Name(), policyRef.PolicyName)
-		assert.Equal(t, policyKind, policyRef.PolicyKind)
-		assert.Equal(t, tableId.Name(), policyRef.RefEntityName)
-		assert.Equal(t, "ICEBERG_TABLE", policyRef.RefEntityDomain)
-		assert.Equal(t, "ACTIVE", *policyRef.PolicyStatus)
+		ass := objectassert.PolicyReferenceFromObject(t, &policyRef).
+			HasPolicyDb(policyId.DatabaseName()).
+			HasPolicySchema(policyId.SchemaName()).
+			HasPolicyName(policyId.Name()).
+			HasPolicyKind(policyKind).
+			HasRefDatabaseName(tableId.DatabaseName()).
+			HasRefSchemaName(tableId.SchemaName()).
+			HasRefEntityName(tableId.Name()).
+			HasRefEntityDomain(string(sdk.PolicyEntityDomainIcebergTable)).
+			HasPolicyStatus("ACTIVE")
 		if refColumnName != nil {
-			assert.NotNil(t, policyRef.RefColumnName)
-			assert.Equal(t, *refColumnName, *policyRef.RefColumnName)
+			ass.HasRefColumnName(*refColumnName)
 		} else {
-			assert.Nil(t, policyRef.RefColumnName)
+			ass.HasNoRefColumnName()
 		}
+		assertThatObject(t, ass)
 	}
 
 	snowflakeCatalog := sdk.IcebergTableCatalogSnowflake
@@ -1538,6 +1539,42 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		assertThatObject(t, objectassert.IcebergTable(t, id).
 			HasAutoRefreshStatus(""),
+		)
+	})
+
+	t.Run("alter iceberg table from files: set and unset", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForIcebergFiles)
+
+		err := client.IcebergTables.CreateFromIcebergFiles(ctx, sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSet(
+			*sdk.NewIcebergTableSetPropertiesRequest().
+				WithComment("integration test comment").
+				WithReplaceInvalidCharacters(true),
+		))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasComment("integration test comment"),
+		)
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasReplaceInvalidCharacters(true),
+		)
+
+		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnset(
+			*sdk.NewIcebergTableUnsetPropertiesRequest().
+				WithComment(true).
+				WithReplaceInvalidCharacters(true),
+		))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.IcebergTable(t, id).
+			HasComment(""),
+		)
+		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
+			HasReplaceInvalidCharacters(false),
 		)
 	})
 

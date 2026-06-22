@@ -445,4 +445,10 @@ var apiIntegrationsDef = g.NewInterface(
 		"DescribeExternalMcpDetails returns converted describe output for external MCP API integrations.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
 		"*ApiIntegrationExternalMcpDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAllDetails",
+		"DescribeAllDetails returns parsed describe output for any API integration type.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*ApiIntegrationAllDetails", "error",
 	)

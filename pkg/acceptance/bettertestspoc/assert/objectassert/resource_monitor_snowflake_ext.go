@@ -43,8 +43,8 @@ func (r *ResourceMonitorAssert) HasSuspendAtNil() *ResourceMonitorAssert {
 func (r *ResourceMonitorAssert) HasSuspendImmediateAtNil() *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
-		if o.SuspendImmediateAt != nil {
-			return fmt.Errorf("expected suspend immediate at to be nil, was %v", *o.SuspendImmediateAt)
+		if o.SuspendImmediatelyAt != nil {
+			return fmt.Errorf("expected suspend immediate at to be nil, was %v", *o.SuspendImmediatelyAt)
 		}
 		return nil
 	})

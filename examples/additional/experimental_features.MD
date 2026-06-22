@@ -86,9 +86,9 @@ With this experiment, Create, Read, and Delete all treat PUBLIC role grants as p
 #### HIERARCHY_RENAMES
 When enabled, allows in-place handling of hierarchy renames and moves for supported resources.
 
-Currently supported by: `snowflake_schema`.
+Currently supported by: `snowflake_schema`, `snowflake_table`.
 
-Without this experiment, changing the `database` field on `snowflake_schema` forces resource recreation. With this experiment, the provider detects whether the parent database was renamed or the schema should be moved to a different database, and handles it without recreation.
+Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on `snowflake_table` forces resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.
 
 For more information, see the [object renaming guide](./guides/object_renaming_guide).
 

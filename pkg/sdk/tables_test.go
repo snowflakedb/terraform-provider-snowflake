@@ -735,7 +735,7 @@ func TestTableAlter(t *testing.T) {
 
 	t.Run("validation: no action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: incorrect identifier", func(t *testing.T) {
@@ -749,7 +749,7 @@ func TestTableAlter(t *testing.T) {
 		opts.NewName = Pointer(randomSchemaObjectIdentifier())
 		opts.SwapWith = Pointer(randomSchemaObjectIdentifier())
 
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: NewName's incorrect identifier", func(t *testing.T) {
@@ -898,6 +898,27 @@ func TestTableAlter(t *testing.T) {
 			Drop: &DropSearchOptimization{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationActionLegacy", "Add", "Drop"))
+	})
+
+	t.Run("validation: add storage lifecycle policy incorrect identifier", func(t *testing.T) {
+		opts := &alterTableOptions{
+			name: id,
+			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
+				StorageLifecyclePolicy: emptySchemaObjectIdentifier,
+				On:                     []Column{{Value: "FIRST_COLUMN"}},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("TableAddStorageLifecyclePolicy", "Name"))
+	})
+
+	t.Run("validation: add storage lifecycle policy without columns", func(t *testing.T) {
+		opts := &alterTableOptions{
+			name: id,
+			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
+				StorageLifecyclePolicy: randomSchemaObjectIdentifier(),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("TableAddStorageLifecyclePolicy", "On"))
 	})
 
 	t.Run("empty options", func(t *testing.T) {
@@ -1448,6 +1469,40 @@ func TestTableAlter(t *testing.T) {
 			DropAllAccessRowPolicies: Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
+	})
+
+	t.Run("add storage lifecycle policy", func(t *testing.T) {
+		storageLifecyclePolicyId := randomSchemaObjectIdentifier()
+
+		opts := &alterTableOptions{
+			name: id,
+			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
+				StorageLifecyclePolicy: storageLifecyclePolicyId,
+				On:                     []Column{{Value: "FIRST_COLUMN"}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+	})
+
+	t.Run("add storage lifecycle policy with multiple columns", func(t *testing.T) {
+		storageLifecyclePolicyId := randomSchemaObjectIdentifier()
+
+		opts := &alterTableOptions{
+			name: id,
+			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
+				StorageLifecyclePolicy: storageLifecyclePolicyId,
+				On:                     []Column{{Value: "FIRST_COLUMN"}, {Value: "SECOND_COLUMN"}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN", "SECOND_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+	})
+
+	t.Run("drop storage lifecycle policy", func(t *testing.T) {
+		opts := &alterTableOptions{
+			name:                       id,
+			DropStorageLifecyclePolicy: new(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP STORAGE LIFECYCLE POLICY`, id.FullyQualifiedName())
 	})
 }
 

@@ -65,6 +65,17 @@ func (a *ApiIntegrationAzureDetailsAssert) HasApiKey(expected string) *ApiIntegr
 	return a
 }
 
+func (a *ApiIntegrationAzureDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if o.ApiKey == "" {
+			return fmt.Errorf("expected api key not empty; got empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAzureDetailsAssert) HasApiProvider(expected sdk.ApiIntegrationAzureApiProviderType) *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()
@@ -105,6 +116,17 @@ func (a *ApiIntegrationAzureDetailsAssert) HasAllowedPrefixes(expected ...string
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected allowed prefixes: %v; got: %v", expected, o.AllowedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAzureDetailsAssert) HasNoAllowedPrefixes() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if len(o.AllowedPrefixes) != 0 {
+			return fmt.Errorf("expected no allowed prefixes; got: %v", o.AllowedPrefixes)
 		}
 		return nil
 	})

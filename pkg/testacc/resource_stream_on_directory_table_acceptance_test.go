@@ -341,13 +341,8 @@ func TestAcc_StreamOnDirectoryTable_RecreateWhenStale(t *testing.T) {
 	stage, cleanupStage := testClient().Stage.CreateStageWithDirectory(t)
 	t.Cleanup(cleanupStage)
 
-	schema, cleanupSchema := testClient().Schema.CreateSchemaWithOpts(t,
-		testClient().Ids.RandomDatabaseObjectIdentifier(),
-		&sdk.CreateSchemaOptions{
-			DataRetentionTimeInDays:    sdk.Pointer(0),
-			MaxDataExtensionTimeInDays: sdk.Pointer(0),
-		},
-	)
+	schemaId := testClient().Ids.RandomDatabaseObjectIdentifier()
+	schema, cleanupSchema := testClient().Schema.CreateSchemaWithRequest(t, schemaId, sdk.NewCreateSchemaRequest(schemaId).WithDataRetentionTimeInDays(0).WithMaxDataExtensionTimeInDays(0))
 	t.Cleanup(cleanupSchema)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())

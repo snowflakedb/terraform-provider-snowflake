@@ -297,9 +297,7 @@ func TestAcc_Experimental_Schema_HierarchyRenames_Error_SchemaNotFoundForMove(t 
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.Execute(func() {
-							testClient().Schema.Alter(t, schemaId, &sdk.AlterSchemaOptions{
-								NewName: sdk.Pointer(sdk.NewDatabaseObjectIdentifier(dbA.ID().Name(), testClient().Ids.Alpha())),
-							})
+							testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schemaId).WithNewName(sdk.NewDatabaseObjectIdentifier(dbA.ID().Name(), testClient().Ids.Alpha())))
 						}),
 					},
 				},
