@@ -132,3 +132,10 @@ func mapStringWithMapping[T any](stringField *T, sqlValue string, mapper func(st
 		log.Printf("[WARN] Failed to map string value, err = %s", err)
 	}
 }
+
+func ParseAccountObjectIdentifierExcludingExplicitNullString(identifier string) (AccountObjectIdentifier, error) {
+	if identifier == "null" {
+		return AccountObjectIdentifier{}, nil
+	}
+	return ParseAccountObjectIdentifier(identifier)
+}

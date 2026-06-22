@@ -176,13 +176,13 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, warehouseModelUpdated),
 				PreConfig: func() {
 					testClient().Warehouse.DropWarehouseFunc(t, newWarehouseId)()
-					testClient().Warehouse.CreateAdaptiveWithOptions(t, newWarehouseId, &sdk.CreateAdaptiveWarehouseOptions{
-						Comment:                         sdk.String(externalComment),
-						QueryThroughputMultiplier:       sdk.Int(externalQueryThroughputMultiplier),
-						StatementTimeoutInSeconds:       sdk.Int(externalStatementTimeout),
-						StatementQueuedTimeoutInSeconds: sdk.Int(externalStatementQueuedTimeout),
-						MaxQueryPerformanceLevel:        sdk.Pointer(externalMaxQueryPerformanceLevel),
-					})
+					testClient().Warehouse.CreateAdaptiveWithRequest(t, sdk.NewCreateAdaptiveWarehouseRequest(newWarehouseId).
+						WithComment(externalComment).
+						WithQueryThroughputMultiplier(externalQueryThroughputMultiplier).
+						WithStatementTimeoutInSeconds(externalStatementTimeout).
+						WithStatementQueuedTimeoutInSeconds(externalStatementQueuedTimeout).
+						WithMaxQueryPerformanceLevel(externalMaxQueryPerformanceLevel),
+					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -271,7 +271,7 @@ func TestAcc_WarehouseAdaptive_Import_WrongWarehouseType(t *testing.T) {
 	regularId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	// Create a regular (non-adaptive) warehouse outside of Terraform to use as the import target.
-	_, regularCleanup := testClient().Warehouse.CreateWarehouseWithOptions(t, regularId, &sdk.CreateWarehouseOptions{})
+	_, regularCleanup := testClient().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(regularId))
 	t.Cleanup(regularCleanup)
 
 	adaptiveModel := model.WarehouseAdaptiveWithId(adaptiveId)

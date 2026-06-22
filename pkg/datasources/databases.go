@@ -103,32 +103,34 @@ func Databases() *schema.Resource {
 func ReadDatabases(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
-	var opts sdk.ShowDatabasesOptions
+	opts := sdk.NewShowDatabaseRequest()
 
 	if likePattern, ok := d.GetOk("like"); ok {
-		opts.Like = &sdk.Like{
+		opts.WithLike(sdk.Like{
 			Pattern: sdk.String(likePattern.(string)),
-		}
+		})
 	}
 
 	if startsWith, ok := d.GetOk("starts_with"); ok {
-		opts.StartsWith = sdk.String(startsWith.(string))
+		opts.WithStartsWith(startsWith.(string))
 	}
 
 	if limit, ok := d.GetOk("limit"); ok && len(limit.([]any)) == 1 {
 		limitMap := limit.([]any)[0].(map[string]any)
 
 		rows := limitMap["rows"].(int)
-		opts.LimitFrom = &sdk.LimitFrom{
+		limitFrom := sdk.LimitFrom{
 			Rows: &rows,
 		}
 
 		if from, ok := limitMap["from"].(string); ok {
-			opts.LimitFrom.From = &from
+			limitFrom.From = &from
 		}
+
+		opts.WithLimit(limitFrom)
 	}
 
-	databases, err := client.Databases.Show(ctx, &opts)
+	databases, err := client.Databases.Show(ctx, opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -95,8 +95,11 @@ func (r *ResourceMonitorAssert) HasLevel(expected sdk.ResourceMonitorLevel) *Res
 func (r *ResourceMonitorAssert) HasFrequency(expected sdk.Frequency) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
-		if o.Frequency != expected {
-			return fmt.Errorf("expected frequency: %v; got: %v", expected, o.Frequency)
+		if o.Frequency == nil {
+			return fmt.Errorf("expected frequency to have value; got: nil")
+		}
+		if *o.Frequency != expected {
+			return fmt.Errorf("expected frequency: %v; got: %v", expected, *o.Frequency)
 		}
 		return nil
 	})
@@ -155,11 +158,11 @@ func (r *ResourceMonitorAssert) HasSuspendAt(expected int) *ResourceMonitorAsser
 func (r *ResourceMonitorAssert) HasSuspendImmediateAt(expected int) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
-		if o.SuspendImmediateAt == nil {
+		if o.SuspendImmediatelyAt == nil {
 			return fmt.Errorf("expected suspend immediate at to have value; got: nil")
 		}
-		if *o.SuspendImmediateAt != expected {
-			return fmt.Errorf("expected suspend immediate at: %v; got: %v", expected, *o.SuspendImmediateAt)
+		if *o.SuspendImmediatelyAt != expected {
+			return fmt.Errorf("expected suspend immediate at: %v; got: %v", expected, *o.SuspendImmediatelyAt)
 		}
 		return nil
 	})

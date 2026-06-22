@@ -36,13 +36,35 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
-### *(new feature)* New storage lifecycle policy resource
+### *(new feature)* `snowflake_grant_ownership`: support for `AGENT` object type
+
+The `snowflake_grant_ownership` resource now supports granting ownership on `AGENT` objects. This includes single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`).
+
+No changes are required for existing configurations.
+
+### *(new feature)* New storage lifecycle policy resource and data source
+
+#### Resource
 
 We have added a new preview resource for managing storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy).
 
 This feature will be marked as stable in future releases. To use it, add `snowflake_storage_lifecycle_policy_resource` to the `preview_features_enabled` field in the provider configuration.
 
-No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+#### Data source
+
+We have added a new preview data source for storage lifecycle policies: [snowflake_storage_lifecycle_policies](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/storage_lifecycle_policies).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_storage_lifecycle_policies_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
+
+### *(new preview resource)* New Iceberg Table resources
+
+We have added a new preview resource for Iceberg tables: [snowflake_iceberg_table_from_files](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_files) for managing Snowflake Iceberg Tables created from files ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files)).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_iceberg_table_from_files_resource` to the `preview_features_enabled` field in the provider configuration.
+
+Stay tuned for the next variants of Iceberg Tables support in the provider!
 
 ### *(new feature)* `log_event_level` parameter support
 
@@ -105,6 +127,22 @@ resource "snowflake_schema" "example" {
 With the experiment enabled, renaming `snowflake_database.example` from `my_database` to `my_new_database` will cause the schema resource to detect the rename and update its state accordingly — without recreating the schema or losing any objects within it.
 
 For more details, see the [Object Renaming Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).
+
+### *(new feature)* Tagging support for iceberg table columns
+
+Tagging support for iceberg table columns is now supported. We added a new `ICEBERG TABLE COLUMN` value to the allowed `object_type` values of the `snowflake_tag_association` resource. Use it to tag a column of an Iceberg table:
+
+```terraform
+resource "snowflake_tag_association" "example" {
+  # For now, column fully qualified names have to be constructed manually.
+  object_identifiers = [format("%s.\"column1\"", snowflake_iceberg_table.example.fully_qualified_name)]
+  object_type        = "ICEBERG TABLE COLUMN"
+  tag_id             = snowflake_tag.example.fully_qualified_name
+  tag_value          = "example"
+}
+```
+
+Do not use the `COLUMN` object type, as it is reserved for table columns.
 
 ## v2.16.0 ➞ v2.17.0
 

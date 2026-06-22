@@ -773,7 +773,7 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidSize),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("invalid warehouse size: SMALLa"),
+				ExpectError: regexp.MustCompile("invalid warehouse size: SMALLA"),
 			},
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidMaxClusterCount),
@@ -788,7 +788,7 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidScalingPolicy),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("invalid scaling policy: unknown"),
+				ExpectError: regexp.MustCompile("invalid scaling policy: UNKNOWN"),
 			},
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidAutoResume),
@@ -808,7 +808,7 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, warehouseModelInvalidResourceConstraint),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid resource constraint: unknown`),
+				ExpectError: regexp.MustCompile(`invalid warehouse resource constraint: UNKNOWN`),
 			},
 			{
 				Config:      config.FromModels(t, warehouseModelWithGenerationAndResourceConstraint),

@@ -32,6 +32,7 @@ var All{{ .NamePlural }}String = []string{
 }
 {{ end }}
 func To{{ .Name }}(s string) ({{ .Name }}, error) {
+  {{- $isMixedCase := .IsMixedCase }}
   {{- if .IsLowercase }}
   s = strings.ToLower(s)
   {{- else }}
@@ -39,7 +40,11 @@ func To{{ .Name }}(s string) ({{ .Name }}, error) {
   {{- end }}
 	switch s {
 	{{- range .ValueRepresentations }}
+	{{- if $isMixedCase }}
+	case strings.ToUpper(string({{ .Name }})){{ range .Aliases }}, strings.ToUpper("{{ . }}"){{ end }}:
+	{{- else }}
 	case string({{ .Name }}){{ range .Aliases }}, "{{ . }}"{{ end }}:
+	{{- end }}
 		return {{ .Name }}, nil
 	{{- end }}
 	default:

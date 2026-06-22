@@ -32,6 +32,7 @@
 - [snowflake_shares](./docs/data-sources/shares)
 - [snowflake_stages](./docs/data-sources/stages)
 - [snowflake_storage_integrations](./docs/data-sources/storage_integrations)
+- [snowflake_storage_lifecycle_policies](./docs/data-sources/storage_lifecycle_policies)
 - [snowflake_system_generate_scim_access_token](./docs/data-sources/system_generate_scim_access_token)
 - [snowflake_system_get_aws_sns_iam_policy](./docs/data-sources/system_get_aws_sns_iam_policy)
 - [snowflake_system_get_privatelink_config](./docs/data-sources/system_get_privatelink_config)

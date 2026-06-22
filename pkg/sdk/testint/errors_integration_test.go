@@ -225,7 +225,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 
 func TestInt_DropSchemaInNonExistingDatabase(t *testing.T) {
 	ctx := context.Background()
-	err := testClient(t).Schemas.Drop(ctx, sdk.NewDatabaseObjectIdentifier("non-existing-database", "non-existing-schema"), &sdk.DropSchemaOptions{IfExists: sdk.Bool(true)})
+	err := testClient(t).Schemas.Drop(ctx, sdk.NewDropSchemaRequest(sdk.NewDatabaseObjectIdentifier("non-existing-database", "non-existing-schema")).WithIfExists(true))
 	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 }
 

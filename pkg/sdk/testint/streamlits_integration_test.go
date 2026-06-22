@@ -81,7 +81,7 @@ func TestInt_Streamlits(t *testing.T) {
 		stage, cleanupStage := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(cleanupStage)
 
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix("lowercase"), nil)
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix("lowercase")))
 		t.Cleanup(warehouseCleanup)
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
