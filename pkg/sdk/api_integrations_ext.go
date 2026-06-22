@@ -419,3 +419,155 @@ func parseUserAuthIntoExternalMcp(value string, details *ApiIntegrationExternalM
 	}
 	return errors.Join(errs...)
 }
+
+// ApiIntegrationAllDetails holds the output of DESCRIBE API INTEGRATION for any provider type.
+// Fields that do not apply to a given provider are zero-valued.
+type ApiIntegrationAllDetails struct {
+	Id                           AccountObjectIdentifier
+	Enabled                      bool
+	ApiKey                       string
+	ApiProvider                  string
+	ApiAwsRoleArn                string
+	ApiAwsIamUserArn             string
+	ApiAwsExternalId             string
+	AzureTenantId                string
+	AzureAdApplicationId         string
+	AzureMultiTenantAppName      string
+	AzureConsentUrl              string
+	GoogleAudience               string
+	GoogleApiServiceAccount      string
+	AllowedAuthenticationSecrets string
+	UserAuthType                 string
+	OauthGrant                   string
+	OauthClientId                string
+	OauthClientAuthMethod        string
+	OauthTokenEndpoint           string
+	OauthAuthorizationEndpoint   string
+	OauthAccessTokenValidity     int
+	OauthRefreshTokenValidity    int
+	OauthAllowedScopes           []string
+	OauthUsername                string
+	OauthAssertionIssuer         string
+	OauthResourceUrl             string
+	UsePrivatelinkEndpoint       bool
+	TlsTrustedCertificates       []string
+	AllowedPrefixes              []string
+	BlockedPrefixes              []string
+	Comment                      string
+}
+
+func (d *ApiIntegrationAllDetails) ID() AccountObjectIdentifier {
+	return d.Id
+}
+
+// DescribeAllDetails fetches and parses describe output for any API integration type.
+func (v *apiIntegrations) DescribeAllDetails(ctx context.Context, id AccountObjectIdentifier) (*ApiIntegrationAllDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseApiIntegrationAllDetails(properties, id)
+}
+
+func parseApiIntegrationAllDetails(properties []ApiIntegrationProperty, id AccountObjectIdentifier) (*ApiIntegrationAllDetails, error) {
+	details := &ApiIntegrationAllDetails{Id: id}
+	var errs []error
+	for _, prop := range properties {
+		switch prop.Name {
+		case "ENABLED":
+			if v, err := strconv.ParseBool(prop.Value); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.Enabled = v
+			}
+		case "API_KEY":
+			details.ApiKey = prop.Value
+		case "API_PROVIDER":
+			details.ApiProvider = prop.Value
+		case "API_AWS_ROLE_ARN":
+			details.ApiAwsRoleArn = prop.Value
+		case "API_AWS_IAM_USER_ARN":
+			details.ApiAwsIamUserArn = prop.Value
+		case "API_AWS_EXTERNAL_ID":
+			details.ApiAwsExternalId = prop.Value
+		case "AZURE_TENANT_ID":
+			details.AzureTenantId = prop.Value
+		case "AZURE_AD_APPLICATION_ID":
+			details.AzureAdApplicationId = prop.Value
+		case "AZURE_MULTI_TENANT_APP_NAME":
+			details.AzureMultiTenantAppName = prop.Value
+		case "AZURE_CONSENT_URL":
+			details.AzureConsentUrl = prop.Value
+		case "GOOGLE_AUDIENCE":
+			details.GoogleAudience = prop.Value
+		case "API_GCP_SERVICE_ACCOUNT":
+			details.GoogleApiServiceAccount = prop.Value
+		case "ALLOWED_AUTHENTICATION_SECRETS":
+			details.AllowedAuthenticationSecrets = prop.Value
+		case "API_USER_AUTHENTICATION":
+			if err := parseUserAuthIntoAllDetails(prop.Value, details); err != nil {
+				errs = append(errs, err)
+			}
+		case "USE_PRIVATELINK_ENDPOINT":
+			if v, err := strconv.ParseBool(prop.Value); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.UsePrivatelinkEndpoint = v
+			}
+		case "TLS_TRUSTED_CERTIFICATES":
+			details.TlsTrustedCertificates = ParseCommaSeparatedStringArray(prop.Value, false)
+		case "API_ALLOWED_PREFIXES":
+			details.AllowedPrefixes = ParseCommaSeparatedStringArray(prop.Value, false)
+		case "API_BLOCKED_PREFIXES":
+			details.BlockedPrefixes = ParseCommaSeparatedStringArray(prop.Value, false)
+		case "COMMENT":
+			details.Comment = prop.Value
+		}
+	}
+	return details, errors.Join(errs...)
+}
+
+func parseUserAuthIntoAllDetails(value string, details *ApiIntegrationAllDetails) error {
+	s := strings.TrimPrefix(value, "{")
+	s = strings.TrimSuffix(s, "}")
+	parts := ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
+	var errs []error
+	for _, part := range parts {
+		k, v, _ := strings.Cut(part, "=")
+		switch k {
+		case "TYPE":
+			details.UserAuthType = v
+		case "OAUTH_GRANT":
+			details.OauthGrant = emptyIfNull(v)
+		case "OAUTH_CLIENT_ID":
+			details.OauthClientId = v
+		case "OAUTH_CLIENT_AUTH_METHOD":
+			details.OauthClientAuthMethod = emptyIfNull(v)
+		case "OAUTH_TOKEN_ENDPOINT":
+			details.OauthTokenEndpoint = v
+		case "OAUTH_AUTHORIZATION_ENDPOINT":
+			details.OauthAuthorizationEndpoint = v
+		case "OAUTH_ACCESS_TOKEN_VALIDITY":
+			if val, err := strconv.ParseInt(v, 10, 32); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.OauthAccessTokenValidity = int(val)
+			}
+		case "OAUTH_REFRESH_TOKEN_VALIDITY":
+			if val, err := strconv.ParseInt(v, 10, 32); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.OauthRefreshTokenValidity = int(val)
+			}
+		case "OAUTH_ALLOWED_SCOPES":
+			details.OauthAllowedScopes = ParseCommaSeparatedStringArray(v, false)
+		case "OAUTH_USERNAME":
+			details.OauthUsername = emptyIfNull(v)
+		case "OAUTH_ASSERTION_ISSUER":
+			details.OauthAssertionIssuer = emptyIfNull(v)
+		case "OAUTH_RESOURCE_URL":
+			details.OauthResourceUrl = emptyIfNull(v)
+		}
+	}
+	return errors.Join(errs...)
+}

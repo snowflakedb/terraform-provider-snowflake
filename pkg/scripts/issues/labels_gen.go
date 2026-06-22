@@ -153,6 +153,7 @@ var RepositoryLabels = []string{
 	"data_source:account_roles",
 	"data_source:accounts",
 	"data_source:alerts",
+	"data_source:api_integrations",
 	"data_source:authentication_policies",
 	"data_source:catalog_integrations",
 	"data_source:compute_pools",
