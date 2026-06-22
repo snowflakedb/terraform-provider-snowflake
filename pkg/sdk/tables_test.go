@@ -905,7 +905,7 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
 				StorageLifecyclePolicy: emptySchemaObjectIdentifier,
-				On:                     []string{"FIRST_COLUMN"},
+				On:                     []Column{{Value: "FIRST_COLUMN"}},
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("TableAddStorageLifecyclePolicy", "Name"))
@@ -1478,10 +1478,10 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
 				StorageLifecyclePolicy: storageLifecyclePolicyId,
-				On:                     []string{"FIRST_COLUMN"},
+				On:                     []Column{{Value: "FIRST_COLUMN"}},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON (FIRST_COLUMN)`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
 	})
 
 	t.Run("add storage lifecycle policy with multiple columns", func(t *testing.T) {
@@ -1491,10 +1491,10 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
 				StorageLifecyclePolicy: storageLifecyclePolicyId,
-				On:                     []string{"FIRST_COLUMN", "SECOND_COLUMN"},
+				On:                     []Column{{Value: "FIRST_COLUMN"}, {Value: "SECOND_COLUMN"}},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON (FIRST_COLUMN, SECOND_COLUMN)`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN", "SECOND_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
 	})
 
 	t.Run("drop storage lifecycle policy", func(t *testing.T) {

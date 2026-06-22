@@ -249,7 +249,7 @@ type TableDropAndAddRowAccessPolicyRequest struct {
 
 type TableAddStorageLifecyclePolicyRequest struct {
 	StorageLifecyclePolicy SchemaObjectIdentifier // required
-	On                     []string               // required
+	On                     []Column               // required
 }
 
 type TableUnsetRequest struct {

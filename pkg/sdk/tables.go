@@ -489,7 +489,7 @@ type TableDropAndAddRowAccessPolicy struct {
 type TableAddStorageLifecyclePolicy struct {
 	add                    bool                   `ddl:"static" sql:"ADD"`
 	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"STORAGE LIFECYCLE POLICY"`
-	On                     []string               `ddl:"keyword,parentheses" sql:"ON"`
+	On                     []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
 // dropTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table

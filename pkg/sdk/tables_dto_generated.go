@@ -717,7 +717,7 @@ func NewTableDropAndAddRowAccessPolicyRequest(
 
 func NewTableAddStorageLifecyclePolicyRequest(
 	storageLifecyclePolicy SchemaObjectIdentifier,
-	on []string,
+	on []Column,
 ) *TableAddStorageLifecyclePolicyRequest {
 	s := TableAddStorageLifecyclePolicyRequest{}
 	s.StorageLifecyclePolicy = storageLifecyclePolicy
