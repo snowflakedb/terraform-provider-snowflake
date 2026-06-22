@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -18,37 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var apiIntegrationGitRepositoryAllowedValueExactlyOneOf = []string{
-	"all_allowed_authentication_secrets",
-	"no_allowed_authentication_secrets",
-	"allowed_authentication_secrets",
-}
-
 var apiIntegrationGitRepositoryTokenSchema = func() map[string]*schema.Schema {
 	apiIntegrationGitRepositoryToken := map[string]*schema.Schema{
-		"all_allowed_authentication_secrets": {
-			Type:         schema.TypeBool,
-			Optional:     true,
-			ExactlyOneOf: apiIntegrationGitRepositoryAllowedValueExactlyOneOf,
-			Description:  "When set to true, all authentication secrets are allowed to be used when authenticating to the git repository. Exactly one of `all_allowed_authentication_secrets`, `no_allowed_authentication_secrets`, or `allowed_authentication_secrets` must be set.",
-		},
-		"no_allowed_authentication_secrets": {
-			Type:         schema.TypeBool,
-			Optional:     true,
-			ExactlyOneOf: apiIntegrationGitRepositoryAllowedValueExactlyOneOf,
-			Description:  "When set to true, no authentication secrets are allowed to be used when authenticating to the git repository. Exactly one of `all_allowed_authentication_secrets`, `no_allowed_authentication_secrets`, or `allowed_authentication_secrets` must be set.",
-		},
-		"allowed_authentication_secrets": {
-			Type:             schema.TypeSet,
-			Optional:         true,
-			ExactlyOneOf:     apiIntegrationGitRepositoryAllowedValueExactlyOneOf,
-			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_authentication_secrets"),
-			Elem: &schema.Schema{
-				Type:             schema.TypeString,
-				ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-			},
-			Description: "A list of fully-qualified secret identifiers (database.schema.secret) allowed to be used when authenticating to the git repository. Exactly one of `all_allowed_authentication_secrets`, `no_allowed_authentication_secrets`, or `allowed_authentication_secrets` must be set.",
-		},
 		DescribeOutputAttributeName: {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -58,7 +28,7 @@ var apiIntegrationGitRepositoryTokenSchema = func() map[string]*schema.Schema {
 			},
 		},
 	}
-	return collections.MergeMaps(apiIntegrationCommonSchema, apiIntegrationGitRepositoryToken)
+	return collections.MergeMaps(apiIntegrationCommonSchema, apiIntegrationAllowedAuthSecretsSchema, apiIntegrationGitRepositoryToken)
 }()
 
 func ApiIntegrationGitRepositoryToken() *schema.Resource {
@@ -111,52 +81,6 @@ func ImportApiIntegrationGitRepositoryToken(ctx context.Context, d *schema.Resou
 	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
 }
 
-func buildAllowedAuthSecretsRequestFromState(d *schema.ResourceData) (*sdk.ApiIntegrationAllowedAuthenticationSecretsRequest, error) {
-	req := sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest()
-	if v, ok := d.GetOk("all_allowed_authentication_secrets"); ok && v.(bool) {
-		return req.WithAllSecrets(true), nil
-	}
-	if v, ok := d.GetOk("no_allowed_authentication_secrets"); ok && v.(bool) {
-		return req.WithNoSecrets(true), nil
-	}
-	if v, ok := d.GetOk("allowed_authentication_secrets"); ok {
-		rawList := expandStringList(v.(*schema.Set).List())
-		ids, err := collections.MapErr(rawList, sdk.ParseSchemaObjectIdentifier)
-		if err != nil {
-			return nil, err
-		}
-		return req.WithAllowedList(ids), nil
-	}
-	return nil, fmt.Errorf("exactly one of all_allowed_authentication_secrets, no_allowed_authentication_secrets, or allowed_authentication_secrets must be set")
-}
-
-func setAllowedAuthSecretFieldsFromDescribe(d *schema.ResourceData, raw string) error {
-	switch strings.ToUpper(strings.TrimSpace(raw)) {
-	case "ALL":
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", true),
-			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", []any{}),
-		)
-	case "NONE":
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", false),
-			d.Set("no_allowed_authentication_secrets", true),
-			d.Set("allowed_authentication_secrets", []any{}),
-		)
-	default:
-		ids, err := collections.MapErr(sdk.ParseCommaSeparatedStringArray(raw, true), sdk.ParseSchemaObjectIdentifier)
-		if err != nil {
-			return err
-		}
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", false),
-			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", collections.Map(ids, sdk.SchemaObjectIdentifier.FullyQualifiedName)),
-		)
-	}
-}
-
 func CreateApiIntegrationGitRepositoryToken(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
@@ -171,7 +95,9 @@ func CreateApiIntegrationGitRepositoryToken(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	gitParams.WithAllowedAuthenticationSecrets(*secretsReq)
+	if secretsReq != nil {
+		gitParams.WithAllowedAuthenticationSecrets(*secretsReq)
+	}
 
 	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiTokenBasedProviderParams(*gitParams)); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating git HTTPS API token-based API integration: %w", err))
@@ -211,7 +137,6 @@ func ReadApiIntegrationGitRepositoryToken(ctx context.Context, d *schema.Resourc
 
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
-		setAllowedAuthSecretFieldsFromDescribe(d, gitDetails.AllowedAuthenticationSecrets),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryTokenDetailsToSchema(gitDetails)}),
 	)
 	return diag.FromErr(errs)
@@ -238,7 +163,11 @@ func UpdateApiIntegrationGitRepositoryToken(ctx context.Context, d *schema.Resou
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		gitSet.WithAllowedAuthenticationSecrets(*secretsReq)
+		if secretsReq != nil {
+			gitSet.WithAllowedAuthenticationSecrets(*secretsReq)
+		} else {
+			gitUnset.WithAllowedAuthenticationSecrets(true)
+		}
 	}
 
 	if !reflect.DeepEqual(*gitSet, *sdk.NewSetGitHttpsApiTokenBasedParamsRequest()) {

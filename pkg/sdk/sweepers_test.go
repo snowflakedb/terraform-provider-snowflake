@@ -652,7 +652,7 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
-		rms, err := client.ResourceMonitors.Show(ctx, new(sdk.ShowResourceMonitorOptions))
+		rms, err := client.ResourceMonitors.Show(ctx, sdk.NewShowResourceMonitorRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW RESOURCE MONITORS ended with error, err = %w", err)
 		}

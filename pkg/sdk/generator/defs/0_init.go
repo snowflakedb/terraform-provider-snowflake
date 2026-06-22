@@ -47,6 +47,7 @@ func init() {
 		passwordPoliciesDef,
 		postgresInstancesDef,
 		proceduresDef,
+		resourceMonitorsDef,
 		rowAccessPoliciesDef,
 		secretsDef,
 		schemasDef,

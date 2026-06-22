@@ -198,25 +198,34 @@ func (s *AlterTableRequest) toOpts() *alterTableOptions {
 			Add:  add,
 		}
 	}
+	var addStorageLifecyclePolicy *TableAddStorageLifecyclePolicy
+	if s.AddStorageLifecyclePolicy != nil {
+		addStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+			StorageLifecyclePolicy: s.AddStorageLifecyclePolicy.StorageLifecyclePolicy,
+			On:                     s.AddStorageLifecyclePolicy.On,
+		}
+	}
 
 	return &alterTableOptions{
-		IfExists:                  s.IfExists,
-		name:                      s.name,
-		NewName:                   s.NewName,
-		SwapWith:                  s.SwapWith,
-		ClusteringAction:          clusteringAction,
-		ColumnAction:              columnAction,
-		ConstraintAction:          constraintAction,
-		ExternalTableAction:       externalTableAction,
-		SearchOptimizationAction:  searchOptimizationAction,
-		Set:                       tableSet,
-		SetTags:                   tagAssociations,
-		UnsetTags:                 s.UnsetTags,
-		Unset:                     tableUnset,
-		AddRowAccessPolicy:        addRowAccessPolicy,
-		DropRowAccessPolicy:       dropRowAccessPolicy,
-		DropAndAddRowAccessPolicy: dropAndAddRowAccessPolicy,
-		DropAllAccessRowPolicies:  s.DropAllAccessRowPolicies,
+		IfExists:                   s.IfExists,
+		name:                       s.name,
+		NewName:                    s.NewName,
+		SwapWith:                   s.SwapWith,
+		ClusteringAction:           clusteringAction,
+		ColumnAction:               columnAction,
+		ConstraintAction:           constraintAction,
+		ExternalTableAction:        externalTableAction,
+		SearchOptimizationAction:   searchOptimizationAction,
+		Set:                        tableSet,
+		SetTags:                    tagAssociations,
+		UnsetTags:                  s.UnsetTags,
+		Unset:                      tableUnset,
+		AddRowAccessPolicy:         addRowAccessPolicy,
+		DropRowAccessPolicy:        dropRowAccessPolicy,
+		DropAndAddRowAccessPolicy:  dropAndAddRowAccessPolicy,
+		DropAllAccessRowPolicies:   s.DropAllAccessRowPolicies,
+		AddStorageLifecyclePolicy:  addStorageLifecyclePolicy,
+		DropStorageLifecyclePolicy: s.DropStorageLifecyclePolicy,
 	}
 }
 

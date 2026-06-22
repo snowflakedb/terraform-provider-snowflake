@@ -66,6 +66,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
 	},
 	{
+		name:   "ApiIntegrationGitRepositoryPrivateLink",
+		schema: resources.ApiIntegrationGitRepositoryPrivateLink().Schema,
+	},
+	{
 		name:   "ApiIntegrationGitRepositoryToken",
 		schema: resources.ApiIntegrationGitRepositoryToken().Schema,
 	},
