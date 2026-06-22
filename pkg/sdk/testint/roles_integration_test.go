@@ -165,16 +165,14 @@ func TestInt_Roles(t *testing.T) {
 		role, cleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(cleanup)
 
-		roles, err := client.Roles.Show(ctx, sdk.NewShowRoleRequest().WithLike(sdk.NewLikeRequest(role.Name)))
+		roles, err := client.Roles.Show(ctx, sdk.NewShowRoleRequest().WithLike(sdk.Like{Pattern: sdk.String(role.Name)}))
 		require.NoError(t, err)
 		assert.Len(t, roles, 1)
 		assert.Equal(t, role.Name, roles[0].Name)
 	})
 
 	t.Run("in class", func(t *testing.T) {
-		roles, err := client.Roles.Show(ctx, sdk.NewShowRoleRequest().WithInClass(sdk.RolesInClass{
-			Class: sdk.NewSchemaObjectIdentifier("SNOWFLAKE", "ML", "ANOMALY_DETECTION"),
-		}))
+		roles, err := client.Roles.Show(ctx, sdk.NewShowRoleRequest().WithInClass(*sdk.NewRolesInClassRequest().WithClass(sdk.NewSchemaObjectIdentifier("SNOWFLAKE", "ML", "ANOMALY_DETECTION"))))
 		require.NoError(t, err)
 		assert.Len(t, roles, 1)
 		assert.Equal(t, "USER", roles[0].Name)
@@ -198,14 +196,14 @@ func TestInt_Roles(t *testing.T) {
 		t.Cleanup(cleanupUser)
 
 		userID := user.ID()
-		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), sdk.GrantRole{User: &userID}))
+		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), *sdk.NewGrantRoleToRequest().WithUser(userID)))
 		require.NoError(t, err)
 
 		roleBefore, err := client.Roles.ShowByID(ctx, role.ID())
 		require.NoError(t, err)
 		assert.Equal(t, 1, roleBefore.AssignedToUsers)
 
-		err = client.Roles.Revoke(ctx, sdk.NewRevokeRoleRequest(role.ID(), sdk.RevokeRole{User: &userID}))
+		err = client.Roles.Revoke(ctx, sdk.NewRevokeRoleRequest(role.ID(), *sdk.NewRevokeRoleFromRequest().WithUser(userID)))
 		require.NoError(t, err)
 
 		roleAfter, err := client.Roles.ShowByID(ctx, role.ID())
@@ -221,7 +219,7 @@ func TestInt_Roles(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		parentRoleID := parentRole.ID()
-		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), sdk.GrantRole{Role: &parentRoleID}))
+		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), *sdk.NewGrantRoleToRequest().WithRole(parentRoleID)))
 		require.NoError(t, err)
 
 		roleBefore, err := client.Roles.ShowByID(ctx, role.ID())
@@ -233,7 +231,7 @@ func TestInt_Roles(t *testing.T) {
 		require.Equal(t, 1, roleBefore.GrantedToRoles)
 		require.Equal(t, 1, parentRoleBefore.GrantedRoles)
 
-		err = client.Roles.Revoke(ctx, sdk.NewRevokeRoleRequest(role.ID(), sdk.RevokeRole{Role: &parentRoleID}))
+		err = client.Roles.Revoke(ctx, sdk.NewRevokeRoleRequest(role.ID(), *sdk.NewRevokeRoleFromRequest().WithRole(parentRoleID)))
 		require.NoError(t, err)
 
 		roleAfter, err := client.Roles.ShowByID(ctx, role.ID())
@@ -254,7 +252,7 @@ func TestInt_Roles(t *testing.T) {
 		parentRoleID := parentRole.ID()
 
 		// Grant PUBLIC to the parent role — Snowflake silently succeeds (it's always a no-op)
-		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(publicRoleID, sdk.GrantRole{Role: &parentRoleID}))
+		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(publicRoleID, *sdk.NewGrantRoleToRequest().WithRole(parentRoleID)))
 		require.NoError(t, err)
 
 		// SHOW GRANTS OF ROLE PUBLIC does NOT contain an explicit grant to the parent role
@@ -280,7 +278,7 @@ func TestInt_Roles(t *testing.T) {
 		userID := user.ID()
 
 		// Grant PUBLIC to the user — Snowflake silently succeeds (it's always a no-op)
-		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(publicRoleID, sdk.GrantRole{User: &userID}))
+		err := client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(publicRoleID, *sdk.NewGrantRoleToRequest().WithUser(userID)))
 		require.NoError(t, err)
 
 		// SHOW GRANTS OF ROLE PUBLIC does NOT contain an explicit grant to the user
