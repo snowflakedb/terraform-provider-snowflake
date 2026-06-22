@@ -16,7 +16,7 @@ const (
 	AccountSessionPolicyAttachmentResource         feature = "snowflake_account_session_policy_attachment_resource"
 	AlertResource                                  feature = "snowflake_alert_resource"
 	AlertsDatasource                               feature = "snowflake_alerts_datasource"
-	ApiIntegrationsDatasource                     feature = "snowflake_api_integrations_datasource"
+	ApiIntegrationsDatasource                      feature = "snowflake_api_integrations_datasource"
 	ApiIntegrationResource                         feature = "snowflake_api_integration_resource"
 	ApiIntegrationAmazonApiGatewayResource         feature = "snowflake_api_integration_amazon_api_gateway_resource"
 	ApiIntegrationAzureApiManagementResource       feature = "snowflake_api_integration_azure_api_management_resource"

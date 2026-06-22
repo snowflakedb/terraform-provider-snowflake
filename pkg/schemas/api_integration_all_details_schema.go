@@ -43,8 +43,8 @@ var DescribeApiIntegrationAllDetailsSchema = map[string]*schema.Schema{
 	"tls_trusted_certificates":       {Type: schema.TypeList, Elem: &schema.Schema{Type: schema.TypeString}, Computed: true},
 	// Shared
 	"allowed_prefixes": {Type: schema.TypeList, Elem: &schema.Schema{Type: schema.TypeString}, Computed: true},
-	"blocked_prefixes":  {Type: schema.TypeList, Elem: &schema.Schema{Type: schema.TypeString}, Computed: true},
-	"comment":           {Type: schema.TypeString, Computed: true},
+	"blocked_prefixes": {Type: schema.TypeList, Elem: &schema.Schema{Type: schema.TypeString}, Computed: true},
+	"comment":          {Type: schema.TypeString, Computed: true},
 }
 
 func ApiIntegrationAllDetailsToSchema(d *sdk.ApiIntegrationAllDetails) map[string]any {
