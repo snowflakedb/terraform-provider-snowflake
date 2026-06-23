@@ -62,6 +62,26 @@ func (s *AlterDynamicTableRequest) WithSet(set *DynamicTableSetRequest) *AlterDy
 	return s
 }
 
+func (s *AlterDynamicTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePolicy *DynamicTableAddStorageLifecyclePolicyRequest) *AlterDynamicTableRequest {
+	s.addStorageLifecyclePolicy = addStorageLifecyclePolicy
+	return s
+}
+
+func (s *AlterDynamicTableRequest) WithDropStorageLifecyclePolicy(dropStorageLifecyclePolicy *bool) *AlterDynamicTableRequest {
+	s.dropStorageLifecyclePolicy = dropStorageLifecyclePolicy
+	return s
+}
+
+func NewDynamicTableAddStorageLifecyclePolicyRequest(
+	storageLifecyclePolicy SchemaObjectIdentifier,
+	on []Column,
+) *DynamicTableAddStorageLifecyclePolicyRequest {
+	s := DynamicTableAddStorageLifecyclePolicyRequest{}
+	s.StorageLifecyclePolicy = storageLifecyclePolicy
+	s.On = on
+	return &s
+}
+
 func NewDynamicTableSetRequest() *DynamicTableSetRequest {
 	return &DynamicTableSetRequest{}
 }
