@@ -185,13 +185,13 @@ func buildAllowedAuthSecretsRequestFromState(d *schema.ResourceData) (*sdk.ApiIn
 
 func setAllowedAuthSecretFieldsFromDescribe(d *schema.ResourceData, raw string) error {
 	switch strings.ToUpper(strings.TrimSpace(raw)) {
-	case "ALL":
+	case string(sdk.ApiIntegrationAllowedAuthenticationSecretsValueAll):
 		return errors.Join(
 			d.Set("all_allowed_authentication_secrets", true),
 			d.Set("no_allowed_authentication_secrets", false),
 			d.Set("allowed_authentication_secrets", []any{}),
 		)
-	case "NONE":
+	case string(sdk.ApiIntegrationAllowedAuthenticationSecretsValueNone):
 		return errors.Join(
 			d.Set("all_allowed_authentication_secrets", false),
 			d.Set("no_allowed_authentication_secrets", true),

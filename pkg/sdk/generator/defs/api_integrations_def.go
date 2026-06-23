@@ -7,6 +7,11 @@ import (
 )
 
 var (
+	ApiIntegrationAllowedAuthenticationSecretsValueEnum = g.NewEnum(
+		"ApiIntegrationAllowedAuthenticationSecretsValue", "ApiIntegrationAllowedAuthenticationSecretsValues",
+		"ALL",
+		"NONE",
+	)
 	ApiIntegrationAwsApiProviderTypeEnum = g.NewEnum(
 		"ApiIntegrationAwsApiProviderType", "ApiIntegrationAwsApiProviderTypes",
 		"aws_api_gateway",
@@ -95,6 +100,7 @@ var apiIntegrationsDef = g.NewInterface(
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	WithEnums(
+		ApiIntegrationAllowedAuthenticationSecretsValueEnum,
 		ApiIntegrationAwsApiProviderTypeEnum,
 		ApiIntegrationOauthClientAuthMethodEnum,
 		ApiIntegrationOauthAllowedScopeEnum,
