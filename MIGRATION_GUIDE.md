@@ -26,7 +26,59 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
-### *(new feature)* New `snowflake_api_integrations` data source
+### *(new feature/deprecation)* API integration resources reworked
+
+#### *(new feature/deprecation)* API integration resources
+
+The existing `snowflake_api_integration` resource has been deprecated. It has been split into nine new dedicated resources, each managing a single integration type:
+
+- [`snowflake_api_integration_amazon_api_gateway`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_amazon_api_gateway) — for AWS API Gateway, AWS Private API Gateway, AWS GovCloud API Gateway, and AWS GovCloud Private API Gateway
+- [`snowflake_api_integration_azure_api_management`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_azure_api_management) — for Azure API Management
+- [`snowflake_api_integration_google_cloud_api_gateway`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_google_cloud_api_gateway) — for Google Cloud API Gateway
+- [`snowflake_api_integration_git_repository_github_app`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_github_app) — for Git repositories using GitHub App authentication
+- [`snowflake_api_integration_git_repository_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_oauth2) — for Git repositories using OAuth 2.0
+- [`snowflake_api_integration_git_repository_token`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_token) — for Git repositories using token-based authentication
+- [`snowflake_api_integration_git_repository_private_link`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_private_link) — for Git repositories over a private link endpoint
+- [`snowflake_api_integration_external_mcp_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_external_mcp_oauth2) — for external MCP servers using OAuth 2.0
+- [`snowflake_api_integration_external_mcp_dynamic_client`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_external_mcp_dynamic_client) — for external MCP servers using OAuth 2.0 Dynamic Client Registration
+
+The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation and adhere to our [new conventions](#general-changes). Each resource schema contains only the attributes valid for the given integration type.
+
+These resources are in preview. To use them, add the corresponding feature flag(s) to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field:
+- `snowflake_api_integration_amazon_api_gateway_resource`
+- `snowflake_api_integration_azure_api_management_resource`
+- `snowflake_api_integration_google_cloud_api_gateway_resource`
+- `snowflake_api_integration_git_repository_github_app_resource`
+- `snowflake_api_integration_git_repository_oauth2_resource`
+- `snowflake_api_integration_git_repository_token_resource`
+- `snowflake_api_integration_git_repository_private_link_resource`
+- `snowflake_api_integration_external_mcp_oauth2_resource`
+- `snowflake_api_integration_external_mcp_dynamic_client_resource`
+
+The old `snowflake_api_integration` resource is deprecated and will be removed in a future major version. It remains available in the meantime.
+
+##### Migrating from `snowflake_api_integration` to the new resources
+
+To determine which new resource to use, check the `api_provider` value in your existing `snowflake_api_integration` configuration:
+
+| Old `api_provider` value | New resource |
+|---|---|
+| `aws_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_private_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_gov_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_gov_private_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `azure_api_management` | `snowflake_api_integration_azure_api_management` |
+| `google_api_gateway` | `snowflake_api_integration_google_cloud_api_gateway` |
+
+Notable schema changes compared to the old resource:
+- Computed attributes (`api_aws_iam_user_arn`, `api_aws_external_id`, `azure_consent_url`, `azure_multi_tenant_app_name`, `api_gcp_service_account`) have moved to `describe_output`
+- `created_on` has moved to `show_output`
+- `api_provider` in the Amazon API Gateway resource accepts only the four AWS variants; Azure and Google each have a dedicated resource with no `api_provider` field
+- Each resource schema contains only the fields relevant to its integration type — provider-specific fields from other backends are no longer present
+
+To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
+
+#### *(new feature)* `snowflake_api_integrations` data source
 
 We have added a new preview data source for querying API integrations: [snowflake_api_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/api_integrations).
 
@@ -34,7 +86,7 @@ The data source supports filtering with `like` and returns both `show_output` an
 
 This feature will be marked as stable in future releases. To use it, add `snowflake_api_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
 
-No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
 ### *(new feature)* `snowflake_grant_ownership`: support for `AGENT` object type
 

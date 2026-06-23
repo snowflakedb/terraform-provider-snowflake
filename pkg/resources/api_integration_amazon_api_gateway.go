@@ -108,27 +108,22 @@ func CreateApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.Resourc
 }
 
 func ImportApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	details, err := client.ApiIntegrations.DescribeAwsDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	if _, err := sdk.ToApiIntegrationAwsApiProviderType(details.ApiProvider); err != nil {
-		return nil, fmt.Errorf(
-			"api integration %s has api_provider %s, not compatible with snowflake_api_integration_amazon_api_gateway (expected one of %s); use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.ApiProvider,
-			possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationAwsApiProviderTypes)),
-		)
-	}
-
-	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+	return importApiIntegrationWithDetails(ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAwsDetails, error) {
+			return client.ApiIntegrations.DescribeAwsDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationAwsDetails, id sdk.AccountObjectIdentifier) error {
+			if _, err := sdk.ToApiIntegrationAwsApiProviderType(details.ApiProvider); err != nil {
+				return fmt.Errorf(
+					"api integration %s has api_provider %s, not compatible with snowflake_api_integration_amazon_api_gateway (expected one of %s); use the appropriate resource type",
+					id.FullyQualifiedName(),
+					details.ApiProvider,
+					possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationAwsApiProviderTypes)),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 func ReadApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

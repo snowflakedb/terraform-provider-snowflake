@@ -1,10 +1,13 @@
 package resources
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -138,6 +141,28 @@ func handleApiIntegrationCommonRead(
 		d.Set("comment", integration.Comment),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ApiIntegrationToSchema(integration)}),
 	)
+}
+
+func importApiIntegrationWithDetails[D any](
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta any,
+	describeFunc func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (D, error),
+	validateFunc func(details D, id sdk.AccountObjectIdentifier) error,
+) ([]*schema.ResourceData, error) {
+	client := meta.(*provider.Context).Client
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	details, err := describeFunc(ctx, client, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
+	}
+	if err := validateFunc(details, id); err != nil {
+		return nil, err
+	}
+	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
 }
 
 func buildAllowedAuthSecretsRequestFromState(d *schema.ResourceData) (*sdk.ApiIntegrationAllowedAuthenticationSecretsRequest, error) {

@@ -79,29 +79,19 @@ func ApiIntegrationAzureApiManagement() *schema.Resource {
 }
 
 func ImportApiIntegrationAzureApiManagement(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	details, err := client.ApiIntegrations.DescribeAzureDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	normalizedProvider, err := sdk.ToApiIntegrationAzureApiProviderType(details.ApiProvider)
-	if err != nil || normalizedProvider != sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement {
-		return nil, fmt.Errorf("api integration %s has api_provider %s, not compatible with snowflake_api_integration_azure_api_management (expected %s); use the appropriate resource type",
-			id.FullyQualifiedName(), details.ApiProvider, sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement)
-	}
-
-	if err = d.Set("name", id.Name()); err != nil {
-		return nil, err
-	}
-
-	return []*schema.ResourceData{d}, nil
+	return importApiIntegrationWithDetails(ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAzureDetails, error) {
+			return client.ApiIntegrations.DescribeAzureDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationAzureDetails, id sdk.AccountObjectIdentifier) error {
+			normalizedProvider, err := sdk.ToApiIntegrationAzureApiProviderType(details.ApiProvider)
+			if err != nil || normalizedProvider != sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement {
+				return fmt.Errorf("api integration %s has api_provider %s, not compatible with snowflake_api_integration_azure_api_management (expected %s); use the appropriate resource type",
+					id.FullyQualifiedName(), details.ApiProvider, sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement)
+			}
+			return nil
+		},
+	)
 }
 
 func CreateApiIntegrationAzureApiManagement(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

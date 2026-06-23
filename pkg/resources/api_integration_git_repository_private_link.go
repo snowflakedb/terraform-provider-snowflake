@@ -117,26 +117,21 @@ func CreateApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema
 }
 
 func ImportApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	details, err := client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	if _, err := sdk.ToApiIntegrationGitApiProviderType(details.ApiProvider); err != nil {
-		return nil, fmt.Errorf(
-			"api integration %s has api_provider %q, not compatible with snowflake_api_integration_git_repository_private_link; use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.ApiProvider,
-		)
-	}
-
-	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+	return importApiIntegrationWithDetails(ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGitHttpsApiDetails, error) {
+			return client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationGitHttpsApiDetails, id sdk.AccountObjectIdentifier) error {
+			if _, err := sdk.ToApiIntegrationGitApiProviderType(details.ApiProvider); err != nil {
+				return fmt.Errorf(
+					"api integration %s has api_provider %q, not compatible with snowflake_api_integration_git_repository_private_link; use the appropriate resource type",
+					id.FullyQualifiedName(),
+					details.ApiProvider,
+				)
+			}
+			return nil
+		},
+	)
 }
 
 func ReadApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
