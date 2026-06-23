@@ -479,6 +479,19 @@ func TestPostgresInstances_ParseDetails(t *testing.T) {
 		require.NotNil(t, details.StorageIntegration)
 		assert.Equal(t, NewAccountObjectIdentifier("my_storage_integration"), *details.StorageIntegration)
 	})
+
+	t.Run("parse mixed-case property keys", func(t *testing.T) {
+		properties := []PostgresInstanceProperty{
+			{Property: "Name", Value: "test_instance"},
+			{Property: "COMPUTE_FAMILY", Value: "STANDARD_M"},
+			{Property: "Storage_Size_Gb", Value: "100"},
+		}
+		details, err := ParsePostgresInstanceDetails(properties)
+		require.NoError(t, err)
+		assert.Equal(t, "test_instance", details.Name)
+		assert.Equal(t, "STANDARD_M", details.ComputeFamily)
+		assert.Equal(t, 100, details.StorageSizeGb)
+	})
 }
 
 func TestNormalizePostgresSettings(t *testing.T) {

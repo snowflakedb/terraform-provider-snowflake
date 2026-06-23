@@ -42,7 +42,7 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 	details := &PostgresInstanceDetails{}
 	var errs []error
 	for _, prop := range properties {
-		switch prop.Property {
+		switch strings.ToLower(prop.Property) {
 		case "name":
 			details.Name = prop.Value
 		case "owner":
