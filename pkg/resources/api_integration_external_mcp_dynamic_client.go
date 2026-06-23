@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -48,10 +49,10 @@ func ApiIntegrationExternalMcpDynamicClient() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationExternalMcpDynamicClient, CreateApiIntegrationExternalMcpDynamicClient),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationExternalMcpDynamicClient, ReadApiIntegrationExternalMcpDynamicClient),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationExternalMcpDynamicClient, UpdateApiIntegrationExternalMcpDynamicClient),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationExternalMcpDynamicClient, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpDynamicClientResource), TrackingCreateWrapper(resources.ApiIntegrationExternalMcpDynamicClient, CreateApiIntegrationExternalMcpDynamicClient)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpDynamicClientResource), TrackingReadWrapper(resources.ApiIntegrationExternalMcpDynamicClient, ReadApiIntegrationExternalMcpDynamicClient)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpDynamicClientResource), TrackingUpdateWrapper(resources.ApiIntegrationExternalMcpDynamicClient, UpdateApiIntegrationExternalMcpDynamicClient)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpDynamicClientResource), TrackingDeleteWrapper(resources.ApiIntegrationExternalMcpDynamicClient, deleteFunc)),
 		Description:   "Resource used to manage API integration External MCP Dynamic Client Registration objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationExternalMcpDynamicClientSchema,

@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -78,10 +79,10 @@ func ApiIntegrationExternalMcpOAuth2() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationExternalMcpOAuth2, CreateApiIntegrationExternalMcpOAuth2),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationExternalMcpOAuth2, ReadApiIntegrationExternalMcpOAuth2),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationExternalMcpOAuth2, UpdateApiIntegrationExternalMcpOAuth2),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationExternalMcpOAuth2, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpOAuth2Resource), TrackingCreateWrapper(resources.ApiIntegrationExternalMcpOAuth2, CreateApiIntegrationExternalMcpOAuth2)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpOAuth2Resource), TrackingReadWrapper(resources.ApiIntegrationExternalMcpOAuth2, ReadApiIntegrationExternalMcpOAuth2)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpOAuth2Resource), TrackingUpdateWrapper(resources.ApiIntegrationExternalMcpOAuth2, UpdateApiIntegrationExternalMcpOAuth2)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpOAuth2Resource), TrackingDeleteWrapper(resources.ApiIntegrationExternalMcpOAuth2, deleteFunc)),
 		Description:   "Resource used to manage API integration for external MCP (Model Context Protocol) servers using OAuth 2.0 authentication. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationExternalMcpOAuth2Schema,

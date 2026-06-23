@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -38,7 +39,6 @@ var apiIntegrationGitRepositoryOauth2Schema = func() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			Sensitive:    true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  "The client ID for the OAuth 2.0 application.",
 		},
@@ -101,10 +101,10 @@ func ApiIntegrationGitRepositoryOauth2() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationGitRepositoryOauth2, CreateApiIntegrationGitRepositoryOauth2),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationGitRepositoryOauth2, ReadApiIntegrationGitRepositoryOauth2),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationGitRepositoryOauth2, UpdateApiIntegrationGitRepositoryOauth2),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationGitRepositoryOauth2, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryOauth2Resource), TrackingCreateWrapper(resources.ApiIntegrationGitRepositoryOauth2, CreateApiIntegrationGitRepositoryOauth2)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryOauth2Resource), TrackingReadWrapper(resources.ApiIntegrationGitRepositoryOauth2, ReadApiIntegrationGitRepositoryOauth2)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryOauth2Resource), TrackingUpdateWrapper(resources.ApiIntegrationGitRepositoryOauth2, UpdateApiIntegrationGitRepositoryOauth2)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryOauth2Resource), TrackingDeleteWrapper(resources.ApiIntegrationGitRepositoryOauth2, deleteFunc)),
 		Description:   "Resource used to manage API integration Git Repository OAuth2 objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationGitRepositoryOauth2Schema,

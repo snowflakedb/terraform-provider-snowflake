@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -61,10 +62,10 @@ func ApiIntegrationAmazonApiGateway() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationAmazonApiGateway, CreateApiIntegrationAmazonApiGateway),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationAmazonApiGateway, ReadApiIntegrationAmazonApiGateway),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationAmazonApiGateway, UpdateApiIntegrationAmazonApiGateway),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationAmazonApiGateway, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingCreateWrapper(resources.ApiIntegrationAmazonApiGateway, CreateApiIntegrationAmazonApiGateway)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingReadWrapper(resources.ApiIntegrationAmazonApiGateway, ReadApiIntegrationAmazonApiGateway)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingUpdateWrapper(resources.ApiIntegrationAmazonApiGateway, UpdateApiIntegrationAmazonApiGateway)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingDeleteWrapper(resources.ApiIntegrationAmazonApiGateway, deleteFunc)),
 		Description:   "Resource used to manage API integration Amazon API Gateway objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationAmazonApiGatewaySchema,

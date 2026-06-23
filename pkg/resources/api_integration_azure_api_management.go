@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -59,10 +60,10 @@ func ApiIntegrationAzureApiManagement() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationAzureApiManagement, CreateApiIntegrationAzureApiManagement),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationAzureApiManagement, ReadApiIntegrationAzureApiManagement),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationAzureApiManagement, UpdateApiIntegrationAzureApiManagement),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationAzureApiManagement, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationAzureApiManagementResource), TrackingCreateWrapper(resources.ApiIntegrationAzureApiManagement, CreateApiIntegrationAzureApiManagement)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationAzureApiManagementResource), TrackingReadWrapper(resources.ApiIntegrationAzureApiManagement, ReadApiIntegrationAzureApiManagement)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationAzureApiManagementResource), TrackingUpdateWrapper(resources.ApiIntegrationAzureApiManagement, UpdateApiIntegrationAzureApiManagement)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationAzureApiManagementResource), TrackingDeleteWrapper(resources.ApiIntegrationAzureApiManagement, deleteFunc)),
 		Description:   "Resource used to manage API integration Azure API Management objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationAzureApiManagementSchema,
