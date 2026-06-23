@@ -26,6 +26,13 @@ const (
 	mcpBlockedPrefix    = "https://mcp.example.com/api/blocked/"
 	mcpOauthResourceUrl = "https://mcp.atlassian.com/v1/mcp"
 
+	// MCP OAuth2 constants
+	mcpOauth2AuthorizationEndpoint = "https://auth.example.com/authorize"
+	mcpOauth2TokenEndpoint         = "https://auth.example.com/token" //nolint:gosec
+	mcpOauth2ClientId              = "oauth-client-id-123"
+	mcpOauth2ClientSecret          = "oauth-client-secret-456" //nolint:gosec
+	mcpOauth2RefreshTokenValidity  = 7200
+
 	// Git OAuth2 constants
 	gitOauth2AuthorizationEndpoint         = "https://auth.example.com/authorize"
 	gitOauth2TokenEndpoint                 = "https://auth.example.com/token" //nolint:gosec

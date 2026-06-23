@@ -8,6 +8,7 @@ import (
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -22,29 +23,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	oauthClientId := "oauth-client-id-123"
-	oauthClientSecret := "oauth-client-secret-456"
-	oauthTokenEndpoint := "https://auth.example.com/token"
-	oauthAuthorizationEndpoint := "https://auth.example.com/authorize"
-	refreshTokenValidity := 7200
-	allowedPrefix := "https://mcp.example.com/api/"
-	blockedPrefix := "https://mcp.example.com/api/blocked/"
 	apiProvider := string(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp)
 
 	comment := random.Comment()
 	externalComment := random.Comment()
 
-	basic := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{allowedPrefix}, true, oauthAuthorizationEndpoint, oauthClientId, oauthClientSecret, oauthTokenEndpoint)
-	withOptionals := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{allowedPrefix}, true, oauthAuthorizationEndpoint, oauthClientId, oauthClientSecret, oauthTokenEndpoint).
+	basic := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{mcpAllowedPrefix}, true, mcpOauth2AuthorizationEndpoint, mcpOauth2ClientId, mcpOauth2ClientSecret, mcpOauth2TokenEndpoint)
+	withOptionals := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{mcpAllowedPrefix}, true, mcpOauth2AuthorizationEndpoint, mcpOauth2ClientId, mcpOauth2ClientSecret, mcpOauth2TokenEndpoint).
 		WithOauthClientAuthMethod(string(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost)).
-		WithOauthRefreshTokenValidity(refreshTokenValidity).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithOauthRefreshTokenValidity(mcpOauth2RefreshTokenValidity).
+		WithApiBlockedPrefixes([]string{mcpBlockedPrefix}).
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
@@ -53,13 +46,13 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 		resourceassert.ApiIntegrationExternalMcpOAuth2Resource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
-			HasOauthClientIdString(oauthClientId).
-			HasOauthClientSecretString(oauthClientSecret).
-			HasOauthTokenEndpointString(oauthTokenEndpoint).
-			HasOauthAuthorizationEndpointString(oauthAuthorizationEndpoint).
+			HasOauthClientIdString(mcpOauth2ClientId).
+			HasOauthClientSecretString(mcpOauth2ClientSecret).
+			HasOauthTokenEndpointString(mcpOauth2TokenEndpoint).
+			HasOauthAuthorizationEndpointString(mcpOauth2AuthorizationEndpoint).
 			HasOauthClientAuthMethodEmpty().
 			HasOauthRefreshTokenValidity(0).
-			HasApiAllowedPrefixes(allowedPrefix).
+			HasApiAllowedPrefixes(mcpAllowedPrefix).
 			HasApiBlockedPrefixesEmpty().
 			HasCommentEmpty(),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
@@ -70,9 +63,9 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasApiProvider(apiProvider).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
 			HasOauthGrant("AUTHORIZATION_CODE").
-			HasOauthClientId(oauthClientId).
-			HasOauthTokenEndpoint(oauthTokenEndpoint).
-			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
+			HasOauthClientId(mcpOauth2ClientId).
+			HasOauthTokenEndpoint(mcpOauth2TokenEndpoint).
+			HasOauthAuthorizationEndpoint(mcpOauth2AuthorizationEndpoint).
 			HasOauthClientAuthMethod("").
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -81,10 +74,10 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthGrant("AUTHORIZATION_CODE").
-			HasOauthClientId(oauthClientId).
-			HasOauthTokenEndpoint(oauthTokenEndpoint).
-			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
-			HasAllowedPrefixes(allowedPrefix).
+			HasOauthClientId(mcpOauth2ClientId).
+			HasOauthTokenEndpoint(mcpOauth2TokenEndpoint).
+			HasOauthAuthorizationEndpoint(mcpOauth2AuthorizationEndpoint).
+			HasAllowedPrefixes(mcpAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
 	}
@@ -93,14 +86,14 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 		resourceassert.ApiIntegrationExternalMcpOAuth2Resource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
-			HasOauthClientIdString(oauthClientId).
-			HasOauthClientSecretString(oauthClientSecret).
-			HasOauthTokenEndpointString(oauthTokenEndpoint).
-			HasOauthAuthorizationEndpointString(oauthAuthorizationEndpoint).
+			HasOauthClientIdString(mcpOauth2ClientId).
+			HasOauthClientSecretString(mcpOauth2ClientSecret).
+			HasOauthTokenEndpointString(mcpOauth2TokenEndpoint).
+			HasOauthAuthorizationEndpointString(mcpOauth2AuthorizationEndpoint).
 			HasOauthClientAuthMethodString(string(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost)).
-			HasOauthRefreshTokenValidity(refreshTokenValidity).
-			HasApiAllowedPrefixes(allowedPrefix).
-			HasApiBlockedPrefixes(blockedPrefix).
+			HasOauthRefreshTokenValidity(mcpOauth2RefreshTokenValidity).
+			HasApiAllowedPrefixes(mcpAllowedPrefix).
+			HasApiBlockedPrefixes(mcpBlockedPrefix).
 			HasCommentString(comment),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -110,24 +103,24 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasApiProvider(apiProvider).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
 			HasOauthGrant("AUTHORIZATION_CODE").
-			HasOauthClientId(oauthClientId).
-			HasOauthTokenEndpoint(oauthTokenEndpoint).
-			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
+			HasOauthClientId(mcpOauth2ClientId).
+			HasOauthTokenEndpoint(mcpOauth2TokenEndpoint).
+			HasOauthAuthorizationEndpoint(mcpOauth2AuthorizationEndpoint).
 			HasOauthClientAuthMethod(string(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost)).
-			HasOauthRefreshTokenValidity(refreshTokenValidity).
+			HasOauthRefreshTokenValidity(mcpOauth2RefreshTokenValidity).
 			HasComment(comment),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
 			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthGrant("AUTHORIZATION_CODE").
-			HasOauthClientId(oauthClientId).
-			HasOauthTokenEndpoint(oauthTokenEndpoint).
-			HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
+			HasOauthClientId(mcpOauth2ClientId).
+			HasOauthTokenEndpoint(mcpOauth2TokenEndpoint).
+			HasOauthAuthorizationEndpoint(mcpOauth2AuthorizationEndpoint).
 			HasOauthClientAuthMethod(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost).
-			HasOauthRefreshTokenValidity(refreshTokenValidity).
-			HasAllowedPrefixes(allowedPrefix).
-			HasBlockedPrefixes(blockedPrefix).
+			HasOauthRefreshTokenValidity(mcpOauth2RefreshTokenValidity).
+			HasAllowedPrefixes(mcpAllowedPrefix).
+			HasBlockedPrefixes(mcpBlockedPrefix).
 			HasComment(comment),
 	}
 
@@ -224,20 +217,13 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 func TestAcc_ApiIntegrationExternalMcpOAuth2_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	oauthClientId := "oauth-client-id-123"
-	oauthClientSecret := "oauth-client-secret-456"
-	oauthTokenEndpoint := "https://auth.example.com/token"
-	oauthAuthorizationEndpoint := "https://auth.example.com/authorize"
-	allowedPrefix := "https://mcp.example.com/api/"
-	blockedPrefix := "https://mcp.example.com/api/blocked/"
 	oauthClientAuthMethod := sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost
-	refreshTokenValidity := 7200
 	comment := random.Comment()
 
-	testModel := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{allowedPrefix}, true, oauthAuthorizationEndpoint, oauthClientId, oauthClientSecret, oauthTokenEndpoint).
+	testModel := model.ApiIntegrationExternalMcpOAuth2("t", id.Name(), []string{mcpAllowedPrefix}, true, mcpOauth2AuthorizationEndpoint, mcpOauth2ClientId, mcpOauth2ClientSecret, mcpOauth2TokenEndpoint).
 		WithOauthClientAuthMethod(string(oauthClientAuthMethod)).
-		WithOauthRefreshTokenValidity(refreshTokenValidity).
-		WithApiBlockedPrefixes([]string{blockedPrefix}).
+		WithOauthRefreshTokenValidity(mcpOauth2RefreshTokenValidity).
+		WithApiBlockedPrefixes([]string{mcpBlockedPrefix}).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -249,13 +235,13 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					auth := sdk.NewOAuth2McpUserAuthenticationRequest(oauthClientId, oauthClientSecret, oauthTokenEndpoint, oauthAuthorizationEndpoint).
+					auth := sdk.NewOAuth2McpUserAuthenticationRequest(mcpOauth2ClientId, mcpOauth2ClientSecret, mcpOauth2TokenEndpoint, mcpOauth2AuthorizationEndpoint).
 						WithOauthClientAuthMethod(oauthClientAuthMethod).
-						WithOauthRefreshTokenValidity(refreshTokenValidity)
+						WithOauthRefreshTokenValidity(mcpOauth2RefreshTokenValidity)
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id,
-							[]sdk.ApiIntegrationEndpointPrefix{{Path: allowedPrefix}}, true).
-							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: blockedPrefix}}).
+							[]sdk.ApiIntegrationEndpointPrefix{{Path: mcpAllowedPrefix}}, true).
+							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: mcpBlockedPrefix}}).
 							WithComment(comment).
 							WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)),
 					)
@@ -272,7 +258,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_Import(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(testModel.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(testModel.ResourceReference(), "oauth_client_secret", tfjson.ActionUpdate, nil, new(oauthClientSecret)),
+						planchecks.ExpectChange(testModel.ResourceReference(), "oauth_client_secret", tfjson.ActionUpdate, nil, new(mcpOauth2ClientSecret)),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -290,12 +276,12 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_Import_WrongProviderType(t *testing
 
 	mcpOAuth2Id := testClient().Ids.RandomAccountObjectIdentifier()
 	mcpOAuth2Model := model.ApiIntegrationExternalMcpOAuth2("t", mcpOAuth2Id.Name(),
-		[]string{"https://mcp.example.com/api/"},
+		[]string{mcpAllowedPrefix},
 		true,
-		"https://auth.example.com/authorize",
-		"oauth-client-id-123",
-		"oauth-client-secret-456",
-		"https://auth.example.com/token",
+		mcpOauth2AuthorizationEndpoint,
+		mcpOauth2ClientId,
+		mcpOauth2ClientSecret,
+		mcpOauth2TokenEndpoint,
 	)
 
 	resource.Test(t, resource.TestCase{
