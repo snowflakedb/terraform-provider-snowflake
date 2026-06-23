@@ -78,6 +78,9 @@ func acceptanceTestsProvider() *schema.Provider {
 	p.ResourcesMap["snowflake_api_integration_external_mcp_dynamic_client"] = resources.ApiIntegrationExternalMcpDynamicClient()
 	p.ResourcesMap["snowflake_api_integration_git_repository_private_link"] = resources.ApiIntegrationGitRepositoryPrivateLink()
 	p.ResourcesMap["snowflake_api_integration_git_repository_token"] = resources.ApiIntegrationGitRepositoryToken()
+	// TODO(next postgres prs): Remove postgres resources from here
+	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
+	p.ResourcesMap["snowflake_postgres_instance"] = resources.PostgresInstance()
 	return p
 }
 

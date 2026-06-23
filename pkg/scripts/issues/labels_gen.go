@@ -87,8 +87,6 @@ var RepositoryLabels = []string{
 	"resource:object_parameter",
 	"resource:password_policy",
 	"resource:pipe",
-	"resource:postgres_fork",
-	"resource:postgres_instance",
 	"resource:primary_connection",
 	"resource:procedure",
 	"resource:procedure_java",
