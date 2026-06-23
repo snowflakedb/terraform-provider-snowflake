@@ -18,7 +18,10 @@ func TestPostgresInstances_Create(t *testing.T) {
 	// Minimal valid CreatePostgresInstanceOptions
 	defaultOpts := func() *CreatePostgresInstanceOptions {
 		return &CreatePostgresInstanceOptions{
-			name: id,
+			name:                    id,
+			ComputeFamily:           "STANDARD_M",
+			StorageSizeGb:           10,
+			AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
 		}
 	}
 
@@ -29,29 +32,39 @@ func TestPostgresInstances_Create(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 AUTHENTICATION_AUTHORITY = POSTGRES", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		networkPolicyId := randomAccountObjectIdentifier()
+		storageIntegrationId := randomAccountObjectIdentifier()
+		opts.PostgresVersion = Int(15)
+		opts.NetworkPolicy = &networkPolicyId
+		opts.HighAvailability = Bool(true)
+		opts.StorageIntegration = &storageIntegrationId
+		opts.PostgresSettings = String(`{"max_connections":"100"}`)
+		opts.Comment = String("my comment")
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 15 NETWORK_POLICY = %s HIGH_AVAILABILITY = true STORAGE_INTEGRATION = %s POSTGRES_SETTINGS = '{\"max_connections\":\"100\"}' COMMENT = 'my comment'`,
+			id.FullyQualifiedName(), networkPolicyId.FullyQualifiedName(), storageIntegrationId.FullyQualifiedName())
 	})
 }
 
 func TestPostgresInstances_Fork(t *testing.T) {
 	id := randomAccountObjectIdentifier()
+	forkSourceId := randomAccountObjectIdentifier()
 	// Minimal valid ForkPostgresInstanceOptions
 	defaultOpts := func() *ForkPostgresInstanceOptions {
 		return &ForkPostgresInstanceOptions{
 			name: id,
+			Fork: forkSourceId,
 		}
 	}
 
@@ -62,44 +75,50 @@ func TestPostgresInstances_Fork(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: valid identifier for [opts.Fork]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Fork = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.At opts.Before]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.At = &PostgresInstanceForkAt{Timestamp: String("2023-01-01 00:00:00")}
+		opts.Before = &PostgresInstanceForkBefore{Timestamp: String("2023-01-01 00:00:00")}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("ForkPostgresInstanceOptions", "At", "Before"))
 	})
 
 	t.Run("validation: exactly one field from [opts.At.Timestamp opts.At.Offset] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.At = &PostgresInstanceForkAt{} // neither Timestamp nor Offset set
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ForkPostgresInstanceOptions.At", "Timestamp", "Offset"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Before.Timestamp opts.Before.Offset] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Before = &PostgresInstanceForkBefore{} // neither Timestamp nor Offset set
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ForkPostgresInstanceOptions.Before", "Timestamp", "Offset"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE POSTGRES INSTANCE %s FORK %s", id.FullyQualifiedName(), forkSourceId.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.At = &PostgresInstanceForkAt{Timestamp: String("2023-01-01 00:00:00")}
+		opts.ComputeFamily = String("STANDARD_M")
+		opts.StorageSizeGb = Int(10)
+		opts.HighAvailability = Bool(true)
+		opts.Comment = String("my fork")
+		assertOptsValidAndSQLEquals(t, opts,
+			"CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => '2023-01-01 00:00:00') COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 HIGH_AVAILABILITY = true COMMENT = 'my fork'",
+			id.FullyQualifiedName(), forkSourceId.FullyQualifiedName())
 	})
 }
 
@@ -119,44 +138,67 @@ func TestPostgresInstances_Alter(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.Unset opts.Suspend opts.Resume opts.ResetAccess opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		// defaultOpts has none of the required fields set
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPostgresInstanceOptions", "RenameTo", "Set", "Unset", "Suspend", "Resume", "ResetAccess", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.NetworkPolicy opts.Set.AuthenticationAuthority opts.Set.Comment opts.Set.HighAvailability opts.Set.ComputeFamily opts.Set.StorageSizeGb opts.Set.StorageIntegration opts.Set.PostgresVersion opts.Set.MaintenanceWindowStart opts.Set.PostgresSettings] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Set = &PostgresInstanceSet{} // Set is present but no fields are set
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterPostgresInstanceOptions.Set", "NetworkPolicy", "AuthenticationAuthority", "Comment", "HighAvailability", "ComputeFamily", "StorageSizeGb", "StorageIntegration", "PostgresVersion", "MaintenanceWindowStart", "PostgresSettings"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Set.Apply.Immediately opts.Set.Apply.On] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Set = &PostgresInstanceSet{
+			Comment: String("x"),
+			Apply:   &PostgresInstanceApply{}, // neither Immediately nor On set
+		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPostgresInstanceOptions.Set.Apply", "Immediately", "On"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Unset.Comment opts.Unset.PostgresSettings opts.Unset.NetworkPolicy opts.Unset.MaintenanceWindowStart opts.Unset.StorageIntegration] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Unset = &PostgresInstanceUnset{} // Unset is present but no fields are set
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterPostgresInstanceOptions.Unset", "Comment", "PostgresSettings", "NetworkPolicy", "MaintenanceWindowStart", "StorageIntegration"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Suspend = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "ALTER POSTGRES INSTANCE %s SUSPEND", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		newId := randomAccountObjectIdentifier()
+		networkPolicyId := randomAccountObjectIdentifier()
+		storageIntegrationId := randomAccountObjectIdentifier()
+		authAuthority := PostgresInstanceAuthenticationAuthorityPostgres
+		opts.IfExists = Bool(true)
+		opts.Set = &PostgresInstanceSet{
+			NetworkPolicy:           &networkPolicyId,
+			AuthenticationAuthority: &authAuthority,
+			Comment:                 String("my comment"),
+			HighAvailability:        Bool(true),
+			ComputeFamily:           String("STANDARD_M"),
+			StorageSizeGb:           Int(10),
+			StorageIntegration:      &storageIntegrationId,
+			PostgresVersion:         Int(15),
+			MaintenanceWindowStart:  Int(3),
+			PostgresSettings:        String(`{"max_connections":"100"}`),
+			Apply:                   &PostgresInstanceApply{Immediately: Bool(true)},
+		}
+		_ = newId
+		assertOptsValidAndSQLEquals(t, opts,
+			`ALTER POSTGRES INSTANCE IF EXISTS %s SET NETWORK_POLICY = %s AUTHENTICATION_AUTHORITY = POSTGRES COMMENT = 'my comment' HIGH_AVAILABILITY = true COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 STORAGE_INTEGRATION = %s POSTGRES_VERSION = 15 MAINTENANCE_WINDOW_START = 3 POSTGRES_SETTINGS = '{\"max_connections\":\"100\"}' APPLY IMMEDIATELY`,
+			id.FullyQualifiedName(), networkPolicyId.FullyQualifiedName(), storageIntegrationId.FullyQualifiedName())
 	})
 }
 
@@ -176,20 +218,19 @@ func TestPostgresInstances_Drop(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "DROP POSTGRES INSTANCE %s", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.IfExists = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "DROP POSTGRES INSTANCE IF EXISTS %s", id.FullyQualifiedName())
 	})
 }
 
@@ -206,14 +247,15 @@ func TestPostgresInstances_Show(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "SHOW POSTGRES INSTANCES")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Like = &Like{Pattern: String("my-pattern")}
+		opts.StartsWith = String("my-prefix")
+		opts.Limit = &LimitFrom{Rows: Int(10), From: String("my-from")}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW POSTGRES INSTANCES LIKE 'my-pattern' STARTS WITH 'my-prefix' LIMIT 10 FROM 'my-from'")
 	})
 }
 
@@ -233,19 +275,17 @@ func TestPostgresInstances_Describe(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptyAccountObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE POSTGRES INSTANCE %s", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE POSTGRES INSTANCE %s", id.FullyQualifiedName())
 	})
 }
