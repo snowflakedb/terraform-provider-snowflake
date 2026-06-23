@@ -314,12 +314,3 @@ func normalizePostgresSettings(s *string) *string {
 	}
 	return &normalized
 }
-
-// setOptionalFromAccountObjectIdentifierPtr sets a key in resource data only if the
-// pointer is non-nil.
-func setOptionalFromAccountObjectIdentifierPtr(d *schema.ResourceData, key string, ptr *sdk.AccountObjectIdentifier) error {
-	if ptr != nil {
-		return d.Set(key, ptr.Name())
-	}
-	return nil
-}
