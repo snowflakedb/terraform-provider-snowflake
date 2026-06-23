@@ -395,12 +395,12 @@ func TestInt_TagsAssociations(t *testing.T) {
 		assertTagUnset(id, sdk.ObjectTypeAccount)
 
 		// test tag sdk method
-		err = client.Tags.SetOnCurrentAccount(ctx, sdk.NewSetTagOnCurrentAccountRequest().WithSetTags(tags))
+		err = client.Tags.SetOnCurrentAccount(ctx, tags)
 		require.NoError(t, err)
 
 		assertTagSet(id, sdk.ObjectTypeAccount)
 
-		err = client.Tags.UnsetOnCurrentAccount(ctx, sdk.NewUnsetTagOnCurrentAccountRequest().WithUnsetTags(unsetTags))
+		err = client.Tags.UnsetOnCurrentAccount(ctx, unsetTags)
 		require.NoError(t, err)
 
 		assertTagUnset(id, sdk.ObjectTypeAccount)

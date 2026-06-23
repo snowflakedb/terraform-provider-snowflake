@@ -56,6 +56,29 @@ func tagDrop() *g.QueryStruct {
 		OptionalQueryStructField("AllowedValues", allowedValues(), g.KeywordOptions().SQL("ALLOWED_VALUES"))
 }
 
+func setTagQueryStruct() *g.QueryStruct {
+	return g.NewQueryStruct("SetTag").
+		SQL("ALTER").
+		PredefinedQueryStructField("objectType", "ObjectType", g.KeywordOptions().Required()).
+		PredefinedQueryStructField("objectName", "ObjectIdentifier", g.IdentifierOptions().Required()).
+		AssignmentWithFieldName("MODIFY COLUMN", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Column").
+		OptionalSetTags().
+		WithValidation(g.ValidIdentifier, "objectName").
+		WithAdditionalValidations()
+}
+
+func unsetTagQueryStruct() *g.QueryStruct {
+	return g.NewQueryStruct("UnsetTag").
+		SQL("ALTER").
+		PredefinedQueryStructField("objectType", "ObjectType", g.KeywordOptions().Required()).
+		IfExists().
+		PredefinedQueryStructField("objectName", "ObjectIdentifier", g.IdentifierOptions().Required()).
+		AssignmentWithFieldName("MODIFY COLUMN", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Column").
+		OptionalUnsetTags().
+		WithValidation(g.ValidIdentifier, "objectName").
+		WithAdditionalValidations()
+}
+
 func tagRename() *g.QueryStruct {
 	return g.NewQueryStruct("TagRename").
 		Identifier("Name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
@@ -116,7 +139,7 @@ var tagsDef = g.NewInterface(
 		Text("schema_name").
 		Text("owner").
 		Text("comment").
-		OptionalPlainField("allowed_values", "[]string").
+		OptionalPlainField("allowed_values", "[]string", g.WithManualConvert()).
 		Text("owner_role_type").
 		OptionalEnum("propagate", TagPropagationEnumDef).
 		OptionalText("on_conflict"),
@@ -136,24 +159,28 @@ var tagsDef = g.NewInterface(
 	g.NewQueryStruct("UndropTag").
 		SQL("UNDROP").SQL("TAG").Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).WithCustomInterfaceMethod(
-	"Set", "",
-	[]*g.MethodParameter{g.NewMethodParameter("request", "*SetTagRequest")},
-	"error",
-).WithCustomInterfaceMethod(
-	"Unset", "",
-	[]*g.MethodParameter{g.NewMethodParameter("request", "*UnsetTagRequest")},
-	"error",
+).CustomOperationWithOpts(
+	"Set",
+	"https://docs.snowflake.com/en/sql-reference/sql/alter-tag",
+	setTagQueryStruct(),
+	[]g.CustomOperationOption{g.WithRequestAdjust()},
+).CustomOperationWithOpts(
+	"Unset",
+	"https://docs.snowflake.com/en/sql-reference/sql/alter-tag",
+	unsetTagQueryStruct(),
+	[]g.CustomOperationOption{g.WithRequestAdjust()},
 ).WithCustomInterfaceMethod(
 	"UnsetSafely", "",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*UnsetTagRequest")},
 	"error",
 ).WithCustomInterfaceMethod(
+	// TODO [next PRs]: change signature to use a proper Accounts request type when Accounts is migrated to the SDK generator.
 	"SetOnCurrentAccount", "",
-	[]*g.MethodParameter{g.NewMethodParameter("request", "*SetTagOnCurrentAccountRequest")},
+	[]*g.MethodParameter{g.NewMethodParameter("setTags", "[]TagAssociation")},
 	"error",
 ).WithCustomInterfaceMethod(
+	// TODO [next PRs]: change signature to use a proper Accounts request type when Accounts is migrated to the SDK generator.
 	"UnsetOnCurrentAccount", "",
-	[]*g.MethodParameter{g.NewMethodParameter("request", "*UnsetTagOnCurrentAccountRequest")},
+	[]*g.MethodParameter{g.NewMethodParameter("unsetTags", "[]ObjectIdentifier")},
 	"error",
 ).WithEnums(TagPropagationEnumDef)
