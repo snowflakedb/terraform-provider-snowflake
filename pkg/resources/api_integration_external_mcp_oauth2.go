@@ -160,7 +160,7 @@ func CreateApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	mcpParams := sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)
+	mcpParams := sdk.NewExternalMcpOAuth2ParamsRequest(*auth)
 
 	if err = client.ApiIntegrations.Create(ctx, request.WithExternalMcpOAuth2ProviderParams(*mcpParams)); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating external MCP OAuth2 API integration: %w", err))
@@ -232,7 +232,7 @@ func UpdateApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		mcpSet := sdk.NewSetExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)
+		mcpSet := sdk.NewSetExternalMcpOAuth2ParamsRequest(*auth)
 		set.WithExternalMcpOAuth2Params(*mcpSet)
 	}
 

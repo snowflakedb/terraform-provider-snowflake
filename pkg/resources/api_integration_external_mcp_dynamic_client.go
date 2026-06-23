@@ -76,7 +76,7 @@ func CreateApiIntegrationExternalMcpDynamicClient(ctx context.Context, d *schema
 	}
 
 	auth := sdk.NewDynamicClientMcpUserAuthenticationRequest(d.Get("oauth_resource_url").(string))
-	dynamicClientParams := sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)
+	dynamicClientParams := sdk.NewExternalMcpDynamicClientParamsRequest(*auth)
 
 	if err = client.ApiIntegrations.Create(ctx, request.WithExternalMcpDynamicClientProviderParams(*dynamicClientParams)); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating External MCP Dynamic Client API integration: %w", err))

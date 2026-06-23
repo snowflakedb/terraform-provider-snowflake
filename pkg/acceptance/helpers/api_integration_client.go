@@ -125,7 +125,7 @@ func (c *ApiIntegrationClient) CreateGitOAuth2(t *testing.T) (*sdk.ApiIntegratio
 	auth := sdk.NewOAuth2GitUserAuthenticationRequest("https://auth.example.com/authorize", "https://auth.example.com/token", "oauth-client-id-123", "oauth-client-secret-456")
 	return c.CreateWithRequest(t, sdk.NewCreateApiIntegrationRequest(id,
 		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://github.com/my-org/"}}, true).
-		WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().WithApiUserAuthentication(*auth)),
+		WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(*auth)),
 	)
 }
 
@@ -147,7 +147,7 @@ func (c *ApiIntegrationClient) CreateMcpOAuth2(t *testing.T) (*sdk.ApiIntegratio
 	auth := sdk.NewOAuth2McpUserAuthenticationRequest("oauth-client-id-123", "oauth-client-secret-456", "https://auth.example.com/token", "https://auth.example.com/authorize")
 	return c.CreateWithRequest(t, sdk.NewCreateApiIntegrationRequest(id,
 		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp.example.com/api/"}}, true).
-		WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)),
+		WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest(*auth)),
 	)
 }
 
@@ -158,7 +158,7 @@ func (c *ApiIntegrationClient) CreateMcpDynamicClient(t *testing.T) (*sdk.ApiInt
 	auth := sdk.NewDynamicClientMcpUserAuthenticationRequest("https://mcp.atlassian.com/v1/mcp")
 	return c.CreateWithRequest(t, sdk.NewCreateApiIntegrationRequest(id,
 		[]sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp.atlassian.com/v1/mcp"}}, true).
-		WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)),
+		WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest(*auth)),
 	)
 }
 

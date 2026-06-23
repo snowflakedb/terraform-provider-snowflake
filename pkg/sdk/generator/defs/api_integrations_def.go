@@ -171,7 +171,7 @@ var apiIntegrationsDef = g.NewInterface(
 					QueryStructField(
 						"ApiUserAuthentication",
 						apiIntegrationOauth2GitAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma().Required(),
 					),
 				g.KeywordOptions(),
 			).
@@ -195,7 +195,7 @@ var apiIntegrationsDef = g.NewInterface(
 					QueryStructField(
 						"ApiUserAuthentication",
 						apiIntegrationOauth2McpAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma().Required(),
 					),
 				g.KeywordOptions(),
 			).
@@ -206,7 +206,7 @@ var apiIntegrationsDef = g.NewInterface(
 					QueryStructField(
 						"ApiUserAuthentication",
 						apiIntegrationDynamicClientMcpAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma().Required(),
 					),
 				g.KeywordOptions(),
 			).
@@ -302,7 +302,7 @@ var apiIntegrationsDef = g.NewInterface(
 							QueryStructField(
 								"ApiUserAuthentication",
 								apiIntegrationOauth2McpAuthDef,
-								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma().Required(),
 							),
 						g.KeywordOptions(),
 					).

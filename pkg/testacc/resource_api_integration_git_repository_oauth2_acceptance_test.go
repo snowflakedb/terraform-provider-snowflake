@@ -208,10 +208,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 					testClient().ApiIntegration.DropApiIntegrationFunc(t, id)()
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
-							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().
-								WithApiUserAuthentication(*sdk.NewOAuth2GitUserAuthenticationRequest(
-									gitOauth2ExternalAuthorizationEndpoint, gitOauth2ExternalTokenEndpoint, gitOauth2ExternalClientId, gitOauth2ClientSecret,
-								))),
+							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(
+							*sdk.NewOAuth2GitUserAuthenticationRequest(
+								gitOauth2ExternalAuthorizationEndpoint, gitOauth2ExternalTokenEndpoint, gitOauth2ExternalClientId, gitOauth2ClientSecret,
+							))),
 					)
 					t.Cleanup(cleanup)
 				},
@@ -370,10 +370,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 					testClient().ApiIntegration.DropApiIntegrationFunc(t, id)()
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
-							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().
-								WithApiUserAuthentication(*sdk.NewOAuth2GitUserAuthenticationRequest(
-									gitOauth2ExternalAuthorizationEndpoint, gitOauth2ExternalTokenEndpoint, gitOauth2ExternalClientId, gitOauth2ClientSecret,
-								))),
+							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(
+							*sdk.NewOAuth2GitUserAuthenticationRequest(
+								gitOauth2ExternalAuthorizationEndpoint, gitOauth2ExternalTokenEndpoint, gitOauth2ExternalClientId, gitOauth2ClientSecret,
+							))),
 					)
 					t.Cleanup(cleanup)
 				},
@@ -463,10 +463,10 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_Import(t *testing.T) {
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithComment(comment).
 							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitBlockedPrefix}}).
-							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest().
-								WithApiUserAuthentication(*sdk.NewOAuth2GitUserAuthenticationRequest(
-									gitOauth2AuthorizationEndpoint, gitOauth2TokenEndpoint, gitOauth2ClientId, clientSecret,
-								))),
+							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(
+							*sdk.NewOAuth2GitUserAuthenticationRequest(
+								gitOauth2AuthorizationEndpoint, gitOauth2TokenEndpoint, gitOauth2ClientId, clientSecret,
+							))),
 					)
 					t.Cleanup(cleanup)
 				},
