@@ -81,17 +81,6 @@ func (c *PostgresInstanceClient) CreateAndWaitForReady(t *testing.T) (*sdk.Postg
 	return instance, cleanup
 }
 
-// WaitForForkReady waits for the instance to reach READY state and then adds
-// an additional settling period. Snowflake reports READY before the instance
-// is actually available for fork operations.
-func (c *PostgresInstanceClient) WaitForForkReady(t *testing.T, id sdk.AccountObjectIdentifier, timeout time.Duration) *sdk.PostgresInstance {
-	t.Helper()
-	instance := c.WaitForReady(t, id, timeout)
-	// The backend needs additional time after reporting READY before it accepts fork requests.
-	time.Sleep(30 * time.Second)
-	return instance
-}
-
 func (c *PostgresInstanceClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.PostgresInstanceDetails, error) {
 	t.Helper()
 	ctx := context.Background()

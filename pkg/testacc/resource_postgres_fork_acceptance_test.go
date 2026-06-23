@@ -25,14 +25,15 @@ import (
 )
 
 // createSourceForFork creates a postgres instance suitable for forking and registers cleanup.
-// It waits for the instance to be fully ready to accept fork operations.
+// It waits for the instance to reach READY state; the resource itself retries the fork
+// operation until the backend accepts it.
 func createSourceForFork(t *testing.T) sdk.AccountObjectIdentifier {
 	t.Helper()
 	sourceId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, sourceCleanup := testClient().PostgresInstance.CreateWithRequest(t,
 		sdk.NewCreatePostgresInstanceRequest(sourceId, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
 	t.Cleanup(sourceCleanup)
-	testClient().PostgresInstance.WaitForForkReady(t, sourceId, 5*time.Minute)
+	testClient().PostgresInstance.WaitForReady(t, sourceId, 5*time.Minute)
 	return sourceId
 }
 

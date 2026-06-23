@@ -254,8 +254,19 @@ func CreatePostgresFork(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(errs)
 	}
 
-	if err := client.PostgresInstances.Fork(ctx, request); err != nil {
-		return diag.FromErr(fmt.Errorf("error creating forked Postgres instance %s: %w", id.FullyQualifiedName(), err))
+	var lastForkErr error
+	if retryErr := util.Retry(24, 5*time.Second, func() (error, bool) {
+		lastForkErr = client.PostgresInstances.Fork(ctx, request)
+		if lastForkErr != nil {
+			log.Printf("[DEBUG] retryable Fork Postgres instance resulted in error: %v", lastForkErr)
+			return nil, false
+		}
+		return nil, true
+	}); retryErr != nil {
+		if lastForkErr != nil {
+			return diag.FromErr(fmt.Errorf("error creating forked Postgres instance %s: %w", id.FullyQualifiedName(), lastForkErr))
+		}
+		return diag.FromErr(retryErr)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
