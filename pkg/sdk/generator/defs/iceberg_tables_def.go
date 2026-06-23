@@ -185,6 +185,10 @@ var icebergTablesDef = g.NewInterface(
 		QueryStructField("ColumnsAndConstraints", icebergTableColumnsAndConstraints, g.ListOptions().Parentheses().Required()).
 		ListQueryStructField("PartitionBy", icebergTablePartitionExpression, g.KeywordOptions().Parentheses().SQL("PARTITION BY")).
 		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+		// TODO: report docs discrepancy to Snowflake - the CREATE ICEBERG TABLE docs list both PARTITION BY and
+		// CLUSTER BY as available options without noting they are mutually exclusive, but Snowflake rejects setting both with
+		// error 099207 (0A000): "Partition by and Cluster by cannot be specified together for Iceberg tables." This is enforced
+		// by the ConflictingFields validation below.
 		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
 		OptionalAssignment("CATALOG", IcebergTableCatalogEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
@@ -207,6 +211,7 @@ var icebergTablesDef = g.NewInterface(
 		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+		WithValidation(g.ConflictingFields, "PartitionBy", "ClusterBy").
 		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateFromIcebergFiles",
