@@ -113,8 +113,8 @@ func TestInt_TagReferences(t *testing.T) {
 	t.Run("view domain: propagated tag from source table", func(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
-				WithAllowedValues([]string{"propagated_value"}).
-				WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency)),
+				WithAllowedValues(sdk.AllowedValuesRequest{Values: []sdk.StringAllowEmpty{{Value: "propagated_value"}}}).
+				WithPropagate(*sdk.NewTagPropagateRequest().WithPropagationMethod(sdk.TagPropagationOnDependency)),
 		)
 		t.Cleanup(tagCleanup)
 
