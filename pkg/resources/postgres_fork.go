@@ -190,7 +190,7 @@ func ImportPostgresFork(ctx context.Context, d *schema.ResourceData, meta any) (
 		d.Set("storage_size_gb", pi.StorageSize),
 		d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
 		setOptionalFromPtr(d, "comment", pi.Comment),
-		setOptionalFromPtr(d, "postgres_settings", normalizePostgresSettings(pi.PostgresSettings)),
+		setOptionalFromPtr(d, "postgres_settings", sdk.NormalizePostgresSettingsPtr(pi.PostgresSettings)),
 	)
 	if errs != nil {
 		return nil, errs
@@ -324,7 +324,7 @@ func ReadPostgresForkFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			d.Set("storage_size_gb", pi.StorageSize),
 			d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
 			setOptionalFromPtr(d, "comment", pi.Comment),
-			setOptionalFromPtr(d, "postgres_settings", normalizePostgresSettings(pi.PostgresSettings)),
+			setOptionalFromPtr(d, "postgres_settings", sdk.NormalizePostgresSettingsPtr(pi.PostgresSettings)),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresInstanceDetailsToSchema(details)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),

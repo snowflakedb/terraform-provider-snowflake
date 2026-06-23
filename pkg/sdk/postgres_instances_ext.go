@@ -151,3 +151,16 @@ func NormalizePostgresSettings(s string) (string, error) {
 	}
 	return string(b), nil
 }
+
+// NormalizePostgresSettingsPtr is a pointer-safe variant of NormalizePostgresSettings
+// for use on the read path. Returns nil for nil input, empty/"{}" JSON, or parse errors.
+func NormalizePostgresSettingsPtr(s *string) *string {
+	if s == nil {
+		return nil
+	}
+	normalized, err := NormalizePostgresSettings(*s)
+	if err != nil || normalized == "" {
+		return nil
+	}
+	return &normalized
+}

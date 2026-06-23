@@ -288,11 +288,10 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			return diag.FromErr(err)
 		}
 
-		postgresSettings := normalizePostgresSettings(pi.PostgresSettings)
 		errs := errors.Join(
 			d.Set("name", pi.Name),
 			setOptionalFromPtr(d, "comment", pi.Comment),
-			setOptionalFromPtr(d, "postgres_settings", postgresSettings),
+			setOptionalFromPtr(d, "postgres_settings", sdk.NormalizePostgresSettingsPtr(pi.PostgresSettings)),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresInstanceDetailsToSchema(details)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),

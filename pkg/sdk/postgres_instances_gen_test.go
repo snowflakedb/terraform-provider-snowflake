@@ -526,3 +526,33 @@ func TestNormalizePostgresSettings(t *testing.T) {
 		require.Error(t, err)
 	})
 }
+
+func TestNormalizePostgresSettingsPtr(t *testing.T) {
+	t.Run("nil input returns nil", func(t *testing.T) {
+		require.Nil(t, NormalizePostgresSettingsPtr(nil))
+	})
+
+	t.Run("empty string returns nil", func(t *testing.T) {
+		s := ""
+		require.Nil(t, NormalizePostgresSettingsPtr(&s))
+	})
+
+	t.Run("empty JSON object returns nil", func(t *testing.T) {
+		s := "{}"
+		require.Nil(t, NormalizePostgresSettingsPtr(&s))
+	})
+
+	t.Run("valid JSON returns normalized pointer", func(t *testing.T) {
+		s := `{"shared_buffers":"256MB","max_connections":"100"}`
+		got := NormalizePostgresSettingsPtr(&s)
+		require.NotNil(t, got)
+		want, err := NormalizePostgresSettings(s)
+		require.NoError(t, err)
+		require.Equal(t, want, *got)
+	})
+
+	t.Run("invalid JSON returns nil", func(t *testing.T) {
+		s := "{broken"
+		require.Nil(t, NormalizePostgresSettingsPtr(&s))
+	})
+}
