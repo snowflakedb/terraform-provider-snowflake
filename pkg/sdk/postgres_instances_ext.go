@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (r *CreatePostgresInstanceRequest) GetName() AccountObjectIdentifier {
@@ -124,6 +126,39 @@ func (v *postgresInstances) DescribeDetails(ctx context.Context, id AccountObjec
 		return nil, err
 	}
 	return ParsePostgresInstanceDetails(properties)
+}
+
+// CreateSafely creates a Postgres instance and polls ShowByID every 3 seconds until the
+// instance reaches READY state. The caller controls the wait budget via ctx — use
+// context.WithTimeout to set a deadline. Returns the ready instance or an error.
+func (v *postgresInstances) CreateSafely(ctx context.Context, req *CreatePostgresInstanceRequest) (*PostgresInstance, error) {
+	return createSafelyPolling(
+		ctx,
+		func() error { return v.Create(ctx, req) },
+		func() (*PostgresInstance, error) { return v.ShowByID(ctx, req.GetName()) },
+	)
+}
+
+// createSafelyPolling is the polling loop shared between CreateSafely and its unit tests.
+func createSafelyPolling(ctx context.Context, doCreate func() error, doShowByID func() (*PostgresInstance, error)) (*PostgresInstance, error) {
+	if err := doCreate(); err != nil {
+		return nil, err
+	}
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("postgres instance did not reach READY state: %w", ctx.Err())
+		default:
+		}
+		instance, err := doShowByID()
+		if err != nil {
+			return nil, err
+		}
+		if instance.State == PostgresInstanceStateReady {
+			return instance, nil
+		}
+		time.Sleep(3 * time.Second)
+	}
 }
 
 // NormalizePostgresSettings parses a postgres_settings JSON string into a canonical

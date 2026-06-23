@@ -24,21 +24,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// createSourceForFork creates a postgres instance suitable for forking and registers cleanup.
-// It waits for the instance to reach READY state; the resource itself retries the fork
-// operation until the backend accepts it.
-func createSourceForFork(t *testing.T) sdk.AccountObjectIdentifier {
-	t.Helper()
-	sourceId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, sourceCleanup := testClient().PostgresInstance.CreateWithRequest(t,
-		sdk.NewCreatePostgresInstanceRequest(sourceId, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres))
-	t.Cleanup(sourceCleanup)
-	testClient().PostgresInstance.WaitForReady(t, sourceId, 5*time.Minute)
-	return sourceId
-}
-
 func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
-	sourceId := createSourceForFork(t)
+	sourceId := testClient().PostgresInstance.CreateSourceForFork(t)
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -164,7 +151,7 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 }
 
 func TestAcc_PostgresFork_CompleteUseCase(t *testing.T) {
-	sourceId := createSourceForFork(t)
+	sourceId := testClient().PostgresInstance.CreateSourceForFork(t)
 	forkId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 

@@ -204,4 +204,9 @@ var postgresInstancesDef = g.NewInterface(
 	"",
 	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
 	"*PostgresInstanceDetails", "error",
+).WithCustomInterfaceMethod(
+	"CreateSafely",
+	"CreateSafely creates the instance and polls until it reaches READY state.\nThe caller should set a deadline on ctx via context.WithTimeout.\nImplemented in postgres_instances_ext.go.",
+	[]*g.MethodParameter{g.NewMethodParameter("request", "*CreatePostgresInstanceRequest")},
+	"*PostgresInstance", "error",
 )

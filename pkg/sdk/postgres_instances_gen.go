@@ -19,6 +19,10 @@ type PostgresInstances interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstance, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]PostgresInstanceProperty, error)
 	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstanceDetails, error)
+	// CreateSafely creates the instance and polls until it reaches READY state.
+	// The caller should set a deadline on ctx via context.WithTimeout.
+	// Implemented in postgres_instances_ext.go.
+	CreateSafely(ctx context.Context, request *CreatePostgresInstanceRequest) (*PostgresInstance, error)
 }
 
 // CreatePostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance.

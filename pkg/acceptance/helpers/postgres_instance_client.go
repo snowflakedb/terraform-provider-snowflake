@@ -76,9 +76,22 @@ func (c *PostgresInstanceClient) WaitForReady(t *testing.T, id sdk.AccountObject
 
 func (c *PostgresInstanceClient) CreateAndWaitForReady(t *testing.T) (*sdk.PostgresInstance, func()) {
 	t.Helper()
-	instance, cleanup := c.Create(t)
-	instance = c.WaitForReady(t, instance.ID(), 5*time.Minute)
-	return instance, cleanup
+	id := c.ids.RandomAccountObjectIdentifier()
+	req := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	instance, err := c.client().CreateSafely(ctx, req)
+	require.NoError(t, err)
+	return instance, c.DropFunc(t, id)
+}
+
+// CreateSourceForFork creates a postgres instance suitable for forking, waits for READY
+// state, registers cleanup, and returns the identifier.
+func (c *PostgresInstanceClient) CreateSourceForFork(t *testing.T) sdk.AccountObjectIdentifier {
+	t.Helper()
+	instance, cleanup := c.CreateAndWaitForReady(t)
+	t.Cleanup(cleanup)
+	return instance.ID()
 }
 
 func (c *PostgresInstanceClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.PostgresInstanceDetails, error) {

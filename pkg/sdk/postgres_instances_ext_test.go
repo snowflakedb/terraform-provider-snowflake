@@ -1,7 +1,10 @@
 package sdk
 
 import (
+	"context"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -117,5 +120,76 @@ func TestNormalizePostgresSettingsPtr(t *testing.T) {
 	t.Run("invalid JSON returns nil", func(t *testing.T) {
 		s := "{broken"
 		require.Nil(t, NormalizePostgresSettingsPtr(&s))
+	})
+}
+
+// stubPostgresInstances is a minimal test double for testing CreateSafely polling logic
+// without a live SDK client. It reimplements the same polling contract.
+type stubPostgresInstances struct {
+	createErr  error
+	showStates []PostgresInstanceState // sequence of states returned by successive ShowByID calls
+	showIdx    int
+	showErr    error
+}
+
+func (s *stubPostgresInstances) showByID() (*PostgresInstance, error) {
+	if s.showErr != nil {
+		return nil, s.showErr
+	}
+	if s.showIdx >= len(s.showStates) {
+		return &PostgresInstance{Name: "test", State: PostgresInstanceStateReady}, nil
+	}
+	state := s.showStates[s.showIdx]
+	s.showIdx++
+	return &PostgresInstance{Name: "test", State: state}, nil
+}
+
+func TestCreateSafely(t *testing.T) {
+	t.Run("returns error when Create fails", func(t *testing.T) {
+		createErr := errors.New("create failed")
+		_, err := createSafelyPolling(context.Background(), func() error { return createErr }, nil)
+		require.ErrorIs(t, err, createErr)
+	})
+
+	t.Run("returns instance when immediately READY", func(t *testing.T) {
+		stub := &stubPostgresInstances{
+			showStates: []PostgresInstanceState{PostgresInstanceStateReady},
+		}
+		instance, err := createSafelyPolling(context.Background(), func() error { return nil }, stub.showByID)
+		require.NoError(t, err)
+		assert.Equal(t, PostgresInstanceStateReady, instance.State)
+	})
+
+	t.Run("returns instance after polling through non-READY states", func(t *testing.T) {
+		stub := &stubPostgresInstances{
+			showStates: []PostgresInstanceState{
+				PostgresInstanceStateCreating,
+				PostgresInstanceStateCreating,
+				PostgresInstanceStateReady,
+			},
+		}
+		instance, err := createSafelyPolling(context.Background(), func() error { return nil }, stub.showByID)
+		require.NoError(t, err)
+		assert.Equal(t, PostgresInstanceStateReady, instance.State)
+		assert.Equal(t, 3, stub.showIdx)
+	})
+
+	t.Run("returns error when context is canceled before READY", func(t *testing.T) {
+		stub := &stubPostgresInstances{
+			showStates: []PostgresInstanceState{PostgresInstanceStateCreating},
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+		defer cancel()
+		time.Sleep(5 * time.Millisecond) // ensure deadline is already exceeded
+		_, err := createSafelyPolling(ctx, func() error { return nil }, stub.showByID)
+		require.Error(t, err)
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+	})
+
+	t.Run("propagates ShowByID error", func(t *testing.T) {
+		showErr := errors.New("show failed")
+		stub := &stubPostgresInstances{showErr: showErr}
+		_, err := createSafelyPolling(context.Background(), func() error { return nil }, stub.showByID)
+		require.ErrorIs(t, err, showErr)
 	})
 }
