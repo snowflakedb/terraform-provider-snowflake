@@ -96,14 +96,20 @@ No changes in the configuration are required.
 
 ### *(new feature)* HIERARCHY_RENAMES experiment
 
-A new `HIERARCHY_RENAMES` experiment has been added. When enabled, changing the `database` field on supported resources no longer forces resource recreation. Instead, the provider detects whether the parent database was renamed or the schema should be moved to a different database, and handles it in-place.
+A new `HIERARCHY_RENAMES` experiment has been added. When enabled, changing the parent identifier fields (`database` on `snowflake_schema`, or `database`/`schema` on `snowflake_table`) no longer forces resource recreation. Instead, the provider detects whether a parent was renamed or the object should be moved, and handles it in-place.
 
-Currently supported by: [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema).
+Currently supported by: [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema), [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table).
 
-The provider handles two use cases:
+The provider handles the following use cases:
 
+**2-level hierarchy** (e.g. `snowflake_schema`):
 1. **Database rename**: The parent database was renamed (e.g. from `A` to `B`). The provider detects that the old database no longer exists while the schema already exists under the new name, and updates the resource ID without performing any Snowflake modification.
 2. **Schema move**: Both the old and new databases exist. The provider executes `ALTER SCHEMA A.X RENAME TO B.X` to move the schema to the target database.
+
+**3-level hierarchy** (e.g. `snowflake_table`):
+- When only the `database` field changes, the provider applies the same rename/move logic at the database level.
+- When only the `schema` field changes, the provider applies the same rename/move logic at the schema level.
+- When both `database` and `schema` change simultaneously, the provider evaluates all combinations of database and schema existence to determine the correct action (e.g. both were renamed, or one was renamed while the other was moved).
 
 To enable, add `HIERARCHY_RENAMES` to your provider's `experimental_features_enabled` list:
 ```hcl
@@ -112,7 +118,7 @@ provider "snowflake" {
 }
 ```
 
-Example configuration using an implicit dependency (recommended):
+Example configuration using implicit dependencies (recommended):
 ```hcl
 resource "snowflake_database" "example" {
   name = "my_database"
@@ -122,9 +128,20 @@ resource "snowflake_schema" "example" {
   name     = "my_schema"
   database = snowflake_database.example.name
 }
+
+resource "snowflake_table" "example" {
+  name     = "my_table"
+  database = snowflake_database.example.name
+  schema   = snowflake_schema.example.name
+
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+  }
+}
 ```
 
-With the experiment enabled, renaming `snowflake_database.example` from `my_database` to `my_new_database` will cause the schema resource to detect the rename and update its state accordingly — without recreating the schema or losing any objects within it.
+With the experiment enabled, renaming `snowflake_database.example` from `my_database` to `my_new_database` will cause both the schema and table resources to detect the rename and update their state accordingly — without recreating the objects or losing any data within them.
 
 For more details, see the [Object Renaming Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).
 
