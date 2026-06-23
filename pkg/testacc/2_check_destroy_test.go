@@ -193,6 +193,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ApiIntegrationExternalMcpDynamicClient: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},
+	resources.ApiIntegrationExternalMcpOAuth2: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
 	resources.ApiIntegrationGitRepositoryGithubApp: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},

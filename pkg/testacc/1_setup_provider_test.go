@@ -79,6 +79,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	p.ResourcesMap["snowflake_api_integration_git_repository_private_link"] = resources.ApiIntegrationGitRepositoryPrivateLink()
 	p.ResourcesMap["snowflake_api_integration_git_repository_token"] = resources.ApiIntegrationGitRepositoryToken()
 	p.ResourcesMap["snowflake_api_integration_git_repository_oauth2"] = resources.ApiIntegrationGitRepositoryOauth2()
+	p.ResourcesMap["snowflake_api_integration_external_mcp_oauth2"] = resources.ApiIntegrationExternalMcpOAuth2()
 	return p
 }
 

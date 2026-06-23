@@ -17,6 +17,7 @@ const (
 	ApiIntegrationAmazonApiGateway                         resource = "snowflake_api_integration_amazon_api_gateway"
 	ApiIntegrationAzureApiManagement                       resource = "snowflake_api_integration_azure_api_management"
 	ApiIntegrationExternalMcpDynamicClient                 resource = "snowflake_api_integration_external_mcp_dynamic_client"
+	ApiIntegrationExternalMcpOAuth2                        resource = "snowflake_api_integration_external_mcp_oauth2"
 	ApiIntegrationGitRepositoryGithubApp                   resource = "snowflake_api_integration_git_repository_github_app"
 	ApiIntegrationGitRepositoryOauth2                      resource = "snowflake_api_integration_git_repository_oauth2"
 	ApiIntegrationGitRepositoryPrivateLink                 resource = "snowflake_api_integration_git_repository_private_link"

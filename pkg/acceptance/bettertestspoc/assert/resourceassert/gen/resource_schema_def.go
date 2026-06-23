@@ -62,6 +62,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationExternalMcpDynamicClient().Schema,
 	},
 	{
+		name:   "ApiIntegrationExternalMcpOAuth2",
+		schema: resources.ApiIntegrationExternalMcpOAuth2().Schema,
+	},
+	{
 		name:   "ApiIntegrationGitRepositoryGithubApp",
 		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
 	},
