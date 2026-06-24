@@ -56,7 +56,7 @@ func NewResourceAssertTmp(name string) *ResourceAssert {
 	}
 }
 
-// NewResourceShowOutputAssert TODO
+// NewResourceShowOutputAssert creates a ResourceAssert for show output assertions with the resource name as a key.
 func NewResourceShowOutputAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name:          name,
@@ -65,7 +65,7 @@ func NewResourceShowOutputAssert(name string) *ResourceAssert {
 	}
 }
 
-// NewResourceDescribeOutputAssert TODO
+// NewResourceDescribeOutputAssert creates a ResourceAssert for describe output assertions with the resource name as a key.
 func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name:          name,
@@ -74,7 +74,7 @@ func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
 	}
 }
 
-// NewResourceParametersAssert TODO
+// NewResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource name as a key.
 func NewResourceParametersAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name:          name,
@@ -101,7 +101,7 @@ func NewImportedResourceAssertTmp(id string) *ResourceAssert {
 	}
 }
 
-// NewImportedResourceShowOutputAssert TODO
+// NewImportedResourceShowOutputAssert creates a ResourceAssert for show output assertions with the resource id as a key.
 func NewImportedResourceShowOutputAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id:            id,
@@ -110,7 +110,7 @@ func NewImportedResourceShowOutputAssert(id string) *ResourceAssert {
 	}
 }
 
-// NewImportedResourceDescribeOutputAssert TODO
+// NewImportedResourceDescribeOutputAssert creates a ResourceAssert for describe output assertions with the resource id as a key.
 func NewImportedResourceDescribeOutputAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id:            id,
@@ -119,7 +119,7 @@ func NewImportedResourceDescribeOutputAssert(id string) *ResourceAssert {
 	}
 }
 
-// NewImportedResourceParametersAssert TODO
+// NewImportedResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource id as a key.
 func NewImportedResourceParametersAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id:            id,
@@ -139,7 +139,7 @@ func NewDatasourceAssert(name string, prefix string, additionalPrefix string) *R
 	}
 }
 
-// NewDatasourceShowOutputAssert TODO
+// NewDatasourceShowOutputAssert creates a ResourceAssert for show output assertions on a datasource at the given index.
 func NewDatasourceShowOutputAssert(name string, objectsPath string, idx int) *ResourceAssert {
 	return &ResourceAssert{
 		name:          name,
@@ -148,7 +148,7 @@ func NewDatasourceShowOutputAssert(name string, objectsPath string, idx int) *Re
 	}
 }
 
-// NewDatasourceDescribeOutputAssert TODO
+// NewDatasourceDescribeOutputAssert creates a ResourceAssert for describe output assertions on a datasource at the given index.
 func NewDatasourceDescribeOutputAssert(name string, objectsPath string, idx int) *ResourceAssert {
 	return &ResourceAssert{
 		name:          name,
@@ -157,7 +157,7 @@ func NewDatasourceDescribeOutputAssert(name string, objectsPath string, idx int)
 	}
 }
 
-// NewDatasourceParametersAssert TODO
+// NewDatasourceParametersAssert creates a ResourceAssert for parameters assertions on a datasource at the given index.
 func NewDatasourceParametersAssert(name string, objectsPath string, idx int) *ResourceAssert {
 	return &ResourceAssert{
 		name:          name,
