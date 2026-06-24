@@ -867,41 +867,9 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 			return diag.FromErr(fmt.Errorf("reading hybrid table constraints: %w", err))
 		}
 
-		// Index read-back is best-effort: a SHOW INDEXES failure must not fail Read of
-		// an otherwise-healthy table. This mirrors the non-fatal SHOW IMPORTED KEYS sub-call
-		// inside GetConstraints, not the fatal GetConstraints call above.
-		var indexState []map[string]any
+		// Index read-back is best-effort — failure must not fail Read of an otherwise-healthy table.
 		indexes, indexErr := client.HybridTables.ShowIndexes(ctx,
 			sdk.NewShowIndexesHybridTableRequest().WithIn(sdk.TableIn{Table: id}))
-		if indexErr != nil {
-			log.Printf("[WARN] SHOW INDEXES failed for %s; skipping index read-back: %v", id.FullyQualifiedName(), indexErr)
-		} else {
-			// FK constraints create a system-managed backing index in Snowflake that
-			// SHOW INDEXES returns as a non-unique secondary index. That index is NOT
-			// a user-defined secondary index (it's implicit in the foreign_key block),
-			// so including it in the `index` state would produce a spurious ForceNew
-			// on every refresh. Two naming patterns must be excluded:
-			//   - Named FK: backing index shares the FK constraint name (e.g. "my_fk")
-			//   - Anonymous FK: backing index is named SYS_INDEX_..._FOREIGN_KEY_...
-			// PK- and UNIQUE-backed indexes are already excluded by the IsUnique filter
-			// in buildIndexesStateFromShowIndexes, so SYS_INDEX_..._PRIMARY and
-			// SYS_INDEX_..._UNIQUE are never reached here.
-			fkNames := make(map[string]bool, len(constraints))
-			for _, c := range constraints {
-				if c.Kind == sdk.ColumnConstraintTypeForeignKey {
-					fkNames[strings.ToUpper(c.Name)] = true
-				}
-			}
-			var userIndexes []sdk.HybridTableIndex
-			for _, idx := range indexes {
-				upper := strings.ToUpper(idx.Name)
-				if fkNames[upper] || strings.HasPrefix(upper, "SYS_INDEX_") {
-					continue
-				}
-				userIndexes = append(userIndexes, idx)
-			}
-			indexState = buildIndexesStateFromShowIndexes(userIndexes)
-		}
 
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.HybridTableToSchema(hybridTable)}),
@@ -912,7 +880,7 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 			d.Set("primary_key", buildPrimaryKeyStateFromConstraints(constraints)),
 			d.Set("unique_constraint", buildUniqueConstraintsStateFromConstraints(constraints)),
 			d.Set("foreign_key", buildForeignKeysStateFromConstraints(constraints)),
-			d.Set("index", indexState),
+			d.Set("index", readIndexState(indexes, indexErr, constraints, id)),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -1219,13 +1187,31 @@ func buildForeignKeysStateFromConstraints(constraints []sdk.HybridTableConstrain
 	return result
 }
 
-// parseIndexColumnsString parses the bracketed, uppercase column list that
-// SHOW INDEXES returns for the `columns` and `included_columns` fields, e.g.
-// "[A, B, C]" -> {"A","B","C"} and the literal "[]" -> empty slice. The SDK does
-// not pre-split these (see hybridTableIndexRow.convert), so the resource layer
-// parses them here.
-func parseIndexColumnsString(raw string) []string {
-	return sdk.ParseCommaSeparatedStringArray(raw, false)
+// readIndexState builds index state from a SHOW INDEXES result, excluding FK-backing
+// indexes. Returns nil on error (best-effort: SHOW INDEXES failure must not fail Read
+// of an otherwise-healthy table).
+func readIndexState(indexes []sdk.HybridTableIndex, indexErr error, constraints []sdk.HybridTableConstraint, id sdk.SchemaObjectIdentifier) []map[string]any {
+	if indexErr != nil {
+		log.Printf("[WARN] SHOW INDEXES failed for %s; skipping index read-back: %v", id.FullyQualifiedName(), indexErr)
+		return nil
+	}
+	// FK constraints produce a system-managed backing index in SHOW INDEXES that must
+	// be excluded: named FKs share the constraint name; anonymous FKs are named SYS_INDEX_..._FOREIGN_KEY_...
+	var userIndexes []sdk.HybridTableIndex
+outer:
+	for _, idx := range indexes {
+		upper := strings.ToUpper(idx.Name)
+		if strings.HasPrefix(upper, "SYS_INDEX_") {
+			continue
+		}
+		for _, c := range constraints {
+			if c.Kind == sdk.ColumnConstraintTypeForeignKey && strings.EqualFold(c.Name, idx.Name) {
+				continue outer
+			}
+		}
+		userIndexes = append(userIndexes, idx)
+	}
+	return buildIndexesStateFromShowIndexes(userIndexes)
 }
 
 // buildIndexesStateFromShowIndexes converts SHOW INDEXES rows into the `index`
@@ -1242,13 +1228,12 @@ func buildIndexesStateFromShowIndexes(indexes []sdk.HybridTableIndex) []map[stri
 		}
 		var columns []string
 		if idx.Columns != nil {
-			columns = parseIndexColumnsString(*idx.Columns)
+			columns = sdk.ParseCommaSeparatedStringArray(*idx.Columns, false)
 		}
 		result = append(result, map[string]any{
 			"name":    idx.Name,
 			"columns": columns,
-			// IncludedColumns is a non-nil string ("" when the server returns NULL), so no nil-guard is needed (unlike Columns, a *string).
-			"include_columns": parseIndexColumnsString(idx.IncludedColumns),
+			"include_columns": sdk.ParseCommaSeparatedStringArray(idx.IncludedColumns, false),
 		})
 	}
 	return result

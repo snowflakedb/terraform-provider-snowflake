@@ -201,23 +201,6 @@ func TestUnit_HybridTable_indexHash_caseInsensitive(t *testing.T) {
 	require.NotPanics(t, func() { indexHash(noInclude) })
 }
 
-func Test_parseIndexColumnsString(t *testing.T) {
-	t.Run("single column", func(t *testing.T) {
-		require.Equal(t, []string{"STATUS"}, parseIndexColumnsString("[STATUS]"))
-	})
-	t.Run("multiple columns split on comma-space", func(t *testing.T) {
-		require.Equal(t, []string{"SUBMISSION_ID", "SUITE_NAME", "SUT_TYPE"}, parseIndexColumnsString("[SUBMISSION_ID, SUITE_NAME, SUT_TYPE]"))
-	})
-	t.Run("empty bracket yields empty slice", func(t *testing.T) {
-		require.Empty(t, parseIndexColumnsString("[]"))
-	})
-	t.Run("no leading space on later elements (not a bare-comma split)", func(t *testing.T) {
-		got := parseIndexColumnsString("[A, B]")
-		require.Equal(t, []string{"A", "B"}, got)
-		require.NotContains(t, got, " B")
-	})
-}
-
 func Test_buildIndexesStateFromShowIndexes(t *testing.T) {
 	indexes := []sdk.HybridTableIndex{
 		{Name: "SYS_INDEX_T_PRIMARY", IsUnique: sdk.Bool(true), Columns: sdk.String("[ID]"), IncludedColumns: "[]"},
