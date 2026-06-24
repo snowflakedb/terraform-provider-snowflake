@@ -3,6 +3,7 @@ package model
 import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -108,10 +109,7 @@ func (h *HybridTableModel) WithPrimaryKey(primaryKey []sdk.TableColumnSignature)
 // This is the preferred form for tests that compose models incrementally: the
 // resource's primary_key.keys is just a list of column names, not signatures.
 func (h *HybridTableModel) WithPrimaryKeyNames(names ...string) *HybridTableModel {
-	keys := make([]tfconfig.Variable, len(names))
-	for i, n := range names {
-		keys[i] = tfconfig.StringVariable(n)
-	}
+	keys := collections.Map(names, func(n string) tfconfig.Variable { return tfconfig.StringVariable(n) })
 	h.PrimaryKey = tfconfig.SetVariable(
 		tfconfig.MapVariable(map[string]tfconfig.Variable{
 			"keys": tfconfig.ListVariable(keys...),
@@ -120,17 +118,39 @@ func (h *HybridTableModel) WithPrimaryKeyNames(names ...string) *HybridTableMode
 	return h
 }
 
-// WithUniqueConstraint sets a single unique constraint on the given columns.
+// WithUniqueConstraint sets a single unnamed unique constraint on the given columns.
 func (h *HybridTableModel) WithUniqueConstraint(columns []string) *HybridTableModel {
-	colVars := make([]tfconfig.Variable, len(columns))
-	for i, c := range columns {
-		colVars[i] = tfconfig.StringVariable(c)
-	}
+	colVars := collections.Map(columns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
 	h.UniqueConstraint = tfconfig.SetVariable(
 		tfconfig.MapVariable(map[string]tfconfig.Variable{
 			"columns": tfconfig.ListVariable(colVars...),
 		}),
 	)
+	return h
+}
+
+// HybridTableUniqueConstraintConfig is a unique constraint definition for tests.
+// Name is optional; if empty, Snowflake generates a SYS_CONSTRAINT_-prefixed name.
+type HybridTableUniqueConstraintConfig struct {
+	Name    string
+	Columns []string
+}
+
+// WithUniqueConstraints sets the unique_constraint block from one or more definitions.
+// Supports both named and anonymous constraints in a single call.
+func (h *HybridTableModel) WithUniqueConstraints(constraints ...HybridTableUniqueConstraintConfig) *HybridTableModel {
+	objs := make([]tfconfig.Variable, len(constraints))
+	for i, uc := range constraints {
+		colVars := collections.Map(uc.Columns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
+		m := map[string]tfconfig.Variable{
+			"columns": tfconfig.ListVariable(colVars...),
+		}
+		if uc.Name != "" {
+			m["name"] = tfconfig.StringVariable(uc.Name)
+		}
+		objs[i] = tfconfig.ObjectVariable(m)
+	}
+	h.UniqueConstraint = tfconfig.SetVariable(objs...)
 	return h
 }
 
@@ -150,19 +170,13 @@ type HybridTableIndexConfig struct {
 func (h *HybridTableModel) WithIndex(indexes ...HybridTableIndexConfig) *HybridTableModel {
 	objs := make([]tfconfig.Variable, len(indexes))
 	for i, idx := range indexes {
-		colVars := make([]tfconfig.Variable, len(idx.Columns))
-		for j, c := range idx.Columns {
-			colVars[j] = tfconfig.StringVariable(c)
-		}
+		colVars := collections.Map(idx.Columns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
 		m := map[string]tfconfig.Variable{
 			"name":    tfconfig.StringVariable(idx.Name),
 			"columns": tfconfig.ListVariable(colVars...),
 		}
 		if len(idx.IncludeColumns) > 0 {
-			incVars := make([]tfconfig.Variable, len(idx.IncludeColumns))
-			for j, c := range idx.IncludeColumns {
-				incVars[j] = tfconfig.StringVariable(c)
-			}
+			incVars := collections.Map(idx.IncludeColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
 			m["include_columns"] = tfconfig.SetVariable(incVars...)
 		}
 		objs[i] = tfconfig.ObjectVariable(m)
@@ -171,7 +185,7 @@ func (h *HybridTableModel) WithIndex(indexes ...HybridTableIndexConfig) *HybridT
 	return h
 }
 
-// WithForeignKey sets a single foreign key constraint. localColumns are the columns
+// WithForeignKey sets a single unnamed foreign key constraint. localColumns are the columns
 // in this table, refTableId is the fully-qualified name of the referenced table,
 // and refColumns are the columns in the referenced table.
 //
@@ -179,16 +193,29 @@ func (h *HybridTableModel) WithIndex(indexes ...HybridTableIndexConfig) *HybridT
 // and the inner references block, because each mixes string and list values, which
 // MapVariable's MarshalJSON rejects ("maps must contain the same type").
 func (h *HybridTableModel) WithForeignKey(localColumns []string, refTableId string, refColumns []string) *HybridTableModel {
-	lcVars := make([]tfconfig.Variable, len(localColumns))
-	for i, c := range localColumns {
-		lcVars[i] = tfconfig.StringVariable(c)
-	}
-	rcVars := make([]tfconfig.Variable, len(refColumns))
-	for i, c := range refColumns {
-		rcVars[i] = tfconfig.StringVariable(c)
-	}
+	lcVars := collections.Map(localColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
+	rcVars := collections.Map(refColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
 	h.ForeignKey = tfconfig.SetVariable(
 		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"columns": tfconfig.ListVariable(lcVars...),
+			"references": tfconfig.ListVariable(
+				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"table_id": tfconfig.StringVariable(refTableId),
+					"columns":  tfconfig.ListVariable(rcVars...),
+				}),
+			),
+		}),
+	)
+	return h
+}
+
+// WithNamedForeignKey is like WithForeignKey but includes an explicit constraint name.
+func (h *HybridTableModel) WithNamedForeignKey(name string, localColumns []string, refTableId string, refColumns []string) *HybridTableModel {
+	lcVars := collections.Map(localColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
+	rcVars := collections.Map(refColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
+	h.ForeignKey = tfconfig.SetVariable(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"name":    tfconfig.StringVariable(name),
 			"columns": tfconfig.ListVariable(lcVars...),
 			"references": tfconfig.ListVariable(
 				tfconfig.ObjectVariable(map[string]tfconfig.Variable{

@@ -8,24 +8,24 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
 
-// HybridTableDescribeOutputAssert asserts fields of a single row in the
+// HybridTableDescribeOutputRowAssert asserts fields of a single row in the
 // describe_output list. Because hybrid table describe output has one row per
 // column, callers must supply the 0-based row index (= column position in the
 // physical column order returned by DESCRIBE TABLE).
-type HybridTableDescribeOutputAssert struct {
+type HybridTableDescribeOutputRowAssert struct {
 	*assert.ResourceAssert
 	rowIndex int
 }
 
-func HybridTableDescribeOutput(t *testing.T, name string, rowIndex int) *HybridTableDescribeOutputAssert {
+func HybridTableDescribeOutputRow(t *testing.T, name string, rowIndex int) *HybridTableDescribeOutputRowAssert {
 	t.Helper()
-	return &HybridTableDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+	return &HybridTableDescribeOutputRowAssert{
+		ResourceAssert: assert.NewResourceAssert(name, fmt.Sprintf("describe_output.%d", rowIndex)),
 		rowIndex:       rowIndex,
 	}
 }
 
-func (h *HybridTableDescribeOutputAssert) field(name string) string {
+func (h *HybridTableDescribeOutputRowAssert) field(name string) string {
 	return fmt.Sprintf("describe_output.%d.%s", h.rowIndex, name)
 }
 
@@ -33,72 +33,72 @@ func (h *HybridTableDescribeOutputAssert) field(name string) string {
 // Attribute value checks //
 ////////////////////////////
 
-func (h *HybridTableDescribeOutputAssert) HasName(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasName(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("name"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasType(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasType(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("type"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasCollation(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasCollation(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("collation"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasKind(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasKind(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("kind"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasIsNullable(expected bool) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasIsNullable(expected bool) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("is_nullable"), strconv.FormatBool(expected)))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasDefault(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasDefault(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("default"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasPrimaryKey(expected bool) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasPrimaryKey(expected bool) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("primary_key"), strconv.FormatBool(expected)))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasUniqueKey(expected bool) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasUniqueKey(expected bool) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("unique_key"), strconv.FormatBool(expected)))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasCheck(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasCheck(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("check"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasExpression(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasExpression(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("expression"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasComment(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasComment(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("comment"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasPolicyName(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasPolicyName(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("policy_name"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasPrivacyDomain(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasPrivacyDomain(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("privacy_domain"), expected))
 	return h
 }
 
-func (h *HybridTableDescribeOutputAssert) HasSchemaEvolutionRecord(expected string) *HybridTableDescribeOutputAssert {
+func (h *HybridTableDescribeOutputRowAssert) HasSchemaEvolutionRecord(expected string) *HybridTableDescribeOutputRowAssert {
 	h.AddAssertion(assert.ValueSet(h.field("schema_evolution_record"), expected))
 	return h
 }

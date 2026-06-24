@@ -1214,12 +1214,7 @@ outer:
 	return buildIndexesStateFromShowIndexes(userIndexes)
 }
 
-// buildIndexesStateFromShowIndexes converts SHOW INDEXES rows into the `index`
-// block state. It keeps only user secondary indexes — rows where IsUnique is
-// non-nil and false. PK- and UNIQUE-backed indexes report is_unique="Y" (IsUnique
-// true) and are surfaced through the constraint blocks instead, so they are
-// excluded here. A nil IsUnique is also excluded: without the discriminator we
-// cannot confirm the row is a provider-managed secondary index.
+// buildIndexesStateFromShowIndexes maps SHOW INDEXES rows to index block state, keeping only user secondary indexes (IsUnique=false; nil excluded).
 func buildIndexesStateFromShowIndexes(indexes []sdk.HybridTableIndex) []map[string]any {
 	var result []map[string]any
 	for _, idx := range indexes {
