@@ -42,13 +42,16 @@ The `snowflake_grant_ownership` resource now supports granting ownership on `AGE
 
 No changes are required for existing configurations.
 
-### *(new feature)* New storage lifecycle policy resource and data source
+### *(new feature)* New storage lifecycle policy resources and data source
 
-#### Resource
+#### Resources
 
-We have added a new preview resource for managing storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy).
+We have added new preview resources for storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy) for defining policies, and [snowflake_table_storage_lifecycle_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table_storage_lifecycle_policy_attachment) for attaching a storage lifecycle policy to a table or a dynamic table.
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_storage_lifecycle_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_storage_lifecycle_policy_resource` for `snowflake_storage_lifecycle_policy`;
+- `snowflake_table_storage_lifecycle_policy_attachment_resource` for `snowflake_table_storage_lifecycle_policy_attachment`.
 
 #### Data source
 
