@@ -42,7 +42,7 @@ The existing `snowflake_api_integration` resource has been deprecated. It has be
 - [`snowflake_api_integration_external_mcp_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_external_mcp_oauth2) — for external MCP servers using OAuth 2.0
 - [`snowflake_api_integration_external_mcp_dynamic_client`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_external_mcp_dynamic_client) — for external MCP servers using OAuth 2.0 Dynamic Client Registration
 
-The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation and adhere to our [new conventions](#general-changes). Each resource schema contains only the attributes valid for the given integration type.
+The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation. Each resource schema contains only the attributes valid for the given integration type.
 
 These resources are in preview. To use them, add the corresponding feature flag(s) to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field:
 - `snowflake_api_integration_amazon_api_gateway_resource`

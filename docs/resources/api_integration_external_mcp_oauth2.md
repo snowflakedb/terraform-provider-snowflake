@@ -19,13 +19,13 @@ Resource used to manage API integration for external MCP (Model Context Protocol
 ```terraform
 # basic resource
 resource "snowflake_api_integration_external_mcp_oauth2" "basic" {
-  name                        = "external_mcp_oauth2_integration"
-  oauth_client_id             = "my-client-id"
-  oauth_client_secret         = "my-client-secret"
-  oauth_token_endpoint        = "https://mcp-server.example.com/oauth/token"
+  name                         = "external_mcp_oauth2_integration"
+  oauth_client_id              = "my-client-id"
+  oauth_client_secret          = "my-client-secret"
+  oauth_token_endpoint         = "https://mcp-server.example.com/oauth/token"
   oauth_authorization_endpoint = "https://mcp-server.example.com/oauth/authorize"
-  api_allowed_prefixes        = ["https://mcp-server.example.com/"]
-  enabled                     = true
+  api_allowed_prefixes         = ["https://mcp-server.example.com/"]
+  enabled                      = true
 }
 
 # complete resource

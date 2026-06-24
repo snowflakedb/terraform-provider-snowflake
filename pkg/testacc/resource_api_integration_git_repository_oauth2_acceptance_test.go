@@ -209,9 +209,9 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(
-							*sdk.NewOAuth2GitUserAuthenticationRequest(
-								gitOauth2ExternalAuthorizationEndpoint, gitOauth2ExternalTokenEndpoint, gitOauth2ExternalClientId, gitOauth2ClientSecret,
-							))),
+								*sdk.NewOAuth2GitUserAuthenticationRequest(
+									gitOauth2ExternalAuthorizationEndpoint, gitOauth2ExternalTokenEndpoint, gitOauth2ExternalClientId, gitOauth2ClientSecret,
+								))),
 					)
 					t.Cleanup(cleanup)
 				},
@@ -371,9 +371,9 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
 						sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(
-							*sdk.NewOAuth2GitUserAuthenticationRequest(
-								gitOauth2ExternalAuthorizationEndpoint, gitOauth2ExternalTokenEndpoint, gitOauth2ExternalClientId, gitOauth2ClientSecret,
-							))),
+								*sdk.NewOAuth2GitUserAuthenticationRequest(
+									gitOauth2ExternalAuthorizationEndpoint, gitOauth2ExternalTokenEndpoint, gitOauth2ExternalClientId, gitOauth2ClientSecret,
+								))),
 					)
 					t.Cleanup(cleanup)
 				},
@@ -464,9 +464,9 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_Import(t *testing.T) {
 							WithComment(comment).
 							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitBlockedPrefix}}).
 							WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(
-							*sdk.NewOAuth2GitUserAuthenticationRequest(
-								gitOauth2AuthorizationEndpoint, gitOauth2TokenEndpoint, gitOauth2ClientId, clientSecret,
-							))),
+								*sdk.NewOAuth2GitUserAuthenticationRequest(
+									gitOauth2AuthorizationEndpoint, gitOauth2TokenEndpoint, gitOauth2ClientId, clientSecret,
+								))),
 					)
 					t.Cleanup(cleanup)
 				},
