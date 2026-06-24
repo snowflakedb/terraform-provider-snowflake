@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -181,37 +180,4 @@ func buildAllowedAuthSecretsRequestFromState(d *schema.ResourceData) (*sdk.ApiIn
 		return req.WithAllowedList(ids), nil
 	}
 	return nil, nil
-}
-
-func setAllowedAuthSecretFieldsFromDescribe(d *schema.ResourceData, raw string) error {
-	switch strings.ToUpper(strings.TrimSpace(raw)) {
-	case string(sdk.ApiIntegrationAllowedAuthenticationSecretsValueAll):
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", true),
-			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", []any{}),
-		)
-	case string(sdk.ApiIntegrationAllowedAuthenticationSecretsValueNone):
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", false),
-			d.Set("no_allowed_authentication_secrets", true),
-			d.Set("allowed_authentication_secrets", []any{}),
-		)
-	case "":
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", false),
-			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", []any{}),
-		)
-	default:
-		ids, err := collections.MapErr(sdk.ParseCommaSeparatedStringArray(raw, true), sdk.ParseSchemaObjectIdentifier)
-		if err != nil {
-			return err
-		}
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", false),
-			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", collections.Map(ids, sdk.SchemaObjectIdentifier.FullyQualifiedName)),
-		)
-	}
 }

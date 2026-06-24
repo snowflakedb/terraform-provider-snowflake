@@ -161,10 +161,20 @@ func ReadApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("could not describe API integration git HTTPS API private link (%s): %w", d.Id(), err))
 	}
 
+	normalizedCerts, err := collections.MapErr(gitDetails.TlsTrustedCertificates, func(v string) (string, error) {
+		id, err := sdk.ParseSchemaObjectIdentifier(v)
+		if err != nil {
+			return "", err
+		}
+		return id.FullyQualifiedName(), nil
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("could not normalize tls_trusted_certificates: %w", err))
+	}
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
 		d.Set("use_privatelink_endpoint", gitDetails.UsePrivatelinkEndpoint),
-		d.Set("tls_trusted_certificates", gitDetails.TlsTrustedCertificates),
+		d.Set("tls_trusted_certificates", normalizedCerts),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryPrivateLinkDetailsToSchema(gitDetails)}),
 	)
 	return diag.FromErr(errs)

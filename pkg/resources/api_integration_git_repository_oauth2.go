@@ -173,9 +173,7 @@ func CreateApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	oauth2Params := sdk.NewGitHttpsApiOAuth2ParamsRequest(*authReq)
-
-	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiOAuth2ProviderParams(*oauth2Params)); err != nil {
+	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(*authReq))); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating Git Repository OAuth2 API integration: %w", err))
 	}
 
