@@ -169,7 +169,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"all_allowed_authentication_secrets", "no_allowed_authentication_secrets", "allowed_authentication_secrets"},
 			},
-			// Update - unset optionals (all_allowed was true → now false; no_allowed was never set → absent)
+			// Update - unset optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -179,7 +179,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasicAfterUpdate...),
 			},
-			// Update - external changes (same state as after unset)
+			// Update - external changes
 			{
 				PreConfig: func() {
 					testClient().ApiIntegration.Alter(t, sdk.NewAlterApiIntegrationRequest(id).WithSet(
