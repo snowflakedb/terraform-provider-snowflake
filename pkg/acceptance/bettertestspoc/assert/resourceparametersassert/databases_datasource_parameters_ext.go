@@ -1,22 +1,8 @@
 package resourceparametersassert
 
 import (
-	"testing"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
-
-// DatabasesDatasourceParameters is a temporary workaround to have better parameter assertions in data source acceptance tests.
-func DatabasesDatasourceParameters(t *testing.T, datasourceReference string) *DatabaseResourceParametersAssert {
-	t.Helper()
-
-	d := DatabaseResourceParametersAssert{
-		ResourceAssert: assert.NewDatasourceAssert(datasourceReference, "parameters", "databases.0."),
-	}
-	d.AddAssertion(assert.ValueSet("parameters.#", "1"))
-	return &d
-}
 
 func (d *DatabaseResourceParametersAssert) HasAllDefaultParameters() *DatabaseResourceParametersAssert {
 	return d.

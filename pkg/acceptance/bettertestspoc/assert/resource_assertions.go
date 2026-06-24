@@ -157,8 +157,8 @@ func NewDatasourceDescribeOutputAssert(name string, objectsPath string, idx int)
 	}
 }
 
-// NewDatasourceDescribeParametersAssert TODO
-func NewDatasourceDescribeParametersAssert(name string, objectsPath string, idx int) *ResourceAssert {
+// NewDatasourceParametersAssert TODO
+func NewDatasourceParametersAssert(name string, objectsPath string, idx int) *ResourceAssert {
 	return &ResourceAssert{
 		name:          name,
 		assertions:    make([]ResourceAssertion, 0),
@@ -330,6 +330,22 @@ func ResourceParameterDescriptionSet[T ~string](parameterName T, expected string
 
 func ResourceParameterDescriptionPresent[T ~string](parameterName T) ResourceAssertion {
 	return ValuePresent(parametersPath + strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
+}
+
+func (r *ResourceAssert) ParameterValueSet(parameterName string, expected string) {
+	r.AddAssertion(ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, expected))
+}
+
+func (r *ResourceAssert) ParameterBoolValueSet(parameterName string, expected bool) {
+	r.AddAssertion(ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, strconv.FormatBool(expected)))
+}
+
+func (r *ResourceAssert) ParameterIntValueSet(parameterName string, expected int) {
+	r.AddAssertion(ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, strconv.Itoa(expected)))
+}
+
+func (r *ResourceAssert) ParameterLevelSet(parameterName string, expected sdk.ParameterType) {
+	r.AddAssertion(ValueSet(strings.ToLower(parameterName)+parametersLevelSuffix, string(expected)))
 }
 
 // ToTerraformTestCheckFunc implements TestCheckFuncProvider to allow easier creation of new resource assertions.

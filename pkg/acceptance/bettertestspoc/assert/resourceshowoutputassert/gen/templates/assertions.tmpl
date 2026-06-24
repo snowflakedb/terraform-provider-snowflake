@@ -14,7 +14,7 @@
 {{ range .Attributes -}}
     {{ if not (IsTypeSlice .ConcreteType) -}}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ .ConcreteType }}) *{{ $assertName }} {
-            {{ $assertVar }}.{{ .AssertionCreator }}("{{ SnakeCase .Name }}",  {{ RunMapper .Mapper "expected" }})
+            {{ $assertVar }}.{{ .AssertionCreator }}("{{ SnakeCase .Name }}", {{ RunMapper .Mapper "expected" }})
             return {{ $assertVar }}
         }
     {{ end }}

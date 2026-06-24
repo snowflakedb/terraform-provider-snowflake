@@ -9,8 +9,9 @@ import (
 )
 
 type ResourceParametersAssertionsModel struct {
-	Name       string
-	Parameters []ResourceParameterAssertionModel
+	Name           string
+	DataSourceName string
+	Parameters     []ResourceParameterAssertionModel
 
 	*genhelpers.PreambleModel
 }
@@ -19,6 +20,11 @@ type ResourceParameterAssertionModel struct {
 	Name             string
 	Type             string
 	AssertionCreator string
+	Mapper           string
+}
+
+var dataSourceParametersMapping = map[string]string{
+	"Database": "Databases",
 }
 
 func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparametersassertgen.SnowflakeObjectParameters, preamble *genhelpers.PreambleModel) ResourceParametersAssertionsModel {
@@ -26,29 +32,36 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparamete
 	for idx, p := range snowflakeObjectParameters.Parameters {
 		// TODO [SNOW-1501905]: get a runtime name for the assertion creator
 		var assertionCreator string
+		var mapper string
 		switch {
 		case p.ParameterType == "bool":
-			assertionCreator = "ResourceParameterBoolValueSet"
+			assertionCreator = "ParameterBoolValueSet"
 		case p.ParameterType == "int":
-			assertionCreator = "ResourceParameterIntValueSet"
+			assertionCreator = "ParameterIntValueSet"
 		case p.ParameterType == "string":
-			assertionCreator = "ResourceParameterValueSet"
+			assertionCreator = "ParameterValueSet"
 		case strings.HasPrefix(p.ParameterType, "sdk."):
-			assertionCreator = "ResourceParameterStringUnderlyingValueSet"
+			assertionCreator = "ParameterValueSet"
+			mapper = "string"
 		default:
-			assertionCreator = "ResourceParameterValueSet"
+			assertionCreator = "ParameterValueSet"
 		}
 
 		parameters[idx] = ResourceParameterAssertionModel{
 			Name:             p.ParameterName,
 			Type:             p.ParameterType,
 			AssertionCreator: assertionCreator,
+			Mapper:           mapper,
 		}
 	}
 
+	name := snowflakeObjectParameters.ObjectName()
+	dataSourceName := dataSourceParametersMapping[name]
+
 	return ResourceParametersAssertionsModel{
-		Name:          snowflakeObjectParameters.ObjectName(),
-		Parameters:    parameters,
-		PreambleModel: preamble,
+		Name:           name,
+		DataSourceName: dataSourceName,
+		Parameters:     parameters,
+		PreambleModel:  preamble,
 	}
 }
