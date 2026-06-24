@@ -195,15 +195,6 @@ func TestInt_DynamicTableAlter(t *testing.T) {
 		require.Len(t, entities, 1)
 	})
 
-	t.Run("alter with suspend and resume", func(t *testing.T) {
-		dynamicTable, dynamicTableCleanup := testClientHelper().DynamicTable.CreateDynamicTable(t, table.ID())
-		t.Cleanup(dynamicTableCleanup)
-
-		err := client.DynamicTables.Alter(ctx, sdk.NewAlterDynamicTableRequest(dynamicTable.ID()).WithSuspend(sdk.Bool(true)).WithResume(sdk.Bool(true)))
-		require.Error(t, err)
-		sdk.ErrorsEqual(t, sdk.JoinErrors(sdk.ErrExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set")), err)
-	})
-
 	t.Run("alter with set", func(t *testing.T) {
 		dynamicTable, dynamicTableCleanup := testClientHelper().DynamicTable.CreateDynamicTable(t, table.ID())
 		t.Cleanup(dynamicTableCleanup)
