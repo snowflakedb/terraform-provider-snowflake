@@ -48,7 +48,7 @@ func NewResourceAssert(name string, prefix string) *ResourceAssert {
 }
 
 // NewResourceAssertTmp creates a ResourceAssert where the resource name should be used as a key for assertions.
-// TODO [next PR]: rename to NewResourceAssert, remove the old NewResourceAssert
+// TODO [next PRs]: rename to NewResourceAssert, remove the old NewResourceAssert when all objects are migrated
 func NewResourceAssertTmp(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name:       name,
@@ -93,7 +93,7 @@ func NewImportedResourceAssert(id string, prefix string) *ResourceAssert {
 }
 
 // NewImportedResourceAssertTmp creates a ResourceAssert where the resource id should be used as a key for assertions.
-// TODO [next PR]: rename to NewImportedResourceAssert, remove the old NewImportedResourceAssert
+// TODO [next PR]: rename to NewImportedResourceAssert, remove the old NewImportedResourceAssert when all objects are migrated
 func NewImportedResourceAssertTmp(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id:         id,
@@ -129,7 +129,7 @@ func NewImportedResourceParametersAssert(id string) *ResourceAssert {
 }
 
 // NewDatasourceAssert creates a ResourceAssert for data sources.
-// TODO [this PR]: adjust signature
+// TODO [next PRs]: remove this method entirely when all invocations replaced with NewDatasourceShowOutputAssert, NewDatasourceDescribeOutputAssert, and NewDatasourceParametersAssert
 func NewDatasourceAssert(name string, prefix string, additionalPrefix string) *ResourceAssert {
 	return &ResourceAssert{
 		name:             name,
@@ -184,13 +184,12 @@ type ResourceAssertion struct {
 }
 
 func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
-	// TODO [next PR]: remove additionalPrefix logic
+	// TODO [next PRs]: remove additionalPrefix logic when all the objects are migrated
 	assertion.fieldName = r.additionalPrefix + assertion.fieldName
 	assertion.fullPath = r.assertionPath + assertion.fieldName
 	r.assertions = append(r.assertions, assertion)
 }
 
-// TODO [SNOW-3113138]: what if we made these functions ResourceAssert methods?
 func SetElem(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName + ".*", expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
 }
