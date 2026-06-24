@@ -16,8 +16,9 @@ type SdkObjectShowOutputDetails struct {
 	genhelpers.SdkObjectDetails
 }
 
-var dataSourceMapping = map[any]dataSourceDef{
-	sdk.Database{}: {"Databases"},
+var dataSourceMappingNormalized = map[string]dataSourceDef{
+	normalized(sdk.Database{}):           {"Databases"},
+	normalized(sdk.NetworkRuleDetails{}): {"NetworkRules"},
 }
 
 type dataSourceDef struct {
@@ -32,7 +33,7 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 	})
 	return collections.Map(filtered, func(d genhelpers.SdkObjectDetails) SdkObjectShowOutputDetails {
 		v, _ := dataSourceMappingNormalized[d.Name]
-		return SdkObjectShowOutputDetails{v, d}
+		return SdkObjectShowOutputDetails{&v, d}
 	})
 }
 
@@ -41,11 +42,8 @@ var (
 	objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {
 		return reflect.ValueOf(o).Type().String()
 	})
-	dataSourceMappingNormalized = map[string]*dataSourceDef{}
 )
 
-func init() {
-	for k, v := range dataSourceMapping {
-		dataSourceMappingNormalized[reflect.ValueOf(k).Type().String()] = &v
-	}
+func normalized(t any) string {
+	return reflect.ValueOf(t).Type().String()
 }

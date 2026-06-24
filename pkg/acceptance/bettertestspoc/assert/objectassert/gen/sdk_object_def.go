@@ -194,6 +194,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.NetworkRule{},
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.NetworkRuleDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Pipe{},
 	},

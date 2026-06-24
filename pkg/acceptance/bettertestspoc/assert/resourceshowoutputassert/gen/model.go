@@ -44,6 +44,7 @@ func ModelFromSdkObjectDetails(sdkObject SdkObjectShowOutputDetails, preamble *g
 
 func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutputAssertionModel {
 	concreteTypeWithoutPtr, _ := strings.CutPrefix(field.ConcreteType, "*")
+	mapper := genhelpers.Identity
 	// TODO [SNOW-1501905]: get a runtime name for the assertion creator
 	var assertionCreator string
 	switch {
@@ -59,12 +60,12 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 	// TODO [SNOW-1501905]: currently, it also generates this assertion type for sdk structs
 	case strings.HasPrefix(concreteTypeWithoutPtr, "sdk."):
 		assertionCreator = "StringValueSet"
+		mapper = genhelpers.CastToString
 	default:
 		assertionCreator = "StringValueSet"
 	}
 
 	// TODO [SNOW-1501905]: handle other mappings if needed
-	mapper := genhelpers.Identity
 	switch concreteTypeWithoutPtr {
 	case "sdk.AccountObjectIdentifier":
 		mapper = genhelpers.Name
