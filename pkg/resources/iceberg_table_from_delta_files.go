@@ -21,15 +21,12 @@ var icebergTableFromDeltaFilesSchema = collections.MergeMaps(
 	icebergTableCommonSchema(),
 	map[string]*schema.Schema{
 		"base_location": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-			Description:  "Specifies the relative path of the Delta table's directory in the external volume. Cannot be changed after creation.",
-			DiffSuppressFunc: SuppressIfAny(
-				IgnoreChangeToCurrentSnowflakeValueInShow("base_location"),
-				ignoreDirectoryPathTrailingSlashSuppressFunc,
-			),
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateFunc:     validation.StringIsNotEmpty,
+			Description:      "Specifies the relative path of the Delta table's directory in the external volume. Cannot be changed after creation.",
+			DiffSuppressFunc: ignoreDirectoryPathTrailingSlashSuppressFunc,
 		},
 		"auto_refresh": {
 			Type:             schema.TypeString,
@@ -62,7 +59,7 @@ func IcebergTableFromDeltaFiles() *schema.Resource {
 		},
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: customdiff.All(
-			ComputedIfAnyAttributeChanged(icebergTableFromDeltaFilesSchema, ShowOutputAttributeName, "comment", "base_location", "auto_refresh"),
+			ComputedIfAnyAttributeChanged(icebergTableFromDeltaFilesSchema, ShowOutputAttributeName, "comment", "auto_refresh"),
 			ComputedIfAnyAttributeChanged(icebergTableFromDeltaFilesSchema, ParametersAttributeName, "external_volume", "catalog", "replace_invalid_characters"),
 			icebergTableParametersCustomDiff,
 		),
