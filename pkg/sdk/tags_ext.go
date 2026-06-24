@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"slices"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 // TagOnConflictAllowedValuesSequence is the value returned by SHOW TAGS in the on_conflict column
@@ -151,4 +153,20 @@ func (v *tags) UnsetOnCurrentAccount(ctx context.Context, unsetTags []ObjectIden
 	return v.client.Accounts.Alter(ctx, &AlterAccountOptions{
 		UnsetTag: unsetTags,
 	})
+}
+
+func NewAllowedValuesRequestFromStrings(values []string) *AllowedValuesRequest {
+	return NewAllowedValuesRequest().WithValues(collections.Map(values, func(v string) StringAllowEmpty { return StringAllowEmpty{Value: v} }))
+}
+
+func NewTagSetMaskingPoliciesRequestWithIds(ids []SchemaObjectIdentifier) *TagSetMaskingPoliciesRequest {
+	return NewTagSetMaskingPoliciesRequest().WithMaskingPolicies(NewTagMaskingPolicyRequestFromIds(ids))
+}
+
+func NewTagUnsetMaskingPoliciesRequestWithIds(ids []SchemaObjectIdentifier) *TagUnsetMaskingPoliciesRequest {
+	return NewTagUnsetMaskingPoliciesRequest().WithMaskingPolicies(NewTagMaskingPolicyRequestFromIds(ids))
+}
+
+func NewTagMaskingPolicyRequestFromIds(ids []SchemaObjectIdentifier) []TagMaskingPolicyRequest {
+	return collections.Map(ids, func(id SchemaObjectIdentifier) TagMaskingPolicyRequest { return *NewTagMaskingPolicyRequest(id) })
 }

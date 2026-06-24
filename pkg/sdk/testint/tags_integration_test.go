@@ -17,14 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func toAllowedValuesRequest(values []string) sdk.AllowedValuesRequest {
-	sae := make([]sdk.StringAllowEmpty, len(values))
-	for i, v := range values {
-		sae[i] = sdk.StringAllowEmpty{Value: v}
-	}
-	return *sdk.NewAllowedValuesRequest().WithValues(sae)
-}
-
 // TODO(SNOW-1813223): cleanup tests
 func TestInt_Tags(t *testing.T) {
 	client := testClient(t)
@@ -60,7 +52,7 @@ func TestInt_Tags(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		values := []string{"value1", "value2"}
-		request := sdk.NewCreateTagRequest(id).WithAllowedValues(toAllowedValuesRequest(values))
+		request := sdk.NewCreateTagRequest(id).WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(values))
 		err := client.Tags.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
@@ -77,7 +69,7 @@ func TestInt_Tags(t *testing.T) {
 		request := sdk.NewCreateTagRequest(id).
 			WithOrReplace(true).
 			WithComment(comment).
-			WithAllowedValues(toAllowedValuesRequest(values)).
+			WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(values)).
 			WithPropagate(*sdk.NewTagPropagateRequest().WithPropagationMethod(sdk.TagPropagationOnDependency).
 				WithOnConflict(sdk.TagOnConflictRequest{
 					CustomValue: sdk.String("CONFLICTING"),
@@ -202,14 +194,14 @@ func TestInt_Tags(t *testing.T) {
 		id := tag.ID()
 
 		values := []string{"value1", "value2"}
-		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(toAllowedValuesRequest(values))))
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(values))))
 		require.NoError(t, err)
 
 		tag, err = client.Tags.ShowByID(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, values, tag.AllowedValues)
 
-		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(toAllowedValuesRequest(values))))
+		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(values))))
 		require.NoError(t, err)
 
 		tag, err = client.Tags.ShowByID(ctx, id)
@@ -244,7 +236,7 @@ func TestInt_Tags(t *testing.T) {
 		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
 
 		values := []string{"value1", "value2"}
-		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(toAllowedValuesRequest(values))))
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(values))))
 		require.NoError(t, err)
 
 		tag, err = client.Tags.ShowByID(ctx, id)
@@ -1402,7 +1394,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 	t.Run("conflict: ALLOWED_VALUES_SEQUENCE resolves using order", func(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
-				WithAllowedValues(toAllowedValuesRequest([]string{"confidential", "internal", "public"})).
+				WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{"confidential", "internal", "public"})).
 				WithPropagate(*sdk.NewTagPropagateRequest().WithPropagationMethod(sdk.TagPropagationOnDependency).
 					WithOnConflict(sdk.TagOnConflictRequest{
 						AllowedValuesSequence: sdk.Bool(true),
@@ -1415,7 +1407,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 
 		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).
 			WithSet(*sdk.NewTagSetRequest().
-				WithAllowedValues(toAllowedValuesRequest([]string{"public", "internal", "confidential"})),
+				WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{"public", "internal", "confidential"})),
 			),
 		)
 		require.NoError(t, err)
@@ -1449,7 +1441,7 @@ func TestInt_Tags_OnConflict_Bcr2291(t *testing.T) {
 	t.Run("create with allowed_values_sequence is returned by ShowByID", func(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
-				WithAllowedValues(toAllowedValuesRequest([]string{"confidential", "internal", "public"})).
+				WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{"confidential", "internal", "public"})).
 				WithPropagate(*sdk.NewTagPropagateRequest().WithPropagationMethod(sdk.TagPropagationOnDependency).
 					WithOnConflict(sdk.TagOnConflictRequest{AllowedValuesSequence: sdk.Bool(true)})),
 		)
@@ -1486,7 +1478,7 @@ func TestInt_Tags_OnConflict_Bcr2291(t *testing.T) {
 	t.Run("alter on_conflict allowed values sequence", func(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
-				WithAllowedValues(toAllowedValuesRequest([]string{"confidential", "internal", "public"})).
+				WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{"confidential", "internal", "public"})).
 				WithPropagate(
 					*sdk.NewTagPropagateRequest().WithPropagationMethod(sdk.TagPropagationOnDependency).
 						WithOnConflict(sdk.TagOnConflictRequest{AllowedValuesSequence: sdk.Bool(true)}),

@@ -218,9 +218,9 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	if v, ok := d.GetOk("ordered_allowed_values"); ok {
-		request.WithAllowedValues(toAllowedValuesRequest(expandStringListAllowEmpty(v.([]any))))
+		request.WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(expandStringListAllowEmpty(v.([]any))))
 	} else if v, ok := d.GetOk("allowed_values"); ok {
-		request.WithAllowedValues(toAllowedValuesRequest(expandStringListAllowEmpty(v.(*schema.Set).List())))
+		request.WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(expandStringListAllowEmpty(v.(*schema.Set).List())))
 	}
 
 	if v, ok := d.GetOk("propagate"); ok {
@@ -248,7 +248,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			})
 		}
 
-		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies(*sdk.NewTagSetMaskingPoliciesRequest().WithMaskingPolicies(toTagMaskingPolicyRequests(ids)))))
+		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies(*sdk.NewTagSetMaskingPoliciesRequestWithIds(ids))))
 		if err != nil {
 			updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 				Severity: diag.Warning,
@@ -261,7 +261,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
 		if d.Get("no_allowed_values").(bool) {
 			// We have to temporarily add and remove allowed value for Snowflake to make the tag block any value.
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(toAllowedValuesRequest([]string{tempTagAllowedValue})))); err != nil {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{tempTagAllowedValue})))); err != nil {
 				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to add temporary allowed value on the tag",
@@ -271,7 +271,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 			// Drop can run without checking above command's status as Snowflake doesn't fail on dropped values that are not there.
 			// The value is also documented to be "reserved" by the provider in case customer would like to use it.
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(toAllowedValuesRequest([]string{tempTagAllowedValue})))); err != nil {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{tempTagAllowedValue})))); err != nil {
 				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to remove temporary allowed value on the tag",
@@ -440,13 +440,13 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		switch {
 		case len(newOrdered) > 0:
 			// Target: ordered values - SET atomically replaces in the specified order.
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(toAllowedValuesRequest(newOrdered)))); err != nil {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(newOrdered)))); err != nil {
 				return diag.FromErr(err)
 			}
 
 		case len(newUnordered) > 0:
 			// Target: unordered values - SET atomically replaces.
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(toAllowedValuesRequest(newUnordered)))); err != nil {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(newUnordered)))); err != nil {
 				return diag.FromErr(err)
 			}
 
@@ -459,14 +459,14 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 				oldValues = expandStringListAllowEmpty(oldOrderedRaw.([]any))
 			}
 			if len(oldValues) > 0 {
-				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(toAllowedValuesRequest(oldValues)))); err != nil {
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(oldValues)))); err != nil {
 					return diag.FromErr(err)
 				}
 			} else {
 				// No previous values - use ADD temp + DROP temp to enter blocking state.
 				if err := errors.Join(
-					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(toAllowedValuesRequest([]string{tempTagAllowedValue})))),
-					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(toAllowedValuesRequest([]string{tempTagAllowedValue})))),
+					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{tempTagAllowedValue})))),
+					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{tempTagAllowedValue})))),
 				); err != nil {
 					return diag.FromErr(err)
 				}
@@ -489,7 +489,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 					oldValues = expandStringListAllowEmpty(oldOrderedRaw.([]any))
 				}
 				if len(oldValues) > 0 {
-					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(toAllowedValuesRequest(oldValues)))); err != nil {
+					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(oldValues)))); err != nil {
 						return diag.FromErr(err)
 					}
 				}
@@ -560,13 +560,13 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 
 		if len(removedItems) > 0 {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithMaskingPolicies(*sdk.NewTagUnsetMaskingPoliciesRequest().WithMaskingPolicies(toTagMaskingPolicyRequests(removedids))))); err != nil {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithMaskingPolicies(*sdk.NewTagUnsetMaskingPoliciesRequestWithIds(removedids)))); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
 		if len(addedItems) > 0 {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies(*sdk.NewTagSetMaskingPoliciesRequest().WithMaskingPolicies(toTagMaskingPolicyRequests(addedids))))); err != nil {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies(*sdk.NewTagSetMaskingPoliciesRequestWithIds(addedids)))); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -597,7 +597,7 @@ func DeleteContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	if len(removedPolicies) > 0 {
 		log.Printf("[DEBUG] unsetting masking policies before dropping tag: %s", id.FullyQualifiedName())
-		if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithMaskingPolicies(*sdk.NewTagUnsetMaskingPoliciesRequest().WithMaskingPolicies(toTagMaskingPolicyRequests(removedPolicies))))); err != nil {
+		if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithMaskingPolicies(*sdk.NewTagUnsetMaskingPoliciesRequestWithIds(removedPolicies)))); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -630,20 +630,4 @@ func buildTagPropagateRequest(propagate string, d *schema.ResourceData) (*sdk.Ta
 		}
 	}
 	return propagateReq, nil
-}
-
-func toAllowedValuesRequest(values []string) sdk.AllowedValuesRequest {
-	sae := make([]sdk.StringAllowEmpty, len(values))
-	for i, v := range values {
-		sae[i] = sdk.StringAllowEmpty{Value: v}
-	}
-	return *sdk.NewAllowedValuesRequest().WithValues(sae)
-}
-
-func toTagMaskingPolicyRequests(ids []sdk.SchemaObjectIdentifier) []sdk.TagMaskingPolicyRequest {
-	reqs := make([]sdk.TagMaskingPolicyRequest, len(ids))
-	for i, id := range ids {
-		reqs[i] = *sdk.NewTagMaskingPolicyRequest(id)
-	}
-	return reqs
 }
