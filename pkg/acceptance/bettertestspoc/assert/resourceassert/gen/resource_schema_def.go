@@ -254,6 +254,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.PrimaryConnection().Schema,
 	},
 	{
+		name:   "PostgresFork",
+		schema: resources.PostgresFork().Schema,
+	},
+	{
+		name:   "PostgresInstance",
+		schema: resources.PostgresInstance().Schema,
+	},
+	{
 		name:   "ProcedureJava",
 		schema: resources.ProcedureJava().Schema,
 	},

@@ -94,6 +94,8 @@ const (
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
 	PipeResource                                  feature = "snowflake_pipe_resource"
 	PipesDatasource                               feature = "snowflake_pipes_datasource"
+	PostgresForkResource                          feature = "snowflake_postgres_fork_resource"
+	PostgresInstanceResource                      feature = "snowflake_postgres_instance_resource"
 	ProcedureJavaResource                         feature = "snowflake_procedure_java_resource"
 	ProcedureJavascriptResource                   feature = "snowflake_procedure_javascript_resource"
 	ProcedurePythonResource                       feature = "snowflake_procedure_python_resource"
@@ -215,6 +217,9 @@ var allPreviewFeatures = []feature{
 	PasswordPolicyResource,
 	PipeResource,
 	PipesDatasource,
+	// These resources are added to the test provider.
+	// PostgresForkResource,
+	// PostgresInstanceResource,
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,

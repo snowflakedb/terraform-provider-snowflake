@@ -576,6 +576,8 @@ func GetProviderSchema() map[string]*schema.Schema {
 	}
 }
 
+// TODO(next postgres prs): "snowflake_postgres_fork":                                                resources.PostgresFork(),
+// TODO(next postgres prs): "snowflake_postgres_instance":                                            resources.PostgresInstance(),
 func getResources() map[string]*schema.Resource {
 	return map[string]*schema.Resource{
 		"snowflake_account": resources.Account(),

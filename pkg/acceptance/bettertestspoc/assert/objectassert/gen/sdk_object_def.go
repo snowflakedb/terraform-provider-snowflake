@@ -345,6 +345,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.TagReference{},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.PostgresInstanceDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.PolicyReference{},
 	},
