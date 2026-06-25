@@ -702,6 +702,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_user_programmatic_access_token":                               resources.UserProgrammaticAccessToken(),
 		"snowflake_user_public_keys":                                             resources.UserPublicKeys(),
 		"snowflake_user_session_policy_attachment":                               resources.UserSessionPolicyAttachment(),
+		"snowflake_table_storage_lifecycle_policy_attachment":                    resources.TableStorageLifecyclePolicyAttachment(),
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
 		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),

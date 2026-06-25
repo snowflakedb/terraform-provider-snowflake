@@ -2,6 +2,11 @@ package sdk
 
 import "strings"
 
+var StorageLifecyclePolicySupportedTableTypes = []PolicyEntityDomain{
+	PolicyEntityDomainTable,
+	PolicyEntityDomainDynamicTable,
+}
+
 // normalizeStorageLifecyclePolicyArchiveTier normalizes the archive tier value returned by
 // DESCRIBE STORAGE LIFECYCLE POLICY. When no archive tier is set, Snowflake returns the literal
 // string "NULL".

@@ -133,6 +133,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_tables_datasource", want: TablesDatasource},
 		{input: "snowflake_table_column_masking_policy_application_resource", want: TableColumnMaskingPolicyApplicationResource},
 		{input: "snowflake_table_constraint_resource", want: TableConstraintResource},
+		{input: "snowflake_table_storage_lifecycle_policy_attachment_resource", want: TableStorageLifecyclePolicyAttachmentResource},
 		{input: "snowflake_user_authentication_policy_attachment_resource", want: UserAuthenticationPolicyAttachmentResource},
 		{input: "snowflake_user_public_keys_resource", want: UserPublicKeysResource},
 		{input: "snowflake_user_password_policy_attachment_resource", want: UserPasswordPolicyAttachmentResource},

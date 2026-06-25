@@ -244,6 +244,7 @@ body:
         - resource:table
         - resource:table_column_masking_policy_application
         - resource:table_constraint
+        - resource:table_storage_lifecycle_policy_attachment
         - resource:tag
         - resource:tag_association
         - resource:tag_masking_policy_association

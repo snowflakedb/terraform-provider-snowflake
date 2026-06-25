@@ -406,6 +406,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.UserSessionPolicyAttachment().Schema,
 	},
 	{
+		name:   "TableStorageLifecyclePolicyAttachment",
+		schema: resources.TableStorageLifecyclePolicyAttachment().Schema,
+	},
+	{
 		name:   "View",
 		schema: resources.View().Schema,
 	},
