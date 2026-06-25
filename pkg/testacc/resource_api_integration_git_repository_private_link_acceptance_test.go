@@ -45,41 +45,56 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 
 	ref := basic.ResourceReference()
 
-	assertBasic := []assert.TestCheckFuncProvider{
-		resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
+	basicCommonAsserts := func() []assert.TestCheckFuncProvider {
+		return []assert.TestCheckFuncProvider{
+			resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
+				HasName(id.Name()).
+				HasEnabled(true).
+				HasComment(""),
+			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+				HasEnabled(true).
+				HasApiProvider(apiProvider).
+				HasAllowedAuthenticationSecrets("").
+				HasUsePrivatelinkEndpoint(true).
+				HasNoTlsTrustedCertificates().
+				HasAllowedPrefixes(gitAllowedPrefix).
+				HasNoBlockedPrefixes().
+				HasComment(""),
+			objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
+				HasEnabled(true).
+				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasNoUserAuthType().
+				HasAllowedAuthenticationSecrets("").
+				HasUsePrivatelinkEndpoint(true).
+				HasAllowedPrefixes(gitAllowedPrefix).
+				HasNoBlockedPrefixes().
+				HasNoTlsTrustedCertificates().
+				HasComment(""),
+		}
+	}
+	basicResourceBaseAsserts := func() *resourceassert.ApiIntegrationGitRepositoryPrivateLinkResourceAssert {
+		return resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
 			HasNameString(id.Name()).
 			HasEnabledString(r.BooleanTrue).
 			HasUsePrivatelinkEndpointString(r.BooleanTrue).
-			HasAllAllowedAuthenticationSecrets(false).
-			HasNoAllowedAuthenticationSecrets(false).
+			HasNoNoAllowedAuthenticationSecrets().
 			HasAllowedAuthenticationSecretsEmpty().
 			HasApiBlockedPrefixesEmpty().
 			HasTlsTrustedCertificatesEmpty().
-			HasCommentEmpty(),
-		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
-			HasName(id.Name()).
-			HasEnabled(true).
-			HasComment(""),
-		resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
-			HasEnabled(true).
-			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets("").
-			HasUsePrivatelinkEndpoint(true).
-			HasNoTlsTrustedCertificates().
-			HasAllowedPrefixes(gitAllowedPrefix).
-			HasNoBlockedPrefixes().
-			HasComment(""),
-		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
-			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasNoUserAuthType().
-			HasAllowedAuthenticationSecrets("").
-			HasUsePrivatelinkEndpoint(true).
-			HasAllowedPrefixes(gitAllowedPrefix).
-			HasNoBlockedPrefixes().
-			HasNoTlsTrustedCertificates().
-			HasComment(""),
+			HasCommentEmpty()
 	}
+	assertBasic := append(
+		[]assert.TestCheckFuncProvider{
+			basicResourceBaseAsserts().HasNoAllAllowedAuthenticationSecrets(),
+		},
+		basicCommonAsserts()...,
+	)
+	assertBasicAfterUpdate := append(
+		[]assert.TestCheckFuncProvider{
+			basicResourceBaseAsserts().HasAllAllowedAuthenticationSecrets(false),
+		},
+		basicCommonAsserts()...,
+	)
 
 	assertWithOptionals := []assert.TestCheckFuncProvider{
 		resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
@@ -87,7 +102,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasEnabledString(r.BooleanTrue).
 			HasUsePrivatelinkEndpointString(r.BooleanTrue).
 			HasAllAllowedAuthenticationSecrets(true).
-			HasNoAllowedAuthenticationSecrets(false).
+			HasNoNoAllowedAuthenticationSecrets().
 			HasAllowedAuthenticationSecretsEmpty().
 			HasApiBlockedPrefixes(gitBlockedPrefix).
 			HasTlsTrustedCertificates(certSecretId.FullyQualifiedName()).
@@ -162,7 +177,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, assertBasic...),
+				Check:  assertThat(t, assertBasicAfterUpdate...),
 			},
 			// Update - external changes
 			{
@@ -177,7 +192,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, assertBasic...),
+				Check:  assertThat(t, assertBasicAfterUpdate...),
 			},
 			// Destroy
 			{
@@ -223,6 +238,16 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 	assertNotSet := func() []assert.TestCheckFuncProvider {
 		return []assert.TestCheckFuncProvider{
 			resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
+				HasNoAllAllowedAuthenticationSecrets().
+				HasNoNoAllowedAuthenticationSecrets().
+				HasAllowedAuthenticationSecretsEmpty(),
+			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+				HasAllowedAuthenticationSecrets(""),
+		}
+	}
+	assertNotSetAfterTransition := func() []assert.TestCheckFuncProvider {
+		return []assert.TestCheckFuncProvider{
+			resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
 				HasAllAllowedAuthenticationSecrets(false).
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecretsEmpty(),
@@ -231,6 +256,16 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 		}
 	}
 	assertAll := func() []assert.TestCheckFuncProvider {
+		return []assert.TestCheckFuncProvider{
+			resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
+				HasAllAllowedAuthenticationSecrets(true).
+				HasNoNoAllowedAuthenticationSecrets().
+				HasAllowedAuthenticationSecretsEmpty(),
+			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+				HasAllowedAuthenticationSecrets(""),
+		}
+	}
+	assertAllAfterTransition := func() []assert.TestCheckFuncProvider {
 		return []assert.TestCheckFuncProvider{
 			resourceassert.ApiIntegrationGitRepositoryPrivateLinkResource(t, ref).
 				HasAllAllowedAuthenticationSecrets(true).
@@ -292,23 +327,23 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 			// NONE → list
 			expectUpdate(withList, assertList),
 			// list → ALL
-			expectUpdate(withAll, assertAll),
+			expectUpdate(withAll, assertAllAfterTransition),
 			// ALL → not-set
-			expectUpdate(withNotSet, assertNotSet),
+			expectUpdate(withNotSet, assertNotSetAfterTransition),
 			// not-set → NONE
 			expectUpdate(withNone, assertNone),
 			// NONE → not-set
-			expectUpdate(withNotSet, assertNotSet),
+			expectUpdate(withNotSet, assertNotSetAfterTransition),
 			// not-set → list
 			expectUpdate(withList, assertList),
 			// list → NONE
 			expectUpdate(withNone, assertNone),
 			// NONE → ALL
-			expectUpdate(withAll, assertAll),
+			expectUpdate(withAll, assertAllAfterTransition),
 			// ALL → list
 			expectUpdate(withList, assertList),
 			// list → not-set
-			expectUpdate(withNotSet, assertNotSet),
+			expectUpdate(withNotSet, assertNotSetAfterTransition),
 		},
 	})
 }
@@ -360,11 +395,9 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_Import(t *testing.T) {
 	})
 }
 
-// TestAcc_ApiIntegrationGitRepositoryPrivateLink_Import_WrongProviderType verifies that importing a non-private-link
-// git integration via this resource returns a descriptive error.
 func TestAcc_ApiIntegrationGitRepositoryPrivateLink_Import_WrongProviderType(t *testing.T) {
-	gitTokenIntegration, gitTokenCleanup := testClient().ApiIntegration.CreateGitToken(t)
-	t.Cleanup(gitTokenCleanup)
+	awsIntegration, awsCleanup := testClient().ApiIntegration.CreateAws(t)
+	t.Cleanup(awsCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	dummyModel := model.ApiIntegrationGitRepositoryPrivateLink("t", id.Name(),
@@ -377,12 +410,11 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_Import_WrongProviderType(t *
 		},
 		CheckDestroy: CheckDestroy(t, resources.ApiIntegrationGitRepositoryPrivateLink),
 		Steps: []resource.TestStep{
-			// Attempt to import a token-based git integration via the private link resource — expects a mismatch error.
 			{
 				Config:        config.FromModels(t, dummyModel),
 				ResourceName:  dummyModel.ResourceReference(),
 				ImportState:   true,
-				ImportStateId: gitTokenIntegration.ID().Name(),
+				ImportStateId: awsIntegration.ID().Name(),
 				ExpectError:   regexp.MustCompile("not compatible with snowflake_api_integration_git_repository_private_link"),
 			},
 		},

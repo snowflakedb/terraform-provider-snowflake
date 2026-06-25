@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -78,10 +79,10 @@ func ApiIntegrationExternalMcpOAuth2() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationExternalMcpOAuth2, CreateApiIntegrationExternalMcpOAuth2),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationExternalMcpOAuth2, ReadApiIntegrationExternalMcpOAuth2),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationExternalMcpOAuth2, UpdateApiIntegrationExternalMcpOAuth2),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationExternalMcpOAuth2, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpOAuth2Resource), TrackingCreateWrapper(resources.ApiIntegrationExternalMcpOAuth2, CreateApiIntegrationExternalMcpOAuth2)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpOAuth2Resource), TrackingReadWrapper(resources.ApiIntegrationExternalMcpOAuth2, ReadApiIntegrationExternalMcpOAuth2)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpOAuth2Resource), TrackingUpdateWrapper(resources.ApiIntegrationExternalMcpOAuth2, UpdateApiIntegrationExternalMcpOAuth2)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationExternalMcpOAuth2Resource), TrackingDeleteWrapper(resources.ApiIntegrationExternalMcpOAuth2, deleteFunc)),
 		Description:   "Resource used to manage API integration for external MCP (Model Context Protocol) servers using OAuth 2.0 authentication. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationExternalMcpOAuth2Schema,
@@ -122,34 +123,28 @@ func buildExternalMcpOAuth2Auth(d *schema.ResourceData) (*sdk.OAuth2McpUserAuthe
 }
 
 func ImportApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	details, err := client.ApiIntegrations.DescribeExternalMcpDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	if _, err := sdk.ToApiIntegrationMcpApiProviderType(details.ApiProvider); err != nil {
-		return nil, fmt.Errorf(
-			"api integration %s has api_provider %q, not compatible with snowflake_api_integration_external_mcp_oauth2; use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.ApiProvider,
-		)
-	}
-
-	if details.UserAuthType != string(sdk.ApiIntegrationUserAuthTypeOauth2) {
-		return nil, fmt.Errorf(
-			"api integration %s has user_auth_type %q, not compatible with snowflake_api_integration_external_mcp_oauth2; use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.UserAuthType,
-		)
-	}
-
-	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+	return importApiIntegrationWithDetails(ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationExternalMcpDetails, error) {
+			return client.ApiIntegrations.DescribeExternalMcpDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationExternalMcpDetails, id sdk.AccountObjectIdentifier) error {
+			if _, err := sdk.ToApiIntegrationMcpApiProviderType(details.ApiProvider); err != nil {
+				return fmt.Errorf(
+					"api integration %s has api_provider %q, not compatible with snowflake_api_integration_external_mcp_oauth2; use the appropriate resource type",
+					id.FullyQualifiedName(),
+					details.ApiProvider,
+				)
+			}
+			if details.UserAuthType != string(sdk.ApiIntegrationUserAuthTypeOauth2) {
+				return fmt.Errorf(
+					"api integration %s has user_auth_type %q, not compatible with snowflake_api_integration_external_mcp_oauth2; use the appropriate resource type",
+					id.FullyQualifiedName(),
+					details.UserAuthType,
+				)
+			}
+			return nil
+		},
+	)
 }
 
 func CreateApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -165,9 +160,7 @@ func CreateApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	mcpParams := sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)
-
-	if err = client.ApiIntegrations.Create(ctx, request.WithExternalMcpOAuth2ProviderParams(*mcpParams)); err != nil {
+	if err = client.ApiIntegrations.Create(ctx, request.WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest(*auth))); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating external MCP OAuth2 API integration: %w", err))
 	}
 
@@ -237,7 +230,7 @@ func UpdateApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		mcpSet := sdk.NewSetExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)
+		mcpSet := sdk.NewSetExternalMcpOAuth2ParamsRequest(*auth)
 		set.WithExternalMcpOAuth2Params(*mcpSet)
 	}
 
