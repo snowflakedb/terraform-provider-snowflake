@@ -38,6 +38,10 @@ func blocklistedCharactersFieldDescription(description string) string {
 	return fmt.Sprintf(`%s Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: %s.`, description, characterList([]rune{'|', '.', '"'}))
 }
 
+func blocklistedPipesFieldDescription(description string) string {
+	return fmt.Sprintf(`%s Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (%s).`, description, characterList([]rune{'|'}))
+}
+
 func caseSensitiveFieldDoubleQuotes(description string) string {
 	return fmt.Sprintf(`%s This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.`, description)
 }

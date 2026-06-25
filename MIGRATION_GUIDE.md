@@ -26,7 +26,59 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
-### *(new feature)* New `snowflake_api_integrations` data source
+### *(new feature/deprecation)* API integration resources reworked
+
+#### *(new feature/deprecation)* API integration resources
+
+The existing `snowflake_api_integration` resource has been deprecated. It has been split into nine new dedicated resources, each managing a single integration type:
+
+- [`snowflake_api_integration_amazon_api_gateway`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_amazon_api_gateway) — for AWS API Gateway, AWS Private API Gateway, AWS GovCloud API Gateway, and AWS GovCloud Private API Gateway
+- [`snowflake_api_integration_azure_api_management`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_azure_api_management) — for Azure API Management
+- [`snowflake_api_integration_google_cloud_api_gateway`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_google_cloud_api_gateway) — for Google Cloud API Gateway
+- [`snowflake_api_integration_git_repository_github_app`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_github_app) — for Git repositories using GitHub App authentication
+- [`snowflake_api_integration_git_repository_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_oauth2) — for Git repositories using OAuth 2.0
+- [`snowflake_api_integration_git_repository_token`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_token) — for Git repositories using token-based authentication
+- [`snowflake_api_integration_git_repository_private_link`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_private_link) — for Git repositories over a private link endpoint
+- [`snowflake_api_integration_external_mcp_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_external_mcp_oauth2) — for external MCP servers using OAuth 2.0
+- [`snowflake_api_integration_external_mcp_dynamic_client`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_external_mcp_dynamic_client) — for external MCP servers using OAuth 2.0 Dynamic Client Registration
+
+The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation. Each resource schema contains only the attributes valid for the given integration type.
+
+These resources are in preview. To use them, add the corresponding feature flag(s) to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field:
+- `snowflake_api_integration_amazon_api_gateway_resource`
+- `snowflake_api_integration_azure_api_management_resource`
+- `snowflake_api_integration_google_cloud_api_gateway_resource`
+- `snowflake_api_integration_git_repository_github_app_resource`
+- `snowflake_api_integration_git_repository_oauth2_resource`
+- `snowflake_api_integration_git_repository_token_resource`
+- `snowflake_api_integration_git_repository_private_link_resource`
+- `snowflake_api_integration_external_mcp_oauth2_resource`
+- `snowflake_api_integration_external_mcp_dynamic_client_resource`
+
+The old `snowflake_api_integration` resource is deprecated and will be removed in a future major version. It remains available in the meantime.
+
+##### Migrating from `snowflake_api_integration` to the new resources
+
+To determine which new resource to use, check the `api_provider` value in your existing `snowflake_api_integration` configuration:
+
+| Old `api_provider` value | New resource |
+|---|---|
+| `aws_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_private_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_gov_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_gov_private_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `azure_api_management` | `snowflake_api_integration_azure_api_management` |
+| `google_api_gateway` | `snowflake_api_integration_google_cloud_api_gateway` |
+
+Notable schema changes compared to the old resource:
+- Computed attributes (`api_aws_iam_user_arn`, `api_aws_external_id`, `azure_consent_url`, `azure_multi_tenant_app_name`, `api_gcp_service_account`) have moved to `describe_output`
+- `created_on` has moved to `show_output`
+- `api_provider` in the Amazon API Gateway resource accepts only the four AWS variants; Azure and Google each have a dedicated resource with no `api_provider` field
+- Each resource schema contains only the fields relevant to its integration type — provider-specific fields from other backends are no longer present
+
+To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
+
+#### *(new feature)* `snowflake_api_integrations` data source
 
 We have added a new preview data source for querying API integrations: [snowflake_api_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/api_integrations).
 
@@ -34,7 +86,7 @@ The data source supports filtering with `like` and returns both `show_output` an
 
 This feature will be marked as stable in future releases. To use it, add `snowflake_api_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
 
-No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
 ### *(new feature)* `snowflake_grant_ownership`: support for `AGENT` object type
 
@@ -42,13 +94,16 @@ The `snowflake_grant_ownership` resource now supports granting ownership on `AGE
 
 No changes are required for existing configurations.
 
-### *(new feature)* New storage lifecycle policy resource and data source
+### *(new feature)* New storage lifecycle policy resources and data source
 
-#### Resource
+#### Resources
 
-We have added a new preview resource for managing storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy).
+We have added new preview resources for storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy) for defining policies, and [snowflake_table_storage_lifecycle_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table_storage_lifecycle_policy_attachment) for attaching a storage lifecycle policy to a table or a dynamic table.
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_storage_lifecycle_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_storage_lifecycle_policy_resource` for `snowflake_storage_lifecycle_policy`;
+- `snowflake_table_storage_lifecycle_policy_attachment_resource` for `snowflake_table_storage_lifecycle_policy_attachment`.
 
 #### Data source
 
@@ -67,6 +122,24 @@ We have added new preview resources for Iceberg tables:
 These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_files_resource` or `snowflake_iceberg_table_from_delta_files_resource` to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
+
+### *(improvement)* GRANT_ACCOUNT_ROLE_SHOW_CACHING experiment for snowflake_grant_account_role
+
+A new experiment `GRANT_ACCOUNT_ROLE_SHOW_CACHING` is now available for the `snowflake_grant_account_role` resource. When enabled, the provider caches `SHOW GRANTS OF ROLE` results in memory for the duration of a single plan or apply cycle.
+
+Without caching, every `snowflake_grant_account_role` instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same set of roles (a common RBAC topology), this produces N identical round-trips that each return the same full result set — only 1 is needed per unique role per plan.
+
+When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain correctly visible to subsequent Reads. The trailing Read at the end of Create is also skipped (this resource has no computed or server-default fields to populate), removing a redundant `SHOW GRANTS OF ROLE` call per grant during apply.
+
+To enable, add `GRANT_ACCOUNT_ROLE_SHOW_CACHING` to the `experimental_features_enabled` field in the provider configuration:
+
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["GRANT_ACCOUNT_ROLE_SHOW_CACHING"]
+}
+```
+
+No changes to existing configurations are required. The experiment is intended for large RBAC configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
 
 ### *(new feature)* `log_event_level` parameter support
 

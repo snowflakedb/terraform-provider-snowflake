@@ -203,7 +203,7 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_Import(t *testing.T) {
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: mcpAllowedPrefix}}, true).
 							WithComment(comment).
 							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: mcpBlockedPrefix}}).
-							WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest().WithApiUserAuthentication(*auth)),
+							WithExternalMcpDynamicClientProviderParams(*sdk.NewExternalMcpDynamicClientParamsRequest(*auth)),
 					)
 					t.Cleanup(cleanup)
 				},
