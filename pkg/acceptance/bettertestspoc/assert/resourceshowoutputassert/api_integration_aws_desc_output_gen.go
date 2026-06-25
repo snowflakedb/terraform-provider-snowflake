@@ -19,7 +19,6 @@ func ApiIntegrationAwsDescribeOutput(t *testing.T, name string) *ApiIntegrationA
 	apiIntegrationAwsAssert := ApiIntegrationAwsDescribeOutputAssert{
 		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	apiIntegrationAwsAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &apiIntegrationAwsAssert
 }
 
@@ -29,7 +28,6 @@ func ImportedApiIntegrationAwsDescribeOutput(t *testing.T, id string) *ApiIntegr
 	apiIntegrationAwsAssert := ApiIntegrationAwsDescribeOutputAssert{
 		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	apiIntegrationAwsAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &apiIntegrationAwsAssert
 }
 

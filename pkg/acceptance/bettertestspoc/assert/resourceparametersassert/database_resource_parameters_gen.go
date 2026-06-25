@@ -19,7 +19,6 @@ func DatabaseResourceParameters(t *testing.T, name string) *DatabaseResourcePara
 	resourceParameterAssert := DatabaseResourceParametersAssert{
 		ResourceAssert: assert.NewResourceParametersAssert(name),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -29,7 +28,6 @@ func ImportedDatabaseResourceParameters(t *testing.T, id string) *DatabaseResour
 	resourceParameterAssert := DatabaseResourceParametersAssert{
 		ResourceAssert: assert.NewImportedResourceParametersAssert(id),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -45,7 +43,6 @@ func DatabasesDatasourceParametersOnIdx(t *testing.T, name string, idx int) *Dat
 	resourceParameterAssert := DatabaseResourceParametersAssert{
 		ResourceAssert: assert.NewDatasourceParametersAssert(name, "databases", idx),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 

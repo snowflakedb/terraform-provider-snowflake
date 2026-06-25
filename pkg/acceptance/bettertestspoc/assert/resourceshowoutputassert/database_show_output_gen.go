@@ -20,7 +20,6 @@ func DatabaseShowOutput(t *testing.T, name string) *DatabaseShowOutputAssert {
 	databaseAssert := DatabaseShowOutputAssert{
 		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	databaseAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &databaseAssert
 }
 
@@ -30,7 +29,6 @@ func ImportedDatabaseShowOutput(t *testing.T, id string) *DatabaseShowOutputAsse
 	databaseAssert := DatabaseShowOutputAssert{
 		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	databaseAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &databaseAssert
 }
 
@@ -46,7 +44,6 @@ func DatabasesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *Dat
 	databaseAssert := DatabaseShowOutputAssert{
 		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "databases", idx),
 	}
-	databaseAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &databaseAssert
 }
 

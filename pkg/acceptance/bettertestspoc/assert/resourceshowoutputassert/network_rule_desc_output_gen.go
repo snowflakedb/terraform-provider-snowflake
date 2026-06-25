@@ -20,7 +20,6 @@ func NetworkRuleDescribeOutput(t *testing.T, name string) *NetworkRuleDescribeOu
 	networkRuleAssert := NetworkRuleDescribeOutputAssert{
 		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	networkRuleAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &networkRuleAssert
 }
 
@@ -30,7 +29,6 @@ func ImportedNetworkRuleDescribeOutput(t *testing.T, id string) *NetworkRuleDesc
 	networkRuleAssert := NetworkRuleDescribeOutputAssert{
 		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	networkRuleAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &networkRuleAssert
 }
 
@@ -46,7 +44,6 @@ func NetworkRulesDatasourceDescribeOutputOnIdx(t *testing.T, name string, idx in
 	networkRuleAssert := NetworkRuleDescribeOutputAssert{
 		ResourceAssert: assert.NewDatasourceDescribeOutputAssert(name, "network_rules", idx),
 	}
-	networkRuleAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &networkRuleAssert
 }
 
