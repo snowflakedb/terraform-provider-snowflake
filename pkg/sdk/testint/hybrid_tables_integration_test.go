@@ -407,6 +407,34 @@ func TestInt_HybridTables(t *testing.T) {
 			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).HasMaxDataExtensionTimeInDays(28))
 		})
 
+		t.Run("set both retention parameters in single ALTER", func(t *testing.T) {
+			id, cleanup := testClientHelper().HybridTable.Create(t)
+			t.Cleanup(cleanup)
+
+			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().
+					WithDataRetentionTimeInDays(5).
+					WithMaxDataExtensionTimeInDays(14)))
+			require.NoError(t, err, "ALTER SET with both retention parameters must succeed")
+
+			params, err := client.HybridTables.ShowParameters(ctx, id)
+			require.NoError(t, err)
+
+			retention, err := collections.FindFirst(params, func(p *sdk.Parameter) bool {
+				return p.Key == string(sdk.ObjectParameterDataRetentionTimeInDays)
+			})
+			require.NoError(t, err, "DATA_RETENTION_TIME_IN_DAYS must be present in ShowParameters")
+			require.Equal(t, "5", (*retention).Value)
+			require.Equal(t, sdk.ParameterTypeTable, (*retention).Level)
+
+			maxExtension, err := collections.FindFirst(params, func(p *sdk.Parameter) bool {
+				return p.Key == string(sdk.ObjectParameterMaxDataExtensionTimeInDays)
+			})
+			require.NoError(t, err, "MAX_DATA_EXTENSION_TIME_IN_DAYS must be present in ShowParameters")
+			require.Equal(t, "14", (*maxExtension).Value)
+			require.Equal(t, sdk.ParameterTypeTable, (*maxExtension).Level)
+		})
+
 		t.Run("show parameters", func(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.Create(t)
 			t.Cleanup(cleanup)
