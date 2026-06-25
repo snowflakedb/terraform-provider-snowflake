@@ -1467,8 +1467,6 @@ func TestAcc_HybridTable_PKNullableNoSpurious(t *testing.T) {
 	})
 }
 
-
-
 // checkUniqueConstraintNamesReadBack asserts that every unique_constraint element in
 // state has a name that is either the explicit "my_uq" or a server-generated name with
 // the "SYS_CONSTRAINT_" prefix. An empty name (which would mean GetConstraints failed to
@@ -1498,7 +1496,6 @@ func checkUniqueConstraintNamesReadBack(resourceRef string) resource.TestCheckFu
 		return nil
 	}
 }
-
 
 // TestAcc_HybridTable_CollateCaseInsensitive verifies that a config-supplied
 // collate of "en-ci" produces no spurious diff even if DESCRIBE returns it

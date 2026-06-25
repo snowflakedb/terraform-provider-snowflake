@@ -1226,8 +1226,8 @@ func buildIndexesStateFromShowIndexes(indexes []sdk.HybridTableIndex) []map[stri
 			columns = sdk.ParseCommaSeparatedStringArray(*idx.Columns, false)
 		}
 		result = append(result, map[string]any{
-			"name":    idx.Name,
-			"columns": columns,
+			"name":            idx.Name,
+			"columns":         columns,
 			"include_columns": sdk.ParseCommaSeparatedStringArray(idx.IncludedColumns, false),
 		})
 	}
