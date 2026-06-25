@@ -158,7 +158,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies(*sdk.NewTagSetMaskingPoliciesRequest().WithMaskingPolicies([]sdk.TagMaskingPolicyRequest{*sdk.NewTagMaskingPolicyRequest(id)}))))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies(*sdk.NewTagSetMaskingPoliciesRequest().WithMaskingPolicies([]sdk.TagMaskingPolicyRequest{*sdk.NewTagMaskingPolicyRequest(maskingPolicy.ID())}))))
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithComment(comment)))
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest().WithPropagationMethod(sdk.TagPropagationOnDependency))))
 				},
@@ -1468,7 +1468,7 @@ func TestAcc_Tag_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, invalidPropagate),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid tag propagation value`),
+				ExpectError: regexp.MustCompile(`invalid tag propagation: INVALID`),
 			},
 			{
 				Config:      config.FromModels(t, onConflictWithoutPropagate),
