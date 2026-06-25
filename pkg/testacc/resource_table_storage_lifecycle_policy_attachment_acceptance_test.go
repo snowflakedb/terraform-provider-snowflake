@@ -81,7 +81,7 @@ func TestAcc_TableStorageLifecyclePolicyAttachment_Table(t *testing.T) {
 		HasOn("C2")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: policiesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -124,7 +124,7 @@ func TestAcc_TableStorageLifecyclePolicyAttachment_Table(t *testing.T) {
 				Config: config.FromModels(t, changedTable),
 				Check:  assertThat(t, changedTableAssertions),
 			},
-			// Drop table externally and remove attachment from config - expect empty plan
+			// Drop table externally and trigger destroy - expect empty plan
 			{
 				PreConfig: func() {
 					testClient().Table.DropFunc(t, table2.ID())()
@@ -134,7 +134,8 @@ func TestAcc_TableStorageLifecyclePolicyAttachment_Table(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Config: " ",
+				Config:  config.FromModels(t, changedTable),
+				Destroy: true,
 			},
 			{
 				Config: config.FromModels(t, basic),
@@ -164,7 +165,6 @@ func TestAcc_TableStorageLifecyclePolicyAttachment_DynamicTable(t *testing.T) {
 	t.Cleanup(dynamicTableCleanup)
 	dynamicTableName := dynamicTable.ID().FullyQualifiedName()
 
-	// The dynamic table is created with a single NUMBER column "ID", so the policy signature must be NUMBER as well.
 	policyId := testClient().Ids.RandomSchemaObjectIdentifier()
 	policyCleanup := testClient().StorageLifecyclePolicy.CreateWithRequest(t, policyId, sdk.NewCreateStorageLifecyclePolicyRequest(
 		policyId,
@@ -181,7 +181,7 @@ func TestAcc_TableStorageLifecyclePolicyAttachment_DynamicTable(t *testing.T) {
 	ref := basic.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: policiesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -222,7 +222,7 @@ func TestAcc_TableStorageLifecyclePolicyAttachment_Validations(t *testing.T) {
 	emptyOn := model.TableStorageLifecyclePolicyAttachment("t", []string{}, policyName, tableName, string(sdk.PolicyEntityDomainTable))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: policiesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

@@ -49,7 +49,7 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 		WithDependsOn(completeModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: policiesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -157,7 +157,7 @@ func TestAcc_SessionPolicies_Filtering(t *testing.T) {
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: policiesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -210,7 +210,7 @@ func TestAcc_SessionPolicies_Filtering(t *testing.T) {
 
 func TestAcc_SessionPolicies_emptyIn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: policiesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -226,7 +226,7 @@ func TestAcc_SessionPolicies_emptyIn(t *testing.T) {
 
 func TestAcc_SessionPolicies_emptyOn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: policiesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

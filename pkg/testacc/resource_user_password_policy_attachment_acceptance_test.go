@@ -23,7 +23,7 @@ func TestAcc_UserPasswordPolicyAttachment(t *testing.T) {
 	newPasswordPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: policiesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		CheckDestroy:             CheckUserPasswordPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
 			// CREATE

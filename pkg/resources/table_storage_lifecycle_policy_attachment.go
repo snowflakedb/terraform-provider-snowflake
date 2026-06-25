@@ -159,13 +159,21 @@ func ReadTableStorageLifecyclePolicyAttachment(ctx context.Context, d *schema.Re
 		on = sdk.ParseCommaSeparatedStringArray(*storageLifecyclePolicyReference.RefArgColumnNames, true)
 	}
 
+	var policyDb, policySchema string
+	if storageLifecyclePolicyReference.PolicyDb != nil {
+		policyDb = *storageLifecyclePolicyReference.PolicyDb
+	}
+	if storageLifecyclePolicyReference.PolicySchema != nil {
+		policySchema = *storageLifecyclePolicyReference.PolicySchema
+	}
+
 	errs := errors.Join(
 		d.Set("table_type", storageLifecyclePolicyReference.RefEntityDomain),
 		d.Set(
 			"storage_lifecycle_policy_name",
 			sdk.NewSchemaObjectIdentifier(
-				*storageLifecyclePolicyReference.PolicyDb,
-				*storageLifecyclePolicyReference.PolicySchema,
+				policyDb,
+				policySchema,
 				storageLifecyclePolicyReference.PolicyName,
 			).FullyQualifiedName()),
 		d.Set("on", on),
