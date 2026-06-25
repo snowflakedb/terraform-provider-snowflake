@@ -21,7 +21,7 @@ var tableStorageLifecyclePolicyAttachmentSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("Fully qualified name of the table (or dynamic table) the storage lifecycle policy is attached to."),
+		Description:      blocklistedPipesFieldDescription("Fully qualified name of the table (or dynamic table) the storage lifecycle policy is attached to."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 	},
@@ -38,7 +38,7 @@ var tableStorageLifecyclePolicyAttachmentSchema = map[string]*schema.Schema{
 	"storage_lifecycle_policy_name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("Fully qualified name of the storage lifecycle policy to attach to the table."),
+		Description:      blocklistedPipesFieldDescription("Fully qualified name of the storage lifecycle policy to attach to the table."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 	},

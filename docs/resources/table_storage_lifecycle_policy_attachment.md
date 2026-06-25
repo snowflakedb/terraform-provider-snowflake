@@ -76,8 +76,8 @@ resource "snowflake_table_storage_lifecycle_policy_attachment" "dynamic_table_at
 ### Required
 
 - `on` (List of String) List of the columns the storage lifecycle policy applies to.
-- `storage_lifecycle_policy_name` (String) Fully qualified name of the storage lifecycle policy to attach to the table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `table_name` (String) Fully qualified name of the table (or dynamic table) the storage lifecycle policy is attached to. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `storage_lifecycle_policy_name` (String) Fully qualified name of the storage lifecycle policy to attach to the table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (`|`).
+- `table_name` (String) Fully qualified name of the table (or dynamic table) the storage lifecycle policy is attached to. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (`|`).
 - `table_type` (String) Specifies the type of the table referenced in `table_name`. Valid values are (case-insensitive): `TABLE` | `DYNAMIC_TABLE`.
 
 ### Optional
