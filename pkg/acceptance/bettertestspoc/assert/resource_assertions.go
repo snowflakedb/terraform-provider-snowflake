@@ -16,9 +16,12 @@ import (
 )
 
 const (
-	describeOutputPath = "describe_output.0."
-	showOutputPath     = "show_output.0."
-	parametersPath     = "parameters.0."
+	describeOutputPath       = "describe_output.0."
+	describeOutputCollection = "describe_output.#"
+	showOutputPath           = "show_output.0."
+	showOutputCollection     = "show_output.#"
+	parametersPath           = "parameters.0."
+	parametersCollection     = "parameters.#"
 )
 
 var (
@@ -59,8 +62,10 @@ func NewResourceAssertTmp(name string) *ResourceAssert {
 // NewResourceShowOutputAssert creates a ResourceAssert for show output assertions with the resource name as a key.
 func NewResourceShowOutputAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
-		name:          name,
-		assertions:    make([]ResourceAssertion, 0),
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSet(showOutputCollection, "1"),
+		},
 		assertionPath: showOutputPath,
 	}
 }
@@ -68,8 +73,10 @@ func NewResourceShowOutputAssert(name string) *ResourceAssert {
 // NewResourceDescribeOutputAssert creates a ResourceAssert for describe output assertions with the resource name as a key.
 func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
-		name:          name,
-		assertions:    make([]ResourceAssertion, 0),
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSet(describeOutputCollection, "1"),
+		},
 		assertionPath: describeOutputPath,
 	}
 }
@@ -77,8 +84,10 @@ func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
 // NewResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource name as a key.
 func NewResourceParametersAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
-		name:          name,
-		assertions:    make([]ResourceAssertion, 0),
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSet(parametersCollection, "1"),
+		},
 		assertionPath: parametersPath,
 	}
 }
@@ -104,8 +113,10 @@ func NewImportedResourceAssertTmp(id string) *ResourceAssert {
 // NewImportedResourceShowOutputAssert creates a ResourceAssert for show output assertions with the resource id as a key.
 func NewImportedResourceShowOutputAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
-		id:            id,
-		assertions:    make([]ResourceAssertion, 0),
+		id: id,
+		assertions: []ResourceAssertion{
+			ValueSet(showOutputCollection, "1"),
+		},
 		assertionPath: showOutputPath,
 	}
 }
@@ -113,8 +124,10 @@ func NewImportedResourceShowOutputAssert(id string) *ResourceAssert {
 // NewImportedResourceDescribeOutputAssert creates a ResourceAssert for describe output assertions with the resource id as a key.
 func NewImportedResourceDescribeOutputAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
-		id:            id,
-		assertions:    make([]ResourceAssertion, 0),
+		id: id,
+		assertions: []ResourceAssertion{
+			ValueSet(describeOutputCollection, "1"),
+		},
 		assertionPath: describeOutputPath,
 	}
 }
@@ -122,8 +135,10 @@ func NewImportedResourceDescribeOutputAssert(id string) *ResourceAssert {
 // NewImportedResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource id as a key.
 func NewImportedResourceParametersAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
-		id:            id,
-		assertions:    make([]ResourceAssertion, 0),
+		id: id,
+		assertions: []ResourceAssertion{
+			ValueSet(parametersCollection, "1"),
+		},
 		assertionPath: parametersPath,
 	}
 }
@@ -142,8 +157,10 @@ func NewDatasourceAssert(name string, prefix string, additionalPrefix string) *R
 // NewDatasourceShowOutputAssert creates a ResourceAssert for show output assertions on a datasource at the given index.
 func NewDatasourceShowOutputAssert(name string, objectsPath string, idx int) *ResourceAssert {
 	return &ResourceAssert{
-		name:          name,
-		assertions:    make([]ResourceAssertion, 0),
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSet(fmt.Sprintf("%s.%d.%s", objectsPath, idx, showOutputCollection), "1"),
+		},
 		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, showOutputPath),
 	}
 }
@@ -151,8 +168,10 @@ func NewDatasourceShowOutputAssert(name string, objectsPath string, idx int) *Re
 // NewDatasourceDescribeOutputAssert creates a ResourceAssert for describe output assertions on a datasource at the given index.
 func NewDatasourceDescribeOutputAssert(name string, objectsPath string, idx int) *ResourceAssert {
 	return &ResourceAssert{
-		name:          name,
-		assertions:    make([]ResourceAssertion, 0),
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSet(fmt.Sprintf("%s.%d.%s", objectsPath, idx, describeOutputCollection), "1"),
+		},
 		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, describeOutputPath),
 	}
 }
@@ -160,8 +179,10 @@ func NewDatasourceDescribeOutputAssert(name string, objectsPath string, idx int)
 // NewDatasourceParametersAssert creates a ResourceAssert for parameters assertions on a datasource at the given index.
 func NewDatasourceParametersAssert(name string, objectsPath string, idx int) *ResourceAssert {
 	return &ResourceAssert{
-		name:          name,
-		assertions:    make([]ResourceAssertion, 0),
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSet(fmt.Sprintf("%s.%d.%s", objectsPath, idx, parametersCollection), "1"),
+		},
 		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, parametersPath),
 	}
 }
