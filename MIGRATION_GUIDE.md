@@ -36,9 +36,12 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
-### *(new feature)* `snowflake_grant_ownership`: support for `AGENT` object type
+### *(new feature)* `snowflake_grant_ownership`: support for new object types
 
-The `snowflake_grant_ownership` resource now supports granting ownership on `AGENT` objects. This includes single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`).
+The `snowflake_grant_ownership` resource now supports granting ownership on the following additional object types:
+
+- `AGENT` — single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`)
+- `CORTEX SEARCH SERVICE` — single object grants, bulk grants (`ALL CORTEX SEARCH SERVICES IN ...`), and future grants (`FUTURE CORTEX SEARCH SERVICES IN ...`)
 
 No changes are required for existing configurations.
 
