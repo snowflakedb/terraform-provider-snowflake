@@ -36,6 +36,18 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
+### *(new feature)* New `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` account parameter
+
+The `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` parameter is now supported in the following resources:
+
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+
+No changes are required for existing configurations.
+
+References: [#4826](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4826)
+
 ### *(new feature)* `snowflake_grant_ownership`: support for new object types
 
 The `snowflake_grant_ownership` resource now supports granting ownership on the following additional object types:
@@ -44,6 +56,8 @@ The `snowflake_grant_ownership` resource now supports granting ownership on the 
 - `CORTEX SEARCH SERVICE` — single object grants, bulk grants (`ALL CORTEX SEARCH SERVICES IN ...`), and future grants (`FUTURE CORTEX SEARCH SERVICES IN ...`)
 
 No changes are required for existing configurations.
+
+References: [#4868](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4868)
 
 ### *(new feature)* New storage lifecycle policy resource and data source
 

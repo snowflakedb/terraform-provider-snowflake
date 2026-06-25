@@ -391,6 +391,13 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.EnableInternalStagesPrivatelink = b
+	case AccountParameterEnablePerAccountAppServicePrivatelinkUrl:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnablePerAccountAppServicePrivatelinkUrl = b
 	case AccountParameterEnablePersonalDatabase:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)

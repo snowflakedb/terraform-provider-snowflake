@@ -95,6 +95,8 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		opts.Unset.LegacyParameters.AccountParameters.EnableIdentifierFirstLogin = Pointer(true)
 	case AccountParameterEnableInternalStagesPrivatelink:
 		opts.Unset.LegacyParameters.AccountParameters.EnableInternalStagesPrivatelink = Pointer(true)
+	case AccountParameterEnablePerAccountAppServicePrivatelinkUrl:
+		opts.Unset.LegacyParameters.AccountParameters.EnablePerAccountAppServicePrivatelinkUrl = Pointer(true)
 	case AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository:
 		opts.Unset.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForImageRepository = Pointer(true)
 	case AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage:
@@ -484,6 +486,7 @@ const (
 	AccountParameterEnableEgressCostOptimizer                                AccountParameter = "ENABLE_EGRESS_COST_OPTIMIZER"
 	AccountParameterEnableIdentifierFirstLogin                               AccountParameter = "ENABLE_IDENTIFIER_FIRST_LOGIN"
 	AccountParameterEnableInternalStagesPrivatelink                          AccountParameter = "ENABLE_INTERNAL_STAGES_PRIVATELINK"
+	AccountParameterEnablePerAccountAppServicePrivatelinkUrl                 AccountParameter = "ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL"
 	AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository          AccountParameter = "ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"   // #nosec G101
 	AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage         AccountParameter = "ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE" // #nosec G101
 	AccountParameterEnableUnhandledExceptionsReporting                       AccountParameter = "ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"
@@ -615,6 +618,7 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterEnableEgressCostOptimizer,
 	AccountParameterEnableIdentifierFirstLogin,
 	AccountParameterEnableInternalStagesPrivatelink,
+	AccountParameterEnablePerAccountAppServicePrivatelinkUrl,
 	AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository,
 	AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage,
 	AccountParameterEnableUnhandledExceptionsReporting,
@@ -1227,6 +1231,7 @@ type LegacyAccountParameters struct {
 	EnableCortexAnalyst                                      *bool   `ddl:"parameter" sql:"ENABLE_CORTEX_ANALYST"`
 	EnableIdentifierFirstLogin                               *bool   `ddl:"parameter" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
 	EnableInternalStagesPrivatelink                          *bool   `ddl:"parameter" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
+	EnablePerAccountAppServicePrivatelinkUrl                 *bool   `ddl:"parameter" sql:"ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL"`
 	EnablePersonalDatabase                                   *bool   `ddl:"parameter" sql:"ENABLE_PERSONAL_DATABASE"`
 	EnableUnredactedQuerySyntaxError                         *bool   `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
 	EnableTriSecretAndRekeyOptOutForImageRepository          *bool   `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`
@@ -1329,6 +1334,7 @@ type AccountParameters struct {
 	EnableTagPropagationEventLogging                         *bool                       `ddl:"parameter" sql:"ENABLE_TAG_PROPAGATION_EVENT_LOGGING"`
 	EnableIdentifierFirstLogin                               *bool                       `ddl:"parameter" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
 	EnableInternalStagesPrivatelink                          *bool                       `ddl:"parameter" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
+	EnablePerAccountAppServicePrivatelinkUrl                 *bool                       `ddl:"parameter" sql:"ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL"`
 	EnableTriSecretAndRekeyOptOutForImageRepository          *bool                       `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`   // #nosec G101
 	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage         *bool                       `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE"` // #nosec G101
 	EnableUnhandledExceptionsReporting                       *bool                       `ddl:"parameter" sql:"ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"`
@@ -1432,6 +1438,7 @@ type LegacyAccountParametersUnset struct {
 	EnableCortexAnalyst                                      *bool `ddl:"keyword" sql:"ENABLE_CORTEX_ANALYST"`
 	EnableIdentifierFirstLogin                               *bool `ddl:"keyword" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
 	EnableInternalStagesPrivatelink                          *bool `ddl:"keyword" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
+	EnablePerAccountAppServicePrivatelinkUrl                 *bool `ddl:"keyword" sql:"ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL"`
 	EnablePersonalDatabase                                   *bool `ddl:"keyword" sql:"ENABLE_PERSONAL_DATABASE"`
 	EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement *bool `ddl:"keyword" sql:"ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT"`
 	EnableTagPropagationEventLogging                         *bool `ddl:"keyword" sql:"ENABLE_TAG_PROPAGATION_EVENT_LOGGING"`
@@ -1511,6 +1518,7 @@ type AccountParametersUnset struct {
 	EnableTagPropagationEventLogging                         *bool `ddl:"keyword" sql:"ENABLE_TAG_PROPAGATION_EVENT_LOGGING"`
 	EnableIdentifierFirstLogin                               *bool `ddl:"keyword" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
 	EnableInternalStagesPrivatelink                          *bool `ddl:"keyword" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
+	EnablePerAccountAppServicePrivatelinkUrl                 *bool `ddl:"keyword" sql:"ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL"`
 	EnableTriSecretAndRekeyOptOutForImageRepository          *bool `ddl:"keyword" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`   // #nosec G101
 	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage         *bool `ddl:"keyword" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE"` // #nosec G101
 	EnableUnhandledExceptionsReporting                       *bool `ddl:"keyword" sql:"ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"`
