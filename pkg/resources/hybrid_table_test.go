@@ -11,7 +11,7 @@ import (
 
 func Test_buildHybridAlterColumnTypeAction(t *testing.T) {
 	t.Run("valid type produces request with parsed type", func(t *testing.T) {
-		col := hybridTableColumn{
+		col := column{
 			name:     "AGE",
 			dataType: "NUMBER(20,5)",
 		}
@@ -26,7 +26,7 @@ func Test_buildHybridAlterColumnTypeAction(t *testing.T) {
 	})
 
 	t.Run("invalid type returns error mentioning column name", func(t *testing.T) {
-		col := hybridTableColumn{
+		col := column{
 			name:     "WAT",
 			dataType: "NOT_A_REAL_TYPE",
 		}
@@ -38,7 +38,7 @@ func Test_buildHybridAlterColumnTypeAction(t *testing.T) {
 	})
 
 	t.Run("empty type returns error", func(t *testing.T) {
-		col := hybridTableColumn{
+		col := column{
 			name:     "X",
 			dataType: "",
 		}
@@ -51,7 +51,7 @@ func Test_buildHybridAlterColumnTypeAction(t *testing.T) {
 
 func Test_buildHybridColumnSpec(t *testing.T) {
 	t.Run("plain column with no default", func(t *testing.T) {
-		col := hybridTableColumn{
+		col := column{
 			name:     "ID",
 			dataType: "NUMBER(38,0)",
 			nullable: true,
@@ -69,7 +69,7 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 
 	t.Run("column with constant default and collate", func(t *testing.T) {
 		def := "hello"
-		col := hybridTableColumn{
+		col := column{
 			name:     "NAME",
 			dataType: "VARCHAR(200)",
 			nullable: true,
@@ -89,7 +89,7 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 	})
 
 	t.Run("invalid data type returns error", func(t *testing.T) {
-		col := hybridTableColumn{
+		col := column{
 			name:     "BAD",
 			dataType: "NOT_A_REAL_TYPE",
 		}
@@ -102,7 +102,7 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 	t.Run("default block with multiple fields set returns error", func(t *testing.T) {
 		c := "x"
 		e := "f()"
-		col := hybridTableColumn{
+		col := column{
 			name:     "X",
 			dataType: "VARCHAR(10)",
 			nullable: true,

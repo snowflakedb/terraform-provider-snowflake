@@ -400,25 +400,7 @@ func indexHash(v any) int {
 // Column types and parsing helpers
 // ---------------------------------------------------------------------------
 
-type hybridTableColumn struct {
-	name     string
-	dataType string
-	nullable bool
-	_default *columnDefault // Reuses table.go's columnDefault type (same package)
-	collate  string
-	comment  string
-}
-
-type hybridTableColumns []hybridTableColumn
-
-type changedHybridColumn struct {
-	newColumn       hybridTableColumn
-	changedDataType bool
-	droppedDefault  bool
-	changedComment  bool
-}
-
-func parseHybridColumn(from any) hybridTableColumn {
+func parseHybridColumn(from any) column {
 	c := from.(map[string]any)
 	var cd *columnDefault
 
@@ -426,7 +408,7 @@ func parseHybridColumn(from any) hybridTableColumn {
 		cd = getHybridColumnDefault(defaultList[0].(map[string]any))
 	}
 
-	return hybridTableColumn{
+	return column{
 		name:     c["name"].(string),
 		dataType: c["type"].(string),
 		nullable: c["nullable"].(bool),
@@ -465,35 +447,23 @@ func getHybridColumnDefault(def map[string]any) *columnDefault {
 	return cd
 }
 
-func parseHybridColumns(from any) hybridTableColumns {
+func parseHybridColumns(from any) columns {
 	cols := from.([]any)
-	result := make(hybridTableColumns, len(cols))
+	result := make(columns, len(cols))
 	for i, c := range cols {
 		result[i] = parseHybridColumn(c)
 	}
 	return result
 }
 
-func (c hybridTableColumns) getNewIn(other hybridTableColumns) hybridTableColumns {
-	added := hybridTableColumns{}
-	for _, oldColumn := range c {
-		if _, err := collections.FindFirst(other, func(newColumn hybridTableColumn) bool {
-			return oldColumn.name == newColumn.name
-		}); err != nil {
-			added = append(added, oldColumn)
-		}
-	}
-	return added
-}
-
-func (c hybridTableColumns) getChangedColumnProperties(new hybridTableColumns) []changedHybridColumn {
-	changed := make([]changedHybridColumn, 0)
+func (c columns) getChangedHybridColumnProperties(new columns) []changedColumn {
+	changed := make([]changedColumn, 0)
 	for _, oldColumn := range c {
 		for _, newColumn := range new {
 			if oldColumn.name != newColumn.name {
 				continue
 			}
-			ch := changedHybridColumn{newColumn: newColumn}
+			ch := changedColumn{newColumn: newColumn}
 			if oldColumn.dataType != newColumn.dataType {
 				ch.changedDataType = true
 			}
@@ -515,8 +485,8 @@ func (c hybridTableColumns) getChangedColumnProperties(new hybridTableColumns) [
 	return changed
 }
 
-func (c hybridTableColumns) diffs(new hybridTableColumns) (removed hybridTableColumns, added hybridTableColumns, changed []changedHybridColumn) {
-	return c.getNewIn(new), new.getNewIn(c), c.getChangedColumnProperties(new)
+func hybridTableColumnDiffs(oldCols, newCols columns) (removed columns, added columns, changed []changedColumn) {
+	return oldCols.getNewIn(newCols), newCols.getNewIn(oldCols), oldCols.getChangedHybridColumnProperties(newCols)
 }
 
 // ---------------------------------------------------------------------------
@@ -537,7 +507,7 @@ type hybridColumnSpec struct {
 	comment      string                  // empty when not set
 }
 
-func buildHybridColumnSpec(col hybridTableColumn) (hybridColumnSpec, error) {
+func buildHybridColumnSpec(col column) (hybridColumnSpec, error) {
 	dataType, err := datatypes.ParseDataType(col.dataType)
 	if err != nil {
 		return hybridColumnSpec{}, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
@@ -595,7 +565,7 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 // InlineConstraint, but the resource forces recreation on nullable changes
 // (see forceNewIfColumnNullableChanged), so a nullable=false branch here
 // would be unreachable.
-func buildHybridAddColumnAction(col hybridTableColumn) (*sdk.HybridTableAddColumnActionRequest, error) {
+func buildHybridAddColumnAction(col column) (*sdk.HybridTableAddColumnActionRequest, error) {
 	spec, err := buildHybridColumnSpec(col)
 	if err != nil {
 		return nil, err
@@ -623,7 +593,7 @@ func buildHybridAddColumnAction(col hybridTableColumn) (*sdk.HybridTableAddColum
 // Using LegacyDataTypeFrom here would be a regression: it strips attributes,
 // silently degrading NUMBER(20,5) to NUMBER (which Snowflake interprets as
 // the default NUMBER(38,0)).
-func buildHybridAlterColumnTypeAction(col hybridTableColumn) (*sdk.HybridTableAlterColumnActionRequest, error) {
+func buildHybridAlterColumnTypeAction(col column) (*sdk.HybridTableAlterColumnActionRequest, error) {
 	dataType, err := datatypes.ParseDataType(col.dataType)
 	if err != nil {
 		return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
@@ -678,21 +648,21 @@ func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.Dat
 		return nil, fmt.Errorf("default block must have exactly one of %q, %q, or %q set", "constant", "expression", "sequence")
 	}
 
-	var expression string
 	switch {
 	case hasConstant:
 		if datatypes.IsTextDataType(dataType) {
-			expression = "'" + strings.ReplaceAll(constant, "'", "''") + "'"
-		} else {
-			expression = constant
+			val := "'" + strings.ReplaceAll(constant, "'", "''") + "'"
+			return &sdk.ColumnDefaultValue{Expression: &val}, nil
 		}
+		c := constant
+		return &sdk.ColumnDefaultValue{Expression: &c}, nil
 	case hasExpression:
-		expression = expr
+		return &sdk.ColumnDefaultValue{Expression: &expr}, nil
 	case hasSequence:
-		expression = fmt.Sprintf("%v.NEXTVAL", seq)
+		val := fmt.Sprintf("%v.NEXTVAL", seq)
+		return &sdk.ColumnDefaultValue{Expression: &val}, nil
 	}
-
-	return &sdk.ColumnDefaultValue{Expression: &expression}, nil
+	return nil, fmt.Errorf("unreachable: default block passed validation but no type matched")
 }
 
 func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLineConstraintRequest, error) {
@@ -944,7 +914,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 	// Handle column changes
 	if d.HasChange("column") {
 		oldRaw, newRaw := d.GetChange("column")
-		removed, added, changed := parseHybridColumns(oldRaw).diffs(parseHybridColumns(newRaw))
+		removed, added, changed := hybridTableColumnDiffs(parseHybridColumns(oldRaw), parseHybridColumns(newRaw))
 
 		// Drop removed columns
 		if len(removed) > 0 {
@@ -1290,7 +1260,7 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) ([]any, error) {
 // existing column. The SDK's HybridTableAlterColumnActionRequest has no WithCollate
 // method, so collation can only be set at column creation time.
 func forceNewIfColumnCollateChanged() schema.CustomizeDiffFunc {
-	return forceNewIfColumnFieldChanged("collate", func(o, n hybridTableColumn) bool {
+	return forceNewIfColumnFieldChanged("collate", func(o, n column) bool {
 		return o.collate != n.collate
 	})
 }
@@ -1302,7 +1272,7 @@ func forceNewIfColumnCollateChanged() schema.CustomizeDiffFunc {
 // spuriously trigger ForceNew when its nullable field initializes from the
 // schema default.
 func forceNewIfColumnNullableChanged() schema.CustomizeDiffFunc {
-	return forceNewIfColumnFieldChanged("nullable", func(o, n hybridTableColumn) bool {
+	return forceNewIfColumnFieldChanged("nullable", func(o, n column) bool {
 		return o.nullable != n.nullable
 	})
 }
@@ -1312,7 +1282,7 @@ func forceNewIfColumnNullableChanged() schema.CustomizeDiffFunc {
 // nested path (e.g. "column.0.nullable"), not on the parent "column" list — the
 // terraform-plugin-sdk/v2 ForceNew sets RequiresNew on the resolved leaf schema,
 // and a TypeList parent does not propagate that flag down to its diff entries.
-func forceNewIfColumnFieldChanged(fieldName string, changed func(old, new hybridTableColumn) bool) schema.CustomizeDiffFunc {
+func forceNewIfColumnFieldChanged(fieldName string, changed func(old, new column) bool) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 		if !diff.HasChange("column") {
 			return nil

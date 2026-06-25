@@ -205,7 +205,7 @@ func Test_forceNewIfColumnFieldChanged(t *testing.T) {
 	t.Run("no `column` change at all is a no-op", func(t *testing.T) {
 		// Equal old and new state for `column`; the changed predicate must never fire.
 		called := false
-		predicate := func(_, _ hybridTableColumn) bool {
+		predicate := func(_, _ column) bool {
 			called = true
 			return true
 		}
@@ -227,7 +227,7 @@ func Test_forceNewIfColumnFieldChanged(t *testing.T) {
 		newCfg := map[string]any{
 			"column": []any{col("ID", "NUMBER(38,0)", "false", "", "")},
 		}
-		diff := runColumnCustomDiff(t, forceNewIfColumnFieldChanged("nullable", func(_, _ hybridTableColumn) bool { return false }), old, newCfg)
+		diff := runColumnCustomDiff(t, forceNewIfColumnFieldChanged("nullable", func(_, _ column) bool { return false }), old, newCfg)
 		assert.False(t, diff.RequiresNew())
 	})
 
@@ -239,7 +239,7 @@ func Test_forceNewIfColumnFieldChanged(t *testing.T) {
 		newCfg := map[string]any{
 			"column": []any{col("ID", "NUMBER(38,0)", "true", "", "new")},
 		}
-		diff := runColumnCustomDiff(t, forceNewIfColumnFieldChanged("comment", func(o, n hybridTableColumn) bool {
+		diff := runColumnCustomDiff(t, forceNewIfColumnFieldChanged("comment", func(o, n column) bool {
 			return o.comment != n.comment
 		}), old, newCfg)
 		assert.True(t, diff.RequiresNew())
