@@ -6,7 +6,8 @@ var (
 	_ validatable = new(CreateUserOptions)
 	_ validatable = new(AlterUserOptions)
 	_ validatable = new(DropUserOptions)
-	_ validatable = new(describeUserOptions)
+	_ validatable = new(describeUserOptions)                                        // TODO [Step 3]: Replace with new(DescribeUserOptions).
+	_ validatable = new(showUserWorkloadIdentityAuthenticationMethodOptionsOptions) // TODO [Step 3]: Remove — replaced by generated validatable assertion.
 	_ validatable = new(ShowUserOptions)
 )
 
@@ -71,24 +72,9 @@ func (opts *DropUserOptions) validate() error {
 	return nil
 }
 
-func (opts *describeUserOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	if !ValidObjectIdentifier(opts.name) {
-		return errors.Join(ErrInvalidObjectIdentifier)
-	}
-	return nil
-}
+// describeUserOptions.validate() is in users_ext.go.
 
 func (opts *ShowUserOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	return nil
-}
-
-func (opts *showUserAuthenticationMethodOptions) validate() error {
 	if opts == nil {
 		return errors.Join(ErrNilOptions)
 	}
@@ -158,4 +144,23 @@ func (workloadIdentity *UserObjectWorkloadIdentityProperties) validate() error {
 		errs = append(errs, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
 	}
 	return errors.Join(errs...)
+}
+
+// TODO [Step 3]: Remove — replaced by generated DescribeUserOptions.validate() from describeUserQueryStruct().
+func (opts *describeUserOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		return errors.Join(ErrInvalidObjectIdentifier)
+	}
+	return nil
+}
+
+// TODO [Step 3]: Remove — replaced by generated ShowUserWorkloadIdentityAuthenticationMethodOptions.validate().
+func (opts *showUserWorkloadIdentityAuthenticationMethodOptionsOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	return nil
 }

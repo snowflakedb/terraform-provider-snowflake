@@ -50,12 +50,6 @@ func ToSecondaryRolesOption(s string) (SecondaryRolesOption, error) {
 	}
 }
 
-var ValidSecondaryRolesOptionsString = []string{
-	string(SecondaryRolesOptionDefault),
-	string(SecondaryRolesOptionNone),
-	string(SecondaryRolesOptionAll),
-}
-
 type UserType string
 
 const (
@@ -81,10 +75,4 @@ var AllUserTypes = []UserType{
 	UserTypePerson,
 	UserTypeService,
 	UserTypeLegacyService,
-}
-
-var AcceptableUserTypes = map[UserType][]string{
-	UserTypePerson:        {"", string(UserTypePerson)},
-	UserTypeService:       {string(UserTypeService)},
-	UserTypeLegacyService: {string(UserTypeLegacyService)},
 }

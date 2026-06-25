@@ -99,7 +99,7 @@ func (c *UserClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sd
 	t.Helper()
 	ctx := context.Background()
 
-	return c.client().Describe(ctx, id)
+	return c.client().DescribeDetails(ctx, id)
 }
 
 func (c *UserClient) Disable(t *testing.T, id sdk.AccountObjectIdentifier) {

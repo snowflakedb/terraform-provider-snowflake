@@ -286,7 +286,7 @@ func ensureUserAlterPrivileges(ctx context.Context, users []string, meta interfa
 	client := meta.(*provider.Context).Client
 
 	for _, user := range users {
-		_, err := client.Users.Describe(ctx, sdk.NewAccountObjectIdentifier(user))
+		_, err := client.Users.DescribeDetails(ctx, sdk.NewAccountObjectIdentifier(user))
 		if err != nil {
 			return fmt.Errorf("error describing user %v err = %w", user, err)
 		}

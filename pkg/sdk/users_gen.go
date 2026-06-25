@@ -11,7 +11,8 @@ type Users interface {
 	Alter(ctx context.Context, id AccountObjectIdentifier, opts *AlterUserOptions) error
 	Drop(ctx context.Context, id AccountObjectIdentifier, opts *DropUserOptions) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
-	Describe(ctx context.Context, id AccountObjectIdentifier) (*UserDetails, error)
+	Describe(ctx context.Context, id AccountObjectIdentifier) ([]UserProperty, error)
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*UserDetails, error)
 	Show(ctx context.Context, opts *ShowUserOptions) ([]User, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*User, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*User, error)
@@ -25,6 +26,7 @@ type Users interface {
 	ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
 	ShowProgrammaticAccessTokenByName(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 	ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
+	// ShowUserWorkloadIdentityAuthenticationMethodOptions: pre-generation signature. Step 3 replaces this with a Request-based signature generated from wifMethodsPairs.
 	ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethod, error)
 }
 
@@ -218,52 +220,6 @@ type DropUserOptions struct {
 	name     AccountObjectIdentifier `ddl:"identifier"`
 }
 
-// describeUserOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-user.
-type describeUserOptions struct {
-	describe bool                    `ddl:"static" sql:"DESCRIBE"`
-	user     bool                    `ddl:"static" sql:"USER"`
-	name     AccountObjectIdentifier `ddl:"identifier"`
-}
-
-// UserDetails contains details about a user.
-type UserDetails struct {
-	Name                                *StringProperty
-	Comment                             *StringProperty
-	DisplayName                         *StringProperty
-	Type                                *StringProperty
-	LoginName                           *StringProperty
-	FirstName                           *StringProperty
-	MiddleName                          *StringProperty
-	LastName                            *StringProperty
-	Email                               *StringProperty
-	Password                            *StringProperty
-	MustChangePassword                  *BoolProperty
-	Disabled                            *BoolProperty
-	SnowflakeLock                       *BoolProperty
-	SnowflakeSupport                    *BoolProperty
-	DaysToExpiry                        *FloatProperty
-	MinsToUnlock                        *IntProperty
-	DefaultWarehouse                    *StringProperty
-	DefaultNamespace                    *StringProperty
-	DefaultRole                         *StringProperty
-	DefaultSecondaryRoles               *StringProperty
-	ExtAuthnDuo                         *BoolProperty
-	ExtAuthnUid                         *StringProperty
-	MinsToBypassMfa                     *IntProperty
-	MinsToBypassNetworkPolicy           *IntProperty
-	RsaPublicKey                        *StringProperty
-	RsaPublicKeyFp                      *StringProperty
-	RsaPublicKeyLastSetTime             *StringProperty
-	RsaPublicKey2                       *StringProperty
-	RsaPublicKey2Fp                     *StringProperty
-	RsaPublicKey2LastSetTime            *StringProperty
-	PasswordLastSetTime                 *StringProperty
-	CustomLandingPageUrl                *StringProperty
-	CustomLandingPageUrlFlushNextUiLoad *BoolProperty
-	HasMfa                              *BoolProperty
-	HasWorkloadIdentity                 *BoolProperty
-}
-
 // ShowUserOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-users.
 type ShowUserOptions struct {
 	show       bool    `ddl:"static" sql:"SHOW"`
@@ -315,6 +271,84 @@ func (v *User) ObjectType() ObjectType {
 	return ObjectTypeUser
 }
 
+type describeUserPropertyRow struct {
+	Property     string `db:"property"`
+	Value        string `db:"value"`
+	DefaultValue string `db:"default"`
+	Description  string `db:"description"`
+}
+
+type UserDetails struct {
+	Name                                *StringProperty
+	Comment                             *StringProperty
+	DisplayName                         *StringProperty
+	Type                                *StringProperty
+	LoginName                           *StringProperty
+	FirstName                           *StringProperty
+	MiddleName                          *StringProperty
+	LastName                            *StringProperty
+	Email                               *StringProperty
+	Password                            *StringProperty
+	MustChangePassword                  *BoolProperty
+	Disabled                            *BoolProperty
+	SnowflakeLock                       *BoolProperty
+	SnowflakeSupport                    *BoolProperty
+	DaysToExpiry                        *FloatProperty
+	MinsToUnlock                        *IntProperty
+	DefaultWarehouse                    *StringProperty
+	DefaultNamespace                    *StringProperty
+	DefaultRole                         *StringProperty
+	DefaultSecondaryRoles               *StringProperty
+	ExtAuthnDuo                         *BoolProperty
+	ExtAuthnUid                         *StringProperty
+	MinsToBypassMfa                     *IntProperty
+	MinsToBypassNetworkPolicy           *IntProperty
+	RsaPublicKey                        *StringProperty
+	RsaPublicKeyFp                      *StringProperty
+	RsaPublicKeyLastSetTime             *StringProperty
+	RsaPublicKey2                       *StringProperty
+	RsaPublicKey2Fp                     *StringProperty
+	RsaPublicKey2LastSetTime            *StringProperty
+	PasswordLastSetTime                 *StringProperty
+	CustomLandingPageUrl                *StringProperty
+	CustomLandingPageUrlFlushNextUiLoad *BoolProperty
+	HasMfa                              *BoolProperty
+	HasWorkloadIdentity                 *BoolProperty
+}
+
+type describeUserOptions struct {
+	describe bool                    `ddl:"static" sql:"DESCRIBE"`
+	user     bool                    `ddl:"static" sql:"USER"`
+	name     AccountObjectIdentifier `ddl:"identifier"`
+}
+
+type showUserWorkloadIdentityAuthenticationMethodOptionsOptions struct {
+	show                            bool                    `ddl:"static" sql:"SHOW"`
+	userWorkloadIdentityAuthMethods bool                    `ddl:"static" sql:"USER WORKLOAD IDENTITY AUTHENTICATION METHODS"`
+	ForUser                         AccountObjectIdentifier `ddl:"identifier,no_equals,no_quotes" sql:"FOR USER"`
+}
+
+type userWorkloadIdentityAuthenticationMethodsDBRow struct {
+	Name           string         `db:"name"`
+	Type           string         `db:"type"`
+	Comment        sql.NullString `db:"comment"`
+	LastUsed       sql.NullTime   `db:"last_used"`
+	CreatedOn      time.Time      `db:"created_on"`
+	AdditionalInfo sql.NullString `db:"additional_info"`
+}
+
+type UserWorkloadIdentityAuthenticationMethod struct {
+	Name                string
+	Type                WIFType
+	Comment             string
+	LastUsed            time.Time
+	CreatedOn           time.Time
+	AwsAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo
+	AzureAdditionalInfo *UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo
+	GcpAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo
+	OidcAdditionalInfo  *UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo
+}
+
 type userDBRow struct {
 	Name                  string         `db:"name"`
 	CreatedOn             time.Time      `db:"created_on"`
@@ -345,58 +379,4 @@ type userDBRow struct {
 	Type                  sql.NullString `db:"type"`
 	HasMfa                sql.NullBool   `db:"has_mfa"`
 	HasWorkloadIdentity   sql.NullBool   `db:"has_workload_identity"`
-}
-
-// showUserAuthenticationMethodOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-user-workload-identity-authentication-methods
-type showUserAuthenticationMethodOptions struct {
-	show                            bool                    `ddl:"static" sql:"SHOW"`
-	userWorkloadIdentityAuthMethods bool                    `ddl:"static" sql:"USER WORKLOAD IDENTITY AUTHENTICATION METHODS"`
-	ForUser                         AccountObjectIdentifier `ddl:"identifier,no_equals,no_quotes" sql:"FOR USER"`
-}
-
-type userWorkloadIdentityAuthenticationMethodsDBRow struct {
-	Name           string         `db:"name"`
-	Type           string         `db:"type"`
-	Comment        sql.NullString `db:"comment"`
-	LastUsed       sql.NullTime   `db:"last_used"`
-	CreatedOn      time.Time      `db:"created_on"`
-	AdditionalInfo sql.NullString `db:"additional_info"`
-}
-
-type UserWorkloadIdentityAuthenticationMethod struct {
-	Name                string
-	Type                WIFType
-	Comment             string
-	LastUsed            time.Time
-	CreatedOn           time.Time
-	AwsAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo
-	AzureAdditionalInfo *UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo
-	GcpAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo
-	OidcAdditionalInfo  *UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo
-}
-
-func (v *UserWorkloadIdentityAuthenticationMethod) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.Name)
-}
-
-type UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo struct {
-	IamRole      string `json:"iamRole"`
-	Type         string `json:"type"`
-	AwsAccount   string `json:"awsAccount"`
-	AwsPartition string `json:"awsPartition"`
-}
-
-type UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo struct {
-	Issuer  string `json:"issuer"`
-	Subject string `json:"subject"`
-}
-
-type UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo struct {
-	Subject string `json:"subject"`
-}
-
-type UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo struct {
-	Issuer       string   `json:"issuer"`
-	Subject      string   `json:"subject"`
-	AudienceList []string `json:"audienceList"`
 }

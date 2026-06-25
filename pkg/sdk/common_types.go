@@ -172,14 +172,15 @@ type FloatProperty struct {
 	Description  string
 }
 
-type propertyRow struct {
+// TODO [Step 3]: Remove — generated from describeUserPropertyPairs in users_def.go; methods below stay.
+type UserProperty struct {
 	Property     string `db:"property"`
 	Value        string `db:"value"`
 	DefaultValue string `db:"default"`
 	Description  string `db:"description"`
 }
 
-func (row *propertyRow) toStringProperty() *StringProperty {
+func (row *UserProperty) toStringProperty() *StringProperty {
 	if row.Value == "null" {
 		row.Value = ""
 	}
@@ -193,7 +194,7 @@ func (row *propertyRow) toStringProperty() *StringProperty {
 	}
 }
 
-func (row *propertyRow) toIntProperty() *IntProperty {
+func (row *UserProperty) toIntProperty() *IntProperty {
 	var value *int
 	var defaultValue *int
 	v, err := strconv.Atoi(row.Value)
@@ -215,7 +216,7 @@ func (row *propertyRow) toIntProperty() *IntProperty {
 	}
 }
 
-func (row *propertyRow) toBoolProperty() *BoolProperty {
+func (row *UserProperty) toBoolProperty() *BoolProperty {
 	var value bool
 	if row.Value != "" && row.Value != "null" {
 		value = ToBool(row.Value)
@@ -235,7 +236,7 @@ func (row *propertyRow) toBoolProperty() *BoolProperty {
 	}
 }
 
-func (row *propertyRow) toFloatProperty() *FloatProperty {
+func (row *UserProperty) toFloatProperty() *FloatProperty {
 	var value *float64
 	var defaultValue *float64
 	v, err := strconv.ParseFloat(row.Value, 64)

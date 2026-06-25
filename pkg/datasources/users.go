@@ -137,7 +137,7 @@ func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		user := user
 		var userDescription []map[string]any
 		if d.Get("with_describe").(bool) {
-			describeResult, err := client.Users.Describe(ctx, user.ID())
+			describeResult, err := client.Users.DescribeDetails(ctx, user.ID())
 			if err != nil {
 				return diag.FromErr(err)
 			}

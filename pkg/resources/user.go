@@ -271,7 +271,7 @@ func GetImportUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			return nil, err
 		}
 
-		userDetails, err := client.Users.Describe(ctx, id)
+		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		if err != nil {
 			return nil, err
 		}
@@ -460,7 +460,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			return diag.FromErr(err)
 		}
 
-		userDetails, err := client.Users.Describe(ctx, id)
+		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 				log.Printf("[DEBUG] user (%s) not found or we are not authorized. Err: %s", d.Id(), err)
