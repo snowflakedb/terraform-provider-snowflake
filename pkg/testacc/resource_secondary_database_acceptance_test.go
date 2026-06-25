@@ -5,7 +5,6 @@ package testacc
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -22,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
@@ -30,19 +28,18 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	primaryDatabase, externalPrimaryId, _ := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
+	_, externalPrimaryId, primaryDatabaseCleanup := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
 		testClient().Account.GetAccountIdentifier(t),
 	})
-	t.Cleanup(func() {
-		// TODO(SNOW-1562172): Create a better solution for this type of situations
-		require.Eventually(t, func() bool { return secondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
-	})
+	t.Cleanup(primaryDatabaseCleanup)
 
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
 
 	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
+
+	testClient().Database.WaitForReplicationToTakeEffect(t, externalPrimaryId)
 
 	basic := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName())
 
@@ -251,19 +248,18 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	primaryDatabase, externalPrimaryId, _ := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
+	_, externalPrimaryId, primaryDatabaseCleanup := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
 		testClient().Account.GetAccountIdentifier(t),
 	})
-	t.Cleanup(func() {
-		// TODO(SNOW-1562172): Create a better solution for this type of situations
-		require.Eventually(t, func() bool { return secondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
-	})
+	t.Cleanup(primaryDatabaseCleanup)
 
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
 
 	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
+
+	testClient().Database.WaitForReplicationToTakeEffect(t, externalPrimaryId)
 
 	completeModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName()).
 		WithIsTransient(true).
@@ -362,13 +358,12 @@ func TestAcc_CreateSecondaryDatabase_DataRetentionTimeInDays(t *testing.T) {
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	primaryDatabase, externalPrimaryId, _ := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
+	_, externalPrimaryId, primaryDatabaseCleanup := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
 		sdk.NewAccountIdentifierFromAccountLocator(testClient().GetAccountLocator()),
 	})
-	t.Cleanup(func() {
-		// TODO(SNOW-1562172): Create a better solution for this type of situations
-		require.Eventually(t, func() bool { return secondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
-	})
+	t.Cleanup(primaryDatabaseCleanup)
+
+	testClient().Database.WaitForReplicationToTakeEffect(t, externalPrimaryId)
 
 	accountDataRetentionTimeInDays := testClient().Parameter.ShowAccountParameter(t, sdk.AccountParameterDataRetentionTimeInDays)
 
@@ -465,13 +460,12 @@ func TestAcc_SecondaryDatabase_migrateFromV0941_ensureSmoothUpgradeWithNewResour
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
-	primaryDatabase, externalPrimaryId, _ := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
+	_, externalPrimaryId, primaryDatabaseCleanup := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
 		sdk.NewAccountIdentifierFromAccountLocator(testClient().GetAccountLocator()),
 	})
-	t.Cleanup(func() {
-		// TODO(SNOW-1562172): Create a better solution for this type of situations
-		require.Eventually(t, func() bool { return secondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
-	})
+	t.Cleanup(primaryDatabaseCleanup)
+
+	testClient().Database.WaitForReplicationToTakeEffect(t, externalPrimaryId)
 
 	secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName())
 
@@ -506,14 +500,13 @@ func TestAcc_SecondaryDatabase_IdentifierQuotingDiffSuppression(t *testing.T) {
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
-	primaryDatabase, externalPrimaryId, _ := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
+	_, externalPrimaryId, primaryDatabaseCleanup := secondaryTestClient().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
 		sdk.NewAccountIdentifierFromAccountLocator(testClient().GetAccountLocator()),
 	})
 	unquotedExternalPrimaryId := fmt.Sprintf("%s.%s.%s", externalPrimaryId.AccountIdentifier().OrganizationName(), externalPrimaryId.AccountIdentifier().AccountName(), externalPrimaryId.Name())
-	t.Cleanup(func() {
-		// TODO(SNOW-1562172): Create a better solution for this type of situations
-		require.Eventually(t, func() bool { return secondaryTestClient().Database.DropDatabase(t, primaryDatabase.ID()) == nil }, time.Second*5, time.Second)
-	})
+	t.Cleanup(primaryDatabaseCleanup)
+
+	testClient().Database.WaitForReplicationToTakeEffect(t, externalPrimaryId)
 
 	secondaryDatabaseModel := model.SecondaryDatabase("test", quotedId, unquotedExternalPrimaryId)
 
