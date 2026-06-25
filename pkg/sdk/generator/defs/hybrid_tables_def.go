@@ -324,5 +324,47 @@ var hybridTablesDef = g.NewInterface(
 		OptionalTableIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
+).CustomShowOperationWithPairedStructs(
+	"ShowPrimaryKeys",
+	g.ShowMappingKindSlice,
+	"https://docs.snowflake.com/en/sql-reference/sql/show-primary-keys",
+	g.StructPair("tablePrimaryKeyRow", "TablePrimaryKey").
+		Text("constraint_name").
+		Text("column_name").
+		Number("key_sequence"),
+	g.NewQueryStruct("ShowPrimaryKeysHybridTable").
+		Show().SQL("PRIMARY KEYS").SQL("IN TABLE").
+		Name().
+		WithValidation(g.ValidIdentifier, "name"),
+).CustomShowOperationWithPairedStructs(
+	"ShowUniqueKeys",
+	g.ShowMappingKindSlice,
+	"https://docs.snowflake.com/en/sql-reference/sql/show-unique-keys",
+	g.StructPair("tableUniqueKeyRow", "TableUniqueKey").
+		Text("constraint_name").
+		Text("column_name").
+		Number("key_sequence"),
+	g.NewQueryStruct("ShowUniqueKeysHybridTable").
+		Show().SQL("UNIQUE KEYS").SQL("IN TABLE").
+		Name().
+		WithValidation(g.ValidIdentifier, "name"),
+).CustomShowOperationWithPairedStructs(
+	"ShowImportedKeys",
+	g.ShowMappingKindSlice,
+	"https://docs.snowflake.com/en/sql-reference/sql/show-imported-keys",
+	g.StructPair("tableImportedKeyRow", "TableImportedKey").
+		Text("fk_name").
+		Text("fk_column_name").
+		Number("key_sequence").
+		Text("pk_database_name").
+		Text("pk_schema_name").
+		Text("pk_table_name").
+		Text("pk_column_name").
+		Text("delete_rule").
+		Text("update_rule"),
+	g.NewQueryStruct("ShowImportedKeysHybridTable").
+		Show().SQL("IMPORTED KEYS").SQL("IN TABLE").
+		Name().
+		WithValidation(g.ValidIdentifier, "name"),
 ).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).
 	WithCustomInterfaceMethod("GetConstraints", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "[]HybridTableConstraint", "error")
