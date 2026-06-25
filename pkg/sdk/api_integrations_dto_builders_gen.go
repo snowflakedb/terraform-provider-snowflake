@@ -162,14 +162,12 @@ func NewGithubAppUserAuthenticationRequest() *GithubAppUserAuthenticationRequest
 	return &s
 }
 
-func NewGitHttpsApiOAuth2ParamsRequest() *GitHttpsApiOAuth2ParamsRequest {
+func NewGitHttpsApiOAuth2ParamsRequest(
+	apiUserAuthentication OAuth2GitUserAuthenticationRequest,
+) *GitHttpsApiOAuth2ParamsRequest {
 	s := GitHttpsApiOAuth2ParamsRequest{}
-	return &s
-}
-
-func (s *GitHttpsApiOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2GitUserAuthenticationRequest) *GitHttpsApiOAuth2ParamsRequest {
 	s.ApiUserAuthentication = apiUserAuthentication
-	return s
+	return &s
 }
 
 func NewOAuth2GitUserAuthenticationRequest(
@@ -224,14 +222,12 @@ func (s *GitHttpsApiPrivateLinkParamsRequest) WithTlsTrustedCertificates(tlsTrus
 	return s
 }
 
-func NewExternalMcpOAuth2ParamsRequest() *ExternalMcpOAuth2ParamsRequest {
+func NewExternalMcpOAuth2ParamsRequest(
+	apiUserAuthentication OAuth2McpUserAuthenticationRequest,
+) *ExternalMcpOAuth2ParamsRequest {
 	s := ExternalMcpOAuth2ParamsRequest{}
-	return &s
-}
-
-func (s *ExternalMcpOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2McpUserAuthenticationRequest) *ExternalMcpOAuth2ParamsRequest {
 	s.ApiUserAuthentication = apiUserAuthentication
-	return s
+	return &s
 }
 
 func NewOAuth2McpUserAuthenticationRequest(
@@ -263,14 +259,12 @@ func (s *OAuth2McpUserAuthenticationRequest) WithOauthRefreshTokenValidity(oauth
 	return s
 }
 
-func NewExternalMcpDynamicClientParamsRequest() *ExternalMcpDynamicClientParamsRequest {
+func NewExternalMcpDynamicClientParamsRequest(
+	apiUserAuthentication DynamicClientMcpUserAuthenticationRequest,
+) *ExternalMcpDynamicClientParamsRequest {
 	s := ExternalMcpDynamicClientParamsRequest{}
-	return &s
-}
-
-func (s *ExternalMcpDynamicClientParamsRequest) WithApiUserAuthentication(apiUserAuthentication DynamicClientMcpUserAuthenticationRequest) *ExternalMcpDynamicClientParamsRequest {
 	s.ApiUserAuthentication = apiUserAuthentication
-	return s
+	return &s
 }
 
 func NewDynamicClientMcpUserAuthenticationRequest(
@@ -442,14 +436,12 @@ func (s *SetGitHttpsApiPrivateLinkParamsRequest) WithTlsTrustedCertificates(tlsT
 	return s
 }
 
-func NewSetExternalMcpOAuth2ParamsRequest() *SetExternalMcpOAuth2ParamsRequest {
+func NewSetExternalMcpOAuth2ParamsRequest(
+	apiUserAuthentication OAuth2McpUserAuthenticationRequest,
+) *SetExternalMcpOAuth2ParamsRequest {
 	s := SetExternalMcpOAuth2ParamsRequest{}
-	return &s
-}
-
-func (s *SetExternalMcpOAuth2ParamsRequest) WithApiUserAuthentication(apiUserAuthentication OAuth2McpUserAuthenticationRequest) *SetExternalMcpOAuth2ParamsRequest {
 	s.ApiUserAuthentication = apiUserAuthentication
-	return s
+	return &s
 }
 
 func NewApiIntegrationUnsetRequest() *ApiIntegrationUnsetRequest {

@@ -8,6 +8,7 @@ import (
 )
 
 func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationAllowedAuthenticationSecretsValue]{"ApiIntegrationAllowedAuthenticationSecretsValue", AllApiIntegrationAllowedAuthenticationSecretsValues, ToApiIntegrationAllowedAuthenticationSecretsValue})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationAwsApiProviderType]{"ApiIntegrationAwsApiProviderType", AllApiIntegrationAwsApiProviderTypes, ToApiIntegrationAwsApiProviderType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationOauthClientAuthMethod]{"ApiIntegrationOauthClientAuthMethod", AllApiIntegrationOauthClientAuthMethods, ToApiIntegrationOauthClientAuthMethod})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ApiIntegrationOauthAllowedScope]{"ApiIntegrationOauthAllowedScope", AllApiIntegrationOauthAllowedScopes, ToApiIntegrationOauthAllowedScope})

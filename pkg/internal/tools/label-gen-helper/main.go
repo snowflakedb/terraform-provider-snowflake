@@ -38,6 +38,8 @@ var manualShortLabels = map[string]string{
 	"snowflake_api_authentication_integration_with_client_credentials":       "api_authn_integration_client_credentials",
 	"snowflake_api_authentication_integration_with_jwt_bearer":               "api_authn_integration_jwt_bearer",
 	"snowflake_oauth_integration_for_partner_applications":                   "oauth_integration_for_partner_application",
+	"snowflake_api_integration_external_mcp_dynamic_client":                  "api_integration_ext_mcp_dynamic_client",
+	"snowflake_api_integration_git_repository_private_link":                  "api_integration_git_repo_private_link",
 } // #nosec G101
 
 // categoryLabels are the static category labels. They are not derived from the provider; edit this

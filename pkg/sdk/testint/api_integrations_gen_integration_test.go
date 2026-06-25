@@ -379,8 +379,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
 			WithGitHttpsApiOAuth2ProviderParams(
-				*sdk.NewGitHttpsApiOAuth2ParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewGitHttpsApiOAuth2ParamsRequest(*auth),
 			),
 		)
 		require.NoError(t, err)
@@ -419,8 +418,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
 			WithGitHttpsApiOAuth2ProviderParams(
-				*sdk.NewGitHttpsApiOAuth2ParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewGitHttpsApiOAuth2ParamsRequest(*auth),
 			).
 			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitOtherPrefix}}).
 			WithComment("git oauth2 comment"),
@@ -534,8 +532,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
 			WithExternalMcpOAuth2ProviderParams(
-				*sdk.NewExternalMcpOAuth2ParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewExternalMcpOAuth2ParamsRequest(*auth),
 			),
 		)
 		require.NoError(t, err)
@@ -574,8 +571,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
 			WithExternalMcpOAuth2ProviderParams(
-				*sdk.NewExternalMcpOAuth2ParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewExternalMcpOAuth2ParamsRequest(*auth),
 			).
 			WithComment("mcp oauth2 comment"),
 		)
@@ -603,8 +599,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp.atlassian.com/v1/mcp"}}, true).
 			WithExternalMcpDynamicClientProviderParams(
-				*sdk.NewExternalMcpDynamicClientParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewExternalMcpDynamicClientParamsRequest(*auth),
 			),
 		)
 		require.NoError(t, err)
@@ -840,8 +835,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
 				WithExternalMcpOAuth2Params(
-					*sdk.NewSetExternalMcpOAuth2ParamsRequest().
-						WithApiUserAuthentication(*newAuth),
+					*sdk.NewSetExternalMcpOAuth2ParamsRequest(*newAuth),
 				).
 				WithEnabled(true).
 				WithApiAllowedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: mcpOtherPrefix}}).
@@ -1042,8 +1036,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		req := sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
 			WithExternalMcpDynamicClientProviderParams(
-				*sdk.NewExternalMcpDynamicClientParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewExternalMcpDynamicClientParamsRequest(*auth),
 			).
 			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp-blocked.example.com/"}})
 
@@ -1069,7 +1062,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			WithOauthRefreshTokenValidity(refreshTokenValidity)
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
 			[]sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
-			WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*auth)),
+			WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest(*auth)),
 		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
@@ -1085,7 +1078,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		authRequiredOnly := sdk.NewOAuth2McpUserAuthenticationRequest("oauth-client-id-123", "oauth-client-secret-456", oauthTokenEndpoint, oauthAuthorizationEndpoint)
 		err = client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
-				WithExternalMcpOAuth2Params(*sdk.NewSetExternalMcpOAuth2ParamsRequest().WithApiUserAuthentication(*authRequiredOnly))),
+				WithExternalMcpOAuth2Params(*sdk.NewSetExternalMcpOAuth2ParamsRequest(*authRequiredOnly))),
 		)
 		require.NoError(t, err)
 

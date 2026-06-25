@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -59,10 +60,10 @@ func ApiIntegrationAzureApiManagement() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationAzureApiManagement, CreateApiIntegrationAzureApiManagement),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationAzureApiManagement, ReadApiIntegrationAzureApiManagement),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationAzureApiManagement, UpdateApiIntegrationAzureApiManagement),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationAzureApiManagement, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationAzureApiManagementResource), TrackingCreateWrapper(resources.ApiIntegrationAzureApiManagement, CreateApiIntegrationAzureApiManagement)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationAzureApiManagementResource), TrackingReadWrapper(resources.ApiIntegrationAzureApiManagement, ReadApiIntegrationAzureApiManagement)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationAzureApiManagementResource), TrackingUpdateWrapper(resources.ApiIntegrationAzureApiManagement, UpdateApiIntegrationAzureApiManagement)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationAzureApiManagementResource), TrackingDeleteWrapper(resources.ApiIntegrationAzureApiManagement, deleteFunc)),
 		Description:   "Resource used to manage API integration Azure API Management objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationAzureApiManagementSchema,
@@ -78,29 +79,19 @@ func ApiIntegrationAzureApiManagement() *schema.Resource {
 }
 
 func ImportApiIntegrationAzureApiManagement(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	details, err := client.ApiIntegrations.DescribeAzureDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	normalizedProvider, err := sdk.ToApiIntegrationAzureApiProviderType(details.ApiProvider)
-	if err != nil || normalizedProvider != sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement {
-		return nil, fmt.Errorf("api integration %s has api_provider %s, not compatible with snowflake_api_integration_azure_api_management (expected %s); use the appropriate resource type",
-			id.FullyQualifiedName(), details.ApiProvider, sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement)
-	}
-
-	if err = d.Set("name", id.Name()); err != nil {
-		return nil, err
-	}
-
-	return []*schema.ResourceData{d}, nil
+	return importApiIntegrationWithDetails(ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAzureDetails, error) {
+			return client.ApiIntegrations.DescribeAzureDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationAzureDetails, id sdk.AccountObjectIdentifier) error {
+			normalizedProvider, err := sdk.ToApiIntegrationAzureApiProviderType(details.ApiProvider)
+			if err != nil || normalizedProvider != sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement {
+				return fmt.Errorf("api integration %s has api_provider %s, not compatible with snowflake_api_integration_azure_api_management (expected %s); use the appropriate resource type",
+					id.FullyQualifiedName(), details.ApiProvider, sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement)
+			}
+			return nil
+		},
+	)
 }
 
 func CreateApiIntegrationAzureApiManagement(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

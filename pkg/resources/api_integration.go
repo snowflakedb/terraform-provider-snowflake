@@ -132,10 +132,11 @@ func APIIntegration() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingCreateWrapper(resources.ApiIntegration, CreateAPIIntegration)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingReadWrapper(resources.ApiIntegration, ReadAPIIntegration)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingUpdateWrapper(resources.ApiIntegration, UpdateAPIIntegration)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingDeleteWrapper(resources.ApiIntegration, deleteFunc)),
+		CreateContext:      PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingCreateWrapper(resources.ApiIntegration, CreateAPIIntegration)),
+		ReadContext:        PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingReadWrapper(resources.ApiIntegration, ReadAPIIntegration)),
+		UpdateContext:      PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingUpdateWrapper(resources.ApiIntegration, UpdateAPIIntegration)),
+		DeleteContext:      PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationResource), TrackingDeleteWrapper(resources.ApiIntegration, deleteFunc)),
+		DeprecationMessage: deprecatedResourceDescription("snowflake_api_integration_amazon_api_gateway", "snowflake_api_integration_azure_api_management", "snowflake_api_integration_google_cloud_api_gateway", "snowflake_api_integration_git_repository_github_app", "snowflake_api_integration_git_repository_oauth2", "snowflake_api_integration_git_repository_token", "snowflake_api_integration_git_repository_private_link", "snowflake_api_integration_external_mcp_oauth2", "snowflake_api_integration_external_mcp_dynamic_client"),
 
 		Schema: apiIntegrationSchema,
 		Importer: &schema.ResourceImporter{
