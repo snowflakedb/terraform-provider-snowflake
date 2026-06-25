@@ -108,7 +108,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoNameMapping().
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatus("").
+			HasNoAutoRefreshStatus().
 			HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
 				{
 					SpecId: 0,
@@ -165,7 +165,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoNameMapping().
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatus("").
+			HasNoAutoRefreshStatus().
 			HasCurrentPartitionSpecId(0).
 			HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
 				{
@@ -543,7 +543,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoNameMapping().
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatus(""),
+			HasNoAutoRefreshStatus(),
 		)
 
 		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
@@ -620,7 +620,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoNameMapping().
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatus(""),
+			HasNoAutoRefreshStatus(),
 		)
 
 		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
@@ -694,7 +694,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoNameMapping().
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatus(""),
+			HasNoAutoRefreshStatus(),
 		)
 
 		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
@@ -724,7 +724,7 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithExternalVolume(externalVolumeId).
 			WithCatalog(catalogForDeltaLakeId).
 			WithReplaceInvalidCharacters(true).
-			WithAutoRefresh(false).
+			WithAutoRefresh(true).
 			WithComment("integration test").
 			WithContact([]sdk.TableContact{
 				{Purpose: "SUPPORT", Contact: contactId},
@@ -747,7 +747,11 @@ func TestInt_IcebergTables(t *testing.T) {
 			HasNoNameMapping().
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatus(""),
+			HasAutoRefreshStatus(sdk.IcebergTableAutoRefreshStatus{
+				CurrentSnapshotId:    0,
+				PendingSnapshotCount: 0,
+				ExecutionState:       "RUNNING",
+			}),
 		)
 
 		assertThatObject(t, objectparametersassert.IcebergTableParameters(t, id).
@@ -1538,7 +1542,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.IcebergTable(t, id).
-			HasAutoRefreshStatus(""),
+			HasNoAutoRefreshStatus(),
 		)
 	})
 

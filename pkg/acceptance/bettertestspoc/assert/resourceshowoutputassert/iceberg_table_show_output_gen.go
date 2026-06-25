@@ -118,11 +118,6 @@ func (i *IcebergTableShowOutputAssert) HasCatalogSyncName(expected string) *Iceb
 	return i
 }
 
-func (i *IcebergTableShowOutputAssert) HasAutoRefreshStatus(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("auto_refresh_status", expected))
-	return i
-}
-
 func (i *IcebergTableShowOutputAssert) HasPartitionSpecs(expected string) *IcebergTableShowOutputAssert {
 	i.AddAssertion(assert.ResourceShowOutputValueSet("partition_specs", expected))
 	return i

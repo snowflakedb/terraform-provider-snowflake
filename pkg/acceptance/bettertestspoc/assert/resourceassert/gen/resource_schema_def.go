@@ -186,6 +186,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.HybridTable().Schema,
 	},
 	{
+		name:   "IcebergTableFromDeltaFiles",
+		schema: resources.IcebergTableFromDeltaFiles().Schema,
+	},
+	{
 		name:   "IcebergTableFromFiles",
 		schema: resources.IcebergTableFromFiles().Schema,
 	},

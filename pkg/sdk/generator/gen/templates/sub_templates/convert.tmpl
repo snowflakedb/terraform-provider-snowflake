@@ -45,9 +45,15 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
         {{- else if .AssignmentKindStringToEnum }}
             mapStringWithMapping(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }}, To{{ TypeWithoutPointer .PlainKind }})
         {{- else if .AssignmentKindStringToJson }}
+            {{- if ne (TypeWithoutPointer .PlainKind) .PlainKind }}
+            if r.{{ .DbFieldName }} != "" {
+            {{- end }}
             if err := json.Unmarshal([]byte(r.{{ .DbFieldName }}), &result.{{ .PlainFieldName }}); err != nil {
-            	return nil, fmt.Errorf("failed to unmarshal {{ .PlainFieldName }}: %w", err)
+                return nil, fmt.Errorf("failed to unmarshal {{ .PlainFieldName }}: %w", err)
             }
+            {{- if ne (TypeWithoutPointer .PlainKind) .PlainKind }}
+            }
+            {{- end }}
         {{- else if .AssignmentKindNullableToNullable }}
             {{ .NullMapFunc }}(&result.{{ .PlainFieldName }}, r.{{ .DbFieldName }})
         {{- else if .AssignmentKindNullableToRequired }}

@@ -232,17 +232,6 @@ func (i *IcebergTableAssert) HasCatalogSyncName(expected string) *IcebergTableAs
 	return i
 }
 
-func (i *IcebergTableAssert) HasAutoRefreshStatus(expected string) *IcebergTableAssert {
-	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
-		t.Helper()
-		if o.AutoRefreshStatus != expected {
-			return fmt.Errorf("expected auto refresh status: %v; got: %v", expected, o.AutoRefreshStatus)
-		}
-		return nil
-	})
-	return i
-}
-
 func (i *IcebergTableAssert) HasPartitionSpecs(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
