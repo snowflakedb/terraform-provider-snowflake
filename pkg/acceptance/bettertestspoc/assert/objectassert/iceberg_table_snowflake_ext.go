@@ -130,8 +130,36 @@ func (i *IcebergTableAssert) HasBaseLocationPrefix(prefix string) *IcebergTableA
 func (i *IcebergTableAssert) HasAutoRefreshStatusNotEmpty() *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
-		if o.AutoRefreshStatus == "" {
-			return fmt.Errorf("expected auto refresh status to be not empty; got: %v", o.AutoRefreshStatus)
+		if o.AutoRefreshStatus == nil {
+			return fmt.Errorf("expected auto refresh status to be not empty; got: nil")
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoAutoRefreshStatus() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.AutoRefreshStatus != nil {
+			return fmt.Errorf("expected auto refresh status to be nil; got: %+v", *o.AutoRefreshStatus)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasAutoRefreshStatus(expected sdk.IcebergTableAutoRefreshStatus) *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.AutoRefreshStatus == nil {
+			return fmt.Errorf("expected auto refresh status to be set; got: nil")
+		}
+		actual := *o.AutoRefreshStatus
+		actual.LastSnapshotTime, actual.LastUpdatedTime = nil, ""
+		expected.LastSnapshotTime, expected.LastUpdatedTime = nil, ""
+		if actual != expected {
+			return fmt.Errorf("expected auto refresh status: %+v; got: %+v", expected, actual)
 		}
 		return nil
 	})

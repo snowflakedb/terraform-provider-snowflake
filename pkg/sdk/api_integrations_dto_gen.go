@@ -62,7 +62,7 @@ type GitHttpsApiGithubAppParamsRequest struct {
 type GithubAppUserAuthenticationRequest struct{}
 
 type GitHttpsApiOAuth2ParamsRequest struct {
-	ApiUserAuthentication OAuth2GitUserAuthenticationRequest
+	ApiUserAuthentication OAuth2GitUserAuthenticationRequest // required
 }
 
 type OAuth2GitUserAuthenticationRequest struct {
@@ -83,7 +83,7 @@ type GitHttpsApiPrivateLinkParamsRequest struct {
 }
 
 type ExternalMcpOAuth2ParamsRequest struct {
-	ApiUserAuthentication OAuth2McpUserAuthenticationRequest
+	ApiUserAuthentication OAuth2McpUserAuthenticationRequest // required
 }
 
 type OAuth2McpUserAuthenticationRequest struct {
@@ -97,7 +97,7 @@ type OAuth2McpUserAuthenticationRequest struct {
 }
 
 type ExternalMcpDynamicClientParamsRequest struct {
-	ApiUserAuthentication DynamicClientMcpUserAuthenticationRequest
+	ApiUserAuthentication DynamicClientMcpUserAuthenticationRequest // required
 }
 
 type DynamicClientMcpUserAuthenticationRequest struct {
@@ -152,7 +152,7 @@ type SetGitHttpsApiPrivateLinkParamsRequest struct {
 }
 
 type SetExternalMcpOAuth2ParamsRequest struct {
-	ApiUserAuthentication OAuth2McpUserAuthenticationRequest
+	ApiUserAuthentication OAuth2McpUserAuthenticationRequest // required
 }
 
 type ApiIntegrationUnsetRequest struct {

@@ -25,6 +25,7 @@ type PolicyEntityDomain string
 
 const (
 	PolicyEntityDomainAccount      PolicyEntityDomain = "ACCOUNT"
+	PolicyEntityDomainDynamicTable PolicyEntityDomain = "DYNAMIC_TABLE"
 	PolicyEntityDomainIcebergTable PolicyEntityDomain = "ICEBERG_TABLE"
 	PolicyEntityDomainIntegration  PolicyEntityDomain = "INTEGRATION"
 	PolicyEntityDomainTable        PolicyEntityDomain = "TABLE"
@@ -35,6 +36,7 @@ const (
 
 var AllPolicyEntityDomains = []PolicyEntityDomain{
 	PolicyEntityDomainAccount,
+	PolicyEntityDomainDynamicTable,
 	PolicyEntityDomainIcebergTable,
 	PolicyEntityDomainIntegration,
 	PolicyEntityDomainTable,
@@ -48,6 +50,8 @@ func ToPolicyEntityDomain(s string) (PolicyEntityDomain, error) {
 	switch s {
 	case string(PolicyEntityDomainAccount):
 		return PolicyEntityDomainAccount, nil
+	case string(PolicyEntityDomainDynamicTable):
+		return PolicyEntityDomainDynamicTable, nil
 	case string(PolicyEntityDomainIcebergTable):
 		return PolicyEntityDomainIcebergTable, nil
 	case string(PolicyEntityDomainIntegration):

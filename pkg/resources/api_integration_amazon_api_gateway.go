@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -61,10 +62,10 @@ func ApiIntegrationAmazonApiGateway() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationAmazonApiGateway, CreateApiIntegrationAmazonApiGateway),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationAmazonApiGateway, ReadApiIntegrationAmazonApiGateway),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationAmazonApiGateway, UpdateApiIntegrationAmazonApiGateway),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationAmazonApiGateway, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingCreateWrapper(resources.ApiIntegrationAmazonApiGateway, CreateApiIntegrationAmazonApiGateway)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingReadWrapper(resources.ApiIntegrationAmazonApiGateway, ReadApiIntegrationAmazonApiGateway)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingUpdateWrapper(resources.ApiIntegrationAmazonApiGateway, UpdateApiIntegrationAmazonApiGateway)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationAmazonApiGatewayResource), TrackingDeleteWrapper(resources.ApiIntegrationAmazonApiGateway, deleteFunc)),
 		Description:   "Resource used to manage API integration Amazon API Gateway objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationAmazonApiGatewaySchema,
@@ -107,27 +108,22 @@ func CreateApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.Resourc
 }
 
 func ImportApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	details, err := client.ApiIntegrations.DescribeAwsDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	if _, err := sdk.ToApiIntegrationAwsApiProviderType(details.ApiProvider); err != nil {
-		return nil, fmt.Errorf(
-			"api integration %s has api_provider %s, not compatible with snowflake_api_integration_amazon_api_gateway (expected one of %s); use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.ApiProvider,
-			possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationAwsApiProviderTypes)),
-		)
-	}
-
-	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+	return importApiIntegrationWithDetails(ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAwsDetails, error) {
+			return client.ApiIntegrations.DescribeAwsDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationAwsDetails, id sdk.AccountObjectIdentifier) error {
+			if _, err := sdk.ToApiIntegrationAwsApiProviderType(details.ApiProvider); err != nil {
+				return fmt.Errorf(
+					"api integration %s has api_provider %s, not compatible with snowflake_api_integration_amazon_api_gateway (expected one of %s); use the appropriate resource type",
+					id.FullyQualifiedName(),
+					details.ApiProvider,
+					possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationAwsApiProviderTypes)),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 func ReadApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

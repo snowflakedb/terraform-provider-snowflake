@@ -62,8 +62,16 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationExternalMcpDynamicClient().Schema,
 	},
 	{
+		name:   "ApiIntegrationExternalMcpOAuth2",
+		schema: resources.ApiIntegrationExternalMcpOAuth2().Schema,
+	},
+	{
 		name:   "ApiIntegrationGitRepositoryGithubApp",
 		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
+	},
+	{
+		name:   "ApiIntegrationGitRepositoryOauth2",
+		schema: resources.ApiIntegrationGitRepositoryOauth2().Schema,
 	},
 	{
 		name:   "ApiIntegrationGitRepositoryPrivateLink",
@@ -176,6 +184,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "HybridTable",
 		schema: resources.HybridTable().Schema,
+	},
+	{
+		name:   "IcebergTableFromDeltaFiles",
+		schema: resources.IcebergTableFromDeltaFiles().Schema,
 	},
 	{
 		name:   "IcebergTableFromFiles",
@@ -404,6 +416,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "UserSessionPolicyAttachment",
 		schema: resources.UserSessionPolicyAttachment().Schema,
+	},
+	{
+		name:   "TableStorageLifecyclePolicyAttachment",
+		schema: resources.TableStorageLifecyclePolicyAttachment().Schema,
 	},
 	{
 		name:   "View",

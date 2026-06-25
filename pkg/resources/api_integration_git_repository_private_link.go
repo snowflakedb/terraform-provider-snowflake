@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -51,10 +52,10 @@ func ApiIntegrationGitRepositoryPrivateLink() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, CreateApiIntegrationGitRepositoryPrivateLink),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, ReadApiIntegrationGitRepositoryPrivateLink),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, UpdateApiIntegrationGitRepositoryPrivateLink),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryPrivateLinkResource), TrackingCreateWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, CreateApiIntegrationGitRepositoryPrivateLink)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryPrivateLinkResource), TrackingReadWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, ReadApiIntegrationGitRepositoryPrivateLink)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryPrivateLinkResource), TrackingUpdateWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, UpdateApiIntegrationGitRepositoryPrivateLink)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryPrivateLinkResource), TrackingDeleteWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, deleteFunc)),
 		Description:   "Resource used to manage API integration for git HTTPS API via a private link endpoint. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationGitRepositoryPrivateLinkSchema,
@@ -116,26 +117,21 @@ func CreateApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema
 }
 
 func ImportApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	details, err := client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	if _, err := sdk.ToApiIntegrationGitApiProviderType(details.ApiProvider); err != nil {
-		return nil, fmt.Errorf(
-			"api integration %s has api_provider %q, not compatible with snowflake_api_integration_git_repository_private_link; use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.ApiProvider,
-		)
-	}
-
-	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+	return importApiIntegrationWithDetails(ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGitHttpsApiDetails, error) {
+			return client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationGitHttpsApiDetails, id sdk.AccountObjectIdentifier) error {
+			if _, err := sdk.ToApiIntegrationGitApiProviderType(details.ApiProvider); err != nil {
+				return fmt.Errorf(
+					"api integration %s has api_provider %q, not compatible with snowflake_api_integration_git_repository_private_link; use the appropriate resource type",
+					id.FullyQualifiedName(),
+					details.ApiProvider,
+				)
+			}
+			return nil
+		},
+	)
 }
 
 func ReadApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -165,10 +161,20 @@ func ReadApiIntegrationGitRepositoryPrivateLink(ctx context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("could not describe API integration git HTTPS API private link (%s): %w", d.Id(), err))
 	}
 
+	normalizedCerts, err := collections.MapErr(gitDetails.TlsTrustedCertificates, func(v string) (string, error) {
+		id, err := sdk.ParseSchemaObjectIdentifier(v)
+		if err != nil {
+			return "", err
+		}
+		return id.FullyQualifiedName(), nil
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("could not normalize tls_trusted_certificates: %w", err))
+	}
 	errs := errors.Join(
 		handleApiIntegrationCommonRead(d, id, s, gitDetails.AllowedPrefixes, gitDetails.BlockedPrefixes),
 		d.Set("use_privatelink_endpoint", gitDetails.UsePrivatelinkEndpoint),
-		d.Set("tls_trusted_certificates", gitDetails.TlsTrustedCertificates),
+		d.Set("tls_trusted_certificates", normalizedCerts),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ApiIntegrationGitRepositoryPrivateLinkDetailsToSchema(gitDetails)}),
 	)
 	return diag.FromErr(errs)

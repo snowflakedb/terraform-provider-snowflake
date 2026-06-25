@@ -66,19 +66,36 @@ func TestDynamicTableAlter(t *testing.T) {
 
 	t.Run("validation: no alter action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Resume = Bool(true)
 		opts.Suspend = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: no property to unset", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+	})
+
+	t.Run("validation: add storage lifecycle policy incorrect identifier", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddStorageLifecyclePolicy = &DynamicTableAddStorageLifecyclePolicy{
+			StorageLifecyclePolicy: emptySchemaObjectIdentifier,
+			On:                     []Column{{Value: "FIRST_COLUMN"}},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("DynamicTableAddStorageLifecyclePolicy", "StorageLifecyclePolicy"))
+	})
+
+	t.Run("validation: add storage lifecycle policy without columns", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddStorageLifecyclePolicy = &DynamicTableAddStorageLifecyclePolicy{
+			StorageLifecyclePolicy: randomSchemaObjectIdentifier(),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("DynamicTableAddStorageLifecyclePolicy", "On"))
 	})
 
 	t.Run("suspend", func(t *testing.T) {
@@ -104,6 +121,32 @@ func TestDynamicTableAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DYNAMIC TABLE %s SET TARGET_LAG = '1 minutes' WAREHOUSE = "warehouse_name"`, id.FullyQualifiedName())
+	})
+
+	t.Run("add storage lifecycle policy", func(t *testing.T) {
+		storageLifecyclePolicyId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.AddStorageLifecyclePolicy = &DynamicTableAddStorageLifecyclePolicy{
+			StorageLifecyclePolicy: storageLifecyclePolicyId,
+			On:                     []Column{{Value: "FIRST_COLUMN"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DYNAMIC TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+	})
+
+	t.Run("add storage lifecycle policy with multiple columns", func(t *testing.T) {
+		storageLifecyclePolicyId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.AddStorageLifecyclePolicy = &DynamicTableAddStorageLifecyclePolicy{
+			StorageLifecyclePolicy: storageLifecyclePolicyId,
+			On:                     []Column{{Value: "FIRST_COLUMN"}, {Value: "SECOND_COLUMN"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DYNAMIC TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN", "SECOND_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+	})
+
+	t.Run("drop storage lifecycle policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DropStorageLifecyclePolicy = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DYNAMIC TABLE %s DROP STORAGE LIFECYCLE POLICY`, id.FullyQualifiedName())
 	})
 }
 

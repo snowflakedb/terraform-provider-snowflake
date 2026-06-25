@@ -28,7 +28,7 @@ func TestAcc_UserAuthenticationPolicyAttachment(t *testing.T) {
 	newAuthenticationPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: userAuthenticationPoliciesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		CheckDestroy:             CheckUserAuthenticationPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
 			// CREATE
@@ -103,13 +103,13 @@ func TestAcc_UserAuthenticationPolicyAttachment_MissingUser(t *testing.T) {
 				Check:             resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "id", fmt.Sprintf("%s|%s", user.ID().FullyQualifiedName(), authPolicy.ID().FullyQualifiedName())),
 			},
 			{
-				ProtoV6ProviderFactories: userAuthenticationPoliciesProviderFactory,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
 				ExpectError:              regexp.MustCompile("object does not exist or not authorized"),
 				Check:                    resource.TestCheckNoResourceAttr("snowflake_user_authentication_policy_attachment.test", "id"),
 			},
 			{
-				ProtoV6ProviderFactories: userAuthenticationPoliciesProviderFactory,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
 				ExpectError:              regexp.MustCompile("error while creating authentication policy attachment"),
 				Check:                    resource.TestCheckNoResourceAttr("snowflake_user_authentication_policy_attachment.test", "id"),
@@ -148,13 +148,13 @@ func TestAcc_UserAuthenticationPolicyAttachment_MissingAuthPolicy(t *testing.T) 
 				Check:       resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "id", fmt.Sprintf("%s|%s", user.ID().FullyQualifiedName(), authPolicy.ID().FullyQualifiedName())),
 			},
 			{
-				ProtoV6ProviderFactories: userAuthenticationPoliciesProviderFactory,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
 				ExpectError:              regexp.MustCompile("object does not exist or not authorized"),
 				Check:                    resource.TestCheckNoResourceAttr("snowflake_user_authentication_policy_attachment.test", "id"),
 			},
 			{
-				ProtoV6ProviderFactories: userAuthenticationPoliciesProviderFactory,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
 				ExpectError:              regexp.MustCompile("error while creating authentication policy attachment"),
 				Check:                    resource.TestCheckNoResourceAttr("snowflake_user_authentication_policy_attachment.test", "id"),

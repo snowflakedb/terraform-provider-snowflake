@@ -16,11 +16,14 @@ const (
 	AccountSessionPolicyAttachmentResource         feature = "snowflake_account_session_policy_attachment_resource"
 	AlertResource                                  feature = "snowflake_alert_resource"
 	AlertsDatasource                               feature = "snowflake_alerts_datasource"
+	ApiIntegrationsDatasource                      feature = "snowflake_api_integrations_datasource"
 	ApiIntegrationResource                         feature = "snowflake_api_integration_resource"
 	ApiIntegrationAmazonApiGatewayResource         feature = "snowflake_api_integration_amazon_api_gateway_resource"
 	ApiIntegrationAzureApiManagementResource       feature = "snowflake_api_integration_azure_api_management_resource"
 	ApiIntegrationExternalMcpDynamicClientResource feature = "snowflake_api_integration_external_mcp_dynamic_client_resource"
+	ApiIntegrationExternalMcpOAuth2Resource        feature = "snowflake_api_integration_external_mcp_oauth2_resource"
 	ApiIntegrationGitRepositoryGithubAppResource   feature = "snowflake_api_integration_git_repository_github_app_resource"
+	ApiIntegrationGitRepositoryOauth2Resource      feature = "snowflake_api_integration_git_repository_oauth2_resource"
 	ApiIntegrationGitRepositoryPrivateLinkResource feature = "snowflake_api_integration_git_repository_private_link_resource"
 	ApiIntegrationGitRepositoryTokenResource       feature = "snowflake_api_integration_git_repository_token_resource"
 	ApiIntegrationGoogleCloudApiGatewayResource    feature = "snowflake_api_integration_google_cloud_api_gateway_resource"
@@ -69,71 +72,73 @@ const (
 	GitRepositoriesDatasource                      feature = "snowflake_git_repositories_datasource"
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource                           feature = "snowflake_hybrid_table_resource"
-	IcebergTableFromFilesResource               feature = "snowflake_iceberg_table_from_files_resource"
-	ImageRepositoryResource                     feature = "snowflake_image_repository_resource"
-	ImageRepositoriesDatasource                 feature = "snowflake_image_repositories_datasource"
-	InternalStageResource                       feature = "snowflake_stage_internal_resource"
-	JobServiceResource                          feature = "snowflake_job_service_resource"
-	ListingResource                             feature = "snowflake_listing_resource"
-	ListingsDatasource                          feature = "snowflake_listings_datasource"
-	ManagedAccountResource                      feature = "snowflake_managed_account_resource"
-	MaterializedViewResource                    feature = "snowflake_materialized_view_resource"
-	MaterializedViewsDatasource                 feature = "snowflake_materialized_views_datasource"
-	NetworkPolicyAttachmentResource             feature = "snowflake_network_policy_attachment_resource"
-	NetworkRuleResource                         feature = "snowflake_network_rule_resource"
-	NetworkRulesDatasource                      feature = "snowflake_network_rules_datasource"
-	NotebookResource                            feature = "snowflake_notebook_resource"
-	NotebooksDatasource                         feature = "snowflake_notebooks_datasource"
-	NotificationIntegrationResource             feature = "snowflake_notification_integration_resource"
-	ObjectParameterResource                     feature = "snowflake_object_parameter_resource"
-	PasswordPoliciesDatasource                  feature = "snowflake_password_policies_datasource"
-	PasswordPolicyResource                      feature = "snowflake_password_policy_resource"
-	PipeResource                                feature = "snowflake_pipe_resource"
-	PipesDatasource                             feature = "snowflake_pipes_datasource"
-	PostgresForkResource                        feature = "snowflake_postgres_fork_resource"
-	PostgresInstanceResource                    feature = "snowflake_postgres_instance_resource"
-	ProcedureJavaResource                       feature = "snowflake_procedure_java_resource"
-	ProcedureJavascriptResource                 feature = "snowflake_procedure_javascript_resource"
-	ProcedurePythonResource                     feature = "snowflake_procedure_python_resource"
-	ProcedureScalaResource                      feature = "snowflake_procedure_scala_resource"
-	ProcedureSqlResource                        feature = "snowflake_procedure_sql_resource"
-	ProceduresDatasource                        feature = "snowflake_procedures_datasource"
-	CurrentRoleDatasource                       feature = "snowflake_current_role_datasource"
-	SemanticViewResource                        feature = "snowflake_semantic_view_resource"
-	SemanticViewDatasource                      feature = "snowflake_semantic_views_datasource"
-	SessionPoliciesDatasource                   feature = "snowflake_session_policies_datasource"
-	SessionPolicyResource                       feature = "snowflake_session_policy_resource"
-	ServiceResource                             feature = "snowflake_service_resource"
-	ServicesDatasource                          feature = "snowflake_services_datasource"
-	SequenceResource                            feature = "snowflake_sequence_resource"
-	SequencesDatasource                         feature = "snowflake_sequences_datasource"
-	ShareResource                               feature = "snowflake_share_resource"
-	SharesDatasource                            feature = "snowflake_shares_datasource"
-	ParametersDatasource                        feature = "snowflake_parameters_datasource"
-	StageResource                               feature = "snowflake_stage_resource"
-	StagesDatasource                            feature = "snowflake_stages_datasource"
-	StorageIntegrationResource                  feature = "snowflake_storage_integration_resource"
-	StorageIntegrationAwsResource               feature = "snowflake_storage_integration_aws_resource"
-	StorageIntegrationAzureResource             feature = "snowflake_storage_integration_azure_resource"
-	StorageIntegrationGcsResource               feature = "snowflake_storage_integration_gcs_resource"
-	StorageIntegrationsDatasource               feature = "snowflake_storage_integrations_datasource"
-	StorageLifecyclePolicyResource              feature = "snowflake_storage_lifecycle_policy_resource"
-	StorageLifecyclePoliciesDatasource          feature = "snowflake_storage_lifecycle_policies_datasource"
-	SystemGenerateSCIMAccessTokenDatasource     feature = "snowflake_system_generate_scim_access_token_datasource"
-	SystemGetAWSSNSIAMPolicyDatasource          feature = "snowflake_system_get_aws_sns_iam_policy_datasource"
-	SystemGetPrivateLinkConfigDatasource        feature = "snowflake_system_get_privatelink_config_datasource"
-	SystemGetSnowflakePlatformInfoDatasource    feature = "snowflake_system_get_snowflake_platform_info_datasource"
-	TableResource                               feature = "snowflake_table_resource"
-	TablesDatasource                            feature = "snowflake_tables_datasource"
-	TableColumnMaskingPolicyApplicationResource feature = "snowflake_table_column_masking_policy_application_resource"
-	TableConstraintResource                     feature = "snowflake_table_constraint_resource"
-	UserAuthenticationPolicyAttachmentResource  feature = "snowflake_user_authentication_policy_attachment_resource"
-	UserPublicKeysResource                      feature = "snowflake_user_public_keys_resource"
-	UserPasswordPolicyAttachmentResource        feature = "snowflake_user_password_policy_attachment_resource"
-	UserProgrammaticAccessTokenResource         feature = "snowflake_user_programmatic_access_token_resource"
-	UserSessionPolicyAttachmentResource         feature = "snowflake_user_session_policy_attachment_resource"
-	UserProgrammaticAccessTokensDatasource      feature = "snowflake_user_programmatic_access_tokens_datasource"
-	WarehouseAdaptiveResource                   feature = "snowflake_warehouse_adaptive_resource"
+	IcebergTableFromDeltaFilesResource            feature = "snowflake_iceberg_table_from_delta_files_resource"
+	IcebergTableFromFilesResource                 feature = "snowflake_iceberg_table_from_files_resource"
+	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
+	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
+	InternalStageResource                         feature = "snowflake_stage_internal_resource"
+	JobServiceResource                            feature = "snowflake_job_service_resource"
+	ListingResource                               feature = "snowflake_listing_resource"
+	ListingsDatasource                            feature = "snowflake_listings_datasource"
+	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
+	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
+	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
+	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
+	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
+	NetworkRulesDatasource                        feature = "snowflake_network_rules_datasource"
+	NotebookResource                              feature = "snowflake_notebook_resource"
+	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
+	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
+	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
+	PasswordPoliciesDatasource                    feature = "snowflake_password_policies_datasource"
+	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
+	PipeResource                                  feature = "snowflake_pipe_resource"
+	PipesDatasource                               feature = "snowflake_pipes_datasource"
+	PostgresForkResource                          feature = "snowflake_postgres_fork_resource"
+	PostgresInstanceResource                      feature = "snowflake_postgres_instance_resource"
+	ProcedureJavaResource                         feature = "snowflake_procedure_java_resource"
+	ProcedureJavascriptResource                   feature = "snowflake_procedure_javascript_resource"
+	ProcedurePythonResource                       feature = "snowflake_procedure_python_resource"
+	ProcedureScalaResource                        feature = "snowflake_procedure_scala_resource"
+	ProcedureSqlResource                          feature = "snowflake_procedure_sql_resource"
+	ProceduresDatasource                          feature = "snowflake_procedures_datasource"
+	CurrentRoleDatasource                         feature = "snowflake_current_role_datasource"
+	SemanticViewResource                          feature = "snowflake_semantic_view_resource"
+	SemanticViewDatasource                        feature = "snowflake_semantic_views_datasource"
+	SessionPoliciesDatasource                     feature = "snowflake_session_policies_datasource"
+	SessionPolicyResource                         feature = "snowflake_session_policy_resource"
+	ServiceResource                               feature = "snowflake_service_resource"
+	ServicesDatasource                            feature = "snowflake_services_datasource"
+	SequenceResource                              feature = "snowflake_sequence_resource"
+	SequencesDatasource                           feature = "snowflake_sequences_datasource"
+	ShareResource                                 feature = "snowflake_share_resource"
+	SharesDatasource                              feature = "snowflake_shares_datasource"
+	ParametersDatasource                          feature = "snowflake_parameters_datasource"
+	StageResource                                 feature = "snowflake_stage_resource"
+	StagesDatasource                              feature = "snowflake_stages_datasource"
+	StorageIntegrationResource                    feature = "snowflake_storage_integration_resource"
+	StorageIntegrationAwsResource                 feature = "snowflake_storage_integration_aws_resource"
+	StorageIntegrationAzureResource               feature = "snowflake_storage_integration_azure_resource"
+	StorageIntegrationGcsResource                 feature = "snowflake_storage_integration_gcs_resource"
+	StorageIntegrationsDatasource                 feature = "snowflake_storage_integrations_datasource"
+	StorageLifecyclePolicyResource                feature = "snowflake_storage_lifecycle_policy_resource"
+	StorageLifecyclePoliciesDatasource            feature = "snowflake_storage_lifecycle_policies_datasource"
+	SystemGenerateSCIMAccessTokenDatasource       feature = "snowflake_system_generate_scim_access_token_datasource"
+	SystemGetAWSSNSIAMPolicyDatasource            feature = "snowflake_system_get_aws_sns_iam_policy_datasource"
+	SystemGetPrivateLinkConfigDatasource          feature = "snowflake_system_get_privatelink_config_datasource"
+	SystemGetSnowflakePlatformInfoDatasource      feature = "snowflake_system_get_snowflake_platform_info_datasource"
+	TableResource                                 feature = "snowflake_table_resource"
+	TablesDatasource                              feature = "snowflake_tables_datasource"
+	TableColumnMaskingPolicyApplicationResource   feature = "snowflake_table_column_masking_policy_application_resource"
+	TableConstraintResource                       feature = "snowflake_table_constraint_resource"
+	TableStorageLifecyclePolicyAttachmentResource feature = "snowflake_table_storage_lifecycle_policy_attachment_resource"
+	UserAuthenticationPolicyAttachmentResource    feature = "snowflake_user_authentication_policy_attachment_resource"
+	UserPublicKeysResource                        feature = "snowflake_user_public_keys_resource"
+	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
+	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
+	UserSessionPolicyAttachmentResource           feature = "snowflake_user_session_policy_attachment_resource"
+	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
+	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
 )
 
 var allPreviewFeatures = []feature{
@@ -142,14 +147,17 @@ var allPreviewFeatures = []feature{
 	AccountSessionPolicyAttachmentResource,
 	AlertResource,
 	AlertsDatasource,
+	ApiIntegrationsDatasource,
 	ApiIntegrationResource,
-	// TODO(next api integration prs): ApiIntegrationAmazonApiGatewayResource,
-	// TODO(next api integration prs): ApiIntegrationAzureApiManagementResource,
-	// TODO(next api integration prs): ApiIntegrationGitRepositoryGithubAppResource,
-	// TODO(next api integration prs): ApiIntegrationGitRepositoryTokenResource,
-	// TODO(next api integration prs): ApiIntegrationGoogleCloudApiGatewayResource,
-	// TODO(next api integration prs): ApiIntegrationExternalMcpDynamicClientResource,
-	// TODO(next api integration prs): ApiIntegrationGitRepositoryPrivateLinkResource,
+	ApiIntegrationAmazonApiGatewayResource,
+	ApiIntegrationAzureApiManagementResource,
+	ApiIntegrationExternalMcpDynamicClientResource,
+	ApiIntegrationExternalMcpOAuth2Resource,
+	ApiIntegrationGitRepositoryGithubAppResource,
+	ApiIntegrationGitRepositoryOauth2Resource,
+	ApiIntegrationGitRepositoryPrivateLinkResource,
+	ApiIntegrationGitRepositoryTokenResource,
+	ApiIntegrationGoogleCloudApiGatewayResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
 	CatalogIntegrationAwsGlueResource,
@@ -190,6 +198,7 @@ var allPreviewFeatures = []feature{
 	FunctionsDatasource,
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource,
+	IcebergTableFromDeltaFilesResource,
 	IcebergTableFromFilesResource,
 	InternalStageResource,
 	JobServiceResource,
@@ -208,8 +217,9 @@ var allPreviewFeatures = []feature{
 	PasswordPolicyResource,
 	PipeResource,
 	PipesDatasource,
-	PostgresForkResource,
-	PostgresInstanceResource,
+	// These resources are added to the test provider.
+	// PostgresForkResource,
+	// PostgresInstanceResource,
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,
@@ -241,6 +251,7 @@ var allPreviewFeatures = []feature{
 	SystemGetSnowflakePlatformInfoDatasource,
 	TableColumnMaskingPolicyApplicationResource,
 	TableConstraintResource,
+	TableStorageLifecyclePolicyAttachmentResource,
 	TableResource,
 	TablesDatasource,
 	UserAuthenticationPolicyAttachmentResource,

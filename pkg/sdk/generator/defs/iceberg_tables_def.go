@@ -366,7 +366,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalText("name_mapping").
 		Text("owner_role_type").
 		Text("catalog_sync_name").
-		Text("auto_refresh_status").
+		JsonField("auto_refresh_status", "*IcebergTableAutoRefreshStatus").
 		Text("partition_specs").
 		Number("current_partition_spec_id").
 		Number("iceberg_table_format_version"),

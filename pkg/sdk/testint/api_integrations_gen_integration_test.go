@@ -379,8 +379,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
 			WithGitHttpsApiOAuth2ProviderParams(
-				*sdk.NewGitHttpsApiOAuth2ParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewGitHttpsApiOAuth2ParamsRequest(*auth),
 			),
 		)
 		require.NoError(t, err)
@@ -419,8 +418,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: gitPrefix}}, true).
 			WithGitHttpsApiOAuth2ProviderParams(
-				*sdk.NewGitHttpsApiOAuth2ParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewGitHttpsApiOAuth2ParamsRequest(*auth),
 			).
 			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: gitOtherPrefix}}).
 			WithComment("git oauth2 comment"),
@@ -534,8 +532,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
 			WithExternalMcpOAuth2ProviderParams(
-				*sdk.NewExternalMcpOAuth2ParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewExternalMcpOAuth2ParamsRequest(*auth),
 			),
 		)
 		require.NoError(t, err)
@@ -574,8 +571,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
 			WithExternalMcpOAuth2ProviderParams(
-				*sdk.NewExternalMcpOAuth2ParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewExternalMcpOAuth2ParamsRequest(*auth),
 			).
 			WithComment("mcp oauth2 comment"),
 		)
@@ -603,8 +599,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp.atlassian.com/v1/mcp"}}, true).
 			WithExternalMcpDynamicClientProviderParams(
-				*sdk.NewExternalMcpDynamicClientParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewExternalMcpDynamicClientParamsRequest(*auth),
 			),
 		)
 		require.NoError(t, err)
@@ -840,8 +835,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(*sdk.NewApiIntegrationSetRequest().
 				WithExternalMcpOAuth2Params(
-					*sdk.NewSetExternalMcpOAuth2ParamsRequest().
-						WithApiUserAuthentication(*newAuth),
+					*sdk.NewSetExternalMcpOAuth2ParamsRequest(*newAuth),
 				).
 				WithEnabled(true).
 				WithApiAllowedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: mcpOtherPrefix}}).
@@ -1042,8 +1036,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		req := sdk.NewCreateApiIntegrationRequest(id, []sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
 			WithExternalMcpDynamicClientProviderParams(
-				*sdk.NewExternalMcpDynamicClientParamsRequest().
-					WithApiUserAuthentication(*auth),
+				*sdk.NewExternalMcpDynamicClientParamsRequest(*auth),
 			).
 			WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: "https://mcp-blocked.example.com/"}})
 
@@ -1054,6 +1047,46 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		}
 		t.Logf("[UNDOCUMENTED] external_mcp api_blocked_prefixes on create: SUPPORTED")
 		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
+	})
+
+	// Prove that OAUTH_CLIENT_AUTH_METHOD and OAUTH_REFRESH_TOKEN_VALIDITY cannot be unset via ALTER once they have been set.
+	// There is no UNSET clause for these fields in ApiIntegrationUnset, and omitting them from the auth block
+	// in ALTER API INTEGRATION SET does not reset them - Snowflake silently retains the existing values.
+	t.Run("external_mcp oauth2 optional auth fields cannot be unset via alter", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		authMethod := sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost
+		refreshTokenValidity := 3600
+
+		auth := sdk.NewOAuth2McpUserAuthenticationRequest("oauth-client-id-123", "oauth-client-secret-456", oauthTokenEndpoint, oauthAuthorizationEndpoint).
+			WithOauthClientAuthMethod(authMethod).
+			WithOauthRefreshTokenValidity(refreshTokenValidity)
+		err := client.ApiIntegrations.Create(ctx, sdk.NewCreateApiIntegrationRequest(id,
+			[]sdk.ApiIntegrationEndpointPrefix{{Path: mcpPrefix}}, true).
+			WithExternalMcpOAuth2ProviderParams(*sdk.NewExternalMcpOAuth2ParamsRequest(*auth)),
+		)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().ApiIntegration.DropApiIntegrationFunc(t, id))
+
+		// Confirm the initial state: both optional fields are set.
+		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
+			HasOauthClientAuthMethod(authMethod).
+			HasOauthRefreshTokenValidity(refreshTokenValidity),
+		)
+
+		// Attempt to "unset" by sending an ALTER with required fields only — OAUTH_CLIENT_AUTH_METHOD and
+		// OAUTH_REFRESH_TOKEN_VALIDITY are intentionally absent. Snowflake accepts the request without error.
+		authRequiredOnly := sdk.NewOAuth2McpUserAuthenticationRequest("oauth-client-id-123", "oauth-client-secret-456", oauthTokenEndpoint, oauthAuthorizationEndpoint)
+		err = client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).
+			WithSet(*sdk.NewApiIntegrationSetRequest().
+				WithExternalMcpOAuth2Params(*sdk.NewSetExternalMcpOAuth2ParamsRequest(*authRequiredOnly))),
+		)
+		require.NoError(t, err)
+
+		// Despite the ALTER succeeding, the values are unchanged — they cannot be removed this way.
+		assertThatObject(t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
+			HasOauthClientAuthMethod(authMethod).
+			HasOauthRefreshTokenValidity(refreshTokenValidity),
+		)
 	})
 
 	t.Run("drop: existing", func(t *testing.T) {
