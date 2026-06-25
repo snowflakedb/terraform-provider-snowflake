@@ -64,7 +64,7 @@ func NewResourceShowOutputAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name: name,
 		assertions: []ResourceAssertion{
-			ValueSet(showOutputCollection, "1"),
+			ValueSetFullPath(showOutputCollection, "1"),
 		},
 		assertionPath: showOutputPath,
 	}
@@ -75,7 +75,7 @@ func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name: name,
 		assertions: []ResourceAssertion{
-			ValueSet(describeOutputCollection, "1"),
+			ValueSetFullPath(describeOutputCollection, "1"),
 		},
 		assertionPath: describeOutputPath,
 	}
@@ -86,7 +86,7 @@ func NewResourceParametersAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name: name,
 		assertions: []ResourceAssertion{
-			ValueSet(parametersCollection, "1"),
+			ValueSetFullPath(parametersCollection, "1"),
 		},
 		assertionPath: parametersPath,
 	}
@@ -115,7 +115,7 @@ func NewImportedResourceShowOutputAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id: id,
 		assertions: []ResourceAssertion{
-			ValueSet(showOutputCollection, "1"),
+			ValueSetFullPath(showOutputCollection, "1"),
 		},
 		assertionPath: showOutputPath,
 	}
@@ -126,7 +126,7 @@ func NewImportedResourceDescribeOutputAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id: id,
 		assertions: []ResourceAssertion{
-			ValueSet(describeOutputCollection, "1"),
+			ValueSetFullPath(describeOutputCollection, "1"),
 		},
 		assertionPath: describeOutputPath,
 	}
@@ -137,7 +137,7 @@ func NewImportedResourceParametersAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id: id,
 		assertions: []ResourceAssertion{
-			ValueSet(parametersCollection, "1"),
+			ValueSetFullPath(parametersCollection, "1"),
 		},
 		assertionPath: parametersPath,
 	}
@@ -159,7 +159,7 @@ func NewDatasourceShowOutputAssert(name string, objectsPath string, idx int) *Re
 	return &ResourceAssert{
 		name: name,
 		assertions: []ResourceAssertion{
-			ValueSet(fmt.Sprintf("%s.%d.%s", objectsPath, idx, showOutputCollection), "1"),
+			ValueSetFullPath(fmt.Sprintf("%s.%d.%s", objectsPath, idx, showOutputCollection), "1"),
 		},
 		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, showOutputPath),
 	}
@@ -170,7 +170,7 @@ func NewDatasourceDescribeOutputAssert(name string, objectsPath string, idx int)
 	return &ResourceAssert{
 		name: name,
 		assertions: []ResourceAssertion{
-			ValueSet(fmt.Sprintf("%s.%d.%s", objectsPath, idx, describeOutputCollection), "1"),
+			ValueSetFullPath(fmt.Sprintf("%s.%d.%s", objectsPath, idx, describeOutputCollection), "1"),
 		},
 		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, describeOutputPath),
 	}
@@ -181,7 +181,7 @@ func NewDatasourceParametersAssert(name string, objectsPath string, idx int) *Re
 	return &ResourceAssert{
 		name: name,
 		assertions: []ResourceAssertion{
-			ValueSet(fmt.Sprintf("%s.%d.%s", objectsPath, idx, parametersCollection), "1"),
+			ValueSetFullPath(fmt.Sprintf("%s.%d.%s", objectsPath, idx, parametersCollection), "1"),
 		},
 		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, parametersPath),
 	}
@@ -221,6 +221,10 @@ func ValuePresent(fieldName string) ResourceAssertion {
 
 func ValueSet(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
+}
+
+func ValueSetFullPath(fieldName string, expected string) ResourceAssertion {
+	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet, fullPath: fieldName}
 }
 
 func ValueNotSet(fieldName string) ResourceAssertion {
