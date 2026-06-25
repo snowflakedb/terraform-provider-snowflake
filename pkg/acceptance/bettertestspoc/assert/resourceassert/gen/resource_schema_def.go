@@ -186,6 +186,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.HybridTable().Schema,
 	},
 	{
+		name:   "IcebergTableFromDeltaFiles",
+		schema: resources.IcebergTableFromDeltaFiles().Schema,
+	},
+	{
 		name:   "IcebergTableFromFiles",
 		schema: resources.IcebergTableFromFiles().Schema,
 	},
@@ -404,6 +408,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "UserSessionPolicyAttachment",
 		schema: resources.UserSessionPolicyAttachment().Schema,
+	},
+	{
+		name:   "TableStorageLifecyclePolicyAttachment",
+		schema: resources.TableStorageLifecyclePolicyAttachment().Schema,
 	},
 	{
 		name:   "View",

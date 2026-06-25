@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -38,7 +39,6 @@ var apiIntegrationGitRepositoryOauth2Schema = func() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			Sensitive:    true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  "The client ID for the OAuth 2.0 application.",
 		},
@@ -101,10 +101,10 @@ func ApiIntegrationGitRepositoryOauth2() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationGitRepositoryOauth2, CreateApiIntegrationGitRepositoryOauth2),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationGitRepositoryOauth2, ReadApiIntegrationGitRepositoryOauth2),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationGitRepositoryOauth2, UpdateApiIntegrationGitRepositoryOauth2),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationGitRepositoryOauth2, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryOauth2Resource), TrackingCreateWrapper(resources.ApiIntegrationGitRepositoryOauth2, CreateApiIntegrationGitRepositoryOauth2)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryOauth2Resource), TrackingReadWrapper(resources.ApiIntegrationGitRepositoryOauth2, ReadApiIntegrationGitRepositoryOauth2)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryOauth2Resource), TrackingUpdateWrapper(resources.ApiIntegrationGitRepositoryOauth2, UpdateApiIntegrationGitRepositoryOauth2)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryOauth2Resource), TrackingDeleteWrapper(resources.ApiIntegrationGitRepositoryOauth2, deleteFunc)),
 		Description:   "Resource used to manage API integration Git Repository OAuth2 objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationGitRepositoryOauth2Schema,
@@ -120,27 +120,22 @@ func ApiIntegrationGitRepositoryOauth2() *schema.Resource {
 }
 
 func ImportApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	details, err := client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	if details.UserAuthType != string(sdk.ApiIntegrationUserAuthTypeOauth2) {
-		return nil, fmt.Errorf(
-			"api integration %s has user auth type %s, not compatible with snowflake_api_integration_git_repository_oauth2 (expected %s); use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.UserAuthType,
-			sdk.ApiIntegrationUserAuthTypeOauth2,
-		)
-	}
-
-	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+	return importApiIntegrationWithDetails(ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGitHttpsApiDetails, error) {
+			return client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationGitHttpsApiDetails, id sdk.AccountObjectIdentifier) error {
+			if details.UserAuthType != string(sdk.ApiIntegrationUserAuthTypeOauth2) {
+				return fmt.Errorf(
+					"api integration %s has user auth type %s, not compatible with snowflake_api_integration_git_repository_oauth2 (expected %s); use the appropriate resource type",
+					id.FullyQualifiedName(),
+					details.UserAuthType,
+					sdk.ApiIntegrationUserAuthTypeOauth2,
+				)
+			}
+			return nil
+		},
+	)
 }
 
 func CreateApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -178,9 +173,7 @@ func CreateApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	oauth2Params := sdk.NewGitHttpsApiOAuth2ParamsRequest().WithApiUserAuthentication(*authReq)
-
-	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiOAuth2ProviderParams(*oauth2Params)); err != nil {
+	if err = client.ApiIntegrations.Create(ctx, request.WithGitHttpsApiOAuth2ProviderParams(*sdk.NewGitHttpsApiOAuth2ParamsRequest(*authReq))); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating Git Repository OAuth2 API integration: %w", err))
 	}
 

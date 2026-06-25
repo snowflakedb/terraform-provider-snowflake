@@ -11,7 +11,7 @@ description: |-
 
 # snowflake_api_integration (Resource)
 
-
+~> **Deprecation** This resource is deprecated and will be removed in a future major version release. Please use one of the new resources instead: `snowflake_api_integration_amazon_api_gateway` | `snowflake_api_integration_azure_api_management` | `snowflake_api_integration_google_cloud_api_gateway` | `snowflake_api_integration_git_repository_github_app` | `snowflake_api_integration_git_repository_oauth2` | `snowflake_api_integration_git_repository_token` | `snowflake_api_integration_git_repository_private_link` | `snowflake_api_integration_external_mcp_oauth2` | `snowflake_api_integration_external_mcp_dynamic_client`. <deprecation>
 
 ## Example Usage
 

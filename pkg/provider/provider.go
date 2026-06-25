@@ -589,6 +589,15 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_api_authentication_integration_with_client_credentials":       resources.ApiAuthenticationIntegrationWithClientCredentials(),
 		"snowflake_api_authentication_integration_with_jwt_bearer":               resources.ApiAuthenticationIntegrationWithJwtBearer(),
 		"snowflake_api_integration":                                              resources.APIIntegration(),
+		"snowflake_api_integration_amazon_api_gateway":                           resources.ApiIntegrationAmazonApiGateway(),
+		"snowflake_api_integration_azure_api_management":                         resources.ApiIntegrationAzureApiManagement(),
+		"snowflake_api_integration_external_mcp_dynamic_client":                  resources.ApiIntegrationExternalMcpDynamicClient(),
+		"snowflake_api_integration_external_mcp_oauth2":                          resources.ApiIntegrationExternalMcpOAuth2(),
+		"snowflake_api_integration_git_repository_github_app":                    resources.ApiIntegrationGitRepositoryGithubApp(),
+		"snowflake_api_integration_git_repository_oauth2":                        resources.ApiIntegrationGitRepositoryOauth2(),
+		"snowflake_api_integration_git_repository_private_link":                  resources.ApiIntegrationGitRepositoryPrivateLink(),
+		"snowflake_api_integration_git_repository_token":                         resources.ApiIntegrationGitRepositoryToken(),
+		"snowflake_api_integration_google_cloud_api_gateway":                     resources.ApiIntegrationGoogleCloudApiGateway(),
 		"snowflake_authentication_policy":                                        resources.AuthenticationPolicy(),
 		"snowflake_catalog_integration_aws_glue":                                 resources.CatalogIntegrationAwsGlue(),
 		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
@@ -627,6 +636,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_grant_privileges_to_database_role":                            resources.GrantPrivilegesToDatabaseRole(),
 		"snowflake_grant_privileges_to_share":                                    resources.GrantPrivilegesToShare(),
 		"snowflake_git_repository":                                               resources.GitRepository(),
+		"snowflake_iceberg_table_from_delta_files":                               resources.IcebergTableFromDeltaFiles(),
 		"snowflake_iceberg_table_from_files":                                     resources.IcebergTableFromFiles(),
 		"snowflake_image_repository":                                             resources.ImageRepository(),
 		"snowflake_stage_internal":                                               resources.InternalStage(),
@@ -693,6 +703,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_user_programmatic_access_token":                               resources.UserProgrammaticAccessToken(),
 		"snowflake_user_public_keys":                                             resources.UserPublicKeys(),
 		"snowflake_user_session_policy_attachment":                               resources.UserSessionPolicyAttachment(),
+		"snowflake_table_storage_lifecycle_policy_attachment":                    resources.TableStorageLifecyclePolicyAttachment(),
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
 		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
@@ -799,7 +810,9 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		}
 	}
 
-	providerCtx := &provider.Context{}
+	providerCtx := &provider.Context{
+		GrantShowOfRoleCache: provider.NewCache[[]sdk.Grant](),
+	}
 	if client, err := sdk.NewClient(config); err != nil {
 		return nil, diag.FromErr(err)
 	} else {

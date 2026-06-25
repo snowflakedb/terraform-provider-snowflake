@@ -1,10 +1,12 @@
 package resources
 
 import (
+	"context"
 	"errors"
-	"strings"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -140,6 +142,28 @@ func handleApiIntegrationCommonRead(
 	)
 }
 
+func importApiIntegrationWithDetails[D any](
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta any,
+	describeFunc func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (D, error),
+	validateFunc func(details D, id sdk.AccountObjectIdentifier) error,
+) ([]*schema.ResourceData, error) {
+	client := meta.(*provider.Context).Client
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	details, err := describeFunc(ctx, client, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
+	}
+	if err := validateFunc(details, id); err != nil {
+		return nil, err
+	}
+	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+}
+
 func buildAllowedAuthSecretsRequestFromState(d *schema.ResourceData) (*sdk.ApiIntegrationAllowedAuthenticationSecretsRequest, error) {
 	req := sdk.NewApiIntegrationAllowedAuthenticationSecretsRequest()
 	if v, ok := d.GetOk("all_allowed_authentication_secrets"); ok && v.(bool) {
@@ -156,37 +180,4 @@ func buildAllowedAuthSecretsRequestFromState(d *schema.ResourceData) (*sdk.ApiIn
 		return req.WithAllowedList(ids), nil
 	}
 	return nil, nil
-}
-
-func setAllowedAuthSecretFieldsFromDescribe(d *schema.ResourceData, raw string) error {
-	switch strings.ToUpper(strings.TrimSpace(raw)) {
-	case "ALL":
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", true),
-			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", []any{}),
-		)
-	case "NONE":
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", false),
-			d.Set("no_allowed_authentication_secrets", true),
-			d.Set("allowed_authentication_secrets", []any{}),
-		)
-	case "":
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", false),
-			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", []any{}),
-		)
-	default:
-		ids, err := collections.MapErr(sdk.ParseCommaSeparatedStringArray(raw, true), sdk.ParseSchemaObjectIdentifier)
-		if err != nil {
-			return err
-		}
-		return errors.Join(
-			d.Set("all_allowed_authentication_secrets", false),
-			d.Set("no_allowed_authentication_secrets", false),
-			d.Set("allowed_authentication_secrets", collections.Map(ids, sdk.SchemaObjectIdentifier.FullyQualifiedName)),
-		)
-	}
 }

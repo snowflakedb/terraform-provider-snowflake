@@ -294,3 +294,7 @@ func ignoreCaseAndTrimSpaceSuppressFunc(_, old, new string, _ *schema.ResourceDa
 func ignoreAlwaysSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
 	return true
 }
+
+func ignoreDirectoryPathTrailingSlashSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
+	return strings.TrimSuffix(old, "/") == strings.TrimSuffix(new, "/")
+}
