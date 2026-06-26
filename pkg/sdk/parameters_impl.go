@@ -348,6 +348,21 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return matched, fmt.Errorf("CLIENT_ENCRYPTION_KEY_SIZE session parameter is an integer, got %v", value)
 		}
 		legacyAccountParameters.ClientEncryptionKeySize = Pointer(v)
+	case AccountParameterCortexCodeCliDailyEstCreditLimitPerUser:
+		err = setIntegerValue(parameter, value, &legacyAccountParameters.CortexCodeCliDailyEstCreditLimitPerUser)
+		if err != nil {
+			return
+		}
+	case AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser:
+		err = setIntegerValue(parameter, value, &legacyAccountParameters.CortexCodeDesktopDailyEstCreditLimitPerUser)
+		if err != nil {
+			return
+		}
+	case AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser:
+		err = setIntegerValue(parameter, value, &legacyAccountParameters.CortexCodeSnowsightDailyEstCreditLimitPerUser)
+		if err != nil {
+			return
+		}
 	case AccountParameterCortexEnabledCrossRegion:
 		legacyAccountParameters.CortexEnabledCrossRegion = &value
 	case AccountParameterCortexModelsAllowlist:

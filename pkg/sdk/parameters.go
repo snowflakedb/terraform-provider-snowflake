@@ -77,6 +77,12 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		opts.Unset.LegacyParameters.AccountParameters.AllowedSpcsWorkloadTypes = Pointer(true)
 	case AccountParameterClientEncryptionKeySize:
 		opts.Unset.LegacyParameters.AccountParameters.ClientEncryptionKeySize = Pointer(true)
+	case AccountParameterCortexCodeCliDailyEstCreditLimitPerUser:
+		opts.Unset.LegacyParameters.AccountParameters.CortexCodeCliDailyEstCreditLimitPerUser = Pointer(true)
+	case AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser:
+		opts.Unset.LegacyParameters.AccountParameters.CortexCodeDesktopDailyEstCreditLimitPerUser = Pointer(true)
+	case AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser:
+		opts.Unset.LegacyParameters.AccountParameters.CortexCodeSnowsightDailyEstCreditLimitPerUser = Pointer(true)
 	case AccountParameterCortexEnabledCrossRegion:
 		opts.Unset.LegacyParameters.AccountParameters.CortexEnabledCrossRegion = Pointer(true)
 	case AccountParameterCortexModelsAllowlist:
@@ -458,6 +464,9 @@ const (
 	AccountParameterClientSessionKeepAlive                                   AccountParameter = "CLIENT_SESSION_KEEP_ALIVE"
 	AccountParameterClientSessionKeepAliveHeartbeatFrequency                 AccountParameter = "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"
 	AccountParameterClientTimestampTypeMapping                               AccountParameter = "CLIENT_TIMESTAMP_TYPE_MAPPING"
+	AccountParameterCortexCodeCliDailyEstCreditLimitPerUser                  AccountParameter = "CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER"
+	AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser              AccountParameter = "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER"
+	AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser            AccountParameter = "CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER"
 	AccountParameterCortexEnabledCrossRegion                                 AccountParameter = "CORTEX_ENABLED_CROSS_REGION"
 	AccountParameterCortexModelsAllowlist                                    AccountParameter = "CORTEX_MODELS_ALLOWLIST"
 	AccountParameterCsvTimestampFormat                                       AccountParameter = "CSV_TIMESTAMP_FORMAT"
@@ -601,6 +610,9 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterClientSessionKeepAlive,
 	AccountParameterClientSessionKeepAliveHeartbeatFrequency,
 	AccountParameterClientTimestampTypeMapping,
+	AccountParameterCortexCodeCliDailyEstCreditLimitPerUser,
+	AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser,
+	AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser,
 	AccountParameterCortexEnabledCrossRegion,
 	AccountParameterCortexModelsAllowlist,
 	AccountParameterCsvTimestampFormat,
@@ -1222,6 +1234,9 @@ type LegacyAccountParameters struct {
 	AllowIDToken                                             *bool   `ddl:"parameter" sql:"ALLOW_ID_TOKEN"`
 	AllowedSpcsWorkloadTypes                                 *string `ddl:"parameter,single_quotes" sql:"ALLOWED_SPCS_WORKLOAD_TYPES"`
 	ClientEncryptionKeySize                                  *int    `ddl:"parameter" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
+	CortexCodeCliDailyEstCreditLimitPerUser                  *int    `ddl:"parameter" sql:"CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER"`
+	CortexCodeDesktopDailyEstCreditLimitPerUser              *int    `ddl:"parameter" sql:"CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER"`
+	CortexCodeSnowsightDailyEstCreditLimitPerUser            *int    `ddl:"parameter" sql:"CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER"`
 	CortexEnabledCrossRegion                                 *string `ddl:"parameter,single_quotes" sql:"CORTEX_ENABLED_CROSS_REGION"`
 	CortexModelsAllowlist                                    *string `ddl:"parameter,single_quotes" sql:"CORTEX_MODELS_ALLOWLIST"`
 	DefaultDbtVersion                                        *string `ddl:"parameter,single_quotes" sql:"DEFAULT_DBT_VERSION"`
@@ -1429,6 +1444,9 @@ type LegacyAccountParametersUnset struct {
 	AllowIDToken                                             *bool `ddl:"keyword" sql:"ALLOW_ID_TOKEN"`
 	AllowedSpcsWorkloadTypes                                 *bool `ddl:"keyword" sql:"ALLOWED_SPCS_WORKLOAD_TYPES"`
 	ClientEncryptionKeySize                                  *bool `ddl:"keyword" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
+	CortexCodeCliDailyEstCreditLimitPerUser                  *bool `ddl:"keyword" sql:"CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER"`
+	CortexCodeDesktopDailyEstCreditLimitPerUser              *bool `ddl:"keyword" sql:"CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER"`
+	CortexCodeSnowsightDailyEstCreditLimitPerUser            *bool `ddl:"keyword" sql:"CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER"`
 	CortexEnabledCrossRegion                                 *bool `ddl:"keyword" sql:"CORTEX_ENABLED_CROSS_REGION"`
 	CortexModelsAllowlist                                    *bool `ddl:"keyword" sql:"CORTEX_MODELS_ALLOWLIST"`
 	DefaultDbtVersion                                        *bool `ddl:"keyword" sql:"DEFAULT_DBT_VERSION"`
