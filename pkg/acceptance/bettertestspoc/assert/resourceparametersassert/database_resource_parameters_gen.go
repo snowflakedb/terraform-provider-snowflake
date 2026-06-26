@@ -17,9 +17,8 @@ func DatabaseResourceParameters(t *testing.T, name string) *DatabaseResourcePara
 	t.Helper()
 
 	resourceParameterAssert := DatabaseResourceParametersAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "parameters"),
+		ResourceAssert: assert.NewResourceParametersAssert(name),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedDatabaseResourceParameters(t *testing.T, id string) *DatabaseResour
 	t.Helper()
 
 	resourceParameterAssert := DatabaseResourceParametersAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported parameters"),
+		ResourceAssert: assert.NewImportedResourceParametersAssert(id),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
+	return &resourceParameterAssert
+}
+
+func DatabasesDatasourceParameters(t *testing.T, name string) *DatabaseResourceParametersAssert {
+	t.Helper()
+
+	return DatabasesDatasourceParametersOnIdx(t, name, 0)
+}
+
+func DatabasesDatasourceParametersOnIdx(t *testing.T, name string, idx int) *DatabaseResourceParametersAssert {
+	t.Helper()
+
+	resourceParameterAssert := DatabaseResourceParametersAssert{
+		ResourceAssert: assert.NewDatasourceParametersAssert(name, "databases", idx),
+	}
 	return &resourceParameterAssert
 }
 
@@ -38,87 +51,87 @@ func ImportedDatabaseResourceParameters(t *testing.T, id string) *DatabaseResour
 ////////////////////////////
 
 func (d *DatabaseResourceParametersAssert) HasDataRetentionTimeInDays(expected int) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterIntValueSet(sdk.DatabaseParameterDataRetentionTimeInDays, expected))
+	d.ParameterIntValueSet(string(sdk.DatabaseParameterDataRetentionTimeInDays), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasMaxDataExtensionTimeInDays(expected int) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterIntValueSet(sdk.DatabaseParameterMaxDataExtensionTimeInDays, expected))
+	d.ParameterIntValueSet(string(sdk.DatabaseParameterMaxDataExtensionTimeInDays), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasExternalVolume(expected string) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterValueSet(sdk.DatabaseParameterExternalVolume, expected))
+	d.ParameterValueSet(string(sdk.DatabaseParameterExternalVolume), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasCatalog(expected string) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterValueSet(sdk.DatabaseParameterCatalog, expected))
+	d.ParameterValueSet(string(sdk.DatabaseParameterCatalog), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasReplaceInvalidCharacters(expected bool) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.DatabaseParameterReplaceInvalidCharacters, expected))
+	d.ParameterBoolValueSet(string(sdk.DatabaseParameterReplaceInvalidCharacters), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasDefaultDdlCollation(expected string) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterValueSet(sdk.DatabaseParameterDefaultDdlCollation, expected))
+	d.ParameterValueSet(string(sdk.DatabaseParameterDefaultDdlCollation), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasStorageSerializationPolicy(expected sdk.StorageSerializationPolicy) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.DatabaseParameterStorageSerializationPolicy, expected))
+	d.ParameterValueSet(string(sdk.DatabaseParameterStorageSerializationPolicy), string(expected))
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.DatabaseParameterLogLevel, expected))
+	d.ParameterValueSet(string(sdk.DatabaseParameterLogLevel), string(expected))
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.DatabaseParameterLogEventLevel, expected))
+	d.ParameterValueSet(string(sdk.DatabaseParameterLogEventLevel), string(expected))
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.DatabaseParameterTraceLevel, expected))
+	d.ParameterValueSet(string(sdk.DatabaseParameterTraceLevel), string(expected))
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterIntValueSet(sdk.DatabaseParameterSuspendTaskAfterNumFailures, expected))
+	d.ParameterIntValueSet(string(sdk.DatabaseParameterSuspendTaskAfterNumFailures), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasTaskAutoRetryAttempts(expected int) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterIntValueSet(sdk.DatabaseParameterTaskAutoRetryAttempts, expected))
+	d.ParameterIntValueSet(string(sdk.DatabaseParameterTaskAutoRetryAttempts), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.DatabaseParameterUserTaskManagedInitialWarehouseSize, expected))
+	d.ParameterValueSet(string(sdk.DatabaseParameterUserTaskManagedInitialWarehouseSize), string(expected))
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasUserTaskTimeoutMs(expected int) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterIntValueSet(sdk.DatabaseParameterUserTaskTimeoutMs, expected))
+	d.ParameterIntValueSet(string(sdk.DatabaseParameterUserTaskTimeoutMs), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterIntValueSet(sdk.DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	d.ParameterIntValueSet(string(sdk.DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase, expected))
+	d.ParameterBoolValueSet(string(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasEnableConsoleOutput(expected bool) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.DatabaseParameterEnableConsoleOutput, expected))
+	d.ParameterBoolValueSet(string(sdk.DatabaseParameterEnableConsoleOutput), expected)
 	return d
 }
 
@@ -127,86 +140,86 @@ func (d *DatabaseResourceParametersAssert) HasEnableConsoleOutput(expected bool)
 ////////////////////////////
 
 func (d *DatabaseResourceParametersAssert) HasDataRetentionTimeInDaysLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterDataRetentionTimeInDays, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterDataRetentionTimeInDays), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasMaxDataExtensionTimeInDaysLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterMaxDataExtensionTimeInDays, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterMaxDataExtensionTimeInDays), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasExternalVolumeLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterExternalVolume, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterExternalVolume), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasCatalogLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterCatalog, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterCatalog), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasReplaceInvalidCharactersLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterReplaceInvalidCharacters, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterReplaceInvalidCharacters), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterDefaultDdlCollation, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterDefaultDdlCollation), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasStorageSerializationPolicyLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterStorageSerializationPolicy, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterStorageSerializationPolicy), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterLogLevel, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterLogLevel), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterLogEventLevel, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterLogEventLevel), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterTraceLevel, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterTraceLevel), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterSuspendTaskAfterNumFailures, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterSuspendTaskAfterNumFailures), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterTaskAutoRetryAttempts, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterTaskAutoRetryAttempts), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterUserTaskManagedInitialWarehouseSize, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterUserTaskManagedInitialWarehouseSize), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterUserTaskTimeoutMs, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterUserTaskTimeoutMs), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase), expected)
 	return d
 }
 
 func (d *DatabaseResourceParametersAssert) HasEnableConsoleOutputLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
-	d.AddAssertion(assert.ResourceParameterLevelSet(sdk.DatabaseParameterEnableConsoleOutput, expected))
+	d.ParameterLevelSet(string(sdk.DatabaseParameterEnableConsoleOutput), expected)
 	return d
 }

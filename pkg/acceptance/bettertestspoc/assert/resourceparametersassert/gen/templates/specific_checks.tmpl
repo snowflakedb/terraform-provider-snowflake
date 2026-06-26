@@ -1,4 +1,4 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert/gen.ResourceParametersAssertionsModel*/ -}}
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert/gen.ResourceParametersAssertionsModel*/ -}}
 
 {{- $assertName := .Name | printf "%sResourceParametersAssert" -}}
 {{- $sdkParameterName := .Name | printf "sdk.%sParameter" -}}
@@ -10,7 +10,7 @@
 
 {{ range .Parameters -}}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}(expected {{ .Type }}) *{{ $assertName }} {
-        {{ $assertVar }}.AddAssertion(assert.{{ .AssertionCreator }}({{ $sdkParameterName }}{{ SnakeCaseToCamel .Name }}, expected))
+        {{ $assertVar }}.{{ .AssertionCreator }}(string({{ $sdkParameterName }}{{ SnakeCaseToCamel .Name }}), {{ if .Mapper }}{{ .Mapper }}(expected){{ else }}expected{{ end }})
         return {{ $assertVar }}
     }
 
@@ -22,7 +22,7 @@
 
 {{ range .Parameters -}}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}Level(expected sdk.ParameterType) *{{ $assertName }} {
-        {{ $assertVar }}.AddAssertion(assert.ResourceParameterLevelSet({{ $sdkParameterName }}{{ SnakeCaseToCamel .Name }}, expected))
+        {{ $assertVar }}.ParameterLevelSet(string({{ $sdkParameterName }}{{ SnakeCaseToCamel .Name }}), expected)
         return {{ $assertVar }}
     }
 

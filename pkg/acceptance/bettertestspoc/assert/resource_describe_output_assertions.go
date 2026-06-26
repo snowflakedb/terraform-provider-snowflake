@@ -4,9 +4,6 @@ import (
 	"strconv"
 )
 
-// TODO [SNOW-1501905]: this file duplicates resource_show_output_assertions.go file as a quick workaround for generated describe output assertions; it should be reworked with proper generation and deduplicated
-const describeOutputPrefix = "describe_output.0."
-
 func ResourceDescribeOutputBoolValueSet(fieldName string, expected bool) ResourceAssertion {
 	return ResourceDescribeOutputValueSet(fieldName, strconv.FormatBool(expected))
 }
@@ -56,17 +53,17 @@ func ResourceDescribeOutputStringUnderlyingValuePresent(fieldName string) Resour
 }
 
 func ResourceDescribeOutputValueSet(fieldName string, expected string) ResourceAssertion {
-	return ResourceAssertion{fieldName: describeOutputPrefix + fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
+	return ResourceAssertion{fieldName: describeOutputPath + fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
 }
 
 func ResourceDescribeOutputValueNotSet(fieldName string) ResourceAssertion {
-	return ResourceAssertion{fieldName: describeOutputPrefix + fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
+	return ResourceAssertion{fieldName: describeOutputPath + fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
 }
 
 func ResourceDescribeOutputValuePresent(fieldName string) ResourceAssertion {
-	return ResourceAssertion{fieldName: describeOutputPrefix + fieldName, resourceAssertionType: resourceAssertionTypeValuePresent}
+	return ResourceAssertion{fieldName: describeOutputPath + fieldName, resourceAssertionType: resourceAssertionTypeValuePresent}
 }
 
 func ResourceDescribeOutputSetElem(fieldName string, expected string) ResourceAssertion {
-	return SetElem(describeOutputPrefix+fieldName, expected)
+	return SetElem(describeOutputPath+fieldName, expected)
 }
