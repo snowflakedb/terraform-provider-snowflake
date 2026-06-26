@@ -16,7 +16,7 @@ func StageResource(t *testing.T, name string) *StageResourceAssert {
 	t.Helper()
 
 	return &StageResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStageResource(t *testing.T, id string) *StageResourceAssert {
 	t.Helper()
 
 	return &StageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -109,72 +109,72 @@ func (s *StageResourceAssert) HasUrl(expected string) *StageResourceAssert {
 ///////////////////////////////////
 
 func (s *StageResourceAssert) HasDatabaseString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
+	s.ValueSet("database", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasSchemaString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+	s.ValueSet("schema", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasNameString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasAwsExternalIdString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("aws_external_id", expected))
+	s.ValueSet("aws_external_id", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasCommentString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasCopyOptionsString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("copy_options", expected))
+	s.ValueSet("copy_options", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasCredentialsString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("credentials", expected))
+	s.ValueSet("credentials", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasDirectoryString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("directory", expected))
+	s.ValueSet("directory", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasEncryptionString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("encryption", expected))
+	s.ValueSet("encryption", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasFileFormatString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("file_format", expected))
+	s.ValueSet("file_format", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasFullyQualifiedNameString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasSnowflakeIamUserString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("snowflake_iam_user", expected))
+	s.ValueSet("snowflake_iam_user", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasStorageIntegrationString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_integration", expected))
+	s.ValueSet("storage_integration", expected)
 	return s
 }
 
 func (s *StageResourceAssert) HasUrlString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("url", expected))
+	s.ValueSet("url", expected)
 	return s
 }
 
@@ -183,72 +183,72 @@ func (s *StageResourceAssert) HasUrlString(expected string) *StageResourceAssert
 ///////////////////////////////
 
 func (s *StageResourceAssert) HasNoDatabase() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
+	s.ValueNotSet("database")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoSchema() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+	s.ValueNotSet("schema")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoName() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoAwsExternalId() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("aws_external_id"))
+	s.ValueNotSet("aws_external_id")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoComment() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoCopyOptions() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("copy_options"))
+	s.ValueNotSet("copy_options")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoCredentials() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("credentials"))
+	s.ValueNotSet("credentials")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoDirectory() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("directory"))
+	s.ValueNotSet("directory")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoEncryption() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("encryption"))
+	s.ValueNotSet("encryption")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoFileFormat() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("file_format"))
+	s.ValueNotSet("file_format")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoFullyQualifiedName() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoSnowflakeIamUser() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("snowflake_iam_user"))
+	s.ValueNotSet("snowflake_iam_user")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoStorageIntegration() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_integration"))
+	s.ValueNotSet("storage_integration")
 	return s
 }
 
 func (s *StageResourceAssert) HasNoUrl() *StageResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("url"))
+	s.ValueNotSet("url")
 	return s
 }
 
@@ -257,62 +257,62 @@ func (s *StageResourceAssert) HasNoUrl() *StageResourceAssert {
 ////////////////////////////
 
 func (s *StageResourceAssert) HasAwsExternalIdEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("aws_external_id", ""))
+	s.ValueSet("aws_external_id", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasCommentEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasCopyOptionsEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("copy_options", ""))
+	s.ValueSet("copy_options", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasCredentialsEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("credentials", ""))
+	s.ValueSet("credentials", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasDirectoryEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("directory", ""))
+	s.ValueSet("directory", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasEncryptionEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("encryption", ""))
+	s.ValueSet("encryption", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasFileFormatEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("file_format", ""))
+	s.ValueSet("file_format", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasFullyQualifiedNameEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasSnowflakeIamUserEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("snowflake_iam_user", ""))
+	s.ValueSet("snowflake_iam_user", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasStorageIntegrationEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_integration", ""))
+	s.ValueSet("storage_integration", "")
 	return s
 }
 
 func (s *StageResourceAssert) HasTagEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("tag.#", "0"))
+	s.ValueSet("tag.#", "0")
 	return s
 }
 
 func (s *StageResourceAssert) HasUrlEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("url", ""))
+	s.ValueSet("url", "")
 	return s
 }
 
@@ -321,71 +321,71 @@ func (s *StageResourceAssert) HasUrlEmpty() *StageResourceAssert {
 ///////////////////////////////
 
 func (s *StageResourceAssert) HasDatabaseNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("database"))
+	s.ValuePresent("database")
 	return s
 }
 
 func (s *StageResourceAssert) HasSchemaNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("schema"))
+	s.ValuePresent("schema")
 	return s
 }
 
 func (s *StageResourceAssert) HasNameNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *StageResourceAssert) HasAwsExternalIdNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("aws_external_id"))
+	s.ValuePresent("aws_external_id")
 	return s
 }
 
 func (s *StageResourceAssert) HasCommentNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *StageResourceAssert) HasCopyOptionsNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("copy_options"))
+	s.ValuePresent("copy_options")
 	return s
 }
 
 func (s *StageResourceAssert) HasCredentialsNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("credentials"))
+	s.ValuePresent("credentials")
 	return s
 }
 
 func (s *StageResourceAssert) HasDirectoryNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("directory"))
+	s.ValuePresent("directory")
 	return s
 }
 
 func (s *StageResourceAssert) HasEncryptionNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("encryption"))
+	s.ValuePresent("encryption")
 	return s
 }
 
 func (s *StageResourceAssert) HasFileFormatNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("file_format"))
+	s.ValuePresent("file_format")
 	return s
 }
 
 func (s *StageResourceAssert) HasFullyQualifiedNameNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *StageResourceAssert) HasSnowflakeIamUserNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("snowflake_iam_user"))
+	s.ValuePresent("snowflake_iam_user")
 	return s
 }
 
 func (s *StageResourceAssert) HasStorageIntegrationNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_integration"))
+	s.ValuePresent("storage_integration")
 	return s
 }
 
 func (s *StageResourceAssert) HasUrlNotEmpty() *StageResourceAssert {
-	s.AddAssertion(assert.ValuePresent("url"))
+	s.ValuePresent("url")
 	return s
 }
