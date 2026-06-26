@@ -414,9 +414,10 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, &sdk.DatabaseRoleGrantPrivileges{
-				AllPrivileges: sdk.Bool(true),
-			},
+			err = client.Grants.RevokePrivilegesFromDatabaseRole(
+				ctx, &sdk.DatabaseRoleGrantPrivileges{
+					AllPrivileges: sdk.Bool(true),
+				},
 				grantOn,
 				id.DatabaseRoleName,
 				new(sdk.RevokePrivilegesFromDatabaseRoleOptions),
@@ -543,9 +544,10 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, &sdk.DatabaseRoleGrantPrivileges{
-				AllPrivileges: sdk.Bool(true),
-			},
+			err = client.Grants.GrantPrivilegesToDatabaseRole(
+				ctx, &sdk.DatabaseRoleGrantPrivileges{
+					AllPrivileges: sdk.Bool(true),
+				},
 				grantOn,
 				id.DatabaseRoleName,
 				new(sdk.GrantPrivilegesToDatabaseRoleOptions),

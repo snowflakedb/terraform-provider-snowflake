@@ -110,7 +110,8 @@ func ReadUserPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceDat
 			*passwordPolicyReferences[0].PolicyDb,
 			*passwordPolicyReferences[0].PolicySchema,
 			passwordPolicyReferences[0].PolicyName,
-		).FullyQualifiedName()); err != nil {
+		).FullyQualifiedName(),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 

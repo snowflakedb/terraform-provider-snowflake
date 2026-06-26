@@ -161,7 +161,8 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 			// Internal stage without describe
 			{
 				Config: accconfig.FromModels(t, internalModel, stagesNoDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StagesDatasourceShowOutput(t, stagesNoDescribe.DatasourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -187,7 +188,8 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 			// Internal stage with describe
 			{
 				Config: accconfig.FromModels(t, internalModel, stagesWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StagesDatasourceShowOutput(t, stagesWithDescribe.DatasourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -219,7 +221,8 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 			// Azure stage with describe
 			{
 				Config: accconfig.FromModels(t, azureModel, azureStagesWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StagesDatasourceShowOutput(t, azureStagesWithDescribe.DatasourceReference()).
 						HasName(azureStageId.Name()).
 						HasDatabaseName(azureStageId.DatabaseName()).
@@ -251,7 +254,8 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 			// External S3 stage with describe
 			{
 				Config: accconfig.FromModels(t, externalS3Model, externalS3StagesWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StagesDatasourceShowOutput(t, externalS3StagesWithDescribe.DatasourceReference()).
 						HasName(s3StageId.Name()).
 						HasDatabaseName(s3StageId.DatabaseName()).
@@ -288,7 +292,8 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 			// External GCS stage with describe
 			{
 				Config: accconfig.FromModels(t, externalGcsModel, externalGcsStagesWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StagesDatasourceShowOutput(t, externalGcsStagesWithDescribe.DatasourceReference()).
 						HasName(gcsStageId.Name()).
 						HasDatabaseName(gcsStageId.DatabaseName()).
@@ -320,7 +325,8 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 			// External S3 compatible stage with describe
 			{
 				Config: accconfig.FromModels(t, externalS3CompatibleModel, externalS3CompatibleStagesWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StagesDatasourceShowOutput(t, externalS3CompatibleStagesWithDescribe.DatasourceReference()).
 						HasName(s3CompatibleStageId.Name()).
 						HasDatabaseName(s3CompatibleStageId.DatabaseName()).
@@ -356,7 +362,8 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 			// External S3 compatible stage with describe + parquet file format
 			{
 				Config: accconfig.FromModels(t, externalS3CompatibleModelWithParquet, externalS3CompatibleStagesWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StagesDatasourceShowOutput(t, externalS3CompatibleStagesWithDescribe.DatasourceReference()).
 						HasName(s3CompatibleStageId.Name()).
 						HasDatabaseName(s3CompatibleStageId.DatabaseName()).
@@ -393,7 +400,8 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 			// External S3 compatible stage with describe + avro file format
 			{
 				Config: accconfig.FromModels(t, externalS3CompatibleModelWithAvro, externalS3CompatibleStagesWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StagesDatasourceShowOutput(t, externalS3CompatibleStagesWithDescribe.DatasourceReference()).
 						HasName(s3CompatibleStageId.Name()).
 						HasDatabaseName(s3CompatibleStageId.DatabaseName()).

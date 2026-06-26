@@ -140,7 +140,8 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().PostgresInstance.Alter(t, sdk.NewAlterPostgresInstanceRequest(id).WithSet(
 						*sdk.NewPostgresInstanceSetRequest().
-							WithComment(externalComment)))
+							WithComment(externalComment),
+					))
 				},
 				Config: accconfig.FromModels(t, modelWithComment),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -264,7 +265,8 @@ func TestAcc_PostgresInstance_Rename(t *testing.T) {
 			// create object
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.PostgresInstanceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasComputeFamilyString("STANDARD_M").

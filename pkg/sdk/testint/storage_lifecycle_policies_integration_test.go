@@ -42,23 +42,25 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().StorageLifecyclePolicy.DropFunc(t, id))
 
-		assertThatObject(t, objectassert.StorageLifecyclePolicy(t, id).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasKind("STORAGE_LIFECYCLE_POLICY").
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment("").
-			HasOwnerRoleType("ROLE"),
+		assertThatObject(
+			t, objectassert.StorageLifecyclePolicy(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasKind("STORAGE_LIFECYCLE_POLICY").
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment("").
+				HasOwnerRoleType("ROLE"),
 		)
-		assertThatObject(t, objectassert.StorageLifecyclePolicyDetails(t, id).
-			HasName(id.Name()).
-			HasSignature(defaultSignature...).
-			HasReturnType(testdatatypes.DataTypeBoolean).
-			HasBody(defaultBody).
-			HasNoArchiveForDays().
-			HasArchiveTier(""),
+		assertThatObject(
+			t, objectassert.StorageLifecyclePolicyDetails(t, id).
+				HasName(id.Name()).
+				HasSignature(defaultSignature...).
+				HasReturnType(testdatatypes.DataTypeBoolean).
+				HasBody(defaultBody).
+				HasNoArchiveForDays().
+				HasArchiveTier(""),
 		)
 	})
 
@@ -74,23 +76,25 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().StorageLifecyclePolicy.DropFunc(t, id))
 
-		assertThatObject(t, objectassert.StorageLifecyclePolicy(t, id).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasKind("STORAGE_LIFECYCLE_POLICY").
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(comment).
-			HasOwnerRoleType("ROLE"),
+		assertThatObject(
+			t, objectassert.StorageLifecyclePolicy(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasKind("STORAGE_LIFECYCLE_POLICY").
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment(comment).
+				HasOwnerRoleType("ROLE"),
 		)
-		assertThatObject(t, objectassert.StorageLifecyclePolicyDetails(t, id).
-			HasName(id.Name()).
-			HasSignature(defaultSignature...).
-			HasReturnType(testdatatypes.DataTypeBoolean).
-			HasBody(defaultBody).
-			HasArchiveForDays(365).
-			HasArchiveTier(string(sdk.StorageLifecyclePolicyArchiveTierCold)),
+		assertThatObject(
+			t, objectassert.StorageLifecyclePolicyDetails(t, id).
+				HasName(id.Name()).
+				HasSignature(defaultSignature...).
+				HasReturnType(testdatatypes.DataTypeBoolean).
+				HasBody(defaultBody).
+				HasArchiveForDays(365).
+				HasArchiveTier(string(sdk.StorageLifecyclePolicyArchiveTierCold)),
 		)
 	})
 
@@ -120,8 +124,9 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 			WithSetBody(newBody))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.StorageLifecyclePolicyDetails(t, id).
-			HasBody(newBody),
+		assertThatObject(
+			t, objectassert.StorageLifecyclePolicyDetails(t, id).
+				HasBody(newBody),
 		)
 	})
 
@@ -129,33 +134,37 @@ func TestInt_StorageLifecyclePolicies(t *testing.T) {
 		id := createBasic(t)
 		comment := random.Comment()
 
-		err := client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).
-			WithSet(*sdk.NewStorageLifecyclePolicySetRequest().
-				WithArchiveTier(sdk.StorageLifecyclePolicyArchiveTierCool).
-				WithArchiveForDays(120).
-				WithComment(comment)),
+		err := client.StorageLifecyclePolicies.Alter(
+			ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).
+				WithSet(*sdk.NewStorageLifecyclePolicySetRequest().
+					WithArchiveTier(sdk.StorageLifecyclePolicyArchiveTierCool).
+					WithArchiveForDays(120).
+					WithComment(comment)),
 		)
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.StorageLifecyclePolicy(t, id).
 			HasComment(comment))
-		assertThatObject(t, objectassert.StorageLifecyclePolicyDetails(t, id).
-			HasArchiveForDays(120).
-			HasArchiveTier(string(sdk.StorageLifecyclePolicyArchiveTierCool)),
+		assertThatObject(
+			t, objectassert.StorageLifecyclePolicyDetails(t, id).
+				HasArchiveForDays(120).
+				HasArchiveTier(string(sdk.StorageLifecyclePolicyArchiveTierCool)),
 		)
 
-		err = client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).
-			WithUnset(*sdk.NewStorageLifecyclePolicyUnsetRequest().
-				WithArchiveForDays(true).
-				WithComment(true)),
+		err = client.StorageLifecyclePolicies.Alter(
+			ctx, sdk.NewAlterStorageLifecyclePolicyRequest(id).
+				WithUnset(*sdk.NewStorageLifecyclePolicyUnsetRequest().
+					WithArchiveForDays(true).
+					WithComment(true)),
 		)
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.StorageLifecyclePolicy(t, id).
 			HasComment(""))
-		assertThatObject(t, objectassert.StorageLifecyclePolicyDetails(t, id).
-			HasNoArchiveForDays().
-			HasArchiveTier(string(sdk.StorageLifecyclePolicyArchiveTierCool)),
+		assertThatObject(
+			t, objectassert.StorageLifecyclePolicyDetails(t, id).
+				HasNoArchiveForDays().
+				HasArchiveTier(string(sdk.StorageLifecyclePolicyArchiveTierCool)),
 		)
 	})
 

@@ -45,7 +45,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_DatabaseRenamed(t *testing.T) 
 			// Create database and schema with implicit dependency
 			{
 				Config: accconfig.FromModels(t, providerModel, databaseModel, schemaModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModel.ResourceReference()).
 						HasNameString(schemaName).
 						HasDatabaseString(databaseId.Name()),
@@ -60,7 +61,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_DatabaseRenamed(t *testing.T) 
 					},
 				},
 				Config: accconfig.FromModels(t, providerModel, databaseModelRenamed, schemaModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModel.ResourceReference()).
 						HasNameString(schemaName).
 						HasDatabaseString(newDatabaseId.Name()).
@@ -96,7 +98,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_SchemaMove(t *testing.T) {
 			// Create both databases and schema in database A
 			{
 				Config: accconfig.FromModels(t, providerModel, databaseModelA, databaseModelB, schemaModelBefore),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelBefore.ResourceReference()).
 						HasNameString(schemaName).
 						HasDatabaseString(databaseAId.Name()),
@@ -110,7 +113,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_SchemaMove(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, providerModel, databaseModelA, databaseModelB, schemaModelAfter),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelAfter.ResourceReference()).
 						HasNameString(schemaName).
 						HasDatabaseString(databaseBId.Name()).
@@ -147,7 +151,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_DatabaseRenamed_WithNameChange
 			// Create database and schema X with implicit dependency
 			{
 				Config: accconfig.FromModels(t, providerModel, databaseModel, schemaModelBefore),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelBefore.ResourceReference()).
 						HasNameString(schemaName).
 						HasDatabaseString(databaseId.Name()),
@@ -162,7 +167,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_DatabaseRenamed_WithNameChange
 					},
 				},
 				Config: accconfig.FromModels(t, providerModel, databaseModelRenamed, schemaModelAfter),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelAfter.ResourceReference()).
 						HasNameString(newSchemaName).
 						HasDatabaseString(newDatabaseId.Name()).
@@ -199,7 +205,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_SchemaMove_WithNameChange(t *t
 			// Create both databases and schema X in database A
 			{
 				Config: accconfig.FromModels(t, providerModel, databaseModelA, databaseModelB, schemaModelBefore),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelBefore.ResourceReference()).
 						HasNameString(schemaName).
 						HasDatabaseString(databaseAId.Name()),
@@ -213,7 +220,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_SchemaMove_WithNameChange(t *t
 					},
 				},
 				Config: accconfig.FromModels(t, providerModel, databaseModelA, databaseModelB, schemaModelAfter),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelAfter.ResourceReference()).
 						HasNameString(newSchemaName).
 						HasDatabaseString(databaseBId.Name()).
@@ -246,7 +254,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_Error_NewDatabaseDoesNotExist(
 			// Create schema in database A
 			{
 				Config: accconfig.FromModels(t, providerModel, schemaModelBefore),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelBefore.ResourceReference()).
 						HasNameString(schemaId.Name()).
 						HasDatabaseString(dbA.ID().Name()),
@@ -285,7 +294,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_Error_SchemaNotFoundForMove(t 
 			// Create schema in database A
 			{
 				Config: accconfig.FromModels(t, providerModel, schemaModelBefore),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelBefore.ResourceReference()).
 						HasNameString(schemaId.Name()).
 						HasDatabaseString(dbA.ID().Name()),
@@ -331,7 +341,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_Disabled_ForceRecreation(t *te
 			// Create both databases and schema in database A
 			{
 				Config: accconfig.FromModels(t, databaseModelA, databaseModelB, schemaModelBefore),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelBefore.ResourceReference()).
 						HasNameString(schemaName).
 						HasDatabaseString(databaseAId.Name()),
@@ -345,7 +356,8 @@ func TestAcc_Experimental_Schema_HierarchyRenames_Disabled_ForceRecreation(t *te
 					},
 				},
 				Config: accconfig.FromModels(t, databaseModelA, databaseModelB, schemaModelAfter),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelAfter.ResourceReference()).
 						HasNameString(schemaName).
 						HasDatabaseString(databaseBId.Name()),

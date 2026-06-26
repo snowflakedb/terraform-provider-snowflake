@@ -143,7 +143,8 @@ func TestAcc_Schemas_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, schemaModel, viewModel, schemasModelWithoutAdditional),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SchemasDatasourceShowOutput(t, schemasModelWithoutAdditional.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -162,7 +163,8 @@ func TestAcc_Schemas_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, schemaModel, viewModel, schemasModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SchemasDatasourceShowOutput(t, schemasModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).

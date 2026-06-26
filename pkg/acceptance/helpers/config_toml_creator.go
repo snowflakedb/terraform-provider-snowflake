@@ -13,65 +13,66 @@ import (
 func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, privateKey string) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithUser(userId.Name()).
-		WithPrivateKey(privateKey).
-		WithRole(roleId.Name()).
-		WithOrganizationName(accountIdentifier.OrganizationName()).
-		WithAccountName(accountIdentifier.AccountName()).
-		WithWarehouse(warehouseId.Name()).
-		WithClientIp("1.2.3.4").
-		WithProtocol("https").
-		WithPort(443).
-		WithOktaUrl(testvars.ExampleOktaUrlString).
-		WithClientTimeout(10).
-		WithJwtClientTimeout(20).
-		WithLoginTimeout(30).
-		WithRequestTimeout(40).
-		WithJwtExpireTimeout(50).
-		WithExternalBrowserTimeout(60).
-		WithMaxRetryCount(1).
-		WithAuthenticator(string(sdk.AuthenticationTypeJwt)).
-		WithInsecureMode(true).
-		WithOcspFailOpen(true).
-		WithToken("token").
-		WithKeepSessionAlive(true).
-		WithDisableTelemetry(true).
-		WithValidateDefaultParameters(true).
-		WithClientRequestMfaToken(true).
-		WithClientStoreTemporaryCredential(true).
-		WithDriverTracing(string(sdk.DriverLogLevelWarn)).
-		WithTmpDirPath(".").
-		WithDisableQueryContextCache(true).
-		WithIncludeRetryReason(true).
-		WithDisableConsoleLogin(true).
-		WithParams(map[string]*string{
-			"foo": sdk.Pointer("bar"),
-		}).
-		WithOauthClientID("oauth_client_id").
-		WithOauthClientSecret("oauth_client_secret").
-		WithOauthTokenRequestURL("oauth_token_request_url").
-		WithOauthAuthorizationURL("oauth_authorization_url").
-		WithOauthRedirectURI("oauth_redirect_uri").
-		WithOauthScope("oauth_scope").
-		WithWorkloadIdentityProvider("workload_identity_provider").
-		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
-		WithEnableSingleUseRefreshTokens(true).
-		WithLogQueryText(true).
-		WithLogQueryParameters(true).
-		WithProxyHost("").
-		WithProxyPort(443).
-		WithProxyUser("proxy_user").
-		WithProxyPassword("proxy_password").
-		WithProxyProtocol("https").
-		WithNoProxy("localhost,snowflake.computing.com").
-		WithDisableOCSPChecks(false).
-		WithCertRevocationCheckMode("ADVISORY").
-		WithCrlAllowCertificatesWithoutCrlURL(true).
-		WithCrlInMemoryCacheDisabled(false).
-		WithCrlOnDiskCacheDisabled(true).
-		WithCrlHTTPClientTimeout(30).
-		WithDisableSamlURLCheck(true),
+	return configDtoToTomlString(
+		t, profile, sdk.NewConfigDTO().
+			WithUser(userId.Name()).
+			WithPrivateKey(privateKey).
+			WithRole(roleId.Name()).
+			WithOrganizationName(accountIdentifier.OrganizationName()).
+			WithAccountName(accountIdentifier.AccountName()).
+			WithWarehouse(warehouseId.Name()).
+			WithClientIp("1.2.3.4").
+			WithProtocol("https").
+			WithPort(443).
+			WithOktaUrl(testvars.ExampleOktaUrlString).
+			WithClientTimeout(10).
+			WithJwtClientTimeout(20).
+			WithLoginTimeout(30).
+			WithRequestTimeout(40).
+			WithJwtExpireTimeout(50).
+			WithExternalBrowserTimeout(60).
+			WithMaxRetryCount(1).
+			WithAuthenticator(string(sdk.AuthenticationTypeJwt)).
+			WithInsecureMode(true).
+			WithOcspFailOpen(true).
+			WithToken("token").
+			WithKeepSessionAlive(true).
+			WithDisableTelemetry(true).
+			WithValidateDefaultParameters(true).
+			WithClientRequestMfaToken(true).
+			WithClientStoreTemporaryCredential(true).
+			WithDriverTracing(string(sdk.DriverLogLevelWarn)).
+			WithTmpDirPath(".").
+			WithDisableQueryContextCache(true).
+			WithIncludeRetryReason(true).
+			WithDisableConsoleLogin(true).
+			WithParams(map[string]*string{
+				"foo": sdk.Pointer("bar"),
+			}).
+			WithOauthClientID("oauth_client_id").
+			WithOauthClientSecret("oauth_client_secret").
+			WithOauthTokenRequestURL("oauth_token_request_url").
+			WithOauthAuthorizationURL("oauth_authorization_url").
+			WithOauthRedirectURI("oauth_redirect_uri").
+			WithOauthScope("oauth_scope").
+			WithWorkloadIdentityProvider("workload_identity_provider").
+			WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+			WithEnableSingleUseRefreshTokens(true).
+			WithLogQueryText(true).
+			WithLogQueryParameters(true).
+			WithProxyHost("").
+			WithProxyPort(443).
+			WithProxyUser("proxy_user").
+			WithProxyPassword("proxy_password").
+			WithProxyProtocol("https").
+			WithNoProxy("localhost,snowflake.computing.com").
+			WithDisableOCSPChecks(false).
+			WithCertRevocationCheckMode("ADVISORY").
+			WithCrlAllowCertificatesWithoutCrlURL(true).
+			WithCrlInMemoryCacheDisabled(false).
+			WithCrlOnDiskCacheDisabled(true).
+			WithCrlHTTPClientTimeout(30).
+			WithDisableSamlURLCheck(true),
 	)
 }
 
@@ -146,14 +147,15 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 func TomlConfigForServiceUser(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, privateKey string) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithUser(userId.Name()).
-		WithPrivateKey(privateKey).
-		WithRole(roleId.Name()).
-		WithOrganizationName(accountIdentifier.OrganizationName()).
-		WithAccountName(accountIdentifier.AccountName()).
-		WithWarehouse(warehouseId.Name()).
-		WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
+	return configDtoToTomlString(
+		t, profile, sdk.NewConfigDTO().
+			WithUser(userId.Name()).
+			WithPrivateKey(privateKey).
+			WithRole(roleId.Name()).
+			WithOrganizationName(accountIdentifier.OrganizationName()).
+			WithAccountName(accountIdentifier.AccountName()).
+			WithWarehouse(warehouseId.Name()).
+			WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
 	)
 }
 
@@ -161,14 +163,15 @@ func TomlConfigForServiceUser(t *testing.T, profile string, userId sdk.AccountOb
 func TomlConfigForServiceUserWithPat(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, token string) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithUser(userId.Name()).
-		WithRole(roleId.Name()).
-		WithOrganizationName(accountIdentifier.OrganizationName()).
-		WithAccountName(accountIdentifier.AccountName()).
-		WithWarehouse(warehouseId.Name()).
-		WithAuthenticator(string(sdk.AuthenticationTypeProgrammaticAccessToken)).
-		WithToken(token),
+	return configDtoToTomlString(
+		t, profile, sdk.NewConfigDTO().
+			WithUser(userId.Name()).
+			WithRole(roleId.Name()).
+			WithOrganizationName(accountIdentifier.OrganizationName()).
+			WithAccountName(accountIdentifier.AccountName()).
+			WithWarehouse(warehouseId.Name()).
+			WithAuthenticator(string(sdk.AuthenticationTypeProgrammaticAccessToken)).
+			WithToken(token),
 	)
 }
 
@@ -176,15 +179,16 @@ func TomlConfigForServiceUserWithPat(t *testing.T, profile string, userId sdk.Ac
 func TomlConfigForServiceUserWithEncryptedKey(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, privateKey string, pass string) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithUser(userId.Name()).
-		WithPrivateKey(privateKey).
-		WithPrivateKeyPassphrase(pass).
-		WithRole(roleId.Name()).
-		WithOrganizationName(accountIdentifier.OrganizationName()).
-		WithAccountName(accountIdentifier.AccountName()).
-		WithWarehouse(warehouseId.Name()).
-		WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
+	return configDtoToTomlString(
+		t, profile, sdk.NewConfigDTO().
+			WithUser(userId.Name()).
+			WithPrivateKey(privateKey).
+			WithPrivateKeyPassphrase(pass).
+			WithRole(roleId.Name()).
+			WithOrganizationName(accountIdentifier.OrganizationName()).
+			WithAccountName(accountIdentifier.AccountName()).
+			WithWarehouse(warehouseId.Name()).
+			WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
 	)
 }
 
@@ -193,13 +197,14 @@ func TomlIncorrectConfigForServiceUser(t *testing.T, profile string, accountIden
 	t.Helper()
 
 	privateKey, _, _, _ := random.GenerateRSAKeyPair(t, "")
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithUser("non-existing-user").
-		WithPrivateKey(privateKey).
-		WithRole("non-existing-role").
-		WithOrganizationName(accountIdentifier.OrganizationName()).
-		WithAccountName(accountIdentifier.AccountName()).
-		WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
+	return configDtoToTomlString(
+		t, profile, sdk.NewConfigDTO().
+			WithUser("non-existing-user").
+			WithPrivateKey(privateKey).
+			WithRole("non-existing-role").
+			WithOrganizationName(accountIdentifier.OrganizationName()).
+			WithAccountName(accountIdentifier.AccountName()).
+			WithAuthenticator(string(sdk.AuthenticationTypeJwt)),
 	)
 }
 
@@ -246,14 +251,15 @@ func TomlConfigForServiceUserWithOauthClientCredentials(
 ) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.NewConfigDTO().
-		WithRole(roleId.Name()).
-		WithOrganizationName(accountIdentifier.OrganizationName()).
-		WithAccountName(accountIdentifier.AccountName()).
-		WithOauthClientID(oauthClientId).
-		WithOauthClientSecret(oauthClientSecret).
-		WithOauthTokenRequestURL(oauthTokenRequestURL).
-		WithAuthenticator(string(sdk.AuthenticationTypeOauthClientCredentials)),
+	return configDtoToTomlString(
+		t, profile, sdk.NewConfigDTO().
+			WithRole(roleId.Name()).
+			WithOrganizationName(accountIdentifier.OrganizationName()).
+			WithAccountName(accountIdentifier.AccountName()).
+			WithOauthClientID(oauthClientId).
+			WithOauthClientSecret(oauthClientSecret).
+			WithOauthTokenRequestURL(oauthTokenRequestURL).
+			WithAuthenticator(string(sdk.AuthenticationTypeOauthClientCredentials)),
 	)
 }
 

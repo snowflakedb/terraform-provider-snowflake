@@ -49,7 +49,8 @@ func TestAcc_ResourceMonitors_BasicUseCase_DifferentFiltering(t *testing.T) {
 			// like (exact)
 			{
 				Config: accconfig.FromModels(t, resourceMonitorModel, resourceMonitorsModelLikeExact),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.ResourceMonitorDatasourceShowOutput(t, resourceMonitorsModelLikeExact.DatasourceReference()).
 						HasName(resourceMonitorId.Name()).
 						HasCreditQuota(5).
@@ -89,7 +90,8 @@ func TestAcc_ResourceMonitors_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, resourceMonitorModel1, datasourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.ResourceMonitorDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).

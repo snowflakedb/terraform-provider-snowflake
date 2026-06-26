@@ -45,7 +45,8 @@ func TestAcc_ImageRepositories(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, imageRepositoryModel, dataSourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "image_repositories.#", "1")),
 
 					resourceshowoutputassert.ImageRepositoriesDatasourceShowOutput(t, "snowflake_image_repositories.test").

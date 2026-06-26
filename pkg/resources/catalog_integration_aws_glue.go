@@ -53,7 +53,8 @@ var catalogIntegrationAwsGlueSchema = func() map[string]*schema.Schema {
 		},
 	}
 	return collections.MergeMaps(
-		catalogIntegrationCommonSchema(schemas.DescribeCatalogIntegrationAwsGlueDetailsSchema), awsGlueSchema)
+		catalogIntegrationCommonSchema(schemas.DescribeCatalogIntegrationAwsGlueDetailsSchema), awsGlueSchema,
+	)
 }()
 
 func CatalogIntegrationAwsGlue() *schema.Resource {
@@ -155,7 +156,8 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) schema.R
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
 				outputMapping{"glue_region", "glue_region", details.GlueRegion, details.GlueRegion, nil},
 			); err != nil {

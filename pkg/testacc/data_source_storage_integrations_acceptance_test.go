@@ -154,7 +154,8 @@ func TestAcc_StorageIntegrations_CompleteUseCase(t *testing.T) {
 			// AWS without describe
 			{
 				Config: accconfig.FromModels(t, storageIntegrationAws, awsNoDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StorageIntegrationsDatasourceShowOutput(t, awsNoDescribe.DatasourceReference()).
 						HasName(awsIntegrationId.Name()).
 						HasEnabled(false).
@@ -168,7 +169,8 @@ func TestAcc_StorageIntegrations_CompleteUseCase(t *testing.T) {
 			// AWS with describe
 			{
 				Config: accconfig.FromModels(t, storageIntegrationAws, awsWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StorageIntegrationsDatasourceShowOutput(t, awsWithDescribe.DatasourceReference()).
 						HasName(awsIntegrationId.Name()).
 						HasEnabled(false).
@@ -194,7 +196,8 @@ func TestAcc_StorageIntegrations_CompleteUseCase(t *testing.T) {
 			// Azure with describe
 			{
 				Config: accconfig.FromModels(t, storageIntegrationAzure, azureWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StorageIntegrationsDatasourceShowOutput(t, azureWithDescribe.DatasourceReference()).
 						HasName(azureIntegrationId.Name()).
 						HasEnabled(false).
@@ -218,7 +221,8 @@ func TestAcc_StorageIntegrations_CompleteUseCase(t *testing.T) {
 			// GCS with describe
 			{
 				Config: accconfig.FromModels(t, storageIntegrationGcs, gcsWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.StorageIntegrationsDatasourceShowOutput(t, gcsWithDescribe.DatasourceReference()).
 						HasName(gcsIntegrationId.Name()).
 						HasEnabled(false).

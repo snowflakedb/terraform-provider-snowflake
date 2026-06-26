@@ -219,7 +219,8 @@ func ReadSessionPolicyFunc(withExternalChangesMarking bool) schema.ReadContextFu
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"session_idle_timeout_mins", "session_idle_timeout_mins", details.SessionIdleTimeoutMins, details.SessionIdleTimeoutMins, nil},
 				outputMapping{"session_ui_idle_timeout_mins", "session_ui_idle_timeout_mins", details.SessionUiIdleTimeoutMins, details.SessionUiIdleTimeoutMins, nil},
 			); err != nil {
@@ -231,7 +232,8 @@ func ReadSessionPolicyFunc(withExternalChangesMarking bool) schema.ReadContextFu
 				}
 				return v
 			}
-			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
+				d,
 				outputMapping{"allowed_secondary_roles", "allowed_secondary_roles", details.AllowedSecondaryRoles, secondaryRolesResourceStateFromDescribeOutput(details.AllowedSecondaryRoles), normalizeStringList},
 				outputMapping{"blocked_secondary_roles", "blocked_secondary_roles", details.BlockedSecondaryRoles, secondaryRolesResourceStateFromDescribeOutput(details.BlockedSecondaryRoles), normalizeStringList},
 			); err != nil {

@@ -21,7 +21,8 @@ func ExternalVolumeDetails(t *testing.T, id sdk.AccountObjectIdentifier) *Extern
 			id,
 			func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ExternalVolumeDetails, sdk.AccountObjectIdentifier] {
 				return testClient.ExternalVolume.Describe
-			}),
+			},
+		),
 	}
 }
 

@@ -35,7 +35,8 @@ func TestSchemasCreate(t *testing.T) {
 			ExternalVolume: Pointer(emptyAccountObjectIdentifier),
 			Catalog:        Pointer(emptyAccountObjectIdentifier),
 		}
-		assertOptsInvalidJoinedErrors(t, opts,
+		assertOptsInvalidJoinedErrors(
+			t, opts,
 			ErrInvalidObjectIdentifier,
 			ErrInvalidObjectIdentifier,
 		)
@@ -293,11 +294,12 @@ func TestSchemasAlter(t *testing.T) {
 				Comment:                                 String("comment"),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA %s SET DATA_RETENTION_TIME_IN_DAYS = 1, MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, `+
-			`EXTERNAL_VOLUME = "%s", CATALOG = "%s", PIPE_EXECUTION_PAUSED = true, REPLACE_INVALID_CHARACTERS = true, DEFAULT_DDL_COLLATION = 'en_US-trim', STORAGE_SERIALIZATION_POLICY = COMPATIBLE, `+
-			`LOG_LEVEL = 'INFO', TRACE_LEVEL = 'PROPAGATE', SUSPEND_TASK_AFTER_NUM_FAILURES = 10, TASK_AUTO_RETRY_ATTEMPTS = 10, USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM, `+
-			`USER_TASK_TIMEOUT_MS = 12000, USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30, QUOTED_IDENTIFIERS_IGNORE_CASE = true, ENABLE_CONSOLE_OUTPUT = true, `+
-			`COMMENT = 'comment'`,
+		assertOptsValidAndSQLEquals(
+			t, opts, `ALTER SCHEMA %s SET DATA_RETENTION_TIME_IN_DAYS = 1, MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, `+
+				`EXTERNAL_VOLUME = "%s", CATALOG = "%s", PIPE_EXECUTION_PAUSED = true, REPLACE_INVALID_CHARACTERS = true, DEFAULT_DDL_COLLATION = 'en_US-trim', STORAGE_SERIALIZATION_POLICY = COMPATIBLE, `+
+				`LOG_LEVEL = 'INFO', TRACE_LEVEL = 'PROPAGATE', SUSPEND_TASK_AFTER_NUM_FAILURES = 10, TASK_AUTO_RETRY_ATTEMPTS = 10, USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM, `+
+				`USER_TASK_TIMEOUT_MS = 12000, USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30, QUOTED_IDENTIFIERS_IGNORE_CASE = true, ENABLE_CONSOLE_OUTPUT = true, `+
+				`COMMENT = 'comment'`,
 			schemaId.FullyQualifiedName(), externalVolumeId.Name(), catalogId.Name(),
 		)
 	})

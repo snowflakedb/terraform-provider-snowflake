@@ -296,7 +296,8 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err := HandleNestedDataTypeSet(d, "argument", "type", maskingPolicyDescription.Signature,
+		if err := HandleNestedDataTypeSet(
+			d, "argument", "type", maskingPolicyDescription.Signature,
 			func(signature sdk.TableColumnSignature) datatypes.DataType { return signature.Type },
 			func(signature sdk.TableColumnSignature, arg map[string]any, _ map[string]any) {
 				arg["name"] = signature.Name
@@ -306,7 +307,8 @@ func ReadMaskingPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"exempt_other_policies", "exempt_other_policies", maskingPolicy.ExemptOtherPolicies, booleanStringFromBool(maskingPolicy.ExemptOtherPolicies), nil},
 			); err != nil {
 				return diag.FromErr(err)

@@ -25,7 +25,8 @@ func TestInt_TagReferences(t *testing.T) {
 		columns := []sdk.TableColumnRequest{
 			*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 		}
-		table, tableCleanup := testClientHelper().Table.CreateWithRequest(t,
+		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
+			t,
 			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
 				WithTags([]sdk.TagAssociationRequest{
 					*sdk.NewTagAssociationRequest(tag.ID(), tagValue),
@@ -41,18 +42,19 @@ func TestInt_TagReferences(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.TagReferenceFromObject(t, ref).
-			HasTagDatabase(tag.ID().DatabaseName()).
-			HasTagSchema(tag.ID().SchemaName()).
-			HasTagName(tag.ID().Name()).
-			HasTagValue(tagValue).
-			HasLevel(sdk.TagReferenceObjectDomainTable).
-			HasDomain(sdk.TagReferenceObjectDomainTable).
-			HasObjectName(table.ID().Name()).
-			HasObjectDatabase(table.ID().DatabaseName()).
-			HasObjectSchema(table.ID().SchemaName()).
-			HasApplyMethod(sdk.TagReferenceApplyMethodManual).
-			HasNoColumnName(),
+		assertThatObject(
+			t, objectassert.TagReferenceFromObject(t, ref).
+				HasTagDatabase(tag.ID().DatabaseName()).
+				HasTagSchema(tag.ID().SchemaName()).
+				HasTagName(tag.ID().Name()).
+				HasTagValue(tagValue).
+				HasLevel(sdk.TagReferenceObjectDomainTable).
+				HasDomain(sdk.TagReferenceObjectDomainTable).
+				HasObjectName(table.ID().Name()).
+				HasObjectDatabase(table.ID().DatabaseName()).
+				HasObjectSchema(table.ID().SchemaName()).
+				HasApplyMethod(sdk.TagReferenceApplyMethodManual).
+				HasNoColumnName(),
 		)
 	})
 
@@ -66,7 +68,8 @@ func TestInt_TagReferences(t *testing.T) {
 		columns := []sdk.TableColumnRequest{
 			*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 		}
-		table, tableCleanup := testClientHelper().Table.CreateWithRequest(t,
+		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
+			t,
 			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
 				WithTags([]sdk.TagAssociationRequest{
 					*sdk.NewTagAssociationRequest(tag1.ID(), "v1"),
@@ -101,17 +104,19 @@ func TestInt_TagReferences(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.TagReferenceFromObject(t, ref).
-			HasTagName(tag.ID().Name()).
-			HasTagValue(tagValue).
-			HasLevel(sdk.TagReferenceObjectDomainSchema).
-			HasDomain(sdk.TagReferenceObjectDomainTable).
-			HasApplyMethod(sdk.TagReferenceApplyMethodInherited),
+		assertThatObject(
+			t, objectassert.TagReferenceFromObject(t, ref).
+				HasTagName(tag.ID().Name()).
+				HasTagValue(tagValue).
+				HasLevel(sdk.TagReferenceObjectDomainSchema).
+				HasDomain(sdk.TagReferenceObjectDomainTable).
+				HasApplyMethod(sdk.TagReferenceApplyMethodInherited),
 		)
 	})
 
 	t.Run("view domain: propagated tag from source table", func(t *testing.T) {
-		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(
+			t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithAllowedValues(sdk.AllowedValuesRequest{Values: []sdk.StringAllowEmpty{{Value: "propagated_value"}}}).
 				WithPropagate(*sdk.NewTagPropagateRequest().WithPropagationMethod(sdk.TagPropagationOnDependency)),
@@ -121,7 +126,8 @@ func TestInt_TagReferences(t *testing.T) {
 		columns := []sdk.TableColumnRequest{
 			*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 		}
-		table, tableCleanup := testClientHelper().Table.CreateWithRequest(t,
+		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
+			t,
 			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
 				WithTags([]sdk.TagAssociationRequest{
 					*sdk.NewTagAssociationRequest(tag.ID(), "propagated_value"),
@@ -140,12 +146,13 @@ func TestInt_TagReferences(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.TagReferenceFromObject(t, ref).
-			HasTagName(tag.ID().Name()).
-			HasTagValue("propagated_value").
-			HasLevel(sdk.TagReferenceObjectDomainTable).
-			HasDomain(sdk.TagReferenceObjectDomainTable).
-			HasApplyMethod(sdk.TagReferenceApplyMethodPropagated),
+		assertThatObject(
+			t, objectassert.TagReferenceFromObject(t, ref).
+				HasTagName(tag.ID().Name()).
+				HasTagValue("propagated_value").
+				HasLevel(sdk.TagReferenceObjectDomainTable).
+				HasDomain(sdk.TagReferenceObjectDomainTable).
+				HasApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 		)
 	})
 

@@ -545,9 +545,10 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = client.Grants.RevokePrivilegesFromAccountRole(ctx, &sdk.AccountRoleGrantPrivileges{
-				AllPrivileges: sdk.Bool(true),
-			},
+			err = client.Grants.RevokePrivilegesFromAccountRole(
+				ctx, &sdk.AccountRoleGrantPrivileges{
+					AllPrivileges: sdk.Bool(true),
+				},
 				grantOn,
 				id.RoleName,
 				new(sdk.RevokePrivilegesFromAccountRoleOptions),
@@ -684,9 +685,10 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = client.Grants.GrantPrivilegesToAccountRole(ctx, &sdk.AccountRoleGrantPrivileges{
-				AllPrivileges: sdk.Bool(true),
-			},
+			err = client.Grants.GrantPrivilegesToAccountRole(
+				ctx, &sdk.AccountRoleGrantPrivileges{
+					AllPrivileges: sdk.Bool(true),
+				},
 				grantOn,
 				id.RoleName,
 				new(sdk.GrantPrivilegesToAccountRoleOptions),

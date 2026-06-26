@@ -160,7 +160,8 @@ func GetReadStorageIntegrationGcsFunc(withExternalChangesMarking bool) schema.Re
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)
 
-		errs = errors.Join(errs,
+		errs = errors.Join(
+			errs,
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StorageIntegrationToSchema(s)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StorageIntegrationGcsDetailsToSchema(gcsDetails)}),
 		)

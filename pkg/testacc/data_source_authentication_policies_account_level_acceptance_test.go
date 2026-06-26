@@ -46,7 +46,8 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 			{
 				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				Config:                   accconfig.FromModels(t, basicModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.show_output.#", "0")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.describe_output.#", "0")),
 				),

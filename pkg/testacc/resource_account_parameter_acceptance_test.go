@@ -63,9 +63,10 @@ func TestAcc_AccountParameter(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						Config: config.FromModels(t, accountParameterModel),
-						Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-							HasKeyString(string(tt.param)).
-							HasValueString(tt.value),
+						Check: assertThat(
+							t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
+								HasKeyString(string(tt.param)).
+								HasValueString(tt.value),
 						),
 					},
 				},
@@ -87,9 +88,10 @@ func TestAcc_AccountParameter_Issue2573(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterInitialReplicationSizeLimitInTB)).
-					HasValueString("3.0"),
+				Check: assertThat(
+					t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
+						HasKeyString(string(sdk.AccountParameterInitialReplicationSizeLimitInTB)).
+						HasValueString("3.0"),
 				),
 			},
 			{
@@ -113,9 +115,10 @@ func TestAcc_AccountParameter_Issue3025(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList)).
-					HasValueString("true"),
+				Check: assertThat(
+					t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
+						HasKeyString(string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList)).
+						HasValueString("true"),
 				),
 			},
 			{

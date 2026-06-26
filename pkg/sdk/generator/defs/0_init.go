@@ -9,7 +9,8 @@ import (
 )
 
 func init() {
-	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions,
+	gen.AllSdkObjectDefinitions = append(
+		gen.AllSdkObjectDefinitions,
 		apiIntegrationsDef,
 		applicationPackagesDef,
 		applicationRolesDef,

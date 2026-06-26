@@ -67,7 +67,8 @@ func TestAcc_SemanticViews_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, semanticViewModel, dataSourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.#", "1")),
 					resourceshowoutputassert.SemanticViewsDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasName(id.Name()).

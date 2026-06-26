@@ -123,7 +123,8 @@ func buildExternalMcpOAuth2Auth(d *schema.ResourceData) (*sdk.OAuth2McpUserAuthe
 }
 
 func ImportApiIntegrationExternalMcpOAuth2(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	return importApiIntegrationWithDetails(ctx, d, meta,
+	return importApiIntegrationWithDetails(
+		ctx, d, meta,
 		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationExternalMcpDetails, error) {
 			return client.ApiIntegrations.DescribeExternalMcpDetails(ctx, id)
 		},

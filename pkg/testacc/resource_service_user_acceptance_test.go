@@ -84,7 +84,8 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 			// CREATE WITHOUT ATTRIBUTES
 			{
 				Config: config.FromModels(t, userModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoLoginName().
@@ -109,7 +110,8 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 			// RENAME AND CHANGE ONE PROP
 			{
 				Config: config.FromModels(t, userModelNoAttributesRenamed),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelNoAttributes.ResourceReference()).
 						HasNameString(id2.Name()).
 						HasCommentString(newComment),
@@ -133,7 +135,8 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 					"disabled",
 					"default_secondary_roles_option",
 				},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedServiceUserResource(t, id2.Name()).
 						HasLoginNameString(strings.ToUpper(id.Name())).
 						HasDisplayNameString(id.Name()).
@@ -149,7 +152,8 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 			// CREATE WITH ALL ATTRIBUTES
 			{
 				Config: config.FromModels(t, userModelAllAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelAllAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasLoginNameString(loginName).
@@ -171,7 +175,8 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 			// CHANGE PROPERTIES
 			{
 				Config: config.FromModels(t, userModelAllAttributesChanged(newLoginName)),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelAllAttributesChanged(newLoginName).ResourceReference()).
 						HasNameString(id.Name()).
 						HasLoginNameString(newLoginName).
@@ -202,7 +207,8 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 					"login_name",
 					"show_output.0.days_to_expiry",
 				},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedServiceUserResource(t, id.Name()).
 						HasDefaultNamespaceString("ONE_PART_NAMESPACE").
 						HasLoginNameString(strings.ToUpper(newLoginName)),
@@ -223,7 +229,8 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 			// UNSET ALL
 			{
 				Config: config.FromModels(t, userModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasLoginNameString("").
@@ -327,7 +334,8 @@ func TestAcc_ServiceUser_AllParameters(t *testing.T) {
 			// create with default values for all the parameters
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.UserParameters(t, userId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -339,7 +347,8 @@ func TestAcc_ServiceUser_AllParameters(t *testing.T) {
 			{
 				ResourceName: userModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceparametersassert.ImportedUserResourceParameters(t, userId.Name()).
 						HasAllDefaults(),
 				),
@@ -347,7 +356,8 @@ func TestAcc_ServiceUser_AllParameters(t *testing.T) {
 			// set all parameters
 			{
 				Config: config.FromModels(t, userModelWithAllParametersSet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.UserParameters(t, userId).
 						HasAbortDetachedQuery(true).
 						HasAutocommit(false).
@@ -474,7 +484,8 @@ func TestAcc_ServiceUser_AllParameters(t *testing.T) {
 			{
 				ResourceName: userModelWithAllParametersSet.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceparametersassert.ImportedUserResourceParameters(t, userId.Name()).
 						HasAbortDetachedQuery(true).
 						HasAutocommit(false).
@@ -540,7 +551,8 @@ func TestAcc_ServiceUser_AllParameters(t *testing.T) {
 			// unset all the parameters
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.UserParameters(t, userId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -566,7 +578,8 @@ func TestAcc_ServiceUser_handleExternalTypeChange(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString("SERVICE"),
 					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType("SERVICE"),
 				),
@@ -582,7 +595,8 @@ func TestAcc_ServiceUser_handleExternalTypeChange(t *testing.T) {
 						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString("SERVICE"),
 					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType("SERVICE"),
 				),
@@ -598,7 +612,8 @@ func TestAcc_ServiceUser_handleExternalTypeChange(t *testing.T) {
 						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString("SERVICE"),
 					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType("SERVICE"),
 				),
@@ -672,7 +687,8 @@ func TestAcc_ServiceUser_migrateFromV2_11_0(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
 				Config:            config.FromModels(t, basicModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, basicModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceshowoutputassert.UserShowOutput(t, basicModel.ResourceReference()).
@@ -687,7 +703,8 @@ func TestAcc_ServiceUser_migrateFromV2_11_0(t *testing.T) {
 						plancheck.ExpectResourceAction(basicModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, basicModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceshowoutputassert.UserShowOutput(t, basicModel.ResourceReference()).

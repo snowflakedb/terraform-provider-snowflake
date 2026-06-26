@@ -519,7 +519,8 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err = handleExternalChangesToObjectInDescribe(d,
+			if err = handleExternalChangesToObjectInDescribe(
+				d,
 				describeMapping{"external_oauth_issuer", "external_oauth_issuer", externalOauthIssuer.Value, externalOauthIssuer.Value, nil},
 				describeMapping{"external_oauth_jws_keys_url", "external_oauth_jws_keys_url", externalOauthJwsKeysUrl.Value, sdk.ParseCommaSeparatedStringArray(externalOauthJwsKeysUrl.Value, false), nil},
 				describeMapping{"external_oauth_any_role_mode", "external_oauth_any_role_mode", externalOauthAnyRoleMode.Value, externalOauthAnyRoleMode.Value, nil},

@@ -52,7 +52,8 @@ func TestAcc_FunctionScala_InlineBasic(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionScalaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanDefault).
@@ -79,7 +80,8 @@ func TestAcc_FunctionScala_InlineBasic(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionScalaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()),
 				),
@@ -90,7 +92,8 @@ func TestAcc_FunctionScala_InlineBasic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"arguments.0.arg_data_type", "is_secure", "null_input_behavior", "return_results_behavior"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedFunctionScalaResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -101,7 +104,8 @@ func TestAcc_FunctionScala_InlineBasic(t *testing.T) {
 			// RENAME
 			{
 				Config: config.FromModels(t, functionModelRenamed),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModelRenamed.ResourceReference()).
 						HasNameString(idWithChangedNameButTheSameDataType.Name()).
 						HasFullyQualifiedNameString(idWithChangedNameButTheSameDataType.FullyQualifiedName()),
@@ -193,7 +197,8 @@ func TestAcc_FunctionScala_InlineFull(t *testing.T) {
 			// CREATE WITH ALL
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionScalaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -217,7 +222,8 @@ func TestAcc_FunctionScala_InlineFull(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"arguments.0.arg_data_type"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedFunctionScalaResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -233,7 +239,8 @@ func TestAcc_FunctionScala_InlineFull(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, functionModelUpdateWithoutRecreation),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionScalaResource(t, functionModelUpdateWithoutRecreation.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).

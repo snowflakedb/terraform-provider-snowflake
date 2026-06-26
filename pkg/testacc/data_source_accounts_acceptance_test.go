@@ -63,7 +63,8 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, provider, accountsWithAccountName),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("data.snowflake_accounts.test", "accounts.#", "1")),
 					resourceshowoutputassert.AccountDatasourceShowOutput(t, "snowflake_accounts.test").
 						HasOrganizationName(account.OrganizationName).

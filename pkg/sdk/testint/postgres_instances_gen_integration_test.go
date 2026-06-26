@@ -119,20 +119,21 @@ func TestInt_PostgresInstances(t *testing.T) {
 		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
-			HasName(id.Name()).
-			HasComputeFamily("STANDARD_M").
-			HasStorageSize(10).
-			HasAuthenticationAuthority("POSTGRES").
-			HasIsHa(false).
-			HasType("PRIMARY").
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasNoComment().
-			// TODO: Origin is documented behavior but not currently observed.
-			// HasNoOrigin().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
+				HasName(id.Name()).
+				HasComputeFamily("STANDARD_M").
+				HasStorageSize(10).
+				HasAuthenticationAuthority("POSTGRES").
+				HasIsHa(false).
+				HasType("PRIMARY").
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasNoComment().
+				// TODO: Origin is documented behavior but not currently observed.
+				// HasNoOrigin().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty(),
 		)
 	})
 
@@ -170,17 +171,18 @@ func TestInt_PostgresInstances(t *testing.T) {
 		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
-			HasName(id.Name()).
-			HasComputeFamily("STANDARD_M").
-			HasStorageSize(10).
-			HasAuthenticationAuthority("POSTGRES").
-			HasPostgresVersion("17").
-			HasIsHa(true).
-			HasComment(comment).
-			HasPostgresSettings(`{"postgres:work_mem":"128MB"}`).
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
+				HasName(id.Name()).
+				HasComputeFamily("STANDARD_M").
+				HasStorageSize(10).
+				HasAuthenticationAuthority("POSTGRES").
+				HasPostgresVersion("17").
+				HasIsHa(true).
+				HasComment(comment).
+				HasPostgresSettings(`{"postgres:work_mem":"128MB"}`).
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty(),
 		)
 	})
 
@@ -222,9 +224,10 @@ func TestInt_PostgresInstances(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
 
-		assertThatObject(t, objectassert.PostgresInstance(t, id).
-			HasName(id.Name()).
-			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
+		assertThatObject(
+			t, objectassert.PostgresInstance(t, id).
+				HasName(id.Name()).
+				HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
 		)
 	})
 
@@ -289,8 +292,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkedId)
 		require.NoError(t, showErr)
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
-			HasName(forkedId.Name()),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
+				HasName(forkedId.Name()),
 		)
 	})
 
@@ -381,9 +385,10 @@ func TestInt_PostgresInstances(t *testing.T) {
 		forkedInstance, err := client.PostgresInstances.ShowByID(ctx, forkId)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
-			HasName(forkId.Name()).
-			HasComment(comment),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
+				HasName(forkId.Name()).
+				HasComment(comment),
 		)
 	})
 
@@ -477,12 +482,13 @@ func TestInt_PostgresInstances(t *testing.T) {
 		}, 6*time.Minute, 5*time.Second)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasComment(comment).
-			HasStorageSize(20).
-			HasComputeFamily("STANDARD_L").
-			HasIsHa(true).
-			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
+		assertThatObject(
+			t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+				HasComment(comment).
+				HasStorageSize(20).
+				HasComputeFamily("STANDARD_L").
+				HasIsHa(true).
+				HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
 		)
 
 		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
@@ -522,8 +528,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasStorageSize(30),
+		assertThatObject(
+			t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+				HasStorageSize(30),
 		)
 
 		// Set postgres_version
@@ -533,8 +540,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasPostgresVersion("17"),
+		assertThatObject(
+			t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+				HasPostgresVersion("17"),
 		)
 
 		// Set with apply on timestamp
@@ -566,11 +574,12 @@ func TestInt_PostgresInstances(t *testing.T) {
 			require.NoError(t, err)
 			return result.State == sdk.PostgresInstanceStateSuspending || result.State == sdk.PostgresInstanceStateSuspended
 		}, 2*time.Minute, 5*time.Second)
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
-			HasStateOneOf(
-				sdk.PostgresInstanceStateSuspending,
-				sdk.PostgresInstanceStateSuspended,
-			),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, result).
+				HasStateOneOf(
+					sdk.PostgresInstanceStateSuspending,
+					sdk.PostgresInstanceStateSuspended,
+				),
 		)
 
 		// Suspend again - expect error due to invalid state
@@ -597,13 +606,14 @@ func TestInt_PostgresInstances(t *testing.T) {
 			return result.State != sdk.PostgresInstanceStateSuspended
 		}, 2*time.Minute, 5*time.Second)
 		// State may be RESUMING, STARTING, CREATING, or READY depending on timing
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
-			HasStateOneOf(
-				sdk.PostgresInstanceStateResuming,
-				sdk.PostgresInstanceStateStarting,
-				sdk.PostgresInstanceStateCreating,
-				sdk.PostgresInstanceStateReady,
-			),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, result).
+				HasStateOneOf(
+					sdk.PostgresInstanceStateResuming,
+					sdk.PostgresInstanceStateStarting,
+					sdk.PostgresInstanceStateCreating,
+					sdk.PostgresInstanceStateReady,
+				),
 		)
 	})
 
@@ -763,27 +773,28 @@ func TestInt_PostgresInstances(t *testing.T) {
 		result, err := client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
-			HasName(postgresInstance.Name).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasType("PRIMARY").
-			HasComputeFamily("STANDARD_M").
-			HasStorageSize(10).
-			HasAuthenticationAuthority("POSTGRES").
-			HasIsHa(false).
-			HasRetentionTime(0).
-			HasPostgresVersionNotEmpty().
-			HasStateOneOf(
-				sdk.PostgresInstanceStateCreating,
-				sdk.PostgresInstanceStateStarting,
-				sdk.PostgresInstanceStateReady,
-			).
-			HasNoComment().
-			// TODO: Origin is documented behavior but not currently observed.
-			// HasNoOrigin().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, result).
+				HasName(postgresInstance.Name).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasType("PRIMARY").
+				HasComputeFamily("STANDARD_M").
+				HasStorageSize(10).
+				HasAuthenticationAuthority("POSTGRES").
+				HasIsHa(false).
+				HasRetentionTime(0).
+				HasPostgresVersionNotEmpty().
+				HasStateOneOf(
+					sdk.PostgresInstanceStateCreating,
+					sdk.PostgresInstanceStateStarting,
+					sdk.PostgresInstanceStateReady,
+				).
+				HasNoComment().
+				// TODO: Origin is documented behavior but not currently observed.
+				// HasNoOrigin().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty(),
 		)
 	})
 

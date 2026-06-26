@@ -492,7 +492,8 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedInternally(t *testing.T) {
 			}
 
 			if testCase.ExpectedFirstStepError == nil {
-				testSteps = append(testSteps,
+				testSteps = append(
+					testSteps,
 					resource.TestStep{
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
@@ -560,7 +561,8 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedInternally(t *testing.T) {
 			}
 
 			if testCase.ExpectedFirstStepError == nil {
-				testSteps = append(testSteps,
+				testSteps = append(
+					testSteps,
 					resource.TestStep{
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
@@ -631,15 +633,16 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedExternally(t *testing.T) {
 			}
 
 			if testCase.ExpectedFirstStepError == nil {
-				testSteps = append(testSteps, resource.TestStep{
-					PreConfig: func() {
-						testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithNewName(newDatabaseId))
+				testSteps = append(
+					testSteps, resource.TestStep{
+						PreConfig: func() {
+							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithNewName(newDatabaseId))
+						},
+						Config: config.FromModels(t, databaseConfigModelWithNewId) +
+							configSchemaWithReferences(t, databaseConfigModelWithNewId.ResourceReference(), testCase.DatabaseInSchemaDependency, newDatabaseId.Name(), schemaName) +
+							configTableWithReferences(t, databaseConfigModelWithNewId.ResourceReference(), testCase.DatabaseDependency, "snowflake_schema.test", testCase.SchemaDependency, newDatabaseId.Name(), schemaName, tableName),
+						ExpectError: testCase.ExpectedSecondStepError,
 					},
-					Config: config.FromModels(t, databaseConfigModelWithNewId) +
-						configSchemaWithReferences(t, databaseConfigModelWithNewId.ResourceReference(), testCase.DatabaseInSchemaDependency, newDatabaseId.Name(), schemaName) +
-						configTableWithReferences(t, databaseConfigModelWithNewId.ResourceReference(), testCase.DatabaseDependency, "snowflake_schema.test", testCase.SchemaDependency, newDatabaseId.Name(), schemaName, tableName),
-					ExpectError: testCase.ExpectedSecondStepError,
-				},
 				)
 			}
 
@@ -697,15 +700,16 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 			}
 
 			if testCase.ExpectedFirstStepError == nil {
-				testSteps = append(testSteps, resource.TestStep{
-					PreConfig: func() {
-						testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schemaId).WithNewName(newSchemaId))
+				testSteps = append(
+					testSteps, resource.TestStep{
+						PreConfig: func() {
+							testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schemaId).WithNewName(newSchemaId))
+						},
+						Config: config.FromModels(t, databaseConfigModel) +
+							configSchemaWithReferences(t, databaseConfigModel.ResourceReference(), testCase.DatabaseInSchemaDependency, databaseId.Name(), newSchemaId.Name()) +
+							configTableWithReferences(t, databaseConfigModel.ResourceReference(), testCase.DatabaseDependency, "snowflake_schema.test", testCase.SchemaDependency, databaseId.Name(), newSchemaId.Name(), tableName),
+						ExpectError: testCase.ExpectedSecondStepError,
 					},
-					Config: config.FromModels(t, databaseConfigModel) +
-						configSchemaWithReferences(t, databaseConfigModel.ResourceReference(), testCase.DatabaseInSchemaDependency, databaseId.Name(), newSchemaId.Name()) +
-						configTableWithReferences(t, databaseConfigModel.ResourceReference(), testCase.DatabaseDependency, "snowflake_schema.test", testCase.SchemaDependency, databaseId.Name(), newSchemaId.Name(), tableName),
-					ExpectError: testCase.ExpectedSecondStepError,
-				},
 				)
 			}
 

@@ -132,7 +132,8 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, warehouseModel, warehousesModelWithoutOptionals),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					commonShowAssert(t, warehousesModelWithoutOptionals.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
@@ -141,7 +142,8 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, warehouseModel, warehousesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					commonShowAssert(t, warehousesModel.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.#", "1")),
@@ -188,7 +190,8 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, warehouseModel, warehousesModelWithoutOptionals),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModelWithoutOptionals.DatasourceReference()).
 						HasName(id.Name()).
 						HasType(sdk.WarehouseTypeAdaptive).
@@ -205,7 +208,8 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, warehouseModel, warehousesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasType(sdk.WarehouseTypeAdaptive).

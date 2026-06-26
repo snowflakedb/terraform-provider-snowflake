@@ -330,8 +330,10 @@ func handleApiAuthRead(d *schema.ResourceData,
 			return err
 		}
 
-		if err = handleExternalChangesToObjectInDescribe(d,
-			append(extraFieldsDescribeMappings,
+		if err = handleExternalChangesToObjectInDescribe(
+			d,
+			append(
+				extraFieldsDescribeMappings,
 				describeMapping{"oauth_access_token_validity", "oauth_access_token_validity", oauthAccessTokenValidity.Value, oauthAccessTokenValidityInt, nil},
 				describeMapping{"oauth_refresh_token_validity", "oauth_refresh_token_validity", oauthRefreshTokenValidity.Value, oauthRefreshTokenValidityInt, nil},
 				describeMapping{"oauth_client_id", "oauth_client_id", oauthClientId.Value, oauthClientId.Value, nil},

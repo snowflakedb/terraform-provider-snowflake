@@ -108,7 +108,8 @@ func CreateApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.Resourc
 }
 
 func ImportApiIntegrationAmazonApiGateway(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	return importApiIntegrationWithDetails(ctx, d, meta,
+	return importApiIntegrationWithDetails(
+		ctx, d, meta,
 		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAwsDetails, error) {
 			return client.ApiIntegrations.DescribeAwsDetails(ctx, id)
 		},

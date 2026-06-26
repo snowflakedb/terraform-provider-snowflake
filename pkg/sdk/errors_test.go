@@ -73,7 +73,8 @@ func TestWriteTree(t *testing.T) {
 			},
 		},
 		"nested errors - custom errors combined with std errors": {
-			Error: NewError("root error",
+			Error: NewError(
+				"root error",
 				errors.New("regular error"),
 				errors.Join(
 					errors.New("regular nested error"),

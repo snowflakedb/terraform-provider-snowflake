@@ -69,9 +69,10 @@ func TestLoadConfigFileWithUnknownFields(t *testing.T) {
 
 func Test_LoadConfigFile_triValueBooleanDefault(t *testing.T) {
 	// omitting the tri value boolean on purpose
-	cfg := ConfigFileWithDefaultProfile(NewConfigDTO().
-		WithAccountName("TEST_ACCOUNT").
-		WithOrganizationName("TEST_ORG"),
+	cfg := ConfigFileWithDefaultProfile(
+		NewConfigDTO().
+			WithAccountName("TEST_ACCOUNT").
+			WithOrganizationName("TEST_ORG"),
 	)
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
@@ -98,10 +99,11 @@ func Test_LoadConfigFile_triValueBooleanSet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(strconv.FormatBool(tt.value), func(t *testing.T) {
-			cfg := ConfigFileWithDefaultProfile(NewConfigDTO().
-				WithAccountName("TEST_ACCOUNT").
-				WithOrganizationName("TEST_ORG").
-				WithValidateDefaultParameters(tt.value),
+			cfg := ConfigFileWithDefaultProfile(
+				NewConfigDTO().
+					WithAccountName("TEST_ACCOUNT").
+					WithOrganizationName("TEST_ORG").
+					WithValidateDefaultParameters(tt.value),
 			)
 			bytes, err := cfg.MarshalToml()
 			require.NoError(t, err)
@@ -290,70 +292,71 @@ func TestLoadConfigFileWithInvalidTOMLFails(t *testing.T) {
 func TestProfileConfig(t *testing.T) {
 	unencryptedKey, encryptedKey := random.GenerateRSAPrivateKeyEncrypted(t, "password")
 
-	cfg := ConfigFileWithProfile(NewConfigDTO().
-		WithAccountName("accountname").
-		WithOrganizationName("organizationname").
-		WithUser("user").
-		WithPassword("password").
-		WithHost("host").
-		WithWarehouse("warehouse").
-		WithRole("role").
-		WithClientIp("1.1.1.1").
-		WithProtocol("http").
-		WithPasscode("passcode").
-		WithPort(1).
-		WithPasscodeInPassword(true).
-		WithOktaUrl(testvars.ExampleOktaUrlString).
-		WithClientTimeout(10).
-		WithJwtClientTimeout(20).
-		WithLoginTimeout(30).
-		WithRequestTimeout(40).
-		WithJwtExpireTimeout(50).
-		WithExternalBrowserTimeout(60).
-		WithMaxRetryCount(1).
-		WithAuthenticator(string(AuthenticationTypeJwt)).
-		WithInsecureMode(false).
-		WithOcspFailOpen(true).
-		WithToken("token").
-		WithKeepSessionAlive(true).
-		WithPrivateKey(encryptedKey).
-		WithPrivateKeyPassphrase("password").
-		WithDisableTelemetry(true).
-		WithValidateDefaultParameters(true).
-		WithClientRequestMfaToken(true).
-		WithClientStoreTemporaryCredential(true).
-		WithDriverTracing(string(DriverLogLevelTrace)).
-		WithTmpDirPath(".").
-		WithDisableQueryContextCache(true).
-		WithIncludeRetryReason(true).
-		WithDisableConsoleLogin(true).
-		WithParams(map[string]*string{
-			"foo": Pointer("bar"),
-		}).
-		WithOauthClientID("oauth_client_id").
-		WithOauthClientSecret("oauth_client_secret").
-		WithOauthTokenRequestURL("oauth_token_request_url").
-		WithOauthAuthorizationURL("oauth_authorization_url").
-		WithOauthRedirectURI("oauth_redirect_uri").
-		WithOauthScope("oauth_scope").
-		WithEnableSingleUseRefreshTokens(true).
-		WithWorkloadIdentityProvider("workload_identity_provider").
-		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
-		WithLogQueryText(true).
-		WithLogQueryParameters(true).
-		WithProxyHost("proxy.example.com").
-		WithProxyPort(443).
-		WithProxyUser("username").
-		WithProxyPassword("****").
-		WithProxyProtocol("https").
-		WithNoProxy("localhost,snowflake.computing.com").
-		WithDisableOCSPChecks(false).
-		WithCertRevocationCheckMode("ADVISORY").
-		WithCrlAllowCertificatesWithoutCrlURL(true).
-		WithCrlInMemoryCacheDisabled(false).
-		WithCrlOnDiskCacheDisabled(true).
-		WithCrlHTTPClientTimeout(30).
-		WithDisableSamlURLCheck(true),
+	cfg := ConfigFileWithProfile(
+		NewConfigDTO().
+			WithAccountName("accountname").
+			WithOrganizationName("organizationname").
+			WithUser("user").
+			WithPassword("password").
+			WithHost("host").
+			WithWarehouse("warehouse").
+			WithRole("role").
+			WithClientIp("1.1.1.1").
+			WithProtocol("http").
+			WithPasscode("passcode").
+			WithPort(1).
+			WithPasscodeInPassword(true).
+			WithOktaUrl(testvars.ExampleOktaUrlString).
+			WithClientTimeout(10).
+			WithJwtClientTimeout(20).
+			WithLoginTimeout(30).
+			WithRequestTimeout(40).
+			WithJwtExpireTimeout(50).
+			WithExternalBrowserTimeout(60).
+			WithMaxRetryCount(1).
+			WithAuthenticator(string(AuthenticationTypeJwt)).
+			WithInsecureMode(false).
+			WithOcspFailOpen(true).
+			WithToken("token").
+			WithKeepSessionAlive(true).
+			WithPrivateKey(encryptedKey).
+			WithPrivateKeyPassphrase("password").
+			WithDisableTelemetry(true).
+			WithValidateDefaultParameters(true).
+			WithClientRequestMfaToken(true).
+			WithClientStoreTemporaryCredential(true).
+			WithDriverTracing(string(DriverLogLevelTrace)).
+			WithTmpDirPath(".").
+			WithDisableQueryContextCache(true).
+			WithIncludeRetryReason(true).
+			WithDisableConsoleLogin(true).
+			WithParams(map[string]*string{
+				"foo": Pointer("bar"),
+			}).
+			WithOauthClientID("oauth_client_id").
+			WithOauthClientSecret("oauth_client_secret").
+			WithOauthTokenRequestURL("oauth_token_request_url").
+			WithOauthAuthorizationURL("oauth_authorization_url").
+			WithOauthRedirectURI("oauth_redirect_uri").
+			WithOauthScope("oauth_scope").
+			WithEnableSingleUseRefreshTokens(true).
+			WithWorkloadIdentityProvider("workload_identity_provider").
+			WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+			WithLogQueryText(true).
+			WithLogQueryParameters(true).
+			WithProxyHost("proxy.example.com").
+			WithProxyPort(443).
+			WithProxyUser("username").
+			WithProxyPassword("****").
+			WithProxyProtocol("https").
+			WithNoProxy("localhost,snowflake.computing.com").
+			WithDisableOCSPChecks(false).
+			WithCertRevocationCheckMode("ADVISORY").
+			WithCrlAllowCertificatesWithoutCrlURL(true).
+			WithCrlInMemoryCacheDisabled(false).
+			WithCrlOnDiskCacheDisabled(true).
+			WithCrlHTTPClientTimeout(30).
+			WithDisableSamlURLCheck(true),
 		"securityadmin",
 	)
 	bytes, err := cfg.MarshalToml()

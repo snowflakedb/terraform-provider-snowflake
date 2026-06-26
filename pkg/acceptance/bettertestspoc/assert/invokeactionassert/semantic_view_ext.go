@@ -15,5 +15,6 @@ func SemanticViewDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) asser
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.SemanticView, sdk.SchemaObjectIdentifier] {
 			return testClient.SemanticView.Show
-		})
+		},
+	)
 }

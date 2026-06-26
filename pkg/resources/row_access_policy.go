@@ -254,7 +254,8 @@ func ReadRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	if err := HandleNestedDataTypeSet(d, "argument", "type", rowAccessPolicyDescription.Signature,
+	if err := HandleNestedDataTypeSet(
+		d, "argument", "type", rowAccessPolicyDescription.Signature,
 		func(signature sdk.TableColumnSignature) datatypes.DataType { return signature.Type },
 		func(signature sdk.TableColumnSignature, arg map[string]any, _ map[string]any) {
 			arg["name"] = signature.Name

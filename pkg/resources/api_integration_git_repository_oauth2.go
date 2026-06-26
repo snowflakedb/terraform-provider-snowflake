@@ -120,7 +120,8 @@ func ApiIntegrationGitRepositoryOauth2() *schema.Resource {
 }
 
 func ImportApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	return importApiIntegrationWithDetails(ctx, d, meta,
+	return importApiIntegrationWithDetails(
+		ctx, d, meta,
 		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGitHttpsApiDetails, error) {
 			return client.ApiIntegrations.DescribeGitHttpsApiDetails(ctx, id)
 		},

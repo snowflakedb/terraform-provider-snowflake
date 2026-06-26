@@ -183,10 +183,12 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().SecurityIntegration.AlterApiAuthenticationWithAuthorizationCodeGrantFlow(t, sdk.NewAlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest(id).
-						WithSet(*sdk.NewApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSetRequest().
-							WithComment(comment),
-						),
+					testClient().SecurityIntegration.AlterApiAuthenticationWithAuthorizationCodeGrantFlow(
+						t, sdk.NewAlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest(id).
+							WithSet(
+								*sdk.NewApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSetRequest().
+									WithComment(comment),
+							),
 					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -245,7 +247,8 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_CompleteUseC
 			// Create - with all optionals (including force-new fields)
 			{
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.SecurityIntegration(t, id).
 						HasName(id.Name()).
 						HasIntegrationType("API_AUTHENTICATION").

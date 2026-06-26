@@ -41,7 +41,8 @@ func TestAcc_ApiIntegrations_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, resourceModel, datasourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "api_integrations.#", "1")),
 					resourceshowoutputassert.ApiIntegrationsDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
 						HasName(id.Name()).
@@ -58,7 +59,8 @@ func TestAcc_ApiIntegrations_BasicUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, resourceModel, datasourceModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutDescribe.DatasourceReference(), "api_integrations.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutDescribe.DatasourceReference(), "api_integrations.0.describe_output.#", "0")),
 				),
@@ -86,7 +88,8 @@ func TestAcc_ApiIntegrations_AzureProviderType(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, datasourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "api_integrations.#", "1")),
 					resourceshowoutputassert.ApiIntegrationsDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
 						HasName(integration.Name).
@@ -122,7 +125,8 @@ func TestAcc_ApiIntegrations_GoogleProviderType(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, datasourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "api_integrations.#", "1")),
 					resourceshowoutputassert.ApiIntegrationsDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
 						HasName(integration.Name).
@@ -160,7 +164,8 @@ func TestAcc_ApiIntegrations_GitHttpsProviderType(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, datasourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "api_integrations.#", "1")),
 					resourceshowoutputassert.ApiIntegrationsDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
 						HasName(integration.Name).

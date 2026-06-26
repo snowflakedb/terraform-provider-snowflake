@@ -250,7 +250,8 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"compute_family", "compute_family", pi.ComputeFamily, pi.ComputeFamily, nil},
 				outputMapping{"storage_size", "storage_size_gb", pi.StorageSize, pi.StorageSize, nil},
 				outputMapping{"authentication_authority", "authentication_authority", pi.AuthenticationAuthority, pi.AuthenticationAuthority, nil},
@@ -265,7 +266,8 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			if details.StorageIntegration != nil {
 				storageIntegration = details.StorageIntegration.Name()
 			}
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"network_policy", "network_policy", networkPolicy, networkPolicy, nil},
 				outputMapping{"storage_integration", "storage_integration", storageIntegration, storageIntegration, nil},
 				outputMapping{"postgres_version", "postgres_version", details.PostgresVersion, details.PostgresVersion, nil},

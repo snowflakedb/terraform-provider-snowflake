@@ -15,5 +15,6 @@ func RowAccessPolicyDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) as
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.RowAccessPolicy, sdk.SchemaObjectIdentifier] {
 			return testClient.RowAccessPolicy.Show
-		})
+		},
+	)
 }

@@ -49,27 +49,29 @@ func TestInt_CortexAgents(t *testing.T) {
 			Avatar:      sdk.String("business-icon.png"),
 			Color:       sdk.String("blue"),
 		}
-		assertThatObject(t, objectassert.CortexAgent(t, id).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(comment).
-			HasCortexAgentProfile(expectedProfile),
+		assertThatObject(
+			t, objectassert.CortexAgent(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment(comment).
+				HasCortexAgentProfile(expectedProfile),
 		)
-		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(comment).
-			HasCortexAgentProfile(expectedProfile).
-			HasAgentSpec(descSpec).
-			HasCreatedOnNotEmpty().
-			HasDefaultVersionName("LAST").
-			HasVersions(`["VERSION$1"]`).
-			HasAliases(`{"DEFAULT":"VERSION$1","FIRST":"VERSION$1","LAST":"VERSION$1"}`),
+		assertThatObject(
+			t, objectassert.CortexAgentDetails(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment(comment).
+				HasCortexAgentProfile(expectedProfile).
+				HasAgentSpec(descSpec).
+				HasCreatedOnNotEmpty().
+				HasDefaultVersionName("LAST").
+				HasVersions(`["VERSION$1"]`).
+				HasAliases(`{"DEFAULT":"VERSION$1","FIRST":"VERSION$1","LAST":"VERSION$1"}`),
 		)
 	})
 
@@ -83,27 +85,29 @@ func TestInt_CortexAgents(t *testing.T) {
 		cleanup := testClientHelper().CortexAgent.CreateWithRequest(t, sdk.NewCreateCortexAgentRequest(id, yamlSpec))
 		t.Cleanup(cleanup)
 
-		assertThatObject(t, objectassert.CortexAgent(t, id).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment("").
-			HasCortexAgentProfile(sdk.CortexAgentProfile{}),
+		assertThatObject(
+			t, objectassert.CortexAgent(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment("").
+				HasCortexAgentProfile(sdk.CortexAgentProfile{}),
 		)
-		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment("").
-			HasCortexAgentProfile(sdk.CortexAgentProfile{}).
-			HasAgentSpec(descSpec).
-			HasCreatedOnNotEmpty().
-			HasDefaultVersionName("LAST").
-			HasVersions(`["VERSION$1"]`).
-			HasAliases(`{"DEFAULT":"VERSION$1","FIRST":"VERSION$1","LAST":"VERSION$1"}`),
+		assertThatObject(
+			t, objectassert.CortexAgentDetails(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment("").
+				HasCortexAgentProfile(sdk.CortexAgentProfile{}).
+				HasAgentSpec(descSpec).
+				HasCreatedOnNotEmpty().
+				HasDefaultVersionName("LAST").
+				HasVersions(`["VERSION$1"]`).
+				HasAliases(`{"DEFAULT":"VERSION$1","FIRST":"VERSION$1","LAST":"VERSION$1"}`),
 		)
 	})
 
@@ -121,9 +125,10 @@ func TestInt_CortexAgents(t *testing.T) {
 		expectedProfile := sdk.CortexAgentProfile{
 			DisplayName: sdk.String("Renamed Assistant"),
 		}
-		assertThatObject(t, objectassert.CortexAgent(t, id).
-			HasComment(comment).
-			HasCortexAgentProfile(expectedProfile),
+		assertThatObject(
+			t, objectassert.CortexAgent(t, id).
+				HasComment(comment).
+				HasCortexAgentProfile(expectedProfile),
 		)
 		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
 			HasComment(comment).
@@ -136,9 +141,10 @@ func TestInt_CortexAgents(t *testing.T) {
 		require.NoError(t, err)
 
 		expectedEmptyProfile := sdk.CortexAgentProfile{}
-		assertThatObject(t, objectassert.CortexAgent(t, id).
-			HasComment("").
-			HasCortexAgentProfile(expectedEmptyProfile),
+		assertThatObject(
+			t, objectassert.CortexAgent(t, id).
+				HasComment("").
+				HasCortexAgentProfile(expectedEmptyProfile),
 		)
 		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
 			HasComment("").

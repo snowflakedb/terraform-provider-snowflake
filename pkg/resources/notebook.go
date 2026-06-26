@@ -243,7 +243,8 @@ func GetReadNotebookFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 
 		if withExternalChangesMarking {
 			warehouse := notebook.CodeWarehouse.Name()
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"code_warehouse", "warehouse", warehouse, warehouse, nil},
 			); err != nil {
 				return diag.FromErr(err)

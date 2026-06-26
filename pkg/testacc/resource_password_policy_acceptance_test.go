@@ -451,7 +451,8 @@ func TestAcc_PasswordPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, basicModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.PasswordPolicyResource(t, ref).
 						HasName(id.Name()).
 						HasFullyQualifiedName(id.FullyQualifiedName()),
@@ -487,7 +488,8 @@ func TestAcc_PasswordPolicy_migrateFromVersion_2_15_0(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, basicModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(ref, "id", id.FullyQualifiedName())),
 					resourceassert.PasswordPolicyResource(t, ref).
 						HasName(id.Name()).

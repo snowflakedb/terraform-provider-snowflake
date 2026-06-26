@@ -6,15 +6,18 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var resourceMonitorLevelEnum = g.NewEnum("ResourceMonitorLevel", "ResourceMonitorLevels",
+var resourceMonitorLevelEnum = g.NewEnum(
+	"ResourceMonitorLevel", "ResourceMonitorLevels",
 	"ACCOUNT", "WAREHOUSE",
 )
 
-var triggerActionEnum = g.NewEnum("TriggerAction", "TriggerActions",
+var triggerActionEnum = g.NewEnum(
+	"TriggerAction", "TriggerActions",
 	"SUSPEND", "SUSPEND_IMMEDIATE", "NOTIFY",
 )
 
-var frequencyEnum = g.NewEnum("Frequency", "Frequencies",
+var frequencyEnum = g.NewEnum(
+	"Frequency", "Frequencies",
 	"MONTHLY", "DAILY", "WEEKLY", "YEARLY", "NEVER",
 )
 
