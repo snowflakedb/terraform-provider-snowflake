@@ -16,7 +16,7 @@ func GrantPrivilegesToDatabaseRoleResource(t *testing.T, name string) *GrantPriv
 	t.Helper()
 
 	return &GrantPrivilegesToDatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantPrivilegesToDatabaseRoleResource(t *testing.T, id string) *Gra
 	t.Helper()
 
 	return &GrantPrivilegesToDatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -76,32 +76,32 @@ func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasWithGrantOption(expecte
 ///////////////////////////////////
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAllPrivilegesString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("all_privileges", expected))
+	g.ValueSet("all_privileges", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAlwaysApplyString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("always_apply", expected))
+	g.ValueSet("always_apply", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAlwaysApplyTriggerString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("always_apply_trigger", expected))
+	g.ValueSet("always_apply_trigger", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasDatabaseRoleNameString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("database_role_name", expected))
+	g.ValueSet("database_role_name", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnDatabaseString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_database", expected))
+	g.ValueSet("on_database", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasWithGrantOptionString(expected string) *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("with_grant_option", expected))
+	g.ValueSet("with_grant_option", expected)
 	return g
 }
 
@@ -110,32 +110,32 @@ func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasWithGrantOptionString(e
 ///////////////////////////////
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasNoAllPrivileges() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("all_privileges"))
+	g.ValueNotSet("all_privileges")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasNoAlwaysApply() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("always_apply"))
+	g.ValueNotSet("always_apply")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasNoAlwaysApplyTrigger() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("always_apply_trigger"))
+	g.ValueNotSet("always_apply_trigger")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasNoDatabaseRoleName() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("database_role_name"))
+	g.ValueNotSet("database_role_name")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasNoOnDatabase() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_database"))
+	g.ValueNotSet("on_database")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasNoWithGrantOption() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("with_grant_option"))
+	g.ValueNotSet("with_grant_option")
 	return g
 }
 
@@ -144,42 +144,42 @@ func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasNoWithGrantOption() *Gr
 ////////////////////////////
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAllPrivilegesEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("all_privileges", ""))
+	g.ValueSet("all_privileges", "")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAlwaysApplyEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("always_apply", ""))
+	g.ValueSet("always_apply", "")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAlwaysApplyTriggerEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("always_apply_trigger", ""))
+	g.ValueSet("always_apply_trigger", "")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnDatabaseEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_database", ""))
+	g.ValueSet("on_database", "")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnSchemaEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema.#", "0"))
+	g.ValueSet("on_schema.#", "0")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnSchemaObjectEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema_object.#", "0"))
+	g.ValueSet("on_schema_object.#", "0")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasPrivilegesEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("privileges.#", "0"))
+	g.ValueSet("privileges.#", "0")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasWithGrantOptionEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("with_grant_option", ""))
+	g.ValueSet("with_grant_option", "")
 	return g
 }
 
@@ -188,31 +188,31 @@ func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasWithGrantOptionEmpty() 
 ///////////////////////////////
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAllPrivilegesNotEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("all_privileges"))
+	g.ValuePresent("all_privileges")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAlwaysApplyNotEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("always_apply"))
+	g.ValuePresent("always_apply")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasAlwaysApplyTriggerNotEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("always_apply_trigger"))
+	g.ValuePresent("always_apply_trigger")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasDatabaseRoleNameNotEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("database_role_name"))
+	g.ValuePresent("database_role_name")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnDatabaseNotEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_database"))
+	g.ValuePresent("on_database")
 	return g
 }
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasWithGrantOptionNotEmpty() *GrantPrivilegesToDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("with_grant_option"))
+	g.ValuePresent("with_grant_option")
 	return g
 }
