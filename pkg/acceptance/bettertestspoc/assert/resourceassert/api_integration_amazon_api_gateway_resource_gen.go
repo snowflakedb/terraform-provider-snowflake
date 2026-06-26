@@ -16,7 +16,7 @@ func ApiIntegrationAmazonApiGatewayResource(t *testing.T, name string) *ApiInteg
 	t.Helper()
 
 	return &ApiIntegrationAmazonApiGatewayResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationAmazonApiGatewayResource(t *testing.T, id string) *Ap
 	t.Helper()
 
 	return &ApiIntegrationAmazonApiGatewayResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -82,37 +82,37 @@ func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasFullyQualifiedName(exp
 ///////////////////////////////////
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNameString(expected string) *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
+	a.ValueSet("name", expected)
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasApiAwsRoleArnString(expected string) *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_aws_role_arn", expected))
+	a.ValueSet("api_aws_role_arn", expected)
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasApiKeyString(expected string) *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_key", expected))
+	a.ValueSet("api_key", expected)
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasApiProviderString(expected string) *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_provider", expected))
+	a.ValueSet("api_provider", expected)
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasCommentString(expected string) *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", expected))
+	a.ValueSet("comment", expected)
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasEnabledString(expected string) *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("enabled", expected))
+	a.ValueSet("enabled", expected)
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasFullyQualifiedNameString(expected string) *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	a.ValueSet("fully_qualified_name", expected)
 	return a
 }
 
@@ -121,37 +121,37 @@ func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasFullyQualifiedNameStri
 ///////////////////////////////
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNoName() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNoApiAwsRoleArn() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("api_aws_role_arn"))
+	a.ValueNotSet("api_aws_role_arn")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNoApiKey() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("api_key"))
+	a.ValueNotSet("api_key")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNoApiProvider() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("api_provider"))
+	a.ValueNotSet("api_provider")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNoComment() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNoEnabled() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("enabled"))
+	a.ValueNotSet("enabled")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNoFullyQualifiedName() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	a.ValueNotSet("fully_qualified_name")
 	return a
 }
 
@@ -160,22 +160,22 @@ func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNoFullyQualifiedName()
 ////////////////////////////
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasApiBlockedPrefixesEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_blocked_prefixes.#", "0"))
+	a.ValueSet("api_blocked_prefixes.#", "0")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasApiKeyEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_key", ""))
+	a.ValueSet("api_key", "")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasCommentEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
+	a.ValueSet("comment", "")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasFullyQualifiedNameEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	a.ValueSet("fully_qualified_name", "")
 	return a
 }
 
@@ -184,36 +184,36 @@ func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasFullyQualifiedNameEmpt
 ///////////////////////////////
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasNameNotEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
+	a.ValuePresent("name")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasApiAwsRoleArnNotEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("api_aws_role_arn"))
+	a.ValuePresent("api_aws_role_arn")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasApiKeyNotEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("api_key"))
+	a.ValuePresent("api_key")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasApiProviderNotEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("api_provider"))
+	a.ValuePresent("api_provider")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasCommentNotEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
+	a.ValuePresent("comment")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasEnabledNotEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("enabled"))
+	a.ValuePresent("enabled")
 	return a
 }
 
 func (a *ApiIntegrationAmazonApiGatewayResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiIntegrationAmazonApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	a.ValuePresent("fully_qualified_name")
 	return a
 }
