@@ -28,7 +28,7 @@ var (
 		parameter[sdk.AccountParameter]{sdk.AccountParameterExternalVolume, valueTypeString, sdk.ParameterTypeDatabase},
 		parameter[sdk.AccountParameter]{sdk.AccountParameterCatalog, valueTypeString, sdk.ParameterTypeDatabase},
 		parameter[sdk.AccountParameter]{sdk.AccountParameterReplaceInvalidCharacters, valueTypeBool, sdk.ParameterTypeDatabase},
-		parameter[sdk.AccountParameter]{sdk.AccountParameterDefaultDDLCollation, valueTypeString, sdk.ParameterTypeDatabase},
+		parameter[sdk.AccountParameter]{sdk.AccountParameterDefaultDdlCollation, valueTypeString, sdk.ParameterTypeDatabase},
 		parameter[sdk.AccountParameter]{sdk.AccountParameterStorageSerializationPolicy, valueTypeString, sdk.ParameterTypeDatabase},
 		parameter[sdk.AccountParameter]{sdk.AccountParameterLogLevel, valueTypeString, sdk.ParameterTypeDatabase},
 		parameter[sdk.AccountParameter]{sdk.AccountParameterLogEventLevel, valueTypeString, sdk.ParameterTypeDatabase},

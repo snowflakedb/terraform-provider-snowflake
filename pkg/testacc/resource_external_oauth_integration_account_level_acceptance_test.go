@@ -22,7 +22,7 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, "true")
+	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, "true")
 	t.Cleanup(paramCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -127,7 +127,7 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, "false")
+	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, "false")
 	t.Cleanup(paramCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
