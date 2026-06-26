@@ -16,7 +16,7 @@ func ApiIntegrationExternalMcpOAuth2Resource(t *testing.T, name string) *ApiInte
 	t.Helper()
 
 	return &ApiIntegrationExternalMcpOAuth2ResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationExternalMcpOAuth2Resource(t *testing.T, id string) *A
 	t.Helper()
 
 	return &ApiIntegrationExternalMcpOAuth2ResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -97,52 +97,52 @@ func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthTokenEndpoint(ex
 ///////////////////////////////////
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNameString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
+	a.ValueSet("name", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasCommentString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", expected))
+	a.ValueSet("comment", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasEnabledString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("enabled", expected))
+	a.ValueSet("enabled", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasFullyQualifiedNameString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	a.ValueSet("fully_qualified_name", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthAuthorizationEndpointString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_authorization_endpoint", expected))
+	a.ValueSet("oauth_authorization_endpoint", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthClientAuthMethodString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_auth_method", expected))
+	a.ValueSet("oauth_client_auth_method", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthClientIdString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_id", expected))
+	a.ValueSet("oauth_client_id", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthClientSecretString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_secret", expected))
+	a.ValueSet("oauth_client_secret", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthRefreshTokenValidityString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_refresh_token_validity", expected))
+	a.ValueSet("oauth_refresh_token_validity", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthTokenEndpointString(expected string) *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_token_endpoint", expected))
+	a.ValueSet("oauth_token_endpoint", expected)
 	return a
 }
 
@@ -151,52 +151,52 @@ func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthTokenEndpointStr
 ///////////////////////////////
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoName() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoComment() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoEnabled() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("enabled"))
+	a.ValueNotSet("enabled")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoFullyQualifiedName() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	a.ValueNotSet("fully_qualified_name")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoOauthAuthorizationEndpoint() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_authorization_endpoint"))
+	a.ValueNotSet("oauth_authorization_endpoint")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoOauthClientAuthMethod() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_client_auth_method"))
+	a.ValueNotSet("oauth_client_auth_method")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoOauthClientId() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_client_id"))
+	a.ValueNotSet("oauth_client_id")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoOauthClientSecret() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_client_secret"))
+	a.ValueNotSet("oauth_client_secret")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoOauthRefreshTokenValidity() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_refresh_token_validity"))
+	a.ValueNotSet("oauth_refresh_token_validity")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoOauthTokenEndpoint() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_token_endpoint"))
+	a.ValueNotSet("oauth_token_endpoint")
 	return a
 }
 
@@ -205,27 +205,27 @@ func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNoOauthTokenEndpoint(
 ////////////////////////////
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasApiBlockedPrefixesEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_blocked_prefixes.#", "0"))
+	a.ValueSet("api_blocked_prefixes.#", "0")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasCommentEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
+	a.ValueSet("comment", "")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasFullyQualifiedNameEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	a.ValueSet("fully_qualified_name", "")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthClientAuthMethodEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_auth_method", ""))
+	a.ValueSet("oauth_client_auth_method", "")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthRefreshTokenValidityEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_refresh_token_validity", ""))
+	a.ValueSet("oauth_refresh_token_validity", "")
 	return a
 }
 
@@ -234,51 +234,51 @@ func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthRefreshTokenVali
 ///////////////////////////////
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasNameNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
+	a.ValuePresent("name")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasCommentNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
+	a.ValuePresent("comment")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasEnabledNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("enabled"))
+	a.ValuePresent("enabled")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	a.ValuePresent("fully_qualified_name")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthAuthorizationEndpointNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_authorization_endpoint"))
+	a.ValuePresent("oauth_authorization_endpoint")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthClientAuthMethodNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_auth_method"))
+	a.ValuePresent("oauth_client_auth_method")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthClientIdNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_id"))
+	a.ValuePresent("oauth_client_id")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthClientSecretNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_secret"))
+	a.ValuePresent("oauth_client_secret")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthRefreshTokenValidityNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_refresh_token_validity"))
+	a.ValuePresent("oauth_refresh_token_validity")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpOAuth2ResourceAssert) HasOauthTokenEndpointNotEmpty() *ApiIntegrationExternalMcpOAuth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_token_endpoint"))
+	a.ValuePresent("oauth_token_endpoint")
 	return a
 }
