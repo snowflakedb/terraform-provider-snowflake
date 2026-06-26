@@ -16,7 +16,7 @@ func PasswordPolicyResource(t *testing.T, name string) *PasswordPolicyResourceAs
 	t.Helper()
 
 	return &PasswordPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPasswordPolicyResource(t *testing.T, id string) *PasswordPolicyReso
 	t.Helper()
 
 	return &PasswordPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -127,92 +127,92 @@ func (p *PasswordPolicyResourceAssert) HasOrReplace(expected bool) *PasswordPoli
 ///////////////////////////////////
 
 func (p *PasswordPolicyResourceAssert) HasDatabaseString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
+	p.ValueSet("database", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasSchemaString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
+	p.ValueSet("schema", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNameString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
+	p.ValueSet("name", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasCommentString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", expected))
+	p.ValueSet("comment", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasFullyQualifiedNameString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	p.ValueSet("fully_qualified_name", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasHistoryString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("history", expected))
+	p.ValueSet("history", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasIfNotExistsString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("if_not_exists", expected))
+	p.ValueSet("if_not_exists", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasLockoutTimeMinsString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("lockout_time_mins", expected))
+	p.ValueSet("lockout_time_mins", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxAgeDaysString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("max_age_days", expected))
+	p.ValueSet("max_age_days", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxLengthString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("max_length", expected))
+	p.ValueSet("max_length", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxRetriesString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("max_retries", expected))
+	p.ValueSet("max_retries", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinAgeDaysString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_age_days", expected))
+	p.ValueSet("min_age_days", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinLengthString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_length", expected))
+	p.ValueSet("min_length", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinLowerCaseCharsString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_lower_case_chars", expected))
+	p.ValueSet("min_lower_case_chars", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinNumericCharsString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_numeric_chars", expected))
+	p.ValueSet("min_numeric_chars", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinSpecialCharsString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_special_chars", expected))
+	p.ValueSet("min_special_chars", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinUpperCaseCharsString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_upper_case_chars", expected))
+	p.ValueSet("min_upper_case_chars", expected)
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasOrReplaceString(expected string) *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("or_replace", expected))
+	p.ValueSet("or_replace", expected)
 	return p
 }
 
@@ -221,92 +221,92 @@ func (p *PasswordPolicyResourceAssert) HasOrReplaceString(expected string) *Pass
 ///////////////////////////////
 
 func (p *PasswordPolicyResourceAssert) HasNoDatabase() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
+	p.ValueNotSet("database")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoSchema() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
+	p.ValueNotSet("schema")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoName() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoComment() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoFullyQualifiedName() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	p.ValueNotSet("fully_qualified_name")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoHistory() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("history"))
+	p.ValueNotSet("history")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoIfNotExists() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("if_not_exists"))
+	p.ValueNotSet("if_not_exists")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoLockoutTimeMins() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("lockout_time_mins"))
+	p.ValueNotSet("lockout_time_mins")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMaxAgeDays() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("max_age_days"))
+	p.ValueNotSet("max_age_days")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMaxLength() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("max_length"))
+	p.ValueNotSet("max_length")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMaxRetries() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("max_retries"))
+	p.ValueNotSet("max_retries")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMinAgeDays() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("min_age_days"))
+	p.ValueNotSet("min_age_days")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMinLength() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("min_length"))
+	p.ValueNotSet("min_length")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMinLowerCaseChars() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("min_lower_case_chars"))
+	p.ValueNotSet("min_lower_case_chars")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMinNumericChars() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("min_numeric_chars"))
+	p.ValueNotSet("min_numeric_chars")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMinSpecialChars() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("min_special_chars"))
+	p.ValueNotSet("min_special_chars")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoMinUpperCaseChars() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("min_upper_case_chars"))
+	p.ValueNotSet("min_upper_case_chars")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNoOrReplace() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("or_replace"))
+	p.ValueNotSet("or_replace")
 	return p
 }
 
@@ -315,77 +315,77 @@ func (p *PasswordPolicyResourceAssert) HasNoOrReplace() *PasswordPolicyResourceA
 ////////////////////////////
 
 func (p *PasswordPolicyResourceAssert) HasCommentEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", ""))
+	p.ValueSet("comment", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasFullyQualifiedNameEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	p.ValueSet("fully_qualified_name", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasHistoryEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("history", ""))
+	p.ValueSet("history", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasIfNotExistsEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("if_not_exists", ""))
+	p.ValueSet("if_not_exists", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasLockoutTimeMinsEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("lockout_time_mins", ""))
+	p.ValueSet("lockout_time_mins", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxAgeDaysEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("max_age_days", ""))
+	p.ValueSet("max_age_days", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxLengthEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("max_length", ""))
+	p.ValueSet("max_length", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxRetriesEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("max_retries", ""))
+	p.ValueSet("max_retries", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinAgeDaysEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_age_days", ""))
+	p.ValueSet("min_age_days", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinLengthEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_length", ""))
+	p.ValueSet("min_length", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinLowerCaseCharsEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_lower_case_chars", ""))
+	p.ValueSet("min_lower_case_chars", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinNumericCharsEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_numeric_chars", ""))
+	p.ValueSet("min_numeric_chars", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinSpecialCharsEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_special_chars", ""))
+	p.ValueSet("min_special_chars", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinUpperCaseCharsEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("min_upper_case_chars", ""))
+	p.ValueSet("min_upper_case_chars", "")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasOrReplaceEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValueSet("or_replace", ""))
+	p.ValueSet("or_replace", "")
 	return p
 }
 
@@ -394,91 +394,91 @@ func (p *PasswordPolicyResourceAssert) HasOrReplaceEmpty() *PasswordPolicyResour
 ///////////////////////////////
 
 func (p *PasswordPolicyResourceAssert) HasDatabaseNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("database"))
+	p.ValuePresent("database")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasSchemaNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("schema"))
+	p.ValuePresent("schema")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasNameNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("name"))
+	p.ValuePresent("name")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasCommentNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("comment"))
+	p.ValuePresent("comment")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	p.ValuePresent("fully_qualified_name")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasHistoryNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("history"))
+	p.ValuePresent("history")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasIfNotExistsNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("if_not_exists"))
+	p.ValuePresent("if_not_exists")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasLockoutTimeMinsNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("lockout_time_mins"))
+	p.ValuePresent("lockout_time_mins")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxAgeDaysNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("max_age_days"))
+	p.ValuePresent("max_age_days")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxLengthNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("max_length"))
+	p.ValuePresent("max_length")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMaxRetriesNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("max_retries"))
+	p.ValuePresent("max_retries")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinAgeDaysNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("min_age_days"))
+	p.ValuePresent("min_age_days")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinLengthNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("min_length"))
+	p.ValuePresent("min_length")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinLowerCaseCharsNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("min_lower_case_chars"))
+	p.ValuePresent("min_lower_case_chars")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinNumericCharsNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("min_numeric_chars"))
+	p.ValuePresent("min_numeric_chars")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinSpecialCharsNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("min_special_chars"))
+	p.ValuePresent("min_special_chars")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasMinUpperCaseCharsNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("min_upper_case_chars"))
+	p.ValuePresent("min_upper_case_chars")
 	return p
 }
 
 func (p *PasswordPolicyResourceAssert) HasOrReplaceNotEmpty() *PasswordPolicyResourceAssert {
-	p.AddAssertion(assert.ValuePresent("or_replace"))
+	p.ValuePresent("or_replace")
 	return p
 }
