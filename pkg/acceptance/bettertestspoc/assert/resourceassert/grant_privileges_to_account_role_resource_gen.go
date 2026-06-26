@@ -16,7 +16,7 @@ func GrantPrivilegesToAccountRoleResource(t *testing.T, name string) *GrantPrivi
 	t.Helper()
 
 	return &GrantPrivilegesToAccountRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantPrivilegesToAccountRoleResource(t *testing.T, id string) *Gran
 	t.Helper()
 
 	return &GrantPrivilegesToAccountRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -83,37 +83,37 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOption(expected
 ///////////////////////////////////
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAccountRoleNameString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("account_role_name", expected))
+	g.ValueSet("account_role_name", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAllPrivilegesString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("all_privileges", expected))
+	g.ValueSet("all_privileges", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("always_apply", expected))
+	g.ValueSet("always_apply", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyTriggerString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("always_apply_trigger", expected))
+	g.ValueSet("always_apply_trigger", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_account", expected))
+	g.ValueSet("on_account", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("strict_privilege_management", expected))
+	g.ValueSet("strict_privilege_management", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOptionString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("with_grant_option", expected))
+	g.ValueSet("with_grant_option", expected)
 	return g
 }
 
@@ -122,37 +122,37 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOptionString(ex
 ///////////////////////////////
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoAccountRoleName() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("account_role_name"))
+	g.ValueNotSet("account_role_name")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoAllPrivileges() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("all_privileges"))
+	g.ValueNotSet("all_privileges")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoAlwaysApply() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("always_apply"))
+	g.ValueNotSet("always_apply")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoAlwaysApplyTrigger() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("always_apply_trigger"))
+	g.ValueNotSet("always_apply_trigger")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoOnAccount() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_account"))
+	g.ValueNotSet("on_account")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoStrictPrivilegeManagement() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("strict_privilege_management"))
+	g.ValueNotSet("strict_privilege_management")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoWithGrantOption() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("with_grant_option"))
+	g.ValueNotSet("with_grant_option")
 	return g
 }
 
@@ -161,52 +161,52 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoWithGrantOption() *Gra
 ////////////////////////////
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAllPrivilegesEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("all_privileges", ""))
+	g.ValueSet("all_privileges", "")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("always_apply", ""))
+	g.ValueSet("always_apply", "")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyTriggerEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("always_apply_trigger", ""))
+	g.ValueSet("always_apply_trigger", "")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_account", ""))
+	g.ValueSet("on_account", "")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountObjectEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_account_object.#", "0"))
+	g.ValueSet("on_account_object.#", "0")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnSchemaEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema.#", "0"))
+	g.ValueSet("on_schema.#", "0")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnSchemaObjectEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema_object.#", "0"))
+	g.ValueSet("on_schema_object.#", "0")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivilegesEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("privileges.#", "0"))
+	g.ValueSet("privileges.#", "0")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("strict_privilege_management", ""))
+	g.ValueSet("strict_privilege_management", "")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOptionEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("with_grant_option", ""))
+	g.ValueSet("with_grant_option", "")
 	return g
 }
 
@@ -215,36 +215,36 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOptionEmpty() *
 ///////////////////////////////
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAccountRoleNameNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("account_role_name"))
+	g.ValuePresent("account_role_name")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAllPrivilegesNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("all_privileges"))
+	g.ValuePresent("all_privileges")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("always_apply"))
+	g.ValuePresent("always_apply")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyTriggerNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("always_apply_trigger"))
+	g.ValuePresent("always_apply_trigger")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_account"))
+	g.ValuePresent("on_account")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("strict_privilege_management"))
+	g.ValuePresent("strict_privilege_management")
 	return g
 }
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOptionNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("with_grant_option"))
+	g.ValuePresent("with_grant_option")
 	return g
 }
