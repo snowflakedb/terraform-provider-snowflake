@@ -273,7 +273,8 @@ func ReadPasswordPolicyFunc(withExternalChangesMarking bool) schema.ReadContextF
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"password_min_length", "min_length", details.PasswordMinLength, details.PasswordMinLength, nil},
 				outputMapping{"password_max_length", "max_length", details.PasswordMaxLength, details.PasswordMaxLength, nil},
 				outputMapping{"password_min_upper_case_chars", "min_upper_case_chars", details.PasswordMinUpperCaseChars, details.PasswordMinUpperCaseChars, nil},

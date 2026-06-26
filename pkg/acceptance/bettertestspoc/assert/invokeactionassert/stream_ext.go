@@ -15,5 +15,6 @@ func StreamDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.Test
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.Stream, sdk.SchemaObjectIdentifier] {
 			return testClient.Stream.Show
-		})
+		},
+	)
 }

@@ -137,7 +137,8 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			// set query_throughput_multiplier to 0 (explicit value, distinct from IntDefault sentinel -1)
 			{
 				Config: accconfig.FromModels(t, warehouseModelWithZeroMultiplier),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasQueryThroughputMultiplier(0),
 					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
@@ -176,12 +177,13 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, warehouseModelUpdated),
 				PreConfig: func() {
 					testClient().Warehouse.DropWarehouseFunc(t, newWarehouseId)()
-					testClient().Warehouse.CreateAdaptiveWithRequest(t, sdk.NewCreateAdaptiveWarehouseRequest(newWarehouseId).
-						WithComment(externalComment).
-						WithQueryThroughputMultiplier(externalQueryThroughputMultiplier).
-						WithStatementTimeoutInSeconds(externalStatementTimeout).
-						WithStatementQueuedTimeoutInSeconds(externalStatementQueuedTimeout).
-						WithMaxQueryPerformanceLevel(externalMaxQueryPerformanceLevel),
+					testClient().Warehouse.CreateAdaptiveWithRequest(
+						t, sdk.NewCreateAdaptiveWarehouseRequest(newWarehouseId).
+							WithComment(externalComment).
+							WithQueryThroughputMultiplier(externalQueryThroughputMultiplier).
+							WithStatementTimeoutInSeconds(externalStatementTimeout).
+							WithStatementQueuedTimeoutInSeconds(externalStatementQueuedTimeout).
+							WithMaxQueryPerformanceLevel(externalMaxQueryPerformanceLevel),
 					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -236,7 +238,8 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 			// create with all fields set
 			{
 				Config: accconfig.FromModels(t, warehouseModelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseAdaptiveResource(t, warehouseModelComplete.ResourceReference()).
 						HasNameString(warehouseId.Name()).
 						HasCommentString(comment).
@@ -340,7 +343,8 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, warehouseModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)),
 					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
@@ -358,7 +362,8 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 						planchecks.ExpectChange(ref, "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeStandard)), sdk.String(string(sdk.WarehouseTypeAdaptive))),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseAdaptiveResource(t, ref).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)),
 					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).

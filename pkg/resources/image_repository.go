@@ -155,7 +155,8 @@ func GetReadImageRepositoryFunc(withExternalChangesMarking bool) schema.ReadCont
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"encryption", "encryption", string(imageRepository.Encryption), imageRepository.Encryption, nil},
 			); err != nil {
 				return diag.FromErr(err)

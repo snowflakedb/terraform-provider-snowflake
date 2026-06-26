@@ -15,5 +15,6 @@ func PostgresInstanceDoesNotExist(t *testing.T, id sdk.AccountObjectIdentifier) 
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.PostgresInstance, sdk.AccountObjectIdentifier] {
 			return testClient.PostgresInstance.Show
-		})
+		},
+	)
 }

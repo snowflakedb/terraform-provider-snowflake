@@ -54,7 +54,8 @@ var resourceMonitorSchema = map[string]*schema.Schema{
 		Optional:         true,
 		RequiredWith:     []string{"frequency"},
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("start_time"),
-		Description: joinWithSpace("The date and time when the resource monitor starts monitoring credit usage for the assigned warehouses.",
+		Description: joinWithSpace(
+			"The date and time when the resource monitor starts monitoring credit usage for the assigned warehouses.",
 			"If you set a `start_timestamp` for a resource monitor, you must also set `frequency`.",
 			"If you specify the special value `IMMEDIATELY`, the current date is used. In this case, the field of this value in `show_output` may be not consistent across different Terraform runs.",
 			"After removing this field from the config, the previously set value will be preserved on the Snowflake side, not the default value. That's due to Snowflake limitation and the lack of unset functionality for this parameter.",
@@ -274,7 +275,8 @@ func ReadResourceMonitor(withExternalChangesMarking bool) schema.ReadContextFunc
 			if resourceMonitor.Frequency != nil {
 				frequencyStr = string(*resourceMonitor.Frequency)
 			}
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"credit_quota", "credit_quota", resourceMonitor.CreditQuota, resourceMonitor.CreditQuota, nil},
 				outputMapping{"frequency", "frequency", frequencyStr, resourceMonitor.Frequency, nil},
 				outputMapping{"start_time", "start_timestamp", resourceMonitor.StartTime, resourceMonitor.StartTime, nil},

@@ -22,7 +22,8 @@ func StageDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *StageDetailsAsse
 			id,
 			func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.StageDetails, sdk.SchemaObjectIdentifier] {
 				return testClient.Stage.DescribeDetails
-			}),
+			},
+		),
 	}
 }
 

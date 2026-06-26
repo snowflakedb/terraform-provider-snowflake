@@ -23,7 +23,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehouseInitialCheck(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: warehousePocResourceConfig(id),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_poc.test", "id", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_poc.test", "fully_qualified_name", id.FullyQualifiedName())),
 				),

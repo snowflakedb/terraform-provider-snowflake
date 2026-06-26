@@ -74,7 +74,8 @@ func TestAcc_StorageLifecyclePolicies_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, policyModel, storageLifecyclePoliciesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(storageLifecyclePoliciesModel.DatasourceReference(), "storage_lifecycle_policies.#", "1")),
 					showOutputAssertions,
 					resourceshowoutputassert.StorageLifecyclePoliciesDatasourceDescribeOutput(t, "snowflake_storage_lifecycle_policies.test").
@@ -88,7 +89,8 @@ func TestAcc_StorageLifecyclePolicies_BasicUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, policyModel, storageLifecyclePoliciesModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(storageLifecyclePoliciesModelWithoutDescribe.DatasourceReference(), "storage_lifecycle_policies.#", "1")),
 					showOutputAssertions,
 					assert.Check(resource.TestCheckResourceAttr(storageLifecyclePoliciesModelWithoutDescribe.DatasourceReference(), "storage_lifecycle_policies.0.describe_output.#", "0")),

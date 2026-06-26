@@ -698,7 +698,8 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"comment", "comment", hybridTable.Comment, hybridTable.Comment, nil},
 			); err != nil {
 				return diag.FromErr(err)

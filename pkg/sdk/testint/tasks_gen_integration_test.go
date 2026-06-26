@@ -108,30 +108,31 @@ func TestInt_Tasks(t *testing.T) {
 
 	assertTaskTerse := func(t *testing.T, task *sdk.Task, id sdk.SchemaObjectIdentifier, schedule string) {
 		t.Helper()
-		assertThatObject(t, objectassert.TaskFromObject(t, task).
-			HasNotEmptyCreatedOn().
-			HasName(id.Name()).
-			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
-			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasSchedule(schedule).
-			// all below are not contained in the terse response, that's why all of them we expect to be empty
-			HasId("").
-			HasOwner("").
-			HasComment("").
-			HasNoWarehouse().
-			HasPredecessorsInAnyOrder().
-			HasState("").
-			HasDefinition("").
-			HasCondition("").
-			HasAllowOverlappingExecution(false).
-			HasNoErrorIntegration().
-			HasLastCommittedOn("").
-			HasLastSuspendedOn("").
-			HasOwnerRoleType("").
-			HasConfig("").
-			HasBudget("").
-			HasLastSuspendedOn("").
-			HasTaskRelations(sdk.TaskRelations{}),
+		assertThatObject(
+			t, objectassert.TaskFromObject(t, task).
+				HasNotEmptyCreatedOn().
+				HasName(id.Name()).
+				HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
+				HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
+				HasSchedule(schedule).
+				// all below are not contained in the terse response, that's why all of them we expect to be empty
+				HasId("").
+				HasOwner("").
+				HasComment("").
+				HasNoWarehouse().
+				HasPredecessorsInAnyOrder().
+				HasState("").
+				HasDefinition("").
+				HasCondition("").
+				HasAllowOverlappingExecution(false).
+				HasNoErrorIntegration().
+				HasLastCommittedOn("").
+				HasLastSuspendedOn("").
+				HasOwnerRoleType("").
+				HasConfig("").
+				HasBudget("").
+				HasLastSuspendedOn("").
+				HasTaskRelations(sdk.TaskRelations{}),
 		)
 	}
 
@@ -274,8 +275,9 @@ func TestInt_Tasks(t *testing.T) {
 		task, err := testClientHelper().Task.Show(t, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeXSmall),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, task.ID()).
+				HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeXSmall),
 		)
 
 		assertTask(t, task, id, nil)
@@ -305,10 +307,11 @@ func TestInt_Tasks(t *testing.T) {
 		require.NoError(t, err)
 
 		assertTaskWithOptions(t, task, id, "some comment", sdk.Pointer(testClientHelper().Ids.WarehouseId()), "10 MINUTE", `SYSTEM$STREAM_HAS_DATA('MYSTREAM')`, true, `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`, nil, sdk.Pointer(errorIntegration.ID()))
-		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
-			HasJsonIndent(4).
-			HasUserTaskTimeoutMs(500).
-			HasSuspendTaskAfterNumFailures(3),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, id).
+				HasJsonIndent(4).
+				HasUserTaskTimeoutMs(500).
+				HasSuspendTaskAfterNumFailures(3),
 		)
 	})
 
@@ -347,18 +350,20 @@ func TestInt_Tasks(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Task.DropFunc(t, finalizerId))
 
-		assertThatObject(t, objectassert.Task(t, rootTaskId).
-			HasTaskRelations(sdk.TaskRelations{
-				Predecessors:  []sdk.SchemaObjectIdentifier{},
-				FinalizerTask: &finalizerId,
-			}),
+		assertThatObject(
+			t, objectassert.Task(t, rootTaskId).
+				HasTaskRelations(sdk.TaskRelations{
+					Predecessors:  []sdk.SchemaObjectIdentifier{},
+					FinalizerTask: &finalizerId,
+				}),
 		)
 
-		assertThatObject(t, objectassert.Task(t, finalizerId).
-			HasTaskRelations(sdk.TaskRelations{
-				Predecessors:      []sdk.SchemaObjectIdentifier{},
-				FinalizedRootTask: &rootTaskId,
-			}),
+		assertThatObject(
+			t, objectassert.Task(t, finalizerId).
+				HasTaskRelations(sdk.TaskRelations{
+					Predecessors:      []sdk.SchemaObjectIdentifier{},
+					FinalizedRootTask: &rootTaskId,
+				}),
 		)
 	})
 
@@ -496,13 +501,14 @@ func TestInt_Tasks(t *testing.T) {
 		t.Cleanup(tagCleanup)
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		task, taskCleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(id, sql).
-			WithTag([]sdk.TagAssociation{
-				{
-					Name:  tag.ID(),
-					Value: "v1",
-				},
-			}),
+		task, taskCleanup := testClientHelper().Task.CreateWithRequest(
+			t, sdk.NewCreateTaskRequest(id, sql).
+				WithTag([]sdk.TagAssociation{
+					{
+						Name:  tag.ID(),
+						Value: "v1",
+					},
+				}),
 		)
 		t.Cleanup(taskCleanup)
 
@@ -525,15 +531,17 @@ func TestInt_Tasks(t *testing.T) {
 		t.Cleanup(testClientHelper().Task.DropFunc(t, id))
 
 		// Verify parameters were set
-		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
-			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
-			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
-			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, id).
+				HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+				HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+				HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
 		)
 		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
-		assertThatObject(t, objectassert.Task(t, id).
-			HasNoWarehouse().
-			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(10)}),
+		assertThatObject(
+			t, objectassert.Task(t, id).
+				HasNoWarehouse().
+				HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(10)}),
 		)
 	})
 
@@ -542,12 +550,13 @@ func TestInt_Tasks(t *testing.T) {
 		t.Cleanup(rootTaskCleanup)
 
 		sourceTaskId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		sourceTask, taskCleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(sourceTaskId, sql).
-			WithAfter([]sdk.SchemaObjectIdentifier{rootTask.ID()}).
-			WithAllowOverlappingExecution(false).
-			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithWarehouse(testClientHelper().Ids.WarehouseId())).
-			WithComment(random.Comment()).
-			WithWhen(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`),
+		sourceTask, taskCleanup := testClientHelper().Task.CreateWithRequest(
+			t, sdk.NewCreateTaskRequest(sourceTaskId, sql).
+				WithAfter([]sdk.SchemaObjectIdentifier{rootTask.ID()}).
+				WithAllowOverlappingExecution(false).
+				WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithWarehouse(testClientHelper().Ids.WarehouseId())).
+				WithComment(random.Comment()).
+				WithWhen(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`),
 		)
 		t.Cleanup(taskCleanup)
 
@@ -573,17 +582,18 @@ func TestInt_Tasks(t *testing.T) {
 
 	t.Run("create or alter: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.Tasks.CreateOrAlter(ctx, sdk.NewCreateOrAlterTaskRequest(id, sql).
-			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithWarehouse(testClientHelper().Ids.WarehouseId())).
-			WithSchedule("10 MINUTES").
-			WithConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
-			WithAllowOverlappingExecution(true).
-			WithUserTaskTimeoutMs(10).
-			WithSessionParameters(sessionParametersSet).
-			WithSuspendTaskAfterNumFailures(15).
-			WithComment("some_comment").
-			WithTaskAutoRetryAttempts(15).
-			WithWhen(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`),
+		err := client.Tasks.CreateOrAlter(
+			ctx, sdk.NewCreateOrAlterTaskRequest(id, sql).
+				WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithWarehouse(testClientHelper().Ids.WarehouseId())).
+				WithSchedule("10 MINUTES").
+				WithConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
+				WithAllowOverlappingExecution(true).
+				WithUserTaskTimeoutMs(10).
+				WithSessionParameters(sessionParametersSet).
+				WithSuspendTaskAfterNumFailures(15).
+				WithComment("some_comment").
+				WithTaskAutoRetryAttempts(15).
+				WithWhen(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`),
 		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Task.DropFunc(t, id))
@@ -592,19 +602,21 @@ func TestInt_Tasks(t *testing.T) {
 		require.NoError(t, err)
 		createdOn := task.CreatedOn
 
-		assertThatObject(t, objectassert.TaskFromObject(t, task).
-			HasWarehouse(testClientHelper().Ids.WarehouseId()).
-			HasSchedule("10 MINUTES").
-			HasConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
-			HasAllowOverlappingExecution(true).
-			HasCondition(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`).
-			HasComment("some_comment").
-			HasTaskRelations(sdk.TaskRelations{}),
+		assertThatObject(
+			t, objectassert.TaskFromObject(t, task).
+				HasWarehouse(testClientHelper().Ids.WarehouseId()).
+				HasSchedule("10 MINUTES").
+				HasConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
+				HasAllowOverlappingExecution(true).
+				HasCondition(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`).
+				HasComment("some_comment").
+				HasTaskRelations(sdk.TaskRelations{}),
 		)
-		assertThatObject(t, assertSessionParametersSet(objectparametersassert.TaskParameters(t, task.ID()).
-			HasUserTaskTimeoutMs(10).
-			HasSuspendTaskAfterNumFailures(15).
-			HasTaskAutoRetryAttempts(15)),
+		assertThatObject(
+			t, assertSessionParametersSet(objectparametersassert.TaskParameters(t, task.ID()).
+				HasUserTaskTimeoutMs(10).
+				HasSuspendTaskAfterNumFailures(15).
+				HasTaskAutoRetryAttempts(15)),
 		)
 
 		err = client.Tasks.CreateOrAlter(ctx, sdk.NewCreateOrAlterTaskRequest(id, sql))
@@ -613,21 +625,23 @@ func TestInt_Tasks(t *testing.T) {
 		alteredTask, err := client.Tasks.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.TaskFromObject(t, alteredTask).
-			HasNoWarehouse().
-			HasSchedule("").
-			HasConfig("").
-			HasAllowOverlappingExecution(false).
-			HasCondition("").
-			HasComment("").
-			HasTaskRelations(sdk.TaskRelations{}),
+		assertThatObject(
+			t, objectassert.TaskFromObject(t, alteredTask).
+				HasNoWarehouse().
+				HasSchedule("").
+				HasConfig("").
+				HasAllowOverlappingExecution(false).
+				HasCondition("").
+				HasComment("").
+				HasTaskRelations(sdk.TaskRelations{}),
 		)
-		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasDefaultAutocommitValue().
-			HasDefaultAbortDetachedQueryValue().
-			HasDefaultUserTaskTimeoutMsValue().
-			HasDefaultSuspendTaskAfterNumFailuresValue().
-			HasDefaultTaskAutoRetryAttemptsValue(),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, task.ID()).
+				HasDefaultAutocommitValue().
+				HasDefaultAbortDetachedQueryValue().
+				HasDefaultUserTaskTimeoutMsValue().
+				HasDefaultSuspendTaskAfterNumFailuresValue().
+				HasDefaultTaskAutoRetryAttemptsValue(),
 		)
 
 		require.Equal(t, createdOn, alteredTask.CreatedOn)
@@ -653,113 +667,118 @@ func TestInt_Tasks(t *testing.T) {
 		task, taskCleanup := testClientHelper().Task.Create(t)
 		t.Cleanup(taskCleanup)
 
-		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
-			// TODO(SNOW-1519496): Cannot set warehouse due to Snowflake error
-			// WithWarehouse(testClientHelper().Ids.WarehouseId()).
-			WithErrorIntegration(errorIntegration.ID()).
-			WithSessionParameters(sessionParametersSet).
-			WithSchedule("10 MINUTE").
-			WithConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
-			WithAllowOverlappingExecution(true).
-			WithUserTaskTimeoutMs(1000).
-			WithSuspendTaskAfterNumFailures(100).
-			WithComment("new comment").
-			WithTaskAutoRetryAttempts(10).
-			WithUserTaskMinimumTriggerIntervalInSeconds(15),
+		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(
+			*sdk.NewTaskSetRequest().
+				// TODO(SNOW-1519496): Cannot set warehouse due to Snowflake error
+				// WithWarehouse(testClientHelper().Ids.WarehouseId()).
+				WithErrorIntegration(errorIntegration.ID()).
+				WithSessionParameters(sessionParametersSet).
+				WithSchedule("10 MINUTE").
+				WithConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
+				WithAllowOverlappingExecution(true).
+				WithUserTaskTimeoutMs(1000).
+				WithSuspendTaskAfterNumFailures(100).
+				WithComment("new comment").
+				WithTaskAutoRetryAttempts(10).
+				WithUserTaskMinimumTriggerIntervalInSeconds(15),
 		))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			// HasWarehouse(testClientHelper().Ids.WarehouseId().Name()).
-			HasErrorIntegration(errorIntegration.ID()).
-			HasSchedule("10 MINUTE").
-			HasConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
-			HasAllowOverlappingExecution(true).
-			HasComment("new comment"),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				// HasWarehouse(testClientHelper().Ids.WarehouseId().Name()).
+				HasErrorIntegration(errorIntegration.ID()).
+				HasSchedule("10 MINUTE").
+				HasConfig(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`).
+				HasAllowOverlappingExecution(true).
+				HasComment("new comment"),
 		)
-		assertThatObject(t, assertSessionParametersSet(objectparametersassert.TaskParameters(t, task.ID())).
-			HasUserTaskTimeoutMs(1000).
-			HasSuspendTaskAfterNumFailures(100).
-			HasTaskAutoRetryAttempts(10).
-			HasUserTaskMinimumTriggerIntervalInSeconds(15),
+		assertThatObject(
+			t, assertSessionParametersSet(objectparametersassert.TaskParameters(t, task.ID())).
+				HasUserTaskTimeoutMs(1000).
+				HasSuspendTaskAfterNumFailures(100).
+				HasTaskAutoRetryAttempts(10).
+				HasUserTaskMinimumTriggerIntervalInSeconds(15),
 		)
 
-		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
-			WithErrorIntegration(true).
-			WithSessionParametersUnset(sdk.SessionParametersUnset{
-				AbortDetachedQuery:                       sdk.Bool(true),
-				Autocommit:                               sdk.Bool(true),
-				BinaryInputFormat:                        sdk.Bool(true),
-				BinaryOutputFormat:                       sdk.Bool(true),
-				ClientMemoryLimit:                        sdk.Bool(true),
-				ClientMetadataRequestUseConnectionCtx:    sdk.Bool(true),
-				ClientPrefetchThreads:                    sdk.Bool(true),
-				ClientResultChunkSize:                    sdk.Bool(true),
-				ClientResultColumnCaseInsensitive:        sdk.Bool(true),
-				ClientSessionKeepAlive:                   sdk.Bool(true),
-				ClientSessionKeepAliveHeartbeatFrequency: sdk.Bool(true),
-				ClientTimestampTypeMapping:               sdk.Bool(true),
-				DateInputFormat:                          sdk.Bool(true),
-				DateOutputFormat:                         sdk.Bool(true),
-				EnableUnloadPhysicalTypeOptimization:     sdk.Bool(true),
-				ErrorOnNondeterministicMerge:             sdk.Bool(true),
-				ErrorOnNondeterministicUpdate:            sdk.Bool(true),
-				GeographyOutputFormat:                    sdk.Bool(true),
-				GeometryOutputFormat:                     sdk.Bool(true),
-				JdbcTreatTimestampNtzAsUtc:               sdk.Bool(true),
-				JdbcUseSessionTimezone:                   sdk.Bool(true),
-				JsonIndent:                               sdk.Bool(true),
-				LockTimeout:                              sdk.Bool(true),
-				LogLevel:                                 sdk.Bool(true),
-				LogEventLevel:                            sdk.Bool(true),
-				MultiStatementCount:                      sdk.Bool(true),
-				NoorderSequenceAsDefault:                 sdk.Bool(true),
-				OdbcTreatDecimalAsInt:                    sdk.Bool(true),
-				QueryTag:                                 sdk.Bool(true),
-				QuotedIdentifiersIgnoreCase:              sdk.Bool(true),
-				RowsPerResultset:                         sdk.Bool(true),
-				S3StageVpceDnsName:                       sdk.Bool(true),
-				SearchPath:                               sdk.Bool(true),
-				StatementQueuedTimeoutInSeconds:          sdk.Bool(true),
-				StatementTimeoutInSeconds:                sdk.Bool(true),
-				StrictJsonOutput:                         sdk.Bool(true),
-				TimestampDayIsAlways24h:                  sdk.Bool(true),
-				TimestampInputFormat:                     sdk.Bool(true),
-				TimestampLTZOutputFormat:                 sdk.Bool(true),
-				TimestampNTZOutputFormat:                 sdk.Bool(true),
-				TimestampOutputFormat:                    sdk.Bool(true),
-				TimestampTypeMapping:                     sdk.Bool(true),
-				TimestampTZOutputFormat:                  sdk.Bool(true),
-				Timezone:                                 sdk.Bool(true),
-				TimeInputFormat:                          sdk.Bool(true),
-				TimeOutputFormat:                         sdk.Bool(true),
-				TraceLevel:                               sdk.Bool(true),
-				TransactionAbortOnError:                  sdk.Bool(true),
-				TransactionDefaultIsolationLevel:         sdk.Bool(true),
-				TwoDigitCenturyStart:                     sdk.Bool(true),
-				UnsupportedDDLAction:                     sdk.Bool(true),
-				UseCachedResult:                          sdk.Bool(true),
-				WeekOfYearPolicy:                         sdk.Bool(true),
-				WeekStart:                                sdk.Bool(true),
-			}).
-			WithWarehouse(true).
-			WithSchedule(true).
-			WithConfig(true).
-			WithAllowOverlappingExecution(true).
-			WithUserTaskTimeoutMs(true).
-			WithSuspendTaskAfterNumFailures(true).
-			WithComment(true).
-			WithTaskAutoRetryAttempts(true).
-			WithUserTaskMinimumTriggerIntervalInSeconds(true),
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(
+			*sdk.NewTaskUnsetRequest().
+				WithErrorIntegration(true).
+				WithSessionParametersUnset(sdk.SessionParametersUnset{
+					AbortDetachedQuery:                       sdk.Bool(true),
+					Autocommit:                               sdk.Bool(true),
+					BinaryInputFormat:                        sdk.Bool(true),
+					BinaryOutputFormat:                       sdk.Bool(true),
+					ClientMemoryLimit:                        sdk.Bool(true),
+					ClientMetadataRequestUseConnectionCtx:    sdk.Bool(true),
+					ClientPrefetchThreads:                    sdk.Bool(true),
+					ClientResultChunkSize:                    sdk.Bool(true),
+					ClientResultColumnCaseInsensitive:        sdk.Bool(true),
+					ClientSessionKeepAlive:                   sdk.Bool(true),
+					ClientSessionKeepAliveHeartbeatFrequency: sdk.Bool(true),
+					ClientTimestampTypeMapping:               sdk.Bool(true),
+					DateInputFormat:                          sdk.Bool(true),
+					DateOutputFormat:                         sdk.Bool(true),
+					EnableUnloadPhysicalTypeOptimization:     sdk.Bool(true),
+					ErrorOnNondeterministicMerge:             sdk.Bool(true),
+					ErrorOnNondeterministicUpdate:            sdk.Bool(true),
+					GeographyOutputFormat:                    sdk.Bool(true),
+					GeometryOutputFormat:                     sdk.Bool(true),
+					JdbcTreatTimestampNtzAsUtc:               sdk.Bool(true),
+					JdbcUseSessionTimezone:                   sdk.Bool(true),
+					JsonIndent:                               sdk.Bool(true),
+					LockTimeout:                              sdk.Bool(true),
+					LogLevel:                                 sdk.Bool(true),
+					LogEventLevel:                            sdk.Bool(true),
+					MultiStatementCount:                      sdk.Bool(true),
+					NoorderSequenceAsDefault:                 sdk.Bool(true),
+					OdbcTreatDecimalAsInt:                    sdk.Bool(true),
+					QueryTag:                                 sdk.Bool(true),
+					QuotedIdentifiersIgnoreCase:              sdk.Bool(true),
+					RowsPerResultset:                         sdk.Bool(true),
+					S3StageVpceDnsName:                       sdk.Bool(true),
+					SearchPath:                               sdk.Bool(true),
+					StatementQueuedTimeoutInSeconds:          sdk.Bool(true),
+					StatementTimeoutInSeconds:                sdk.Bool(true),
+					StrictJsonOutput:                         sdk.Bool(true),
+					TimestampDayIsAlways24h:                  sdk.Bool(true),
+					TimestampInputFormat:                     sdk.Bool(true),
+					TimestampLTZOutputFormat:                 sdk.Bool(true),
+					TimestampNTZOutputFormat:                 sdk.Bool(true),
+					TimestampOutputFormat:                    sdk.Bool(true),
+					TimestampTypeMapping:                     sdk.Bool(true),
+					TimestampTZOutputFormat:                  sdk.Bool(true),
+					Timezone:                                 sdk.Bool(true),
+					TimeInputFormat:                          sdk.Bool(true),
+					TimeOutputFormat:                         sdk.Bool(true),
+					TraceLevel:                               sdk.Bool(true),
+					TransactionAbortOnError:                  sdk.Bool(true),
+					TransactionDefaultIsolationLevel:         sdk.Bool(true),
+					TwoDigitCenturyStart:                     sdk.Bool(true),
+					UnsupportedDDLAction:                     sdk.Bool(true),
+					UseCachedResult:                          sdk.Bool(true),
+					WeekOfYearPolicy:                         sdk.Bool(true),
+					WeekStart:                                sdk.Bool(true),
+				}).
+				WithWarehouse(true).
+				WithSchedule(true).
+				WithConfig(true).
+				WithAllowOverlappingExecution(true).
+				WithUserTaskTimeoutMs(true).
+				WithSuspendTaskAfterNumFailures(true).
+				WithComment(true).
+				WithTaskAutoRetryAttempts(true).
+				WithUserTaskMinimumTriggerIntervalInSeconds(true),
 		))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasNoErrorIntegration().
-			HasSchedule("").
-			HasConfig("").
-			HasAllowOverlappingExecution(false).
-			HasComment(""),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasNoErrorIntegration().
+				HasSchedule("").
+				HasConfig("").
+				HasAllowOverlappingExecution(false).
+				HasComment(""),
 		)
 		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).HasAllDefaults())
 	})
@@ -822,39 +841,44 @@ func TestInt_Tasks(t *testing.T) {
 		finalTask, finalTaskCleanup := testClientHelper().Task.Create(t)
 		t.Cleanup(finalTaskCleanup)
 
-		assertThatObject(t, objectassert.TaskFromObject(t, task).
-			HasTaskRelations(sdk.TaskRelations{
-				FinalizerTask:     nil,
-				FinalizedRootTask: nil,
-			}),
+		assertThatObject(
+			t, objectassert.TaskFromObject(t, task).
+				HasTaskRelations(sdk.TaskRelations{
+					FinalizerTask:     nil,
+					FinalizedRootTask: nil,
+				}),
 		)
 
 		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(finalTask.ID()).WithSetFinalize(task.ID()))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasTaskRelations(sdk.TaskRelations{
-				FinalizerTask: sdk.Pointer(finalTask.ID()),
-			}),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasTaskRelations(sdk.TaskRelations{
+					FinalizerTask: sdk.Pointer(finalTask.ID()),
+				}),
 		)
-		assertThatObject(t, objectassert.Task(t, finalTask.ID()).
-			HasTaskRelations(sdk.TaskRelations{
-				FinalizedRootTask: sdk.Pointer(task.ID()),
-			}),
+		assertThatObject(
+			t, objectassert.Task(t, finalTask.ID()).
+				HasTaskRelations(sdk.TaskRelations{
+					FinalizedRootTask: sdk.Pointer(task.ID()),
+				}),
 		)
 
 		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(finalTask.ID()).WithUnsetFinalize(true))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasTaskRelations(sdk.TaskRelations{
-				FinalizerTask: nil,
-			}),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasTaskRelations(sdk.TaskRelations{
+					FinalizerTask: nil,
+				}),
 		)
-		assertThatObject(t, objectassert.Task(t, finalTask.ID()).
-			HasTaskRelations(sdk.TaskRelations{
-				FinalizedRootTask: nil,
-			}),
+		assertThatObject(
+			t, objectassert.Task(t, finalTask.ID()).
+				HasTaskRelations(sdk.TaskRelations{
+					FinalizedRootTask: nil,
+				}),
 		)
 	})
 
@@ -1124,39 +1148,45 @@ func TestInt_Tasks(t *testing.T) {
 		t.Cleanup(taskCleanup)
 
 		// Set the serverless task parameters
-		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
-			WithTargetCompletionInterval("15 MINUTES").
-			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
-			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(
+			*sdk.NewTaskSetRequest().
+				WithTargetCompletionInterval("15 MINUTES").
+				WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+				WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
 		))
 		require.NoError(t, err)
 
 		// Verify parameters were set
-		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
-			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, task.ID()).
+				HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+				HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
 		)
 		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasNoWarehouse().
-			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(15)}),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasNoWarehouse().
+				HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(15)}),
 		)
 
 		// Unset the serverless task parameters
-		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
-			WithTargetCompletionInterval(true).
-			WithServerlessTaskMinStatementSize(true).
-			WithServerlessTaskMaxStatementSize(true),
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(
+			*sdk.NewTaskUnsetRequest().
+				WithTargetCompletionInterval(true).
+				WithServerlessTaskMinStatementSize(true).
+				WithServerlessTaskMaxStatementSize(true),
 		))
 		require.NoError(t, err)
 
 		// Verify parameters were unset (reverted to defaults)
-		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasDefaultServerlessTaskMinStatementSizeValue().
-			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, task.ID()).
+				HasDefaultServerlessTaskMinStatementSizeValue().
+				HasDefaultServerlessTaskMaxStatementSizeValue(),
 		)
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasNoTargetCompletionInterval(),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasNoTargetCompletionInterval(),
 		)
 	})
 
@@ -1171,90 +1201,104 @@ func TestInt_Tasks(t *testing.T) {
 		assertThatObject(t, objectassert.Task(t, task.ID()).HasWarehouse(warehouseId))
 
 		// Setting serverless task parameters on a non-serverless task fails, even if we set USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE
-		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
-			WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
-			WithTargetCompletionInterval("10 MINUTES").
-			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
-			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeSmall),
+		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(
+			*sdk.NewTaskSetRequest().
+				WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+				WithTargetCompletionInterval("10 MINUTES").
+				WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+				WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeSmall),
 		))
 		require.ErrorContains(t, err, "Cannot set USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE on a non-serverless task.")
 
 		// First, unset the warehouse to make the task serverless.
-		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
-			WithWarehouse(true),
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(
+			*sdk.NewTaskUnsetRequest().
+				WithWarehouse(true),
 		))
 		require.NoError(t, err)
 
 		// Assert default attributes.
-		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasDefaultUserTaskManagedInitialWarehouseSizeValue().
-			HasDefaultServerlessTaskMinStatementSizeValue().
-			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, task.ID()).
+				HasDefaultUserTaskManagedInitialWarehouseSizeValue().
+				HasDefaultServerlessTaskMinStatementSizeValue().
+				HasDefaultServerlessTaskMaxStatementSizeValue(),
 		)
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasNoWarehouse().
-			HasNoTargetCompletionInterval(),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasNoWarehouse().
+				HasNoTargetCompletionInterval(),
 		)
 
 		// Set serverless task parameters.
-		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
-			WithTargetCompletionInterval("10 MINUTES").
-			WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
-			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
-			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeMedium),
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(
+			*sdk.NewTaskSetRequest().
+				WithTargetCompletionInterval("10 MINUTES").
+				WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+				WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+				WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeMedium),
 		))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
-			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
-			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeMedium),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, task.ID()).
+				HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+				HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+				HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeMedium),
 		)
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasNoWarehouse().
-			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(10)}),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasNoWarehouse().
+				HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(10)}),
 		)
 
 		// Convert back to warehouse-based task - fails
-		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
-			WithWarehouse(warehouseId),
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(
+			*sdk.NewTaskSetRequest().
+				WithWarehouse(warehouseId),
 		))
 		require.ErrorContains(t, err, "091857 (42601): TARGET_COMPLETION_INTERVAL is only allowed for serverless Tasks.")
 
 		// Unset the serverless parameters on the warehouse-based task
-		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
-			WithTargetCompletionInterval(true).
-			WithUserTaskManagedInitialWarehouseSize(true).
-			WithServerlessTaskMinStatementSize(true).
-			WithServerlessTaskMaxStatementSize(true),
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(
+			*sdk.NewTaskUnsetRequest().
+				WithTargetCompletionInterval(true).
+				WithUserTaskManagedInitialWarehouseSize(true).
+				WithServerlessTaskMinStatementSize(true).
+				WithServerlessTaskMaxStatementSize(true),
 		))
 		require.NoError(t, err)
 
 		// Verify parameters were unset
-		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasDefaultUserTaskManagedInitialWarehouseSizeValue().
-			HasDefaultServerlessTaskMinStatementSizeValue().
-			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, task.ID()).
+				HasDefaultUserTaskManagedInitialWarehouseSizeValue().
+				HasDefaultServerlessTaskMinStatementSizeValue().
+				HasDefaultServerlessTaskMaxStatementSizeValue(),
 		)
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasNoWarehouse().
-			HasNoTargetCompletionInterval(),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasNoWarehouse().
+				HasNoTargetCompletionInterval(),
 		)
 
-		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
-			WithWarehouse(warehouseId),
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(
+			*sdk.NewTaskSetRequest().
+				WithWarehouse(warehouseId),
 		))
 		require.NoError(t, err)
 
 		// Verify task is back to warehouse-based and parameters are still set
-		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasDefaultUserTaskManagedInitialWarehouseSizeValue().
-			HasDefaultServerlessTaskMinStatementSizeValue().
-			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		assertThatObject(
+			t, objectparametersassert.TaskParameters(t, task.ID()).
+				HasDefaultUserTaskManagedInitialWarehouseSizeValue().
+				HasDefaultServerlessTaskMinStatementSizeValue().
+				HasDefaultServerlessTaskMaxStatementSizeValue(),
 		)
-		assertThatObject(t, objectassert.Task(t, task.ID()).
-			HasWarehouse(warehouseId).
-			HasNoTargetCompletionInterval(),
+		assertThatObject(
+			t, objectassert.Task(t, task.ID()).
+				HasWarehouse(warehouseId).
+				HasNoTargetCompletionInterval(),
 		)
 	})
 

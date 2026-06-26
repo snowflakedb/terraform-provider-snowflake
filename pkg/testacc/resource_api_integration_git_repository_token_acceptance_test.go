@@ -197,7 +197,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithComment(comment).
@@ -249,7 +250,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 			// Create with ALL
 			{
 				Config: config.FromModels(t, withAll),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasAllAllowedAuthenticationSecrets(true),
 				),
@@ -260,7 +262,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
 				},
 				Config: config.FromModels(t, withNone),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasNoAllowedAuthenticationSecrets(true),
 				),
@@ -271,7 +274,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
 				},
 				Config: config.FromModels(t, withList),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
 				),
@@ -282,7 +286,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
 				},
 				Config: config.FromModels(t, withAll),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasAllAllowedAuthenticationSecrets(true),
 				),
@@ -293,7 +298,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
 				},
 				Config: config.FromModels(t, withList),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
 				),
@@ -304,7 +310,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
 				},
 				Config: config.FromModels(t, withNone),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasNoAllowedAuthenticationSecrets(true),
 				),
@@ -315,7 +322,8 @@ func TestAcc_ApiIntegrationGitRepositoryToken_AllowedSecrets_Update(t *testing.T
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate)},
 				},
 				Config: config.FromModels(t, withAll),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
 						HasAllAllowedAuthenticationSecrets(true),
 				),

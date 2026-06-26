@@ -180,7 +180,8 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.SecretDoesNotExist(t, id),
 				),
 			},
@@ -213,7 +214,8 @@ func TestAcc_SecretWithGenericString_EmptySecretString(t *testing.T) {
 			// Create - with empty secret_string
 			{
 				Config: config.FromModels(t, emptySecretModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Secret(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -283,7 +285,8 @@ func TestAcc_SecretWithGenericString_ExternalSecretTypeChange(t *testing.T) {
 			{
 				Config: config.FromModels(t, secretModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithGenericStringResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeGenericString)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
@@ -305,7 +308,8 @@ func TestAcc_SecretWithGenericString_ExternalSecretTypeChange(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithGenericStringResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeGenericString)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).

@@ -49,67 +49,68 @@ func TestInt_Users(t *testing.T) {
 	t.Cleanup(networkPolicyCleanup)
 
 	assertParametersSet := func(userParametersAssert *objectparametersassert.UserParametersAssert) {
-		assertThatObject(t, userParametersAssert.
-			HasEnableUnredactedQuerySyntaxError(true).
-			HasNetworkPolicy(networkPolicy.ID().Name()).
-			HasPreventUnloadToInternalStages(true).
-			HasAbortDetachedQuery(true).
-			HasAutocommit(false).
-			HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
-			HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
-			HasClientMemoryLimit(1024).
-			HasClientMetadataRequestUseConnectionCtx(true).
-			HasClientPrefetchThreads(2).
-			HasClientResultChunkSize(48).
-			HasClientResultColumnCaseInsensitive(true).
-			HasClientSessionKeepAlive(true).
-			HasClientSessionKeepAliveHeartbeatFrequency(2400).
-			HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
-			HasDateInputFormat("YYYY-MM-DD").
-			HasDateOutputFormat("YY-MM-DD").
-			HasEnableUnloadPhysicalTypeOptimization(false).
-			HasErrorOnNondeterministicMerge(false).
-			HasErrorOnNondeterministicUpdate(true).
-			HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
-			HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
-			HasJdbcTreatDecimalAsInt(false).
-			HasJdbcTreatTimestampNtzAsUtc(true).
-			HasJdbcUseSessionTimezone(false).
-			HasJsonIndent(4).
-			HasLockTimeout(21222).
-			HasLogLevel(sdk.LogLevelError).
-			HasLogEventLevel(sdk.LogLevelError).
-			HasMultiStatementCount(0).
-			HasNoorderSequenceAsDefault(false).
-			HasOdbcTreatDecimalAsInt(true).
-			HasQueryTag("some_tag").
-			HasQuotedIdentifiersIgnoreCase(true).
-			HasRowsPerResultset(2).
-			HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-			HasSearchPath("$public, $current").
-			HasSimulatedDataSharingConsumer("some_consumer").
-			HasStatementQueuedTimeoutInSeconds(10).
-			HasStatementTimeoutInSeconds(10).
-			HasStrictJsonOutput(true).
-			HasTimestampDayIsAlways24h(true).
-			HasTimestampInputFormat("YYYY-MM-DD").
-			HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-			HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-			HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
-			HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
-			HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
-			HasTimezone("Europe/Warsaw").
-			HasTimeInputFormat("HH24:MI").
-			HasTimeOutputFormat("HH24:MI").
-			HasTraceLevel(sdk.TraceLevelPropagate).
-			HasTransactionAbortOnError(true).
-			HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
-			HasTwoDigitCenturyStart(1980).
-			HasUnsupportedDdlAction(sdk.UnsupportedDDLActionFail).
-			HasUseCachedResult(false).
-			HasWeekOfYearPolicy(1).
-			HasWeekStart(1).
-			HasBoolParameterValue(sdk.UserParameterUseCachedResult, false),
+		assertThatObject(
+			t, userParametersAssert.
+				HasEnableUnredactedQuerySyntaxError(true).
+				HasNetworkPolicy(networkPolicy.ID().Name()).
+				HasPreventUnloadToInternalStages(true).
+				HasAbortDetachedQuery(true).
+				HasAutocommit(false).
+				HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
+				HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
+				HasClientMemoryLimit(1024).
+				HasClientMetadataRequestUseConnectionCtx(true).
+				HasClientPrefetchThreads(2).
+				HasClientResultChunkSize(48).
+				HasClientResultColumnCaseInsensitive(true).
+				HasClientSessionKeepAlive(true).
+				HasClientSessionKeepAliveHeartbeatFrequency(2400).
+				HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+				HasDateInputFormat("YYYY-MM-DD").
+				HasDateOutputFormat("YY-MM-DD").
+				HasEnableUnloadPhysicalTypeOptimization(false).
+				HasErrorOnNondeterministicMerge(false).
+				HasErrorOnNondeterministicUpdate(true).
+				HasGeographyOutputFormat(sdk.GeographyOutputFormatWKB).
+				HasGeometryOutputFormat(sdk.GeometryOutputFormatWKB).
+				HasJdbcTreatDecimalAsInt(false).
+				HasJdbcTreatTimestampNtzAsUtc(true).
+				HasJdbcUseSessionTimezone(false).
+				HasJsonIndent(4).
+				HasLockTimeout(21222).
+				HasLogLevel(sdk.LogLevelError).
+				HasLogEventLevel(sdk.LogLevelError).
+				HasMultiStatementCount(0).
+				HasNoorderSequenceAsDefault(false).
+				HasOdbcTreatDecimalAsInt(true).
+				HasQueryTag("some_tag").
+				HasQuotedIdentifiersIgnoreCase(true).
+				HasRowsPerResultset(2).
+				HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
+				HasSearchPath("$public, $current").
+				HasSimulatedDataSharingConsumer("some_consumer").
+				HasStatementQueuedTimeoutInSeconds(10).
+				HasStatementTimeoutInSeconds(10).
+				HasStrictJsonOutput(true).
+				HasTimestampDayIsAlways24h(true).
+				HasTimestampInputFormat("YYYY-MM-DD").
+				HasTimestampLtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
+				HasTimestampNtzOutputFormat("YYYY-MM-DD HH24:MI:SS").
+				HasTimestampOutputFormat("YYYY-MM-DD HH24:MI:SS").
+				HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+				HasTimestampTzOutputFormat("YYYY-MM-DD HH24:MI:SS").
+				HasTimezone("Europe/Warsaw").
+				HasTimeInputFormat("HH24:MI").
+				HasTimeOutputFormat("HH24:MI").
+				HasTraceLevel(sdk.TraceLevelPropagate).
+				HasTransactionAbortOnError(true).
+				HasTransactionDefaultIsolationLevel(sdk.TransactionDefaultIsolationLevelReadCommitted).
+				HasTwoDigitCenturyStart(1980).
+				HasUnsupportedDdlAction(sdk.UnsupportedDDLActionFail).
+				HasUseCachedResult(false).
+				HasWeekOfYearPolicy(1).
+				HasWeekStart(1).
+				HasBoolParameterValue(sdk.UserParameterUseCachedResult, false),
 		)
 	}
 
@@ -155,12 +156,13 @@ func TestInt_Users(t *testing.T) {
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasName(id.Name()).
-			HasHasPassword(true).
-			HasHasWorkloadIdentity(false).
-			HasLoginName(strings.ToUpper(loginName)).
-			HasDefaultRole(defaultRole),
+		assertThatObject(
+			t, objectassert.UserFromObject(t, user).
+				HasName(id.Name()).
+				HasHasPassword(true).
+				HasHasWorkloadIdentity(false).
+				HasLoginName(strings.ToUpper(loginName)).
+				HasDefaultRole(defaultRole),
 		)
 	})
 
@@ -203,10 +205,11 @@ func TestInt_Users(t *testing.T) {
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasName(id.Name()).
-			HasHasPassword(true).
-			HasLoginName(strings.ToUpper(loginName)),
+		assertThatObject(
+			t, objectassert.UserFromObject(t, user).
+				HasName(id.Name()).
+				HasHasPassword(true).
+				HasLoginName(strings.ToUpper(loginName)),
 		)
 	})
 
@@ -228,11 +231,12 @@ func TestInt_Users(t *testing.T) {
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasDefaults(id.Name()).
-			HasType(string(sdk.UserTypePerson)).
-			HasDisplayName(id.Name()).
-			HasOwner(currentRole.Name()),
+		assertThatObject(
+			t, objectassert.UserFromObject(t, user).
+				HasDefaults(id.Name()).
+				HasType(string(sdk.UserTypePerson)).
+				HasDisplayName(id.Name()).
+				HasOwner(currentRole.Name()),
 		)
 	})
 
@@ -257,9 +261,10 @@ func TestInt_Users(t *testing.T) {
 			user, err := client.Users.ShowByID(ctx, id)
 			require.NoError(t, err)
 
-			assertThatObject(t, objectassert.UserFromObject(t, user).
-				HasDefaults(id.Name()).
-				HasType(string(userType)),
+			assertThatObject(
+				t, objectassert.UserFromObject(t, user).
+					HasDefaults(id.Name()).
+					HasType(string(userType)),
 			)
 		})
 	}
@@ -304,35 +309,36 @@ func TestInt_Users(t *testing.T) {
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasName(user.Name).
-			HasCreatedOnNotEmpty().
-			// login name is always case-insensitive
-			HasLoginName(strings.ToUpper(newValue)).
-			HasDisplayName(newValue).
-			HasFirstName(newValue).
-			HasLastName(newValue).
-			HasEmail(email).
-			HasMinsToUnlock("14").
-			HasDaysToExpiryNotEmpty().
-			HasComment("some comment").
-			HasDisabled(true).
-			HasMustChangePassword(true).
-			HasSnowflakeLock(false).
-			HasDefaultWarehouse(warehouseId.Name()).
-			HasDefaultNamespaceId(schemaId).
-			HasDefaultRole(roleId.Name()).
-			HasDefaultSecondaryRoles(`["ALL"]`).
-			HasExtAuthnDuo(false).
-			HasExtAuthnUid("").
-			HasMinsToBypassMfa("29").
-			HasOwner(currentRole.Name()).
-			HasLastSuccessLoginEmpty().
-			HasExpiresAtTimeNotEmpty().
-			HasLockedUntilTimeNotEmpty().
-			HasHasPassword(true).
-			HasHasWorkloadIdentity(false).
-			HasHasRsaPublicKey(true),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasName(user.Name).
+				HasCreatedOnNotEmpty().
+				// login name is always case-insensitive
+				HasLoginName(strings.ToUpper(newValue)).
+				HasDisplayName(newValue).
+				HasFirstName(newValue).
+				HasLastName(newValue).
+				HasEmail(email).
+				HasMinsToUnlock("14").
+				HasDaysToExpiryNotEmpty().
+				HasComment("some comment").
+				HasDisabled(true).
+				HasMustChangePassword(true).
+				HasSnowflakeLock(false).
+				HasDefaultWarehouse(warehouseId.Name()).
+				HasDefaultNamespaceId(schemaId).
+				HasDefaultRole(roleId.Name()).
+				HasDefaultSecondaryRoles(`["ALL"]`).
+				HasExtAuthnDuo(false).
+				HasExtAuthnUid("").
+				HasMinsToBypassMfa("29").
+				HasOwner(currentRole.Name()).
+				HasLastSuccessLoginEmpty().
+				HasExpiresAtTimeNotEmpty().
+				HasLockedUntilTimeNotEmpty().
+				HasHasPassword(true).
+				HasHasWorkloadIdentity(false).
+				HasHasRsaPublicKey(true),
 		)
 	})
 
@@ -400,52 +406,54 @@ func TestInt_Users(t *testing.T) {
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasName(user.Name).
-			HasType(string(sdk.UserTypeService)).
-			HasCreatedOnNotEmpty().
-			// login name is always case-insensitive
-			HasLoginName(strings.ToUpper(newValue)).
-			HasDisplayName(newValue).
-			HasFirstName("").
-			HasLastName("").
-			HasEmail(email).
-			HasMinsToUnlock("14").
-			HasDaysToExpiryNotEmpty().
-			HasComment("some comment").
-			HasDisabled(true).
-			HasMustChangePassword(false).
-			HasSnowflakeLock(false).
-			HasDefaultWarehouse(warehouseId.Name()).
-			HasDefaultNamespaceId(schemaId).
-			HasDefaultRole(roleId.Name()).
-			HasDefaultSecondaryRoles(`["ALL"]`).
-			HasExtAuthnDuo(false).
-			HasExtAuthnUid("").
-			HasMinsToBypassMfa("").
-			HasOwner(currentRole.Name()).
-			HasLastSuccessLoginEmpty().
-			HasExpiresAtTimeNotEmpty().
-			HasLockedUntilTimeNotEmpty().
-			HasHasPassword(false).
-			HasHasWorkloadIdentity(true).
-			HasHasRsaPublicKey(true),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasName(user.Name).
+				HasType(string(sdk.UserTypeService)).
+				HasCreatedOnNotEmpty().
+				// login name is always case-insensitive
+				HasLoginName(strings.ToUpper(newValue)).
+				HasDisplayName(newValue).
+				HasFirstName("").
+				HasLastName("").
+				HasEmail(email).
+				HasMinsToUnlock("14").
+				HasDaysToExpiryNotEmpty().
+				HasComment("some comment").
+				HasDisabled(true).
+				HasMustChangePassword(false).
+				HasSnowflakeLock(false).
+				HasDefaultWarehouse(warehouseId.Name()).
+				HasDefaultNamespaceId(schemaId).
+				HasDefaultRole(roleId.Name()).
+				HasDefaultSecondaryRoles(`["ALL"]`).
+				HasExtAuthnDuo(false).
+				HasExtAuthnUid("").
+				HasMinsToBypassMfa("").
+				HasOwner(currentRole.Name()).
+				HasLastSuccessLoginEmpty().
+				HasExpiresAtTimeNotEmpty().
+				HasLockedUntilTimeNotEmpty().
+				HasHasPassword(false).
+				HasHasWorkloadIdentity(true).
+				HasHasRsaPublicKey(true),
 		)
 
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
-			HasName("DEFAULT").
-			HasType(sdk.WIFTypeOIDC).
-			HasNoComment().
-			HasLastUsedNotEmpty().
-			HasCreatedOnNotEmpty().
-			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
-				Issuer:       "https://accounts.google.com",
-				Subject:      subject,
-				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
-			}),
+		assertThatObject(
+			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+				HasName("DEFAULT").
+				HasType(sdk.WIFTypeOIDC).
+				HasNoComment().
+				HasLastUsedNotEmpty().
+				HasCreatedOnNotEmpty().
+				HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+					Issuer:       "https://accounts.google.com",
+					Subject:      subject,
+					AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+				}),
 		)
 	})
 
@@ -514,52 +522,54 @@ func TestInt_Users(t *testing.T) {
 		user, err := client.Users.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasName(user.Name).
-			HasType(string(sdk.UserTypeLegacyService)).
-			HasCreatedOnNotEmpty().
-			// login name is always case-insensitive
-			HasLoginName(strings.ToUpper(newValue)).
-			HasDisplayName(newValue).
-			HasFirstName("").
-			HasLastName("").
-			HasEmail(email).
-			HasMinsToUnlock("14").
-			HasDaysToExpiryNotEmpty().
-			HasComment("some comment").
-			HasDisabled(true).
-			HasMustChangePassword(true).
-			HasSnowflakeLock(false).
-			HasDefaultWarehouse(warehouseId.Name()).
-			HasDefaultNamespaceId(schemaId).
-			HasDefaultRole(roleId.Name()).
-			HasDefaultSecondaryRoles(`["ALL"]`).
-			HasExtAuthnDuo(false).
-			HasExtAuthnUid("").
-			HasMinsToBypassMfa("").
-			HasOwner(currentRole.Name()).
-			HasLastSuccessLoginEmpty().
-			HasExpiresAtTimeNotEmpty().
-			HasLockedUntilTimeNotEmpty().
-			HasHasPassword(true).
-			HasHasWorkloadIdentity(true).
-			HasHasRsaPublicKey(true),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasName(user.Name).
+				HasType(string(sdk.UserTypeLegacyService)).
+				HasCreatedOnNotEmpty().
+				// login name is always case-insensitive
+				HasLoginName(strings.ToUpper(newValue)).
+				HasDisplayName(newValue).
+				HasFirstName("").
+				HasLastName("").
+				HasEmail(email).
+				HasMinsToUnlock("14").
+				HasDaysToExpiryNotEmpty().
+				HasComment("some comment").
+				HasDisabled(true).
+				HasMustChangePassword(true).
+				HasSnowflakeLock(false).
+				HasDefaultWarehouse(warehouseId.Name()).
+				HasDefaultNamespaceId(schemaId).
+				HasDefaultRole(roleId.Name()).
+				HasDefaultSecondaryRoles(`["ALL"]`).
+				HasExtAuthnDuo(false).
+				HasExtAuthnUid("").
+				HasMinsToBypassMfa("").
+				HasOwner(currentRole.Name()).
+				HasLastSuccessLoginEmpty().
+				HasExpiresAtTimeNotEmpty().
+				HasLockedUntilTimeNotEmpty().
+				HasHasPassword(true).
+				HasHasWorkloadIdentity(true).
+				HasHasRsaPublicKey(true),
 		)
 
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
-			HasName("DEFAULT").
-			HasType(sdk.WIFTypeOIDC).
-			HasNoComment().
-			HasLastUsedNotEmpty().
-			HasCreatedOnNotEmpty().
-			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
-				Issuer:       "https://accounts.google.com",
-				Subject:      subject,
-				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
-			}),
+		assertThatObject(
+			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+				HasName("DEFAULT").
+				HasType(sdk.WIFTypeOIDC).
+				HasNoComment().
+				HasLastUsedNotEmpty().
+				HasCreatedOnNotEmpty().
+				HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+					Issuer:       "https://accounts.google.com",
+					Subject:      subject,
+					AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+				}),
 		)
 	})
 
@@ -745,11 +755,12 @@ func TestInt_Users(t *testing.T) {
 			user, err := client.Users.ShowByID(ctx, id)
 			require.NoError(t, err)
 
-			assertThatObject(t, objectassert.User(t, user.ID()).
-				HasName(user.Name).
-				HasType(string(tt.userType)).
-				HasHasWorkloadIdentity(true).
-				HasOwner(currentRole.Name()),
+			assertThatObject(
+				t, objectassert.User(t, user.ID()).
+					HasName(user.Name).
+					HasType(string(tt.userType)).
+					HasHasWorkloadIdentity(true).
+					HasOwner(currentRole.Name()),
 			)
 
 			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
@@ -923,8 +934,9 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
-		assertThatObject(t, objectassert.User(t, id).
-			HasDefaultRole(defaultRole),
+		assertThatObject(
+			t, objectassert.User(t, id).
+				HasDefaultRole(defaultRole),
 		)
 	})
 
@@ -942,8 +954,9 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
-		assertThatObject(t, objectassert.User(t, id).
-			HasDefaultRole(defaultRole),
+		assertThatObject(
+			t, objectassert.User(t, id).
+				HasDefaultRole(defaultRole),
 		)
 	})
 
@@ -983,15 +996,16 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
-		assertThatObject(t, objectassert.User(t, id).
-			// login name is always case-insensitive
-			HasLoginName(strings.ToUpper(randomWithHyphenAndMixedCase)).
-			HasDisplayName(randomWithHyphenAndMixedCase).
-			HasFirstName(randomWithHyphenAndMixedCase).
-			HasLastName(randomWithHyphenAndMixedCase).
-			HasDefaultWarehouse(randomWithHyphenAndMixedCase).
-			HasDefaultNamespace(randomWithHyphenAndMixedCase+"."+randomWithHyphenAndMixedCase).
-			HasDefaultRole(randomWithHyphenAndMixedCase),
+		assertThatObject(
+			t, objectassert.User(t, id).
+				// login name is always case-insensitive
+				HasLoginName(strings.ToUpper(randomWithHyphenAndMixedCase)).
+				HasDisplayName(randomWithHyphenAndMixedCase).
+				HasFirstName(randomWithHyphenAndMixedCase).
+				HasLastName(randomWithHyphenAndMixedCase).
+				HasDefaultWarehouse(randomWithHyphenAndMixedCase).
+				HasDefaultNamespace(randomWithHyphenAndMixedCase+"."+randomWithHyphenAndMixedCase).
+				HasDefaultRole(randomWithHyphenAndMixedCase),
 		)
 
 		userDetails, err := client.Users.Describe(ctx, id)
@@ -1101,17 +1115,19 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
-		assertThatObject(t, objectparametersassert.UserParameters(t, id).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.UserParameters(t, id).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 
 		// check that ShowParameters works too
 		parameters, err := client.Users.ShowParameters(ctx, id)
 		require.NoError(t, err)
-		assertThatObject(t, objectparametersassert.UserParametersPrefetched(t, id, parameters).
-			HasAllDefaults().
-			HasAllDefaultsExplicit(),
+		assertThatObject(
+			t, objectparametersassert.UserParametersPrefetched(t, id, parameters).
+				HasAllDefaults().
+				HasAllDefaultsExplicit(),
 		)
 	})
 
@@ -1138,10 +1154,11 @@ func TestInt_Users(t *testing.T) {
 
 		currentRole := testClientHelper().Context.CurrentRole(t)
 
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasDefaults(user.Name).
-			HasDisplayName(user.Name).
-			HasOwner(currentRole.Name()),
+		assertThatObject(
+			t, objectassert.UserFromObject(t, user).
+				HasDefaults(user.Name).
+				HasDisplayName(user.Name).
+				HasOwner(currentRole.Name()),
 		)
 
 		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
@@ -1175,36 +1192,37 @@ func TestInt_Users(t *testing.T) {
 		err := client.Users.Alter(ctx, user.ID(), alterOpts)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasName(user.Name).
-			HasCreatedOnNotEmpty().
-			// login name is always case-insensitive
-			HasLoginName(strings.ToUpper(newValue)).
-			HasDisplayName(newValue).
-			HasFirstName(newValue).
-			HasLastName(newValue).
-			HasEmail(email).
-			HasMinsToUnlock("14").
-			HasDaysToExpiryNotEmpty().
-			HasComment("some comment").
-			HasDisabled(true).
-			HasMustChangePassword(true).
-			HasSnowflakeLock(false).
-			HasDefaultWarehouse(warehouseId.Name()).
-			HasDefaultNamespaceId(schemaId).
-			HasDefaultRole(roleId.Name()).
-			HasDefaultSecondaryRoles(`["ALL"]`).
-			HasExtAuthnDuo(false).
-			HasExtAuthnUid("").
-			HasMinsToBypassMfa("29").
-			HasOwner(currentRole.Name()).
-			HasLastSuccessLoginEmpty().
-			HasExpiresAtTimeNotEmpty().
-			HasLockedUntilTimeNotEmpty().
-			HasHasPassword(true).
-			HasHasWorkloadIdentity(false).
-			HasHasRsaPublicKey(true).
-			HasType(string(sdk.UserTypePerson)),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasName(user.Name).
+				HasCreatedOnNotEmpty().
+				// login name is always case-insensitive
+				HasLoginName(strings.ToUpper(newValue)).
+				HasDisplayName(newValue).
+				HasFirstName(newValue).
+				HasLastName(newValue).
+				HasEmail(email).
+				HasMinsToUnlock("14").
+				HasDaysToExpiryNotEmpty().
+				HasComment("some comment").
+				HasDisabled(true).
+				HasMustChangePassword(true).
+				HasSnowflakeLock(false).
+				HasDefaultWarehouse(warehouseId.Name()).
+				HasDefaultNamespaceId(schemaId).
+				HasDefaultRole(roleId.Name()).
+				HasDefaultSecondaryRoles(`["ALL"]`).
+				HasExtAuthnDuo(false).
+				HasExtAuthnUid("").
+				HasMinsToBypassMfa("29").
+				HasOwner(currentRole.Name()).
+				HasLastSuccessLoginEmpty().
+				HasExpiresAtTimeNotEmpty().
+				HasLockedUntilTimeNotEmpty().
+				HasHasPassword(true).
+				HasHasWorkloadIdentity(false).
+				HasHasRsaPublicKey(true).
+				HasType(string(sdk.UserTypePerson)),
 		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -1236,11 +1254,12 @@ func TestInt_Users(t *testing.T) {
 		err = client.Users.Alter(ctx, user.ID(), alterOpts)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasDefaults(user.Name).
-			HasType(string(sdk.UserTypePerson)).
-			HasDisplayName("").
-			HasOwner(currentRole.Name()),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasDefaults(user.Name).
+				HasType(string(sdk.UserTypePerson)).
+				HasDisplayName("").
+				HasOwner(currentRole.Name()),
 		)
 	})
 
@@ -1250,10 +1269,11 @@ func TestInt_Users(t *testing.T) {
 
 		currentRole := testClientHelper().Context.CurrentRole(t)
 
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasDefaults(user.Name).
-			HasDisplayName(user.Name).
-			HasOwner(currentRole.Name()),
+		assertThatObject(
+			t, objectassert.UserFromObject(t, user).
+				HasDefaults(user.Name).
+				HasDisplayName(user.Name).
+				HasOwner(currentRole.Name()),
 		)
 
 		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
@@ -1292,51 +1312,53 @@ func TestInt_Users(t *testing.T) {
 		err := client.Users.Alter(ctx, user.ID(), alterOpts)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasName(user.Name).
-			HasCreatedOnNotEmpty().
-			// login name is always case-insensitive
-			HasLoginName(strings.ToUpper(newValue)).
-			HasDisplayName(newValue).
-			HasFirstName("").
-			HasLastName("").
-			HasEmail(email).
-			HasMinsToUnlock("14").
-			HasDaysToExpiryNotEmpty().
-			HasComment("some comment").
-			HasDisabled(true).
-			HasMustChangePassword(false).
-			HasSnowflakeLock(false).
-			HasDefaultWarehouse(warehouseId.Name()).
-			HasDefaultNamespaceId(schemaId).
-			HasDefaultRole(roleId.Name()).
-			HasDefaultSecondaryRoles(`["ALL"]`).
-			HasExtAuthnDuo(false).
-			HasExtAuthnUid("").
-			HasMinsToBypassMfa("").
-			HasOwner(currentRole.Name()).
-			HasLastSuccessLoginEmpty().
-			HasExpiresAtTimeNotEmpty().
-			HasLockedUntilTimeNotEmpty().
-			HasHasPassword(false).
-			HasHasWorkloadIdentity(true).
-			HasHasRsaPublicKey(true),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasName(user.Name).
+				HasCreatedOnNotEmpty().
+				// login name is always case-insensitive
+				HasLoginName(strings.ToUpper(newValue)).
+				HasDisplayName(newValue).
+				HasFirstName("").
+				HasLastName("").
+				HasEmail(email).
+				HasMinsToUnlock("14").
+				HasDaysToExpiryNotEmpty().
+				HasComment("some comment").
+				HasDisabled(true).
+				HasMustChangePassword(false).
+				HasSnowflakeLock(false).
+				HasDefaultWarehouse(warehouseId.Name()).
+				HasDefaultNamespaceId(schemaId).
+				HasDefaultRole(roleId.Name()).
+				HasDefaultSecondaryRoles(`["ALL"]`).
+				HasExtAuthnDuo(false).
+				HasExtAuthnUid("").
+				HasMinsToBypassMfa("").
+				HasOwner(currentRole.Name()).
+				HasLastSuccessLoginEmpty().
+				HasExpiresAtTimeNotEmpty().
+				HasLockedUntilTimeNotEmpty().
+				HasHasPassword(false).
+				HasHasWorkloadIdentity(true).
+				HasHasRsaPublicKey(true),
 		)
 
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
-			HasName("DEFAULT").
-			HasType(sdk.WIFTypeOIDC).
-			HasNoComment().
-			HasLastUsedNotEmpty().
-			HasCreatedOnNotEmpty().
-			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
-				Issuer:       "https://accounts.google.com",
-				Subject:      subject,
-				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
-			}),
+		assertThatObject(
+			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+				HasName("DEFAULT").
+				HasType(sdk.WIFTypeOIDC).
+				HasNoComment().
+				HasLastUsedNotEmpty().
+				HasCreatedOnNotEmpty().
+				HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+					Issuer:       "https://accounts.google.com",
+					Subject:      subject,
+					AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+				}),
 		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -1361,10 +1383,11 @@ func TestInt_Users(t *testing.T) {
 		err = client.Users.Alter(ctx, user.ID(), alterOpts)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasDefaults(user.Name).
-			HasDisplayName("").
-			HasOwner(currentRole.Name()),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasDefaults(user.Name).
+				HasDisplayName("").
+				HasOwner(currentRole.Name()),
 		)
 
 		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
@@ -1378,10 +1401,11 @@ func TestInt_Users(t *testing.T) {
 
 		currentRole := testClientHelper().Context.CurrentRole(t)
 
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasDefaults(user.Name).
-			HasDisplayName(user.Name).
-			HasOwner(currentRole.Name()),
+		assertThatObject(
+			t, objectassert.UserFromObject(t, user).
+				HasDefaults(user.Name).
+				HasDisplayName(user.Name).
+				HasOwner(currentRole.Name()),
 		)
 
 		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
@@ -1422,51 +1446,53 @@ func TestInt_Users(t *testing.T) {
 		err := client.Users.Alter(ctx, user.ID(), alterOpts)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasName(user.Name).
-			HasCreatedOnNotEmpty().
-			// login name is always case-insensitive
-			HasLoginName(strings.ToUpper(newValue)).
-			HasDisplayName(newValue).
-			HasFirstName("").
-			HasLastName("").
-			HasEmail(email).
-			HasMinsToUnlock("14").
-			HasDaysToExpiryNotEmpty().
-			HasComment("some comment").
-			HasDisabled(true).
-			HasMustChangePassword(true).
-			HasSnowflakeLock(false).
-			HasDefaultWarehouse(warehouseId.Name()).
-			HasDefaultNamespaceId(schemaId).
-			HasDefaultRole(roleId.Name()).
-			HasDefaultSecondaryRoles(`["ALL"]`).
-			HasExtAuthnDuo(false).
-			HasExtAuthnUid("").
-			HasMinsToBypassMfa("").
-			HasOwner(currentRole.Name()).
-			HasLastSuccessLoginEmpty().
-			HasExpiresAtTimeNotEmpty().
-			HasLockedUntilTimeNotEmpty().
-			HasHasPassword(true).
-			HasHasWorkloadIdentity(true).
-			HasHasRsaPublicKey(true),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasName(user.Name).
+				HasCreatedOnNotEmpty().
+				// login name is always case-insensitive
+				HasLoginName(strings.ToUpper(newValue)).
+				HasDisplayName(newValue).
+				HasFirstName("").
+				HasLastName("").
+				HasEmail(email).
+				HasMinsToUnlock("14").
+				HasDaysToExpiryNotEmpty().
+				HasComment("some comment").
+				HasDisabled(true).
+				HasMustChangePassword(true).
+				HasSnowflakeLock(false).
+				HasDefaultWarehouse(warehouseId.Name()).
+				HasDefaultNamespaceId(schemaId).
+				HasDefaultRole(roleId.Name()).
+				HasDefaultSecondaryRoles(`["ALL"]`).
+				HasExtAuthnDuo(false).
+				HasExtAuthnUid("").
+				HasMinsToBypassMfa("").
+				HasOwner(currentRole.Name()).
+				HasLastSuccessLoginEmpty().
+				HasExpiresAtTimeNotEmpty().
+				HasLockedUntilTimeNotEmpty().
+				HasHasPassword(true).
+				HasHasWorkloadIdentity(true).
+				HasHasRsaPublicKey(true),
 		)
 
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
-			HasName("DEFAULT").
-			HasType(sdk.WIFTypeOIDC).
-			HasNoComment().
-			HasLastUsedNotEmpty().
-			HasCreatedOnNotEmpty().
-			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
-				Issuer:       "https://accounts.google.com",
-				Subject:      subject,
-				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
-			}),
+		assertThatObject(
+			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+				HasName("DEFAULT").
+				HasType(sdk.WIFTypeOIDC).
+				HasNoComment().
+				HasLastUsedNotEmpty().
+				HasCreatedOnNotEmpty().
+				HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+					Issuer:       "https://accounts.google.com",
+					Subject:      subject,
+					AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+				}),
 		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -1493,10 +1519,11 @@ func TestInt_Users(t *testing.T) {
 		err = client.Users.Alter(ctx, user.ID(), alterOpts)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasDefaults(user.Name).
-			HasDisplayName("").
-			HasOwner(currentRole.Name()),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasDefaults(user.Name).
+				HasDisplayName("").
+				HasOwner(currentRole.Name()),
 		)
 
 		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
@@ -1624,8 +1651,9 @@ func TestInt_Users(t *testing.T) {
 			data := tt.setup()
 
 			// Verify initial state - no WIF
-			assertThatObject(t, objectassert.UserFromObject(t, user).
-				HasHasWorkloadIdentity(false),
+			assertThatObject(
+				t, objectassert.UserFromObject(t, user).
+					HasHasWorkloadIdentity(false),
 			)
 
 			// Set WIF
@@ -1640,8 +1668,9 @@ func TestInt_Users(t *testing.T) {
 			err := client.Users.Alter(ctx, user.ID(), alterOpts)
 			require.NoError(t, err)
 
-			assertThatObject(t, objectassert.User(t, user.ID()).
-				HasHasWorkloadIdentity(true),
+			assertThatObject(
+				t, objectassert.User(t, user.ID()).
+					HasHasWorkloadIdentity(true),
 			)
 
 			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
@@ -1666,8 +1695,9 @@ func TestInt_Users(t *testing.T) {
 			err = client.Users.Alter(ctx, user.ID(), alterOpts)
 			require.NoError(t, err)
 
-			assertThatObject(t, objectassert.User(t, user.ID()).
-				HasHasWorkloadIdentity(false),
+			assertThatObject(
+				t, objectassert.User(t, user.ID()).
+					HasHasWorkloadIdentity(false),
 			)
 
 			methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
@@ -2019,17 +2049,19 @@ func TestInt_Users(t *testing.T) {
 			err = client.Users.Alter(ctx, id, alterOpts)
 			require.NoError(t, err)
 
-			assertThatObject(t, objectparametersassert.UserParameters(t, id).
-				HasAllDefaults().
-				HasAllDefaultsExplicit(),
+			assertThatObject(
+				t, objectparametersassert.UserParameters(t, id).
+					HasAllDefaults().
+					HasAllDefaultsExplicit(),
 			)
 
 			// check that ShowParameters works too
 			parameters, err = client.Users.ShowParameters(ctx, id)
 			require.NoError(t, err)
-			assertThatObject(t, objectparametersassert.UserParametersPrefetched(t, id, parameters).
-				HasAllDefaults().
-				HasAllDefaultsExplicit(),
+			assertThatObject(
+				t, objectparametersassert.UserParametersPrefetched(t, id, parameters).
+					HasAllDefaults().
+					HasAllDefaultsExplicit(),
 			)
 		})
 	}
@@ -2075,8 +2107,9 @@ func TestInt_Users(t *testing.T) {
 		user, userCleanup := testClientHelper().User.CreateServiceUser(t)
 		t.Cleanup(userCleanup)
 
-		assertThatObject(t, objectassert.UserFromObject(t, user).
-			HasType(string(sdk.UserTypeService)),
+		assertThatObject(
+			t, objectassert.UserFromObject(t, user).
+				HasType(string(sdk.UserTypeService)),
 		)
 
 		alterOpts := &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -2088,8 +2121,9 @@ func TestInt_Users(t *testing.T) {
 		err := client.Users.Alter(ctx, user.ID(), alterOpts)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasType(string(sdk.UserTypePerson)),
+		assertThatObject(
+			t, objectassert.User(t, user.ID()).
+				HasType(string(sdk.UserTypePerson)),
 		)
 	})
 
@@ -2184,8 +2218,9 @@ func TestInt_Users(t *testing.T) {
 		disabledUser, disabledUserCleanup := testClientHelper().User.CreateUserWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{Disable: sdk.Bool(true)}})
 		t.Cleanup(disabledUserCleanup)
 
-		assertThatObject(t, objectassert.User(t, disabledUser.ID()).
-			HasDisabled(true),
+		assertThatObject(
+			t, objectassert.User(t, disabledUser.ID()).
+				HasDisabled(true),
 		)
 
 		role, roleCleanup := testClientHelper().Role.CreateRoleGrantedToCurrentUser(t)
@@ -2194,8 +2229,9 @@ func TestInt_Users(t *testing.T) {
 		revertRole := testClientHelper().Role.UseRole(t, role.ID())
 		t.Cleanup(revertRole)
 
-		assertThatObject(t, objectassert.User(t, disabledUser.ID()).
-			HasDisabled(false),
+		assertThatObject(
+			t, objectassert.User(t, disabledUser.ID()).
+				HasDisabled(false),
 		)
 	})
 
@@ -2321,36 +2357,37 @@ func TestInt_Users(t *testing.T) {
 		_, err = testClientHelper().Parameter.ShowUserParametersOrError(t, id)
 		require.ErrorContains(t, err, "Insufficient privileges to operate on user")
 
-		assertThatObject(t, objectassert.User(t, id).
-			HasName(id.Name()).
-			HasCreatedOnNotEmpty().
-			HasLoginName("").
-			HasDisplayName("").
-			HasFirstName("").
-			HasLastName("").
-			HasEmail("").
-			HasMinsToUnlock("").
-			HasDaysToExpiry("").
-			HasComment("").
-			HasDisabled(false).           // underlying null
-			HasMustChangePassword(false). // underlying null
-			HasSnowflakeLock(false).      // underlying null
-			HasDefaultWarehouse("").
-			HasDefaultNamespace("").
-			HasDefaultRole("").
-			HasDefaultSecondaryRoles("").
-			HasExtAuthnDuo(false). // underlying null
-			HasExtAuthnUid("").
-			HasMinsToBypassMfa("").
-			HasOwnerNotEmpty().
-			HasLastSuccessLogin(time.Time{}). // underlying null
-			HasExpiresAtTimeNotEmpty().
-			HasLockedUntilTimeNotEmpty().
-			HasHasPassword(false).
-			HasHasRsaPublicKey(false).
-			HasType(""). // underlying null
-			HasHasMfa(false).
-			HasHasWorkloadIdentity(false),
+		assertThatObject(
+			t, objectassert.User(t, id).
+				HasName(id.Name()).
+				HasCreatedOnNotEmpty().
+				HasLoginName("").
+				HasDisplayName("").
+				HasFirstName("").
+				HasLastName("").
+				HasEmail("").
+				HasMinsToUnlock("").
+				HasDaysToExpiry("").
+				HasComment("").
+				HasDisabled(false).           // underlying null
+				HasMustChangePassword(false). // underlying null
+				HasSnowflakeLock(false).      // underlying null
+				HasDefaultWarehouse("").
+				HasDefaultNamespace("").
+				HasDefaultRole("").
+				HasDefaultSecondaryRoles("").
+				HasExtAuthnDuo(false). // underlying null
+				HasExtAuthnUid("").
+				HasMinsToBypassMfa("").
+				HasOwnerNotEmpty().
+				HasLastSuccessLogin(time.Time{}). // underlying null
+				HasExpiresAtTimeNotEmpty().
+				HasLockedUntilTimeNotEmpty().
+				HasHasPassword(false).
+				HasHasRsaPublicKey(false).
+				HasType(""). // underlying null
+				HasHasMfa(false).
+				HasHasWorkloadIdentity(false),
 		)
 	})
 

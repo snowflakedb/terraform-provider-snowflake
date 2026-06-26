@@ -64,12 +64,13 @@ func createDatabaseReplica(t *testing.T) (*sdk.Database, func()) {
 	sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
 	t.Cleanup(sharedDatabaseCleanup)
 
-	err := secondaryClient.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
-		WithEnableReplication(*sdk.NewEnableReplicationRequest().
-			WithToAccounts([]sdk.AccountIdentifier{
-				testClientHelper().Account.GetAccountIdentifier(t),
-			}).
-			WithIgnoreEditionCheck(true)),
+	err := secondaryClient.Databases.AlterReplication(
+		ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
+			WithEnableReplication(*sdk.NewEnableReplicationRequest().
+				WithToAccounts([]sdk.AccountIdentifier{
+					testClientHelper().Account.GetAccountIdentifier(t),
+				}).
+				WithIgnoreEditionCheck(true)),
 	)
 	require.NoError(t, err)
 

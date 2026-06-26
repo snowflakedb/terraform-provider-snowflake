@@ -188,7 +188,8 @@ func TestAcc_Users_CompleteUseCase(t *testing.T) {
 			// Person user WITHOUT additional outputs
 			{
 				Config: config.FromModels(t, personUserModel, usersModelPersonWithoutOptionals),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					userCommonShowAssert(t, usersModelPersonWithoutOptionals.DatasourceReference()).
 						HasName(personUserId.Name()).
 						HasType(string(sdk.UserTypePerson)).
@@ -207,7 +208,8 @@ func TestAcc_Users_CompleteUseCase(t *testing.T) {
 			// Person user WITH additional outputs
 			{
 				Config: config.FromModels(t, personUserModel, usersModelPerson),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					userCommonShowAssert(t, usersModelPerson.DatasourceReference()).
 						HasName(personUserId.Name()).
 						HasType(string(sdk.UserTypePerson)).
@@ -260,7 +262,8 @@ func TestAcc_Users_CompleteUseCase(t *testing.T) {
 			//  Service user WITH additional outputs
 			{
 				Config: config.FromModels(t, serviceUserModel, usersModelService),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					userCommonShowAssert(t, usersModelService.DatasourceReference()).
 						HasName(serviceUserId.Name()).
 						HasType(string(sdk.UserTypeService)).
@@ -313,7 +316,8 @@ func TestAcc_Users_CompleteUseCase(t *testing.T) {
 			//  Legacy service user WITH additional outputs
 			{
 				Config: config.FromModels(t, legacyServiceUserModel, usersModelLegacyService),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					userCommonShowAssert(t, usersModelLegacyService.DatasourceReference()).
 						HasName(legacyServiceUserId.Name()).
 						HasType(string(sdk.UserTypeLegacyService)).

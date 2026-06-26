@@ -126,7 +126,8 @@ func TestAcc_PostgresFork_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().PostgresInstance.Alter(t, sdk.NewAlterPostgresInstanceRequest(forkId).WithSet(
 						*sdk.NewPostgresInstanceSetRequest().
-							WithComment(externalComment)))
+							WithComment(externalComment),
+					))
 				},
 				Config: accconfig.FromModels(t, modelWithComment),
 				ConfigPlanChecks: resource.ConfigPlanChecks{

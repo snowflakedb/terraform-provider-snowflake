@@ -40,14 +40,16 @@ func TestAcc_GrantDatabaseRole_Issue_3629(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("2.0.0"),
 				Config:            testConfig,
 				ExpectError:       regexp.MustCompile("Provider produced inconsistent result after apply"),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRole.ID().FullyQualifiedName(), sdk.ObjectTypeRole.String(), accountRole.ID().FullyQualifiedName()))),
 				),
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   testConfig,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", helpers.EncodeResourceIdentifier(databaseRole.ID().FullyQualifiedName(), sdk.ObjectTypeRole.String(), accountRole.ID().FullyQualifiedName()))),
 				),
 			},

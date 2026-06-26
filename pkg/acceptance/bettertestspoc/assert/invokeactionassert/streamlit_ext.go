@@ -15,5 +15,6 @@ func StreamlitDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.T
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.Streamlit, sdk.SchemaObjectIdentifier] {
 			return testClient.Streamlit.Show
-		})
+		},
+	)
 }

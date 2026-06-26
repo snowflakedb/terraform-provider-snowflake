@@ -135,12 +135,13 @@ func TestInt_SessionPolicies(t *testing.T) {
 	t.Run("alter session_policy: set value and unset value", func(t *testing.T) {
 		id := createSessionPolicy(t).ID()
 
-		alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithSet(*sdk.NewSessionPolicySetRequest().
-			WithSessionIdleTimeoutMins(60).
-			WithSessionUiIdleTimeoutMins(60).
-			WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithNone(true)).
-			WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithAll(true)).
-			WithComment("new comment"),
+		alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithSet(
+			*sdk.NewSessionPolicySetRequest().
+				WithSessionIdleTimeoutMins(60).
+				WithSessionUiIdleTimeoutMins(60).
+				WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithNone(true)).
+				WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithAll(true)).
+				WithComment("new comment"),
 		)
 		err := client.SessionPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
@@ -152,12 +153,13 @@ func TestInt_SessionPolicies(t *testing.T) {
 			HasAllowedSecondaryRolesUnordered().
 			HasBlockedSecondaryRoles("ALL"))
 
-		alterRequest = sdk.NewAlterSessionPolicyRequest(id).WithUnset(*sdk.NewSessionPolicyUnsetRequest().
-			WithSessionIdleTimeoutMins(true).
-			WithSessionUiIdleTimeoutMins(true).
-			WithAllowedSecondaryRoles(true).
-			WithBlockedSecondaryRoles(true).
-			WithComment(true),
+		alterRequest = sdk.NewAlterSessionPolicyRequest(id).WithUnset(
+			*sdk.NewSessionPolicyUnsetRequest().
+				WithSessionIdleTimeoutMins(true).
+				WithSessionUiIdleTimeoutMins(true).
+				WithAllowedSecondaryRoles(true).
+				WithBlockedSecondaryRoles(true).
+				WithComment(true),
 		)
 		err = client.SessionPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)

@@ -64,7 +64,8 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 			// create with empty optionals
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ComputePoolResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasAutoResumeString(r.BooleanDefault).
@@ -124,7 +125,8 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelBasic),
 				ResourceName: modelBasic.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedComputePoolResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").
@@ -182,7 +184,8 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 			// set optionals
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ComputePoolResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").
@@ -232,7 +235,8 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ComputePoolResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").
@@ -279,7 +283,8 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 					))
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ComputePoolResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").
@@ -321,7 +326,8 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ComputePoolResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -339,7 +345,8 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasicWithApp.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ComputePoolResource(t, modelBasicWithApp.ResourceReference()).
 						HasNameString(id.Name()).
 						HasAutoResumeString(r.BooleanDefault).
@@ -381,7 +388,8 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentInstanceFamily),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ComputePoolResource(t, modelCompleteWithDifferentInstanceFamily.ResourceReference()).
 						HasNameString(id.Name()).
 						HasAutoResumeString(r.BooleanDefault).
@@ -441,7 +449,8 @@ func TestAcc_ComputePool_complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ComputePoolResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").

@@ -576,24 +576,26 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(cleanupTableProvider(tableId))
 
 		addRequest := sdk.NewAlterTableRequest(tableId).WithAddStorageLifecyclePolicy(
-			sdk.NewTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "COLUMN_1"}}))
+			sdk.NewTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "COLUMN_1"}}),
+		)
 		err = client.Tables.Alter(ctx, addRequest)
 		require.NoError(t, err)
 
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
 		require.NoError(t, err)
 		require.Len(t, references, 1)
-		assertThatObject(t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
-			HasPolicyDb(storageLifecyclePolicyId.DatabaseName()).
-			HasPolicySchema(storageLifecyclePolicyId.SchemaName()).
-			HasPolicyName(storageLifecyclePolicyId.Name()).
-			HasPolicyKind(sdk.PolicyKindStorageLifecyclePolicy).
-			HasRefDatabaseName(tableId.DatabaseName()).
-			HasRefSchemaName(tableId.SchemaName()).
-			HasRefEntityName(tableId.Name()).
-			HasRefEntityDomain(string(sdk.PolicyEntityDomainTable)).
-			HasRefArgColumnNames(`[ "COLUMN_1" ]`).
-			HasPolicyStatus("ACTIVE"),
+		assertThatObject(
+			t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
+				HasPolicyDb(storageLifecyclePolicyId.DatabaseName()).
+				HasPolicySchema(storageLifecyclePolicyId.SchemaName()).
+				HasPolicyName(storageLifecyclePolicyId.Name()).
+				HasPolicyKind(sdk.PolicyKindStorageLifecyclePolicy).
+				HasRefDatabaseName(tableId.DatabaseName()).
+				HasRefSchemaName(tableId.SchemaName()).
+				HasRefEntityName(tableId.Name()).
+				HasRefEntityDomain(string(sdk.PolicyEntityDomainTable)).
+				HasRefArgColumnNames(`[ "COLUMN_1" ]`).
+				HasPolicyStatus("ACTIVE"),
 		)
 
 		dropRequest := sdk.NewAlterTableRequest(tableId).WithDropStorageLifecyclePolicy(new(true))
@@ -774,11 +776,12 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(cleanupTableProvider(id))
 
 		alterRequest := sdk.NewAlterTableRequest(id).
-			WithExternalTableAction(sdk.NewTableExternalTableActionRequest().WithAdd(sdk.NewTableExternalTableColumnAddActionRequest().
-				WithName("COLUMN_3").
-				WithType(sdk.DataTypeNumber).
-				WithExpression("1 + 1").
-				WithComment(sdk.String("some comment")),
+			WithExternalTableAction(sdk.NewTableExternalTableActionRequest().WithAdd(
+				sdk.NewTableExternalTableColumnAddActionRequest().
+					WithName("COLUMN_3").
+					WithType(sdk.DataTypeNumber).
+					WithExpression("1 + 1").
+					WithComment(sdk.String("some comment")),
 			))
 
 		err = client.Tables.Alter(ctx, alterRequest)

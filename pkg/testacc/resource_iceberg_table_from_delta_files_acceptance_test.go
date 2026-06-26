@@ -26,7 +26,8 @@ import (
 
 func deltaLakeCatalog(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
-	return testClient().CatalogIntegration.CreateFunc(t,
+	return testClient().CatalogIntegration.CreateFunc(
+		t,
 		sdk.NewCreateCatalogIntegrationRequest(testClient().Ids.RandomAccountObjectIdentifier(), true).
 			WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta)),
 	)
@@ -209,7 +210,8 @@ func TestAcc_IcebergTableFromDeltaFiles_BasicUseCase(t *testing.T) {
 			// Change alterable fields externally and detect drift
 			{
 				PreConfig: func() {
-					testClient().IcebergTable.CreateFromDeltaLake(t, id,
+					testClient().IcebergTable.CreateFromDeltaLake(
+						t, id,
 						sdk.NewCreateFromDeltaLakeIcebergTableRequest(id, baseLocation).
 							WithOrReplace(true).
 							WithComment(externalComment).
@@ -281,7 +283,8 @@ func TestAcc_IcebergTableFromDeltaFiles_CompleteUseCase(t *testing.T) {
 			// Create with all fields
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.IcebergTableFromDeltaFilesResource(t, modelComplete.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).

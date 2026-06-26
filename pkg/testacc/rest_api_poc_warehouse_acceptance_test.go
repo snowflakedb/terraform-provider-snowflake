@@ -37,7 +37,8 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 					t.Setenv(snowflakeenvs.ConfigPath, userWithPatConfig.Path)
 				},
 				Config: config.FromModels(t, providerModel) + warehouseRestApiPocResourceConfig(id),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_rest_api_poc.test", "id", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_rest_api_poc.test", "fully_qualified_name", id.FullyQualifiedName())),
 					objectassert.Warehouse(t, id).

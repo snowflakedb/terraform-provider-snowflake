@@ -20,7 +20,8 @@ func TagDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.TestChe
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.Tag, sdk.SchemaObjectIdentifier] {
 			return testClient.Tag.Show
-		})
+		},
+	)
 }
 
 // tagValueOnObjectCheck verifies that a tag has the expected value on a given object.

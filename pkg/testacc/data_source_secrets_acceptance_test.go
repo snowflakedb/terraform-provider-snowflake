@@ -122,7 +122,8 @@ func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
 	comment := random.Comment()
 
 	apiIntegrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(apiIntegrationId, true, "test_oauth_client_id", "test_oauth_client_secret").
 			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}}),
 	)
@@ -173,7 +174,8 @@ func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: ComposeCheckDestroy(t,
+		CheckDestroy: ComposeCheckDestroy(
+			t,
 			resources.SecretWithGenericString,
 			resources.SecretWithBasicAuthentication,
 			resources.SecretWithClientCredentials,
@@ -183,7 +185,8 @@ func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
 			// Generic string without describe
 			{
 				Config: config.FromModels(t, genericModel, genericSecretNoDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecretsDatasourceShowOutput(t, genericSecretNoDescribe.DatasourceReference()).
 						HasName(genericId.Name()).
 						HasDatabaseName(genericId.DatabaseName()).
@@ -197,7 +200,8 @@ func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
 			// Generic string with describe
 			{
 				Config: config.FromModels(t, genericModel, genericSecretWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecretsDatasourceShowOutput(t, genericSecretWithDescribe.DatasourceReference()).
 						HasName(genericId.Name()).
 						HasDatabaseName(genericId.DatabaseName()).
@@ -218,7 +222,8 @@ func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
 			// Basic authentication with describe
 			{
 				Config: config.FromModels(t, basicModel, basicSecretWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecretsDatasourceShowOutput(t, basicSecretWithDescribe.DatasourceReference()).
 						HasName(basicId.Name()).
 						HasDatabaseName(basicId.DatabaseName()).
@@ -234,7 +239,8 @@ func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
 			// OAuth2 client credentials with describe
 			{
 				Config: config.FromModels(t, clientCredsModel, clientCredsSecretWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecretsDatasourceShowOutput(t, clientCredsSecretWithDescribe.DatasourceReference()).
 						HasName(clientCredsId.Name()).
 						HasDatabaseName(clientCredsId.DatabaseName()).
@@ -252,7 +258,8 @@ func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
 			// OAuth2 authorization code grant with describe
 			{
 				Config: config.FromModels(t, authCodeModel, authCodeSecretWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecretsDatasourceShowOutput(t, authCodeSecretWithDescribe.DatasourceReference()).
 						HasName(authCodeId.Name()).
 						HasDatabaseName(authCodeId.DatabaseName()).

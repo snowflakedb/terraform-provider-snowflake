@@ -291,7 +291,8 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) sche
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -429,7 +430,8 @@ func handleExternalChangesToIcebergRestConfig(d *schema.ResourceData, details *s
 			"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
 		},
 	}
-	return handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+	return handleExternalChangesToObjectInFlatDescribeDeepEqual(
+		d,
 		outputMapping{"rest_config", "rest_config", restConfig, restConfig, nil},
 	)
 }
@@ -455,7 +457,8 @@ func handleExternalChangesToSigV4RestAuthentication(d *schema.ResourceData, deta
 			"sigv4_signing_region": details.SigV4RestAuthentication.Sigv4SigningRegion,
 		},
 	}
-	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(
+		d,
 		outputMapping{"sigv4_rest_authentication", "sigv4_rest_authentication", sigV4RestAuthorization, sigV4RestAuthorization, nil},
 	)
 	return errors.Join(

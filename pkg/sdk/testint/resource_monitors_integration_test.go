@@ -62,25 +62,28 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 		creditQuota := 100
 		endTimeStamp := time.Now().Add(24 * 10 * time.Hour).Format("2006-01-02 15:04")
 
-		err := client.ResourceMonitors.Create(ctx, sdk.NewCreateResourceMonitorRequest(id).
-			WithOrReplace(true).
-			WithWith(*sdk.NewResourceMonitorWithRequest().
-				WithFrequency(frequency).
-				WithCreditQuota(creditQuota).
-				WithStartTimestamp("IMMEDIATELY").
-				WithEndTimestamp(endTimeStamp).
-				WithTriggers([]sdk.TriggerDefinitionRequest{
-					*sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionSuspend),
-					*sdk.NewTriggerDefinitionRequest(50, sdk.TriggerActionSuspendImmediate),
-					*sdk.NewTriggerDefinitionRequest(100, sdk.TriggerActionNotify),
-				}),
-			),
+		err := client.ResourceMonitors.Create(
+			ctx, sdk.NewCreateResourceMonitorRequest(id).
+				WithOrReplace(true).
+				WithWith(
+					*sdk.NewResourceMonitorWithRequest().
+						WithFrequency(frequency).
+						WithCreditQuota(creditQuota).
+						WithStartTimestamp("IMMEDIATELY").
+						WithEndTimestamp(endTimeStamp).
+						WithTriggers([]sdk.TriggerDefinitionRequest{
+							*sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionSuspend),
+							*sdk.NewTriggerDefinitionRequest(50, sdk.TriggerActionSuspendImmediate),
+							*sdk.NewTriggerDefinitionRequest(100, sdk.TriggerActionNotify),
+						}),
+				),
 		)
 		require.NoError(t, err)
 
 		t.Cleanup(testClientHelper().ResourceMonitor.DropResourceMonitorFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ResourceMonitor(t, id).
 				HasName(name).
 				HasFrequency(frequency).
@@ -95,28 +98,32 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 
 	t.Run("validate: only one suspend trigger", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ResourceMonitors.Create(ctx, sdk.NewCreateResourceMonitorRequest(id).
-			WithWith(*sdk.NewResourceMonitorWithRequest().
-				WithCreditQuota(100).
-				WithTriggers([]sdk.TriggerDefinitionRequest{
-					*sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionSuspend),
-					*sdk.NewTriggerDefinitionRequest(50, sdk.TriggerActionSuspend),
-				}),
-			),
+		err := client.ResourceMonitors.Create(
+			ctx, sdk.NewCreateResourceMonitorRequest(id).
+				WithWith(
+					*sdk.NewResourceMonitorWithRequest().
+						WithCreditQuota(100).
+						WithTriggers([]sdk.TriggerDefinitionRequest{
+							*sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionSuspend),
+							*sdk.NewTriggerDefinitionRequest(50, sdk.TriggerActionSuspend),
+						}),
+				),
 		)
 		require.ErrorContains(t, err, "A resource monitor can have at most one suspend trigger.")
 	})
 
 	t.Run("validate: only one suspend immediate trigger", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.ResourceMonitors.Create(ctx, sdk.NewCreateResourceMonitorRequest(id).
-			WithWith(*sdk.NewResourceMonitorWithRequest().
-				WithCreditQuota(100).
-				WithTriggers([]sdk.TriggerDefinitionRequest{
-					*sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionSuspendImmediate),
-					*sdk.NewTriggerDefinitionRequest(50, sdk.TriggerActionSuspendImmediate),
-				}),
-			),
+		err := client.ResourceMonitors.Create(
+			ctx, sdk.NewCreateResourceMonitorRequest(id).
+				WithWith(
+					*sdk.NewResourceMonitorWithRequest().
+						WithCreditQuota(100).
+						WithTriggers([]sdk.TriggerDefinitionRequest{
+							*sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionSuspendImmediate),
+							*sdk.NewTriggerDefinitionRequest(50, sdk.TriggerActionSuspendImmediate),
+						}),
+				),
 		)
 		require.ErrorContains(t, err, "A resource monitor can have at most one suspend_immediate trigger.")
 	})
@@ -129,7 +136,8 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ResourceMonitor.DropResourceMonitorFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ResourceMonitor(t, id).
 				HasName(name).
 				HasFrequency(sdk.FrequencyMonthly).
@@ -160,8 +168,9 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		newTriggers = append(newTriggers, *sdk.NewTriggerDefinitionRequest(*resourceMonitor.SuspendImmediatelyAt, sdk.TriggerActionSuspendImmediate))
 		newTriggers = append(newTriggers, *sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionNotify))
 
-		err := client.ResourceMonitors.Alter(ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
-			WithTriggers(newTriggers),
+		err := client.ResourceMonitors.Alter(
+			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
+				WithTriggers(newTriggers),
 		)
 		require.NoError(t, err)
 
@@ -184,10 +193,12 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 
 		creditQuota := 100
 
-		err := client.ResourceMonitors.Alter(ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
-			WithSet(*sdk.NewResourceMonitorSetRequest().
-				WithCreditQuota(creditQuota),
-			),
+		err := client.ResourceMonitors.Alter(
+			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
+				WithSet(
+					*sdk.NewResourceMonitorSetRequest().
+						WithCreditQuota(creditQuota),
+				),
 		)
 		require.NoError(t, err)
 
@@ -195,10 +206,12 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, creditQuota, int(resourceMonitor.CreditQuota))
 
-		err = client.ResourceMonitors.Alter(ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
-			WithUnset(*sdk.NewResourceMonitorUnsetRequest().
-				WithCreditQuota(true),
-			),
+		err = client.ResourceMonitors.Alter(
+			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
+				WithUnset(
+					*sdk.NewResourceMonitorUnsetRequest().
+						WithCreditQuota(true),
+				),
 		)
 		require.NoError(t, err)
 
@@ -211,12 +224,15 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		resourceMonitor, resourceMonitorCleanup := testClientHelper().ResourceMonitor.CreateResourceMonitor(t)
 		t.Cleanup(resourceMonitorCleanup)
 
-		err := client.ResourceMonitors.Alter(ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
-			WithSet(*sdk.NewResourceMonitorSetRequest().
-				WithNotifyUsers(*sdk.NewNotifyUsersRequest().
-					WithUsers([]sdk.NotifiedUserRequest{*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("JAN_CIESLAK"))}),
+		err := client.ResourceMonitors.Alter(
+			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
+				WithSet(
+					*sdk.NewResourceMonitorSetRequest().
+						WithNotifyUsers(
+							*sdk.NewNotifyUsersRequest().
+								WithUsers([]sdk.NotifiedUserRequest{*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("JAN_CIESLAK"))}),
+						),
 				),
-			),
 		)
 		require.NoError(t, err)
 
@@ -225,10 +241,12 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		assert.Len(t, resourceMonitor.NotifyUsers, 1)
 		assert.Equal(t, "JAN_CIESLAK", resourceMonitor.NotifyUsers[0])
 
-		err = client.ResourceMonitors.Alter(ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
-			WithUnset(*sdk.NewResourceMonitorUnsetRequest().
-				WithNotifyUsers(true),
-			),
+		err = client.ResourceMonitors.Alter(
+			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
+				WithUnset(
+					*sdk.NewResourceMonitorUnsetRequest().
+						WithNotifyUsers(true),
+				),
 		)
 		require.NoError(t, err)
 
@@ -244,12 +262,14 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		frequency := sdk.FrequencyNever
 		startTimeStamp := "2050-01-01 12:34"
 
-		err := client.ResourceMonitors.Alter(ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
-			WithSet(*sdk.NewResourceMonitorSetRequest().
-				WithFrequency(frequency).
-				WithStartTimestamp(startTimeStamp).
-				WithEndTimestamp("2051-01-01 12:34"),
-			),
+		err := client.ResourceMonitors.Alter(
+			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
+				WithSet(
+					*sdk.NewResourceMonitorSetRequest().
+						WithFrequency(frequency).
+						WithStartTimestamp(startTimeStamp).
+						WithEndTimestamp("2051-01-01 12:34"),
+				),
 		)
 		require.NoError(t, err)
 
@@ -260,10 +280,12 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		assert.NotEmpty(t, resourceMonitor.StartTime)
 		assert.NotEmpty(t, resourceMonitor.EndTime)
 
-		err = client.ResourceMonitors.Alter(ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
-			WithUnset(*sdk.NewResourceMonitorUnsetRequest().
-				WithEndTimestamp(true),
-			),
+		err = client.ResourceMonitors.Alter(
+			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
+				WithUnset(
+					*sdk.NewResourceMonitorUnsetRequest().
+						WithEndTimestamp(true),
+				),
 		)
 		require.NoError(t, err)
 
@@ -279,20 +301,24 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		t.Cleanup(resourceMonitorCleanup)
 
 		creditQuota := 100
-		err := client.ResourceMonitors.Alter(ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
-			WithSet(*sdk.NewResourceMonitorSetRequest().
-				WithCreditQuota(creditQuota).
-				WithNotifyUsers(*sdk.NewNotifyUsersRequest().
-					WithUsers([]sdk.NotifiedUserRequest{*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("JAN_CIESLAK"))}),
-				),
-			).
-			WithTriggers([]sdk.TriggerDefinitionRequest{
-				*sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionNotify),
-			}),
+		err := client.ResourceMonitors.Alter(
+			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
+				WithSet(
+					*sdk.NewResourceMonitorSetRequest().
+						WithCreditQuota(creditQuota).
+						WithNotifyUsers(
+							*sdk.NewNotifyUsersRequest().
+								WithUsers([]sdk.NotifiedUserRequest{*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("JAN_CIESLAK"))}),
+						),
+				).
+				WithTriggers([]sdk.TriggerDefinitionRequest{
+					*sdk.NewTriggerDefinitionRequest(30, sdk.TriggerActionNotify),
+				}),
 		)
 		require.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ResourceMonitor(t, resourceMonitor.ID()).
 				HasCreditQuota(float64(creditQuota)).
 				HasNotifyUsers("JAN_CIESLAK").

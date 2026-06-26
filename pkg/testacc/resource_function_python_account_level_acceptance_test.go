@@ -49,7 +49,8 @@ func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
 					secondaryTestClient().BcrBundles.DisableBcrBundle(t, "2025_03")
 				},
 				Config: config.FromModels(t, providerModel, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).HasNameString(id.Name()),
 				),
 			},
@@ -111,7 +112,8 @@ func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
 					secondaryTestClient().BcrBundles.DisableBcrBundle(t, "2025_03")
 				},
 				Config: config.FromModels(t, providerModel, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).HasNameString(id.Name()),
 				),
 			},
@@ -124,7 +126,8 @@ func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).HasNameString(id.Name()),
 				),
 			},

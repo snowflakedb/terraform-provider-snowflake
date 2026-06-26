@@ -29,7 +29,8 @@ var catalogIntegrationObjectStorageSchema = func() map[string]*schema.Schema {
 		},
 	}
 	return collections.MergeMaps(
-		catalogIntegrationCommonSchema(schemas.DescribeCatalogIntegrationObjectStorageDetailsSchema), objectStorageSchema)
+		catalogIntegrationCommonSchema(schemas.DescribeCatalogIntegrationObjectStorageDetailsSchema), objectStorageSchema,
+	)
 }()
 
 func CatalogIntegrationObjectStorage() *schema.Resource {
@@ -131,7 +132,8 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) sc
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
 			); err != nil {
 				return diag.FromErr(err)

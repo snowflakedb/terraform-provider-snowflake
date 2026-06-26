@@ -57,7 +57,8 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel, passwordPoliciesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(passwordPoliciesModel.DatasourceReference(), "password_policies.#", "1")),
 					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, "snowflake_password_policies.test").
 						HasName(id.Name()).
@@ -87,7 +88,8 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, completeModel, passwordPoliciesModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(passwordPoliciesModelWithoutDescribe.DatasourceReference(), "password_policies.#", "1")),
 					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, "snowflake_password_policies.test").
 						HasName(id.Name()).

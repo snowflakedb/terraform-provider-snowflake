@@ -200,7 +200,8 @@ func TestAcc_StreamOnExternalTable_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.StreamDoesNotExist(t, id),
 				),
 			},
@@ -245,8 +246,9 @@ func TestAcc_StreamOnExternalTable_CopyGrants(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, streamModelWithCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnTableResource(t, streamModelWithCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnTableResource(t, streamModelWithCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModelWithCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						createdOn = value
 						return nil
@@ -255,8 +257,9 @@ func TestAcc_StreamOnExternalTable_CopyGrants(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, streamModelWithoutCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnTableResource(t, streamModelWithoutCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnTableResource(t, streamModelWithoutCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModelWithoutCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value != createdOn {
 							return fmt.Errorf("stream was recreated")
@@ -267,8 +270,9 @@ func TestAcc_StreamOnExternalTable_CopyGrants(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, streamModelWithCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnTableResource(t, streamModelWithCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnTableResource(t, streamModelWithCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModelWithCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value != createdOn {
 							return fmt.Errorf("stream was recreated")
@@ -377,9 +381,10 @@ func TestAcc_StreamOnExternalTable_PermadiffWhenIsStaleAndHasNoRetentionTime(t *
 					},
 				},
 				ExpectNonEmptyPlan: true,
-				Check: assertThat(t, resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanTrue),
+				Check: assertThat(
+					t, resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanTrue),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "true")),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModel.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						createdOn = value
@@ -398,9 +403,10 @@ func TestAcc_StreamOnExternalTable_PermadiffWhenIsStaleAndHasNoRetentionTime(t *
 					},
 				},
 				ExpectNonEmptyPlan: true,
-				Check: assertThat(t, resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanTrue),
+				Check: assertThat(
+					t, resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanTrue),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "true")),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModel.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value == createdOn {
@@ -441,9 +447,10 @@ func TestAcc_StreamOnExternalTable_StaleWithExternalChanges(t *testing.T) {
 			// initial creation does not lead to stale stream
 			{
 				Config: config.FromModels(t, streamModel),
-				Check: assertThat(t, resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanFalse),
+				Check: assertThat(
+					t, resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanFalse),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "false")),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModel.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						createdOn = value
@@ -455,20 +462,23 @@ func TestAcc_StreamOnExternalTable_StaleWithExternalChanges(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithSet(sdk.SchemaSetRequest{DataRetentionTimeInDays: sdk.Int(0), MaxDataExtensionTimeInDays: sdk.Int(0)}))
-					assertThatObject(t, objectassert.Stream(t, id).
-						HasName(id.Name()).
-						HasStale(true),
+					assertThatObject(
+						t, objectassert.Stream(t, id).
+							HasName(id.Name()).
+							HasStale(true),
 					)
 					testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithSet(sdk.SchemaSetRequest{DataRetentionTimeInDays: sdk.Int(1), MaxDataExtensionTimeInDays: sdk.Int(1)}))
-					assertThatObject(t, objectassert.Stream(t, id).
-						HasName(id.Name()).
-						HasStale(false),
+					assertThatObject(
+						t, objectassert.Stream(t, id).
+							HasName(id.Name()).
+							HasStale(false),
 					)
 				},
 				Config: config.FromModels(t, streamModel),
-				Check: assertThat(t, resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanFalse),
+				Check: assertThat(
+					t, resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanFalse),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "false")),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModel.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value != createdOn {
@@ -516,14 +526,15 @@ func TestAcc_StreamOnExternalTable_At(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnExternalTable/at"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithOffset),
-				Check: assertThat(t, resourceassert.StreamOnExternalTableResource(t, modelWithOffset.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasExternalTableString(externalTable.ID().FullyQualifiedName()).
-					HasInsertOnlyString(r.BooleanTrue).
-					HasCommentString("foo"),
+				Check: assertThat(
+					t, resourceassert.StreamOnExternalTableResource(t, modelWithOffset.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasExternalTableString(externalTable.ID().FullyQualifiedName()).
+						HasInsertOnlyString(r.BooleanTrue).
+						HasCommentString("foo"),
 					resourceshowoutputassert.StreamShowOutput(t, modelWithOffset.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -560,8 +571,9 @@ func TestAcc_StreamOnExternalTable_At(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnExternalTable/at"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithStream),
-				Check: assertThat(t, resourceassert.StreamOnTableResource(t, modelWithStream.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnTableResource(t, modelWithStream.ResourceReference()).
+						HasNameString(id.Name()),
 				),
 			},
 			// TODO(SNOW-1689111): test timestamps and statements
@@ -603,14 +615,15 @@ func TestAcc_StreamOnExternalTable_Before(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnExternalTable/before"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithOffset),
-				Check: assertThat(t, resourceassert.StreamOnExternalTableResource(t, modelWithOffset.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasExternalTableString(externalTable.ID().FullyQualifiedName()).
-					HasInsertOnlyString(r.BooleanTrue).
-					HasCommentString("foo"),
+				Check: assertThat(
+					t, resourceassert.StreamOnExternalTableResource(t, modelWithOffset.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasExternalTableString(externalTable.ID().FullyQualifiedName()).
+						HasInsertOnlyString(r.BooleanTrue).
+						HasCommentString("foo"),
 					resourceshowoutputassert.StreamShowOutput(t, modelWithOffset.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -647,8 +660,9 @@ func TestAcc_StreamOnExternalTable_Before(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnExternalTable/before"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithStream),
-				Check: assertThat(t, resourceassert.StreamOnTableResource(t, modelWithStream.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnTableResource(t, modelWithStream.ResourceReference()).
+						HasNameString(id.Name()),
 				),
 			},
 			// TODO(SNOW-1689111): test timestamps and statements
@@ -731,7 +745,8 @@ func TestAcc_StreamOnExternalTable_ExternalStreamTypeChange(t *testing.T) {
 			{
 				Config: config.FromModels(t, streamModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
 							HasStreamTypeString(string(sdk.StreamSourceTypeExternalTable)),
 						resourceshowoutputassert.StreamShowOutput(t, streamModel.ResourceReference()).
@@ -756,7 +771,8 @@ func TestAcc_StreamOnExternalTable_ExternalStreamTypeChange(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.StreamOnExternalTableResource(t, streamModel.ResourceReference()).
 							HasStreamTypeString(string(sdk.StreamSourceTypeExternalTable)),
 						resourceshowoutputassert.StreamShowOutput(t, streamModel.ResourceReference()).

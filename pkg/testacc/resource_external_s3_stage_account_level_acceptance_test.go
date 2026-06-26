@@ -86,7 +86,8 @@ func TestAcc_ExternalS3Stage_DirectoryTableTimestampParsing(t *testing.T) {
 					},
 				},
 				ProtoV6ProviderFactories: s3StageProviderFactory,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, stageModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).

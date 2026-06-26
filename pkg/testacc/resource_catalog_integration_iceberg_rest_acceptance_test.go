@@ -543,10 +543,11 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			// Change alterable props externally
 			{
 				PreConfig: func() {
-					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*sdk.NewCatalogIntegrationSetRequest().
-						WithEnabled(true).
-						WithComment(sdk.StringAllowEmpty{Value: externalComment}).
-						WithRefreshIntervalSeconds(externalRefreshIntervalSeconds),
+					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(
+						*sdk.NewCatalogIntegrationSetRequest().
+							WithEnabled(true).
+							WithComment(sdk.StringAllowEmpty{Value: externalComment}).
+							WithRefreshIntervalSeconds(externalRefreshIntervalSeconds),
 					)
 					testClient().CatalogIntegration.Alter(t, alterRequest)
 				},
@@ -1301,12 +1302,14 @@ func TestAcc_CatalogIntegrationIcebergRest_Validations(t *testing.T) {
 
 	emptySigV4IamRole := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest(""))
 
-	emptySigV4SigningRegion := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
-		WithSigv4SigningRegion(""),
+	emptySigV4SigningRegion := model.CatalogIntegrationIcebergRestSigV4(
+		"t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
+			WithSigv4SigningRegion(""),
 	)
 
-	emptySigV4ExternalId := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
-		WithSigv4ExternalId(""),
+	emptySigV4ExternalId := model.CatalogIntegrationIcebergRestSigV4(
+		"t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
+			WithSigv4ExternalId(""),
 	)
 
 	noAuthentication := model.CatalogIntegrationIcebergRest("t", id.Name(), false, []sdk.IcebergRestRestConfigRequest{restConfig})

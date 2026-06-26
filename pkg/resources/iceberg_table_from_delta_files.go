@@ -106,7 +106,8 @@ func ReadIcebergTableFromDeltaFilesFunc(withExternalChangesMarking bool) schema.
 				if table.AutoRefreshStatus != nil {
 					autoRefreshSet = table.AutoRefreshStatus.ExecutionState
 				}
-				if err := handleExternalChangesToObject(d,
+				if err := handleExternalChangesToObject(
+					d,
 					"show_output.0.auto_refresh_status",
 					outputMapping{"execution_state", "auto_refresh", autoRefreshSet, booleanStringFromBool(table.AutoRefreshStatus != nil), nil},
 				); err != nil {

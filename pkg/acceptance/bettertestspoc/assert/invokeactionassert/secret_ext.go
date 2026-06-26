@@ -15,5 +15,6 @@ func SecretDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.Test
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.Secret, sdk.SchemaObjectIdentifier] {
 			return testClient.Secret.Show
-		})
+		},
+	)
 }

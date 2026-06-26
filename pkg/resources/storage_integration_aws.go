@@ -190,7 +190,8 @@ func GetReadStorageIntegrationAwsFunc(withExternalChangesMarking bool) schema.Re
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"external_id", "storage_aws_external_id", awsDetails.ExternalId, awsDetails.ExternalId, nil},
 				outputMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", awsDetails.UsePrivatelinkEndpoint, booleanStringFromBool(awsDetails.UsePrivatelinkEndpoint), nil},
 			); err != nil {
@@ -212,7 +213,8 @@ func GetReadStorageIntegrationAwsFunc(withExternalChangesMarking bool) schema.Re
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)
 
-		errs = errors.Join(errs,
+		errs = errors.Join(
+			errs,
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StorageIntegrationToSchema(s)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StorageIntegrationAwsDetailsToSchema(awsDetails)}),
 		)

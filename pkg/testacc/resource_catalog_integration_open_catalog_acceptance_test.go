@@ -510,10 +510,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			// Change alterable props externally
 			{
 				PreConfig: func() {
-					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*sdk.NewCatalogIntegrationSetRequest().
-						WithEnabled(true).
-						WithComment(sdk.StringAllowEmpty{Value: externalComment}).
-						WithRefreshIntervalSeconds(externalRefreshIntervalSeconds),
+					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(
+						*sdk.NewCatalogIntegrationSetRequest().
+							WithEnabled(true).
+							WithComment(sdk.StringAllowEmpty{Value: externalComment}).
+							WithRefreshIntervalSeconds(externalRefreshIntervalSeconds),
 					)
 					testClient().CatalogIntegration.Alter(t, alterRequest)
 				},

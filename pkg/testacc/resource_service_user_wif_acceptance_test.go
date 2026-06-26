@@ -66,7 +66,8 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			// create optional
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDC.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject),
@@ -88,7 +89,8 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			// UPDATE - REMOVE WIF
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityEmpty(),
@@ -107,7 +109,8 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			// UPDATE - ADD WIF BACK
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceList),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDCAndAudienceList.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
@@ -130,7 +133,8 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 					testClient().User.SetOidcWorkloadIdentity(t, id, testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/changed")
 				},
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceList),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 							Issuer:       testvars.OidcIssuer,
@@ -142,7 +146,8 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			// ALTER - CHANGE AUDIENCE LIST
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceListTwoItems),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 							Issuer:       testvars.OidcIssuer,
@@ -184,7 +189,8 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 			// CREATE WITH AWS WIF
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithAWS),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithAWS.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityAws(arn),
@@ -208,7 +214,8 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 			// UPDATE - REMOVE WIF
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityEmpty(),
@@ -243,7 +250,8 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 			// CREATE WITH GCP WIF
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithGCP),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithGCP.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityGcp(subject),
@@ -263,7 +271,8 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 			// UPDATE - REMOVE WIF
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityEmpty(),
@@ -282,7 +291,8 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 			// UPDATE - ADD WIF BACK
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithGCP),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithGCP.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityGcp(subject),
@@ -310,7 +320,8 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 						plancheck.ExpectNonEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithGCP.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityGcp(subject),
@@ -364,7 +375,8 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 			// CREATE WITH Azure WIF
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithAzure),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithAzure.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
@@ -385,7 +397,8 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 			// UPDATE - REMOVE WIF
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityEmpty(),
@@ -404,7 +417,8 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 			// UPDATE - ADD WIF BACK
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithAzure),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithAzure.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
@@ -433,7 +447,8 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 						plancheck.ExpectNonEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithAzure.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
@@ -490,7 +505,8 @@ func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 			// Start with OIDC
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDC.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
@@ -512,7 +528,8 @@ func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 			// Switch to AWS
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithAWS),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithAWS.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityAws(arn),
@@ -554,7 +571,8 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDC.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
@@ -591,7 +609,8 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 					},
 				},
 				// Terraform should detect the drift and re-apply
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDC.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
@@ -622,7 +641,8 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 					},
 				},
 				// Terraform should detect the type change and re-apply OIDC config
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDC.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
@@ -734,7 +754,8 @@ func TestAcc_ServiceUser_WIF_MigrateFrom_v2_12_0(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
 				Config:            config.FromModels(t, userModelWithoutWIF),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithoutWIF.ResourceReference()).
@@ -753,7 +774,8 @@ func TestAcc_ServiceUser_WIF_MigrateFrom_v2_12_0(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithoutWIF.ResourceReference()).

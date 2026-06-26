@@ -253,7 +253,8 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			// Empty config - ensure schema is destroyed
 			{
 				Config: " ",
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.SchemaIsMissing(t, id),
 				),
 			},
@@ -317,7 +318,8 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 			// Create - with all optionals (including optional force-new fields)
 			{
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Schema(t, id).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -801,7 +803,8 @@ func TestAcc_Schema_RemoveDatabaseOutsideOfTerraform_dbInConfig(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, databaseModel, schemaModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(databaseModel.ResourceReference(), "name", databaseId.Name())),
 					assert.Check(resource.TestCheckResourceAttr(schemaModel.ResourceReference(), "name", schemaId.Name())),
 				),
@@ -818,7 +821,8 @@ func TestAcc_Schema_RemoveDatabaseOutsideOfTerraform_dbInConfig(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, databaseModel, schemaModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "name", databaseId.Name())),
 					assert.Check(resource.TestCheckResourceAttr("snowflake_schema.test", "name", schemaId.Name())),
 				),
@@ -1110,7 +1114,8 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
@@ -1189,7 +1194,8 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue_WithDatabaseLevel(t *testing.T)
 						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
@@ -1242,7 +1248,8 @@ func TestAcc_Schema_FailedUpdateStoresCorrectState(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: basicConfig,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Schema(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -1262,7 +1269,8 @@ func TestAcc_Schema_FailedUpdateStoresCorrectState(t *testing.T) {
 			// we need to do this in a separate step.
 			{
 				RefreshState: true,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, "snowflake_schema.test").
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -1279,7 +1287,8 @@ func TestAcc_Schema_FailedUpdateStoresCorrectState(t *testing.T) {
 					},
 				},
 				Config: basicConfig,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, "snowflake_schema.test").
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).

@@ -169,7 +169,8 @@ func TestAcc_Streamlits_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, streamlitModel, datasourceModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					commonShowOutputAssert(t, datasourceModelWithoutDescribe.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutDescribe.DatasourceReference(), "streamlits.0.describe_output.#", "0")),
@@ -177,7 +178,8 @@ func TestAcc_Streamlits_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, streamlitModel, datasourceModelWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					commonShowOutputAssert(t, datasourceModelWithDescribe.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "streamlits.0.describe_output.#", "1")),

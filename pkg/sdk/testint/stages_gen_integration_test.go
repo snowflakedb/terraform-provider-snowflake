@@ -56,14 +56,15 @@ func TestInt_Stages(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"))
 
-		assertThatObject(t, objectassert.StageDetails(t, id).
-			HasStageLocation(sdk.StageLocationDetails{
-				Url: []string{},
-			}).
-			HasDirectoryTableEnable(false).
-			HasDirectoryTableAutoRefresh(false).
-			HasDirectoryTableNotificationChannelEmpty().
-			HasDirectoryTableLastRefreshedOnNil(),
+		assertThatObject(
+			t, objectassert.StageDetails(t, id).
+				HasStageLocation(sdk.StageLocationDetails{
+					Url: []string{},
+				}).
+				HasDirectoryTableEnable(false).
+				HasDirectoryTableAutoRefresh(false).
+				HasDirectoryTableNotificationChannelEmpty().
+				HasDirectoryTableLastRefreshedOnNil(),
 		)
 	})
 
@@ -119,11 +120,12 @@ func TestInt_Stages(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.Stage(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
-			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType(sdk.StageTypeInternalTemporary),
+		assertThatObject(
+			t, objectassert.Stage(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
+				HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
+				HasType(sdk.StageTypeInternalTemporary),
 		)
 	})
 
@@ -445,8 +447,9 @@ func TestInt_Stages(t *testing.T) {
 			HasHasCredentials(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
 
-		assertThatObject(t, objectassert.StageDetails(t, id).
-			HasPrivateLinkUsePrivatelinkEndpoint(true),
+		assertThatObject(
+			t, objectassert.StageDetails(t, id).
+				HasPrivateLinkUsePrivatelinkEndpoint(true),
 		)
 	})
 
@@ -505,12 +508,13 @@ func TestInt_Stages(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.Stage(t, id).
-			HasName(id.Name()).
-			HasType(sdk.StageTypeExternalTemporary).
-			HasUrl(awsBucketUrl).
-			HasCloud(sdk.StageCloudAws).
-			HasStorageIntegration(s3StorageIntegration.ID()),
+		assertThatObject(
+			t, objectassert.Stage(t, id).
+				HasName(id.Name()).
+				HasType(sdk.StageTypeExternalTemporary).
+				HasUrl(awsBucketUrl).
+				HasCloud(sdk.StageCloudAws).
+				HasStorageIntegration(s3StorageIntegration.ID()),
 		)
 	})
 
@@ -527,8 +531,9 @@ func TestInt_Stages(t *testing.T) {
 		stage, err = client.Stages.ShowByID(ctx, stage.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
-			HasPrivateLinkUsePrivatelinkEndpoint(true),
+		assertThatObject(
+			t, objectassert.StageDetails(t, stage.ID()).
+				HasPrivateLinkUsePrivatelinkEndpoint(true),
 		)
 	})
 

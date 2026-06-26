@@ -214,7 +214,8 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 			// Change force new fields externally and detect drift
 			{
 				PreConfig: func() {
-					testClient().IcebergTable.CreateFromIcebergFiles(t, id,
+					testClient().IcebergTable.CreateFromIcebergFiles(
+						t, id,
 						sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath).
 							WithOrReplace(true).
 							WithComment(externalComment).
@@ -282,7 +283,8 @@ func TestAcc_IcebergTableFromFiles_CompleteUseCase(t *testing.T) {
 			// Create with all fields
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.IcebergTableFromFilesResource(t, modelComplete.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).

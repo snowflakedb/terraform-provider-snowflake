@@ -67,7 +67,8 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 			// create with empty optionals
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
@@ -95,7 +96,8 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelBasic),
 				ResourceName: modelBasic.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedUserProgrammaticAccessTokenResource(t, resourceId).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
@@ -128,7 +130,8 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						planchecks.ExpectChange(modelCompleteWithDifferentValues.ResourceReference(), "role_restriction", tfjson.ActionCreate, nil, sdk.String(role.ID().Name())),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
@@ -167,7 +170,8 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
@@ -194,10 +198,11 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 			{
 				PreConfig: func() {
 					setRequest := sdk.NewModifyUserProgrammaticAccessTokenRequest(user.ID(), id).
-						WithSet(*sdk.NewModifyProgrammaticAccessTokenSetRequest().
-							WithDisabled(true).
-							WithMinsToBypassNetworkPolicyRequirement(30).
-							WithComment(comment),
+						WithSet(
+							*sdk.NewModifyProgrammaticAccessTokenSetRequest().
+								WithDisabled(true).
+								WithMinsToBypassNetworkPolicyRequirement(30).
+								WithComment(comment),
 						)
 					testClient().User.ModifyProgrammaticAccessToken(t, setRequest)
 				},
@@ -207,7 +212,8 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
@@ -256,7 +262,8 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithForceNewOptionals.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithForceNewOptionals.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
@@ -287,7 +294,8 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
@@ -338,7 +346,8 @@ func TestAcc_UserProgrammaticAccessToken_rename(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelCompleteId1),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteId1.ResourceReference()).
 						HasNameString(id1.Name()).
 						HasUserString(user.ID().Name()),
@@ -351,7 +360,8 @@ func TestAcc_UserProgrammaticAccessToken_rename(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteId2.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteId2.ResourceReference()).
 						HasNameString(id2.Name()).
 						HasUserString(user.ID().Name()),
@@ -366,7 +376,8 @@ func TestAcc_UserProgrammaticAccessToken_rename(t *testing.T) {
 						planchecks.ExpectChange(modelCompleteId3WithOptionalField.ResourceReference(), "comment", tfjson.ActionUpdate, nil, sdk.String(comment)),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelCompleteId3WithOptionalField.ResourceReference()).
 						HasNameString(id3.Name()).
 						HasUserString(user.ID().Name()).
@@ -407,7 +418,8 @@ func TestAcc_UserProgrammaticAccessToken_complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasUserString(user.ID().Name()).
@@ -498,7 +510,8 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 			// create the token
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoRotatedTokenName().
@@ -518,7 +531,8 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "rotated_token_name", false),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeeper.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoRotatedTokenName().
@@ -536,7 +550,8 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 						planchecks.ExpectComputed(modelWithExpireRotatedTokenAfterHours.ResourceReference(), "rotated_token_name", false),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithExpireRotatedTokenAfterHours.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoRotatedTokenName().
@@ -554,7 +569,8 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 						planchecks.ExpectComputed(modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference(), "rotated_token_name", true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeeperDifferentValueAndExpireRotatedTokenAfterHours.ResourceReference()).
 						HasNameString(id.Name()).
 						HasRotatedTokenNameNotEmpty().
@@ -587,7 +603,8 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 						planchecks.ExpectComputed(modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference(), "rotated_token_name", true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeeperDifferentValueAndDifferentExpireRotatedTokenAfterHours.ResourceReference()).
 						HasNameString(id.Name()).
 						HasRotatedTokenNameNotEmpty().
@@ -633,7 +650,8 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 						planchecks.ExpectComputed(modelBasic.ResourceReference(), "rotated_token_name", false),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasRotatedTokenNameNotEmpty().
@@ -684,7 +702,8 @@ func TestAcc_UserProgrammaticAccessToken_RotatingWithExternalProvider(t *testing
 			// create the token
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoRotatedTokenName().
@@ -702,7 +721,8 @@ func TestAcc_UserProgrammaticAccessToken_RotatingWithExternalProvider(t *testing
 						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "rotated_token_name", false),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoRotatedTokenName().
@@ -720,7 +740,8 @@ func TestAcc_UserProgrammaticAccessToken_RotatingWithExternalProvider(t *testing
 						planchecks.ExpectComputed(modelWithKeeper.ResourceReference(), "rotated_token_name", true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelWithKeeper.ResourceReference()).
 						HasNameString(id.Name()).
 						HasRotatedTokenNameNotEmpty().
@@ -738,7 +759,8 @@ func TestAcc_UserProgrammaticAccessToken_RotatingWithExternalProvider(t *testing
 						planchecks.ExpectComputed(modelBasic.ResourceReference(), "rotated_token_name", false),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserProgrammaticAccessTokenResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasRotatedTokenNameNotEmpty().

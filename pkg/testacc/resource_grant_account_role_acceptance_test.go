@@ -242,7 +242,8 @@ func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
 					secondaryTestClient().Role.GrantRoleToUser(t, accountRole.ID(), user.ID())
 				},
 				Config: testConfig,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_grant_account_role.test", "id", helpers.EncodeResourceIdentifier(accountRole.ID().FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentAccountRole.ID().FullyQualifiedName()))),
 				),
 			},

@@ -198,7 +198,8 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_Import(t *testing.T) {
 			{
 				PreConfig: func() {
 					auth := sdk.NewDynamicClientMcpUserAuthenticationRequest(mcpOauthResourceUrl)
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: mcpAllowedPrefix}}, true).
 							WithComment(comment).
@@ -231,7 +232,8 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_Import_WrongProviderType(t *
 	t.Cleanup(oauth2Cleanup)
 
 	dynamicClientId := testClient().Ids.RandomAccountObjectIdentifier()
-	dynamicClientModel := model.ApiIntegrationExternalMcpDynamicClient("t", dynamicClientId.Name(),
+	dynamicClientModel := model.ApiIntegrationExternalMcpDynamicClient(
+		"t", dynamicClientId.Name(),
 		[]string{mcpAllowedPrefix},
 		true,
 		mcpOauthResourceUrl,

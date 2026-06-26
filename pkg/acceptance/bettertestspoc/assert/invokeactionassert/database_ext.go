@@ -15,5 +15,6 @@ func DatabaseDoesNotExist(t *testing.T, id sdk.AccountObjectIdentifier) assert.T
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.Database, sdk.AccountObjectIdentifier] {
 			return testClient.Database.Show
-		})
+		},
+	)
 }

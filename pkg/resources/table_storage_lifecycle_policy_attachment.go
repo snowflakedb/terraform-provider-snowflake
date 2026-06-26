@@ -175,7 +175,8 @@ func ReadTableStorageLifecyclePolicyAttachment(ctx context.Context, d *schema.Re
 				policyDb,
 				policySchema,
 				storageLifecyclePolicyReference.PolicyName,
-			).FullyQualifiedName()),
+			).FullyQualifiedName(),
+		),
 		d.Set("on", on),
 	)
 	return diag.FromErr(errs)

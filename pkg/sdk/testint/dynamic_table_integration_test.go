@@ -224,24 +224,26 @@ func TestInt_DynamicTableAlter(t *testing.T) {
 		dynamicTableId := dynamicTable.ID()
 
 		addRequest := sdk.NewAlterDynamicTableRequest(dynamicTableId).WithAddStorageLifecyclePolicy(
-			sdk.NewDynamicTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "ID"}}))
+			sdk.NewDynamicTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "ID"}}),
+		)
 		err := client.DynamicTables.Alter(ctx, addRequest)
 		require.NoError(t, err)
 
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, dynamicTableId, sdk.PolicyEntityDomainTable)
 		require.NoError(t, err)
 		require.Len(t, references, 1)
-		assertThatObject(t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
-			HasPolicyDb(storageLifecyclePolicyId.DatabaseName()).
-			HasPolicySchema(storageLifecyclePolicyId.SchemaName()).
-			HasPolicyName(storageLifecyclePolicyId.Name()).
-			HasPolicyKind(sdk.PolicyKindStorageLifecyclePolicy).
-			HasRefDatabaseName(dynamicTableId.DatabaseName()).
-			HasRefSchemaName(dynamicTableId.SchemaName()).
-			HasRefEntityName(dynamicTableId.Name()).
-			HasRefEntityDomain(string(sdk.PolicyEntityDomainDynamicTable)).
-			HasRefArgColumnNames(`[ "ID" ]`).
-			HasPolicyStatus("ACTIVE"),
+		assertThatObject(
+			t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
+				HasPolicyDb(storageLifecyclePolicyId.DatabaseName()).
+				HasPolicySchema(storageLifecyclePolicyId.SchemaName()).
+				HasPolicyName(storageLifecyclePolicyId.Name()).
+				HasPolicyKind(sdk.PolicyKindStorageLifecyclePolicy).
+				HasRefDatabaseName(dynamicTableId.DatabaseName()).
+				HasRefSchemaName(dynamicTableId.SchemaName()).
+				HasRefEntityName(dynamicTableId.Name()).
+				HasRefEntityDomain(string(sdk.PolicyEntityDomainDynamicTable)).
+				HasRefArgColumnNames(`[ "ID" ]`).
+				HasPolicyStatus("ACTIVE"),
 		)
 
 		dropRequest := sdk.NewAlterDynamicTableRequest(dynamicTableId).WithDropStorageLifecyclePolicy(new(true))

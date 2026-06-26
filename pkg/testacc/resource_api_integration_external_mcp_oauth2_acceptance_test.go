@@ -238,7 +238,8 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_Import(t *testing.T) {
 					auth := sdk.NewOAuth2McpUserAuthenticationRequest(mcpOauth2ClientId, mcpOauth2ClientSecret, mcpOauth2TokenEndpoint, mcpOauth2AuthorizationEndpoint).
 						WithOauthClientAuthMethod(oauthClientAuthMethod).
 						WithOauthRefreshTokenValidity(mcpOauth2RefreshTokenValidity)
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: mcpAllowedPrefix}}, true).
 							WithApiBlockedPrefixes([]sdk.ApiIntegrationEndpointPrefix{{Path: mcpBlockedPrefix}}).
@@ -275,7 +276,8 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_Import_WrongProviderType(t *testing
 	t.Cleanup(dynamicClientCleanup)
 
 	mcpOAuth2Id := testClient().Ids.RandomAccountObjectIdentifier()
-	mcpOAuth2Model := model.ApiIntegrationExternalMcpOAuth2("t", mcpOAuth2Id.Name(),
+	mcpOAuth2Model := model.ApiIntegrationExternalMcpOAuth2(
+		"t", mcpOAuth2Id.Name(),
 		[]string{mcpAllowedPrefix},
 		true,
 		mcpOauth2AuthorizationEndpoint,

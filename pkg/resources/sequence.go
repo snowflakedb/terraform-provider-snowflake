@@ -63,7 +63,8 @@ var sequenceSchema = map[string]*schema.Schema{
 			[]string{
 				string(sdk.ValuesBehaviorNoOrder),
 				string(sdk.ValuesBehaviorOrder),
-			}, false),
+			}, false,
+		),
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }

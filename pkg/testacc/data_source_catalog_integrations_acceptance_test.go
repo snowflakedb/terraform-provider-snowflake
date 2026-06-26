@@ -128,7 +128,8 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: ComposeCheckDestroy(t,
+		CheckDestroy: ComposeCheckDestroy(
+			t,
 			resources.CatalogIntegrationAwsGlue,
 			resources.CatalogIntegrationObjectStorage,
 			resources.CatalogIntegrationOpenCatalog,
@@ -138,7 +139,8 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 			// AWS Glue without describe
 			{
 				Config: accconfig.FromModels(t, catalogIntegrationAwsGlue, glueNoDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(glueNoDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueNoDescribe.DatasourceReference(), 0).
 						HasName(glueId.Name()).
@@ -152,7 +154,8 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 			// AWS Glue with describe
 			{
 				Config: accconfig.FromModels(t, catalogIntegrationAwsGlue, glueWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(glueWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueWithDescribe.DatasourceReference(), 0).
 						HasName(glueId.Name()).
@@ -177,7 +180,8 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 			// Object Storage with describe
 			{
 				Config: accconfig.FromModels(t, catalogIntegrationObjectStorage, objectStorageWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(objectStorageWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, objectStorageWithDescribe.DatasourceReference(), 0).
 						HasName(objectStorageId.Name()).
@@ -197,7 +201,8 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 			// Open Catalog with describe
 			{
 				Config: accconfig.FromModels(t, catalogIntegrationOpenCatalog, openCatalogWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(openCatalogWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, openCatalogWithDescribe.DatasourceReference(), 0).
 						HasName(openCatalogId.Name()).
@@ -227,7 +232,8 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 			// Iceberg REST Bearer with describe
 			{
 				Config: accconfig.FromModels(t, catalogIntegrationIcebergRestBearer, icebergBearerWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(icebergBearerWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, icebergBearerWithDescribe.DatasourceReference(), 0).
 						HasName(icebergId.Name()).
@@ -283,7 +289,8 @@ func TestAcc_CatalogIntegrations_MultipleTypes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, catalogIntegrationAwsGlueModel, catalogIntegrationObjectStorageModel, catalogIntegrationsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(ref, "catalog_integrations.#", "2")),
 					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, ref, 0).
 						// Don't check name, as the order of elements in SHOW output is unpredictable

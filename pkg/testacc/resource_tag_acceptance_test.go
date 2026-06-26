@@ -174,7 +174,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.TagDoesNotExist(t, id),
 				),
 			},
@@ -208,7 +209,8 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 			// Create - with allowed_values
 			{
 				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -242,7 +244,8 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basicWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -294,7 +297,8 @@ func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *test
 			// Step 1: create a tag with allowed_values + allowed_values_sequence on_conflict.
 			{
 				Config: config.FromModels(t, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, resourceRef).
 						HasPropagateEnum(sdk.TagPropagationOnDependency).
 						HasOnConflictAllowedValuesSequence(),
@@ -308,7 +312,8 @@ func TestAcc_Tag_CompleteUseCase_OnConflictAllowedValuesSequence_Bcr2291(t *test
 					},
 				},
 				Config: config.FromModels(t, withPropagateOnly),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withPropagateOnly.ResourceReference()).
 						HasOnConflictEmpty(),
 				),
@@ -332,8 +337,9 @@ func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
 				PreConfig:         func() { SetLegacyConfigPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.98.0"),
 				Config:            tagV098(id),
-				Check: assertThat(t, resourceassert.TagResource(t, tagModel.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.TagResource(t, tagModel.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttr(tagModel.ResourceReference(), "allowed_values.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(tagModel.ResourceReference(), "allowed_values.0", "bar")),
 					assert.Check(resource.TestCheckResourceAttr(tagModel.ResourceReference(), "allowed_values.1", "foo")),
@@ -348,8 +354,9 @@ func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
 						plancheck.ExpectResourceAction(tagModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t, resourceassert.TagResource(t, tagModel.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.TagResource(t, tagModel.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttr(tagModel.ResourceReference(), "allowed_values.#", "2")),
 					assert.Check(resource.TestCheckTypeSetElemAttr(tagModel.ResourceReference(), "allowed_values.*", "foo")),
 					assert.Check(resource.TestCheckTypeSetElemAttr(tagModel.ResourceReference(), "allowed_values.*", "bar")),
@@ -392,7 +399,8 @@ func TestAcc_Tag_NoAllowedValues_WithoutExperimentFlag(t *testing.T) {
 			// Create basic tag (succeeds)
 			{
 				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesNil(),
@@ -415,7 +423,8 @@ func TestAcc_Tag_NoAllowedValues_WithoutExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesUnordered("value1", "value2"),
@@ -433,7 +442,8 @@ func TestAcc_Tag_NoAllowedValues_WithoutExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -464,7 +474,8 @@ func TestAcc_Tag_ExternalChanges_WithoutExperimentFlag(t *testing.T) {
 			// Create with allowed_values
 			{
 				Config: config.FromModels(t, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesUnordered(allowedValues...),
@@ -486,7 +497,8 @@ func TestAcc_Tag_ExternalChanges_WithoutExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesUnordered(allowedValues...),
@@ -507,7 +519,8 @@ func TestAcc_Tag_ExternalChanges_WithoutExperimentFlag(t *testing.T) {
 					require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 				},
 				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesNil(),
@@ -531,7 +544,8 @@ func TestAcc_Tag_ExternalChanges_WithoutExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -566,7 +580,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 			// Create - without optionals
 			{
 				Config: config.FromModels(t, providerModel, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesNil(),
@@ -596,7 +611,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesUnordered("value1", "value2"),
@@ -627,7 +643,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withDifferentAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesUnordered("value2", "value3"),
@@ -646,7 +663,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesNil(),
@@ -665,7 +683,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -687,7 +706,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -716,7 +736,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -745,7 +766,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesUnordered("value1", "value2"),
@@ -764,7 +786,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -786,7 +809,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -805,7 +829,8 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesNil(),
@@ -836,7 +861,8 @@ func TestAcc_Tag_TransitionToExperimentFlag_NullAllowedValues(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
 				Config:            config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesNil(),
@@ -855,7 +881,8 @@ func TestAcc_Tag_TransitionToExperimentFlag_NullAllowedValues(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesNil(),
@@ -888,7 +915,8 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValues(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
 				Config:            config.FromModels(t, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesUnordered("v1", "v2"),
@@ -902,7 +930,8 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValues(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
 				Config:            config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -921,7 +950,8 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValues(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -953,7 +983,8 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValuesWithBasicConfig(t 
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
 				Config:            config.FromModels(t, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesUnordered("v1", "v2"),
@@ -967,7 +998,8 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValuesWithBasicConfig(t 
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
 				Config:            config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -988,7 +1020,8 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValuesWithBasicConfig(t 
 					},
 				},
 				Config: config.FromModels(t, providerModel, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesNil(),
@@ -1021,7 +1054,8 @@ func TestAcc_Tag_NoAllowedValues_DisableExperimentFlag(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: tagsWithExperimentFlagProviderFactory,
 				Config:                   config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -1037,7 +1071,8 @@ func TestAcc_Tag_NoAllowedValues_DisableExperimentFlag(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: tagsProviderFactory,
 				Config:                   config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
 						HasAllowedValuesEmpty(),
@@ -1099,7 +1134,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 			// Create with allowed_values_sequence and set up conflicting dependency to assert propagated value
 			{
 				Config: config.FromModels(t, withSeqInitial),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, tagId).
 						HasPropagate(sdk.TagPropagationOnDependency).
 						HasAllowedValuesUnordered("confidential", "internal", "public"),
@@ -1115,7 +1151,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 					viewId = view.ID()
 				},
 				Config: config.FromModels(t, withSeqInitial),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					// "confidential" is first in sequence but not assigned to either table;
 					// "internal" is second and assigned to table1 -> first match -> propagated value
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "internal").
@@ -1134,7 +1171,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 			// Update allowed_values order ONLY -> "public" is now first match -> view should get "public"
 			{
 				Config: config.FromModels(t, withSeqReordered),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withSeqReordered.ResourceReference()).
 						HasOnConflictAllowedValuesSequence().
 						HasOrderedAllowedValues("public", "internal", "confidential"),
@@ -1146,7 +1184,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 			// Add new value "restricted" at front -> "public" still first match among conflicting ("internal","public")
 			{
 				Config: config.FromModels(t, withSeqAddedValue),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withSeqAddedValue.ResourceReference()).
 						HasOrderedAllowedValues("restricted", "public", "internal", "confidential"),
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "public").
@@ -1157,7 +1196,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 			// Remove "public" -> only "internal" remains among conflicting values -> propagated = "internal"
 			{
 				Config: config.FromModels(t, withSeqRemovedValue),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withSeqRemovedValue.ResourceReference()).
 						HasOrderedAllowedValues("restricted", "internal", "confidential"),
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "internal").
@@ -1168,7 +1208,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 			// Switch to custom_value -> view should get "confidential"
 			{
 				Config: config.FromModels(t, withCustomConflict),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withCustomConflict.ResourceReference()).
 						HasOnConflictCustomValue("confidential"),
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "confidential").
@@ -1179,7 +1220,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 			// Switch back to allowed_values_sequence -> "internal" is now the only conflicting value in sequence
 			{
 				Config: config.FromModels(t, withSeqAgain),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withSeqAgain.ResourceReference()).
 						HasOnConflictAllowedValuesSequence().
 						HasOrderedAllowedValues("restricted", "internal", "confidential"),
@@ -1191,7 +1233,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 			// Remove propagate and on_conflict -> propagated tag value remains (Snowflake does not remove it), but state is clean
 			{
 				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, tagId).
 						HasPropagate(sdk.TagPropagationNone),
 					resourceassert.TagResource(t, basic.ResourceReference()).
@@ -1240,7 +1283,8 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 			// Create the tag with propagate + on_conflict (tag must exist first)
 			{
 				Config: config.FromModels(t, withCustomFail),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withCustomFail.ResourceReference()).
 						HasPropagateEnum(sdk.TagPropagationOnDependency).
 						HasOnConflictCustomValue("FAIL"),
@@ -1260,7 +1304,8 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 			// Add allowed_values while keeping same propagate + on_conflict
 			{
 				Config: config.FromModels(t, withCustomFailAndAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withCustomFailAndAllowedValues.ResourceReference()).
 						HasOnConflictCustomValue("FAIL").
 						HasAllowedValues("FAIL", "alpha", "beta"),
@@ -1272,7 +1317,8 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 			// Update custom_value to "RESTRICTED"
 			{
 				Config: config.FromModels(t, withCustomRestricted),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, withCustomRestricted.ResourceReference()).
 						HasOnConflictCustomValue("RESTRICTED"),
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "RESTRICTED").
@@ -1283,7 +1329,8 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 			// Remove on_conflict (keep propagate)
 			{
 				Config: config.FromModels(t, propagateOnly),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TagResource(t, propagateOnly.ResourceReference()).
 						HasOnConflictEmpty(),
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "CONFLICT").
@@ -1324,7 +1371,8 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 			// Create with allowed_values (unordered).
 			{
 				Config: config.FromModels(t, providerModel, withAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValuesUnordered("a", "b", "c"),
 					resourceassert.TagResource(t, ref).
 						HasAllowedValues("a", "b", "c").
@@ -1339,7 +1387,8 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withOrdered),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValues("c", "b", "a"),
 					resourceassert.TagResource(t, ref).
 						HasOrderedAllowedValues("c", "b", "a").
@@ -1354,7 +1403,8 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withOrderedModified),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValues("x", "b", "c"),
 					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
 				),
@@ -1367,7 +1417,8 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValuesEmpty(),
 					resourceassert.TagResource(t, ref).
 						HasNoAllowedValuesString("true").
@@ -1383,7 +1434,8 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withOrderedModified),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValues("x", "b", "c"),
 					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
 				),
@@ -1404,7 +1456,8 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withOrderedModified),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValues("x", "b", "c"),
 					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
 				),
@@ -1417,7 +1470,8 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, providerModel, withAllowedValuesAfterBlocking),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
 					resourceassert.TagResource(t, ref).
 						HasAllowedValues("x", "b", "c").

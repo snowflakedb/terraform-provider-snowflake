@@ -195,7 +195,8 @@ func TestAcc_TableStorageLifecyclePolicyAttachment_DynamicTable(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.TableStorageLifecyclePolicyAttachmentResource(t, ref).
 						HasTableName(dynamicTableName).
 						HasTableType(tableType).

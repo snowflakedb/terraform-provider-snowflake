@@ -71,7 +71,8 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationGcsModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -119,7 +120,8 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationGcsAllAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsAllAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -150,7 +152,8 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationGcsAllAttributesChanged),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsAllAttributesChanged.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanTrue).
@@ -187,7 +190,8 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationGcsModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -306,7 +310,8 @@ func TestAcc_StorageIntegrationGcs_AllowedLocationsUnordered(t *testing.T) {
 			// create
 			{
 				Config: config.FromModels(t, storageIntegrationGcsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModel.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationGcsDescribeOutput(t, storageIntegrationGcsModel.ResourceReference()).
@@ -327,7 +332,8 @@ func TestAcc_StorageIntegrationGcs_AllowedLocationsUnordered(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationGcsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModel.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationGcsDescribeOutput(t, storageIntegrationGcsModel.ResourceReference()).
@@ -342,7 +348,8 @@ func TestAcc_StorageIntegrationGcs_AllowedLocationsUnordered(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationGcsModel2),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModel2.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationGcsDescribeOutput(t, storageIntegrationGcsModel2.ResourceReference()).

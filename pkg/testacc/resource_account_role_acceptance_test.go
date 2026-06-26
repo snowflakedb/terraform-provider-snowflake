@@ -156,7 +156,8 @@ func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
 			// Empty config - ensure account role is destroyed
 			{
 				Config: " ",
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.AccountRoleIsMissing(t, id),
 				),
 			},

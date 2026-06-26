@@ -102,7 +102,8 @@ func TestAcc_NetworkPolicies_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, networkPolicyModel, withoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.NetworkPoliciesDatasourceShowOutput(t, withoutDescribe.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -118,7 +119,8 @@ func TestAcc_NetworkPolicies_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, networkPolicyModel, withDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.NetworkPoliciesDatasourceShowOutput(t, withDescribe.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).

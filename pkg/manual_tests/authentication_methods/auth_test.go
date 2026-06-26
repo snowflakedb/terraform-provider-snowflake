@@ -80,7 +80,8 @@ func TestAcc_Provider_UsernamePasswordMfaAuthWithPasscode(t *testing.T) {
 
 func providerConfigWithAuthenticator(t *testing.T, profile string, authenticator sdk.AuthenticationType) string {
 	t.Helper()
-	return config.FromModels(t,
+	return config.FromModels(
+		t,
 		providermodel.SnowflakeProvider().WithProfile(profile).WithAuthenticator(string(authenticator)),
 		model.Database("t", "SNOWFLAKE"),
 	)
