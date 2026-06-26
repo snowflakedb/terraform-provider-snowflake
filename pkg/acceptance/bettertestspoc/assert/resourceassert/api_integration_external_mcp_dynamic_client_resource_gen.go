@@ -16,7 +16,7 @@ func ApiIntegrationExternalMcpDynamicClientResource(t *testing.T, name string) *
 	t.Helper()
 
 	return &ApiIntegrationExternalMcpDynamicClientResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationExternalMcpDynamicClientResource(t *testing.T, id str
 	t.Helper()
 
 	return &ApiIntegrationExternalMcpDynamicClientResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -72,27 +72,27 @@ func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasOauthResourceU
 ///////////////////////////////////
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasNameString(expected string) *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
+	a.ValueSet("name", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasCommentString(expected string) *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", expected))
+	a.ValueSet("comment", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasEnabledString(expected string) *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueSet("enabled", expected))
+	a.ValueSet("enabled", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasFullyQualifiedNameString(expected string) *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	a.ValueSet("fully_qualified_name", expected)
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasOauthResourceUrlString(expected string) *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_resource_url", expected))
+	a.ValueSet("oauth_resource_url", expected)
 	return a
 }
 
@@ -101,27 +101,27 @@ func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasOauthResourceU
 ///////////////////////////////
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasNoName() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasNoComment() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasNoEnabled() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("enabled"))
+	a.ValueNotSet("enabled")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasNoFullyQualifiedName() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	a.ValueNotSet("fully_qualified_name")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasNoOauthResourceUrl() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_resource_url"))
+	a.ValueNotSet("oauth_resource_url")
 	return a
 }
 
@@ -130,17 +130,17 @@ func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasNoOauthResourc
 ////////////////////////////
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasApiBlockedPrefixesEmpty() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_blocked_prefixes.#", "0"))
+	a.ValueSet("api_blocked_prefixes.#", "0")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasCommentEmpty() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
+	a.ValueSet("comment", "")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasFullyQualifiedNameEmpty() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	a.ValueSet("fully_qualified_name", "")
 	return a
 }
 
@@ -149,26 +149,26 @@ func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasFullyQualified
 ///////////////////////////////
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasNameNotEmpty() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
+	a.ValuePresent("name")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasCommentNotEmpty() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
+	a.ValuePresent("comment")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasEnabledNotEmpty() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValuePresent("enabled"))
+	a.ValuePresent("enabled")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	a.ValuePresent("fully_qualified_name")
 	return a
 }
 
 func (a *ApiIntegrationExternalMcpDynamicClientResourceAssert) HasOauthResourceUrlNotEmpty() *ApiIntegrationExternalMcpDynamicClientResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_resource_url"))
+	a.ValuePresent("oauth_resource_url")
 	return a
 }
