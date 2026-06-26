@@ -24,7 +24,10 @@ type ResourceParameterAssertionModel struct {
 }
 
 var dataSourceParametersMapping = map[string]string{
-	"Database": "Databases",
+	"Database":  "Databases",
+	"Task":      "Tasks",
+	"User":      "Users",
+	"Warehouse": "Warehouses",
 }
 
 func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparametersassertgen.SnowflakeObjectParameters, preamble *genhelpers.PreambleModel) ResourceParametersAssertionsModel {
