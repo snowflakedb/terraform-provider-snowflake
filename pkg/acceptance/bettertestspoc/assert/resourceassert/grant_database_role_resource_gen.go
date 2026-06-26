@@ -16,7 +16,7 @@ func GrantDatabaseRoleResource(t *testing.T, name string) *GrantDatabaseRoleReso
 	t.Helper()
 
 	return &GrantDatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantDatabaseRoleResource(t *testing.T, id string) *GrantDatabaseRo
 	t.Helper()
 
 	return &GrantDatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -57,22 +57,22 @@ func (g *GrantDatabaseRoleResourceAssert) HasShareName(expected string) *GrantDa
 ///////////////////////////////////
 
 func (g *GrantDatabaseRoleResourceAssert) HasDatabaseRoleNameString(expected string) *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("database_role_name", expected))
+	g.ValueSet("database_role_name", expected)
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasParentDatabaseRoleNameString(expected string) *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("parent_database_role_name", expected))
+	g.ValueSet("parent_database_role_name", expected)
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasParentRoleNameString(expected string) *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("parent_role_name", expected))
+	g.ValueSet("parent_role_name", expected)
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasShareNameString(expected string) *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("share_name", expected))
+	g.ValueSet("share_name", expected)
 	return g
 }
 
@@ -81,22 +81,22 @@ func (g *GrantDatabaseRoleResourceAssert) HasShareNameString(expected string) *G
 ///////////////////////////////
 
 func (g *GrantDatabaseRoleResourceAssert) HasNoDatabaseRoleName() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("database_role_name"))
+	g.ValueNotSet("database_role_name")
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasNoParentDatabaseRoleName() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("parent_database_role_name"))
+	g.ValueNotSet("parent_database_role_name")
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasNoParentRoleName() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("parent_role_name"))
+	g.ValueNotSet("parent_role_name")
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasNoShareName() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("share_name"))
+	g.ValueNotSet("share_name")
 	return g
 }
 
@@ -105,17 +105,17 @@ func (g *GrantDatabaseRoleResourceAssert) HasNoShareName() *GrantDatabaseRoleRes
 ////////////////////////////
 
 func (g *GrantDatabaseRoleResourceAssert) HasParentDatabaseRoleNameEmpty() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("parent_database_role_name", ""))
+	g.ValueSet("parent_database_role_name", "")
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasParentRoleNameEmpty() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("parent_role_name", ""))
+	g.ValueSet("parent_role_name", "")
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasShareNameEmpty() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("share_name", ""))
+	g.ValueSet("share_name", "")
 	return g
 }
 
@@ -124,21 +124,21 @@ func (g *GrantDatabaseRoleResourceAssert) HasShareNameEmpty() *GrantDatabaseRole
 ///////////////////////////////
 
 func (g *GrantDatabaseRoleResourceAssert) HasDatabaseRoleNameNotEmpty() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("database_role_name"))
+	g.ValuePresent("database_role_name")
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasParentDatabaseRoleNameNotEmpty() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("parent_database_role_name"))
+	g.ValuePresent("parent_database_role_name")
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasParentRoleNameNotEmpty() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("parent_role_name"))
+	g.ValuePresent("parent_role_name")
 	return g
 }
 
 func (g *GrantDatabaseRoleResourceAssert) HasShareNameNotEmpty() *GrantDatabaseRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("share_name"))
+	g.ValuePresent("share_name")
 	return g
 }
