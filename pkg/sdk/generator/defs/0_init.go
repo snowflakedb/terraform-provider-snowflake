@@ -63,6 +63,7 @@ func init() {
 		streamlitsDef,
 		streamsDef,
 		tagReferencesDef,
+		tagsDef,
 		tasksDef,
 		userProgrammaticAccessTokensDef,
 		viewsDef,

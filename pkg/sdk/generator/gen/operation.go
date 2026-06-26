@@ -77,6 +77,9 @@ type Operation struct {
 	DropSafelyHook bool
 	// DropSafelyForce, when true, appends .WithForce(true) to the Drop request in the generated DropSafely implementation.
 	DropSafelyForce bool
+	// RequestAdjust, when true, inserts a request.adjust() call in the generated impl before toOpts() is called.
+	// The adjust() method must be implemented manually on the request type in a _ext.go file.
+	RequestAdjust bool
 
 	// TODO [SNOW-2324252]: Consider splitting the Operation into definition and generation model
 	// new fields used to move the old template executors logic into simpler template generation based on prepared model
@@ -340,8 +343,28 @@ func (i *Interface) describeOperation(describeKind DescriptionMappingKind, doc s
 	return i
 }
 
+// CustomOperationOption is a functional option for configuring CustomOperation behavior.
+type CustomOperationOption func(*Operation)
+
+// WithRequestAdjust enables a request.adjust() call in the generated impl before toOpts() and validateAndExec.
+// The adjust() method must be implemented manually on the request type in a _ext.go file.
+func WithRequestAdjust() CustomOperationOption {
+	return func(op *Operation) { op.RequestAdjust = true }
+}
+
 func (i *Interface) CustomOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	return i.newSimpleOperation(kind, doc, queryStruct, helperStructs...)
+}
+
+// CustomOperationWithOpts creates a custom operation with functional options for configuring behavior.
+// Use this instead of CustomOperation when you need to attach options like WithRequestAdjust.
+func (i *Interface) CustomOperationWithOpts(kind string, doc string, queryStruct *QueryStruct, opts []CustomOperationOption, helperStructs ...IntoField) *Interface {
+	i.newSimpleOperation(kind, doc, queryStruct, helperStructs...)
+	op := i.Operations[len(i.Operations)-1]
+	for _, opt := range opts {
+		opt(op)
+	}
+	return i
 }
 
 func (i *Interface) ShowParameters(identifierKind string) *Interface {

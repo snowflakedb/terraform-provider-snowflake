@@ -158,9 +158,9 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()})))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies(*sdk.NewTagSetMaskingPoliciesRequest().WithMaskingPolicies([]sdk.TagMaskingPolicyRequest{*sdk.NewTagMaskingPolicyRequest(maskingPolicy.ID())}))))
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithComment(comment)))
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency))))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest().WithPropagationMethod(sdk.TagPropagationOnDependency))))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -478,7 +478,7 @@ func TestAcc_Tag_ExternalChanges_WithoutExperimentFlag(t *testing.T) {
 			// Provider detects the drift (config still expects values) and restores them.
 			{
 				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithDrop(allowedValues))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings(allowedValues))))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -522,8 +522,8 @@ func TestAcc_Tag_ExternalChanges_WithoutExperimentFlag(t *testing.T) {
 			// so no drift is detected and the tag silently stays in blocking state.
 			{
 				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithAdd([]string{"temp_value"}))
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithDrop([]string{"temp_value"}))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{"temp_value"}))))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithDrop(*sdk.NewTagDropRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{"temp_value"}))))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -679,7 +679,7 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 			// Detect external change - someone adds allowed values externally
 			{
 				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithAdd([]string{"external_value"}))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithAdd(*sdk.NewTagAddRequest().WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{"external_value"}))))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1468,7 +1468,7 @@ func TestAcc_Tag_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, invalidPropagate),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid tag propagation value`),
+				ExpectError: regexp.MustCompile(`invalid tag propagation: INVALID`),
 			},
 			{
 				Config:      config.FromModels(t, onConflictWithoutPropagate),
