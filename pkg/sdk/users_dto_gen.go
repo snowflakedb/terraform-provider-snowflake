@@ -195,8 +195,7 @@ type ShowUserRequest struct {
 	Terse      *bool
 	Like       *Like
 	StartsWith *string
-	Limit      *int
-	From       *string
+	Limit      *LimitFrom
 }
 
 type DescribeUserRequest struct {

@@ -112,16 +112,7 @@ func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		req.WithStartsWith(startsWith.(string))
 	}
 
-	if limit, ok := d.GetOk("limit"); ok && len(limit.([]any)) == 1 {
-		limitMap := limit.([]any)[0].(map[string]any)
-
-		rows := limitMap["rows"].(int)
-		req.WithLimit(rows)
-
-		if from, ok := limitMap["from"].(string); ok {
-			req.WithFrom(from)
-		}
-	}
+	handleLimitFrom(d, &req.Limit)
 
 	users, err := client.Users.Show(ctx, req)
 	if err != nil {

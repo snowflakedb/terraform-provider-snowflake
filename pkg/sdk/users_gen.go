@@ -226,13 +226,12 @@ type DropUserOptions struct {
 
 // ShowUserOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-users.
 type ShowUserOptions struct {
-	show       bool    `ddl:"static" sql:"SHOW"`
-	Terse      *bool   `ddl:"keyword" sql:"TERSE"`
-	users      bool    `ddl:"static" sql:"USERS"`
-	Like       *Like   `ddl:"keyword" sql:"LIKE"`
-	StartsWith *string `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit      *int    `ddl:"parameter,no_equals" sql:"LIMIT"`
-	From       *string `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
+	show       bool       `ddl:"static" sql:"SHOW"`
+	Terse      *bool      `ddl:"keyword" sql:"TERSE"`
+	users      bool       `ddl:"static" sql:"USERS"`
+	Like       *Like      `ddl:"keyword" sql:"LIKE"`
+	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 type userDBRow struct {

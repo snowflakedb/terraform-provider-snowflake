@@ -6,6 +6,13 @@ import (
 	"fmt"
 )
 
+func (opts *ShowUserOptions) additionalValidations() error {
+	if valueSet(opts.Limit) && opts.Limit.From != nil && opts.Limit.Rows == nil {
+		return errNotSet("ShowUserOptions.Limit", "Rows")
+	}
+	return nil
+}
+
 func (s *CreateUserRequest) ID() AccountObjectIdentifier {
 	return s.name
 }

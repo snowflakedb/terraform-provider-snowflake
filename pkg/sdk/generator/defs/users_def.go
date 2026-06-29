@@ -293,8 +293,8 @@ var usersDef = g.NewInterface(
 		SQL("USERS").
 		OptionalLike().
 		OptionalStartsWith().
-		PredefinedQueryStructField("Limit", "*int", g.ParameterOptions().NoEquals().SQL("LIMIT")).
-		OptionalTextAssignment("FROM", g.ParameterOptions().NoEquals().SingleQuotes()),
+		OptionalLimit().
+		WithAdditionalValidations(),
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,

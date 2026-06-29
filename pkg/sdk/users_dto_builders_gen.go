@@ -736,13 +736,8 @@ func (s *ShowUserRequest) WithStartsWith(startsWith string) *ShowUserRequest {
 	return s
 }
 
-func (s *ShowUserRequest) WithLimit(limit int) *ShowUserRequest {
+func (s *ShowUserRequest) WithLimit(limit LimitFrom) *ShowUserRequest {
 	s.Limit = &limit
-	return s
-}
-
-func (s *ShowUserRequest) WithFrom(from string) *ShowUserRequest {
-	s.From = &from
 	return s
 }
 

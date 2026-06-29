@@ -756,15 +756,15 @@ func TestUserShow(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "SHOW USERS LIKE '%s'", id.Name())
 	})
 
-	t.Run("with like and from", func(t *testing.T) {
-		fromPatern := random.String()
+	t.Run("validation: from cannot be set without limit", func(t *testing.T) {
+		fromPattern := random.String()
 		opts := &ShowUserOptions{
 			Like: &Like{
 				Pattern: String(id.Name()),
 			},
-			From: &fromPatern,
+			Limit: &LimitFrom{From: &fromPattern},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW USERS LIKE '%s' FROM '%s'", id.Name(), fromPatern)
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("ShowUserOptions.Limit", "Rows"))
 	})
 
 	t.Run("with like and limit", func(t *testing.T) {
@@ -773,20 +773,33 @@ func TestUserShow(t *testing.T) {
 			Like: &Like{
 				Pattern: String(id.Name()),
 			},
-			Limit: &limit,
+			Limit: &LimitFrom{Rows: &limit},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW USERS LIKE '%s' LIMIT %v", id.Name(), limit)
 	})
 
-	t.Run("with starts with and from", func(t *testing.T) {
+	t.Run("with like and limit and from", func(t *testing.T) {
+		limit := 5
+		fromPattern := random.String()
+		opts := &ShowUserOptions{
+			Like: &Like{
+				Pattern: String(id.Name()),
+			},
+			Limit: &LimitFrom{Rows: &limit, From: &fromPattern},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW USERS LIKE '%s' LIMIT %v FROM '%s'", id.Name(), limit, fromPattern)
+	})
+
+	t.Run("with starts with and limit and from", func(t *testing.T) {
+		limit := 5
 		fromPattern := random.String()
 		startsWithPattern := random.String()
 
 		opts := &ShowUserOptions{
 			StartsWith: &startsWithPattern,
-			From:       &fromPattern,
+			Limit:      &LimitFrom{Rows: &limit, From: &fromPattern},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW USERS STARTS WITH '%s' FROM '%s'", startsWithPattern, fromPattern)
+		assertOptsValidAndSQLEquals(t, opts, "SHOW USERS STARTS WITH '%s' LIMIT %v FROM '%s'", startsWithPattern, limit, fromPattern)
 	})
 }
 

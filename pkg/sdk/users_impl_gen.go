@@ -311,7 +311,6 @@ func (r *ShowUserRequest) toOpts() *ShowUserOptions {
 		Like:       r.Like,
 		StartsWith: r.StartsWith,
 		Limit:      r.Limit,
-		From:       r.From,
 	}
 	return opts
 }
