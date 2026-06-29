@@ -227,6 +227,11 @@ func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelink(expect
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrl(expected bool) *CurrentAccountResourceAssert {
+	c.BoolValueSet("enable_per_account_app_service_privatelink_url", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForImageRepository(expected bool) *CurrentAccountResourceAssert {
 	c.BoolValueSet("enable_tri_secret_and_rekey_opt_out_for_image_repository", expected)
 	return c
@@ -843,6 +848,11 @@ func (c *CurrentAccountResourceAssert) HasEnableIdentifierFirstLoginString(expec
 
 func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelinkString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("enable_internal_stages_privatelink", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("enable_per_account_app_service_privatelink_url", expected)
 	return c
 }
 
@@ -1465,6 +1475,11 @@ func (c *CurrentAccountResourceAssert) HasNoEnableInternalStagesPrivatelink() *C
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoEnablePerAccountAppServicePrivatelinkUrl() *CurrentAccountResourceAssert {
+	c.ValueNotSet("enable_per_account_app_service_privatelink_url")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoEnableTriSecretAndRekeyOptOutForImageRepository() *CurrentAccountResourceAssert {
 	c.ValueNotSet("enable_tri_secret_and_rekey_opt_out_for_image_repository")
 	return c
@@ -2084,6 +2099,11 @@ func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelinkEmpty()
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("enable_per_account_app_service_privatelink_url", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForImageRepositoryEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("enable_tri_secret_and_rekey_opt_out_for_image_repository", "")
 	return c
@@ -2700,6 +2720,11 @@ func (c *CurrentAccountResourceAssert) HasEnableIdentifierFirstLoginNotEmpty() *
 
 func (c *CurrentAccountResourceAssert) HasEnableInternalStagesPrivatelinkNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("enable_internal_stages_privatelink")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("enable_per_account_app_service_privatelink_url")
 	return c
 }
 
