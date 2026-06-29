@@ -17,8 +17,47 @@ type SdkObjectShowOutputDetails struct {
 }
 
 var dataSourceMappingNormalized = map[string]dataSourceDef{
-	normalized(sdk.Database{}):           {"Databases"},
-	normalized(sdk.NetworkRuleDetails{}): {"NetworkRules"},
+	// Show output - standard:
+	normalized(sdk.Account{}):                {"Accounts"},
+	normalized(sdk.ApiIntegration{}):         {"ApiIntegrations"},
+	normalized(sdk.AuthenticationPolicy{}):   {"AuthenticationPolicies"},
+	normalized(sdk.CatalogIntegration{}):     {"CatalogIntegrations"},
+	normalized(sdk.ComputePool{}):            {"ComputePools"},
+	normalized(sdk.CortexAgent{}):            {"CortexAgents"},
+	normalized(sdk.Database{}):               {"Databases"},
+	normalized(sdk.DatabaseRole{}):           {"DatabaseRoles"},
+	normalized(sdk.ExternalVolume{}):         {"ExternalVolumes"},
+	normalized(sdk.GitRepository{}):          {"GitRepositories"},
+	normalized(sdk.ImageRepository{}):        {"ImageRepositories"},
+	normalized(sdk.Listing{}):                {"Listings"},
+	normalized(sdk.MaskingPolicy{}):          {"MaskingPolicies"},
+	normalized(sdk.NetworkPolicy{}):          {"NetworkPolicies"},
+	normalized(sdk.NetworkRuleDetails{}):     {"NetworkRules"},
+	normalized(sdk.Notebook{}):               {"Notebooks"},
+	normalized(sdk.PasswordPolicy{}):         {"PasswordPolicies"},
+	normalized(sdk.ResourceMonitor{}):        {"ResourceMonitors"},
+	normalized(sdk.RowAccessPolicy{}):        {"RowAccessPolicies"},
+	normalized(sdk.Schema{}):                 {"Schemas"},
+	normalized(sdk.Secret{}):                 {"Secrets"},
+	normalized(sdk.SecurityIntegration{}):    {"SecurityIntegrations"},
+	normalized(sdk.SemanticView{}):           {"SemanticViews"},
+	normalized(sdk.Service{}):                {"Services"},
+	normalized(sdk.Stage{}):                  {"Stages"},
+	normalized(sdk.StorageIntegration{}):     {"StorageIntegrations"},
+	normalized(sdk.StorageLifecyclePolicy{}): {"StorageLifecyclePolicies"},
+	normalized(sdk.Stream{}):                 {"Streams"},
+	normalized(sdk.Streamlit{}):              {"Streamlits"},
+	normalized(sdk.Tag{}):                    {"Tags"},
+	normalized(sdk.Task{}):                   {"Tasks"},
+	normalized(sdk.User{}):                   {"Users"},
+	normalized(sdk.Warehouse{}):              {"Warehouses"},
+
+	// Describe output:
+	normalized(sdk.CortexAgentDetails{}):                   {"CortexAgents"},
+	normalized(sdk.ExternalVolumeStorageLocationDetails{}): {"ExternalVolumes"},
+	normalized(sdk.PasswordPolicyDetails{}):                {"PasswordPolicies"},
+	normalized(sdk.SessionPolicyDetails{}):                 {"SessionPolicies"},
+	normalized(sdk.StorageLifecyclePolicyDetails{}):        {"StorageLifecyclePolicies"},
 }
 
 type dataSourceDef struct {
