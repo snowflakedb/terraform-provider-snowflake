@@ -6,10 +6,11 @@ import (
 )
 
 type SnowflakeObjectParameters struct {
-	Name       string
-	IdType     string
-	Level      sdk.ParameterType
-	Parameters []SnowflakeParameter
+	Name                    string
+	IdType                  string
+	Level                   sdk.ParameterType
+	Parameters              []SnowflakeParameter
+	ParameterConstantPrefix string
 }
 
 func (p SnowflakeObjectParameters) ObjectName() string {
@@ -107,9 +108,10 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		},
 	},
 	{
-		Name:   "WarehouseAdaptive",
-		IdType: "sdk.AccountObjectIdentifier",
-		Level:  sdk.ParameterTypeWarehouse,
+		Name:                    "WarehouseAdaptive",
+		IdType:                  "sdk.AccountObjectIdentifier",
+		Level:                   sdk.ParameterTypeWarehouse,
+		ParameterConstantPrefix: "Warehouse",
 		Parameters: []SnowflakeParameter{
 			{ParameterName: string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.WarehouseParameterStatementTimeoutInSeconds), ParameterType: "int", DefaultValue: "172800", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
@@ -404,9 +406,10 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		},
 	},
 	{
-		Name:   "HybridTable",
-		IdType: "sdk.SchemaObjectIdentifier",
-		Level:  sdk.ParameterTypeObject,
+		Name:                    "HybridTable",
+		IdType:                  "sdk.SchemaObjectIdentifier",
+		Level:                   sdk.ParameterTypeObject,
+		ParameterConstantPrefix: "Object",
 		Parameters: []SnowflakeParameter{
 			{ParameterName: string(sdk.ObjectParameterDataRetentionTimeInDays), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.ObjectParameterMaxDataExtensionTimeInDays), ParameterType: "int", DefaultValue: "14", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},

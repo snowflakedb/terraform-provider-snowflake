@@ -9,9 +9,10 @@ import (
 )
 
 type ResourceParametersAssertionsModel struct {
-	Name           string
-	DataSourceName string
-	Parameters     []ResourceParameterAssertionModel
+	Name                  string
+	DataSourceName        string
+	Parameters            []ResourceParameterAssertionModel
+	ParameterConstantName string
 
 	*genhelpers.PreambleModel
 }
@@ -61,10 +62,16 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters objectparamete
 	name := snowflakeObjectParameters.ObjectName()
 	dataSourceName := dataSourceParametersMapping[name]
 
+	parameterConstantName := name
+	if snowflakeObjectParameters.ParameterConstantPrefix != "" {
+		parameterConstantName = snowflakeObjectParameters.ParameterConstantPrefix
+	}
+
 	return ResourceParametersAssertionsModel{
-		Name:           name,
-		DataSourceName: dataSourceName,
-		Parameters:     parameters,
-		PreambleModel:  preamble,
+		Name:                  name,
+		DataSourceName:        dataSourceName,
+		Parameters:            parameters,
+		ParameterConstantName: parameterConstantName,
+		PreambleModel:         preamble,
 	}
 }
