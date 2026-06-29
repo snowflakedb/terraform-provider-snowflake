@@ -27,6 +27,7 @@ var accountParameterSupportedParameters = []sdk.AccountParameter{
 	sdk.AccountParameterDisableUserPrivilegeGrants,
 	sdk.AccountParameterEnableIdentifierFirstLogin,
 	sdk.AccountParameterEnableInternalStagesPrivatelink,
+	sdk.AccountParameterEnablePerAccountAppServicePrivatelinkUrl,
 	sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository,
 	sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage,
 	sdk.AccountParameterEnableUnhandledExceptionsReporting,

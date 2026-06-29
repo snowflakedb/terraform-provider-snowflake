@@ -51,6 +51,7 @@ type CurrentOrganizationAccountModel struct {
 	EnableEgressCostOptimizer                        tfconfig.Variable `json:"enable_egress_cost_optimizer,omitempty"`
 	EnableIdentifierFirstLogin                       tfconfig.Variable `json:"enable_identifier_first_login,omitempty"`
 	EnableInternalStagesPrivatelink                  tfconfig.Variable `json:"enable_internal_stages_privatelink,omitempty"`
+	EnablePerAccountAppServicePrivatelinkUrl         tfconfig.Variable `json:"enable_per_account_app_service_privatelink_url,omitempty"`
 	EnableTriSecretAndRekeyOptOutForImageRepository  tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_image_repository,omitempty"`
 	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage,omitempty"`
 	EnableUnhandledExceptionsReporting               tfconfig.Variable `json:"enable_unhandled_exceptions_reporting,omitempty"`
@@ -393,6 +394,11 @@ func (c *CurrentOrganizationAccountModel) WithEnableIdentifierFirstLogin(enableI
 
 func (c *CurrentOrganizationAccountModel) WithEnableInternalStagesPrivatelink(enableInternalStagesPrivatelink bool) *CurrentOrganizationAccountModel {
 	c.EnableInternalStagesPrivatelink = tfconfig.BoolVariable(enableInternalStagesPrivatelink)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnablePerAccountAppServicePrivatelinkUrl(enablePerAccountAppServicePrivatelinkUrl bool) *CurrentOrganizationAccountModel {
+	c.EnablePerAccountAppServicePrivatelinkUrl = tfconfig.BoolVariable(enablePerAccountAppServicePrivatelinkUrl)
 	return c
 }
 
@@ -1007,6 +1013,11 @@ func (c *CurrentOrganizationAccountModel) WithEnableIdentifierFirstLoginValue(va
 
 func (c *CurrentOrganizationAccountModel) WithEnableInternalStagesPrivatelinkValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.EnableInternalStagesPrivatelink = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithEnablePerAccountAppServicePrivatelinkUrlValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.EnablePerAccountAppServicePrivatelinkUrl = value
 	return c
 }
 
