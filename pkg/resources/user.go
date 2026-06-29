@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -312,29 +313,27 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
 		}
 
-		opts := &sdk.CreateUserOptions{
-			ObjectProperties:  &sdk.UserObjectProperties{},
-			ObjectParameters:  &sdk.UserObjectParameters{},
-			SessionParameters: &sdk.SessionParameters{},
-		}
+		objectProperties := &sdk.UserObjectPropertiesRequest{}
+		objectParameters := &sdk.UserObjectParametersRequest{}
+		sessionParameters := &sdk.SessionParameters{}
 		name := d.Get("name").(string)
 		id := sdk.NewAccountObjectIdentifier(name)
 
 		errs := errors.Join(
 			// password handled separately for proper user types,
-			stringAttributeCreate(d, "login_name", &opts.ObjectProperties.LoginName),
-			stringAttributeCreate(d, "display_name", &opts.ObjectProperties.DisplayName),
+			stringAttributeCreate(d, "login_name", &objectProperties.LoginName),
+			stringAttributeCreate(d, "display_name", &objectProperties.DisplayName),
 			// first_name handled separately for proper user types,
 			// middle_name handled separately for proper user types,
 			// last_name handled separately for proper user types,
-			stringAttributeCreate(d, "email", &opts.ObjectProperties.Email),
+			stringAttributeCreate(d, "email", &objectProperties.Email),
 			// must_change_password handled separately for proper user types,
-			booleanStringAttributeCreate(d, "disabled", &opts.ObjectProperties.Disable),
-			intAttributeCreate(d, "days_to_expiry", &opts.ObjectProperties.DaysToExpiry),
-			intAttributeWithSpecialDefaultCreate(d, "mins_to_unlock", &opts.ObjectProperties.MinsToUnlock),
-			accountObjectIdentifierAttributeCreate(d, "default_warehouse", &opts.ObjectProperties.DefaultWarehouse),
-			objectIdentifierAttributeCreate(d, "default_namespace", &opts.ObjectProperties.DefaultNamespace),
-			accountObjectIdentifierAttributeCreate(d, "default_role", &opts.ObjectProperties.DefaultRole),
+			booleanStringAttributeCreate(d, "disabled", &objectProperties.Disabled),
+			intAttributeCreate(d, "days_to_expiry", &objectProperties.DaysToExpiry),
+			intAttributeWithSpecialDefaultCreate(d, "mins_to_unlock", &objectProperties.MinsToUnlock),
+			accountObjectIdentifierAttributeCreate(d, "default_warehouse", &objectProperties.DefaultWarehouse),
+			objectIdentifierAttributeCreate(d, "default_namespace", &objectProperties.DefaultNamespace),
+			accountObjectIdentifierAttributeCreate(d, "default_role", &objectProperties.DefaultRole),
 			func() error {
 				defaultSecondaryRolesOption, err := sdk.ToSecondaryRolesOption(d.Get("default_secondary_roles_option").(string))
 				if err != nil {
@@ -344,16 +343,16 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 				case sdk.SecondaryRolesOptionDefault:
 					return nil
 				case sdk.SecondaryRolesOptionNone:
-					opts.ObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{None: sdk.Bool(true)}
+					objectProperties.DefaultSecondaryRoles = &sdk.SecondaryRolesRequest{None: sdk.Bool(true)}
 				case sdk.SecondaryRolesOptionAll:
-					opts.ObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{All: sdk.Bool(true)}
+					objectProperties.DefaultSecondaryRoles = &sdk.SecondaryRolesRequest{All: sdk.Bool(true)}
 				}
 				return nil
 			}(),
 			// mins_to_bypass_mfa handled separately for proper user types,
-			stringAttributeCreate(d, "rsa_public_key", &opts.ObjectProperties.RSAPublicKey),
-			stringAttributeCreate(d, "rsa_public_key_2", &opts.ObjectProperties.RSAPublicKey2),
-			stringAttributeCreate(d, "comment", &opts.ObjectProperties.Comment),
+			stringAttributeCreate(d, "rsa_public_key", &objectProperties.RsaPublicKey),
+			stringAttributeCreate(d, "rsa_public_key_2", &objectProperties.RsaPublicKey2),
+			stringAttributeCreate(d, "comment", &objectProperties.Comment),
 			// disable mfa cannot be set in create, alter is run after creation
 		)
 		if errs != nil {
@@ -364,18 +363,18 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		switch userType {
 		case sdk.UserTypePerson:
 			userTypeSpecificFieldsErrs = errors.Join(
-				stringAttributeCreate(d, "password", &opts.ObjectProperties.Password),
-				stringAttributeCreate(d, "first_name", &opts.ObjectProperties.FirstName),
-				stringAttributeCreate(d, "middle_name", &opts.ObjectProperties.MiddleName),
-				stringAttributeCreate(d, "last_name", &opts.ObjectProperties.LastName),
-				booleanStringAttributeCreate(d, "must_change_password", &opts.ObjectProperties.MustChangePassword),
-				intAttributeWithSpecialDefaultCreate(d, "mins_to_bypass_mfa", &opts.ObjectProperties.MinsToBypassMFA),
+				stringAttributeCreate(d, "password", &objectProperties.Password),
+				stringAttributeCreate(d, "first_name", &objectProperties.FirstName),
+				stringAttributeCreate(d, "middle_name", &objectProperties.MiddleName),
+				stringAttributeCreate(d, "last_name", &objectProperties.LastName),
+				booleanStringAttributeCreate(d, "must_change_password", &objectProperties.MustChangePassword),
+				intAttributeWithSpecialDefaultCreate(d, "mins_to_bypass_mfa", &objectProperties.MinsToBypassMfa),
 			)
 		case sdk.UserTypeLegacyService:
 			userTypeSpecificFieldsErrs = errors.Join(
-				stringAttributeCreate(d, "password", &opts.ObjectProperties.Password),
-				booleanStringAttributeCreate(d, "must_change_password", &opts.ObjectProperties.MustChangePassword),
-				attributeMappedValueCreate(d, "default_workload_identity", &opts.ObjectProperties.WorkloadIdentity, func(v any) (*sdk.UserObjectWorkloadIdentityProperties, error) {
+				stringAttributeCreate(d, "password", &objectProperties.Password),
+				booleanStringAttributeCreate(d, "must_change_password", &objectProperties.MustChangePassword),
+				attributeMappedValueCreate(d, "default_workload_identity", &objectProperties.WorkloadIdentity, func(v any) (*sdk.UserObjectWorkloadIdentityPropertiesRequest, error) {
 					wif, err := parseWorkloadIdentityConfig(v)
 					if err != nil {
 						return nil, err
@@ -383,10 +382,10 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 					return &wif, nil
 				}),
 			)
-			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeLegacyService)
+			objectProperties.UserType = sdk.Pointer(sdk.UserTypeLegacyService)
 		case sdk.UserTypeService:
 			userTypeSpecificFieldsErrs = errors.Join(
-				attributeMappedValueCreate(d, "default_workload_identity", &opts.ObjectProperties.WorkloadIdentity, func(v any) (*sdk.UserObjectWorkloadIdentityProperties, error) {
+				attributeMappedValueCreate(d, "default_workload_identity", &objectProperties.WorkloadIdentity, func(v any) (*sdk.UserObjectWorkloadIdentityPropertiesRequest, error) {
 					wif, err := parseWorkloadIdentityConfig(v)
 					if err != nil {
 						return nil, err
@@ -394,17 +393,17 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 					return &wif, nil
 				}),
 			)
-			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeService)
+			objectProperties.UserType = sdk.Pointer(sdk.UserTypeService)
 		}
 		if userTypeSpecificFieldsErrs != nil {
 			return diag.FromErr(userTypeSpecificFieldsErrs)
 		}
 
-		if parametersCreateDiags := handleUserParametersCreate(d, opts); len(parametersCreateDiags) > 0 {
+		if parametersCreateDiags := handleUserParametersCreate(d, sessionParameters, objectParameters); len(parametersCreateDiags) > 0 {
 			return parametersCreateDiags
 		}
 
-		err := client.Users.Create(ctx, id, opts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).WithObjectProperties(*objectProperties).WithObjectParameters(*objectParameters).WithSessionParameters(*sessionParameters))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -421,8 +420,7 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 						Summary:  fmt.Sprintf("Setting disable mfa failed after create for user %s, err: %v", id.FullyQualifiedName(), err),
 					})
 				}
-				alterDisableMfa := sdk.AlterUserOptions{Set: &sdk.UserSet{ObjectProperties: &sdk.UserAlterObjectProperties{DisableMfa: sdk.Bool(parsed)}}}
-				err = client.Users.Alter(ctx, id, &alterDisableMfa)
+				err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithSet(*sdk.NewUserSetRequest().WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().WithDisableMfa(parsed))))
 				if err != nil {
 					diags = append(diags, diag.Diagnostic{
 						Severity: diag.Warning,
@@ -547,7 +545,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 				providerCtx := meta.(*provider.Context)
 				if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) &&
 					(userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService) {
-					wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+					wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(id))
 					if err != nil {
 						return err
 					}
@@ -559,7 +557,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 					case errors.Is(err, collections.ErrObjectNotFound):
 						errs = errors.Join(errs, d.Set("default_workload_identity", nil))
 					// TODO(SNOW-3003261): Handle AWS type externally
-					case err == nil && defaultWIF.Type != sdk.WIFTypeAWS:
+					case err == nil && defaultWIF.Type != sdk.WIFTypeAws:
 						errs = errors.Join(errs, d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)))
 					default:
 						errs = errors.Join(errs, err)
@@ -597,9 +595,7 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		if d.HasChange("name") {
 			newID := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
-			err := client.Users.Alter(ctx, id, &sdk.AlterUserOptions{
-				NewName: newID,
-			})
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithNewName(newID))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -608,8 +604,8 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			id = newID
 		}
 
-		setObjectProperties := sdk.UserAlterObjectProperties{}
-		unsetObjectProperties := sdk.UserObjectPropertiesUnset{}
+		setObjectProperties := sdk.UserAlterObjectPropertiesRequest{}
+		unsetObjectProperties := sdk.UserObjectPropertiesUnsetRequest{}
 		errs := errors.Join(
 			// password handled separately for proper user types,
 			stringAttributeUpdate(d, "login_name", &setObjectProperties.LoginName, &unsetObjectProperties.LoginName),
@@ -619,7 +615,7 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			// last_name handled separately for proper user types,
 			stringAttributeUpdate(d, "email", &setObjectProperties.Email, &unsetObjectProperties.Email),
 			// must_change_password handled separately for proper user types,
-			booleanStringAttributeUpdate(d, "disabled", &setObjectProperties.Disable, &unsetObjectProperties.Disable),
+			booleanStringAttributeUpdate(d, "disabled", &setObjectProperties.Disabled, &unsetObjectProperties.Disabled),
 			intAttributeUpdate(d, "days_to_expiry", &setObjectProperties.DaysToExpiry, &unsetObjectProperties.DaysToExpiry),
 			intAttributeWithSpecialDefaultUpdate(d, "mins_to_unlock", &setObjectProperties.MinsToUnlock, &unsetObjectProperties.MinsToUnlock),
 			accountObjectIdentifierAttributeUpdate(d, "default_warehouse", &setObjectProperties.DefaultWarehouse, &unsetObjectProperties.DefaultWarehouse),
@@ -635,16 +631,16 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 					case sdk.SecondaryRolesOptionDefault:
 						unsetObjectProperties.DefaultSecondaryRoles = sdk.Bool(true)
 					case sdk.SecondaryRolesOptionNone:
-						setObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{None: sdk.Bool(true)}
+						setObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRolesRequest{None: sdk.Bool(true)}
 					case sdk.SecondaryRolesOptionAll:
-						setObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRoles{All: sdk.Bool(true)}
+						setObjectProperties.DefaultSecondaryRoles = &sdk.SecondaryRolesRequest{All: sdk.Bool(true)}
 					}
 				}
 				return nil
 			}(),
 			// mins_to_bypass_mfa handled separately for proper user types,
-			stringAttributeUpdate(d, "rsa_public_key", &setObjectProperties.RSAPublicKey, &unsetObjectProperties.RSAPublicKey),
-			stringAttributeUpdate(d, "rsa_public_key_2", &setObjectProperties.RSAPublicKey2, &unsetObjectProperties.RSAPublicKey2),
+			stringAttributeUpdate(d, "rsa_public_key", &setObjectProperties.RsaPublicKey, &unsetObjectProperties.RsaPublicKey),
+			stringAttributeUpdate(d, "rsa_public_key_2", &setObjectProperties.RsaPublicKey2, &unsetObjectProperties.RsaPublicKey2),
 			stringAttributeUpdate(d, "comment", &setObjectProperties.Comment, &unsetObjectProperties.Comment),
 			// disable_mfa handled separately for proper user types,
 		)
@@ -660,7 +656,7 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 				stringAttributeUpdate(d, "middle_name", &setObjectProperties.MiddleName, &unsetObjectProperties.MiddleName),
 				stringAttributeUpdate(d, "last_name", &setObjectProperties.LastName, &unsetObjectProperties.LastName),
 				booleanStringAttributeUpdate(d, "must_change_password", &setObjectProperties.MustChangePassword, &unsetObjectProperties.MustChangePassword),
-				intAttributeWithSpecialDefaultUpdate(d, "mins_to_bypass_mfa", &setObjectProperties.MinsToBypassMFA, &unsetObjectProperties.MinsToBypassMFA),
+				intAttributeWithSpecialDefaultUpdate(d, "mins_to_bypass_mfa", &setObjectProperties.MinsToBypassMfa, &unsetObjectProperties.MinsToBypassMfa),
 				booleanStringAttributeUpdate(d, "disable_mfa", &setObjectProperties.DisableMfa, &unsetObjectProperties.DisableMfa),
 			)
 		case sdk.UserTypeLegacyService:
@@ -677,15 +673,15 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			return diag.FromErr(userTypeSpecificFieldsErrs)
 		}
 
-		if (setObjectProperties != sdk.UserAlterObjectProperties{}) {
-			err := client.Users.Alter(ctx, id, &sdk.AlterUserOptions{Set: &sdk.UserSet{ObjectProperties: &setObjectProperties}})
+		if !reflect.DeepEqual(setObjectProperties, sdk.UserAlterObjectPropertiesRequest{}) {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithSet(*sdk.NewUserSetRequest().WithObjectProperties(setObjectProperties)))
 			if err != nil {
 				d.Partial(true)
 				return diag.FromErr(err)
 			}
 		}
-		if (unsetObjectProperties != sdk.UserObjectPropertiesUnset{}) {
-			err := client.Users.Alter(ctx, id, &sdk.AlterUserOptions{Unset: &sdk.UserUnset{ObjectProperties: &unsetObjectProperties}})
+		if !reflect.DeepEqual(unsetObjectProperties, sdk.UserObjectPropertiesUnsetRequest{}) {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(unsetObjectProperties)))
 			if err != nil {
 				d.Partial(true)
 				return diag.FromErr(err)
@@ -696,34 +692,23 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			return diag.FromErr(err)
 		}
 
-		set := &sdk.UserSet{
-			SessionParameters: &sdk.SessionParameters{},
-			ObjectParameters:  &sdk.UserObjectParameters{},
-		}
-		unset := &sdk.UserUnset{
-			SessionParameters: &sdk.SessionParametersUnset{},
-			ObjectParameters:  &sdk.UserObjectParametersUnset{},
-		}
-		if updateParamDiags := handleUserParametersUpdate(d, set, unset); len(updateParamDiags) > 0 {
+		setSessionParams := &sdk.SessionParameters{}
+		setObjectParams := &sdk.UserObjectParametersRequest{}
+		unsetSessionParams := &sdk.SessionParametersUnset{}
+		unsetObjectParams := &sdk.UserObjectParametersUnsetRequest{}
+		if updateParamDiags := handleUserParametersUpdate(d, setSessionParams, setObjectParams, unsetSessionParams, unsetObjectParams); len(updateParamDiags) > 0 {
 			return updateParamDiags
 		}
 
-		if (*set.SessionParameters != sdk.SessionParameters{} || *set.ObjectParameters != sdk.UserObjectParameters{}) {
-			err := client.Users.Alter(ctx, id, &sdk.AlterUserOptions{
-				Set: set,
-			})
+		if !reflect.DeepEqual(*setSessionParams, sdk.SessionParameters{}) || !reflect.DeepEqual(*setObjectParams, sdk.UserObjectParametersRequest{}) {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithSet(*sdk.NewUserSetRequest().WithSessionParameters(*setSessionParams).WithObjectParameters(*setObjectParams)))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		if (*unset.SessionParameters != sdk.SessionParametersUnset{}) || (*unset.ObjectParameters != sdk.UserObjectParametersUnset{}) {
-			err := client.Users.Alter(ctx, id, &sdk.AlterUserOptions{
-				Unset: &sdk.UserUnset{
-					SessionParameters: unset.SessionParameters,
-					ObjectParameters:  unset.ObjectParameters,
-				},
-			})
+		if !reflect.DeepEqual(*unsetSessionParams, sdk.SessionParametersUnset{}) || !reflect.DeepEqual(*unsetObjectParams, sdk.UserObjectParametersUnsetRequest{}) {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().WithSessionParameters(*unsetSessionParams).WithObjectParameters(*unsetObjectParams)))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -740,13 +725,13 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 // Current workaround is to ignore such an error. We will revisit it after migration to plugin framework.
 func handlePasswordUpdate(ctx context.Context, id sdk.AccountObjectIdentifier, userType sdk.UserType, d *schema.ResourceData, client *sdk.Client) error {
 	if userType == sdk.UserTypePerson || userType == sdk.UserTypeLegacyService {
-		setPassword := sdk.UserAlterObjectProperties{}
-		unsetPassword := sdk.UserObjectPropertiesUnset{}
+		setPassword := sdk.UserAlterObjectPropertiesRequest{}
+		unsetPassword := sdk.UserObjectPropertiesUnsetRequest{}
 		if err := stringAttributeUpdate(d, "password", &setPassword.Password, &unsetPassword.Password); err != nil {
 			return err
 		}
-		if (setPassword != sdk.UserAlterObjectProperties{}) {
-			err := client.Users.Alter(ctx, id, &sdk.AlterUserOptions{Set: &sdk.UserSet{ObjectProperties: &setPassword}})
+		if !reflect.DeepEqual(setPassword, sdk.UserAlterObjectPropertiesRequest{}) {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithSet(*sdk.NewUserSetRequest().WithObjectProperties(setPassword)))
 			if err != nil {
 				if strings.Contains(err.Error(), "Error: 003002 (28P01)") || strings.Contains(err.Error(), "Reason: 'PRIOR_USE'") {
 					log.Printf("[DEBUG] Update to the same password is prohibited but it means we have a valid password in the current state. Continue.")
@@ -756,8 +741,8 @@ func handlePasswordUpdate(ctx context.Context, id sdk.AccountObjectIdentifier, u
 				}
 			}
 		}
-		if (unsetPassword != sdk.UserObjectPropertiesUnset{}) {
-			err := client.Users.Alter(ctx, id, &sdk.AlterUserOptions{Unset: &sdk.UserUnset{ObjectProperties: &unsetPassword}})
+		if !reflect.DeepEqual(unsetPassword, sdk.UserObjectPropertiesUnsetRequest{}) {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(unsetPassword)))
 			if err != nil {
 				d.Partial(true)
 				return err
@@ -776,31 +761,31 @@ var DeleteUser = ResourceDeleteContextFunc(
 // and returns the SDK representation for use in Create/Update operations.
 // Note: The error return is required to match the signature expected by attributeMappedValueCreate/Update,
 // but this function never returns an error because schema validation ensures the correct structure.
-func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityProperties, error) {
+func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityPropertiesRequest, error) {
 	wifConfig := v.([]any)
 	if len(wifConfig) == 0 {
-		return sdk.UserObjectWorkloadIdentityProperties{}, nil
+		return sdk.UserObjectWorkloadIdentityPropertiesRequest{}, nil
 	}
 	config := wifConfig[0].(map[string]any)
-	wif := sdk.UserObjectWorkloadIdentityProperties{}
+	wif := sdk.UserObjectWorkloadIdentityPropertiesRequest{}
 
 	if awsConfig, ok := config["aws"].([]any); ok && len(awsConfig) > 0 {
 		aws := awsConfig[0].(map[string]any)
-		wif.AwsType = &sdk.UserObjectWorkloadIdentityAws{
+		wif.AwsType = &sdk.UserObjectWorkloadIdentityAwsRequest{
 			Arn: sdk.String(aws["arn"].(string)),
 		}
 	}
 
 	if gcpConfig, ok := config["gcp"].([]any); ok && len(gcpConfig) > 0 {
 		gcp := gcpConfig[0].(map[string]any)
-		wif.GcpType = &sdk.UserObjectWorkloadIdentityGcp{
+		wif.GcpType = &sdk.UserObjectWorkloadIdentityGcpRequest{
 			Subject: sdk.String(gcp["subject"].(string)),
 		}
 	}
 
 	if azureConfig, ok := config["azure"].([]any); ok && len(azureConfig) > 0 {
 		azure := azureConfig[0].(map[string]any)
-		wif.AzureType = &sdk.UserObjectWorkloadIdentityAzure{
+		wif.AzureType = &sdk.UserObjectWorkloadIdentityAzureRequest{
 			Issuer:  sdk.String(azure["issuer"].(string)),
 			Subject: sdk.String(azure["subject"].(string)),
 		}
@@ -816,7 +801,7 @@ func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityPropertie
 				audiences[i] = sdk.StringListItemWrapper{Value: v.(string)}
 			}
 		}
-		wif.OidcType = &sdk.UserObjectWorkloadIdentityOidc{
+		wif.OidcType = &sdk.UserObjectWorkloadIdentityOidcRequest{
 			Issuer:           sdk.String(oidc["issuer"].(string)),
 			Subject:          sdk.String(oidc["subject"].(string)),
 			OidcAudienceList: audiences,
@@ -836,14 +821,14 @@ func flattenWorkloadIdentityMethod(wif *sdk.UserWorkloadIdentityAuthenticationMe
 	result := make(map[string]any)
 
 	switch wif.Type {
-	case sdk.WIFTypeAWS:
+	case sdk.WIFTypeAws:
 		if wif.AwsAdditionalInfo != nil {
 			result["aws"] = []any{
 				// TODO(SNOW-3003261): Read or construct the ARN from the additional info
 				map[string]any{},
 			}
 		}
-	case sdk.WIFTypeGCP:
+	case sdk.WIFTypeGcp:
 		if wif.GcpAdditionalInfo != nil {
 			result["gcp"] = []any{
 				map[string]any{
@@ -860,7 +845,7 @@ func flattenWorkloadIdentityMethod(wif *sdk.UserWorkloadIdentityAuthenticationMe
 				},
 			}
 		}
-	case sdk.WIFTypeOIDC:
+	case sdk.WIFTypeOidc:
 		if wif.OidcAdditionalInfo != nil {
 			result["oidc"] = []any{
 				map[string]any{

@@ -6,6 +6,10 @@ import (
 	"fmt"
 )
 
+func (s *CreateUserRequest) ID() AccountObjectIdentifier {
+	return s.name
+}
+
 // GetSecondaryRolesOptionFrom returns the SecondaryRolesOption for the given string value
 // returned by SHOW USERS.
 func GetSecondaryRolesOptionFrom(text string) SecondaryRolesOption {
@@ -147,15 +151,14 @@ type UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo struct {
 
 // additionalConvert handles Type (string→WIFType with error) and AdditionalInfo (JSON→typed sub-structs).
 // Called by the generated convert() because type and additional_info fields are WithManualConvert().
-// TODO: After generator runs in Step 3, update ToWIFTypeType→ToWIFType and constant names.
 func (row *userWorkloadIdentityAuthenticationMethodsDBRow) additionalConvert(result *UserWorkloadIdentityAuthenticationMethod) error {
-	wifType, err := ToWIFTypeType(row.Type)
+	wifType, err := ToWIFType(row.Type)
 	if err != nil {
 		return err
 	}
 	result.Type = wifType
 	switch wifType {
-	case WIFTypeAWS:
+	case WIFTypeAws:
 		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{}
 		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
 			return err
@@ -167,13 +170,13 @@ func (row *userWorkloadIdentityAuthenticationMethodsDBRow) additionalConvert(res
 			return err
 		}
 		result.AzureAdditionalInfo = additionalInfo
-	case WIFTypeGCP:
+	case WIFTypeGcp:
 		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{}
 		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
 			return err
 		}
 		result.GcpAdditionalInfo = additionalInfo
-	case WIFTypeOIDC:
+	case WIFTypeOidc:
 		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{}
 		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
 			return err
@@ -187,6 +190,14 @@ func (row *userWorkloadIdentityAuthenticationMethodsDBRow) additionalConvert(res
 // Kept in ext because the generator does not produce ID() for custom show result types.
 func (v *UserWorkloadIdentityAuthenticationMethod) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
+}
+
+func (v *users) ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error) {
+	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
+		In: &ParametersIn{
+			User: id,
+		},
+	})
 }
 
 // DescribeDetails returns the aggregated UserDetails for a user by calling Describe and converting

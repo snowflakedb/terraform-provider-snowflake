@@ -172,14 +172,6 @@ type FloatProperty struct {
 	Description  string
 }
 
-// TODO [Step 3]: Remove — generated from describeUserPropertyPairs in users_def.go; methods below stay.
-type UserProperty struct {
-	Property     string `db:"property"`
-	Value        string `db:"value"`
-	DefaultValue string `db:"default"`
-	Description  string `db:"description"`
-}
-
 func (row *UserProperty) toStringProperty() *StringProperty {
 	if row.Value == "null" {
 		row.Value = ""

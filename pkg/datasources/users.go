@@ -102,30 +102,28 @@ func Users() *schema.Resource {
 func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
-	var opts sdk.ShowUserOptions
+	req := sdk.NewShowUserRequest()
 
 	if likePattern, ok := d.GetOk("like"); ok {
-		opts.Like = &sdk.Like{
-			Pattern: sdk.String(likePattern.(string)),
-		}
+		req.WithLike(sdk.Like{Pattern: sdk.String(likePattern.(string))})
 	}
 
 	if startsWith, ok := d.GetOk("starts_with"); ok {
-		opts.StartsWith = sdk.String(startsWith.(string))
+		req.WithStartsWith(startsWith.(string))
 	}
 
 	if limit, ok := d.GetOk("limit"); ok && len(limit.([]any)) == 1 {
 		limitMap := limit.([]any)[0].(map[string]any)
 
 		rows := limitMap["rows"].(int)
-		opts.Limit = &rows
+		req.WithLimit(rows)
 
 		if from, ok := limitMap["from"].(string); ok {
-			opts.From = &from
+			req.WithFrom(from)
 		}
 	}
 
-	users, err := client.Users.Show(ctx, &opts)
+	users, err := client.Users.Show(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}

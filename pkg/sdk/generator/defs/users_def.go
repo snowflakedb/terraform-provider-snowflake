@@ -81,8 +81,8 @@ var userPairs = g.StructPair("userDBRow", "User").
 
 func secondaryRolesStruct() *g.QueryStruct {
 	return g.NewQueryStruct("SecondaryRoles").
-		PredefinedQueryStructField("None", "*bool", g.StaticOptions().SQL("()")).
-		PredefinedQueryStructField("All", "*bool", g.StaticOptions().SQL("('ALL')")).
+		OptionalSQLWithCustomFieldName("None", "()").
+		OptionalSQLWithCustomFieldName("All", "('ALL')").
 		WithValidation(g.ExactlyOneValueSet, "None", "All")
 }
 
@@ -110,7 +110,7 @@ func userObjectWorkloadIdentityOidcStruct() *g.QueryStruct {
 		PredefinedQueryStructField("wifType", "string", g.StaticOptions().SQL("TYPE = OIDC")).
 		OptionalTextAssignment("ISSUER", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("SUBJECT", g.ParameterOptions().SingleQuotes()).
-		NamedListWithParens("OIDC_AUDIENCE_LIST", "StringListItemWrapper", nil)
+		PredefinedQueryStructField("OidcAudienceList", "[]StringListItemWrapper", g.ParameterOptions().Parentheses().SQL("OIDC_AUDIENCE_LIST"))
 }
 
 func userObjectWorkloadIdentityPropertiesStruct() *g.QueryStruct {
@@ -144,7 +144,7 @@ func userObjectPropertiesFields(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalTextAssignment("RSA_PUBLIC_KEY_FP", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("RSA_PUBLIC_KEY_2_FP", g.ParameterOptions().SingleQuotes()).
-		OptionalEnumAssignment("TYPE", userTypeEnum, g.ParameterOptions().NoQuotes()).
+		OptionalAssignmentWithFieldName("TYPE", userTypeEnum.KindPtr(), g.ParameterOptions().NoQuotes(), "UserType").
 		OptionalQueryStructField("WorkloadIdentity", userObjectWorkloadIdentityPropertiesStruct(), g.ListOptions().SQL("WORKLOAD_IDENTITY =").Parentheses().NoComma()).
 		OptionalComment()
 }
@@ -186,7 +186,7 @@ func userObjectPropertiesUnsetStruct() *g.QueryStruct {
 		OptionalSQL("DISABLE_MFA").
 		OptionalSQL("RSA_PUBLIC_KEY").
 		OptionalSQL("RSA_PUBLIC_KEY_2").
-		OptionalSQL("TYPE").
+		OptionalSQLWithCustomFieldName("UserType", "TYPE").
 		OptionalSQL("WORKLOAD_IDENTITY").
 		OptionalSQL("COMMENT")
 }
@@ -209,7 +209,7 @@ func removeDelegatedAuthorizationStruct() *g.QueryStruct {
 		OptionalAssignment("REMOVE DELEGATED AUTHORIZATION OF ROLE", "string", g.ParameterOptions().NoEquals()).
 		PredefinedQueryStructField("Authorizations", "*bool", g.ParameterOptions().NoEquals().SQL("REMOVE DELEGATED AUTHORIZATIONS")).
 		PredefinedQueryStructField("Integration", "string", g.ParameterOptions().NoEquals().SQL("FROM SECURITY INTEGRATION")).
-		WithValidation(g.ExactlyOneValueSet, "Role", "Authorizations").
+		WithValidation(g.ExactlyOneValueSet, "RemoveDelegatedAuthorizationOfRole", "Authorizations").
 		WithValidation(g.ValidateValueSet, "Integration")
 }
 
@@ -293,7 +293,7 @@ var usersDef = g.NewInterface(
 		SQL("USERS").
 		OptionalLike().
 		OptionalStartsWith().
-		OptionalNumber("Limit", g.KeywordOptions().SQL("LIMIT")).
+		PredefinedQueryStructField("Limit", "*int", g.ParameterOptions().NoEquals().SQL("LIMIT")).
 		OptionalTextAssignment("FROM", g.ParameterOptions().NoEquals().SingleQuotes()),
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(

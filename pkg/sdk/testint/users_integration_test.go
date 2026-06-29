@@ -127,23 +127,19 @@ func TestInt_Users(t *testing.T) {
 		password := random.Password()
 		loginName := random.SensitiveAlphanumeric()
 
-		opts := &sdk.CreateUserOptions{
-			OrReplace: sdk.Bool(true),
-			ObjectProperties: &sdk.UserObjectProperties{
-				Password:    &password,
-				LoginName:   &loginName,
-				DefaultRole: sdk.Pointer(sdk.NewAccountObjectIdentifier(defaultRole)),
-			},
-			ObjectParameters: &sdk.UserObjectParameters{
-				EnableUnredactedQuerySyntaxError: sdk.Bool(true),
-			},
-			SessionParameters: &sdk.SessionParameters{
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithOrReplace(true).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithPassword(password).
+				WithLoginName(loginName).
+				WithDefaultRole(sdk.NewAccountObjectIdentifier(defaultRole))).
+			WithObjectParameters(*sdk.NewUserObjectParametersRequest().
+				WithEnableUnredactedQuerySyntaxError(true)).
+			WithSessionParameters(sdk.SessionParameters{
 				Autocommit: sdk.Bool(true),
-			},
-			With: sdk.Bool(true),
-			Tags: tags,
-		}
-		err := client.Users.Create(ctx, id, opts)
+			}).
+			WithWith(true).
+			WithTag(tags))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -178,22 +174,18 @@ func TestInt_Users(t *testing.T) {
 		password := random.Password()
 		loginName := random.SensitiveAlphanumeric()
 
-		opts := &sdk.CreateUserOptions{
-			IfNotExists: sdk.Bool(true),
-			ObjectProperties: &sdk.UserObjectProperties{
-				Password:  &password,
-				LoginName: &loginName,
-			},
-			ObjectParameters: &sdk.UserObjectParameters{
-				EnableUnredactedQuerySyntaxError: sdk.Bool(true),
-			},
-			SessionParameters: &sdk.SessionParameters{
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithIfNotExists(true).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithPassword(password).
+				WithLoginName(loginName)).
+			WithObjectParameters(*sdk.NewUserObjectParametersRequest().
+				WithEnableUnredactedQuerySyntaxError(true)).
+			WithSessionParameters(sdk.SessionParameters{
 				Autocommit: sdk.Bool(true),
-			},
-			With: sdk.Bool(true),
-			Tags: tags,
-		}
-		err := client.Users.Create(ctx, id, opts)
+			}).
+			WithWith(true).
+			WithTag(tags))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -217,7 +209,7 @@ func TestInt_Users(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		currentRole := testClientHelper().Context.CurrentRole(t)
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -245,11 +237,9 @@ func TestInt_Users(t *testing.T) {
 		t.Run(fmt.Sprintf("create: type %s - no options", userType), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			err := client.Users.Create(ctx, id, &sdk.CreateUserOptions{
-				ObjectProperties: &sdk.UserObjectProperties{
-					Type: sdk.Pointer(userType),
-				},
-			})
+			err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+				WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+					WithUserType(userType)))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -273,29 +263,27 @@ func TestInt_Users(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		currentRole := testClientHelper().Context.CurrentRole(t)
 
-		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			Password:              sdk.String(password),
-			LoginName:             sdk.String(newValue),
-			DisplayName:           sdk.String(newValue),
-			FirstName:             sdk.String(newValue),
-			MiddleName:            sdk.String(newValue),
-			LastName:              sdk.String(newValue),
-			Email:                 sdk.String(email),
-			MustChangePassword:    sdk.Bool(true),
-			Disable:               sdk.Bool(true),
-			DaysToExpiry:          sdk.Int(5),
-			MinsToUnlock:          sdk.Int(15),
-			DefaultWarehouse:      sdk.Pointer(warehouseId),
-			DefaultNamespace:      sdk.Pointer(schemaIdObjectIdentifier),
-			DefaultRole:           sdk.Pointer(roleId),
-			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
-			MinsToBypassMFA:       sdk.Int(30),
-			RSAPublicKey:          sdk.String(key),
-			RSAPublicKey2:         sdk.String(key2),
-			Comment:               sdk.String("some comment"),
-		}}
-
-		err := client.Users.Create(ctx, id, createOpts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithPassword(password).
+				WithLoginName(newValue).
+				WithDisplayName(newValue).
+				WithFirstName(newValue).
+				WithMiddleName(newValue).
+				WithLastName(newValue).
+				WithEmail(email).
+				WithMustChangePassword(true).
+				WithDisabled(true).
+				WithDaysToExpiry(5).
+				WithMinsToUnlock(15).
+				WithDefaultWarehouse(warehouseId).
+				WithDefaultNamespace(schemaIdObjectIdentifier).
+				WithDefaultRole(roleId).
+				WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithAll(true)).
+				WithMinsToBypassMfa(30).
+				WithRsaPublicKey(key).
+				WithRsaPublicKey2(key2).
+				WithComment("some comment")))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -348,35 +336,29 @@ func TestInt_Users(t *testing.T) {
 		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 
 		// omitting FirstName, MiddleName, LastName, Password, MustChangePassword, and MinsToBypassMFA
-		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			LoginName:             sdk.String(newValue),
-			DisplayName:           sdk.String(newValue),
-			Email:                 sdk.String(email),
-			Disable:               sdk.Bool(true),
-			DaysToExpiry:          sdk.Int(5),
-			MinsToUnlock:          sdk.Int(15),
-			DefaultWarehouse:      sdk.Pointer(warehouseId),
-			DefaultNamespace:      sdk.Pointer(schemaIdObjectIdentifier),
-			DefaultRole:           sdk.Pointer(roleId),
-			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
-			RSAPublicKey:          sdk.String(key),
-			RSAPublicKey2:         sdk.String(key2),
-			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
-					Issuer:  sdk.String("https://accounts.google.com"),
-					Subject: sdk.String(subject),
-					OidcAudienceList: []sdk.StringListItemWrapper{
-						{
-							Value: "https://accounts.google.com/o/oauth2/auth",
-						},
-					},
-				},
-			},
-			Comment: sdk.String("some comment"),
-			Type:    sdk.Pointer(sdk.UserTypeService),
-		}}
-
-		err := client.Users.Create(ctx, id, createOpts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithLoginName(newValue).
+				WithDisplayName(newValue).
+				WithEmail(email).
+				WithDisabled(true).
+				WithDaysToExpiry(5).
+				WithMinsToUnlock(15).
+				WithDefaultWarehouse(warehouseId).
+				WithDefaultNamespace(schemaIdObjectIdentifier).
+				WithDefaultRole(roleId).
+				WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithAll(true)).
+				WithRsaPublicKey(key).
+				WithRsaPublicKey2(key2).
+				WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+					WithOidcType(*sdk.NewUserObjectWorkloadIdentityOidcRequest().
+						WithIssuer("https://accounts.google.com").
+						WithSubject(subject).
+						WithOidcAudienceList([]sdk.StringListItemWrapper{
+							{Value: "https://accounts.google.com/o/oauth2/auth"},
+						}))).
+				WithComment("some comment").
+				WithUserType(sdk.UserTypeService)))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -445,7 +427,7 @@ func TestInt_Users(t *testing.T) {
 		assertThatObject(
 			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
-				HasType(sdk.WIFTypeOIDC).
+				HasType(sdk.WIFTypeOidc).
 				HasNoComment().
 				HasLastUsedNotEmpty().
 				HasCreatedOnNotEmpty().
@@ -462,37 +444,31 @@ func TestInt_Users(t *testing.T) {
 		currentRole := testClientHelper().Context.CurrentRole(t)
 		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, and MinsToBypassMFA
-		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			Password:              sdk.String(password),
-			MustChangePassword:    sdk.Bool(true),
-			LoginName:             sdk.String(newValue),
-			DisplayName:           sdk.String(newValue),
-			Email:                 sdk.String(email),
-			Disable:               sdk.Bool(true),
-			DaysToExpiry:          sdk.Int(5),
-			MinsToUnlock:          sdk.Int(15),
-			DefaultWarehouse:      sdk.Pointer(warehouseId),
-			DefaultNamespace:      sdk.Pointer(schemaIdObjectIdentifier),
-			DefaultRole:           sdk.Pointer(roleId),
-			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
-			RSAPublicKey:          sdk.String(key),
-			RSAPublicKey2:         sdk.String(key2),
-			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
-					Issuer:  sdk.String("https://accounts.google.com"),
-					Subject: sdk.String(subject),
-					OidcAudienceList: []sdk.StringListItemWrapper{
-						{
-							Value: "https://accounts.google.com/o/oauth2/auth",
-						},
-					},
-				},
-			},
-			Comment: sdk.String("some comment"),
-			Type:    sdk.Pointer(sdk.UserTypeLegacyService),
-		}}
-
-		err := client.Users.Create(ctx, id, createOpts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithPassword(password).
+				WithMustChangePassword(true).
+				WithLoginName(newValue).
+				WithDisplayName(newValue).
+				WithEmail(email).
+				WithDisabled(true).
+				WithDaysToExpiry(5).
+				WithMinsToUnlock(15).
+				WithDefaultWarehouse(warehouseId).
+				WithDefaultNamespace(schemaIdObjectIdentifier).
+				WithDefaultRole(roleId).
+				WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithAll(true)).
+				WithRsaPublicKey(key).
+				WithRsaPublicKey2(key2).
+				WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+					WithOidcType(*sdk.NewUserObjectWorkloadIdentityOidcRequest().
+						WithIssuer("https://accounts.google.com").
+						WithSubject(subject).
+						WithOidcAudienceList([]sdk.StringListItemWrapper{
+							{Value: "https://accounts.google.com/o/oauth2/auth"},
+						}))).
+				WithComment("some comment").
+				WithUserType(sdk.UserTypeLegacyService)))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -561,7 +537,7 @@ func TestInt_Users(t *testing.T) {
 		assertThatObject(
 			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
-				HasType(sdk.WIFTypeOIDC).
+				HasType(sdk.WIFTypeOidc).
 				HasNoComment().
 				HasLastUsedNotEmpty().
 				HasCreatedOnNotEmpty().
@@ -587,12 +563,9 @@ func TestInt_Users(t *testing.T) {
 		subject string
 	}
 
-	awsWifConfig := func(arn string) *sdk.UserObjectWorkloadIdentityProperties {
-		return &sdk.UserObjectWorkloadIdentityProperties{
-			AwsType: &sdk.UserObjectWorkloadIdentityAws{
-				Arn: sdk.String(arn),
-			},
-		}
+	awsWifConfig := func(arn string) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
+		return sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+			WithAwsType(*sdk.NewUserObjectWorkloadIdentityAwsRequest().WithArn(arn))
 	}
 	awsWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, account string) {
 		assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
@@ -603,13 +576,9 @@ func TestInt_Users(t *testing.T) {
 		})
 	}
 
-	azureWifConfig := func(issuer string, subject string) *sdk.UserObjectWorkloadIdentityProperties {
-		return &sdk.UserObjectWorkloadIdentityProperties{
-			AzureType: &sdk.UserObjectWorkloadIdentityAzure{
-				Issuer:  sdk.String(issuer),
-				Subject: sdk.String(subject),
-			},
-		}
+	azureWifConfig := func(issuer string, subject string) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
+		return sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+			WithAzureType(*sdk.NewUserObjectWorkloadIdentityAzureRequest().WithIssuer(issuer).WithSubject(subject))
 	}
 	azureWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, issuer string, subject string) {
 		assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
@@ -618,12 +587,9 @@ func TestInt_Users(t *testing.T) {
 		})
 	}
 
-	gcpWifConfig := func(subject string) *sdk.UserObjectWorkloadIdentityProperties {
-		return &sdk.UserObjectWorkloadIdentityProperties{
-			GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-				Subject: sdk.String(subject),
-			},
-		}
+	gcpWifConfig := func(subject string) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
+		return sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+			WithGcpType(*sdk.NewUserObjectWorkloadIdentityGcpRequest().WithSubject(subject))
 	}
 	gcpWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, subject string) {
 		assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
@@ -635,11 +601,11 @@ func TestInt_Users(t *testing.T) {
 		userType     sdk.UserType
 		setup        func() any
 		metadata     any
-		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityProperties
+		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest
 		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
 	}{
 		{
-			provider: sdk.WIFTypeAWS,
+			provider: sdk.WIFTypeAws,
 			userType: sdk.UserTypeService,
 			setup: func() any {
 				accountNumber := random.NumericN(12)
@@ -648,7 +614,7 @@ func TestInt_Users(t *testing.T) {
 					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -664,7 +630,7 @@ func TestInt_Users(t *testing.T) {
 					subject: random.AlphaN(10),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -672,14 +638,14 @@ func TestInt_Users(t *testing.T) {
 			},
 		},
 		{
-			provider: sdk.WIFTypeGCP,
+			provider: sdk.WIFTypeGcp,
 			userType: sdk.UserTypeService,
 			setup: func() any {
 				return gcpWifData{
 					subject: random.NumericN(10),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return gcpWifConfig(data.(gcpWifData).subject)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -687,7 +653,7 @@ func TestInt_Users(t *testing.T) {
 			},
 		},
 		{
-			provider: sdk.WIFTypeAWS,
+			provider: sdk.WIFTypeAws,
 			userType: sdk.UserTypeLegacyService,
 			setup: func() any {
 				accountNumber := random.NumericN(12)
@@ -696,7 +662,7 @@ func TestInt_Users(t *testing.T) {
 					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -712,7 +678,7 @@ func TestInt_Users(t *testing.T) {
 					subject: random.AlphaN(10),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -720,14 +686,14 @@ func TestInt_Users(t *testing.T) {
 			},
 		},
 		{
-			provider: sdk.WIFTypeGCP,
+			provider: sdk.WIFTypeGcp,
 			userType: sdk.UserTypeLegacyService,
 			setup: func() any {
 				return gcpWifData{
 					subject: random.NumericN(10),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return gcpWifConfig(data.(gcpWifData).subject)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -743,12 +709,10 @@ func TestInt_Users(t *testing.T) {
 
 			data := tt.setup()
 
-			createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-				WorkloadIdentity: tt.wifConfig(data),
-				Type:             sdk.Pointer(tt.userType),
-			}}
-
-			err := client.Users.Create(ctx, id, createOpts)
+			err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+				WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+					WithWorkloadIdentity(*tt.wifConfig(data)).
+					WithUserType(tt.userType)))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -779,14 +743,26 @@ func TestInt_Users(t *testing.T) {
 
 	incorrectObjectPropertiesForServiceType := []struct {
 		property             string
-		userObjectProperties *sdk.UserObjectProperties
+		userObjectProperties func() *sdk.UserObjectPropertiesRequest
 	}{
-		{property: "MINS_TO_BYPASS_MFA", userObjectProperties: &sdk.UserObjectProperties{MinsToBypassMFA: sdk.Int(30)}},
-		{property: "MUST_CHANGE_PASSWORD", userObjectProperties: &sdk.UserObjectProperties{MustChangePassword: sdk.Bool(true)}},
-		{property: "FIRST_NAME", userObjectProperties: &sdk.UserObjectProperties{FirstName: sdk.String(newValue)}},
-		{property: "MIDDLE_NAME", userObjectProperties: &sdk.UserObjectProperties{MiddleName: sdk.String(newValue)}},
-		{property: "LAST_NAME", userObjectProperties: &sdk.UserObjectProperties{LastName: sdk.String(newValue)}},
-		{property: "PASSWORD", userObjectProperties: &sdk.UserObjectProperties{Password: sdk.String(password)}},
+		{property: "MINS_TO_BYPASS_MFA", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithMinsToBypassMfa(30).WithUserType(sdk.UserTypeService)
+		}},
+		{property: "MUST_CHANGE_PASSWORD", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithMustChangePassword(true).WithUserType(sdk.UserTypeService)
+		}},
+		{property: "FIRST_NAME", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithFirstName(newValue).WithUserType(sdk.UserTypeService)
+		}},
+		{property: "MIDDLE_NAME", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithMiddleName(newValue).WithUserType(sdk.UserTypeService)
+		}},
+		{property: "LAST_NAME", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithLastName(newValue).WithUserType(sdk.UserTypeService)
+		}},
+		{property: "PASSWORD", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithPassword(password).WithUserType(sdk.UserTypeService)
+		}},
 	}
 
 	for _, tt := range incorrectObjectPropertiesForServiceType {
@@ -794,22 +770,28 @@ func TestInt_Users(t *testing.T) {
 		t.Run(fmt.Sprintf("create: incorrect object property %s - type service", tt.property), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			tt.userObjectProperties.Type = sdk.Pointer(sdk.UserTypeService)
-			createOpts := &sdk.CreateUserOptions{ObjectProperties: tt.userObjectProperties}
-
-			err := client.Users.Create(ctx, id, createOpts)
+			err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+				WithObjectProperties(*tt.userObjectProperties()))
 			require.ErrorContains(t, err, fmt.Sprintf("Cannot set %s on users with TYPE=SERVICE.", tt.property))
 		})
 	}
 
 	incorrectObjectPropertiesForLegacyServiceType := []struct {
 		property             string
-		userObjectProperties *sdk.UserObjectProperties
+		userObjectProperties func() *sdk.UserObjectPropertiesRequest
 	}{
-		{property: "MINS_TO_BYPASS_MFA", userObjectProperties: &sdk.UserObjectProperties{MinsToBypassMFA: sdk.Int(30)}},
-		{property: "FIRST_NAME", userObjectProperties: &sdk.UserObjectProperties{FirstName: sdk.String(newValue)}},
-		{property: "MIDDLE_NAME", userObjectProperties: &sdk.UserObjectProperties{MiddleName: sdk.String(newValue)}},
-		{property: "LAST_NAME", userObjectProperties: &sdk.UserObjectProperties{LastName: sdk.String(newValue)}},
+		{property: "MINS_TO_BYPASS_MFA", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithMinsToBypassMfa(30).WithUserType(sdk.UserTypeLegacyService)
+		}},
+		{property: "FIRST_NAME", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithFirstName(newValue).WithUserType(sdk.UserTypeLegacyService)
+		}},
+		{property: "MIDDLE_NAME", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithMiddleName(newValue).WithUserType(sdk.UserTypeLegacyService)
+		}},
+		{property: "LAST_NAME", userObjectProperties: func() *sdk.UserObjectPropertiesRequest {
+			return sdk.NewUserObjectPropertiesRequest().WithLastName(newValue).WithUserType(sdk.UserTypeLegacyService)
+		}},
 	}
 
 	for _, tt := range incorrectObjectPropertiesForLegacyServiceType {
@@ -817,10 +799,8 @@ func TestInt_Users(t *testing.T) {
 		t.Run(fmt.Sprintf("create: incorrect object property %s - type legacy service", tt.property), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			tt.userObjectProperties.Type = sdk.Pointer(sdk.UserTypeLegacyService)
-			createOpts := &sdk.CreateUserOptions{ObjectProperties: tt.userObjectProperties}
-
-			err := client.Users.Create(ctx, id, createOpts)
+			err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+				WithObjectProperties(*tt.userObjectProperties()))
 			require.ErrorContains(t, err, fmt.Sprintf("Cannot set %s on users with TYPE=LEGACY_SERVICE.", tt.property))
 		})
 	}
@@ -828,11 +808,8 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create: set mins to bypass mfa to negative manually", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			MinsToBypassMFA: sdk.Int(-100),
-		}}
-
-		err := client.Users.Create(ctx, id, createOpts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithMinsToBypassMfa(-100)))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -844,11 +821,8 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create: set mins to bypass mfa to zero manually", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			MinsToBypassMFA: sdk.Int(0),
-		}}
-
-		err := client.Users.Create(ctx, id, createOpts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithMinsToBypassMfa(0)))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -860,11 +834,8 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create: set mins to bypass mfa to one manually", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			MinsToBypassMFA: sdk.Int(1),
-		}}
-
-		err := client.Users.Create(ctx, id, createOpts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithMinsToBypassMfa(1)))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -876,47 +847,33 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create and alter: problems with public key fingerprints", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			RSAPublicKey:   sdk.String(key),
-			RSAPublicKeyFp: sdk.String(hash),
-		}}
-
-		err := client.Users.Create(ctx, id, createOpts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithRsaPublicKey(key).
+				WithRsaPublicKeyFp(hash)))
 		require.ErrorContains(t, err, "invalid property 'RSA_PUBLIC_KEY_FP' for 'USER'")
 
-		createOpts = &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			RSAPublicKey2:   sdk.String(key),
-			RSAPublicKey2Fp: sdk.String(hash),
-		}}
-
-		err = client.Users.Create(ctx, id, createOpts)
+		err = client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithRsaPublicKey2(key).
+				WithRsaPublicKey2Fp(hash)))
 		require.ErrorContains(t, err, "invalid property 'RSA_PUBLIC_KEY_2_FP' for 'USER'")
 
 		user, userCleanup := testClientHelper().User.CreateUser(t)
 		t.Cleanup(userCleanup)
 
-		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					RSAPublicKey:   sdk.String(key),
-					RSAPublicKeyFp: sdk.String(hash),
-				},
-			},
-		}}
-
-		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithRsaPublicKey(key).
+					WithRsaPublicKeyFp(hash))))
 		require.ErrorContains(t, err, "invalid property 'RSA_PUBLIC_KEY_FP' for 'USER'")
 
-		alterOpts = &sdk.AlterUserOptions{Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					RSAPublicKey2:   sdk.String(key2),
-					RSAPublicKey2Fp: sdk.String(hash2),
-				},
-			},
-		}}
-
-		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithRsaPublicKey2(key2).
+					WithRsaPublicKey2Fp(hash2))))
 		require.ErrorContains(t, err, "invalid property 'RSA_PUBLIC_KEY_2_FP' for 'USER'")
 	})
 
@@ -924,13 +881,9 @@ func TestInt_Users(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		defaultRole := strings.ToUpper(random.AlphaN(4) + "-" + random.AlphaN(4))
 
-		opts := &sdk.CreateUserOptions{
-			ObjectProperties: &sdk.UserObjectProperties{
-				DefaultRole: sdk.Pointer(sdk.NewAccountObjectIdentifier(defaultRole)),
-			},
-		}
-
-		err := client.Users.Create(ctx, id, opts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithDefaultRole(sdk.NewAccountObjectIdentifier(defaultRole))))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -944,13 +897,9 @@ func TestInt_Users(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		defaultRole := strings.ToLower(random.AlphaN(6))
 
-		opts := &sdk.CreateUserOptions{
-			ObjectProperties: &sdk.UserObjectProperties{
-				DefaultRole: sdk.Pointer(sdk.NewAccountObjectIdentifier(defaultRole)),
-			},
-		}
-
-		err := client.Users.Create(ctx, id, opts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithDefaultRole(sdk.NewAccountObjectIdentifier(defaultRole))))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -963,13 +912,10 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create: client memory limit set to zero", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		opts := &sdk.CreateUserOptions{
-			SessionParameters: &sdk.SessionParameters{
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithSessionParameters(sdk.SessionParameters{
 				ClientMemoryLimit: sdk.Int(0),
-			},
-		}
-
-		err := client.Users.Create(ctx, id, opts)
+			}))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 	})
@@ -979,20 +925,16 @@ func TestInt_Users(t *testing.T) {
 		randomWithHyphenAndMixedCase := strings.ToUpper(random.AlphaN(4)) + "-" + strings.ToLower(random.SensitiveAlphanumeric())
 		var namespaceId sdk.ObjectIdentifier = sdk.NewDatabaseObjectIdentifier(randomWithHyphenAndMixedCase, randomWithHyphenAndMixedCase)
 
-		opts := &sdk.CreateUserOptions{
-			ObjectProperties: &sdk.UserObjectProperties{
-				LoginName:        sdk.String(randomWithHyphenAndMixedCase),
-				DisplayName:      sdk.String(randomWithHyphenAndMixedCase),
-				FirstName:        sdk.String(randomWithHyphenAndMixedCase),
-				MiddleName:       sdk.String(randomWithHyphenAndMixedCase),
-				LastName:         sdk.String(randomWithHyphenAndMixedCase),
-				DefaultWarehouse: sdk.Pointer(sdk.NewAccountObjectIdentifier(randomWithHyphenAndMixedCase)),
-				DefaultNamespace: sdk.Pointer(namespaceId),
-				DefaultRole:      sdk.Pointer(sdk.NewAccountObjectIdentifier(randomWithHyphenAndMixedCase)),
-			},
-		}
-
-		err := client.Users.Create(ctx, id, opts)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithLoginName(randomWithHyphenAndMixedCase).
+				WithDisplayName(randomWithHyphenAndMixedCase).
+				WithFirstName(randomWithHyphenAndMixedCase).
+				WithMiddleName(randomWithHyphenAndMixedCase).
+				WithLastName(randomWithHyphenAndMixedCase).
+				WithDefaultWarehouse(sdk.NewAccountObjectIdentifier(randomWithHyphenAndMixedCase)).
+				WithDefaultNamespace(namespaceId).
+				WithDefaultRole(sdk.NewAccountObjectIdentifier(randomWithHyphenAndMixedCase))))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -1026,11 +968,10 @@ func TestInt_Users(t *testing.T) {
 		t.Run(fmt.Sprintf("create: with all parameters set - type %s", userType), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			opts := &sdk.CreateUserOptions{
-				ObjectProperties: &sdk.UserObjectProperties{
-					Type: sdk.Pointer(userType),
-				},
-				SessionParameters: &sdk.SessionParameters{
+			err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+				WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+					WithUserType(userType)).
+				WithSessionParameters(sdk.SessionParameters{
 					AbortDetachedQuery:                       sdk.Bool(true),
 					Autocommit:                               sdk.Bool(false),
 					BinaryInputFormat:                        sdk.Pointer(sdk.BinaryInputFormatUTF8),
@@ -1087,15 +1028,11 @@ func TestInt_Users(t *testing.T) {
 					UseCachedResult:                          sdk.Bool(false),
 					WeekOfYearPolicy:                         sdk.Int(1),
 					WeekStart:                                sdk.Int(1),
-				},
-				ObjectParameters: &sdk.UserObjectParameters{
-					EnableUnredactedQuerySyntaxError: sdk.Bool(true),
-					NetworkPolicy:                    sdk.Pointer(networkPolicy.ID()),
-					PreventUnloadToInternalStages:    sdk.Bool(true),
-				},
-			}
-
-			err := client.Users.Create(ctx, id, opts)
+				}).
+				WithObjectParameters(*sdk.NewUserObjectParametersRequest().
+					WithEnableUnredactedQuerySyntaxError(true).
+					WithNetworkPolicy(networkPolicy.ID()).
+					WithPreventUnloadToInternalStages(true)))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -1111,7 +1048,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create: with all parameters default", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -1136,10 +1073,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(userCleanup)
 
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		alterOptions := &sdk.AlterUserOptions{
-			NewName: newID,
-		}
-		err := client.Users.Alter(ctx, user.ID(), alterOptions)
+		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).WithNewName(newID))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, newID))
 
@@ -1161,35 +1095,30 @@ func TestInt_Users(t *testing.T) {
 				HasOwner(currentRole.Name()),
 		)
 
-		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					Password:              sdk.String(password),
-					LoginName:             sdk.String(newValue),
-					DisplayName:           sdk.String(newValue),
-					FirstName:             sdk.String(newValue),
-					MiddleName:            sdk.String(newValue),
-					LastName:              sdk.String(newValue),
-					Email:                 sdk.String(email),
-					MustChangePassword:    sdk.Bool(true),
-					Disable:               sdk.Bool(true),
-					DaysToExpiry:          sdk.Int(5),
-					MinsToUnlock:          sdk.Int(15),
-					DefaultWarehouse:      sdk.Pointer(warehouseId),
-					DefaultNamespace:      sdk.Pointer(schemaIdObjectIdentifier),
-					DefaultRole:           sdk.Pointer(roleId),
-					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
-					MinsToBypassMFA:       sdk.Int(30),
-					RSAPublicKey:          sdk.String(key),
-					RSAPublicKey2:         sdk.String(key2),
-					Type:                  sdk.Pointer(sdk.UserTypePerson),
-					Comment:               sdk.String("some comment"),
-				},
-				DisableMfa: sdk.Bool(true),
-			},
-		}}
-
-		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithPassword(password).
+					WithLoginName(newValue).
+					WithDisplayName(newValue).
+					WithFirstName(newValue).
+					WithMiddleName(newValue).
+					WithLastName(newValue).
+					WithEmail(email).
+					WithMustChangePassword(true).
+					WithDisabled(true).
+					WithDaysToExpiry(5).
+					WithMinsToUnlock(15).
+					WithDefaultWarehouse(warehouseId).
+					WithDefaultNamespace(schemaIdObjectIdentifier).
+					WithDefaultRole(roleId).
+					WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithAll(true)).
+					WithMinsToBypassMfa(30).
+					WithRsaPublicKey(key).
+					WithRsaPublicKey2(key2).
+					WithUserType(sdk.UserTypePerson).
+					WithComment("some comment").
+					WithDisableMfa(true))))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1225,33 +1154,30 @@ func TestInt_Users(t *testing.T) {
 				HasType(string(sdk.UserTypePerson)),
 		)
 
-		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				Password:              sdk.Bool(true),
-				LoginName:             sdk.Bool(true),
-				DisplayName:           sdk.Bool(true),
-				FirstName:             sdk.Bool(true),
-				MiddleName:            sdk.Bool(true),
-				LastName:              sdk.Bool(true),
-				Email:                 sdk.Bool(true),
-				MustChangePassword:    sdk.Bool(true),
-				Disable:               sdk.Bool(true),
-				DaysToExpiry:          sdk.Bool(true),
-				MinsToUnlock:          sdk.Bool(true),
-				DefaultWarehouse:      sdk.Bool(true),
-				DefaultNamespace:      sdk.Bool(true),
-				DefaultRole:           sdk.Bool(true),
-				DefaultSecondaryRoles: sdk.Bool(true),
-				MinsToBypassMFA:       sdk.Bool(true),
-				DisableMfa:            sdk.Bool(true),
-				RSAPublicKey:          sdk.Bool(true),
-				RSAPublicKey2:         sdk.Bool(true),
-				Comment:               sdk.Bool(true),
-				Type:                  sdk.Bool(true),
-			},
-		}}
-
-		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+					WithPassword(true).
+					WithLoginName(true).
+					WithDisplayName(true).
+					WithFirstName(true).
+					WithMiddleName(true).
+					WithLastName(true).
+					WithEmail(true).
+					WithMustChangePassword(true).
+					WithDisabled(true).
+					WithDaysToExpiry(true).
+					WithMinsToUnlock(true).
+					WithDefaultWarehouse(true).
+					WithDefaultNamespace(true).
+					WithDefaultRole(true).
+					WithDefaultSecondaryRoles(true).
+					WithMinsToBypassMfa(true).
+					WithDisableMfa(true).
+					WithRsaPublicKey(true).
+					WithRsaPublicKey2(true).
+					WithComment(true).
+					WithUserType(true))))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1278,38 +1204,29 @@ func TestInt_Users(t *testing.T) {
 
 		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, Password, MustChangePassword, MinsToBypassMFA, and DisableMfa
-		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					LoginName:             sdk.String(newValue),
-					DisplayName:           sdk.String(newValue),
-					Email:                 sdk.String(email),
-					Disable:               sdk.Bool(true),
-					DaysToExpiry:          sdk.Int(5),
-					MinsToUnlock:          sdk.Int(15),
-					DefaultWarehouse:      sdk.Pointer(warehouseId),
-					DefaultNamespace:      sdk.Pointer(schemaIdObjectIdentifier),
-					DefaultRole:           sdk.Pointer(roleId),
-					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
-					RSAPublicKey:          sdk.String(key),
-					RSAPublicKey2:         sdk.String(key2),
-					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
-							Issuer:  sdk.String("https://accounts.google.com"),
-							Subject: sdk.String(subject),
-							OidcAudienceList: []sdk.StringListItemWrapper{
-								{
-									Value: "https://accounts.google.com/o/oauth2/auth",
-								},
-							},
-						},
-					},
-					Comment: sdk.String("some comment"),
-				},
-			},
-		}}
-
-		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithLoginName(newValue).
+					WithDisplayName(newValue).
+					WithEmail(email).
+					WithDisabled(true).
+					WithDaysToExpiry(5).
+					WithMinsToUnlock(15).
+					WithDefaultWarehouse(warehouseId).
+					WithDefaultNamespace(schemaIdObjectIdentifier).
+					WithDefaultRole(roleId).
+					WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithAll(true)).
+					WithRsaPublicKey(key).
+					WithRsaPublicKey2(key2).
+					WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+						WithOidcType(*sdk.NewUserObjectWorkloadIdentityOidcRequest().
+							WithIssuer("https://accounts.google.com").
+							WithSubject(subject).
+							WithOidcAudienceList([]sdk.StringListItemWrapper{
+								{Value: "https://accounts.google.com/o/oauth2/auth"},
+							}))).
+					WithComment("some comment"))))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1350,7 +1267,7 @@ func TestInt_Users(t *testing.T) {
 		assertThatObject(
 			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
-				HasType(sdk.WIFTypeOIDC).
+				HasType(sdk.WIFTypeOidc).
 				HasNoComment().
 				HasLastUsedNotEmpty().
 				HasCreatedOnNotEmpty().
@@ -1361,26 +1278,23 @@ func TestInt_Users(t *testing.T) {
 				}),
 		)
 
-		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				LoginName:             sdk.Bool(true),
-				DisplayName:           sdk.Bool(true),
-				Email:                 sdk.Bool(true),
-				Disable:               sdk.Bool(true),
-				DaysToExpiry:          sdk.Bool(true),
-				MinsToUnlock:          sdk.Bool(true),
-				DefaultWarehouse:      sdk.Bool(true),
-				DefaultNamespace:      sdk.Bool(true),
-				DefaultRole:           sdk.Bool(true),
-				DefaultSecondaryRoles: sdk.Bool(true),
-				RSAPublicKey:          sdk.Bool(true),
-				RSAPublicKey2:         sdk.Bool(true),
-				WorkloadIdentity:      sdk.Bool(true),
-				Comment:               sdk.Bool(true),
-			},
-		}}
-
-		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+					WithLoginName(true).
+					WithDisplayName(true).
+					WithEmail(true).
+					WithDisabled(true).
+					WithDaysToExpiry(true).
+					WithMinsToUnlock(true).
+					WithDefaultWarehouse(true).
+					WithDefaultNamespace(true).
+					WithDefaultRole(true).
+					WithDefaultSecondaryRoles(true).
+					WithRsaPublicKey(true).
+					WithRsaPublicKey2(true).
+					WithWorkloadIdentity(true).
+					WithComment(true))))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1410,40 +1324,31 @@ func TestInt_Users(t *testing.T) {
 
 		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, MinsToBypassMFA, and DisableMfa
-		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					Password:              sdk.String(password),
-					MustChangePassword:    sdk.Bool(true),
-					LoginName:             sdk.String(newValue),
-					DisplayName:           sdk.String(newValue),
-					Email:                 sdk.String(email),
-					Disable:               sdk.Bool(true),
-					DaysToExpiry:          sdk.Int(5),
-					MinsToUnlock:          sdk.Int(15),
-					DefaultWarehouse:      sdk.Pointer(warehouseId),
-					DefaultNamespace:      sdk.Pointer(schemaIdObjectIdentifier),
-					DefaultRole:           sdk.Pointer(roleId),
-					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
-					RSAPublicKey:          sdk.String(key),
-					RSAPublicKey2:         sdk.String(key2),
-					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
-							Issuer:  sdk.String("https://accounts.google.com"),
-							Subject: sdk.String(subject),
-							OidcAudienceList: []sdk.StringListItemWrapper{
-								{
-									Value: "https://accounts.google.com/o/oauth2/auth",
-								},
-							},
-						},
-					},
-					Comment: sdk.String("some comment"),
-				},
-			},
-		}}
-
-		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithPassword(password).
+					WithMustChangePassword(true).
+					WithLoginName(newValue).
+					WithDisplayName(newValue).
+					WithEmail(email).
+					WithDisabled(true).
+					WithDaysToExpiry(5).
+					WithMinsToUnlock(15).
+					WithDefaultWarehouse(warehouseId).
+					WithDefaultNamespace(schemaIdObjectIdentifier).
+					WithDefaultRole(roleId).
+					WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithAll(true)).
+					WithRsaPublicKey(key).
+					WithRsaPublicKey2(key2).
+					WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+						WithOidcType(*sdk.NewUserObjectWorkloadIdentityOidcRequest().
+							WithIssuer("https://accounts.google.com").
+							WithSubject(subject).
+							WithOidcAudienceList([]sdk.StringListItemWrapper{
+								{Value: "https://accounts.google.com/o/oauth2/auth"},
+							}))).
+					WithComment("some comment"))))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1484,7 +1389,7 @@ func TestInt_Users(t *testing.T) {
 		assertThatObject(
 			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
-				HasType(sdk.WIFTypeOIDC).
+				HasType(sdk.WIFTypeOidc).
 				HasNoComment().
 				HasLastUsedNotEmpty().
 				HasCreatedOnNotEmpty().
@@ -1495,28 +1400,25 @@ func TestInt_Users(t *testing.T) {
 				}),
 		)
 
-		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				Password:              sdk.Bool(true),
-				MustChangePassword:    sdk.Bool(true),
-				LoginName:             sdk.Bool(true),
-				DisplayName:           sdk.Bool(true),
-				Email:                 sdk.Bool(true),
-				Disable:               sdk.Bool(true),
-				DaysToExpiry:          sdk.Bool(true),
-				MinsToUnlock:          sdk.Bool(true),
-				DefaultWarehouse:      sdk.Bool(true),
-				DefaultNamespace:      sdk.Bool(true),
-				DefaultRole:           sdk.Bool(true),
-				DefaultSecondaryRoles: sdk.Bool(true),
-				RSAPublicKey:          sdk.Bool(true),
-				RSAPublicKey2:         sdk.Bool(true),
-				Comment:               sdk.Bool(true),
-				WorkloadIdentity:      sdk.Bool(true),
-			},
-		}}
-
-		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+					WithPassword(true).
+					WithMustChangePassword(true).
+					WithLoginName(true).
+					WithDisplayName(true).
+					WithEmail(true).
+					WithDisabled(true).
+					WithDaysToExpiry(true).
+					WithMinsToUnlock(true).
+					WithDefaultWarehouse(true).
+					WithDefaultNamespace(true).
+					WithDefaultRole(true).
+					WithDefaultSecondaryRoles(true).
+					WithRsaPublicKey(true).
+					WithRsaPublicKey2(true).
+					WithComment(true).
+					WithWorkloadIdentity(true))))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -1536,11 +1438,11 @@ func TestInt_Users(t *testing.T) {
 		userType     sdk.UserType
 		createUser   func(t *testing.T) (*sdk.User, func())
 		setup        func() any
-		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityProperties
+		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest
 		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
 	}{
 		{
-			provider:   sdk.WIFTypeAWS,
+			provider:   sdk.WIFTypeAws,
 			userType:   sdk.UserTypeService,
 			createUser: testClientHelper().User.CreateServiceUser,
 			setup: func() any {
@@ -1550,7 +1452,7 @@ func TestInt_Users(t *testing.T) {
 					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -1567,7 +1469,7 @@ func TestInt_Users(t *testing.T) {
 					subject: random.AlphaN(10),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -1575,7 +1477,7 @@ func TestInt_Users(t *testing.T) {
 			},
 		},
 		{
-			provider:   sdk.WIFTypeGCP,
+			provider:   sdk.WIFTypeGcp,
 			userType:   sdk.UserTypeService,
 			createUser: testClientHelper().User.CreateServiceUser,
 			setup: func() any {
@@ -1583,7 +1485,7 @@ func TestInt_Users(t *testing.T) {
 					subject: random.NumericN(10),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return gcpWifConfig(data.(gcpWifData).subject)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -1591,7 +1493,7 @@ func TestInt_Users(t *testing.T) {
 			},
 		},
 		{
-			provider:   sdk.WIFTypeAWS,
+			provider:   sdk.WIFTypeAws,
 			userType:   sdk.UserTypeLegacyService,
 			createUser: testClientHelper().User.CreateLegacyServiceUser,
 			setup: func() any {
@@ -1601,7 +1503,7 @@ func TestInt_Users(t *testing.T) {
 					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -1618,7 +1520,7 @@ func TestInt_Users(t *testing.T) {
 					subject: random.AlphaN(10),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -1626,7 +1528,7 @@ func TestInt_Users(t *testing.T) {
 			},
 		},
 		{
-			provider:   sdk.WIFTypeGCP,
+			provider:   sdk.WIFTypeGcp,
 			userType:   sdk.UserTypeLegacyService,
 			createUser: testClientHelper().User.CreateLegacyServiceUser,
 			setup: func() any {
@@ -1634,7 +1536,7 @@ func TestInt_Users(t *testing.T) {
 					subject: random.NumericN(10),
 				}
 			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return gcpWifConfig(data.(gcpWifData).subject)
 			},
 			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
@@ -1657,15 +1559,10 @@ func TestInt_Users(t *testing.T) {
 			)
 
 			// Set WIF
-			alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						WorkloadIdentity: tt.wifConfig(data),
-					},
-				},
-			}}
-
-			err := client.Users.Alter(ctx, user.ID(), alterOpts)
+			err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+				WithSet(*sdk.NewUserSetRequest().
+					WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+						WithWorkloadIdentity(*tt.wifConfig(data)))))
 			require.NoError(t, err)
 
 			assertThatObject(
@@ -1686,13 +1583,10 @@ func TestInt_Users(t *testing.T) {
 			assertThatObject(t, assertion)
 
 			// Unset WIF
-			alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-				ObjectProperties: &sdk.UserObjectPropertiesUnset{
-					WorkloadIdentity: sdk.Bool(true),
-				},
-			}}
-
-			err = client.Users.Alter(ctx, user.ID(), alterOpts)
+			err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+				WithUnset(*sdk.NewUserUnsetRequest().
+					WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+						WithWorkloadIdentity(true))))
 			require.NoError(t, err)
 
 			assertThatObject(
@@ -1708,54 +1602,82 @@ func TestInt_Users(t *testing.T) {
 
 	incorrectAlterForServiceType := []struct {
 		property           string
-		alterSet           *sdk.UserAlterObjectProperties
-		alterUnset         *sdk.UserObjectPropertiesUnset
+		alterSet           func() *sdk.UserAlterObjectPropertiesRequest
+		alterUnset         func() *sdk.UserObjectPropertiesUnsetRequest
 		expectNoUnsetError bool
 	}{
 		{
-			property:   "MINS_TO_BYPASS_MFA",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{MinsToBypassMFA: sdk.Int(30)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{MinsToBypassMFA: sdk.Bool(true)},
+			property: "MINS_TO_BYPASS_MFA",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithMinsToBypassMfa(30)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithMinsToBypassMfa(true)
+			},
 			// unset for MINS_TO_BYPASS_MFA is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "MUST_CHANGE_PASSWORD",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{MustChangePassword: sdk.Bool(true)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{MustChangePassword: sdk.Bool(true)},
+			property: "MUST_CHANGE_PASSWORD",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithMustChangePassword(true)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithMustChangePassword(true)
+			},
 		},
 		{
-			property:   "FIRST_NAME",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{FirstName: sdk.String(newValue)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{FirstName: sdk.Bool(true)},
+			property: "FIRST_NAME",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithFirstName(newValue)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithFirstName(true)
+			},
 			// unset for FIRST_NAME is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "MIDDLE_NAME",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{MiddleName: sdk.String(newValue)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{MiddleName: sdk.Bool(true)},
+			property: "MIDDLE_NAME",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithMiddleName(newValue)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithMiddleName(true)
+			},
 			// unset for MIDDLE_NAME is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "LAST_NAME",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{LastName: sdk.String(newValue)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{LastName: sdk.Bool(true)},
+			property: "LAST_NAME",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithLastName(newValue)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithLastName(true)
+			},
 			// unset for LAST_NAME is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "PASSWORD",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{Password: sdk.String(password)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{Password: sdk.Bool(true)},
+			property: "PASSWORD",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithPassword(password)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithPassword(true)
+			},
 			// unset for PASSWORD is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "DISABLE_MFA",
-			alterSet:   &sdk.UserAlterObjectProperties{DisableMfa: sdk.Bool(true)},
-			alterUnset: &sdk.UserObjectPropertiesUnset{DisableMfa: sdk.Bool(true)},
+			property: "DISABLE_MFA",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithDisableMfa(true)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithDisableMfa(true)
+			},
 		},
 	}
 
@@ -1765,18 +1687,12 @@ func TestInt_Users(t *testing.T) {
 			serviceUser, serviceUserCleanup := testClientHelper().User.CreateServiceUser(t)
 			t.Cleanup(serviceUserCleanup)
 
-			alterSet := &sdk.AlterUserOptions{Set: &sdk.UserSet{
-				ObjectProperties: tt.alterSet,
-			}}
-
-			err := client.Users.Alter(ctx, serviceUser.ID(), alterSet)
+			err := client.Users.Alter(ctx, serviceUser.ID(), sdk.NewAlterUserRequest(serviceUser.ID()).
+				WithSet(*sdk.NewUserSetRequest().WithObjectProperties(*tt.alterSet())))
 			require.ErrorContains(t, err, fmt.Sprintf("Cannot set %s on users with TYPE=SERVICE.", tt.property))
 
-			alterUnset := &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-				ObjectProperties: tt.alterUnset,
-			}}
-
-			err = client.Users.Alter(ctx, serviceUser.ID(), alterUnset)
+			err = client.Users.Alter(ctx, serviceUser.ID(), sdk.NewAlterUserRequest(serviceUser.ID()).
+				WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(*tt.alterUnset())))
 			if tt.expectNoUnsetError {
 				require.Nil(t, err)
 			} else {
@@ -1787,42 +1703,62 @@ func TestInt_Users(t *testing.T) {
 
 	incorrectAlterForLegacyServiceType := []struct {
 		property           string
-		alterSet           *sdk.UserAlterObjectProperties
-		alterUnset         *sdk.UserObjectPropertiesUnset
+		alterSet           func() *sdk.UserAlterObjectPropertiesRequest
+		alterUnset         func() *sdk.UserObjectPropertiesUnsetRequest
 		expectNoUnsetError bool
 	}{
 		{
-			property:   "MINS_TO_BYPASS_MFA",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{MinsToBypassMFA: sdk.Int(30)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{MinsToBypassMFA: sdk.Bool(true)},
+			property: "MINS_TO_BYPASS_MFA",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithMinsToBypassMfa(30)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithMinsToBypassMfa(true)
+			},
 			// unset for MINS_TO_BYPASS_MFA is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "FIRST_NAME",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{FirstName: sdk.String(newValue)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{FirstName: sdk.Bool(true)},
+			property: "FIRST_NAME",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithFirstName(newValue)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithFirstName(true)
+			},
 			// unset for FIRST_NAME is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "MIDDLE_NAME",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{MiddleName: sdk.String(newValue)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{MiddleName: sdk.Bool(true)},
+			property: "MIDDLE_NAME",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithMiddleName(newValue)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithMiddleName(true)
+			},
 			// unset for MIDDLE_NAME is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "LAST_NAME",
-			alterSet:   &sdk.UserAlterObjectProperties{UserObjectProperties: sdk.UserObjectProperties{LastName: sdk.String(newValue)}},
-			alterUnset: &sdk.UserObjectPropertiesUnset{LastName: sdk.Bool(true)},
+			property: "LAST_NAME",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithLastName(newValue)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithLastName(true)
+			},
 			// unset for LAST_NAME is not returning an error from Snowflake
 			expectNoUnsetError: true,
 		},
 		{
-			property:   "DISABLE_MFA",
-			alterSet:   &sdk.UserAlterObjectProperties{DisableMfa: sdk.Bool(true)},
-			alterUnset: &sdk.UserObjectPropertiesUnset{DisableMfa: sdk.Bool(true)},
+			property: "DISABLE_MFA",
+			alterSet: func() *sdk.UserAlterObjectPropertiesRequest {
+				return sdk.NewUserAlterObjectPropertiesRequest().WithDisableMfa(true)
+			},
+			alterUnset: func() *sdk.UserObjectPropertiesUnsetRequest {
+				return sdk.NewUserObjectPropertiesUnsetRequest().WithDisableMfa(true)
+			},
 		},
 	}
 
@@ -1832,18 +1768,12 @@ func TestInt_Users(t *testing.T) {
 			legacyServiceUser, legacyServiceUserCleanup := testClientHelper().User.CreateLegacyServiceUser(t)
 			t.Cleanup(legacyServiceUserCleanup)
 
-			alterSet := &sdk.AlterUserOptions{Set: &sdk.UserSet{
-				ObjectProperties: tt.alterSet,
-			}}
-
-			err := client.Users.Alter(ctx, legacyServiceUser.ID(), alterSet)
+			err := client.Users.Alter(ctx, legacyServiceUser.ID(), sdk.NewAlterUserRequest(legacyServiceUser.ID()).
+				WithSet(*sdk.NewUserSetRequest().WithObjectProperties(*tt.alterSet())))
 			require.ErrorContains(t, err, fmt.Sprintf("Cannot set %s on users with TYPE=LEGACY_SERVICE.", tt.property))
 
-			alterUnset := &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-				ObjectProperties: tt.alterUnset,
-			}}
-
-			err = client.Users.Alter(ctx, legacyServiceUser.ID(), alterUnset)
+			err = client.Users.Alter(ctx, legacyServiceUser.ID(), sdk.NewAlterUserRequest(legacyServiceUser.ID()).
+				WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(*tt.alterUnset())))
 			if tt.expectNoUnsetError {
 				require.Nil(t, err)
 			} else {
@@ -1856,11 +1786,9 @@ func TestInt_Users(t *testing.T) {
 		authenticationPolicyTest, authenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(authenticationPolicyCleanup)
 
-		err := client.Users.Alter(ctx, user.ID(), &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				AuthenticationPolicy: sdk.Pointer(authenticationPolicyTest.ID()),
-			},
-		})
+		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().
+				WithAuthenticationPolicy(authenticationPolicyTest.ID())))
 		require.NoError(t, err)
 
 		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, user.ID(), sdk.PolicyEntityDomainUser)
@@ -1871,11 +1799,9 @@ func TestInt_Users(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		err = client.Users.Alter(ctx, user.ID(), &sdk.AlterUserOptions{
-			Unset: &sdk.UserUnset{
-				AuthenticationPolicy: sdk.Bool(true),
-			},
-		})
+		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithAuthenticationPolicy(true)))
 		require.NoError(t, err)
 
 		policies, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, user.ID(), sdk.PolicyEntityDomainUser)
@@ -1892,17 +1818,15 @@ func TestInt_Users(t *testing.T) {
 		t.Run(fmt.Sprintf("alter: set and unset parameters - type %s", userType), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			err := client.Users.Create(ctx, id, &sdk.CreateUserOptions{
-				ObjectProperties: &sdk.UserObjectProperties{
-					Type: sdk.Pointer(userType),
-				},
-			})
+			err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+				WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+					WithUserType(userType)))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
-			alterOpts := &sdk.AlterUserOptions{
-				Set: &sdk.UserSet{
-					SessionParameters: &sdk.SessionParameters{
+			err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+				WithSet(*sdk.NewUserSetRequest().
+					WithSessionParameters(sdk.SessionParameters{
 						AbortDetachedQuery:                       sdk.Bool(true),
 						Autocommit:                               sdk.Bool(false),
 						BinaryInputFormat:                        sdk.Pointer(sdk.BinaryInputFormatUTF8),
@@ -1959,16 +1883,11 @@ func TestInt_Users(t *testing.T) {
 						UseCachedResult:                          sdk.Bool(false),
 						WeekOfYearPolicy:                         sdk.Int(1),
 						WeekStart:                                sdk.Int(1),
-					},
-					ObjectParameters: &sdk.UserObjectParameters{
-						EnableUnredactedQuerySyntaxError: sdk.Bool(true),
-						NetworkPolicy:                    sdk.Pointer(networkPolicy.ID()),
-						PreventUnloadToInternalStages:    sdk.Bool(true),
-					},
-				},
-			}
-
-			err = client.Users.Alter(ctx, id, alterOpts)
+					}).
+					WithObjectParameters(*sdk.NewUserObjectParametersRequest().
+						WithEnableUnredactedQuerySyntaxError(true).
+						WithNetworkPolicy(networkPolicy.ID()).
+						WithPreventUnloadToInternalStages(true))))
 			require.NoError(t, err)
 
 			assertParametersSet(objectparametersassert.UserParameters(t, id))
@@ -1978,9 +1897,9 @@ func TestInt_Users(t *testing.T) {
 			require.NoError(t, err)
 			assertParametersSet(objectparametersassert.UserParametersPrefetched(t, id, parameters))
 
-			alterOpts = &sdk.AlterUserOptions{
-				Unset: &sdk.UserUnset{
-					SessionParameters: &sdk.SessionParametersUnset{
+			err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+				WithUnset(*sdk.NewUserUnsetRequest().
+					WithSessionParameters(sdk.SessionParametersUnset{
 						AbortDetachedQuery:                       sdk.Bool(true),
 						Autocommit:                               sdk.Bool(true),
 						BinaryInputFormat:                        sdk.Bool(true),
@@ -2037,16 +1956,11 @@ func TestInt_Users(t *testing.T) {
 						UseCachedResult:                          sdk.Bool(true),
 						WeekOfYearPolicy:                         sdk.Bool(true),
 						WeekStart:                                sdk.Bool(true),
-					},
-					ObjectParameters: &sdk.UserObjectParametersUnset{
-						EnableUnredactedQuerySyntaxError: sdk.Bool(true),
-						NetworkPolicy:                    sdk.Bool(true),
-						PreventUnloadToInternalStages:    sdk.Bool(true),
-					},
-				},
-			}
-
-			err = client.Users.Alter(ctx, id, alterOpts)
+					}).
+					WithObjectParameters(*sdk.NewUserObjectParametersUnsetRequest().
+						WithEnableUnredactedQuerySyntaxError(true).
+						WithNetworkPolicy(true).
+						WithPreventUnloadToInternalStages(true))))
 			require.NoError(t, err)
 
 			assertThatObject(
@@ -2070,36 +1984,26 @@ func TestInt_Users(t *testing.T) {
 		user, userCleanup := testClientHelper().User.CreateUser(t)
 		t.Cleanup(userCleanup)
 
-		err := client.Users.Alter(ctx, user.ID(), &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				SessionParameters: &sdk.SessionParameters{
+		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().
+				WithSessionParameters(sdk.SessionParameters{
 					Autocommit: sdk.Bool(false),
-				},
-				ObjectParameters: &sdk.UserObjectParameters{
-					NetworkPolicy: sdk.Pointer(networkPolicy.ID()),
-				},
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						Comment: sdk.String("some comment"),
-					},
-				},
-			},
-		})
+				}).
+				WithObjectParameters(*sdk.NewUserObjectParametersRequest().
+					WithNetworkPolicy(networkPolicy.ID())).
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithComment("some comment"))))
 		require.NoError(t, err)
 
-		err = client.Users.Alter(ctx, user.ID(), &sdk.AlterUserOptions{
-			Unset: &sdk.UserUnset{
-				SessionParameters: &sdk.SessionParametersUnset{
+		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithSessionParameters(sdk.SessionParametersUnset{
 					Autocommit: sdk.Bool(true),
-				},
-				ObjectParameters: &sdk.UserObjectParametersUnset{
-					NetworkPolicy: sdk.Bool(true),
-				},
-				ObjectProperties: &sdk.UserObjectPropertiesUnset{
-					Comment: sdk.Bool(true),
-				},
-			},
-		})
+				}).
+				WithObjectParameters(*sdk.NewUserObjectParametersUnsetRequest().
+					WithNetworkPolicy(true)).
+				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+					WithComment(true))))
 		require.NoError(t, err)
 	})
 
@@ -2112,13 +2016,10 @@ func TestInt_Users(t *testing.T) {
 				HasType(string(sdk.UserTypeService)),
 		)
 
-		alterOpts := &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				Type: sdk.Bool(true),
-			},
-		}}
-
-		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+					WithUserType(true))))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -2144,7 +2045,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(userCleanup)
 
 		id := user.ID()
-		err := client.Users.Drop(ctx, id, &sdk.DropUserOptions{})
+		err := client.Users.Drop(ctx, sdk.NewDropUserRequest(id))
 		require.NoError(t, err)
 		_, err = client.Users.DescribeDetails(ctx, id)
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
@@ -2152,7 +2053,7 @@ func TestInt_Users(t *testing.T) {
 
 	t.Run("drop: when user does not exist", func(t *testing.T) {
 		id := NonExistingAccountObjectIdentifier
-		err := client.Users.Drop(ctx, id, &sdk.DropUserOptions{})
+		err := client.Users.Drop(ctx, sdk.NewDropUserRequest(id))
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 
@@ -2215,7 +2116,7 @@ func TestInt_Users(t *testing.T) {
 	// This test proves issue https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2817.
 	// sql: Scan error on column index 10, name "disabled": sql/driver: couldn't convert "null" into type bool
 	t.Run("issue #2817: handle show properly without OWNERSHIP and MANAGE GRANTS", func(t *testing.T) {
-		disabledUser, disabledUserCleanup := testClientHelper().User.CreateUserWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{Disable: sdk.Bool(true)}})
+		disabledUser, disabledUserCleanup := testClientHelper().User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(testClientHelper().Ids.RandomAccountObjectIdentifier()).WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithDisabled(true)))
 		t.Cleanup(disabledUserCleanup)
 
 		assertThatObject(
@@ -2236,7 +2137,7 @@ func TestInt_Users(t *testing.T) {
 	})
 
 	t.Run("issue #2817: check the describe behavior", func(t *testing.T) {
-		disabledUser, disabledUserCleanup := testClientHelper().User.CreateUserWithOptions(t, testClientHelper().Ids.RandomAccountObjectIdentifier(), &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{Disable: sdk.Bool(true)}})
+		disabledUser, disabledUserCleanup := testClientHelper().User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(testClientHelper().Ids.RandomAccountObjectIdentifier()).WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithDisabled(true)))
 		t.Cleanup(disabledUserCleanup)
 
 		fetchedDisabledUserDetails, err := client.Users.DescribeDetails(ctx, disabledUser.ID())
@@ -2257,8 +2158,8 @@ func TestInt_Users(t *testing.T) {
 
 	t.Run("issue #2817: check what fields are available when using a user with insufficient privileges to fully inspect another user", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Users.Create(ctx, id, &sdk.CreateUserOptions{
-			SessionParameters: &sdk.SessionParameters{
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).
+			WithSessionParameters(sdk.SessionParameters{
 				AbortDetachedQuery:                       sdk.Bool(true),
 				Autocommit:                               sdk.Bool(false),
 				BinaryInputFormat:                        sdk.Pointer(sdk.BinaryInputFormatUTF8),
@@ -2314,34 +2215,31 @@ func TestInt_Users(t *testing.T) {
 				UseCachedResult:                          sdk.Bool(false),
 				WeekOfYearPolicy:                         sdk.Int(1),
 				WeekStart:                                sdk.Int(1),
-			},
-			ObjectParameters: &sdk.UserObjectParameters{
-				EnableUnredactedQuerySyntaxError: sdk.Bool(true),
-				NetworkPolicy:                    sdk.Pointer(networkPolicy.ID()),
-				PreventUnloadToInternalStages:    sdk.Bool(true),
-			},
-			ObjectProperties: &sdk.UserObjectProperties{
-				Password:              sdk.String(password),
-				LoginName:             sdk.String(newValue),
-				DisplayName:           sdk.String(newValue),
-				FirstName:             sdk.String(newValue),
-				MiddleName:            sdk.String(newValue),
-				LastName:              sdk.String(newValue),
-				Email:                 sdk.String(email),
-				MustChangePassword:    sdk.Bool(true),
-				Disable:               sdk.Bool(true),
-				DaysToExpiry:          sdk.Int(5),
-				MinsToUnlock:          sdk.Int(15),
-				DefaultWarehouse:      sdk.Pointer(warehouseId),
-				DefaultNamespace:      sdk.Pointer(schemaIdObjectIdentifier),
-				DefaultRole:           sdk.Pointer(roleId),
-				DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
-				MinsToBypassMFA:       sdk.Int(30),
-				RSAPublicKey:          sdk.String(key),
-				RSAPublicKey2:         sdk.String(key2),
-				Comment:               sdk.String("some comment"),
-			},
-		})
+			}).
+			WithObjectParameters(*sdk.NewUserObjectParametersRequest().
+				WithEnableUnredactedQuerySyntaxError(true).
+				WithNetworkPolicy(networkPolicy.ID()).
+				WithPreventUnloadToInternalStages(true)).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithPassword(password).
+				WithLoginName(newValue).
+				WithDisplayName(newValue).
+				WithFirstName(newValue).
+				WithMiddleName(newValue).
+				WithLastName(newValue).
+				WithEmail(email).
+				WithMustChangePassword(true).
+				WithDisabled(true).
+				WithDaysToExpiry(5).
+				WithMinsToUnlock(15).
+				WithDefaultWarehouse(warehouseId).
+				WithDefaultNamespace(schemaIdObjectIdentifier).
+				WithDefaultRole(roleId).
+				WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithAll(true)).
+				WithMinsToBypassMfa(30).
+				WithRsaPublicKey(key).
+				WithRsaPublicKey2(key2).
+				WithComment("some comment")))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2394,7 +2292,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("login_name and display_name inconsistencies", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2405,14 +2303,11 @@ func TestInt_Users(t *testing.T) {
 		assert.Equal(t, id.Name(), userDetails.DisplayName.Value)
 
 		// we unset both values (expecting that it will result in no change)
-		unsetBoth := &sdk.AlterUserOptions{
-			Unset: &sdk.UserUnset{
-				ObjectProperties: &sdk.UserObjectPropertiesUnset{
-					LoginName:   sdk.Bool(true),
-					DisplayName: sdk.Bool(true),
-				},
-			},
-		}
+		unsetBoth := sdk.NewAlterUserRequest(id).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+					WithLoginName(true).
+					WithDisplayName(true)))
 		err = client.Users.Alter(ctx, id, unsetBoth)
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
@@ -2423,16 +2318,11 @@ func TestInt_Users(t *testing.T) {
 
 		// we set both values (expecting that it will result in no change)
 		// we use lowercase values on purpose (login_name acts differently than display_name)
-		setBoth := &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						LoginName:   sdk.String(strings.ToLower(newValue)),
-						DisplayName: sdk.String(strings.ToLower(newValue)),
-					},
-				},
-			},
-		}
+		setBoth := sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithLoginName(strings.ToLower(newValue)).
+					WithDisplayName(strings.ToLower(newValue))))
 		err = client.Users.Alter(ctx, id, setBoth)
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
@@ -2454,7 +2344,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("default login_name and display_name when the name changes", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2466,10 +2356,7 @@ func TestInt_Users(t *testing.T) {
 
 		// we rename user
 		newId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		rename := &sdk.AlterUserOptions{
-			NewName: newId,
-		}
-		err = client.Users.Alter(ctx, id, rename)
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).WithNewName(newId))
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, newId)
 		require.NoError(t, err)
@@ -2478,15 +2365,11 @@ func TestInt_Users(t *testing.T) {
 		assert.Equal(t, id.Name(), userDetails.DisplayName.Value)
 
 		// we unset both login_name and display_name
-		unsetBoth := &sdk.AlterUserOptions{
-			Unset: &sdk.UserUnset{
-				ObjectProperties: &sdk.UserObjectPropertiesUnset{
-					LoginName:   sdk.Bool(true),
-					DisplayName: sdk.Bool(true),
-				},
-			},
-		}
-		err = client.Users.Alter(ctx, newId, unsetBoth)
+		err = client.Users.Alter(ctx, newId, sdk.NewAlterUserRequest(newId).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+					WithLoginName(true).
+					WithDisplayName(true))))
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, newId)
 		require.NoError(t, err)
@@ -2499,7 +2382,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("email casing is preserved in Snowflake", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{Email: sdk.String(strings.ToUpper(email))}})
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id).WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithEmail(strings.ToUpper(email))))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2512,16 +2395,10 @@ func TestInt_Users(t *testing.T) {
 		assert.Equal(t, strings.ToUpper(email), userShowOutput.Email)
 
 		// we change it to lowercase
-		set := &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						Email: sdk.String(strings.ToLower(email)),
-					},
-				},
-			},
-		}
-		err = client.Users.Alter(ctx, id, set)
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithEmail(strings.ToLower(email)))))
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2535,21 +2412,15 @@ func TestInt_Users(t *testing.T) {
 	t.Run("days to expiry setting by hand to a negative value", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
 		// try to set manually the negative value
-		set := &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						DaysToExpiry: sdk.Int(-1),
-					},
-				},
-			},
-		}
-		err = client.Users.Alter(ctx, id, set)
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithDaysToExpiry(-1))))
 		require.NoError(t, err)
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2561,7 +2432,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("days to expiry set by hand to float value", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2573,21 +2444,15 @@ func TestInt_Users(t *testing.T) {
 	t.Run("days to expiry setting by hand to zero", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
 		// setting manually to zero
-		set := &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						DaysToExpiry: sdk.Int(0),
-					},
-				},
-			},
-		}
-		err = client.Users.Alter(ctx, id, set)
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithDaysToExpiry(0))))
 		require.NoError(t, err)
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2598,7 +2463,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("mins to unlock setting by hand to a negative value", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2608,16 +2473,10 @@ func TestInt_Users(t *testing.T) {
 		assert.Nil(t, userDetails.MinsToUnlock.Value)
 
 		// try to set manually the negative value
-		set := &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						MinsToUnlock: sdk.Int(-1),
-					},
-				},
-			},
-		}
-		err = client.Users.Alter(ctx, id, set)
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithMinsToUnlock(-1))))
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2628,7 +2487,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("mins to unlock set by hand to float value", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2640,21 +2499,15 @@ func TestInt_Users(t *testing.T) {
 	t.Run("mins to unlock setting by hand to zero", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
 		// setting manually to zero value
-		set := &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						MinsToUnlock: sdk.Int(0),
-					},
-				},
-			},
-		}
-		err = client.Users.Alter(ctx, id, set)
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithMinsToUnlock(0))))
 		require.NoError(t, err)
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2675,7 +2528,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("mins to bypass mfa setting by hand to a negative value", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2685,16 +2538,10 @@ func TestInt_Users(t *testing.T) {
 		assert.Nil(t, userDetails.MinsToBypassMfa.Value)
 
 		// try to set manually the negative value
-		set := &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						MinsToBypassMFA: sdk.Int(-1),
-					},
-				},
-			},
-		}
-		err = client.Users.Alter(ctx, id, set)
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithMinsToBypassMfa(-1))))
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2705,21 +2552,15 @@ func TestInt_Users(t *testing.T) {
 	t.Run("mins to bypass mfa setting by hand to zero", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
 		// setting manually to zero value
-		set := &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						MinsToBypassMFA: sdk.Int(0),
-					},
-				},
-			},
-		}
-		err = client.Users.Alter(ctx, id, set)
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithMinsToBypassMfa(0))))
 		require.NoError(t, err)
 		userDetails, err := client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2731,7 +2572,7 @@ func TestInt_Users(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		// create, expecting ALL as new default
-		err := client.Users.Create(ctx, id, nil)
+		err := client.Users.Create(ctx, sdk.NewCreateUserRequest(id))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
@@ -2740,15 +2581,10 @@ func TestInt_Users(t *testing.T) {
 		require.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles.Value)
 
 		// set to empty, expecting empty list
-		err = client.Users.Alter(ctx, id, &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				ObjectProperties: &sdk.UserAlterObjectProperties{
-					UserObjectProperties: sdk.UserObjectProperties{
-						DefaultSecondaryRoles: &sdk.SecondaryRoles{None: sdk.Bool(true)},
-					},
-				},
-			},
-		})
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithSet(*sdk.NewUserSetRequest().
+				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+					WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithNone(true)))))
 		require.NoError(t, err)
 
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
@@ -2756,13 +2592,10 @@ func TestInt_Users(t *testing.T) {
 		require.Equal(t, "[]", userDetails.DefaultSecondaryRoles.Value)
 
 		// unset, expecting ALL
-		err = client.Users.Alter(ctx, id, &sdk.AlterUserOptions{
-			Unset: &sdk.UserUnset{
-				ObjectProperties: &sdk.UserObjectPropertiesUnset{
-					DefaultSecondaryRoles: sdk.Bool(true),
-				},
-			},
-		})
+		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			WithUnset(*sdk.NewUserUnsetRequest().
+				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
+					WithDefaultSecondaryRoles(true))))
 		require.NoError(t, err)
 
 		userDetails, err = client.Users.DescribeDetails(ctx, id)

@@ -387,7 +387,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
-		urs, err := client.Users.Show(ctx, new(sdk.ShowUserOptions))
+		urs, err := client.Users.Show(ctx, sdk.NewShowUserRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW USERS ended with error, err = %w", err)
 		}
@@ -400,7 +400,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 
 			if !slices.Contains(protectedUsers, user.Name) && userDropCondition(user) {
 				log.Printf("[DEBUG] Dropping user %s", user.ID().FullyQualifiedName())
-				if err := client.Users.Drop(ctx, user.ID(), &sdk.DropUserOptions{IfExists: sdk.Bool(true)}); err != nil {
+				if err := client.Users.Drop(ctx, sdk.NewDropUserRequest(user.ID()).WithIfExists(true)); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping user %s ended with error, err = %w", user.ID().FullyQualifiedName(), err))
 				}
 			} else {

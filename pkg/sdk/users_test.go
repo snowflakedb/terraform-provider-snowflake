@@ -27,7 +27,7 @@ func TestUserCreate(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateUserOptions.ObjectProperties.WorkloadIdentity", "AwsType", "AzureType", "GcpType", "OidcType"))
 	})
 
 	t.Run("validation: empty workload identity", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestUserCreate(t *testing.T) {
 				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateUserOptions.ObjectProperties.WorkloadIdentity", "AwsType", "AzureType", "GcpType", "OidcType"))
 	})
 
 	t.Run("with only required attributes", func(t *testing.T) {
@@ -64,7 +64,7 @@ func TestUserCreate(t *testing.T) {
 				DefaultSecondaryRoles: &SecondaryRoles{},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("SecondaryRoles", "All", "None"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateUserOptions.ObjectProperties.DefaultSecondaryRoles", "None", "All"))
 	})
 
 	t.Run("with both options in secondary roles", func(t *testing.T) {
@@ -77,21 +77,21 @@ func TestUserCreate(t *testing.T) {
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("SecondaryRoles", "All", "None"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateUserOptions.ObjectProperties.DefaultSecondaryRoles", "None", "All"))
 	})
 
 	t.Run("with type", func(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
 			ObjectProperties: &UserObjectProperties{
-				Type: Pointer(UserTypeLegacyService),
+				UserType: Pointer(UserTypeLegacyService),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE USER %s TYPE = LEGACY_SERVICE`, id.FullyQualifiedName())
 	})
 
 	t.Run("with setting a GCP WIF", func(t *testing.T) {
-		wifType := WIFTypeGCP
+		wifType := WIFTypeGcp
 		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
 		opts := &CreateUserOptions{
 			name: id,
@@ -125,7 +125,7 @@ func TestUserCreate(t *testing.T) {
 	})
 
 	t.Run("with setting an AWS WIF", func(t *testing.T) {
-		wifType := WIFTypeAWS
+		wifType := WIFTypeAws
 		wifArn := "arn:aws:iam::123456789012:role/test-role"
 		opts := &CreateUserOptions{
 			name: id,
@@ -141,7 +141,7 @@ func TestUserCreate(t *testing.T) {
 	})
 
 	t.Run("with setting an OIDC WIF - basic", func(t *testing.T) {
-		wifType := WIFTypeOIDC
+		wifType := WIFTypeOidc
 		wifIssuer := "https://accounts.google.com"
 		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
 		opts := &CreateUserOptions{
@@ -159,7 +159,7 @@ func TestUserCreate(t *testing.T) {
 	})
 
 	t.Run("with setting an OIDC WIF - complete", func(t *testing.T) {
-		wifType := WIFTypeOIDC
+		wifType := WIFTypeOidc
 		wifIssuer := "https://accounts.google.com"
 		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
 		opts := &CreateUserOptions{
@@ -196,7 +196,6 @@ func TestUserCreate(t *testing.T) {
 		var defaultNamespaceId ObjectIdentifier = randomDatabaseObjectIdentifier()
 
 		opts := &CreateUserOptions{
-			OrReplace:   Bool(true),
 			name:        id,
 			IfNotExists: Bool(true),
 			ObjectProperties: &UserObjectProperties{
@@ -214,10 +213,10 @@ func TestUserCreate(t *testing.T) {
 				Autocommit: Bool(true),
 			},
 			With: Bool(true),
-			Tags: tags,
+			Tag:  tags,
 		}
 
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE USER IF NOT EXISTS %s PASSWORD = '%s' LOGIN_NAME = '%s' DEFAULT_WAREHOUSE = %s DEFAULT_NAMESPACE = %s DEFAULT_ROLE = %s DEFAULT_SECONDARY_ROLES = ('ALL') ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true AUTOCOMMIT = true WITH TAG (%s = 'v1')`, id.FullyQualifiedName(), password, loginName, defaultWarehouseId.FullyQualifiedName(), defaultNamespaceId.FullyQualifiedName(), defaultRoleId.FullyQualifiedName(), tagId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE USER IF NOT EXISTS %s PASSWORD = '%s' LOGIN_NAME = '%s' DEFAULT_WAREHOUSE = %s DEFAULT_NAMESPACE = %s DEFAULT_ROLE = %s DEFAULT_SECONDARY_ROLES = ('ALL') ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = true AUTOCOMMIT = true WITH TAG (%s = 'v1')`, id.FullyQualifiedName(), password, loginName, defaultWarehouseId.FullyQualifiedName(), defaultNamespaceId.FullyQualifiedName(), defaultRoleId.FullyQualifiedName(), tagId.FullyQualifiedName())
 	})
 }
 
@@ -233,7 +232,7 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions", "NewName", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTag", "UnsetTag"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions", "NewName", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: no set", func(t *testing.T) {
@@ -241,7 +240,7 @@ func TestUserAlter(t *testing.T) {
 			name: id,
 			Set:  &UserSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("UserSet", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterUserOptions.Set", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters"))
 	})
 
 	t.Run("validation: set more than one policy", func(t *testing.T) {
@@ -252,7 +251,7 @@ func TestUserAlter(t *testing.T) {
 				PasswordPolicy:       Pointer(randomSchemaObjectIdentifier()),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("UserSet", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("AlterUserOptions.Set", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
 	})
 
 	t.Run("validation: set policy with user parameters and properties", func(t *testing.T) {
@@ -283,7 +282,7 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
-				ObjectProperties: &UserAlterObjectProperties{UserObjectProperties: UserObjectProperties{Type: Pointer(UserTypeLegacyService)}},
+				ObjectProperties: &UserAlterObjectProperties{UserType: Pointer(UserTypeLegacyService)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET TYPE = LEGACY_SERVICE", id.FullyQualifiedName())
@@ -294,7 +293,7 @@ func TestUserAlter(t *testing.T) {
 			name:  id,
 			Unset: &UserUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("UserUnset", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterUserOptions.Unset", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters"))
 	})
 
 	t.Run("validation: unset property with policy", func(t *testing.T) {
@@ -313,16 +312,14 @@ func TestUserAlter(t *testing.T) {
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-							AwsType:   &UserObjectWorkloadIdentityAws{},
-							AzureType: &UserObjectWorkloadIdentityAzure{},
-						},
+					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+						AwsType:   &UserObjectWorkloadIdentityAws{},
+						AzureType: &UserObjectWorkloadIdentityAzure{},
 					},
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions.Set.ObjectProperties.WorkloadIdentity", "AwsType", "AzureType", "GcpType", "OidcType"))
 	})
 
 	t.Run("validation: empty workload identity", func(t *testing.T) {
@@ -330,20 +327,18 @@ func TestUserAlter(t *testing.T) {
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{},
-					},
+					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{},
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions.Set.ObjectProperties.WorkloadIdentity", "AwsType", "AzureType", "GcpType", "OidcType"))
 	})
 
 	t.Run("alter: unset type", func(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			Unset: &UserUnset{
-				ObjectProperties: &UserObjectPropertiesUnset{Type: Bool(true)},
+				ObjectProperties: &UserObjectPropertiesUnset{UserType: Bool(true)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET TYPE", id.FullyQualifiedName())
@@ -357,7 +352,7 @@ func TestUserAlter(t *testing.T) {
 				AuthenticationPolicy: Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("UserUnset", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("AlterUserOptions.Unset", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy"))
 	})
 
 	t.Run("two compatible unsets", func(t *testing.T) {
@@ -418,8 +413,8 @@ func TestUserAlter(t *testing.T) {
 			},
 		}
 		opts := &AlterUserOptions{
-			name:   id,
-			SetTag: tags,
+			name:    id,
+			SetTags: tags,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
@@ -427,11 +422,9 @@ func TestUserAlter(t *testing.T) {
 	t.Run("with setting properties and parameters", func(t *testing.T) {
 		password := random.Password()
 		objectProperties := UserAlterObjectProperties{
-			UserObjectProperties: UserObjectProperties{
-				Password: &password,
-				DefaultSecondaryRoles: &SecondaryRoles{
-					All: Bool(true),
-				},
+			Password: &password,
+			DefaultSecondaryRoles: &SecondaryRoles{
+				All: Bool(true),
 			},
 		}
 		opts := &AlterUserOptions{
@@ -468,9 +461,7 @@ func TestUserAlter(t *testing.T) {
 
 	t.Run("alter: set object properties", func(t *testing.T) {
 		objectProperties := UserAlterObjectProperties{
-			UserObjectProperties: UserObjectProperties{
-				FirstName: String("name"),
-			},
+			FirstName:  String("name"),
 			DisableMfa: Bool(true),
 		}
 		opts := &AlterUserOptions{
@@ -517,7 +508,7 @@ func TestUserAlter(t *testing.T) {
 		newID := randomAccountObjectIdentifier()
 		opts := &AlterUserOptions{
 			name:    id,
-			NewName: newID,
+			NewName: &newID,
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s RENAME TO %s", id.FullyQualifiedName(), newID.FullyQualifiedName())
 	})
@@ -539,8 +530,8 @@ func TestUserAlter(t *testing.T) {
 		tag1 := randomSchemaObjectIdentifier()
 		tag2 := randomSchemaObjectIdentifier()
 		opts := &AlterUserOptions{
-			name:     id,
-			UnsetTag: []ObjectIdentifier{tag1, tag2},
+			name:      id,
+			UnsetTags: []ObjectIdentifier{tag1, tag2},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET TAG %s, %s", id.FullyQualifiedName(), tag1.FullyQualifiedName(), tag2.FullyQualifiedName())
 	})
@@ -579,17 +570,15 @@ func TestUserAlter(t *testing.T) {
 	})
 
 	t.Run("with setting a GCP WIF", func(t *testing.T) {
-		wifType := WIFTypeGCP
+		wifType := WIFTypeGcp
 		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-							GcpType: &UserObjectWorkloadIdentityGcp{
-								Subject: &wifSubject,
-							},
+					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+						GcpType: &UserObjectWorkloadIdentityGcp{
+							Subject: &wifSubject,
 						},
 					},
 				},
@@ -606,12 +595,10 @@ func TestUserAlter(t *testing.T) {
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-							AzureType: &UserObjectWorkloadIdentityAzure{
-								Issuer:  &wifIssuer,
-								Subject: &wifSubject,
-							},
+					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+						AzureType: &UserObjectWorkloadIdentityAzure{
+							Issuer:  &wifIssuer,
+							Subject: &wifSubject,
 						},
 					},
 				},
@@ -621,17 +608,15 @@ func TestUserAlter(t *testing.T) {
 	})
 
 	t.Run("with setting an AWS WIF", func(t *testing.T) {
-		wifType := WIFTypeAWS
+		wifType := WIFTypeAws
 		wifArn := "arn:aws:iam::123456789012:role/test-role"
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-							AwsType: &UserObjectWorkloadIdentityAws{
-								Arn: &wifArn,
-							},
+					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+						AwsType: &UserObjectWorkloadIdentityAws{
+							Arn: &wifArn,
 						},
 					},
 				},
@@ -641,19 +626,17 @@ func TestUserAlter(t *testing.T) {
 	})
 
 	t.Run("with setting an OIDC WIF - basic", func(t *testing.T) {
-		wifType := WIFTypeOIDC
+		wifType := WIFTypeOidc
 		wifIssuer := "https://accounts.google.com"
 		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-							OidcType: &UserObjectWorkloadIdentityOidc{
-								Issuer:  &wifIssuer,
-								Subject: &wifSubject,
-							},
+					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+						OidcType: &UserObjectWorkloadIdentityOidc{
+							Issuer:  &wifIssuer,
+							Subject: &wifSubject,
 						},
 					},
 				},
@@ -663,22 +646,20 @@ func TestUserAlter(t *testing.T) {
 	})
 
 	t.Run("with setting an OIDC WIF - complete", func(t *testing.T) {
-		wifType := WIFTypeOIDC
+		wifType := WIFTypeOidc
 		wifIssuer := "https://accounts.google.com"
 		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-							OidcType: &UserObjectWorkloadIdentityOidc{
-								Issuer:  &wifIssuer,
-								Subject: &wifSubject,
-								OidcAudienceList: []StringListItemWrapper{
-									{
-										Value: "https://accounts.google.com/o/oauth2/auth",
-									},
+					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+						OidcType: &UserObjectWorkloadIdentityOidc{
+							Issuer:  &wifIssuer,
+							Subject: &wifSubject,
+							OidcAudienceList: []StringListItemWrapper{
+								{
+									Value: "https://accounts.google.com/o/oauth2/auth",
 								},
 							},
 						},
@@ -707,8 +688,8 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 			RemoveDelegatedAuthorization: &RemoveDelegatedAuthorization{
-				Role:        &role,
-				Integration: integration,
+				RemoveDelegatedAuthorizationOfRole: &role,
+				Integration:                        integration,
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s REMOVE DELEGATED AUTHORIZATION OF ROLE %s FROM SECURITY INTEGRATION %s", id.FullyQualifiedName(), role, integration)
@@ -719,13 +700,11 @@ func TestUserAlter(t *testing.T) {
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						DefaultSecondaryRoles: &SecondaryRoles{},
-					},
+					DefaultSecondaryRoles: &SecondaryRoles{},
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("SecondaryRoles", "All", "None"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions.Set.ObjectProperties.DefaultSecondaryRoles", "None", "All"))
 	})
 
 	t.Run("with empty secondary roles", func(t *testing.T) {
@@ -733,16 +712,14 @@ func TestUserAlter(t *testing.T) {
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
-					UserObjectProperties: UserObjectProperties{
-						DefaultSecondaryRoles: &SecondaryRoles{
-							All:  Bool(true),
-							None: Bool(true),
-						},
+					DefaultSecondaryRoles: &SecondaryRoles{
+						All:  Bool(true),
+						None: Bool(true),
 					},
 				},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("SecondaryRoles", "All", "None"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions.Set.ObjectProperties.DefaultSecondaryRoles", "None", "All"))
 	})
 }
 
@@ -817,12 +794,12 @@ func TestUserDescribe(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 
 	t.Run("validation: empty options", func(t *testing.T) {
-		opts := &describeUserOptions{}
+		opts := &DescribeUserOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("only name", func(t *testing.T) {
-		opts := &describeUserOptions{
+		opts := &DescribeUserOptions{
 			name: id,
 		}
 		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE USER %s", id.FullyQualifiedName())

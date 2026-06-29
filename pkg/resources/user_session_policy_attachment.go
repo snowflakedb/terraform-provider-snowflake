@@ -71,11 +71,7 @@ func CreateUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	err = client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			SessionPolicy: &sessionPolicy,
-		},
-	})
+	err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).WithSet(*sdk.NewUserSetRequest().WithSessionPolicy(sessionPolicy)))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error while creating session policy attachment, err = %w", err))
 	}
@@ -157,21 +153,11 @@ func UpdateUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		if err := client.Users.Alter(ctx, *userName, &sdk.AlterUserOptions{
-			IfExists: sdk.Bool(true),
-			Unset: &sdk.UserUnset{
-				SessionPolicy: sdk.Bool(true),
-			},
-		}); err != nil {
+		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(*userName).WithIfExists(true).WithUnset(*sdk.NewUserUnsetRequest().WithSessionPolicy(true))); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while unsetting old session policy from user %v, err = %w", userName.FullyQualifiedName(), err))
 		}
-		if err := client.Users.Alter(ctx, *userName, &sdk.AlterUserOptions{
-			IfExists: sdk.Bool(true),
-			Set: &sdk.UserSet{
-				SessionPolicy: &newSessionPolicyName,
-			},
-		}); err != nil {
+		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(*userName).WithIfExists(true).WithSet(*sdk.NewUserSetRequest().WithSessionPolicy(newSessionPolicyName))); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while setting new session policy to user %v, err = %w", userName.FullyQualifiedName(), err))
 		}
@@ -190,12 +176,7 @@ func DeleteUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	err = client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
-		IfExists: sdk.Bool(true),
-		Unset: &sdk.UserUnset{
-			SessionPolicy: sdk.Bool(true),
-		},
-	})
+	err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).WithIfExists(true).WithUnset(*sdk.NewUserUnsetRequest().WithSessionPolicy(true)))
 	if err != nil {
 		return diag.FromErr(err)
 	}
