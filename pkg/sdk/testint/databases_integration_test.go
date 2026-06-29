@@ -515,7 +515,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterExternalVolume)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterCatalog)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
-			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDDLCollation)
+			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)

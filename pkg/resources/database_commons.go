@@ -68,7 +68,7 @@ func init() {
 			ValidateDiag: validation.ToDiagFunc(validation.IntBetween(0, 90)),
 		},
 		{
-			Name:        sdk.ObjectParameterDefaultDDLCollation,
+			Name:        sdk.ObjectParameterDefaultDdlCollation,
 			Type:        schema.TypeString,
 			Description: "Specifies a default collation specification for all schemas and tables added to the database. It can be overridden on schema or table level. For more information, see [collation specification](https://docs.snowflake.com/en/sql-reference/collation#label-collation-specification).",
 		},
@@ -201,7 +201,7 @@ func handleDatabaseParametersCreate(d *schema.ResourceData, createOpts *sdk.Crea
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &createOpts.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDdlCollation),
+		handleParameterCreate(d, sdk.ObjectParameterDefaultDdlCollation, &createOpts.DefaultDdlCollation),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &createOpts.LogLevel, sdk.ToLogLevel),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &createOpts.LogEventLevel, sdk.ToLogLevel),
@@ -223,7 +223,7 @@ func handleSecondaryDatabaseParametersCreate(d *schema.ResourceData, createOpts 
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &createOpts.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDdlCollation),
+		handleParameterCreate(d, sdk.ObjectParameterDefaultDdlCollation, &createOpts.DefaultDdlCollation),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &createOpts.LogLevel, sdk.ToLogLevel),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &createOpts.LogEventLevel, sdk.ToLogLevel),
@@ -243,7 +243,7 @@ func handleSharedDatabaseParametersCreate(d *schema.ResourceData, createOpts *sd
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterExternalVolume, &createOpts.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterCatalog, &createOpts.Catalog, stringToAccountObjectIdentifier),
 		handleParameterCreate(d, sdk.ObjectParameterReplaceInvalidCharacters, &createOpts.ReplaceInvalidCharacters),
-		handleParameterCreate(d, sdk.ObjectParameterDefaultDDLCollation, &createOpts.DefaultDdlCollation),
+		handleParameterCreate(d, sdk.ObjectParameterDefaultDdlCollation, &createOpts.DefaultDdlCollation),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &createOpts.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogLevel, &createOpts.LogLevel, sdk.ToLogLevel),
 		handleParameterCreateWithMapping(d, sdk.ObjectParameterLogEventLevel, &createOpts.LogEventLevel, sdk.ToLogLevel),
@@ -265,7 +265,7 @@ func handleDatabaseParametersChanges(d *schema.ResourceData, set *sdk.DatabaseSe
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterExternalVolume, &set.ExternalVolume, &unset.ExternalVolume, stringToAccountObjectIdentifier),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterCatalog, &set.Catalog, &unset.Catalog, stringToAccountObjectIdentifier),
 		handleParameterUpdate(d, sdk.ObjectParameterReplaceInvalidCharacters, &set.ReplaceInvalidCharacters, &unset.ReplaceInvalidCharacters),
-		handleParameterUpdate(d, sdk.ObjectParameterDefaultDDLCollation, &set.DefaultDdlCollation, &unset.DefaultDdlCollation),
+		handleParameterUpdate(d, sdk.ObjectParameterDefaultDdlCollation, &set.DefaultDdlCollation, &unset.DefaultDdlCollation),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterStorageSerializationPolicy, &set.StorageSerializationPolicy, &unset.StorageSerializationPolicy, sdk.ToStorageSerializationPolicy),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogLevel, &set.LogLevel, &unset.LogLevel, sdk.ToLogLevel),
 		handleParameterUpdateWithMapping(d, sdk.ObjectParameterLogEventLevel, &set.LogEventLevel, &unset.LogEventLevel, sdk.ToLogLevel),
@@ -298,7 +298,7 @@ func handleDatabaseParameterRead(d *schema.ResourceData, databaseParameters []*s
 				return diag.FromErr(err)
 			}
 		case
-			string(sdk.ObjectParameterDefaultDDLCollation),
+			string(sdk.ObjectParameterDefaultDdlCollation),
 			string(sdk.ObjectParameterStorageSerializationPolicy),
 			string(sdk.ObjectParameterLogLevel),
 			string(sdk.ObjectParameterLogEventLevel),

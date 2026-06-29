@@ -417,11 +417,12 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 	},
 	// TODO [SNOW-1501905]: update this definition and use results in tests
 	{
-		Name:   "Schema",
-		IdType: "sdk.DatabaseObjectIdentifier",
-		Level:  sdk.ParameterTypeObject,
+		Name:                    "Schema",
+		IdType:                  "sdk.DatabaseObjectIdentifier",
+		Level:                   sdk.ParameterTypeObject,
+		ParameterConstantPrefix: "Object",
 		Parameters: []SnowflakeParameter{
-			{ParameterName: string(sdk.ObjectParameterDefaultDDLCollation), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterDefaultDdlCollation), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},
 	},
 }

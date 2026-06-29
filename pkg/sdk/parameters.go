@@ -212,7 +212,7 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 			return fmt.Errorf("DATA_RETENTION_TIME_IN_DAYS object parameter is an integer, got %v", value)
 		}
 		opts.Set.LegacyParameters.ObjectParameters.DataRetentionTimeInDays = Pointer(v)
-	case ObjectParameterDefaultDDLCollation:
+	case ObjectParameterDefaultDdlCollation:
 		opts.Set.LegacyParameters.ObjectParameters.DefaultDDLCollation = &value
 	case ObjectParameterLogLevel:
 		opts.Set.LegacyParameters.ObjectParameters.LogLevel = Pointer(LogLevel(value))
@@ -343,7 +343,7 @@ func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, paramete
 		opts.Unset.LegacyParameters.ObjectParameters.Catalog = Pointer(true)
 	case ObjectParameterDataRetentionTimeInDays:
 		opts.Unset.LegacyParameters.ObjectParameters.DataRetentionTimeInDays = Pointer(true)
-	case ObjectParameterDefaultDDLCollation:
+	case ObjectParameterDefaultDdlCollation:
 		opts.Unset.LegacyParameters.ObjectParameters.DefaultDDLCollation = Pointer(true)
 	case ObjectParameterLogLevel:
 		opts.Unset.LegacyParameters.ObjectParameters.LogLevel = Pointer(true)
@@ -784,7 +784,7 @@ type ObjectParameter string
 const (
 	// Object Parameters
 	ObjectParameterDataRetentionTimeInDays                 ObjectParameter = "DATA_RETENTION_TIME_IN_DAYS"
-	ObjectParameterDefaultDDLCollation                     ObjectParameter = "DEFAULT_DDL_COLLATION"
+	ObjectParameterDefaultDdlCollation                     ObjectParameter = "DEFAULT_DDL_COLLATION"
 	ObjectParameterLogLevel                                ObjectParameter = "LOG_LEVEL"
 	ObjectParameterLogEventLevel                           ObjectParameter = "LOG_EVENT_LEVEL"
 	ObjectParameterMaxConcurrencyLevel                     ObjectParameter = "MAX_CONCURRENCY_LEVEL"
@@ -1098,7 +1098,7 @@ var AllSchemaParameters = []ObjectParameter{
 	ObjectParameterExternalVolume,
 	ObjectParameterCatalog,
 	ObjectParameterReplaceInvalidCharacters,
-	ObjectParameterDefaultDDLCollation,
+	ObjectParameterDefaultDdlCollation,
 	ObjectParameterStorageSerializationPolicy,
 	ObjectParameterLogLevel,
 	ObjectParameterLogEventLevel,
