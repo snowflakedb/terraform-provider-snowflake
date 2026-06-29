@@ -16,6 +16,8 @@ const (
 	ComputePoolInstanceFamilyCpuX64SL    ComputePoolInstanceFamily = "CPU_X64_SL"
 	ComputePoolInstanceFamilyCpuX64L     ComputePoolInstanceFamily = "CPU_X64_L"
 	ComputePoolInstanceFamilyHighMemX64S ComputePoolInstanceFamily = "HIGHMEM_X64_S"
+	// Note: Currently the list of instance families in https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool
+	// has two entries for HIGHMEM_X64_M. They have the same name, but have different values depending on the region.
 	ComputePoolInstanceFamilyHighMemX64M ComputePoolInstanceFamily = "HIGHMEM_X64_M"
 	ComputePoolInstanceFamilyHighMemX64L ComputePoolInstanceFamily = "HIGHMEM_X64_L"
 	// Azure and GCP only
