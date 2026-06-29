@@ -14,6 +14,10 @@ func (r *CreatePostgresInstanceRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }
 
+func (r *AlterPostgresInstanceRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}
+
 // PostgresInstanceDetails represents the parsed result of DESCRIBE POSTGRES INSTANCE
 type PostgresInstanceDetails struct {
 	Name                         string
@@ -159,6 +163,37 @@ func createSafelyPolling(ctx context.Context, doCreate func() error, doShowByID 
 		}
 		time.Sleep(3 * time.Second)
 	}
+}
+
+func (v *postgresInstances) AlterSafely(ctx context.Context, req *AlterPostgresInstanceRequest) error {
+	return updateSafelyPolling(
+		ctx,
+		func() error { return v.Alter(ctx, req) },
+		func() (*PostgresInstance, error) { return v.ShowByID(ctx, req.GetName()) },
+	)
+}
+
+func updateSafelyPolling(ctx context.Context, doUpdate func() error, doShowByID func() (*PostgresInstance, error)) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("postgres instance did not reach READY state: %w", ctx.Err())
+		default:
+		}
+		instance, err := doShowByID()
+		if err != nil {
+			if strings.Contains(err.Error(), "must be complete before issuing ALTER") {
+				time.Sleep(3 * time.Second)
+				continue
+			}
+			return err
+		}
+		if instance.State == PostgresInstanceStateReady {
+			break // success
+		}
+		time.Sleep(3 * time.Second)
+	}
+	return doUpdate()
 }
 
 // NormalizePostgresSettings parses a postgres_settings JSON string into a canonical

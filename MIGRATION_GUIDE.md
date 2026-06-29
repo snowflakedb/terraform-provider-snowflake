@@ -26,6 +26,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new feature)* Postgres preview features
+
+Added new preview resources for managing Postgres instances:
+
+- **`snowflake_postgres_instance`** — for creating new Postgres instances. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance).
+- **`snowflake_postgres_fork`** — for creating a fork (point-in-time copy) of an existing Postgres instance. See reference [docs](https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-point-in-time-recovery).
+
+These features will be marked as stable features in future releases. Breaking changes are expected, even without bumping the major version. To use these features, add the corresponding values to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_postgres_instance_resource` for `snowflake_postgres_instance`
+- `snowflake_postgres_fork_resource` for `snowflake_postgres_fork`
+
 ### *(new feature/deprecation)* API integration resources reworked
 
 #### *(new feature/deprecation)* API integration resources

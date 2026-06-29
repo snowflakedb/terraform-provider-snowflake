@@ -196,6 +196,8 @@ var RepositoryLabels = []string{
 	"data_source:parameters",
 	"data_source:password_policies",
 	"data_source:pipes",
+	"data_source:postgres_fork",
+	"data_source:postgres_instance",
 	"data_source:procedures",
 	"data_source:resource_monitors",
 	"data_source:roles",

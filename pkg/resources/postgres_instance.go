@@ -90,6 +90,7 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(0, 23)),
 		Description:      "Specifies the hour (0-23 UTC) at which the maintenance window starts.",
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("maintenance_window_start"),
 	},
 	"comment": {
 		Type:             schema.TypeString,
@@ -161,8 +162,32 @@ func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		return nil, fmt.Errorf("postgres instance %s is a fork (origin: %s); use the snowflake_postgres_fork resource to import fork instances", id.FullyQualifiedName(), *pi.Origin)
 	}
 
-	if err := d.Set("name", id.Name()); err != nil {
+	details, err := client.PostgresInstances.DescribeDetails(ctx, id)
+	if err != nil {
 		return nil, err
+	}
+
+	var networkPolicy, storageIntegration *string
+	if details.NetworkPolicy != nil {
+		networkPolicy = new(details.NetworkPolicy.Name())
+	}
+	if details.StorageIntegration != nil {
+		storageIntegration = new(details.StorageIntegration.Name())
+	}
+
+	errs := errors.Join(
+		d.Set("name", pi.Name),
+		d.Set("compute_family", pi.ComputeFamily),
+		d.Set("storage_size_gb", pi.StorageSize),
+		d.Set("authentication_authority", pi.AuthenticationAuthority),
+		d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
+		d.Set("network_policy", networkPolicy),
+		d.Set("storage_integration", storageIntegration),
+		d.Set("postgres_version", details.PostgresVersion),
+		d.Set("maintenance_window_start", details.MaintenanceWindowStart),
+	)
+	if errs != nil {
+		return nil, errs
 	}
 
 	return []*schema.ResourceData{d}, nil
@@ -203,7 +228,7 @@ func CreatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	if err := util.Retry(5, 3*time.Second, func() (error, bool) {
-		_, err = client.PostgresInstances.ShowByID(ctx, id)
+		value, err := client.PostgresInstances.ShowByID(ctx, id)
 		if err != nil {
 			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
 			if errors.Is(err, sdk.ErrObjectNotFound) {
@@ -212,6 +237,7 @@ func CreatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 				return err, true
 			}
 		}
+		_ = value
 		return nil, true
 	}); err != nil {
 		return diag.FromErr(fmt.Errorf("failed to query Postgres instance (%s) after creation, err: %w", id.FullyQualifiedName(), err))
@@ -319,7 +345,7 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 			return diag.FromErr(err)
 		}
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithRenameTo(newId)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
+		if err := client.PostgresInstances.AlterSafely(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming Postgres instance: %w", err))
 		}
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
@@ -346,7 +372,7 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 
 	if !reflect.DeepEqual(pgSettingsSet, &sdk.PostgresInstanceSetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*pgSettingsSet)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
+		if err := client.PostgresInstances.AlterSafely(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting Postgres instance postgres_settings: %w", err))
 		}
 	}
@@ -369,7 +395,7 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 
 	if !reflect.DeepEqual(set, &sdk.PostgresInstanceSetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*set)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
+		if err := client.PostgresInstances.AlterSafely(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting Postgres instance properties: %w", err))
 		}
 	}
@@ -385,14 +411,14 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 
 	if !reflect.DeepEqual(highAvailabilitySet, &sdk.PostgresInstanceSetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithSet(*highAvailabilitySet)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
+		if err := client.PostgresInstances.AlterSafely(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting Postgres instance high_availability: %w", err))
 		}
 	}
 
 	if !reflect.DeepEqual(unset, &sdk.PostgresInstanceUnsetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithUnset(*unset)
-		if err := client.PostgresInstances.Alter(ctx, alterReq); err != nil {
+		if err := client.PostgresInstances.AlterSafely(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error unsetting Postgres instance properties: %w", err))
 		}
 	}
