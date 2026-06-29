@@ -324,56 +324,36 @@ const (
 	parametersDescriptionSuffix = ".0.description"
 )
 
-func ResourceParameterBoolValueSet[T ~string](parameterName T, expected bool) ResourceAssertion {
-	return ResourceParameterValueSet(parameterName, strconv.FormatBool(expected))
-}
-
-func ResourceParameterIntValueSet[T ~string](parameterName T, expected int) ResourceAssertion {
-	return ResourceParameterValueSet(parameterName, strconv.Itoa(expected))
-}
-
-func ResourceParameterStringUnderlyingValueSet[T ~string, U ~string](parameterName T, expected U) ResourceAssertion {
-	return ResourceParameterValueSet(parameterName, string(expected))
-}
-
-func ResourceParameterValueSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ResourceAssertion{fieldName: parametersPath + strings.ToLower(string(parameterName)) + parametersValueSuffix, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
-}
-
-func ResourceParameterLevelSet[T ~string](parameterName T, parameterType sdk.ParameterType) ResourceAssertion {
-	return ResourceAssertion{fieldName: parametersPath + strings.ToLower(string(parameterName)) + parametersLevelSuffix, expectedValue: string(parameterType), resourceAssertionType: resourceAssertionTypeValueSet}
-}
-
 func ResourceParameterKeySet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPath+strings.ToLower(string(parameterName))+parametersKeySuffix, expected)
+	return ValueSet(strings.ToLower(string(parameterName))+parametersKeySuffix, expected)
 }
 
 func ResourceParameterDefaultSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPath+strings.ToLower(string(parameterName))+parametersDefaultSuffix, expected)
+	return ValueSet(strings.ToLower(string(parameterName))+parametersDefaultSuffix, expected)
 }
 
 func ResourceParameterDescriptionSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPath+strings.ToLower(string(parameterName))+parametersDescriptionSuffix, expected)
+	return ValueSet(strings.ToLower(string(parameterName))+parametersDescriptionSuffix, expected)
 }
 
 func ResourceParameterDescriptionPresent[T ~string](parameterName T) ResourceAssertion {
-	return ValuePresent(parametersPath + strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
+	return ValuePresent(strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
 }
 
 func (r *ResourceAssert) ParameterValueSet(parameterName string, expected string) {
-	r.AddAssertion(ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, expected))
+	r.ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, expected)
 }
 
 func (r *ResourceAssert) ParameterBoolValueSet(parameterName string, expected bool) {
-	r.AddAssertion(ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, strconv.FormatBool(expected)))
+	r.ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, strconv.FormatBool(expected))
 }
 
 func (r *ResourceAssert) ParameterIntValueSet(parameterName string, expected int) {
-	r.AddAssertion(ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, strconv.Itoa(expected)))
+	r.ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, strconv.Itoa(expected))
 }
 
 func (r *ResourceAssert) ParameterLevelSet(parameterName string, expected sdk.ParameterType) {
-	r.AddAssertion(ValueSet(strings.ToLower(parameterName)+parametersLevelSuffix, string(expected)))
+	r.ValueSet(strings.ToLower(parameterName)+parametersLevelSuffix, string(expected))
 }
 
 // ToTerraformTestCheckFunc implements TestCheckFuncProvider to allow easier creation of new resource assertions.
