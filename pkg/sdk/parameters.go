@@ -1180,7 +1180,7 @@ const (
 	IcebergTableParameterCatalogSync                 IcebergTableParameter = "CATALOG_SYNC"
 	IcebergTableParameterDataMetricSchedule          IcebergTableParameter = "DATA_METRIC_SCHEDULE"
 	IcebergTableParameterDataRetentionTimeInDays     IcebergTableParameter = "DATA_RETENTION_TIME_IN_DAYS"
-	IcebergTableParameterDefaultDDLCollation         IcebergTableParameter = "DEFAULT_DDL_COLLATION"
+	IcebergTableParameterDefaultDdlCollation         IcebergTableParameter = "DEFAULT_DDL_COLLATION"
 	IcebergTableParameterEnableDataCompaction        IcebergTableParameter = "ENABLE_DATA_COMPACTION"
 	IcebergTableParameterEnableIcebergMergeOnRead    IcebergTableParameter = "ENABLE_ICEBERG_MERGE_ON_READ"
 	IcebergTableParameterExternalVolume              IcebergTableParameter = "EXTERNAL_VOLUME"
@@ -1200,7 +1200,7 @@ var AllIcebergTableParameters = []IcebergTableParameter{
 	IcebergTableParameterCatalogSync,
 	IcebergTableParameterDataMetricSchedule,
 	IcebergTableParameterDataRetentionTimeInDays,
-	IcebergTableParameterDefaultDDLCollation,
+	IcebergTableParameterDefaultDdlCollation,
 	IcebergTableParameterEnableDataCompaction,
 	IcebergTableParameterEnableIcebergMergeOnRead,
 	IcebergTableParameterExternalVolume,

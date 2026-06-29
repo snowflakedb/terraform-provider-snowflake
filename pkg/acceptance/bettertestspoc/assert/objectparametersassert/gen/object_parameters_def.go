@@ -151,7 +151,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.IcebergTableParameterCatalogSync), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.IcebergTableParameterDataMetricSchedule), ParameterType: "string", DefaultValue: "60 MINUTES", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.IcebergTableParameterDataRetentionTimeInDays), ParameterType: "int", DefaultValue: "1", DefaultLevel: "sdk.ParameterTypeDatabase"},
-			{ParameterName: string(sdk.IcebergTableParameterDefaultDDLCollation), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.IcebergTableParameterDefaultDdlCollation), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.IcebergTableParameterEnableDataCompaction), ParameterType: "bool", DefaultValue: "true", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.IcebergTableParameterEnableIcebergMergeOnRead), ParameterType: "bool", DefaultValue: "true", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.IcebergTableParameterExternalVolume), ParameterType: "string", DefaultValue: "SNOWFLAKE_MANAGED", DefaultLevel: "sdk.ParameterTypeTable"},
