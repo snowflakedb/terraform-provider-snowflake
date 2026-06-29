@@ -1,6 +1,6 @@
 ---
 page_title: "snowflake_notebook Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage Legacy Notebooks https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks (created with CREATE NOTEBOOK https://docs.snowflake.com/en/sql-reference/sql/create-notebook). This resource does not manage the newer Notebooks in Workspaces / Notebook Project Objects (created with CREATE NOTEBOOK PROJECT https://docs.snowflake.com/en/sql-reference/sql/create-notebook-project). For more information, check notebooks documentation https://docs.snowflake.com/en/sql-reference/sql/create-notebook.
 ---
@@ -10,8 +10,6 @@ description: |-
 -> **Note** `secrets` is currently not supported. It will be supported in the following versions of the provider which may still affect this resource.
 
 -> **Note** `warehouse` and `query_warehouse` parameters can only be set to upper-case identifiers.
-
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_notebook (Resource)
 
