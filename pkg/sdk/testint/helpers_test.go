@@ -58,30 +58,32 @@ func createDatabaseFromShare(t *testing.T) (*sdk.Database, func()) {
 func createDatabaseReplica(t *testing.T) (*sdk.Database, func()) {
 	t.Helper()
 	client := testClient(t)
-	secondaryClient := testSecondaryClient(t)
 	ctx := testContext(t)
 
-	sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
-	t.Cleanup(sharedDatabaseCleanup)
+	sharedDatabase, externalDatabaseId := createPrimaryDatabase(t)
 
-	err := secondaryClient.Databases.AlterReplication(
-		ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
-			WithEnableReplication(*sdk.NewEnableReplicationRequest().
-				WithToAccounts([]sdk.AccountIdentifier{
-					testClientHelper().Account.GetAccountIdentifier(t),
-				}).
-				WithIgnoreEditionCheck(true)),
-	)
-	require.NoError(t, err)
-
-	externalDatabaseId := sdk.NewExternalObjectIdentifier(secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(), sharedDatabase.ID())
-	err = client.Databases.CreateSecondary(ctx, sdk.NewCreateSecondaryDatabaseRequest(sharedDatabase.ID(), externalDatabaseId))
+	err := client.Databases.CreateSecondary(ctx, sdk.NewCreateSecondaryDatabaseRequest(sharedDatabase.ID(), externalDatabaseId))
 	require.NoError(t, err)
 
 	database, err := client.Databases.ShowByID(ctx, sharedDatabase.ID())
 	require.NoError(t, err)
 
 	return database, testClientHelper().Database.DropDatabaseFunc(t, sharedDatabase.ID())
+}
+
+// createPrimaryDatabase creates a database on the secondary account. It returns the created primary
+// database and its external identifier as seen from the current account.
+func createPrimaryDatabase(t *testing.T) (*sdk.Database, sdk.ExternalObjectIdentifier) {
+	t.Helper()
+
+	primaryDatabase, externalDatabaseId, primaryDatabaseCleanup := secondaryTestClientHelper().Database.CreatePrimaryDatabase(t, []sdk.AccountIdentifier{
+		testClientHelper().Account.GetAccountIdentifier(t),
+	})
+	t.Cleanup(primaryDatabaseCleanup)
+
+	testClientHelper().Database.WaitForReplicationToTakeEffect(t, externalDatabaseId)
+
+	return primaryDatabase, externalDatabaseId
 }
 
 func createApplicationPackage(t *testing.T) (*sdk.ApplicationPackage, func()) {

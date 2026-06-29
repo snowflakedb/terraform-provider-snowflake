@@ -138,7 +138,7 @@ func (c *DatabaseClient) CreatePrimaryDatabase(t *testing.T, enableReplicationTo
 	t.Helper()
 	ctx := context.Background()
 
-	primaryDatabase, primaryDatabaseCleanup := c.CreateDatabase(t)
+	primaryDatabase, _ := c.CreateDatabase(t)
 
 	err := c.client().AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(primaryDatabase.ID()).WithEnableReplication(
 		*sdk.NewEnableReplicationRequest().WithToAccounts(enableReplicationTo).WithIgnoreEditionCheck(true),
@@ -149,7 +149,45 @@ func (c *DatabaseClient) CreatePrimaryDatabase(t *testing.T, enableReplicationTo
 	require.NoError(t, err)
 
 	externalPrimaryId := sdk.NewExternalObjectIdentifier(sdk.NewAccountIdentifier(sessionDetails.OrganizationName, sessionDetails.AccountName), primaryDatabase.ID())
-	return primaryDatabase, externalPrimaryId, primaryDatabaseCleanup
+
+	// Dropping the primary database can fail until the removal of its secondary database has propagated across
+	// regions, so retry the cleanup until it succeeds.
+	// TODO(SNOW-1562172): Replace this retry-based workaround once there is a deterministic way to detect that the cross-region replication change has propagated.
+	cleanup := func() {
+		require.Eventually(t, func() bool {
+			return c.DropDatabase(t, primaryDatabase.ID()) == nil
+		}, 2*time.Minute, 5*time.Second)
+	}
+
+	return primaryDatabase, externalPrimaryId, cleanup
+}
+
+// WaitForReplicationToTakeEffect waits until replication of the given primary database has taken effect on
+// this account, polling SHOW REPLICATION DATABASES until the primary appears. Enabling replication triggers
+// cross-region operations that take a few seconds to take effect, so the primary database may not be
+// immediately usable for creating a secondary database.
+// TODO(SNOW-1562172): Replace this polling-based workaround once there is a deterministic way to detect that the cross-region replication change has propagated.
+func (c *DatabaseClient) WaitForReplicationToTakeEffect(t *testing.T, primaryDatabaseId sdk.ExternalObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+	t.Logf("Waiting for replication of primary database %s to take effect", primaryDatabaseId.FullyQualifiedName())
+	require.Eventually(t, func() bool {
+		replicationDatabases, err := c.context.client.ReplicationFunctions.ShowReplicationDatabases(ctx, &sdk.ShowReplicationDatabasesOptions{
+			WithPrimary: &primaryDatabaseId,
+		})
+		if err != nil {
+			t.Logf("Error showing replication databases, retrying: %v", err)
+			return false
+		}
+		for _, replicationDatabase := range replicationDatabases {
+			if replicationDatabase.IsPrimary && replicationDatabase.Name == primaryDatabaseId.Name() {
+				t.Logf("Replication of primary database %s has taken effect", primaryDatabaseId.FullyQualifiedName())
+				return true
+			}
+		}
+		t.Logf("Replication of primary database %s has not taken effect yet, retrying", primaryDatabaseId.FullyQualifiedName())
+		return false
+	}, 2*time.Minute, 5*time.Second)
 }
 
 func (c *DatabaseClient) UpdateDataRetentionTime(t *testing.T, id sdk.AccountObjectIdentifier, days int) {

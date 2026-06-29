@@ -259,23 +259,10 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 
 func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	client := testClient(t)
-	secondaryClient := testSecondaryClient(t)
 	ctx := testContext(t)
 
-	sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
-	t.Cleanup(sharedDatabaseCleanup)
-
-	databaseId := sharedDatabase.ID()
-
-	err := secondaryClient.Databases.AlterReplication(
-		ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
-			WithEnableReplication(*sdk.NewEnableReplicationRequest().
-				WithToAccounts([]sdk.AccountIdentifier{
-					testClientHelper().Account.GetAccountIdentifier(t),
-				}).
-				WithIgnoreEditionCheck(true)),
-	)
-	require.NoError(t, err)
+	primaryDatabase, externalDatabaseId := createPrimaryDatabase(t)
+	databaseId := primaryDatabase.ID()
 
 	externalVolume, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
@@ -283,10 +270,8 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	catalog, catalogCleanup := testClientHelper().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
 
-	externalDatabaseId := sdk.NewExternalObjectIdentifier(secondaryTestClientHelper().Account.GetAccountIdentifier(t), sharedDatabase.ID())
-
 	comment := random.Comment()
-	err = client.Databases.CreateSecondary(
+	err := client.Databases.CreateSecondary(
 		ctx, sdk.NewCreateSecondaryDatabaseRequest(databaseId, externalDatabaseId).
 			WithIfNotExists(true).
 			WithDataRetentionTimeInDays(10).
@@ -613,18 +598,7 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 		secondaryClient := testSecondaryClient(t)
 		ctx := testContext(t)
 
-		sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
-		t.Cleanup(sharedDatabaseCleanup)
-
-		err := secondaryClient.Databases.AlterReplication(
-			ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
-				WithEnableReplication(*sdk.NewEnableReplicationRequest().
-					WithToAccounts([]sdk.AccountIdentifier{
-						testClientHelper().Account.GetAccountIdentifier(t),
-					}).
-					WithIgnoreEditionCheck(true)),
-		)
-		require.NoError(t, err)
+		sharedDatabase, externalDatabaseId := createPrimaryDatabase(t)
 
 		externalVolume, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
 		t.Cleanup(externalVolumeCleanup)
@@ -632,9 +606,8 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 		catalog, catalogCleanup := testClientHelper().CatalogIntegration.Create(t)
 		t.Cleanup(catalogCleanup)
 
-		externalDatabaseId := sdk.NewExternalObjectIdentifier(secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(), sharedDatabase.ID())
 		comment := random.Comment()
-		err = client.Databases.CreateSecondary(
+		err := client.Databases.CreateSecondary(
 			ctx, sdk.NewCreateSecondaryDatabaseRequest(sharedDatabase.ID(), externalDatabaseId).
 				WithIfNotExists(true).
 				WithDataRetentionTimeInDays(1).
