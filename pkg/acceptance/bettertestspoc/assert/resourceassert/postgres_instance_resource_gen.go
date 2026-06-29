@@ -16,7 +16,7 @@ func PostgresInstanceResource(t *testing.T, name string) *PostgresInstanceResour
 	t.Helper()
 
 	return &PostgresInstanceResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPostgresInstanceResource(t *testing.T, id string) *PostgresInstance
 	t.Helper()
 
 	return &PostgresInstanceResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -62,8 +62,8 @@ func (p *PostgresInstanceResourceAssert) HasHighAvailability(expected string) *P
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStart(expected string) *PostgresInstanceResourceAssert {
-	p.StringValueSet("maintenance_window_start", expected)
+func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStart(expected int) *PostgresInstanceResourceAssert {
+	p.IntValueSet("maintenance_window_start", expected)
 	return p
 }
 
@@ -97,62 +97,62 @@ func (p *PostgresInstanceResourceAssert) HasStorageSizeGb(expected int) *Postgre
 ///////////////////////////////////
 
 func (p *PostgresInstanceResourceAssert) HasNameString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
+	p.ValueSet("name", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasAuthenticationAuthorityString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("authentication_authority", expected))
+	p.ValueSet("authentication_authority", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasCommentString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", expected))
+	p.ValueSet("comment", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasComputeFamilyString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("compute_family", expected))
+	p.ValueSet("compute_family", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasFullyQualifiedNameString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	p.ValueSet("fully_qualified_name", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasHighAvailabilityString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("high_availability", expected))
+	p.ValueSet("high_availability", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStartString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("maintenance_window_start", expected))
+	p.ValueSet("maintenance_window_start", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNetworkPolicyString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("network_policy", expected))
+	p.ValueSet("network_policy", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasPostgresSettingsString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_settings", expected))
+	p.ValueSet("postgres_settings", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasPostgresVersionString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_version", expected))
+	p.ValueSet("postgres_version", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasStorageIntegrationString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("storage_integration", expected))
+	p.ValueSet("storage_integration", expected)
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasStorageSizeGbString(expected string) *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("storage_size_gb", expected))
+	p.ValueSet("storage_size_gb", expected)
 	return p
 }
 
@@ -161,62 +161,62 @@ func (p *PostgresInstanceResourceAssert) HasStorageSizeGbString(expected string)
 ///////////////////////////////
 
 func (p *PostgresInstanceResourceAssert) HasNoName() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoAuthenticationAuthority() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("authentication_authority"))
+	p.ValueNotSet("authentication_authority")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoComment() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoComputeFamily() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("compute_family"))
+	p.ValueNotSet("compute_family")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoFullyQualifiedName() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	p.ValueNotSet("fully_qualified_name")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoHighAvailability() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("high_availability"))
+	p.ValueNotSet("high_availability")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoMaintenanceWindowStart() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("maintenance_window_start"))
+	p.ValueNotSet("maintenance_window_start")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoNetworkPolicy() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("network_policy"))
+	p.ValueNotSet("network_policy")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoPostgresSettings() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("postgres_settings"))
+	p.ValueNotSet("postgres_settings")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoPostgresVersion() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("postgres_version"))
+	p.ValueNotSet("postgres_version")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoStorageIntegration() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("storage_integration"))
+	p.ValueNotSet("storage_integration")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNoStorageSizeGb() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("storage_size_gb"))
+	p.ValueNotSet("storage_size_gb")
 	return p
 }
 
@@ -225,42 +225,42 @@ func (p *PostgresInstanceResourceAssert) HasNoStorageSizeGb() *PostgresInstanceR
 ////////////////////////////
 
 func (p *PostgresInstanceResourceAssert) HasCommentEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", ""))
+	p.ValueSet("comment", "")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasFullyQualifiedNameEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	p.ValueSet("fully_qualified_name", "")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasHighAvailabilityEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("high_availability", ""))
+	p.ValueSet("high_availability", "")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStartEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("maintenance_window_start", ""))
+	p.ValueSet("maintenance_window_start", "")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNetworkPolicyEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("network_policy", ""))
+	p.ValueSet("network_policy", "")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasPostgresSettingsEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_settings", ""))
+	p.ValueSet("postgres_settings", "")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasPostgresVersionEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_version", ""))
+	p.ValueSet("postgres_version", "")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasStorageIntegrationEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValueSet("storage_integration", ""))
+	p.ValueSet("storage_integration", "")
 	return p
 }
 
@@ -269,61 +269,61 @@ func (p *PostgresInstanceResourceAssert) HasStorageIntegrationEmpty() *PostgresI
 ///////////////////////////////
 
 func (p *PostgresInstanceResourceAssert) HasNameNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("name"))
+	p.ValuePresent("name")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasAuthenticationAuthorityNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("authentication_authority"))
+	p.ValuePresent("authentication_authority")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasCommentNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("comment"))
+	p.ValuePresent("comment")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasComputeFamilyNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("compute_family"))
+	p.ValuePresent("compute_family")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasFullyQualifiedNameNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	p.ValuePresent("fully_qualified_name")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasHighAvailabilityNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("high_availability"))
+	p.ValuePresent("high_availability")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasMaintenanceWindowStartNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("maintenance_window_start"))
+	p.ValuePresent("maintenance_window_start")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasNetworkPolicyNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("network_policy"))
+	p.ValuePresent("network_policy")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasPostgresSettingsNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("postgres_settings"))
+	p.ValuePresent("postgres_settings")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasPostgresVersionNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("postgres_version"))
+	p.ValuePresent("postgres_version")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasStorageIntegrationNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("storage_integration"))
+	p.ValuePresent("storage_integration")
 	return p
 }
 
 func (p *PostgresInstanceResourceAssert) HasStorageSizeGbNotEmpty() *PostgresInstanceResourceAssert {
-	p.AddAssertion(assert.ValuePresent("storage_size_gb"))
+	p.ValuePresent("storage_size_gb")
 	return p
 }

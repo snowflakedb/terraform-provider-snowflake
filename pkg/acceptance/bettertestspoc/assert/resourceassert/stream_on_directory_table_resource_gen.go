@@ -16,7 +16,7 @@ func StreamOnDirectoryTableResource(t *testing.T, name string) *StreamOnDirector
 	t.Helper()
 
 	return &StreamOnDirectoryTableResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStreamOnDirectoryTableResource(t *testing.T, id string) *StreamOnDi
 	t.Helper()
 
 	return &StreamOnDirectoryTableResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -82,47 +82,47 @@ func (s *StreamOnDirectoryTableResourceAssert) HasStreamType(expected string) *S
 ///////////////////////////////////
 
 func (s *StreamOnDirectoryTableResourceAssert) HasDatabaseString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
+	s.ValueSet("database", expected)
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasSchemaString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+	s.ValueSet("schema", expected)
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNameString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasCommentString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasCopyGrantsString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("copy_grants", expected))
+	s.ValueSet("copy_grants", expected)
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasFullyQualifiedNameString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasStageString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stage", expected))
+	s.ValueSet("stage", expected)
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasStaleString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stale", expected))
+	s.ValueSet("stale", expected)
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasStreamTypeString(expected string) *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stream_type", expected))
+	s.ValueSet("stream_type", expected)
 	return s
 }
 
@@ -131,47 +131,47 @@ func (s *StreamOnDirectoryTableResourceAssert) HasStreamTypeString(expected stri
 ///////////////////////////////
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoDatabase() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
+	s.ValueNotSet("database")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoSchema() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+	s.ValueNotSet("schema")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoName() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoComment() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoCopyGrants() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("copy_grants"))
+	s.ValueNotSet("copy_grants")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoFullyQualifiedName() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoStage() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("stage"))
+	s.ValueNotSet("stage")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoStale() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("stale"))
+	s.ValueNotSet("stale")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNoStreamType() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("stream_type"))
+	s.ValueNotSet("stream_type")
 	return s
 }
 
@@ -180,27 +180,27 @@ func (s *StreamOnDirectoryTableResourceAssert) HasNoStreamType() *StreamOnDirect
 ////////////////////////////
 
 func (s *StreamOnDirectoryTableResourceAssert) HasCommentEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasCopyGrantsEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("copy_grants", ""))
+	s.ValueSet("copy_grants", "")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasFullyQualifiedNameEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasStaleEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stale", ""))
+	s.ValueSet("stale", "")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasStreamTypeEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stream_type", ""))
+	s.ValueSet("stream_type", "")
 	return s
 }
 
@@ -209,46 +209,46 @@ func (s *StreamOnDirectoryTableResourceAssert) HasStreamTypeEmpty() *StreamOnDir
 ///////////////////////////////
 
 func (s *StreamOnDirectoryTableResourceAssert) HasDatabaseNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("database"))
+	s.ValuePresent("database")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasSchemaNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("schema"))
+	s.ValuePresent("schema")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasNameNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasCommentNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasCopyGrantsNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("copy_grants"))
+	s.ValuePresent("copy_grants")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasFullyQualifiedNameNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasStageNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("stage"))
+	s.ValuePresent("stage")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasStaleNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("stale"))
+	s.ValuePresent("stale")
 	return s
 }
 
 func (s *StreamOnDirectoryTableResourceAssert) HasStreamTypeNotEmpty() *StreamOnDirectoryTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("stream_type"))
+	s.ValuePresent("stream_type")
 	return s
 }

@@ -16,7 +16,7 @@ func ApiAuthenticationIntegrationWithJwtBearerResource(t *testing.T, name string
 	t.Helper()
 
 	return &ApiAuthenticationIntegrationWithJwtBearerResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiAuthenticationIntegrationWithJwtBearerResource(t *testing.T, id 
 	t.Helper()
 
 	return &ApiAuthenticationIntegrationWithJwtBearerResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -97,62 +97,62 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthTokenE
 ///////////////////////////////////
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNameString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
+	a.ValueSet("name", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasCommentString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", expected))
+	a.ValueSet("comment", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasEnabledString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("enabled", expected))
+	a.ValueSet("enabled", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasFullyQualifiedNameString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	a.ValueSet("fully_qualified_name", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAccessTokenValidityString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_access_token_validity", expected))
+	a.ValueSet("oauth_access_token_validity", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAssertionIssuerString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_assertion_issuer", expected))
+	a.ValueSet("oauth_assertion_issuer", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAuthorizationEndpointString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_authorization_endpoint", expected))
+	a.ValueSet("oauth_authorization_endpoint", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientAuthMethodString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_auth_method", expected))
+	a.ValueSet("oauth_client_auth_method", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientIdString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_id", expected))
+	a.ValueSet("oauth_client_id", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientSecretString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_secret", expected))
+	a.ValueSet("oauth_client_secret", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthRefreshTokenValidityString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_refresh_token_validity", expected))
+	a.ValueSet("oauth_refresh_token_validity", expected)
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthTokenEndpointString(expected string) *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_token_endpoint", expected))
+	a.ValueSet("oauth_token_endpoint", expected)
 	return a
 }
 
@@ -161,62 +161,62 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthTokenE
 ///////////////////////////////
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoName() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoComment() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoEnabled() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("enabled"))
+	a.ValueNotSet("enabled")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoFullyQualifiedName() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	a.ValueNotSet("fully_qualified_name")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthAccessTokenValidity() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_access_token_validity"))
+	a.ValueNotSet("oauth_access_token_validity")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthAssertionIssuer() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_assertion_issuer"))
+	a.ValueNotSet("oauth_assertion_issuer")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthAuthorizationEndpoint() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_authorization_endpoint"))
+	a.ValueNotSet("oauth_authorization_endpoint")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthClientAuthMethod() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_client_auth_method"))
+	a.ValueNotSet("oauth_client_auth_method")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthClientId() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_client_id"))
+	a.ValueNotSet("oauth_client_id")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthClientSecret() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_client_secret"))
+	a.ValueNotSet("oauth_client_secret")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthRefreshTokenValidity() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_refresh_token_validity"))
+	a.ValueNotSet("oauth_refresh_token_validity")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthTokenEndpoint() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_token_endpoint"))
+	a.ValueNotSet("oauth_token_endpoint")
 	return a
 }
 
@@ -225,37 +225,37 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNoOauthToke
 ////////////////////////////
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasCommentEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
+	a.ValueSet("comment", "")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasFullyQualifiedNameEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	a.ValueSet("fully_qualified_name", "")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAccessTokenValidityEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_access_token_validity", ""))
+	a.ValueSet("oauth_access_token_validity", "")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAuthorizationEndpointEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_authorization_endpoint", ""))
+	a.ValueSet("oauth_authorization_endpoint", "")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientAuthMethodEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_auth_method", ""))
+	a.ValueSet("oauth_client_auth_method", "")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthRefreshTokenValidityEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_refresh_token_validity", ""))
+	a.ValueSet("oauth_refresh_token_validity", "")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthTokenEndpointEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_token_endpoint", ""))
+	a.ValueSet("oauth_token_endpoint", "")
 	return a
 }
 
@@ -264,61 +264,61 @@ func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthTokenE
 ///////////////////////////////
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasNameNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
+	a.ValuePresent("name")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasCommentNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
+	a.ValuePresent("comment")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasEnabledNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("enabled"))
+	a.ValuePresent("enabled")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	a.ValuePresent("fully_qualified_name")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAccessTokenValidityNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_access_token_validity"))
+	a.ValuePresent("oauth_access_token_validity")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAssertionIssuerNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_assertion_issuer"))
+	a.ValuePresent("oauth_assertion_issuer")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthAuthorizationEndpointNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_authorization_endpoint"))
+	a.ValuePresent("oauth_authorization_endpoint")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientAuthMethodNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_auth_method"))
+	a.ValuePresent("oauth_client_auth_method")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientIdNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_id"))
+	a.ValuePresent("oauth_client_id")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthClientSecretNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_secret"))
+	a.ValuePresent("oauth_client_secret")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthRefreshTokenValidityNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_refresh_token_validity"))
+	a.ValuePresent("oauth_refresh_token_validity")
 	return a
 }
 
 func (a *ApiAuthenticationIntegrationWithJwtBearerResourceAssert) HasOauthTokenEndpointNotEmpty() *ApiAuthenticationIntegrationWithJwtBearerResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_token_endpoint"))
+	a.ValuePresent("oauth_token_endpoint")
 	return a
 }

@@ -3,7 +3,6 @@ package resourceassert
 import (
 	"strconv"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -16,40 +15,36 @@ func (e *ExternalS3CompatibleStageResourceAssert) HasDirectory(opts sdk.StageS3C
 	if opts.AutoRefresh != nil {
 		autoRefresh = strconv.FormatBool(*opts.AutoRefresh)
 	}
-	e.AddAssertion(assert.ValueSet("directory.#", "1"))
-	e.AddAssertion(assert.ValueSet("directory.0.enable", strconv.FormatBool(opts.Enable)))
-	e.AddAssertion(assert.ValueSet("directory.0.auto_refresh", autoRefresh))
-	e.AddAssertion(assert.ValueSet("directory.0.refresh_on_create", refreshOnCreate))
+	e.ValueSet("directory.#", "1")
+	e.ValueSet("directory.0.enable", strconv.FormatBool(opts.Enable))
+	e.ValueSet("directory.0.auto_refresh", autoRefresh)
+	e.ValueSet("directory.0.refresh_on_create", refreshOnCreate)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasStageTypeEnum(expected sdk.StageType) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("stage_type", string(expected)))
+	e.ValueSet("stage_type", string(expected))
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCloudEnum(expected sdk.StageCloud) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("cloud", string(expected)))
+	e.ValueSet("cloud", string(expected))
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasFileFormatFormatName(expected string) *ExternalS3CompatibleStageResourceAssert {
-	for _, a := range stageHasFileFormatFormatName(expected) {
-		e.AddAssertion(a)
-	}
+	stageApplyFileFormatFormatNameChecks(e.ResourceAssert, expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasFileFormatCsv() *ExternalS3CompatibleStageResourceAssert {
-	for _, a := range stageHasFileFormatCsv() {
-		e.AddAssertion(a)
-	}
+	stageApplyFileFormatCsvChecks(e.ResourceAssert)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCredentials(awsKeyId string, awsSecretKey string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("credentials.#", "1"))
-	e.AddAssertion(assert.ValueSet("credentials.0.aws_key_id", awsKeyId))
-	e.AddAssertion(assert.ValueSet("credentials.0.aws_secret_key", awsSecretKey))
+	e.ValueSet("credentials.#", "1")
+	e.ValueSet("credentials.0.aws_key_id", awsKeyId)
+	e.ValueSet("credentials.0.aws_secret_key", awsSecretKey)
 	return e
 }

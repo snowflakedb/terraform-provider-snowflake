@@ -16,7 +16,7 @@ func AccountSessionPolicyAttachmentResource(t *testing.T, name string) *AccountS
 	t.Helper()
 
 	return &AccountSessionPolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedAccountSessionPolicyAttachmentResource(t *testing.T, id string) *Ac
 	t.Helper()
 
 	return &AccountSessionPolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -42,7 +42,7 @@ func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyName(expe
 ///////////////////////////////////
 
 func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyNameString(expected string) *AccountSessionPolicyAttachmentResourceAssert {
-	a.AddAssertion(assert.ValueSet("session_policy_name", expected))
+	a.ValueSet("session_policy_name", expected)
 	return a
 }
 
@@ -51,7 +51,7 @@ func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyNameStrin
 ///////////////////////////////
 
 func (a *AccountSessionPolicyAttachmentResourceAssert) HasNoSessionPolicyName() *AccountSessionPolicyAttachmentResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("session_policy_name"))
+	a.ValueNotSet("session_policy_name")
 	return a
 }
 
@@ -64,6 +64,6 @@ func (a *AccountSessionPolicyAttachmentResourceAssert) HasNoSessionPolicyName() 
 ///////////////////////////////
 
 func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyNameNotEmpty() *AccountSessionPolicyAttachmentResourceAssert {
-	a.AddAssertion(assert.ValuePresent("session_policy_name"))
+	a.ValuePresent("session_policy_name")
 	return a
 }

@@ -16,7 +16,7 @@ func StorageIntegrationAwsResource(t *testing.T, name string) *StorageIntegratio
 	t.Helper()
 
 	return &StorageIntegrationAwsResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStorageIntegrationAwsResource(t *testing.T, id string) *StorageInte
 	t.Helper()
 
 	return &StorageIntegrationAwsResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -92,47 +92,47 @@ func (s *StorageIntegrationAwsResourceAssert) HasUsePrivatelinkEndpoint(expected
 ///////////////////////////////////
 
 func (s *StorageIntegrationAwsResourceAssert) HasNameString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasCommentString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasEnabledString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("enabled", expected))
+	s.ValueSet("enabled", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasFullyQualifiedNameString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageAwsExternalIdString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_external_id", expected))
+	s.ValueSet("storage_aws_external_id", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageAwsObjectAclString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_object_acl", expected))
+	s.ValueSet("storage_aws_object_acl", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageAwsRoleArnString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_role_arn", expected))
+	s.ValueSet("storage_aws_role_arn", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageProviderString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_provider", expected))
+	s.ValueSet("storage_provider", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasUsePrivatelinkEndpointString(expected string) *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("use_privatelink_endpoint", expected))
+	s.ValueSet("use_privatelink_endpoint", expected)
 	return s
 }
 
@@ -141,47 +141,47 @@ func (s *StorageIntegrationAwsResourceAssert) HasUsePrivatelinkEndpointString(ex
 ///////////////////////////////
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoName() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoComment() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoEnabled() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("enabled"))
+	s.ValueNotSet("enabled")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoFullyQualifiedName() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoStorageAwsExternalId() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_external_id"))
+	s.ValueNotSet("storage_aws_external_id")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoStorageAwsObjectAcl() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_object_acl"))
+	s.ValueNotSet("storage_aws_object_acl")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoStorageAwsRoleArn() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_role_arn"))
+	s.ValueNotSet("storage_aws_role_arn")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoStorageProvider() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_provider"))
+	s.ValueNotSet("storage_provider")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasNoUsePrivatelinkEndpoint() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("use_privatelink_endpoint"))
+	s.ValueNotSet("use_privatelink_endpoint")
 	return s
 }
 
@@ -190,32 +190,32 @@ func (s *StorageIntegrationAwsResourceAssert) HasNoUsePrivatelinkEndpoint() *Sto
 ////////////////////////////
 
 func (s *StorageIntegrationAwsResourceAssert) HasCommentEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasFullyQualifiedNameEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageAwsExternalIdEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_external_id", ""))
+	s.ValueSet("storage_aws_external_id", "")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageAwsObjectAclEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_object_acl", ""))
+	s.ValueSet("storage_aws_object_acl", "")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageBlockedLocationsEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_blocked_locations.#", "0"))
+	s.ValueSet("storage_blocked_locations.#", "0")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasUsePrivatelinkEndpointEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValueSet("use_privatelink_endpoint", ""))
+	s.ValueSet("use_privatelink_endpoint", "")
 	return s
 }
 
@@ -224,46 +224,46 @@ func (s *StorageIntegrationAwsResourceAssert) HasUsePrivatelinkEndpointEmpty() *
 ///////////////////////////////
 
 func (s *StorageIntegrationAwsResourceAssert) HasNameNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasCommentNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasEnabledNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("enabled"))
+	s.ValuePresent("enabled")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasFullyQualifiedNameNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageAwsExternalIdNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_external_id"))
+	s.ValuePresent("storage_aws_external_id")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageAwsObjectAclNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_object_acl"))
+	s.ValuePresent("storage_aws_object_acl")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageAwsRoleArnNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_role_arn"))
+	s.ValuePresent("storage_aws_role_arn")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasStorageProviderNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_provider"))
+	s.ValuePresent("storage_provider")
 	return s
 }
 
 func (s *StorageIntegrationAwsResourceAssert) HasUsePrivatelinkEndpointNotEmpty() *StorageIntegrationAwsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("use_privatelink_endpoint"))
+	s.ValuePresent("use_privatelink_endpoint")
 	return s
 }

@@ -16,7 +16,7 @@ func CatalogIntegrationAwsGlueResource(t *testing.T, name string) *CatalogIntegr
 	t.Helper()
 
 	return &CatalogIntegrationAwsGlueResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCatalogIntegrationAwsGlueResource(t *testing.T, id string) *Catalog
 	t.Helper()
 
 	return &CatalogIntegrationAwsGlueResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -87,52 +87,52 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasRefreshIntervalSeconds(expe
 ///////////////////////////////////
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNameString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("name", expected))
+	c.ValueSet("name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogNamespaceString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_namespace", expected))
+	c.ValueSet("catalog_namespace", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSourceString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_source", expected))
+	c.ValueSet("catalog_source", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCommentString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", expected))
+	c.ValueSet("comment", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasEnabledString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("enabled", expected))
+	c.ValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasFullyQualifiedNameString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	c.ValueSet("fully_qualified_name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasGlueAwsRoleArnString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("glue_aws_role_arn", expected))
+	c.ValueSet("glue_aws_role_arn", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasGlueCatalogIdString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("glue_catalog_id", expected))
+	c.ValueSet("glue_catalog_id", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasGlueRegionString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("glue_region", expected))
+	c.ValueSet("glue_region", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasRefreshIntervalSecondsString(expected string) *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("refresh_interval_seconds", expected))
+	c.ValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
@@ -141,52 +141,52 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasRefreshIntervalSecondsStrin
 ///////////////////////////////
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoName() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoCatalogNamespace() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("catalog_namespace"))
+	c.ValueNotSet("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoCatalogSource() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("catalog_source"))
+	c.ValueNotSet("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoComment() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoEnabled() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoFullyQualifiedName() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	c.ValueNotSet("fully_qualified_name")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoGlueAwsRoleArn() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("glue_aws_role_arn"))
+	c.ValueNotSet("glue_aws_role_arn")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoGlueCatalogId() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("glue_catalog_id"))
+	c.ValueNotSet("glue_catalog_id")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoGlueRegion() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("glue_region"))
+	c.ValueNotSet("glue_region")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoRefreshIntervalSeconds() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("refresh_interval_seconds"))
+	c.ValueNotSet("refresh_interval_seconds")
 	return c
 }
 
@@ -195,32 +195,32 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasNoRefreshIntervalSeconds() 
 ////////////////////////////
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogNamespaceEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_namespace", ""))
+	c.ValueSet("catalog_namespace", "")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSourceEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_source", ""))
+	c.ValueSet("catalog_source", "")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCommentEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", ""))
+	c.ValueSet("comment", "")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasFullyQualifiedNameEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	c.ValueSet("fully_qualified_name", "")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasGlueRegionEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("glue_region", ""))
+	c.ValueSet("glue_region", "")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasRefreshIntervalSecondsEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValueSet("refresh_interval_seconds", ""))
+	c.ValueSet("refresh_interval_seconds", "")
 	return c
 }
 
@@ -229,51 +229,51 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasRefreshIntervalSecondsEmpty
 ///////////////////////////////
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasNameNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("name"))
+	c.ValuePresent("name")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogNamespaceNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("catalog_namespace"))
+	c.ValuePresent("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSourceNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("catalog_source"))
+	c.ValuePresent("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCommentNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("comment"))
+	c.ValuePresent("comment")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasEnabledNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("enabled"))
+	c.ValuePresent("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasFullyQualifiedNameNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	c.ValuePresent("fully_qualified_name")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasGlueAwsRoleArnNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("glue_aws_role_arn"))
+	c.ValuePresent("glue_aws_role_arn")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasGlueCatalogIdNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("glue_catalog_id"))
+	c.ValuePresent("glue_catalog_id")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasGlueRegionNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("glue_region"))
+	c.ValuePresent("glue_region")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasRefreshIntervalSecondsNotEmpty() *CatalogIntegrationAwsGlueResourceAssert {
-	c.AddAssertion(assert.ValuePresent("refresh_interval_seconds"))
+	c.ValuePresent("refresh_interval_seconds")
 	return c
 }

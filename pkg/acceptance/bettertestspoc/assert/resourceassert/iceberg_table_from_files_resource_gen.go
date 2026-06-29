@@ -16,7 +16,7 @@ func IcebergTableFromFilesResource(t *testing.T, name string) *IcebergTableFromF
 	t.Helper()
 
 	return &IcebergTableFromFilesResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedIcebergTableFromFilesResource(t *testing.T, id string) *IcebergTabl
 	t.Helper()
 
 	return &IcebergTableFromFilesResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -82,47 +82,47 @@ func (i *IcebergTableFromFilesResourceAssert) HasReplaceInvalidCharacters(expect
 ///////////////////////////////////
 
 func (i *IcebergTableFromFilesResourceAssert) HasDatabaseString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("database", expected))
+	i.ValueSet("database", expected)
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasSchemaString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("schema", expected))
+	i.ValueSet("schema", expected)
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNameString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("name", expected))
+	i.ValueSet("name", expected)
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasCatalogString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("catalog", expected))
+	i.ValueSet("catalog", expected)
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasCommentString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("comment", expected))
+	i.ValueSet("comment", expected)
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasExternalVolumeString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("external_volume", expected))
+	i.ValueSet("external_volume", expected)
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasFullyQualifiedNameString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	i.ValueSet("fully_qualified_name", expected)
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasMetadataFilePathString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("metadata_file_path", expected))
+	i.ValueSet("metadata_file_path", expected)
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasReplaceInvalidCharactersString(expected string) *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("replace_invalid_characters", expected))
+	i.ValueSet("replace_invalid_characters", expected)
 	return i
 }
 
@@ -131,47 +131,47 @@ func (i *IcebergTableFromFilesResourceAssert) HasReplaceInvalidCharactersString(
 ///////////////////////////////
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoDatabase() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("database"))
+	i.ValueNotSet("database")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoSchema() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("schema"))
+	i.ValueNotSet("schema")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoName() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("name"))
+	i.ValueNotSet("name")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoCatalog() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("catalog"))
+	i.ValueNotSet("catalog")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoComment() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("comment"))
+	i.ValueNotSet("comment")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoExternalVolume() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("external_volume"))
+	i.ValueNotSet("external_volume")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoFullyQualifiedName() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	i.ValueNotSet("fully_qualified_name")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoMetadataFilePath() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("metadata_file_path"))
+	i.ValueNotSet("metadata_file_path")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNoReplaceInvalidCharacters() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("replace_invalid_characters"))
+	i.ValueNotSet("replace_invalid_characters")
 	return i
 }
 
@@ -180,27 +180,27 @@ func (i *IcebergTableFromFilesResourceAssert) HasNoReplaceInvalidCharacters() *I
 ////////////////////////////
 
 func (i *IcebergTableFromFilesResourceAssert) HasCatalogEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("catalog", ""))
+	i.ValueSet("catalog", "")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasCommentEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("comment", ""))
+	i.ValueSet("comment", "")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasExternalVolumeEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("external_volume", ""))
+	i.ValueSet("external_volume", "")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasFullyQualifiedNameEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	i.ValueSet("fully_qualified_name", "")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasReplaceInvalidCharactersEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("replace_invalid_characters", ""))
+	i.ValueSet("replace_invalid_characters", "")
 	return i
 }
 
@@ -209,46 +209,46 @@ func (i *IcebergTableFromFilesResourceAssert) HasReplaceInvalidCharactersEmpty()
 ///////////////////////////////
 
 func (i *IcebergTableFromFilesResourceAssert) HasDatabaseNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("database"))
+	i.ValuePresent("database")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasSchemaNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("schema"))
+	i.ValuePresent("schema")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasNameNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("name"))
+	i.ValuePresent("name")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasCatalogNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("catalog"))
+	i.ValuePresent("catalog")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasCommentNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("comment"))
+	i.ValuePresent("comment")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasExternalVolumeNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("external_volume"))
+	i.ValuePresent("external_volume")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasFullyQualifiedNameNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	i.ValuePresent("fully_qualified_name")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasMetadataFilePathNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("metadata_file_path"))
+	i.ValuePresent("metadata_file_path")
 	return i
 }
 
 func (i *IcebergTableFromFilesResourceAssert) HasReplaceInvalidCharactersNotEmpty() *IcebergTableFromFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("replace_invalid_characters"))
+	i.ValuePresent("replace_invalid_characters")
 	return i
 }

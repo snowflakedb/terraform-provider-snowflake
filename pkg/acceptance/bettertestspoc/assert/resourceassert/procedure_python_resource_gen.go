@@ -16,7 +16,7 @@ func ProcedurePythonResource(t *testing.T, name string) *ProcedurePythonResource
 	t.Helper()
 
 	return &ProcedurePythonResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedProcedurePythonResource(t *testing.T, id string) *ProcedurePythonRe
 	t.Helper()
 
 	return &ProcedurePythonResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -148,97 +148,97 @@ func (p *ProcedurePythonResourceAssert) HasTraceLevel(expected string) *Procedur
 ///////////////////////////////////
 
 func (p *ProcedurePythonResourceAssert) HasDatabaseString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
+	p.ValueSet("database", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasSchemaString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
+	p.ValueSet("schema", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNameString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
+	p.ValueSet("name", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasCommentString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", expected))
+	p.ValueSet("comment", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasEnableConsoleOutputString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("enable_console_output", expected))
+	p.ValueSet("enable_console_output", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasExecuteAsString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("execute_as", expected))
+	p.ValueSet("execute_as", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasFullyQualifiedNameString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	p.ValueSet("fully_qualified_name", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasHandlerString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("handler", expected))
+	p.ValueSet("handler", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasIsSecureString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("is_secure", expected))
+	p.ValueSet("is_secure", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasLogEventLevelString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_event_level", expected))
+	p.ValueSet("log_event_level", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasLogLevelString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_level", expected))
+	p.ValueSet("log_level", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasMetricLevelString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("metric_level", expected))
+	p.ValueSet("metric_level", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNullInputBehaviorString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
+	p.ValueSet("null_input_behavior", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasProcedureDefinitionString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("procedure_definition", expected))
+	p.ValueSet("procedure_definition", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasProcedureLanguageString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("procedure_language", expected))
+	p.ValueSet("procedure_language", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasReturnTypeString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("return_type", expected))
+	p.ValueSet("return_type", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasRuntimeVersionString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("runtime_version", expected))
+	p.ValueSet("runtime_version", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasSnowparkPackageString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("snowpark_package", expected))
+	p.ValueSet("snowpark_package", expected)
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasTraceLevelString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("trace_level", expected))
+	p.ValueSet("trace_level", expected)
 	return p
 }
 
@@ -247,97 +247,97 @@ func (p *ProcedurePythonResourceAssert) HasTraceLevelString(expected string) *Pr
 ///////////////////////////////
 
 func (p *ProcedurePythonResourceAssert) HasNoDatabase() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
+	p.ValueNotSet("database")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoSchema() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
+	p.ValueNotSet("schema")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoName() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoComment() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoEnableConsoleOutput() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("enable_console_output"))
+	p.ValueNotSet("enable_console_output")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoExecuteAs() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("execute_as"))
+	p.ValueNotSet("execute_as")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoFullyQualifiedName() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	p.ValueNotSet("fully_qualified_name")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoHandler() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("handler"))
+	p.ValueNotSet("handler")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoIsSecure() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("is_secure"))
+	p.ValueNotSet("is_secure")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoLogEventLevel() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("log_event_level"))
+	p.ValueNotSet("log_event_level")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoLogLevel() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("log_level"))
+	p.ValueNotSet("log_level")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoMetricLevel() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("metric_level"))
+	p.ValueNotSet("metric_level")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoNullInputBehavior() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
+	p.ValueNotSet("null_input_behavior")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoProcedureDefinition() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("procedure_definition"))
+	p.ValueNotSet("procedure_definition")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoProcedureLanguage() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("procedure_language"))
+	p.ValueNotSet("procedure_language")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoReturnType() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("return_type"))
+	p.ValueNotSet("return_type")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoRuntimeVersion() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("runtime_version"))
+	p.ValueNotSet("runtime_version")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoSnowparkPackage() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("snowpark_package"))
+	p.ValueNotSet("snowpark_package")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNoTraceLevel() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("trace_level"))
+	p.ValueNotSet("trace_level")
 	return p
 }
 
@@ -346,87 +346,87 @@ func (p *ProcedurePythonResourceAssert) HasNoTraceLevel() *ProcedurePythonResour
 ////////////////////////////
 
 func (p *ProcedurePythonResourceAssert) HasArgumentsEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	p.ValueSet("arguments.#", "0")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasCommentEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", ""))
+	p.ValueSet("comment", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasEnableConsoleOutputEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	p.ValueSet("enable_console_output", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasExecuteAsEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("execute_as", ""))
+	p.ValueSet("execute_as", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasExternalAccessIntegrationsEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	p.ValueSet("external_access_integrations.#", "0")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasFullyQualifiedNameEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	p.ValueSet("fully_qualified_name", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasImportsEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("imports.#", "0"))
+	p.ValueSet("imports.#", "0")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasIsSecureEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("is_secure", ""))
+	p.ValueSet("is_secure", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasLogEventLevelEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_event_level", ""))
+	p.ValueSet("log_event_level", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasLogLevelEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_level", ""))
+	p.ValueSet("log_level", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasMetricLevelEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("metric_level", ""))
+	p.ValueSet("metric_level", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNullInputBehaviorEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("null_input_behavior", ""))
+	p.ValueSet("null_input_behavior", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasPackagesEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("packages.#", "0"))
+	p.ValueSet("packages.#", "0")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasProcedureDefinitionEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("procedure_definition", ""))
+	p.ValueSet("procedure_definition", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasProcedureLanguageEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("procedure_language", ""))
+	p.ValueSet("procedure_language", "")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasSecretsEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("secrets.#", "0"))
+	p.ValueSet("secrets.#", "0")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasTraceLevelEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("trace_level", ""))
+	p.ValueSet("trace_level", "")
 	return p
 }
 
@@ -435,96 +435,96 @@ func (p *ProcedurePythonResourceAssert) HasTraceLevelEmpty() *ProcedurePythonRes
 ///////////////////////////////
 
 func (p *ProcedurePythonResourceAssert) HasDatabaseNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("database"))
+	p.ValuePresent("database")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasSchemaNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("schema"))
+	p.ValuePresent("schema")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNameNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("name"))
+	p.ValuePresent("name")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasCommentNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("comment"))
+	p.ValuePresent("comment")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasEnableConsoleOutputNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("enable_console_output"))
+	p.ValuePresent("enable_console_output")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasExecuteAsNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("execute_as"))
+	p.ValuePresent("execute_as")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasFullyQualifiedNameNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	p.ValuePresent("fully_qualified_name")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasHandlerNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("handler"))
+	p.ValuePresent("handler")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasIsSecureNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("is_secure"))
+	p.ValuePresent("is_secure")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasLogEventLevelNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("log_event_level"))
+	p.ValuePresent("log_event_level")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasLogLevelNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("log_level"))
+	p.ValuePresent("log_level")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasMetricLevelNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("metric_level"))
+	p.ValuePresent("metric_level")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasNullInputBehaviorNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("null_input_behavior"))
+	p.ValuePresent("null_input_behavior")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasProcedureDefinitionNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("procedure_definition"))
+	p.ValuePresent("procedure_definition")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasProcedureLanguageNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("procedure_language"))
+	p.ValuePresent("procedure_language")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasReturnTypeNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("return_type"))
+	p.ValuePresent("return_type")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasRuntimeVersionNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("runtime_version"))
+	p.ValuePresent("runtime_version")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasSnowparkPackageNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("snowpark_package"))
+	p.ValuePresent("snowpark_package")
 	return p
 }
 
 func (p *ProcedurePythonResourceAssert) HasTraceLevelNotEmpty() *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValuePresent("trace_level"))
+	p.ValuePresent("trace_level")
 	return p
 }
