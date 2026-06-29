@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -122,10 +121,10 @@ func Notebook() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.NotebookResource), TrackingCreateWrapper(resources.Notebook, CreateNotebook)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.NotebookResource), TrackingReadWrapper(resources.Notebook, GetReadNotebookFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.NotebookResource), TrackingUpdateWrapper(resources.Notebook, UpdateNotebook)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.NotebookResource), TrackingDeleteWrapper(resources.Notebook, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.Notebook, CreateNotebook),
+		ReadContext:   TrackingReadWrapper(resources.Notebook, GetReadNotebookFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.Notebook, UpdateNotebook),
+		DeleteContext: TrackingDeleteWrapper(resources.Notebook, deleteFunc),
 		Description:   "Resource used to manage [Legacy Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks) (created with [CREATE NOTEBOOK](https://docs.snowflake.com/en/sql-reference/sql/create-notebook)). This resource does not manage the newer Notebooks in Workspaces / Notebook Project Objects (created with [CREATE NOTEBOOK PROJECT](https://docs.snowflake.com/en/sql-reference/sql/create-notebook-project)). For more information, check [notebooks documentation](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Notebook, customdiff.All(

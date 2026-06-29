@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -33,10 +32,10 @@ var userSessionPolicyAttachmentSchema = map[string]*schema.Schema{
 func UserSessionPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Specifies the session policy to use for a certain user.",
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.UserSessionPolicyAttachmentResource), TrackingCreateWrapper(resources.UserSessionPolicyAttachment, CreateUserSessionPolicyAttachment)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.UserSessionPolicyAttachmentResource), TrackingReadWrapper(resources.UserSessionPolicyAttachment, ReadUserSessionPolicyAttachment)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.UserSessionPolicyAttachmentResource), TrackingUpdateWrapper(resources.UserSessionPolicyAttachment, UpdateUserSessionPolicyAttachment)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.UserSessionPolicyAttachmentResource), TrackingDeleteWrapper(resources.UserSessionPolicyAttachment, DeleteUserSessionPolicyAttachment)),
+		CreateContext: TrackingCreateWrapper(resources.UserSessionPolicyAttachment, CreateUserSessionPolicyAttachment),
+		ReadContext:   TrackingReadWrapper(resources.UserSessionPolicyAttachment, ReadUserSessionPolicyAttachment),
+		UpdateContext: TrackingUpdateWrapper(resources.UserSessionPolicyAttachment, UpdateUserSessionPolicyAttachment),
+		DeleteContext: TrackingDeleteWrapper(resources.UserSessionPolicyAttachment, DeleteUserSessionPolicyAttachment),
 
 		Schema: userSessionPolicyAttachmentSchema,
 		Importer: &schema.ResourceImporter{

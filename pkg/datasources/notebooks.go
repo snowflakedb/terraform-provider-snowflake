@@ -5,7 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -52,7 +51,7 @@ var notebooksSchema = map[string]*schema.Schema{
 
 func Notebooks() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.NotebooksDatasource), TrackingReadWrapper(datasources.Notebooks, ReadNotebooks)),
+		ReadContext: TrackingReadWrapper(datasources.Notebooks, ReadNotebooks),
 		Schema:      notebooksSchema,
 		Description: "Data source used to get details of filtered notebooks. This data source returns [Legacy Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks), not the newer Notebooks in Workspaces / Notebook Project Objects. Filtering is aligned with the current possibilities for [SHOW NOTEBOOKS](https://docs.snowflake.com/en/sql-reference/sql/show-notebooks) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `notebooks`.",
 	}
