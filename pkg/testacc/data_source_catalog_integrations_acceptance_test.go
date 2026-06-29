@@ -142,7 +142,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(glueNoDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueNoDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueNoDescribe.DatasourceReference()).
 						HasName(glueId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
@@ -157,7 +157,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(glueWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueWithDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueWithDescribe.DatasourceReference()).
 						HasName(glueId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
@@ -183,7 +183,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(objectStorageWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, objectStorageWithDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, objectStorageWithDescribe.DatasourceReference()).
 						HasName(objectStorageId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
@@ -204,7 +204,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(openCatalogWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, openCatalogWithDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, openCatalogWithDescribe.DatasourceReference()).
 						HasName(openCatalogId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
@@ -235,7 +235,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(icebergBearerWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, icebergBearerWithDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, icebergBearerWithDescribe.DatasourceReference()).
 						HasName(icebergId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
@@ -292,13 +292,13 @@ func TestAcc_CatalogIntegrations_MultipleTypes(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(ref, "catalog_integrations.#", "2")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, ref, 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, ref).
 						// Don't check name, as the order of elements in SHOW output is unpredictable
 						HasType("CATALOG").
 						HasCategory("CATALOG").
 						HasEnabled(false).
 						HasComment(""),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, ref, 1).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutputOnIdx(t, ref, 1).
 						// Don't check name, as the order of elements in SHOW output is unpredictable
 						HasType("CATALOG").
 						HasCategory("CATALOG").
