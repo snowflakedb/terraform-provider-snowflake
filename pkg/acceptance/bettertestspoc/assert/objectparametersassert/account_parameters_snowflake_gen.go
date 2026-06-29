@@ -74,7 +74,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowBindValuesAccess, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowClientMfaCaching, sdk.ParameterTypeSnowflakeDefault). // modified manually
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowIdToken, sdk.ParameterTypeSnowflakeDefault). // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowIdToken, sdk.ParameterTypeSnowflakeDefault).          // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientEnableLogInfoStatementParameters, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientMetadataRequestUseConnectionCtx, sdk.ParameterTypeSnowflakeDefault).
