@@ -18,9 +18,8 @@ func AccountShowOutput(t *testing.T, name string) *AccountShowOutputAssert {
 	t.Helper()
 
 	accountAssert := AccountShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	accountAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &accountAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedAccountShowOutput(t *testing.T, id string) *AccountShowOutputAssert
 	t.Helper()
 
 	accountAssert := AccountShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	accountAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &accountAssert
+}
+
+func AccountsDatasourceShowOutput(t *testing.T, name string) *AccountShowOutputAssert {
+	t.Helper()
+
+	return AccountsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func AccountsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *AccountShowOutputAssert {
+	t.Helper()
+
+	accountAssert := AccountShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "accounts", idx),
+	}
 	return &accountAssert
 }
 
@@ -39,147 +52,147 @@ func ImportedAccountShowOutput(t *testing.T, id string) *AccountShowOutputAssert
 ////////////////////////////
 
 func (a *AccountShowOutputAssert) HasOrganizationName(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("organization_name", expected))
+	a.StringValueSet("organization_name", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasAccountName(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("account_name", expected))
+	a.StringValueSet("account_name", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasSnowflakeRegion(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("snowflake_region", expected))
+	a.StringValueSet("snowflake_region", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasRegionGroup(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("region_group", expected))
+	a.StringValueSet("region_group", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasEdition(expected sdk.AccountEdition) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("edition", expected))
+	a.StringValueSet("edition", string(expected))
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasAccountURL(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("account_url", expected))
+	a.StringValueSet("account_url", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasCreatedOn(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	a.StringValueSet("created_on", expected.String())
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasComment(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	a.StringValueSet("comment", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasAccountLocator(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("account_locator", expected))
+	a.StringValueSet("account_locator", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasAccountLocatorUrl(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("account_locator_url", expected))
+	a.StringValueSet("account_locator_url", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasManagedAccounts(expected int) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputIntValueSet("managed_accounts", expected))
+	a.IntValueSet("managed_accounts", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasConsumptionBillingEntityName(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("consumption_billing_entity_name", expected))
+	a.StringValueSet("consumption_billing_entity_name", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasMarketplaceConsumerBillingEntityName(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("marketplace_consumer_billing_entity_name", expected))
+	a.StringValueSet("marketplace_consumer_billing_entity_name", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasMarketplaceProviderBillingEntityName(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("marketplace_provider_billing_entity_name", expected))
+	a.StringValueSet("marketplace_provider_billing_entity_name", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasOldAccountURL(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("old_account_url", expected))
+	a.StringValueSet("old_account_url", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasIsOrgAdmin(expected bool) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_org_admin", expected))
+	a.BoolValueSet("is_org_admin", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasAccountOldUrlSavedOn(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("account_old_url_saved_on", expected.String()))
+	a.StringValueSet("account_old_url_saved_on", expected.String())
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasAccountOldUrlLastUsed(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("account_old_url_last_used", expected.String()))
+	a.StringValueSet("account_old_url_last_used", expected.String())
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasOrganizationOldUrl(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("organization_old_url", expected))
+	a.StringValueSet("organization_old_url", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasOrganizationOldUrlSavedOn(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("organization_old_url_saved_on", expected.String()))
+	a.StringValueSet("organization_old_url_saved_on", expected.String())
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasOrganizationOldUrlLastUsed(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("organization_old_url_last_used", expected.String()))
+	a.StringValueSet("organization_old_url_last_used", expected.String())
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasIsEventsAccount(expected bool) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_events_account", expected))
+	a.BoolValueSet("is_events_account", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasIsOrganizationAccount(expected bool) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_organization_account", expected))
+	a.BoolValueSet("is_organization_account", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasDroppedOn(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("dropped_on", expected.String()))
+	a.StringValueSet("dropped_on", expected.String())
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasScheduledDeletionTime(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("scheduled_deletion_time", expected.String()))
+	a.StringValueSet("scheduled_deletion_time", expected.String())
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasRestoredOn(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("restored_on", expected.String()))
+	a.StringValueSet("restored_on", expected.String())
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasMovedToOrganization(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("moved_to_organization", expected))
+	a.StringValueSet("moved_to_organization", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasMovedOn(expected string) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("moved_on", expected))
+	a.StringValueSet("moved_on", expected)
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasOrganizationUrlExpirationOn(expected time.Time) *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("organization_url_expiration_on", expected.String()))
+	a.StringValueSet("organization_url_expiration_on", expected.String())
 	return a
 }
 
@@ -188,146 +201,146 @@ func (a *AccountShowOutputAssert) HasOrganizationUrlExpirationOn(expected time.T
 ///////////////////////////////
 
 func (a *AccountShowOutputAssert) HasNoOrganizationName() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_name"))
+	a.ValueNotSet("organization_name")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoAccountName() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("account_name"))
+	a.ValueNotSet("account_name")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoSnowflakeRegion() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("snowflake_region"))
+	a.ValueNotSet("snowflake_region")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoRegionGroup() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("region_group"))
+	a.ValueNotSet("region_group")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoEdition() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("edition"))
+	a.ValueNotSet("edition")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoAccountURL() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("account_url"))
+	a.ValueNotSet("account_url")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoCreatedOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	a.ValueNotSet("created_on")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoComment() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoAccountLocator() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("account_locator"))
+	a.ValueNotSet("account_locator")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoAccountLocatorUrl() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("account_locator_url"))
+	a.ValueNotSet("account_locator_url")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoManagedAccounts() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputIntValueNotSet("managed_accounts"))
+	a.ValueNotSet("managed_accounts")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoConsumptionBillingEntityName() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("consumption_billing_entity_name"))
+	a.ValueNotSet("consumption_billing_entity_name")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoMarketplaceConsumerBillingEntityName() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("marketplace_consumer_billing_entity_name"))
+	a.ValueNotSet("marketplace_consumer_billing_entity_name")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoMarketplaceProviderBillingEntityName() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("marketplace_provider_billing_entity_name"))
+	a.ValueNotSet("marketplace_provider_billing_entity_name")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoOldAccountURL() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("old_account_url"))
+	a.ValueNotSet("old_account_url")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoIsOrgAdmin() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_org_admin"))
+	a.ValueNotSet("is_org_admin")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoAccountOldUrlSavedOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("account_old_url_saved_on"))
+	a.ValueNotSet("account_old_url_saved_on")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoAccountOldUrlLastUsed() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("account_old_url_last_used"))
+	a.ValueNotSet("account_old_url_last_used")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoOrganizationOldUrl() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_old_url"))
+	a.ValueNotSet("organization_old_url")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoOrganizationOldUrlSavedOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_old_url_saved_on"))
+	a.ValueNotSet("organization_old_url_saved_on")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoOrganizationOldUrlLastUsed() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_old_url_last_used"))
+	a.ValueNotSet("organization_old_url_last_used")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoIsEventsAccount() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_events_account"))
+	a.ValueNotSet("is_events_account")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoIsOrganizationAccount() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_organization_account"))
+	a.ValueNotSet("is_organization_account")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoDroppedOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("dropped_on"))
+	a.ValueNotSet("dropped_on")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoScheduledDeletionTime() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("scheduled_deletion_time"))
+	a.ValueNotSet("scheduled_deletion_time")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoRestoredOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("restored_on"))
+	a.ValueNotSet("restored_on")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoMovedToOrganization() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("moved_to_organization"))
+	a.ValueNotSet("moved_to_organization")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoMovedOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("moved_on"))
+	a.ValueNotSet("moved_on")
 	return a
 }
 
 func (a *AccountShowOutputAssert) HasNoOrganizationUrlExpirationOn() *AccountShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_url_expiration_on"))
+	a.ValueNotSet("organization_url_expiration_on")
 	return a
 }
