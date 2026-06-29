@@ -1321,6 +1321,9 @@ type AccountParameters struct {
 	ClientSessionKeepAlive                                   *bool                       `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE"`
 	ClientSessionKeepAliveHeartbeatFrequency                 *int                        `ddl:"parameter" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
 	ClientTimestampTypeMapping                               *ClientTimestampTypeMapping `ddl:"parameter,double_quotes" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	CortexCodeCliDailyEstCreditLimitPerUser                  *int                        `ddl:"parameter" sql:"CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER"`
+	CortexCodeDesktopDailyEstCreditLimitPerUser              *int                        `ddl:"parameter" sql:"CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER"`
+	CortexCodeSnowsightDailyEstCreditLimitPerUser            *int                        `ddl:"parameter" sql:"CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER"`
 	CortexEnabledCrossRegion                                 *string                     `ddl:"parameter,double_quotes" sql:"CORTEX_ENABLED_CROSS_REGION"`
 	CortexModelsAllowlist                                    *string                     `ddl:"parameter,double_quotes" sql:"CORTEX_MODELS_ALLOWLIST"`
 	CsvTimestampFormat                                       *string                     `ddl:"parameter,double_quotes" sql:"CSV_TIMESTAMP_FORMAT"`
@@ -1508,6 +1511,9 @@ type AccountParametersUnset struct {
 	ClientSessionKeepAlive                                   *bool `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE"`
 	ClientSessionKeepAliveHeartbeatFrequency                 *bool `ddl:"keyword" sql:"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"`
 	ClientTimestampTypeMapping                               *bool `ddl:"keyword" sql:"CLIENT_TIMESTAMP_TYPE_MAPPING"`
+	CortexCodeCliDailyEstCreditLimitPerUser                  *bool `ddl:"keyword" sql:"CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER"`
+	CortexCodeDesktopDailyEstCreditLimitPerUser              *bool `ddl:"keyword" sql:"CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER"`
+	CortexCodeSnowsightDailyEstCreditLimitPerUser            *bool `ddl:"keyword" sql:"CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER"`
 	CortexEnabledCrossRegion                                 *bool `ddl:"keyword" sql:"CORTEX_ENABLED_CROSS_REGION"`
 	CortexModelsAllowlist                                    *bool `ddl:"keyword" sql:"CORTEX_MODELS_ALLOWLIST"`
 	CsvTimestampFormat                                       *bool `ddl:"keyword" sql:"CSV_TIMESTAMP_FORMAT"`
