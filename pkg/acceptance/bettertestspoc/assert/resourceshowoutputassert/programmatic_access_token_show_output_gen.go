@@ -18,9 +18,8 @@ func ProgrammaticAccessTokenShowOutput(t *testing.T, name string) *ProgrammaticA
 	t.Helper()
 
 	programmaticAccessTokenAssert := ProgrammaticAccessTokenShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	programmaticAccessTokenAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &programmaticAccessTokenAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedProgrammaticAccessTokenShowOutput(t *testing.T, id string) *Program
 	t.Helper()
 
 	programmaticAccessTokenAssert := ProgrammaticAccessTokenShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	programmaticAccessTokenAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &programmaticAccessTokenAssert
+}
+
+func UserProgrammaticAccessTokensDatasourceShowOutput(t *testing.T, name string) *ProgrammaticAccessTokenShowOutputAssert {
+	t.Helper()
+
+	return UserProgrammaticAccessTokensDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func UserProgrammaticAccessTokensDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ProgrammaticAccessTokenShowOutputAssert {
+	t.Helper()
+
+	programmaticAccessTokenAssert := ProgrammaticAccessTokenShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "user_programmatic_access_tokens", idx),
+	}
 	return &programmaticAccessTokenAssert
 }
 
@@ -39,52 +52,52 @@ func ImportedProgrammaticAccessTokenShowOutput(t *testing.T, id string) *Program
 ////////////////////////////
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasName(expected string) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	p.StringValueSet("name", expected)
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasUserName(expected sdk.AccountObjectIdentifier) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("user_name", expected.Name()))
+	p.StringValueSet("user_name", expected.Name())
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasRoleRestriction(expected sdk.AccountObjectIdentifier) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("role_restriction", expected.Name()))
+	p.StringValueSet("role_restriction", expected.Name())
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasExpiresAt(expected time.Time) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("expires_at", expected.String()))
+	p.StringValueSet("expires_at", expected.String())
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasStatus(expected sdk.ProgrammaticAccessTokenStatus) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("status", expected))
+	p.StringValueSet("status", string(expected))
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasComment(expected string) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	p.StringValueSet("comment", expected)
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasCreatedOn(expected time.Time) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	p.StringValueSet("created_on", expected.String())
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasCreatedBy(expected string) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("created_by", expected))
+	p.StringValueSet("created_by", expected)
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasMinsToBypassNetworkPolicyRequirement(expected int) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueSet("mins_to_bypass_network_policy_requirement", expected))
+	p.IntValueSet("mins_to_bypass_network_policy_requirement", expected)
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasRotatedTo(expected string) *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("rotated_to", expected))
+	p.StringValueSet("rotated_to", expected)
 	return p
 }
 
@@ -93,51 +106,51 @@ func (p *ProgrammaticAccessTokenShowOutputAssert) HasRotatedTo(expected string) 
 ///////////////////////////////
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoName() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoUserName() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("user_name"))
+	p.ValueNotSet("user_name")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoRoleRestriction() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("role_restriction"))
+	p.ValueNotSet("role_restriction")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoExpiresAt() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("expires_at"))
+	p.ValueNotSet("expires_at")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoStatus() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("status"))
+	p.ValueNotSet("status")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoComment() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoCreatedOn() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	p.ValueNotSet("created_on")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoCreatedBy() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("created_by"))
+	p.ValueNotSet("created_by")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoMinsToBypassNetworkPolicyRequirement() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("mins_to_bypass_network_policy_requirement"))
+	p.ValueNotSet("mins_to_bypass_network_policy_requirement")
 	return p
 }
 
 func (p *ProgrammaticAccessTokenShowOutputAssert) HasNoRotatedTo() *ProgrammaticAccessTokenShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("rotated_to"))
+	p.ValueNotSet("rotated_to")
 	return p
 }
