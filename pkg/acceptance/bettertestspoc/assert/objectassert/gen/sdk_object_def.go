@@ -73,6 +73,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.ExternalVolume{},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ExternalVolumeDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Secret{},
 	},

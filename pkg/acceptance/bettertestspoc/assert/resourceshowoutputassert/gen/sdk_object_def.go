@@ -55,11 +55,11 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Warehouse{}):               {"Warehouses"},
 
 	// Describe output:
-	normalized(sdk.CortexAgentDetails{}):                   {"CortexAgents"},
-	normalized(sdk.ExternalVolumeStorageLocationDetails{}): {"ExternalVolumes"},
-	normalized(sdk.PasswordPolicyDetails{}):                {"PasswordPolicies"},
-	normalized(sdk.SessionPolicyDetails{}):                 {"SessionPolicies"},
-	normalized(sdk.StorageLifecyclePolicyDetails{}):        {"StorageLifecyclePolicies"},
+	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
+	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
+	normalized(sdk.PasswordPolicyDetails{}):         {"PasswordPolicies"},
+	normalized(sdk.SessionPolicyDetails{}):          {"SessionPolicies"},
+	normalized(sdk.StorageLifecyclePolicyDetails{}): {"StorageLifecyclePolicies"},
 }
 
 type dataSourceDef struct {
