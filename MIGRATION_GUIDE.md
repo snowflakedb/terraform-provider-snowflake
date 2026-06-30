@@ -36,6 +36,9 @@ Added support for three new account parameters in the `snowflake_account_paramet
 
 No action is required; this is a non-breaking addition.
 
+### *(new feature)* New instance families in the compute_pool resource
+Added missing instance families that are available in Snowflake: `GEN_ARM_G1_2`, `GEN_ARM_G1_4`, `GEN_ARM_G1_8`, `GEN_ARM_G1_16`, `GEN_ARM_G1_32`, `GEN_X64_G2_2`, `GEN_X64_G2_4`, `GEN_X64_G2_8`, `GEN_X64_G2_16`, `GEN_X64_G2_32`, `MEM_X64_G2_8`, `MEM_X64_G2_32`, `MEM_X64_G2_64`, `MEM_X64_G2_96`, `MEM_X64_G2_192`, `GPU_L40S_G1_8`, `GPU_L40S_G1_16`, `GPU_L40S_G1_48`, `GPU_L40S_G1_192`, `GPU_R6K_G1_8`, `GPU_R6K_G1_16`, `GPU_R6K_G1_32`, `GPU_R6K_G1_48`, `GPU_R6K_G1_96`, `GPU_R6K_G1_192`, `GPU_A100_G1_12`, and `GPU_A100_G1_48`.
+
 ### *(new feature/deprecation)* API integration resources reworked
 
 #### *(new feature/deprecation)* API integration resources

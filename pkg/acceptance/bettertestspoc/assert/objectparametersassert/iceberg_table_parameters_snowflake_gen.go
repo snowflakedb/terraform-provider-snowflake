@@ -73,7 +73,7 @@ func (i *IcebergTableParametersAssert) HasAllDefaults() *IcebergTableParametersA
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterCatalogSync, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterDataMetricSchedule, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterDataRetentionTimeInDays, sdk.ParameterTypeDatabase).
-		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterDefaultDDLCollation, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterEnableDataCompaction, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterEnableIcebergMergeOnRead, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterExternalVolume, sdk.ParameterTypeTable).
@@ -138,7 +138,7 @@ func (i *IcebergTableParametersAssert) HasDataRetentionTimeInDays(expected int) 
 }
 
 func (i *IcebergTableParametersAssert) HasDefaultDdlCollation(expected string) *IcebergTableParametersAssert { // Adjusted manually
-	i.AddAssertion(assert.SnowflakeParameterValueSet(sdk.IcebergTableParameterDefaultDDLCollation, expected)) // Adjusted manually
+	i.AddAssertion(assert.SnowflakeParameterValueSet(sdk.IcebergTableParameterDefaultDdlCollation, expected)) // Adjusted manually
 	return i
 }
 
@@ -227,7 +227,7 @@ func (i *IcebergTableParametersAssert) HasDataRetentionTimeInDaysLevel(expected 
 }
 
 func (i *IcebergTableParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *IcebergTableParametersAssert { // Adjusted manually
-	i.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.IcebergTableParameterDefaultDDLCollation, expected)) // Adjusted manually
+	i.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.IcebergTableParameterDefaultDdlCollation, expected)) // Adjusted manually
 	return i
 }
 
@@ -311,7 +311,7 @@ func (i *IcebergTableParametersAssert) HasDefaultDataRetentionTimeInDaysValue() 
 }
 
 func (i *IcebergTableParametersAssert) HasDefaultDefaultDdlCollationValue() *IcebergTableParametersAssert { // Adjusted manually
-	return i.HasDefaultParameterValue(sdk.IcebergTableParameterDefaultDDLCollation) // Adjusted manually
+	return i.HasDefaultParameterValue(sdk.IcebergTableParameterDefaultDdlCollation) // Adjusted manually
 }
 
 func (i *IcebergTableParametersAssert) HasDefaultEnableDataCompactionValue() *IcebergTableParametersAssert {

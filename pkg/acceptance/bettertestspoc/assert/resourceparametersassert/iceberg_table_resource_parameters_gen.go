@@ -17,9 +17,8 @@ func IcebergTableResourceParameters(t *testing.T, name string) *IcebergTableReso
 	t.Helper()
 
 	resourceParameterAssert := IcebergTableResourceParametersAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "parameters"),
+		ResourceAssert: assert.NewResourceParametersAssert(name),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -27,9 +26,8 @@ func ImportedIcebergTableResourceParameters(t *testing.T, id string) *IcebergTab
 	t.Helper()
 
 	resourceParameterAssert := IcebergTableResourceParametersAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported parameters"),
+		ResourceAssert: assert.NewImportedResourceParametersAssert(id),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -38,87 +36,87 @@ func ImportedIcebergTableResourceParameters(t *testing.T, id string) *IcebergTab
 ////////////////////////////
 
 func (i *IcebergTableResourceParametersAssert) HasAllowRowTimestamp(expected bool) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.IcebergTableParameterAllowRowTimestamp, expected))
+	i.ParameterBoolValueSet(string(sdk.IcebergTableParameterAllowRowTimestamp), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasCatalog(expected string) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterValueSet(sdk.IcebergTableParameterCatalog, expected))
+	i.ParameterValueSet(string(sdk.IcebergTableParameterCatalog), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasCatalogSync(expected string) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterValueSet(sdk.IcebergTableParameterCatalogSync, expected))
+	i.ParameterValueSet(string(sdk.IcebergTableParameterCatalogSync), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasDataMetricSchedule(expected string) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterValueSet(sdk.IcebergTableParameterDataMetricSchedule, expected))
+	i.ParameterValueSet(string(sdk.IcebergTableParameterDataMetricSchedule), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasDataRetentionTimeInDays(expected int) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterIntValueSet(sdk.IcebergTableParameterDataRetentionTimeInDays, expected))
+	i.ParameterIntValueSet(string(sdk.IcebergTableParameterDataRetentionTimeInDays), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasDefaultDdlCollation(expected string) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterValueSet(sdk.IcebergTableParameterDefaultDDLCollation, expected)) // Adjusted manually: generator produced wrong casing for IcebergTableParameterDefaultDdlCollation
+	i.ParameterValueSet(string(sdk.IcebergTableParameterDefaultDdlCollation), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasEnableDataCompaction(expected bool) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.IcebergTableParameterEnableDataCompaction, expected))
+	i.ParameterBoolValueSet(string(sdk.IcebergTableParameterEnableDataCompaction), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasEnableIcebergMergeOnRead(expected bool) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.IcebergTableParameterEnableIcebergMergeOnRead, expected))
+	i.ParameterBoolValueSet(string(sdk.IcebergTableParameterEnableIcebergMergeOnRead), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasExternalVolume(expected string) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterValueSet(sdk.IcebergTableParameterExternalVolume, expected))
+	i.ParameterValueSet(string(sdk.IcebergTableParameterExternalVolume), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasIcebergMergeOnReadBehavior(expected string) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterValueSet(sdk.IcebergTableParameterIcebergMergeOnReadBehavior, expected))
+	i.ParameterValueSet(string(sdk.IcebergTableParameterIcebergMergeOnReadBehavior), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasLogEventLevel(expected string) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterValueSet(sdk.IcebergTableParameterLogEventLevel, expected))
+	i.ParameterValueSet(string(sdk.IcebergTableParameterLogEventLevel), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasMaxDataExtensionTimeInDays(expected int) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterIntValueSet(sdk.IcebergTableParameterMaxDataExtensionTimeInDays, expected))
+	i.ParameterIntValueSet(string(sdk.IcebergTableParameterMaxDataExtensionTimeInDays), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasOptimizeDataLayout(expected bool) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.IcebergTableParameterOptimizeDataLayout, expected))
+	i.ParameterBoolValueSet(string(sdk.IcebergTableParameterOptimizeDataLayout), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.IcebergTableParameterQuotedIdentifiersIgnoreCase, expected))
+	i.ParameterBoolValueSet(string(sdk.IcebergTableParameterQuotedIdentifiersIgnoreCase), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasReplaceInvalidCharacters(expected bool) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.IcebergTableParameterReplaceInvalidCharacters, expected))
+	i.ParameterBoolValueSet(string(sdk.IcebergTableParameterReplaceInvalidCharacters), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasStorageSerializationPolicy(expected sdk.StorageSerializationPolicy) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.IcebergTableParameterStorageSerializationPolicy, expected))
+	i.ParameterValueSet(string(sdk.IcebergTableParameterStorageSerializationPolicy), string(expected))
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasTargetFileSize(expected sdk.IcebergTableTargetFileSize) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.IcebergTableParameterTargetFileSize, expected))
+	i.ParameterValueSet(string(sdk.IcebergTableParameterTargetFileSize), string(expected))
 	return i
 }
 
@@ -127,86 +125,86 @@ func (i *IcebergTableResourceParametersAssert) HasTargetFileSize(expected sdk.Ic
 ////////////////////////////
 
 func (i *IcebergTableResourceParametersAssert) HasAllowRowTimestampLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterAllowRowTimestamp, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterAllowRowTimestamp), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasCatalogLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterCatalog, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterCatalog), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasCatalogSyncLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterCatalogSync, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterCatalogSync), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasDataMetricScheduleLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterDataMetricSchedule, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterDataMetricSchedule), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasDataRetentionTimeInDaysLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterDataRetentionTimeInDays, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterDataRetentionTimeInDays), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterDefaultDDLCollation, expected)) // Adjusted manually: generator produced wrong casing for IcebergTableParameterDefaultDdlCollation
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterDefaultDdlCollation), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasEnableDataCompactionLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterEnableDataCompaction, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterEnableDataCompaction), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasEnableIcebergMergeOnReadLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterEnableIcebergMergeOnRead, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterEnableIcebergMergeOnRead), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasExternalVolumeLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterExternalVolume, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterExternalVolume), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasIcebergMergeOnReadBehaviorLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterIcebergMergeOnReadBehavior, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterIcebergMergeOnReadBehavior), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterLogEventLevel, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterLogEventLevel), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasMaxDataExtensionTimeInDaysLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterMaxDataExtensionTimeInDays, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterMaxDataExtensionTimeInDays), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasOptimizeDataLayoutLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterOptimizeDataLayout, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterOptimizeDataLayout), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterQuotedIdentifiersIgnoreCase, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterQuotedIdentifiersIgnoreCase), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasReplaceInvalidCharactersLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterReplaceInvalidCharacters, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterReplaceInvalidCharacters), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasStorageSerializationPolicyLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterStorageSerializationPolicy, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterStorageSerializationPolicy), expected)
 	return i
 }
 
 func (i *IcebergTableResourceParametersAssert) HasTargetFileSizeLevel(expected sdk.ParameterType) *IcebergTableResourceParametersAssert {
-	i.AddAssertion(assert.ResourceParameterLevelSet(sdk.IcebergTableParameterTargetFileSize, expected))
+	i.ParameterLevelSet(string(sdk.IcebergTableParameterTargetFileSize), expected)
 	return i
 }

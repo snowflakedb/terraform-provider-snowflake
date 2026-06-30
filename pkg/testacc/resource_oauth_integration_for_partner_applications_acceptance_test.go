@@ -829,7 +829,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithPrivilegedRolesBlockedLi
 	onlyPrivilegedRoles := []string{snowflakeroles.Accountadmin.Name(), snowflakeroles.SecurityAdmin.Name()}
 	customRoles := []string{role.ID().Name()}
 
-	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, "true")
+	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList, "true")
 	t.Cleanup(paramCleanup)
 
 	modelWithoutBlockedRole := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientOptionTableauDesktop))
@@ -864,7 +864,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithPrivilegedRolesBlockedLi
 			{
 				PreConfig: func() {
 					// Do not revert, because the revert is setup above.
-					testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, "false")
+					testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList, "false")
 				},
 				Config: accconfig.FromModels(t, modelWithBlockedRole),
 				Check: resource.ComposeAggregateTestCheckFunc(

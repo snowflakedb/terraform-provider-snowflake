@@ -69,9 +69,9 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 	switch parameter {
 	case AccountParameterAllowBindValuesAccess:
 		opts.Unset.LegacyParameters.AccountParameters.AllowBindValuesAccess = Pointer(true)
-	case AccountParameterAllowClientMFACaching:
+	case AccountParameterAllowClientMfaCaching:
 		opts.Unset.LegacyParameters.AccountParameters.AllowClientMFACaching = Pointer(true)
-	case AccountParameterAllowIDToken:
+	case AccountParameterAllowIdToken:
 		opts.Unset.LegacyParameters.AccountParameters.AllowIDToken = Pointer(true)
 	case AccountParameterAllowedSpcsWorkloadTypes:
 		opts.Unset.LegacyParameters.AccountParameters.AllowedSpcsWorkloadTypes = Pointer(true)
@@ -121,9 +121,9 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		opts.Unset.LegacyParameters.AccountParameters.EnforceNetworkRulesForInternalStages = Pointer(true)
 	case AccountParameterEventTable:
 		opts.Unset.LegacyParameters.AccountParameters.EventTable = Pointer(true)
-	case AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList:
+	case AccountParameterExternalOauthAddPrivilegedRolesToBlockedList:
 		opts.Unset.LegacyParameters.AccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = Pointer(true)
-	case AccountParameterInitialReplicationSizeLimitInTB:
+	case AccountParameterInitialReplicationSizeLimitInTb:
 		opts.Unset.LegacyParameters.AccountParameters.InitialReplicationSizeLimitInTB = Pointer(true)
 	case AccountParameterMinDataRetentionTimeInDays:
 		opts.Unset.LegacyParameters.AccountParameters.MinDataRetentionTimeInDays = Pointer(true)
@@ -131,13 +131,13 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		opts.Unset.LegacyParameters.AccountParameters.MetricLevel = Pointer(true)
 	case AccountParameterNetworkPolicy:
 		opts.Unset.LegacyParameters.AccountParameters.NetworkPolicy = Pointer(true)
-	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:
+	case AccountParameterOauthAddPrivilegedRolesToBlockedList:
 		opts.Unset.LegacyParameters.AccountParameters.OAuthAddPrivilegedRolesToBlockedList = Pointer(true)
 	case AccountParameterPeriodicDataRekeying:
 		opts.Unset.LegacyParameters.AccountParameters.PeriodicDataRekeying = Pointer(true)
 	case AccountParameterPreventLoadFromInlineURL:
 		opts.Unset.LegacyParameters.AccountParameters.PreventLoadFromInlineURL = Pointer(true)
-	case AccountParameterPreventUnloadToInlineURL:
+	case AccountParameterPreventUnloadToInlineUrl:
 		opts.Unset.LegacyParameters.AccountParameters.PreventUnloadToInlineURL = Pointer(true)
 	case AccountParameterPreventUnloadToInternalStages:
 		opts.Unset.LegacyParameters.AccountParameters.PreventUnloadToInternalStages = Pointer(true)
@@ -218,7 +218,7 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 			return fmt.Errorf("DATA_RETENTION_TIME_IN_DAYS object parameter is an integer, got %v", value)
 		}
 		opts.Set.LegacyParameters.ObjectParameters.DataRetentionTimeInDays = Pointer(v)
-	case ObjectParameterDefaultDDLCollation:
+	case ObjectParameterDefaultDdlCollation:
 		opts.Set.LegacyParameters.ObjectParameters.DefaultDDLCollation = &value
 	case ObjectParameterLogLevel:
 		opts.Set.LegacyParameters.ObjectParameters.LogLevel = Pointer(LogLevel(value))
@@ -349,7 +349,7 @@ func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, paramete
 		opts.Unset.LegacyParameters.ObjectParameters.Catalog = Pointer(true)
 	case ObjectParameterDataRetentionTimeInDays:
 		opts.Unset.LegacyParameters.ObjectParameters.DataRetentionTimeInDays = Pointer(true)
-	case ObjectParameterDefaultDDLCollation:
+	case ObjectParameterDefaultDdlCollation:
 		opts.Unset.LegacyParameters.ObjectParameters.DefaultDDLCollation = Pointer(true)
 	case ObjectParameterLogLevel:
 		opts.Unset.LegacyParameters.ObjectParameters.LogLevel = Pointer(true)
@@ -444,9 +444,9 @@ const (
 	AccountParameterAbortDetachedQuery                                       AccountParameter = "ABORT_DETACHED_QUERY"
 	AccountParameterActivePythonProfiler                                     AccountParameter = "ACTIVE_PYTHON_PROFILER"
 	AccountParameterAllowBindValuesAccess                                    AccountParameter = "ALLOW_BIND_VALUES_ACCESS"
-	AccountParameterAllowClientMFACaching                                    AccountParameter = "ALLOW_CLIENT_MFA_CACHING"
+	AccountParameterAllowClientMfaCaching                                    AccountParameter = "ALLOW_CLIENT_MFA_CACHING"
 	AccountParameterAllowedSpcsWorkloadTypes                                 AccountParameter = "ALLOWED_SPCS_WORKLOAD_TYPES"
-	AccountParameterAllowIDToken                                             AccountParameter = "ALLOW_ID_TOKEN" // #nosec G101
+	AccountParameterAllowIdToken                                             AccountParameter = "ALLOW_ID_TOKEN" // #nosec G101
 	AccountParameterAutocommit                                               AccountParameter = "AUTOCOMMIT"
 	AccountParameterBaseLocationPrefix                                       AccountParameter = "BASE_LOCATION_PREFIX"
 	AccountParameterBinaryInputFormat                                        AccountParameter = "BINARY_INPUT_FORMAT"
@@ -475,7 +475,7 @@ const (
 	AccountParameterDateInputFormat                                          AccountParameter = "DATE_INPUT_FORMAT"
 	AccountParameterDateOutputFormat                                         AccountParameter = "DATE_OUTPUT_FORMAT"
 	AccountParameterDefaultDbtVersion                                        AccountParameter = "DEFAULT_DBT_VERSION"
-	AccountParameterDefaultDDLCollation                                      AccountParameter = "DEFAULT_DDL_COLLATION"
+	AccountParameterDefaultDdlCollation                                      AccountParameter = "DEFAULT_DDL_COLLATION"
 	AccountParameterDefaultNotebookComputePoolCpu                            AccountParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"
 	AccountParameterDefaultNotebookComputePoolGpu                            AccountParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"
 	AccountParameterDefaultNullOrdering                                      AccountParameter = "DEFAULT_NULL_ORDERING"
@@ -506,18 +506,18 @@ const (
 	AccountParameterErrorOnNondeterministicMerge                             AccountParameter = "ERROR_ON_NONDETERMINISTIC_MERGE"
 	AccountParameterErrorOnNondeterministicUpdate                            AccountParameter = "ERROR_ON_NONDETERMINISTIC_UPDATE"
 	AccountParameterEventTable                                               AccountParameter = "EVENT_TABLE"
-	AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList             AccountParameter = "EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"
+	AccountParameterExternalOauthAddPrivilegedRolesToBlockedList             AccountParameter = "EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"
 	AccountParameterExternalVolume                                           AccountParameter = "EXTERNAL_VOLUME"
 	AccountParameterGeographyOutputFormat                                    AccountParameter = "GEOGRAPHY_OUTPUT_FORMAT"
 	AccountParameterGeometryOutputFormat                                     AccountParameter = "GEOMETRY_OUTPUT_FORMAT"
 	AccountParameterHybridTableLockTimeout                                   AccountParameter = "HYBRID_TABLE_LOCK_TIMEOUT"
 	AccountParameterIcebergVersionDefault                                    AccountParameter = "ICEBERG_VERSION_DEFAULT"
-	AccountParameterInitialReplicationSizeLimitInTB                          AccountParameter = "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"
+	AccountParameterInitialReplicationSizeLimitInTb                          AccountParameter = "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"
 	AccountParameterJdbcTreatDecimalAsInt                                    AccountParameter = "JDBC_TREAT_DECIMAL_AS_INT"
 	AccountParameterJdbcTreatTimestampNtzAsUtc                               AccountParameter = "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC"
 	AccountParameterJdbcUseSessionTimezone                                   AccountParameter = "JDBC_USE_SESSION_TIMEZONE"
 	AccountParameterJsonIndent                                               AccountParameter = "JSON_INDENT"
-	AccountParameterJsTreatIntegerAsBigInt                                   AccountParameter = "JS_TREAT_INTEGER_AS_BIGINT"
+	AccountParameterJsTreatIntegerAsBigint                                   AccountParameter = "JS_TREAT_INTEGER_AS_BIGINT"
 	AccountParameterListingAutoFulfillmentReplicationRefreshSchedule         AccountParameter = "LISTING_AUTO_FULFILLMENT_REPLICATION_REFRESH_SCHEDULE"
 	AccountParameterLockTimeout                                              AccountParameter = "LOCK_TIMEOUT"
 	AccountParameterLogLevel                                                 AccountParameter = "LOG_LEVEL"
@@ -529,11 +529,11 @@ const (
 	AccountParameterMultiStatementCount                                      AccountParameter = "MULTI_STATEMENT_COUNT"
 	AccountParameterNetworkPolicy                                            AccountParameter = "NETWORK_POLICY"
 	AccountParameterNoorderSequenceAsDefault                                 AccountParameter = "NOORDER_SEQUENCE_AS_DEFAULT"
-	AccountParameterOAuthAddPrivilegedRolesToBlockedList                     AccountParameter = "OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"
+	AccountParameterOauthAddPrivilegedRolesToBlockedList                     AccountParameter = "OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"
 	AccountParameterOdbcTreatDecimalAsInt                                    AccountParameter = "ODBC_TREAT_DECIMAL_AS_INT"
 	AccountParameterPeriodicDataRekeying                                     AccountParameter = "PERIODIC_DATA_REKEYING"
 	AccountParameterPipeExecutionPaused                                      AccountParameter = "PIPE_EXECUTION_PAUSED"
-	AccountParameterPreventUnloadToInlineURL                                 AccountParameter = "PREVENT_UNLOAD_TO_INLINE_URL"
+	AccountParameterPreventUnloadToInlineUrl                                 AccountParameter = "PREVENT_UNLOAD_TO_INLINE_URL"
 	AccountParameterPreventUnloadToInternalStages                            AccountParameter = "PREVENT_UNLOAD_TO_INTERNAL_STAGES"
 	AccountParameterPythonProfilerModules                                    AccountParameter = "PYTHON_PROFILER_MODULES"
 	AccountParameterPythonProfilerTargetStage                                AccountParameter = "PYTHON_PROFILER_TARGET_STAGE"
@@ -591,8 +591,8 @@ const (
 var AllAccountParameters = []AccountParameter{
 	AccountParameterAbortDetachedQuery,
 	AccountParameterActivePythonProfiler,
-	AccountParameterAllowClientMFACaching,
-	AccountParameterAllowIDToken,
+	AccountParameterAllowClientMfaCaching,
+	AccountParameterAllowIdToken,
 	AccountParameterAutocommit,
 	AccountParameterBaseLocationPrefix,
 	AccountParameterBinaryInputFormat,
@@ -619,7 +619,7 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterDataRetentionTimeInDays,
 	AccountParameterDateInputFormat,
 	AccountParameterDateOutputFormat,
-	AccountParameterDefaultDDLCollation,
+	AccountParameterDefaultDdlCollation,
 	AccountParameterDefaultNotebookComputePoolCpu,
 	AccountParameterDefaultNotebookComputePoolGpu,
 	AccountParameterDefaultNullOrdering,
@@ -641,17 +641,17 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterErrorOnNondeterministicMerge,
 	AccountParameterErrorOnNondeterministicUpdate,
 	AccountParameterEventTable,
-	AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList,
+	AccountParameterExternalOauthAddPrivilegedRolesToBlockedList,
 	AccountParameterExternalVolume,
 	AccountParameterGeographyOutputFormat,
 	AccountParameterGeometryOutputFormat,
 	AccountParameterHybridTableLockTimeout,
-	AccountParameterInitialReplicationSizeLimitInTB,
+	AccountParameterInitialReplicationSizeLimitInTb,
 	AccountParameterJdbcTreatDecimalAsInt,
 	AccountParameterJdbcTreatTimestampNtzAsUtc,
 	AccountParameterJdbcUseSessionTimezone,
 	AccountParameterJsonIndent,
-	AccountParameterJsTreatIntegerAsBigInt,
+	AccountParameterJsTreatIntegerAsBigint,
 	AccountParameterListingAutoFulfillmentReplicationRefreshSchedule,
 	AccountParameterLockTimeout,
 	AccountParameterLogLevel,
@@ -663,11 +663,11 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterMultiStatementCount,
 	AccountParameterNetworkPolicy,
 	AccountParameterNoorderSequenceAsDefault,
-	AccountParameterOAuthAddPrivilegedRolesToBlockedList,
+	AccountParameterOauthAddPrivilegedRolesToBlockedList,
 	AccountParameterOdbcTreatDecimalAsInt,
 	AccountParameterPeriodicDataRekeying,
 	AccountParameterPipeExecutionPaused,
-	AccountParameterPreventUnloadToInlineURL,
+	AccountParameterPreventUnloadToInlineUrl,
 	AccountParameterPreventUnloadToInternalStages,
 	AccountParameterPythonProfilerModules,
 	AccountParameterPythonProfilerTargetStage,
@@ -796,7 +796,7 @@ type ObjectParameter string
 const (
 	// Object Parameters
 	ObjectParameterDataRetentionTimeInDays                 ObjectParameter = "DATA_RETENTION_TIME_IN_DAYS"
-	ObjectParameterDefaultDDLCollation                     ObjectParameter = "DEFAULT_DDL_COLLATION"
+	ObjectParameterDefaultDdlCollation                     ObjectParameter = "DEFAULT_DDL_COLLATION"
 	ObjectParameterLogLevel                                ObjectParameter = "LOG_LEVEL"
 	ObjectParameterLogEventLevel                           ObjectParameter = "LOG_EVENT_LEVEL"
 	ObjectParameterMaxConcurrencyLevel                     ObjectParameter = "MAX_CONCURRENCY_LEVEL"
@@ -1110,7 +1110,7 @@ var AllSchemaParameters = []ObjectParameter{
 	ObjectParameterExternalVolume,
 	ObjectParameterCatalog,
 	ObjectParameterReplaceInvalidCharacters,
-	ObjectParameterDefaultDDLCollation,
+	ObjectParameterDefaultDdlCollation,
 	ObjectParameterStorageSerializationPolicy,
 	ObjectParameterLogLevel,
 	ObjectParameterLogEventLevel,
@@ -1192,7 +1192,7 @@ const (
 	IcebergTableParameterCatalogSync                 IcebergTableParameter = "CATALOG_SYNC"
 	IcebergTableParameterDataMetricSchedule          IcebergTableParameter = "DATA_METRIC_SCHEDULE"
 	IcebergTableParameterDataRetentionTimeInDays     IcebergTableParameter = "DATA_RETENTION_TIME_IN_DAYS"
-	IcebergTableParameterDefaultDDLCollation         IcebergTableParameter = "DEFAULT_DDL_COLLATION"
+	IcebergTableParameterDefaultDdlCollation         IcebergTableParameter = "DEFAULT_DDL_COLLATION"
 	IcebergTableParameterEnableDataCompaction        IcebergTableParameter = "ENABLE_DATA_COMPACTION"
 	IcebergTableParameterEnableIcebergMergeOnRead    IcebergTableParameter = "ENABLE_ICEBERG_MERGE_ON_READ"
 	IcebergTableParameterExternalVolume              IcebergTableParameter = "EXTERNAL_VOLUME"
@@ -1212,7 +1212,7 @@ var AllIcebergTableParameters = []IcebergTableParameter{
 	IcebergTableParameterCatalogSync,
 	IcebergTableParameterDataMetricSchedule,
 	IcebergTableParameterDataRetentionTimeInDays,
-	IcebergTableParameterDefaultDDLCollation,
+	IcebergTableParameterDefaultDdlCollation,
 	IcebergTableParameterEnableDataCompaction,
 	IcebergTableParameterEnableIcebergMergeOnRead,
 	IcebergTableParameterExternalVolume,
