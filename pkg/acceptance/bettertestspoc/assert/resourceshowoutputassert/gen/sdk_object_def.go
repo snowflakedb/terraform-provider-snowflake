@@ -38,12 +38,14 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.PasswordPolicy{}):          {"PasswordPolicies"},
 	normalized(sdk.ProgrammaticAccessToken{}): {"UserProgrammaticAccessTokens"},
 	normalized(sdk.ResourceMonitor{}):         {"ResourceMonitors"},
+	normalized(sdk.Role{}):                    {"AccountRoles"},
 	normalized(sdk.RowAccessPolicy{}):         {"RowAccessPolicies"},
 	normalized(sdk.Schema{}):                  {"Schemas"},
 	normalized(sdk.Secret{}):                  {"Secrets"},
 	normalized(sdk.SecurityIntegration{}):     {"SecurityIntegrations"},
 	normalized(sdk.SemanticView{}):            {"SemanticViews"},
 	normalized(sdk.Service{}):                 {"Services"},
+	normalized(sdk.SessionPolicy{}):           {"SessionPolicies"},
 	normalized(sdk.Stage{}):                   {"Stages"},
 	normalized(sdk.StorageIntegration{}):      {"StorageIntegrations"},
 	normalized(sdk.StorageLifecyclePolicy{}):  {"StorageLifecyclePolicies"},
@@ -55,6 +57,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Warehouse{}):               {"Warehouses"},
 
 	// Describe output:
+	normalized(sdk.ApiIntegrationAllDetails{}):      {"ApiIntegrations"},
 	normalized(sdk.CatalogIntegrationAllDetails{}):  {"CatalogIntegrations"},
 	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},

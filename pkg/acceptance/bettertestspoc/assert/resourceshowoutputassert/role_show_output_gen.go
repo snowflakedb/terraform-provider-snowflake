@@ -31,6 +31,21 @@ func ImportedRoleShowOutput(t *testing.T, id string) *RoleShowOutputAssert {
 	return &roleAssert
 }
 
+func AccountRolesDatasourceShowOutput(t *testing.T, name string) *RoleShowOutputAssert {
+	t.Helper()
+
+	return AccountRolesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func AccountRolesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *RoleShowOutputAssert {
+	t.Helper()
+
+	roleAssert := RoleShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "account_roles", idx),
+	}
+	return &roleAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
