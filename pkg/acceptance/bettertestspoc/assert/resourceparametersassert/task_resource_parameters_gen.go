@@ -17,9 +17,8 @@ func TaskResourceParameters(t *testing.T, name string) *TaskResourceParametersAs
 	t.Helper()
 
 	resourceParameterAssert := TaskResourceParametersAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "parameters"),
+		ResourceAssert: assert.NewResourceParametersAssert(name),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedTaskResourceParameters(t *testing.T, id string) *TaskResourceParame
 	t.Helper()
 
 	resourceParameterAssert := TaskResourceParametersAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported parameters"),
+		ResourceAssert: assert.NewImportedResourceParametersAssert(id),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
+	return &resourceParameterAssert
+}
+
+func TasksDatasourceParameters(t *testing.T, name string) *TaskResourceParametersAssert {
+	t.Helper()
+
+	return TasksDatasourceParametersOnIdx(t, name, 0)
+}
+
+func TasksDatasourceParametersOnIdx(t *testing.T, name string, idx int) *TaskResourceParametersAssert {
+	t.Helper()
+
+	resourceParameterAssert := TaskResourceParametersAssert{
+		ResourceAssert: assert.NewDatasourceParametersAssert(name, "tasks", idx),
+	}
 	return &resourceParameterAssert
 }
 
@@ -38,307 +51,307 @@ func ImportedTaskResourceParameters(t *testing.T, id string) *TaskResourceParame
 ////////////////////////////
 
 func (t *TaskResourceParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterSuspendTaskAfterNumFailures, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterSuspendTaskAfterNumFailures), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTaskAutoRetryAttempts(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterTaskAutoRetryAttempts, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterTaskAutoRetryAttempts), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUserTaskTimeoutMs(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterUserTaskTimeoutMs, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterUserTaskTimeoutMs), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasAbortDetachedQuery(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterAbortDetachedQuery, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterAbortDetachedQuery), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasAutocommit(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterAutocommit, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterAutocommit), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasBinaryInputFormat(expected sdk.BinaryInputFormat) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterBinaryInputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterBinaryInputFormat), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasBinaryOutputFormat(expected sdk.BinaryOutputFormat) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterBinaryOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterBinaryOutputFormat), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientMemoryLimit(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterClientMemoryLimit, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterClientMemoryLimit), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterClientMetadataRequestUseConnectionCtx, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterClientMetadataRequestUseConnectionCtx), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientPrefetchThreads(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterClientPrefetchThreads, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterClientPrefetchThreads), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientResultChunkSize(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterClientResultChunkSize, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterClientResultChunkSize), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientResultColumnCaseInsensitive(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterClientResultColumnCaseInsensitive, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterClientResultColumnCaseInsensitive), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientSessionKeepAlive(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterClientSessionKeepAlive, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterClientSessionKeepAlive), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientSessionKeepAliveHeartbeatFrequency(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientTimestampTypeMapping(expected sdk.ClientTimestampTypeMapping) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterClientTimestampTypeMapping, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterClientTimestampTypeMapping), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasDateInputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterDateInputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterDateInputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasDateOutputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterDateOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterDateOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterEnableUnloadPhysicalTypeOptimization, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterEnableUnloadPhysicalTypeOptimization), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasErrorOnNondeterministicMerge(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterErrorOnNondeterministicMerge, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterErrorOnNondeterministicMerge), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasErrorOnNondeterministicUpdate(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterErrorOnNondeterministicUpdate, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterErrorOnNondeterministicUpdate), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasGeographyOutputFormat(expected sdk.GeographyOutputFormat) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterGeographyOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterGeographyOutputFormat), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasGeometryOutputFormat(expected sdk.GeometryOutputFormat) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterGeometryOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterGeometryOutputFormat), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterJdbcTreatTimestampNtzAsUtc, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterJdbcTreatTimestampNtzAsUtc), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasJdbcUseSessionTimezone(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterJdbcUseSessionTimezone, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterJdbcUseSessionTimezone), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasJsonIndent(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterJsonIndent, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterJsonIndent), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasLockTimeout(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterLockTimeout, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterLockTimeout), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterLogLevel, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterLogLevel), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterLogEventLevel, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterLogEventLevel), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasMultiStatementCount(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterMultiStatementCount, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterMultiStatementCount), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasNoorderSequenceAsDefault(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterNoorderSequenceAsDefault, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterNoorderSequenceAsDefault), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasOdbcTreatDecimalAsInt(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterOdbcTreatDecimalAsInt, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterOdbcTreatDecimalAsInt), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasQueryTag(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterQueryTag, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterQueryTag), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterQuotedIdentifiersIgnoreCase, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterQuotedIdentifiersIgnoreCase), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasRowsPerResultset(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterRowsPerResultset, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterRowsPerResultset), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasS3StageVpceDnsName(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterS3StageVpceDnsName, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterS3StageVpceDnsName), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasSearchPath(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterSearchPath, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterSearchPath), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk.WarehouseSize) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterServerlessTaskMaxStatementSize), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasServerlessTaskMinStatementSize(expected sdk.WarehouseSize) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterServerlessTaskMinStatementSize), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasStatementQueuedTimeoutInSeconds(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterStatementQueuedTimeoutInSeconds, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterStatementQueuedTimeoutInSeconds), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasStatementTimeoutInSeconds(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterStatementTimeoutInSeconds, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterStatementTimeoutInSeconds), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasStrictJsonOutput(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterStrictJsonOutput, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterStrictJsonOutput), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampDayIsAlways24h(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterTimestampDayIsAlways24h, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterTimestampDayIsAlways24h), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampInputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterTimestampInputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimestampInputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampLtzOutputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterTimestampLtzOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimestampLtzOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampNtzOutputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterTimestampNtzOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimestampNtzOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampOutputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterTimestampOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimestampOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampTypeMapping(expected sdk.TimestampTypeMapping) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterTimestampTypeMapping, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimestampTypeMapping), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampTzOutputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterTimestampTzOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimestampTzOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimezone(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterTimezone, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimezone), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimeInputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterTimeInputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimeInputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimeOutputFormat(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterTimeOutputFormat, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTimeOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterTraceLevel, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTraceLevel), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTransactionAbortOnError(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterTransactionAbortOnError, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterTransactionAbortOnError), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTransactionDefaultIsolationLevel(expected sdk.TransactionDefaultIsolationLevel) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterTransactionDefaultIsolationLevel, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterTransactionDefaultIsolationLevel), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTwoDigitCenturyStart(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterTwoDigitCenturyStart, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterTwoDigitCenturyStart), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUnsupportedDdlAction(expected sdk.UnsupportedDDLAction) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterUnsupportedDdlAction, expected))
+	t.ParameterValueSet(string(sdk.TaskParameterUnsupportedDdlAction), string(expected))
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUseCachedResult(expected bool) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.TaskParameterUseCachedResult, expected))
+	t.ParameterBoolValueSet(string(sdk.TaskParameterUseCachedResult), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasWeekOfYearPolicy(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterWeekOfYearPolicy, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterWeekOfYearPolicy), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasWeekStart(expected int) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterWeekStart, expected))
+	t.ParameterIntValueSet(string(sdk.TaskParameterWeekStart), expected)
 	return t
 }
 
@@ -347,306 +360,306 @@ func (t *TaskResourceParametersAssert) HasWeekStart(expected int) *TaskResourceP
 ////////////////////////////
 
 func (t *TaskResourceParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterSuspendTaskAfterNumFailures, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterSuspendTaskAfterNumFailures), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTaskAutoRetryAttempts, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTaskAutoRetryAttempts), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterUserTaskTimeoutMs, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterUserTaskTimeoutMs), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasAbortDetachedQueryLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterAbortDetachedQuery, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterAbortDetachedQuery), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasAutocommitLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterAutocommit, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterAutocommit), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasBinaryInputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterBinaryInputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterBinaryInputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasBinaryOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterBinaryOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterBinaryOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientMemoryLimitLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterClientMemoryLimit, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterClientMemoryLimit), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientMetadataRequestUseConnectionCtxLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterClientMetadataRequestUseConnectionCtx, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterClientMetadataRequestUseConnectionCtx), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientPrefetchThreadsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterClientPrefetchThreads, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterClientPrefetchThreads), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientResultChunkSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterClientResultChunkSize, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterClientResultChunkSize), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientResultColumnCaseInsensitiveLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterClientResultColumnCaseInsensitive, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterClientResultColumnCaseInsensitive), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientSessionKeepAliveLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterClientSessionKeepAlive, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterClientSessionKeepAlive), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientSessionKeepAliveHeartbeatFrequencyLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasClientTimestampTypeMappingLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterClientTimestampTypeMapping, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterClientTimestampTypeMapping), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasDateInputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterDateInputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterDateInputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasDateOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterDateOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterDateOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasEnableUnloadPhysicalTypeOptimizationLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterEnableUnloadPhysicalTypeOptimization, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterEnableUnloadPhysicalTypeOptimization), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasErrorOnNondeterministicMergeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterErrorOnNondeterministicMerge, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterErrorOnNondeterministicMerge), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasErrorOnNondeterministicUpdateLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterErrorOnNondeterministicUpdate, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterErrorOnNondeterministicUpdate), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasGeographyOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterGeographyOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterGeographyOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasGeometryOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterGeometryOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterGeometryOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasJdbcTreatTimestampNtzAsUtcLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterJdbcTreatTimestampNtzAsUtc, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterJdbcTreatTimestampNtzAsUtc), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasJdbcUseSessionTimezoneLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterJdbcUseSessionTimezone, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterJdbcUseSessionTimezone), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasJsonIndentLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterJsonIndent, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterJsonIndent), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasLockTimeoutLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterLockTimeout, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterLockTimeout), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterLogLevel, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterLogLevel), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterLogEventLevel, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterLogEventLevel), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasMultiStatementCountLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterMultiStatementCount, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterMultiStatementCount), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasNoorderSequenceAsDefaultLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterNoorderSequenceAsDefault, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterNoorderSequenceAsDefault), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasOdbcTreatDecimalAsIntLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterOdbcTreatDecimalAsInt, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterOdbcTreatDecimalAsInt), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasQueryTagLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterQueryTag, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterQueryTag), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterQuotedIdentifiersIgnoreCase, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterQuotedIdentifiersIgnoreCase), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasRowsPerResultsetLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterRowsPerResultset, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterRowsPerResultset), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterS3StageVpceDnsName, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterS3StageVpceDnsName), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterSearchPath, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterSearchPath), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasServerlessTaskMaxStatementSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterServerlessTaskMaxStatementSize), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasServerlessTaskMinStatementSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterServerlessTaskMinStatementSize), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasStatementQueuedTimeoutInSecondsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterStatementQueuedTimeoutInSeconds, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterStatementQueuedTimeoutInSeconds), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasStatementTimeoutInSecondsLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterStatementTimeoutInSeconds, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterStatementTimeoutInSeconds), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasStrictJsonOutputLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterStrictJsonOutput, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterStrictJsonOutput), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampDayIsAlways24hLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimestampDayIsAlways24h, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimestampDayIsAlways24h), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampInputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimestampInputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimestampInputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampLtzOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimestampLtzOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimestampLtzOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampNtzOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimestampNtzOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimestampNtzOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimestampOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimestampOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampTypeMappingLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimestampTypeMapping, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimestampTypeMapping), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimestampTzOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimestampTzOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimestampTzOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimezoneLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimezone, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimezone), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimeInputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimeInputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTimeOutputFormat, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTimeOutputFormat), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTraceLevel, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTraceLevel), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTransactionAbortOnErrorLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTransactionAbortOnError, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTransactionAbortOnError), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTransactionDefaultIsolationLevelLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTransactionDefaultIsolationLevel, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTransactionDefaultIsolationLevel), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasTwoDigitCenturyStartLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterTwoDigitCenturyStart, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterTwoDigitCenturyStart), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUnsupportedDdlActionLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterUnsupportedDdlAction, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterUnsupportedDdlAction), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasUseCachedResultLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterUseCachedResult, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterUseCachedResult), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasWeekOfYearPolicyLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterWeekOfYearPolicy, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterWeekOfYearPolicy), expected)
 	return t
 }
 
 func (t *TaskResourceParametersAssert) HasWeekStartLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterWeekStart, expected))
+	t.ParameterLevelSet(string(sdk.TaskParameterWeekStart), expected)
 	return t
 }

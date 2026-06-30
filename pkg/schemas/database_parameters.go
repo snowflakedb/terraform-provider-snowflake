@@ -17,7 +17,7 @@ var (
 		sdk.AccountParameterExternalVolume,
 		sdk.AccountParameterCatalog,
 		sdk.AccountParameterReplaceInvalidCharacters,
-		sdk.AccountParameterDefaultDDLCollation,
+		sdk.AccountParameterDefaultDdlCollation,
 		sdk.AccountParameterStorageSerializationPolicy,
 		sdk.AccountParameterLogLevel,
 		sdk.AccountParameterLogEventLevel,

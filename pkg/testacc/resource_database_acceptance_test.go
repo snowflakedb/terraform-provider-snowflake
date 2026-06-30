@@ -347,7 +347,7 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 					*accountExternalVolume = helpers.FindParameter(t, params, sdk.AccountParameterExternalVolume).Value
 					*accountCatalog = helpers.FindParameter(t, params, sdk.AccountParameterCatalog).Value
 					*accountReplaceInvalidCharacters = helpers.FindParameter(t, params, sdk.AccountParameterReplaceInvalidCharacters).Value
-					*accountDefaultDdlCollation = helpers.FindParameter(t, params, sdk.AccountParameterDefaultDDLCollation).Value
+					*accountDefaultDdlCollation = helpers.FindParameter(t, params, sdk.AccountParameterDefaultDdlCollation).Value
 					*accountStorageSerializationPolicy = helpers.FindParameter(t, params, sdk.AccountParameterStorageSerializationPolicy).Value
 					*accountLogLevel = helpers.FindParameter(t, params, sdk.AccountParameterLogLevel).Value
 					*accountTraceLevel = helpers.FindParameter(t, params, sdk.AccountParameterTraceLevel).Value
