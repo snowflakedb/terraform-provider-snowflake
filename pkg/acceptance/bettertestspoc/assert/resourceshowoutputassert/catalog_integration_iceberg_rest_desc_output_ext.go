@@ -1,10 +1,25 @@
 package resourceshowoutputassert
 
-import (
-	"fmt"
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-)
+// Composite methods
+
+func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasRestConfig(catalogUri, prefix, catalogName string, catalogApiType sdk.CatalogIntegrationCatalogApiType, accessDelegationMode sdk.CatalogIntegrationAccessDelegationMode) *CatalogIntegrationIcebergRestDescribeOutputAssert {
+	catalogIntegrationApplyRestConfigChecks(c.ResourceAssert, catalogUri, prefix, catalogName, catalogApiType, accessDelegationMode)
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasOAuthRestAuthentication(tokenUri, clientId string, scopes ...string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
+	catalogIntegrationApplyOAuthChecks(c.ResourceAssert, "oauth_rest_authentication", tokenUri, clientId, scopes...)
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasSigV4RestAuthentication(iamRole, signingRegion, externalId string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
+	catalogIntegrationApplySigV4Checks(c.ResourceAssert, iamRole, signingRegion, externalId)
+	return c
+}
+
+// Individual RestConfig methods
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasRestConfigCatalogUri(expected string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
 	c.StringValueSet("rest_config.0.catalog_uri", expected)
@@ -31,6 +46,8 @@ func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasRestConfigAccessD
 	return c
 }
 
+// Individual SigV4 methods
+
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasSigv4RestAuthenticationSigv4IamRole(expected string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
 	c.StringValueSet("sigv4_rest_authentication.0.sigv4_iam_role", expected)
 	return c
@@ -45,6 +62,8 @@ func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasSigv4RestAuthenti
 	c.StringValueSet("sigv4_rest_authentication.0.sigv4_external_id", expected)
 	return c
 }
+
+// Individual OAuth methods
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasOAuthRestAuthenticationOauthTokenUri(expected string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
 	c.StringValueSet("oauth_rest_authentication.0.oauth_token_uri", expected)
@@ -62,12 +81,11 @@ func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasOAuthRestAuthenti
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasOAuthRestAuthenticationOauthAllowedScopes(expected ...string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.StringValueSet("oauth_rest_authentication.0.oauth_allowed_scopes.#", fmt.Sprintf("%d", len(expected)))
-	for i, v := range expected {
-		c.StringValueSet(fmt.Sprintf("oauth_rest_authentication.0.oauth_allowed_scopes.%d", i), v)
-	}
+	catalogIntegrationApplyOAuthScopesCheck(c.ResourceAssert, "oauth_rest_authentication", expected...)
 	return c
 }
+
+// No-value OAuth methods
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoOAuthRestAuthenticationOauthTokenUri() *CatalogIntegrationIcebergRestDescribeOutputAssert {
 	c.ValueNotSet("oauth_rest_authentication.0.oauth_token_uri")

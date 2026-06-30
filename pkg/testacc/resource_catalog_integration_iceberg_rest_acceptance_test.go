@@ -151,14 +151,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment("").
 			HasCatalogNamespace(""),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasRestConfigCatalogUri(catalogUri).
-			HasRestConfigPrefix("").
-			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			HasRestConfigCatalogName("").
-			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
-			HasOAuthRestAuthenticationOauthTokenUri(catalogUri + "/v1/oauth/tokens").
-			HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
-			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
+			HasRestConfig(catalogUri, "", "", sdk.CatalogIntegrationCatalogApiTypePublic, sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasOAuthRestAuthentication(catalogUri+"/v1/oauth/tokens", oAuthClientId, oAuthAllowedScope),
 	}
 
 	basicAssertionsWithRefreshIntervalZero := append(
@@ -227,14 +221,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasCatalogNamespace(""),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasRestConfigCatalogUri(catalogUri).
-			HasRestConfigPrefix("").
-			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			HasRestConfigCatalogName("").
-			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
-			HasOAuthRestAuthenticationOauthTokenUri(catalogUri + "/v1/oauth/tokens").
-			HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
-			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
+			HasRestConfig(catalogUri, "", "", sdk.CatalogIntegrationCatalogApiTypePublic, sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasOAuthRestAuthentication(catalogUri+"/v1/oauth/tokens", oAuthClientId, oAuthAllowedScope),
 	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{
@@ -275,14 +263,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasCatalogNamespace(catalogNamespace),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasRestConfigCatalogUri(catalogUri).
-			HasRestConfigPrefix(prefix).
-			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			HasRestConfigCatalogName(catalogName).
-			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
-			HasOAuthRestAuthenticationOauthTokenUri(oAuthTokenUri).
-			HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
-			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
+			HasRestConfig(catalogUri, prefix, catalogName, sdk.CatalogIntegrationCatalogApiTypePublic, sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasOAuthRestAuthentication(oAuthTokenUri, oAuthClientId, oAuthAllowedScope),
 	}
 
 	forceNewAssertions := []assert.TestCheckFuncProvider{
@@ -323,14 +305,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasCatalogNamespace(newCatalogNamespace),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasRestConfigCatalogUri(catalogUri).
-			HasRestConfigPrefix(prefix).
-			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			HasRestConfigCatalogName(catalogName).
-			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
-			HasOAuthRestAuthenticationOauthTokenUri(oAuthTokenUri).
-			HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
-			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
+			HasRestConfig(catalogUri, prefix, catalogName, sdk.CatalogIntegrationCatalogApiTypePublic, sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasOAuthRestAuthentication(oAuthTokenUri, oAuthClientId, oAuthAllowedScope),
 	}
 
 	moreForceNewAssertions := []assert.TestCheckFuncProvider{
@@ -371,14 +347,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasCatalogNamespace(newCatalogNamespace),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasRestConfigCatalogUri(newCatalogUri).
-			HasRestConfigPrefix(newPrefix).
-			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
-			HasRestConfigCatalogName(newCatalogName).
-			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
-			HasOAuthRestAuthenticationOauthTokenUri(oAuthTokenUri).
-			HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
-			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
+			HasRestConfig(newCatalogUri, newPrefix, newCatalogName, sdk.CatalogIntegrationCatalogApiTypePrivate, sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
+			HasOAuthRestAuthentication(oAuthTokenUri, oAuthClientId, oAuthAllowedScope),
 	}
 
 	moreForceNewAssertionsWithChangedSecret := append(
@@ -447,14 +417,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasCatalogNamespace(newCatalogNamespace),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasRestConfigCatalogUri(newCatalogUri).
-			HasRestConfigPrefix(newPrefix).
-			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
-			HasRestConfigCatalogName(newCatalogName).
-			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
-			HasOAuthRestAuthenticationOauthTokenUri(newOAuthTokenUri).
-			HasOAuthRestAuthenticationOauthClientId(newOAuthClientId).
-			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope, additionalOAuthAllowedScope),
+			HasRestConfig(newCatalogUri, newPrefix, newCatalogName, sdk.CatalogIntegrationCatalogApiTypePrivate, sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
+			HasOAuthRestAuthentication(newOAuthTokenUri, newOAuthClientId, oAuthAllowedScope, additionalOAuthAllowedScope),
 	}
 
 	withBearerTokenAssertions := append([]assert.TestCheckFuncProvider{
@@ -958,11 +922,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace("").
-			HasRestConfigCatalogUri(catalogUri).
-			HasRestConfigPrefix("").
-			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
-			HasRestConfigCatalogName("").
-			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
+			HasRestConfig(catalogUri, "", "", sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway, sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
 
 	basicAssertions := append([]assert.TestCheckFuncProvider{
@@ -1127,8 +1087,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				Sigv4ExternalId:    "",
 			}),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasSigv4RestAuthenticationSigv4IamRole(sigV4IamRole).
-			HasSigv4RestAuthenticationSigv4SigningRegion(sigV4SigningRegion).
+			HasSigV4RestAuthentication(sigV4IamRole, sigV4SigningRegion, "").
 			HasId(id).
 			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -1136,11 +1095,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace("").
-			HasRestConfigCatalogUri(catalogUri).
-			HasRestConfigPrefix("").
-			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
-			HasRestConfigCatalogName("").
-			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
+			HasRestConfig(catalogUri, "", "", sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway, sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
 
 	updatedAssertions := append([]assert.TestCheckFuncProvider{
@@ -1166,8 +1121,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				Sigv4ExternalId:    newSigV4ExternalId,
 			}),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasSigv4RestAuthenticationSigv4IamRole(newSigV4IamRole).
-			HasSigv4RestAuthenticationSigv4SigningRegion(newSigV4SigningRegion),
+			HasSigV4RestAuthentication(newSigV4IamRole, newSigV4SigningRegion, newSigV4ExternalId),
 	}, basicAssertions[2:]...)
 
 	withBearerTokenAssertions := append([]assert.TestCheckFuncProvider{
