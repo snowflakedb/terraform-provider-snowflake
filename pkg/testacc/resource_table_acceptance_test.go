@@ -2269,3 +2269,71 @@ resource "snowflake_table" "test_table" {
 }
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), argName)
 }
+
+func TestAcc_Table_AddColumnWithConstantDefault_issue4730(t *testing.T) {
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: tableConfigIssue4730SingleColumn(tableId),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "COLUMN_1"),
+				),
+			},
+			{
+				Config: tableConfigIssue4730AddColumnWithConstantDefault(tableId),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "COLUMN_2"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.default.0.constant", "false"),
+				),
+			},
+		},
+	})
+}
+
+func tableConfigIssue4730SingleColumn(tableId sdk.SchemaObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_table" "test_table" {
+	database = "%[1]s"
+	schema   = "%[2]s"
+	name     = "%[3]s"
+
+	column {
+		name = "COLUMN_1"
+		type = "VARCHAR(16)"
+	}
+}
+`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
+}
+
+func tableConfigIssue4730AddColumnWithConstantDefault(tableId sdk.SchemaObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_table" "test_table" {
+	database = "%[1]s"
+	schema   = "%[2]s"
+	name     = "%[3]s"
+
+	column {
+		name = "COLUMN_1"
+		type = "VARCHAR(16)"
+	}
+	column {
+		name = "COLUMN_2"
+		type = "BOOLEAN"
+		default {
+			constant = "false"
+		}
+	}
+}
+`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
+}
