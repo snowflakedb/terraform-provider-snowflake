@@ -18,9 +18,8 @@ func NotebookShowOutput(t *testing.T, name string) *NotebookShowOutputAssert {
 	t.Helper()
 
 	notebookAssert := NotebookShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	notebookAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &notebookAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedNotebookShowOutput(t *testing.T, id string) *NotebookShowOutputAsse
 	t.Helper()
 
 	notebookAssert := NotebookShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	notebookAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &notebookAssert
+}
+
+func NotebooksDatasourceShowOutput(t *testing.T, name string) *NotebookShowOutputAssert {
+	t.Helper()
+
+	return NotebooksDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func NotebooksDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *NotebookShowOutputAssert {
+	t.Helper()
+
+	notebookAssert := NotebookShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "notebooks", idx),
+	}
 	return &notebookAssert
 }
 
@@ -39,52 +52,52 @@ func ImportedNotebookShowOutput(t *testing.T, id string) *NotebookShowOutputAsse
 ////////////////////////////
 
 func (n *NotebookShowOutputAssert) HasCreatedOn(expected time.Time) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	n.StringValueSet("created_on", expected.String())
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasName(expected string) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	n.StringValueSet("name", expected)
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasDatabaseName(expected string) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	n.StringValueSet("database_name", expected)
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasSchemaName(expected string) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	n.StringValueSet("schema_name", expected)
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasComment(expected string) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	n.StringValueSet("comment", expected)
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasOwner(expected string) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	n.StringValueSet("owner", expected)
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("query_warehouse", expected.Name()))
+	n.StringValueSet("query_warehouse", expected.Name())
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasUrlId(expected string) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("url_id", expected))
+	n.StringValueSet("url_id", expected)
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasOwnerRoleType(expected string) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	n.StringValueSet("owner_role_type", expected)
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasCodeWarehouse(expected sdk.AccountObjectIdentifier) *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("code_warehouse", expected.Name()))
+	n.StringValueSet("code_warehouse", expected.Name())
 	return n
 }
 
@@ -93,51 +106,51 @@ func (n *NotebookShowOutputAssert) HasCodeWarehouse(expected sdk.AccountObjectId
 ///////////////////////////////
 
 func (n *NotebookShowOutputAssert) HasNoCreatedOn() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	n.ValueNotSet("created_on")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoName() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	n.ValueNotSet("name")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoDatabaseName() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	n.ValueNotSet("database_name")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoSchemaName() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	n.ValueNotSet("schema_name")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoComment() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	n.ValueNotSet("comment")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoOwner() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	n.ValueNotSet("owner")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoQueryWarehouse() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("query_warehouse"))
+	n.ValueNotSet("query_warehouse")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoUrlId() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("url_id"))
+	n.ValueNotSet("url_id")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoOwnerRoleType() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	n.ValueNotSet("owner_role_type")
 	return n
 }
 
 func (n *NotebookShowOutputAssert) HasNoCodeWarehouse() *NotebookShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("code_warehouse"))
+	n.ValueNotSet("code_warehouse")
 	return n
 }
