@@ -18,9 +18,8 @@ func WarehouseShowOutput(t *testing.T, name string) *WarehouseShowOutputAssert {
 	t.Helper()
 
 	warehouseAssert := WarehouseShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	warehouseAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &warehouseAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedWarehouseShowOutput(t *testing.T, id string) *WarehouseShowOutputAs
 	t.Helper()
 
 	warehouseAssert := WarehouseShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	warehouseAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &warehouseAssert
+}
+
+func WarehousesDatasourceShowOutput(t *testing.T, name string) *WarehouseShowOutputAssert {
+	t.Helper()
+
+	return WarehousesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func WarehousesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *WarehouseShowOutputAssert {
+	t.Helper()
+
+	warehouseAssert := WarehouseShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "warehouses", idx),
+	}
 	return &warehouseAssert
 }
 
@@ -39,157 +52,182 @@ func ImportedWarehouseShowOutput(t *testing.T, id string) *WarehouseShowOutputAs
 ////////////////////////////
 
 func (w *WarehouseShowOutputAssert) HasName(expected string) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	w.StringValueSet("name", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasState(expected sdk.WarehouseState) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("state", expected))
+	w.StringValueSet("state", string(expected))
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasType(expected sdk.WarehouseType) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("type", expected))
+	w.StringValueSet("type", string(expected))
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasSize(expected sdk.WarehouseSize) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("size", expected))
+	w.StringValueSet("size", string(expected))
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasMinClusterCount(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("min_cluster_count", expected))
+	w.IntValueSet("min_cluster_count", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasMaxClusterCount(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("max_cluster_count", expected))
+	w.IntValueSet("max_cluster_count", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasStartedClusters(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("started_clusters", expected))
+	w.IntValueSet("started_clusters", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasRunning(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("running", expected))
+	w.IntValueSet("running", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasQueued(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("queued", expected))
+	w.IntValueSet("queued", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasIsDefault(expected bool) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_default", expected))
+	w.BoolValueSet("is_default", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasIsCurrent(expected bool) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_current", expected))
+	w.BoolValueSet("is_current", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasAutoSuspend(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("auto_suspend", expected))
+	w.IntValueSet("auto_suspend", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasAutoResume(expected bool) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputBoolValueSet("auto_resume", expected))
+	w.BoolValueSet("auto_resume", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasAvailable(expected float64) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputFloatValueSet("available", expected))
+	w.FloatValueSet("available", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasProvisioning(expected float64) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputFloatValueSet("provisioning", expected))
+	w.FloatValueSet("provisioning", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasQuiescing(expected float64) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputFloatValueSet("quiescing", expected))
+	w.FloatValueSet("quiescing", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasOther(expected float64) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputFloatValueSet("other", expected))
+	w.FloatValueSet("other", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasCreatedOn(expected time.Time) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	w.StringValueSet("created_on", expected.String())
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasResumedOn(expected time.Time) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("resumed_on", expected.String()))
+	w.StringValueSet("resumed_on", expected.String())
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasUpdatedOn(expected time.Time) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("updated_on", expected.String()))
+	w.StringValueSet("updated_on", expected.String())
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasOwner(expected string) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	w.StringValueSet("owner", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasComment(expected string) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	w.StringValueSet("comment", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasEnableQueryAcceleration(expected bool) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputBoolValueSet("enable_query_acceleration", expected))
+	w.BoolValueSet("enable_query_acceleration", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasQueryAccelerationMaxScaleFactor(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("query_acceleration_max_scale_factor", expected))
+	w.IntValueSet("query_acceleration_max_scale_factor", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasResourceMonitor(expected sdk.AccountObjectIdentifier) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("resource_monitor", expected.Name()))
+	w.StringValueSet("resource_monitor", expected.Name())
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasActives(expected string) *WarehouseShowOutputAssert {
+	w.StringValueSet("actives", expected)
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasPendings(expected string) *WarehouseShowOutputAssert {
+	w.StringValueSet("pendings", expected)
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasFailed(expected string) *WarehouseShowOutputAssert {
+	w.StringValueSet("failed", expected)
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasSuspended(expected string) *WarehouseShowOutputAssert {
+	w.StringValueSet("suspended", expected)
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasUuid(expected string) *WarehouseShowOutputAssert {
+	w.StringValueSet("uuid", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasScalingPolicy(expected sdk.ScalingPolicy) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("scaling_policy", expected))
+	w.StringValueSet("scaling_policy", string(expected))
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasOwnerRoleType(expected string) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	w.StringValueSet("owner_role_type", expected)
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasResourceConstraint(expected sdk.WarehouseResourceConstraint) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("resource_constraint", expected))
+	w.StringValueSet("resource_constraint", string(expected))
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasGeneration(expected sdk.WarehouseGeneration) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("generation", expected))
+	w.StringValueSet("generation", string(expected))
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasMaxQueryPerformanceLevel(expected sdk.MaxQueryPerformanceLevel) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("max_query_performance_level", expected))
+	w.StringValueSet("max_query_performance_level", string(expected))
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasQueryThroughputMultiplier(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("query_throughput_multiplier", expected))
+	w.IntValueSet("query_throughput_multiplier", expected)
 	return w
 }
 
@@ -198,156 +236,181 @@ func (w *WarehouseShowOutputAssert) HasQueryThroughputMultiplier(expected int) *
 ///////////////////////////////
 
 func (w *WarehouseShowOutputAssert) HasNoName() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	w.ValueNotSet("name")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoState() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
+	w.ValueNotSet("state")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoType() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("type"))
+	w.ValueNotSet("type")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoSize() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("size"))
+	w.ValueNotSet("size")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoMinClusterCount() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_cluster_count"))
+	w.ValueNotSet("min_cluster_count")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoMaxClusterCount() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_cluster_count"))
+	w.ValueNotSet("max_cluster_count")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoStartedClusters() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("started_clusters"))
+	w.ValueNotSet("started_clusters")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoRunning() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("running"))
+	w.ValueNotSet("running")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoQueued() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("queued"))
+	w.ValueNotSet("queued")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoIsDefault() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_default"))
+	w.ValueNotSet("is_default")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoIsCurrent() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_current"))
+	w.ValueNotSet("is_current")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoAutoSuspend() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("auto_suspend"))
+	w.ValueNotSet("auto_suspend")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoAutoResume() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("auto_resume"))
+	w.ValueNotSet("auto_resume")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoAvailable() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("available"))
+	w.ValueNotSet("available")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoProvisioning() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("provisioning"))
+	w.ValueNotSet("provisioning")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoQuiescing() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("quiescing"))
+	w.ValueNotSet("quiescing")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoOther() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("other"))
+	w.ValueNotSet("other")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoCreatedOn() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	w.ValueNotSet("created_on")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoResumedOn() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueNotSet("resumed_on"))
+	w.ValueNotSet("resumed_on")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoUpdatedOn() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
+	w.ValueNotSet("updated_on")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoOwner() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	w.ValueNotSet("owner")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoComment() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	w.ValueNotSet("comment")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoEnableQueryAcceleration() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("enable_query_acceleration"))
+	w.ValueNotSet("enable_query_acceleration")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoQueryAccelerationMaxScaleFactor() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("query_acceleration_max_scale_factor"))
+	w.ValueNotSet("query_acceleration_max_scale_factor")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoResourceMonitor() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("resource_monitor"))
+	w.ValueNotSet("resource_monitor")
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoActives() *WarehouseShowOutputAssert {
+	w.ValueNotSet("actives")
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoPendings() *WarehouseShowOutputAssert {
+	w.ValueNotSet("pendings")
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoFailed() *WarehouseShowOutputAssert {
+	w.ValueNotSet("failed")
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoSuspended() *WarehouseShowOutputAssert {
+	w.ValueNotSet("suspended")
+	return w
+}
+
+func (w *WarehouseShowOutputAssert) HasNoUuid() *WarehouseShowOutputAssert {
+	w.ValueNotSet("uuid")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoScalingPolicy() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("scaling_policy"))
+	w.ValueNotSet("scaling_policy")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoOwnerRoleType() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	w.ValueNotSet("owner_role_type")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoResourceConstraint() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("resource_constraint"))
+	w.ValueNotSet("resource_constraint")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoGeneration() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("generation"))
+	w.ValueNotSet("generation")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoMaxQueryPerformanceLevel() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("max_query_performance_level"))
+	w.ValueNotSet("max_query_performance_level")
 	return w
 }
 
 func (w *WarehouseShowOutputAssert) HasNoQueryThroughputMultiplier() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("query_throughput_multiplier"))
+	w.ValueNotSet("query_throughput_multiplier")
 	return w
 }
