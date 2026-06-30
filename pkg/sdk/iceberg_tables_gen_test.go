@@ -20,7 +20,15 @@ func init() {
 
 func TestIcebergTables_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateIcebergTableOptions
+	aggregationPolicyId := randomSchemaObjectIdentifier()
+	rowAccessPolicyId := randomSchemaObjectIdentifier()
+	maskingPolicyId := randomSchemaObjectIdentifier()
+	projectionPolicyId := randomSchemaObjectIdentifier()
+	tagId1 := randomSchemaObjectIdentifier()
+	tagId2 := randomSchemaObjectIdentifier()
+
+	// Minimal valid CreateIcebergTableOptions.
+	// AggregationPolicy is a required-by-validation non-pointer struct; provide a valid identifier so opts pass validation.
 	defaultOpts := func() *CreateIcebergTableOptions {
 		return &CreateIcebergTableOptions{
 			name: id,
@@ -34,53 +42,896 @@ func TestIcebergTables_Create(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("validation: exactly one field from [opts.PartitionBy.Identity opts.PartitionBy.Bucket opts.PartitionBy.Truncate opts.PartitionBy.Year opts.PartitionBy.Month opts.PartitionBy.Day opts.PartitionBy.Hour] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"))
-	})
-
-	t.Run("validation: valid identifier for [opts.RowAccessPolicy.Name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+		opts.PartitionBy = []IcebergTablePartitionExpression{
+			{},
+			{},
+		}
+		assertOptsInvalidJoinedErrors(
+			t, opts,
+			errExactlyOneOf("CreateIcebergTableOptions.PartitionBy", "Identity", "Bucket", "Truncate", "Year", "Month", "Day", "Hour"),
+		)
 	})
 
 	t.Run("validation: valid identifier for [opts.AggregationPolicy.AggregationPolicy]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
+			AggregationPolicy: emptySchemaObjectIdentifier,
+		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.ColumnsAndConstraints.Columns[*].InlineConstraint.UniquePK opts.ColumnsAndConstraints.Columns[*].InlineConstraint.FK opts.ColumnsAndConstraints.Columns[*].InlineConstraint.CH] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:             "ID",
+					ColumnType:       dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint", "UniquePK", "FK", "CH"))
+	})
+
+	t.Run("validation: inline constraint - more than one of [UniquePK FK CH] cannot be set", func(t *testing.T) {
+		refId := randomSchemaObjectIdentifier()
+		path := "CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint"
+		t.Run("UniquePK + FK", func(t *testing.T) {
+			opts := defaultOpts()
+			opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+				Columns: []IcebergTableColumn{
+					{
+						Name:       "ID",
+						ColumnType: dataTypeNumber,
+						InlineConstraint: &TableColumnInlineConstraint{
+							UniquePK: &TableColumnInlineUniquePK{Unique: new(true)},
+							FK:       &TableColumnInlineFK{References: refId},
+						},
+					},
+				},
+			}
+			assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		})
+		t.Run("UniquePK + CH", func(t *testing.T) {
+			opts := defaultOpts()
+			opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+				Columns: []IcebergTableColumn{
+					{
+						Name:       "ID",
+						ColumnType: dataTypeNumber,
+						InlineConstraint: &TableColumnInlineConstraint{
+							UniquePK: &TableColumnInlineUniquePK{Unique: new(true)},
+							CH:       &TableColumnInlineCH{Expression: "ID > 0"},
+						},
+					},
+				},
+			}
+			assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		})
+		t.Run("FK + CH", func(t *testing.T) {
+			opts := defaultOpts()
+			opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+				Columns: []IcebergTableColumn{
+					{
+						Name:       "ID",
+						ColumnType: dataTypeNumber,
+						InlineConstraint: &TableColumnInlineConstraint{
+							FK: &TableColumnInlineFK{References: refId},
+							CH: &TableColumnInlineCH{Expression: "ID > 0"},
+						},
+					},
+				},
+			}
+			assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		})
+		t.Run("UniquePK + FK + CH", func(t *testing.T) {
+			opts := defaultOpts()
+			opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+				Columns: []IcebergTableColumn{
+					{
+						Name:       "ID",
+						ColumnType: dataTypeNumber,
+						InlineConstraint: &TableColumnInlineConstraint{
+							UniquePK: &TableColumnInlineUniquePK{Unique: new(true)},
+							FK:       &TableColumnInlineFK{References: refId},
+							CH:       &TableColumnInlineCH{Expression: "ID > 0"},
+						},
+					},
+				},
+			}
+			assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		})
+	})
+
+	t.Run("validation: inline UniquePK - exactly one of [Unique PrimaryKey] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						UniquePK: &TableColumnInlineUniquePK{},
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
+	})
+
+	t.Run("validation: inline UniquePK - conflicting paired flags", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						UniquePK: &TableColumnInlineUniquePK{
+							Unique:             new(true),
+							PrimaryKey:         new(true),
+							Enforced:           new(true),
+							NotEnforced:        new(true),
+							Deferrable:         new(true),
+							NotDeferrable:      new(true),
+							InitiallyDeferred:  new(true),
+							InitiallyImmediate: new(true),
+							Enable:             new(true),
+							Disable:            new(true),
+							Validate:           new(true),
+							Novalidate:         new(true),
+							Rely:               new(true),
+							Norely:             new(true),
+						},
+					},
+				},
+			},
+		}
+		upPath := "CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.UniquePK"
+		assertOptsInvalidJoinedErrors(
+			t, opts,
+			errOneOf(upPath, "Enforced", "NotEnforced"),
+			errOneOf(upPath, "Deferrable", "NotDeferrable"),
+			errOneOf(upPath, "InitiallyDeferred", "InitiallyImmediate"),
+			errOneOf(upPath, "Enable", "Disable"),
+			errOneOf(upPath, "Validate", "Novalidate"),
+			errOneOf(upPath, "Rely", "Norely"),
+			errExactlyOneOf(upPath, "Unique", "PrimaryKey"),
+		)
+	})
+
+	t.Run("validation: inline FK - conflicting paired flags", func(t *testing.T) {
+		refId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						FK: &TableColumnInlineFK{
+							References:         refId,
+							Enforced:           new(true),
+							NotEnforced:        new(true),
+							Deferrable:         new(true),
+							NotDeferrable:      new(true),
+							InitiallyDeferred:  new(true),
+							InitiallyImmediate: new(true),
+							Enable:             new(true),
+							Disable:            new(true),
+							Validate:           new(true),
+							Novalidate:         new(true),
+							Rely:               new(true),
+							Norely:             new(true),
+						},
+					},
+				},
+			},
+		}
+		fkPath := "CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.FK"
+		assertOptsInvalidJoinedErrors(
+			t, opts,
+			errOneOf(fkPath, "Enforced", "NotEnforced"),
+			errOneOf(fkPath, "Deferrable", "NotDeferrable"),
+			errOneOf(fkPath, "InitiallyDeferred", "InitiallyImmediate"),
+			errOneOf(fkPath, "Enable", "Disable"),
+			errOneOf(fkPath, "Validate", "Novalidate"),
+			errOneOf(fkPath, "Rely", "Norely"),
+		)
+	})
+
+	t.Run("validation: inline FK - invalid References identifier", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						FK: &TableColumnInlineFK{
+							References: emptySchemaObjectIdentifier,
+						},
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: inline CH - conflicting EnableValidate / EnableNovalidate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						CH: &TableColumnInlineCH{
+							Expression:       "ID > 0",
+							EnableValidate:   new(true),
+							EnableNovalidate: new(true),
+						},
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].InlineConstraint.CH", "EnableValidate", "EnableNovalidate"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE %s`, id.FullyQualifiedName())
+	})
+
+	t.Run("if not exists", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfNotExists = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE IF NOT EXISTS %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.OrReplace = new(true)
+		opts.Transient = new(true)
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					DefaultValue: &ColumnDefaultValue{
+						Expression: new("1"),
+					},
+					NotNull: new(true),
+					MaskingPolicy: &TableColumnMaskingPolicy{
+						MaskingPolicy: maskingPolicyId,
+						Using:         []Column{{"ID"}, {"NAME"}},
+					},
+					ProjectionPolicy: &TableColumnProjectionPolicy{
+						ProjectionPolicy: projectionPolicyId,
+					},
+					Tag: []TagAssociation{
+						{Name: tagId1, Value: "v1"},
+						{Name: tagId2, Value: "v2"},
+					},
+					Comment: new("id column"),
+				},
+				{
+					Name:       "NAME",
+					ColumnType: dataTypeVarchar,
+					Comment:    new("name column"),
+				},
+			},
+		}
+		opts.PartitionBy = []IcebergTablePartitionExpression{
+			{
+				Identity: new("ID"),
+			},
+			{
+				Bucket: &IcebergTablePartitionBucket{
+					Args: IcebergTablePartitionBucketArgs{NumBuckets: 4, Column: "NAME"},
+				},
+			},
+			{
+				Truncate: &IcebergTablePartitionTruncate{
+					Args: IcebergTablePartitionTruncateArgs{Width: 10, Column: "C1"},
+				},
+			},
+			{
+				Year: &IcebergTablePartitionYear{
+					Args: IcebergTablePartitionTimeArgs{Column: "C2"},
+				},
+			},
+			{
+				Month: &IcebergTablePartitionMonth{
+					Args: IcebergTablePartitionTimeArgs{Column: "C3"},
+				},
+			},
+			{
+				Day: &IcebergTablePartitionDay{
+					Args: IcebergTablePartitionTimeArgs{Column: "C4"},
+				},
+			},
+			{
+				Hour: &IcebergTablePartitionHour{
+					Args: IcebergTablePartitionTimeArgs{Column: "C5"},
+				},
+			},
+		}
+		opts.PathLayout = new(IcebergTablePathLayoutHierarchical)
+		opts.ClusterBy = []string{`"col1"`, `"col2"`}
+		opts.ExternalVolume = new(NewAccountObjectIdentifier("vol1"))
+		opts.Catalog = new(IcebergTableCatalogSnowflake)
+		opts.BaseLocation = new("base/loc")
+		opts.TargetFileSize = new(IcebergTableTargetFileSize64mb)
+		opts.CatalogSync = new("integration1")
+		opts.StorageSerializationPolicy = new(StorageSerializationPolicyOptimized)
+		opts.DataRetentionTimeInDays = new(1)
+		opts.MaxDataExtensionTimeInDays = new(2)
+		opts.ChangeTracking = new(true)
+		opts.CopyGrants = new(true)
+		opts.ErrorLogging = new(true)
+		opts.Comment = new("test comment")
+		opts.IcebergVersion = new(2)
+		opts.EnableIcebergMergeOnRead = new(true)
+		opts.RowAccessPolicy = &IcebergTableRowAccessPolicy{
+			Name: rowAccessPolicyId,
+			On:   []Column{{"ID"}, {"NAME"}},
+		}
+		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
+			AggregationPolicy: aggregationPolicyId,
+		}
+		opts.Tag = []TagAssociation{
+			{Name: tagId1, Value: "v1"},
+			{Name: tagId2, Value: "v2"},
+		}
+		opts.EnableDataCompaction = new(true)
+		opts.Contact = []TableContact{
+			{Purpose: "SUPPORT", Contact: contactId},
+			{Purpose: "ACCESS_APPROVAL", Contact: contactId},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE OR REPLACE TRANSIENT ICEBERG TABLE %s `+
+				`("ID" NUMBER(38, 0) DEFAULT 1 NOT NULL MASKING POLICY %s USING ("ID", "NAME") PROJECTION POLICY %s TAG (%s = 'v1', %s = 'v2') COMMENT 'id column', `+
+				`"NAME" VARCHAR(16777216) COMMENT 'name column') `+
+				`PARTITION BY ("ID", BUCKET (4, "NAME"), TRUNCATE (10, "C1"), YEAR ("C2"), MONTH ("C3"), DAY ("C4"), HOUR ("C5")) `+
+				`PATH_LAYOUT = HIERARCHICAL `+
+				`CLUSTER BY ("col1", "col2") `+
+				`EXTERNAL_VOLUME = '\"vol1\"' `+
+				`CATALOG = 'SNOWFLAKE' `+
+				`BASE_LOCATION = 'base/loc' `+
+				`TARGET_FILE_SIZE = '64MB' `+
+				`CATALOG_SYNC = 'integration1' `+
+				`STORAGE_SERIALIZATION_POLICY = OPTIMIZED `+
+				`DATA_RETENTION_TIME_IN_DAYS = 1 `+
+				`MAX_DATA_EXTENSION_TIME_IN_DAYS = 2 `+
+				`CHANGE_TRACKING = true `+
+				`COPY GRANTS `+
+				`ERROR_LOGGING = true `+
+				`COMMENT = 'test comment' `+
+				`ICEBERG_VERSION = 2 `+
+				`ENABLE_ICEBERG_MERGE_ON_READ = true `+
+				`ROW ACCESS POLICY %s ON ("ID", "NAME") `+
+				`AGGREGATION POLICY %s `+
+				`TAG (%s = 'v1', %s = 'v2') `+
+				`ENABLE_DATA_COMPACTION = true `+
+				`WITH CONTACT (SUPPORT = %s, ACCESS_APPROVAL = %s)`,
+			id.FullyQualifiedName(),
+			maskingPolicyId.FullyQualifiedName(),
+			projectionPolicyId.FullyQualifiedName(),
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			rowAccessPolicyId.FullyQualifiedName(),
+			aggregationPolicyId.FullyQualifiedName(),
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(), contactId.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with inline UNIQUE constraint - all fields", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						UniquePK: &TableColumnInlineUniquePK{
+							Name:              new("uq_id"),
+							Unique:            new(true),
+							Enforced:          new(true),
+							Deferrable:        new(true),
+							InitiallyDeferred: new(true),
+							Enable:            new(true),
+							Validate:          new(true),
+							Rely:              new(true),
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0) CONSTRAINT "uq_id" UNIQUE ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY)`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with inline PRIMARY KEY constraint - negated paired flags", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						UniquePK: &TableColumnInlineUniquePK{
+							Name:               new("pk_id"),
+							PrimaryKey:         new(true),
+							NotEnforced:        new(true),
+							NotDeferrable:      new(true),
+							InitiallyImmediate: new(true),
+							Disable:            new(true),
+							Novalidate:         new(true),
+							Norely:             new(true),
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0) CONSTRAINT "pk_id" PRIMARY KEY NOT ENFORCED NOT DEFERRABLE INITIALLY IMMEDIATE DISABLE NOVALIDATE NORELY)`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with inline FOREIGN KEY constraint - all fields", func(t *testing.T) {
+		refId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						FK: &TableColumnInlineFK{
+							Name:       new("fk_id"),
+							ForeignKey: new(true),
+							References: refId,
+							RefColumn:  []Column{{Value: "REF_COL"}},
+							Match:      new(FullMatchType),
+							On: &ForeignKeyOnAction{
+								OnUpdate: new(ForeignKeySetNullAction),
+								OnDelete: new(ForeignKeyRestrictAction),
+							},
+							Enforced:          new(true),
+							Deferrable:        new(true),
+							InitiallyDeferred: new(true),
+							Enable:            new(true),
+							Validate:          new(true),
+							Rely:              new(true),
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0) CONSTRAINT "fk_id" FOREIGN KEY REFERENCES %s ("REF_COL") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY)`,
+			id.FullyQualifiedName(),
+			refId.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with inline CHECK constraint - enable validate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						CH: &TableColumnInlineCH{
+							Name:           new("ck_id"),
+							Expression:     "ID > 0",
+							EnableValidate: new(true),
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0) CONSTRAINT "ck_id" CHECK ( ID > 0 ) ENABLE VALIDATE)`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with inline CHECK constraint - enable novalidate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{
+					Name:       "ID",
+					ColumnType: dataTypeNumber,
+					InlineConstraint: &TableColumnInlineConstraint{
+						CH: &TableColumnInlineCH{
+							Name:             new("ck_id"),
+							Expression:       "ID > 0",
+							EnableNovalidate: new(true),
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0) CONSTRAINT "ck_id" CHECK ( ID > 0 ) ENABLE NOVALIDATE)`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with out-of-line constraints - all variants", func(t *testing.T) {
+		fkRefId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					UniquePK: &TableOutOfLineUniquePK{
+						Name:    new("uq_c"),
+						Unique:  new(true),
+						Columns: []Column{{Value: "ID"}},
+					},
+				},
+				{
+					UniquePK: &TableOutOfLineUniquePK{
+						Name:       new("pk_c"),
+						PrimaryKey: new(true),
+						Columns:    []Column{{Value: "ID"}},
+					},
+				},
+				{
+					FK: &TableOutOfLineFK{
+						Name:       new("fk_c"),
+						Columns:    []Column{{Value: "ID"}},
+						References: fkRefId,
+						RefColumns: []Column{{Value: "COL_A"}, {Value: "COL_B"}},
+						Match:      new(SimpleMatchType),
+						On: &ForeignKeyOnAction{
+							OnUpdate: new(ForeignKeyCascadeAction),
+							OnDelete: new(ForeignKeyNoAction),
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0), CONSTRAINT "uq_c" UNIQUE ("ID"), CONSTRAINT "pk_c" PRIMARY KEY ("ID"), CONSTRAINT "fk_c" FOREIGN KEY ("ID") REFERENCES %s ("COL_A", "COL_B") MATCH SIMPLE ON UPDATE CASCADE ON DELETE NO ACTION)`,
+			id.FullyQualifiedName(),
+			fkRefId.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with out-of-line UNIQUE constraint - all fields including COMMENT", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					UniquePK: &TableOutOfLineUniquePK{
+						Name:              new("uq_full"),
+						Unique:            new(true),
+						Columns:           []Column{{Value: "ID"}},
+						Enforced:          new(true),
+						Deferrable:        new(true),
+						InitiallyDeferred: new(true),
+						Enable:            new(true),
+						Validate:          new(true),
+						Rely:              new(true),
+						Comment:           new("uq note"),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0), CONSTRAINT "uq_full" UNIQUE ("ID") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY COMMENT 'uq note')`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with out-of-line PRIMARY KEY constraint - negated paired flags + COMMENT", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					UniquePK: &TableOutOfLineUniquePK{
+						Name:               new("pk_full"),
+						PrimaryKey:         new(true),
+						Columns:            []Column{{Value: "ID"}},
+						NotEnforced:        new(true),
+						NotDeferrable:      new(true),
+						InitiallyImmediate: new(true),
+						Disable:            new(true),
+						Novalidate:         new(true),
+						Norely:             new(true),
+						Comment:            new("pk note"),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0), CONSTRAINT "pk_full" PRIMARY KEY ("ID") NOT ENFORCED NOT DEFERRABLE INITIALLY IMMEDIATE DISABLE NOVALIDATE NORELY COMMENT 'pk note')`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with out-of-line FOREIGN KEY constraint - all fields including COMMENT", func(t *testing.T) {
+		fkRefId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					FK: &TableOutOfLineFK{
+						Name:       new("fk_full"),
+						Columns:    []Column{{Value: "ID"}},
+						References: fkRefId,
+						RefColumns: []Column{{Value: "COL_A"}},
+						Match:      new(PartialMatchType),
+						On: &ForeignKeyOnAction{
+							OnUpdate: new(ForeignKeySetNullAction),
+							OnDelete: new(ForeignKeySetDefaultAction),
+						},
+						Enforced:          new(true),
+						Deferrable:        new(true),
+						InitiallyDeferred: new(true),
+						Enable:            new(true),
+						Validate:          new(true),
+						Rely:              new(true),
+						Comment:           new("fk note"),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0), CONSTRAINT "fk_full" FOREIGN KEY ("ID") REFERENCES %s ("COL_A") MATCH PARTIAL ON UPDATE SET NULL ON DELETE SET DEFAULT ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY COMMENT 'fk note')`,
+			id.FullyQualifiedName(),
+			fkRefId.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with out-of-line CHECK constraint - enable validate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					CH: &TableOutOfLineCH{
+						Name:           new("ck_out"),
+						Expression:     "ID > 0",
+						EnableValidate: new(true),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0), CONSTRAINT "ck_out" CHECK ( ID > 0 ) ENABLE VALIDATE)`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("with out-of-line CHECK constraint - enable novalidate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					CH: &TableOutOfLineCH{
+						Name:             new("ck_out"),
+						Expression:       "ID > 0",
+						EnableNovalidate: new(true),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`CREATE ICEBERG TABLE %s ("ID" NUMBER(38, 0), CONSTRAINT "ck_out" CHECK ( ID > 0 ) ENABLE NOVALIDATE)`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("validation: out-of-line constraint - exactly one of [UniquePK FK CH] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{{}},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]", "UniquePK", "FK", "CH"))
+	})
+
+	t.Run("validation: out-of-line constraint - more than one of [UniquePK FK CH] cannot be set", func(t *testing.T) {
+		refId := randomSchemaObjectIdentifier()
+		path := "CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0]"
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					UniquePK: &TableOutOfLineUniquePK{Unique: new(true), Columns: []Column{{Value: "ID"}}},
+					FK:       &TableOutOfLineFK{References: refId, Columns: []Column{{Value: "ID"}}},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+	})
+
+	t.Run("validation: out-of-line UniquePK - exactly one of [Unique PrimaryKey] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					UniquePK: &TableOutOfLineUniquePK{Columns: []Column{{Value: "ID"}}},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK", "Unique", "PrimaryKey"))
+	})
+
+	t.Run("validation: out-of-line UniquePK - conflicting paired flags", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					UniquePK: &TableOutOfLineUniquePK{
+						Unique:             new(true),
+						PrimaryKey:         new(true),
+						Columns:            []Column{{Value: "ID"}},
+						Enforced:           new(true),
+						NotEnforced:        new(true),
+						Deferrable:         new(true),
+						NotDeferrable:      new(true),
+						InitiallyDeferred:  new(true),
+						InitiallyImmediate: new(true),
+						Enable:             new(true),
+						Disable:            new(true),
+						Validate:           new(true),
+						Novalidate:         new(true),
+						Rely:               new(true),
+						Norely:             new(true),
+					},
+				},
+			},
+		}
+		upPath := "CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].UniquePK"
+		assertOptsInvalidJoinedErrors(
+			t, opts,
+			errOneOf(upPath, "Enforced", "NotEnforced"),
+			errOneOf(upPath, "Deferrable", "NotDeferrable"),
+			errOneOf(upPath, "InitiallyDeferred", "InitiallyImmediate"),
+			errOneOf(upPath, "Enable", "Disable"),
+			errOneOf(upPath, "Validate", "Novalidate"),
+			errOneOf(upPath, "Rely", "Norely"),
+			errExactlyOneOf(upPath, "Unique", "PrimaryKey"),
+		)
+	})
+
+	t.Run("validation: out-of-line FK - conflicting paired flags and invalid References", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					FK: &TableOutOfLineFK{
+						Columns:            []Column{{Value: "ID"}},
+						References:         emptySchemaObjectIdentifier,
+						Enforced:           new(true),
+						NotEnforced:        new(true),
+						Deferrable:         new(true),
+						NotDeferrable:      new(true),
+						InitiallyDeferred:  new(true),
+						InitiallyImmediate: new(true),
+						Enable:             new(true),
+						Disable:            new(true),
+						Validate:           new(true),
+						Novalidate:         new(true),
+						Rely:               new(true),
+						Norely:             new(true),
+					},
+				},
+			},
+		}
+		fkPath := "CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].FK"
+		assertOptsInvalidJoinedErrors(
+			t, opts,
+			errOneOf(fkPath, "Enforced", "NotEnforced"),
+			errOneOf(fkPath, "Deferrable", "NotDeferrable"),
+			errOneOf(fkPath, "InitiallyDeferred", "InitiallyImmediate"),
+			errOneOf(fkPath, "Enable", "Disable"),
+			errOneOf(fkPath, "Validate", "Novalidate"),
+			errOneOf(fkPath, "Rely", "Norely"),
+			ErrInvalidObjectIdentifier,
+		)
+	})
+
+	t.Run("validation: out-of-line CH - conflicting EnableValidate / EnableNovalidate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ColumnsAndConstraints = IcebergTableColumnsAndConstraints{
+			Columns: []IcebergTableColumn{
+				{Name: "ID", ColumnType: dataTypeNumber},
+			},
+			OutOfLineConstraint: []TableOutOfLineConstraint{
+				{
+					CH: &TableOutOfLineCH{
+						Expression:       "ID > 0",
+						EnableValidate:   new(true),
+						EnableNovalidate: new(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[0].CH", "EnableValidate", "EnableNovalidate"))
 	})
 }
 
 func TestIcebergTables_CreateFromIcebergFiles(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
+	externalVolumeId := NewAccountObjectIdentifier("vol1")
+	catalogId := NewAccountObjectIdentifier("cat1")
+	tagId1 := randomSchemaObjectIdentifier()
+	tagId2 := randomSchemaObjectIdentifier()
+
 	// Minimal valid CreateFromIcebergFilesIcebergTableOptions
 	defaultOpts := func() *CreateFromIcebergFilesIcebergTableOptions {
 		return &CreateFromIcebergFilesIcebergTableOptions{
-			name: id,
+			name:             id,
+			MetadataFilePath: "metadata/v1.metadata.json",
 		}
 	}
 
@@ -91,35 +942,73 @@ func TestIcebergTables_CreateFromIcebergFiles(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFromIcebergFilesIcebergTableOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE %s METADATA_FILE_PATH = 'metadata/v1.metadata.json'`, id.FullyQualifiedName())
+	})
+
+	t.Run("if not exists", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfNotExists = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE IF NOT EXISTS %s METADATA_FILE_PATH = 'metadata/v1.metadata.json'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.OrReplace = new(true)
+		opts.ExternalVolume = &externalVolumeId
+		opts.Catalog = &catalogId
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.Comment = new("some comment")
+		opts.Tag = []TagAssociation{
+			{Name: tagId1, Value: "v1"},
+			{Name: tagId2, Value: "v2"},
+		}
+		opts.Contact = []TableContact{
+			{Purpose: "SUPPORT", Contact: contactId},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE OR REPLACE ICEBERG TABLE %s `+
+				`EXTERNAL_VOLUME = '\"%s\"' `+
+				`CATALOG = '\"%s\"' `+
+				`METADATA_FILE_PATH = 'metadata/v1.metadata.json' `+
+				`REPLACE_INVALID_CHARACTERS = true `+
+				`COMMENT = 'some comment' `+
+				`TAG (%s = 'v1', %s = 'v2') `+
+				`WITH CONTACT (SUPPORT = %s)`,
+			id.FullyQualifiedName(),
+			externalVolumeId.Name(),
+			catalogId.Name(),
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(),
+		)
 	})
 }
 
 func TestIcebergTables_CreateFromDeltaLake(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
+	externalVolumeId := NewAccountObjectIdentifier("vol1")
+	catalogId := NewAccountObjectIdentifier("cat1")
+	tagId1 := randomSchemaObjectIdentifier()
+	tagId2 := randomSchemaObjectIdentifier()
+
 	// Minimal valid CreateFromDeltaLakeIcebergTableOptions
 	defaultOpts := func() *CreateFromDeltaLakeIcebergTableOptions {
 		return &CreateFromDeltaLakeIcebergTableOptions{
-			name: id,
+			name:         id,
+			BaseLocation: "my/base/location",
 		}
 	}
 
@@ -130,35 +1019,74 @@ func TestIcebergTables_CreateFromDeltaLake(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFromDeltaLakeIcebergTableOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE %s BASE_LOCATION = 'my/base/location'`, id.FullyQualifiedName())
+	})
+
+	t.Run("if not exists", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfNotExists = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE IF NOT EXISTS %s BASE_LOCATION = 'my/base/location'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.OrReplace = new(true)
+		opts.ExternalVolume = &externalVolumeId
+		opts.Catalog = &catalogId
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.AutoRefresh = new(true)
+		opts.Comment = new("some comment")
+		opts.Tag = []TagAssociation{
+			{Name: tagId1, Value: "v1"},
+			{Name: tagId2, Value: "v2"},
+		}
+		opts.Contact = []TableContact{
+			{Purpose: "SUPPORT", Contact: contactId},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE OR REPLACE ICEBERG TABLE %s `+
+				`EXTERNAL_VOLUME = '\"%s\"' `+
+				`CATALOG = '\"%s\"' `+
+				`BASE_LOCATION = 'my/base/location' `+
+				`REPLACE_INVALID_CHARACTERS = true `+
+				`AUTO_REFRESH = true `+
+				`COMMENT = 'some comment' `+
+				`TAG (%s = 'v1', %s = 'v2') `+
+				`WITH CONTACT (SUPPORT = %s)`,
+			id.FullyQualifiedName(),
+			externalVolumeId.Name(),
+			catalogId.Name(),
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(),
+		)
 	})
 }
 
 func TestIcebergTables_CreateFromIcebergRest(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateFromIcebergRestIcebergTableOptions
+	externalVolumeId := NewAccountObjectIdentifier("vol1")
+	catalogId := NewAccountObjectIdentifier("cat1")
+	tagId1 := randomSchemaObjectIdentifier()
+	tagId2 := randomSchemaObjectIdentifier()
+
 	defaultOpts := func() *CreateFromIcebergRestIcebergTableOptions {
 		return &CreateFromIcebergRestIcebergTableOptions{
-			name: id,
+			name:             id,
+			CatalogTableName: "my_remote_table",
 		}
 	}
 
@@ -169,35 +1097,86 @@ func TestIcebergTables_CreateFromIcebergRest(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFromIcebergRestIcebergTableOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE %s CATALOG_TABLE_NAME = 'my_remote_table'`, id.FullyQualifiedName())
+	})
+
+	t.Run("if not exists", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfNotExists = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE IF NOT EXISTS %s CATALOG_TABLE_NAME = 'my_remote_table'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.OrReplace = new(true)
+		opts.ExternalVolume = &externalVolumeId
+		opts.Catalog = &catalogId
+		opts.CatalogNamespace = new("my_namespace")
+		opts.PathLayout = new(IcebergTablePathLayoutHierarchical)
+		opts.TargetFileSize = new(IcebergTableTargetFileSize64mb)
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.AutoRefresh = new(true)
+		opts.Comment = new("some comment")
+		opts.StorageSerializationPolicy = new(StorageSerializationPolicyOptimized)
+		opts.IcebergMergeOnReadBehavior = new(IcebergTableIcebergMergeOnReadBehaviorEnabled)
+		opts.EnableIcebergMergeOnRead = new(true)
+		opts.Tag = []TagAssociation{
+			{Name: tagId1, Value: "v1"},
+			{Name: tagId2, Value: "v2"},
+		}
+		opts.Contact = []TableContact{
+			{Purpose: "SUPPORT", Contact: contactId},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE OR REPLACE ICEBERG TABLE %s `+
+				`EXTERNAL_VOLUME = '\"%s\"' `+
+				`CATALOG = '\"%s\"' `+
+				`CATALOG_TABLE_NAME = 'my_remote_table' `+
+				`CATALOG_NAMESPACE = 'my_namespace' `+
+				`PATH_LAYOUT = HIERARCHICAL `+
+				`TARGET_FILE_SIZE = '64MB' `+
+				`REPLACE_INVALID_CHARACTERS = true `+
+				`AUTO_REFRESH = true `+
+				`COMMENT = 'some comment' `+
+				`STORAGE_SERIALIZATION_POLICY = OPTIMIZED `+
+				`ICEBERG_MERGE_ON_READ_BEHAVIOR = 'ENABLED' `+
+				`ENABLE_ICEBERG_MERGE_ON_READ = true `+
+				`TAG (%s = 'v1', %s = 'v2') `+
+				`WITH CONTACT (SUPPORT = %s)`,
+			id.FullyQualifiedName(),
+			externalVolumeId.Name(),
+			catalogId.Name(),
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(),
+		)
 	})
 }
 
 func TestIcebergTables_CreateFromAwsGlue(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateFromAwsGlueIcebergTableOptions
+	externalVolumeId := NewAccountObjectIdentifier("vol1")
+	catalogId := NewAccountObjectIdentifier("cat1")
+	tagId1 := randomSchemaObjectIdentifier()
+	tagId2 := randomSchemaObjectIdentifier()
+
 	defaultOpts := func() *CreateFromAwsGlueIcebergTableOptions {
 		return &CreateFromAwsGlueIcebergTableOptions{
-			name: id,
+			name:             id,
+			CatalogTableName: "my_remote_table",
 		}
 	}
 
@@ -208,31 +1187,76 @@ func TestIcebergTables_CreateFromAwsGlue(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFromAwsGlueIcebergTableOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE %s CATALOG_TABLE_NAME = 'my_remote_table'`, id.FullyQualifiedName())
+	})
+
+	t.Run("if not exists", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfNotExists = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE IF NOT EXISTS %s CATALOG_TABLE_NAME = 'my_remote_table'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.OrReplace = new(true)
+		opts.ExternalVolume = &externalVolumeId
+		opts.Catalog = &catalogId
+		opts.CatalogNamespace = new("my_namespace")
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.AutoRefresh = new(true)
+		opts.Comment = new("some comment")
+		opts.Tag = []TagAssociation{
+			{Name: tagId1, Value: "v1"},
+			{Name: tagId2, Value: "v2"},
+		}
+		opts.Contact = []TableContact{
+			{Purpose: "SUPPORT", Contact: contactId},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE OR REPLACE ICEBERG TABLE %s `+
+				`EXTERNAL_VOLUME = '\"%s\"' `+
+				`CATALOG = '\"%s\"' `+
+				`CATALOG_TABLE_NAME = 'my_remote_table' `+
+				`CATALOG_NAMESPACE = 'my_namespace' `+
+				`REPLACE_INVALID_CHARACTERS = true `+
+				`AUTO_REFRESH = true `+
+				`COMMENT = 'some comment' `+
+				`TAG (%s = 'v1', %s = 'v2') `+
+				`WITH CONTACT (SUPPORT = %s)`,
+			id.FullyQualifiedName(),
+			externalVolumeId.Name(),
+			catalogId.Name(),
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(),
+		)
 	})
 }
 
 func TestIcebergTables_Alter(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
+	aggregationPolicyId := randomSchemaObjectIdentifier()
+	joinPolicyId := randomSchemaObjectIdentifier()
+	maskingPolicyId := randomSchemaObjectIdentifier()
+	projectionPolicyId := randomSchemaObjectIdentifier()
+	rowAccessPolicy1Id := randomSchemaObjectIdentifier()
+	rowAccessPolicy2Id := randomSchemaObjectIdentifier()
+	tagId1 := randomSchemaObjectIdentifier()
+	tagId2 := randomSchemaObjectIdentifier()
+
 	// Minimal valid AlterIcebergTableOptions
 	defaultOpts := func() *AlterIcebergTableOptions {
 		return &AlterIcebergTableOptions{
@@ -247,74 +1271,729 @@ func TestIcebergTables_Alter(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one field from [opts.AddColumnAction opts.DropColumnAction opts.RenameColumnAction opts.AlterColumnAction opts.SetMaskingPolicyOnColumn opts.UnsetMaskingPolicyOnColumn opts.SetProjectionPolicyOnColumn opts.UnsetProjectionPolicyOnColumn opts.SetTagsOnColumn opts.UnsetTagsOnColumn opts.ClusteringAction opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.AddRowAccessPolicy opts.DropRowAccessPolicy opts.DropAndAddRowAccessPolicy opts.DropAllRowAccessPolicies opts.SetAggregationPolicy opts.UnsetAggregationPolicy opts.SetJoinPolicy opts.UnsetJoinPolicy opts.SearchOptimizationAction] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions", "AddColumnAction", "DropColumnAction", "RenameColumnAction", "AlterColumnAction", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn", "ClusteringAction", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SearchOptimizationAction"))
 	})
 
 	t.Run("validation: exactly one field from [opts.AlterColumnAction.SetNotNull opts.AlterColumnAction.DropNotNull opts.AlterColumnAction.DataType opts.AlterColumnAction.Comment opts.AlterColumnAction.UnsetComment opts.AlterColumnAction.SetWriteDefault opts.AlterColumnAction.DropWriteDefault] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
+		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
+			{ColumnName: "col1"},
+			{ColumnName: "col2"},
+		}
+		assertOptsInvalidJoinedErrors(
+			t, opts,
+			errExactlyOneOf("AlterIcebergTableOptions.AlterColumnAction", "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"),
+		)
 	})
 
 	t.Run("validation: exactly one field from [opts.ClusteringAction.ClusterBy opts.ClusteringAction.ChangeReclusterState opts.ClusteringAction.DropClusteringKey] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.ClusteringAction = &IcebergTableClusteringAction{}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions.ClusteringAction", "ClusterBy", "ChangeReclusterState", "DropClusteringKey"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.ReplaceInvalidCharacters opts.Set.CatalogSync opts.Set.DataRetentionTimeInDays opts.Set.MaxDataExtensionTimeInDays opts.Set.AutoRefresh opts.Set.TargetFileSize opts.Set.Contact opts.Set.LogEventLevel opts.Set.ErrorLogging opts.Set.EnableDataCompaction opts.Set.EnableIcebergMergeOnRead opts.Set.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Set = &IcebergTableSetProperties{}
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterIcebergTableOptions.Set", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "AutoRefresh", "TargetFileSize", "Contact", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Unset.ReplaceInvalidCharacters opts.Unset.CatalogSync opts.Unset.DataRetentionTimeInDays opts.Unset.MaxDataExtensionTimeInDays opts.Unset.TargetFileSize opts.Unset.LogEventLevel opts.Unset.ErrorLogging opts.Unset.EnableDataCompaction opts.Unset.EnableIcebergMergeOnRead opts.Unset.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Unset = &IcebergTableUnsetProperties{}
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
 	})
 
 	t.Run("validation: valid identifier for [opts.SetAggregationPolicy.AggregationPolicy]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+			AggregationPolicy: emptySchemaObjectIdentifier,
+		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: valid identifier for [opts.SetJoinPolicy.JoinPolicy]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.SetJoinPolicy = &TableSetJoinPolicy{
+			JoinPolicy: emptySchemaObjectIdentifier,
+		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one field from [opts.SearchOptimizationAction.Add opts.SearchOptimizationAction.Drop] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction", "Add", "Drop"))
+	})
+
+	t.Run("validation: AddColumnAction.InlineConstraint - exactly one of [UniquePK FK CH] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddColumnAction = &IcebergTableAddColumnAction{
+			Name:             "NEW_COL",
+			ColumnType:       dataTypeVarchar,
+			InlineConstraint: &TableColumnInlineConstraint{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint", "UniquePK", "FK", "CH"))
+	})
+
+	t.Run("validation: AddColumnAction.InlineConstraint - more than one of [UniquePK FK CH] cannot be set", func(t *testing.T) {
+		refId := randomSchemaObjectIdentifier()
+		path := "AlterIcebergTableOptions.AddColumnAction.InlineConstraint"
+		t.Run("UniquePK + FK", func(t *testing.T) {
+			opts := defaultOpts()
+			opts.AddColumnAction = &IcebergTableAddColumnAction{
+				Name:       "NEW_COL",
+				ColumnType: dataTypeVarchar,
+				InlineConstraint: &TableColumnInlineConstraint{
+					UniquePK: &TableColumnInlineUniquePK{Unique: new(true)},
+					FK:       &TableColumnInlineFK{References: refId},
+				},
+			}
+			assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		})
+		t.Run("UniquePK + CH", func(t *testing.T) {
+			opts := defaultOpts()
+			opts.AddColumnAction = &IcebergTableAddColumnAction{
+				Name:       "NEW_COL",
+				ColumnType: dataTypeVarchar,
+				InlineConstraint: &TableColumnInlineConstraint{
+					UniquePK: &TableColumnInlineUniquePK{Unique: new(true)},
+					CH:       &TableColumnInlineCH{Expression: "NEW_COL IS NOT NULL"},
+				},
+			}
+			assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		})
+		t.Run("FK + CH", func(t *testing.T) {
+			opts := defaultOpts()
+			opts.AddColumnAction = &IcebergTableAddColumnAction{
+				Name:       "NEW_COL",
+				ColumnType: dataTypeVarchar,
+				InlineConstraint: &TableColumnInlineConstraint{
+					FK: &TableColumnInlineFK{References: refId},
+					CH: &TableColumnInlineCH{Expression: "NEW_COL IS NOT NULL"},
+				},
+			}
+			assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		})
+		t.Run("UniquePK + FK + CH", func(t *testing.T) {
+			opts := defaultOpts()
+			opts.AddColumnAction = &IcebergTableAddColumnAction{
+				Name:       "NEW_COL",
+				ColumnType: dataTypeVarchar,
+				InlineConstraint: &TableColumnInlineConstraint{
+					UniquePK: &TableColumnInlineUniquePK{Unique: new(true)},
+					FK:       &TableColumnInlineFK{References: refId},
+					CH:       &TableColumnInlineCH{Expression: "NEW_COL IS NOT NULL"},
+				},
+			}
+			assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf(path, "UniquePK", "FK", "CH"))
+		})
+	})
+
+	t.Run("validation: AddColumnAction.InlineConstraint.UniquePK - conflicting paired flags and missing Unique/PrimaryKey", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddColumnAction = &IcebergTableAddColumnAction{
+			Name:       "NEW_COL",
+			ColumnType: dataTypeVarchar,
+			InlineConstraint: &TableColumnInlineConstraint{
+				UniquePK: &TableColumnInlineUniquePK{
+					Enforced:           new(true),
+					NotEnforced:        new(true),
+					Deferrable:         new(true),
+					NotDeferrable:      new(true),
+					InitiallyDeferred:  new(true),
+					InitiallyImmediate: new(true),
+					Enable:             new(true),
+					Disable:            new(true),
+					Validate:           new(true),
+					Novalidate:         new(true),
+					Rely:               new(true),
+					Norely:             new(true),
+				},
+			},
+		}
+		upPath := "AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK"
+		assertOptsInvalidJoinedErrors(
+			t, opts,
+			errOneOf(upPath, "Enforced", "NotEnforced"),
+			errOneOf(upPath, "Deferrable", "NotDeferrable"),
+			errOneOf(upPath, "InitiallyDeferred", "InitiallyImmediate"),
+			errOneOf(upPath, "Enable", "Disable"),
+			errOneOf(upPath, "Validate", "Novalidate"),
+			errOneOf(upPath, "Rely", "Norely"),
+			errExactlyOneOf(upPath, "Unique", "PrimaryKey"),
+		)
+	})
+
+	t.Run("validation: AddColumnAction.InlineConstraint.FK - conflicting paired flags and invalid References", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddColumnAction = &IcebergTableAddColumnAction{
+			Name:       "NEW_COL",
+			ColumnType: dataTypeVarchar,
+			InlineConstraint: &TableColumnInlineConstraint{
+				FK: &TableColumnInlineFK{
+					References:         emptySchemaObjectIdentifier,
+					Enforced:           new(true),
+					NotEnforced:        new(true),
+					Deferrable:         new(true),
+					NotDeferrable:      new(true),
+					InitiallyDeferred:  new(true),
+					InitiallyImmediate: new(true),
+					Enable:             new(true),
+					Disable:            new(true),
+					Validate:           new(true),
+					Novalidate:         new(true),
+					Rely:               new(true),
+					Norely:             new(true),
+				},
+			},
+		}
+		fkPath := "AlterIcebergTableOptions.AddColumnAction.InlineConstraint.FK"
+		assertOptsInvalidJoinedErrors(
+			t, opts,
+			errOneOf(fkPath, "Enforced", "NotEnforced"),
+			errOneOf(fkPath, "Deferrable", "NotDeferrable"),
+			errOneOf(fkPath, "InitiallyDeferred", "InitiallyImmediate"),
+			errOneOf(fkPath, "Enable", "Disable"),
+			errOneOf(fkPath, "Validate", "Novalidate"),
+			errOneOf(fkPath, "Rely", "Norely"),
+			ErrInvalidObjectIdentifier,
+		)
+	})
+
+	t.Run("validation: AddColumnAction.InlineConstraint.CH - conflicting EnableValidate / EnableNovalidate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddColumnAction = &IcebergTableAddColumnAction{
+			Name:       "NEW_COL",
+			ColumnType: dataTypeVarchar,
+			InlineConstraint: &TableColumnInlineConstraint{
+				CH: &TableColumnInlineCH{
+					Expression:       "NEW_COL > 0",
+					EnableValidate:   new(true),
+					EnableNovalidate: new(true),
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"))
+	})
+
+	t.Run("alter: add column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.AddColumnAction = &IcebergTableAddColumnAction{
+			IfNotExists: new(true),
+			Name:        "NEW_COL",
+			ColumnType:  dataTypeVarchar,
+			DefaultValue: &ColumnDefaultValue{
+				Expression: new("'a'"),
+			},
+			MaskingPolicy: &TableColumnMaskingPolicy{
+				MaskingPolicy: maskingPolicyId,
+				Using:         []Column{{"NEW_COL"}, {"OTHER"}},
+			},
+			ProjectionPolicy: &TableColumnProjectionPolicy{
+				ProjectionPolicy: projectionPolicyId,
+			},
+			Tag: []TagAssociation{
+				{Name: tagId1, Value: "v1"},
+				{Name: tagId2, Value: "v2"},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts, `ALTER ICEBERG TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS "NEW_COL" VARCHAR(16777216) DEFAULT 'a' MASKING POLICY %s USING ("NEW_COL", "OTHER") PROJECTION POLICY %s TAG (%s = 'v1', %s = 'v2')`,
+			id.FullyQualifiedName(),
+			maskingPolicyId.FullyQualifiedName(),
+			projectionPolicyId.FullyQualifiedName(),
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("alter: add column with inline UNIQUE constraint", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddColumnAction = &IcebergTableAddColumnAction{
+			Name:       "NEW_COL",
+			ColumnType: dataTypeVarchar,
+			InlineConstraint: &TableColumnInlineConstraint{
+				UniquePK: &TableColumnInlineUniquePK{
+					Name:              new("uq_new"),
+					Unique:            new(true),
+					Enforced:          new(true),
+					Deferrable:        new(true),
+					InitiallyDeferred: new(true),
+					Enable:            new(true),
+					Validate:          new(true),
+					Rely:              new(true),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`ALTER ICEBERG TABLE %s ADD COLUMN "NEW_COL" VARCHAR(16777216) CONSTRAINT "uq_new" UNIQUE ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("alter: add column with inline FOREIGN KEY constraint", func(t *testing.T) {
+		refId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.AddColumnAction = &IcebergTableAddColumnAction{
+			Name:       "NEW_COL",
+			ColumnType: dataTypeVarchar,
+			InlineConstraint: &TableColumnInlineConstraint{
+				FK: &TableColumnInlineFK{
+					Name:       new("fk_new"),
+					ForeignKey: new(true),
+					References: refId,
+					RefColumn:  []Column{{Value: "REF_COL"}},
+					Match:      new(PartialMatchType),
+					On: &ForeignKeyOnAction{
+						OnUpdate: new(ForeignKeySetDefaultAction),
+						OnDelete: new(ForeignKeyCascadeAction),
+					},
+					NotEnforced:        new(true),
+					NotDeferrable:      new(true),
+					InitiallyImmediate: new(true),
+					Disable:            new(true),
+					Novalidate:         new(true),
+					Norely:             new(true),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`ALTER ICEBERG TABLE %s ADD COLUMN "NEW_COL" VARCHAR(16777216) CONSTRAINT "fk_new" FOREIGN KEY REFERENCES %s ("REF_COL") MATCH PARTIAL ON UPDATE SET DEFAULT ON DELETE CASCADE NOT ENFORCED NOT DEFERRABLE INITIALLY IMMEDIATE DISABLE NOVALIDATE NORELY`,
+			id.FullyQualifiedName(),
+			refId.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("alter: add column with inline CHECK constraint", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddColumnAction = &IcebergTableAddColumnAction{
+			Name:       "NEW_COL",
+			ColumnType: dataTypeVarchar,
+			InlineConstraint: &TableColumnInlineConstraint{
+				CH: &TableColumnInlineCH{
+					Name:           new("ck_new"),
+					Expression:     "LENGTH(NEW_COL) > 0",
+					EnableValidate: new(true),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`ALTER ICEBERG TABLE %s ADD COLUMN "NEW_COL" VARCHAR(16777216) CONSTRAINT "ck_new" CHECK ( LENGTH(NEW_COL) > 0 ) ENABLE VALIDATE`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("alter: drop column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DropColumnAction = &TableDropColumnAction{
+			IfExists: Bool(true),
+			Columns:  []Column{{"col1"}, {"col2"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP COLUMN IF EXISTS "col1", "col2"`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: rename column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.RenameColumnAction = &TableRenameColumnAction{
+			OldName: "old_col",
+			NewName: "new_col",
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s RENAME COLUMN "old_col" TO "new_col"`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: alter column - set not null", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
+			{ColumnName: "col1", SetNotNull: new(true)},
+			{ColumnName: "col2", SetNotNull: new(true)},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET NOT NULL, COLUMN "col2" SET NOT NULL`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: alter column - drop not null", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
+			{ColumnName: "col1", DropNotNull: new(true)},
+			{ColumnName: "col2", DropNotNull: new(true)},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" DROP NOT NULL, COLUMN "col2" DROP NOT NULL`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: alter column - set data type", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
+			{ColumnName: "col1", DataType: &dataTypeVarchar_100},
+			{ColumnName: "col2", DataType: &dataTypeNumber_36_2},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET DATA TYPE VARCHAR(100), COLUMN "col2" SET DATA TYPE NUMBER(36, 2)`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: alter column - comment / unset comment", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
+			{ColumnName: "col1", Comment: new("comment1")},
+			{ColumnName: "col2", UnsetComment: new(true)},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" COMMENT 'comment1', COLUMN "col2" UNSET COMMENT`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: alter column - set/drop write default", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterColumnAction = []IcebergTableAlterColumnAction{
+			{ColumnName: "col1", SetWriteDefault: new("1")},
+			{ColumnName: "col2", DropWriteDefault: new(true)},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET WRITE DEFAULT 1, COLUMN "col2" DROP WRITE DEFAULT`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: set masking policy on column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetMaskingPolicyOnColumn = &TableSetColumnMaskingPolicy{
+			Name:          "col1",
+			MaskingPolicy: maskingPolicyId,
+			Using:         []Column{{"col1"}, {"col2"}},
+			Force:         new(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET MASKING POLICY %s USING ("col1", "col2") FORCE`, id.FullyQualifiedName(), maskingPolicyId.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset masking policy on column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetMaskingPolicyOnColumn = &TableUnsetColumnMaskingPolicy{
+			Name: "col1",
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" UNSET MASKING POLICY`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: set projection policy on column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetProjectionPolicyOnColumn = &TableSetColumnProjectionPolicy{
+			Name:             "col1",
+			ProjectionPolicy: projectionPolicyId,
+			Force:            new(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET PROJECTION POLICY %s FORCE`, id.FullyQualifiedName(), projectionPolicyId.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset projection policy on column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetProjectionPolicyOnColumn = &TableUnsetColumnProjectionPolicy{
+			Name: "col1",
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" UNSET PROJECTION POLICY`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: set tags on column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetTagsOnColumn = &TableSetColumnTags{
+			Name: "col1",
+			SetTags: []TagAssociation{
+				{Name: tagId1, Value: "v1"},
+				{Name: tagId2, Value: "v2"},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset tags on column", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetTagsOnColumn = &TableUnsetColumnTags{
+			Name: "col1",
+			UnsetTags: []ObjectIdentifier{
+				tagId1,
+				tagId2,
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ALTER COLUMN "col1" UNSET TAG %s, %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	})
+
+	t.Run("alter: cluster by", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &IcebergTableClusteringAction{
+			ClusterBy: []string{`"col1"`, `"col2"`},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s CLUSTER BY ("col1", "col2")`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: change recluster state - suspend", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &IcebergTableClusteringAction{
+			ChangeReclusterState: &IcebergTableReclusterChangeState{
+				State: new(ReclusterStateSuspend),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s SUSPEND RECLUSTER`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: change recluster state - resume", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &IcebergTableClusteringAction{
+			ChangeReclusterState: &IcebergTableReclusterChangeState{
+				State: new(ReclusterStateResume),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s RESUME RECLUSTER`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: drop clustering key", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &IcebergTableClusteringAction{
+			DropClusteringKey: new(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP CLUSTERING KEY`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: set - all properties", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Set = &IcebergTableSetProperties{
+			ReplaceInvalidCharacters:   new(true),
+			CatalogSync:                new("integration1"),
+			DataRetentionTimeInDays:    new(7),
+			MaxDataExtensionTimeInDays: new(14),
+			AutoRefresh:                new(true),
+			TargetFileSize:             new(IcebergTableTargetFileSize128mb),
+			Contact: []TableContact{
+				{Purpose: "SUPPORT", Contact: contactId},
+				{Purpose: "ACCESS_APPROVAL", Contact: contactId},
+			},
+			LogEventLevel:            new(IcebergTableLogEventLevelError),
+			ErrorLogging:             new(true),
+			EnableDataCompaction:     new(true),
+			EnableIcebergMergeOnRead: new(true),
+			Comment:                  new("updated comment"),
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`ALTER ICEBERG TABLE IF EXISTS %s SET `+
+				`REPLACE_INVALID_CHARACTERS = true `+
+				`CATALOG_SYNC = 'integration1' `+
+				`DATA_RETENTION_TIME_IN_DAYS = 7 `+
+				`MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 `+
+				`AUTO_REFRESH = true `+
+				`TARGET_FILE_SIZE = '128MB' `+
+				`CONTACT (SUPPORT = %s, ACCESS_APPROVAL = %s) `+
+				`LOG_EVENT_LEVEL = ERROR `+
+				`ERROR_LOGGING = true `+
+				`ENABLE_DATA_COMPACTION = true `+
+				`ENABLE_ICEBERG_MERGE_ON_READ = true `+
+				`COMMENT = 'updated comment'`,
+			id.FullyQualifiedName(),
+			contactId.FullyQualifiedName(), contactId.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("alter: unset - all properties", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Unset = &IcebergTableUnsetProperties{
+			ReplaceInvalidCharacters:   new(true),
+			CatalogSync:                new(true),
+			DataRetentionTimeInDays:    new(true),
+			MaxDataExtensionTimeInDays: new(true),
+			TargetFileSize:             new(true),
+			LogEventLevel:              new(true),
+			ErrorLogging:               new(true),
+			EnableDataCompaction:       new(true),
+			EnableIcebergMergeOnRead:   new(true),
+			Comment:                    new(true),
+		}
+		assertOptsValidAndSQLEquals(
+			t, opts,
+			`ALTER ICEBERG TABLE IF EXISTS %s UNSET `+
+				`REPLACE_INVALID_CHARACTERS, `+
+				`CATALOG_SYNC, `+
+				`DATA_RETENTION_TIME_IN_DAYS, `+
+				`MAX_DATA_EXTENSION_TIME_IN_DAYS, `+
+				`TARGET_FILE_SIZE, `+
+				`LOG_EVENT_LEVEL, `+
+				`ERROR_LOGGING, `+
+				`ENABLE_DATA_COMPACTION, `+
+				`ENABLE_ICEBERG_MERGE_ON_READ, `+
+				`COMMENT`,
+			id.FullyQualifiedName(),
+		)
+	})
+
+	t.Run("alter: set tags", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetTags = []TagAssociation{
+			{Name: tagId1, Value: "v1"},
+			{Name: tagId2, Value: "v2"},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset tags", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetTags = []ObjectIdentifier{
+			tagId1,
+			tagId2,
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s UNSET TAG %s, %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	})
+
+	t.Run("alter: add row access policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{
+			RowAccessPolicy: rowAccessPolicy1Id,
+			On:              []Column{{"col1"}, {"col2"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ADD ROW ACCESS POLICY %s ON ("col1", "col2")`, id.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName())
+	})
+
+	t.Run("alter: drop row access policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{
+			RowAccessPolicy: rowAccessPolicy1Id,
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP ROW ACCESS POLICY %s`, id.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName())
+	})
+
+	t.Run("alter: drop and add row access policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
+			Drop: ViewDropRowAccessPolicy{
+				RowAccessPolicy: rowAccessPolicy1Id,
+			},
+			Add: ViewAddRowAccessPolicy{
+				RowAccessPolicy: rowAccessPolicy2Id,
+				On:              []Column{{"col1"}, {"col2"}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON ("col1", "col2")`, id.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName(), rowAccessPolicy2Id.FullyQualifiedName())
+	})
+
+	t.Run("alter: drop all row access policies", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DropAllRowAccessPolicies = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: set aggregation policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+			AggregationPolicy: aggregationPolicyId,
+			EntityKey:         []Column{{"col1"}, {"col2"}},
+			Force:             Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s SET AGGREGATION POLICY %s ENTITY KEY ("col1", "col2") FORCE`, id.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset aggregation policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s UNSET AGGREGATION POLICY`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: set join policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetJoinPolicy = &TableSetJoinPolicy{
+			JoinPolicy: joinPolicyId,
+			Force:      Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s SET JOIN POLICY %s FORCE`, id.FullyQualifiedName(), joinPolicyId.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset join policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s UNSET JOIN POLICY`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: search optimization - add", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+			Add: &TableAddSearchOptimization{
+				On: []TableSearchMethodWithTarget{
+					{
+						Method: TableSearchMethodEquality,
+						Args: TableSearchMethodArgs{
+							Targets:  []string{"col1", "col2"},
+							Analyzer: String("DEFAULT_ANALYZER"),
+						},
+					},
+					{
+						Method: TableSearchMethodSubstring,
+						Args: TableSearchMethodArgs{
+							Targets: []string{"*"},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s ADD SEARCH OPTIMIZATION ON EQUALITY (col1, col2, ANALYZER => 'DEFAULT_ANALYZER'), SUBSTRING (*)`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: search optimization - drop with search methods", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+			Drop: &TableDropSearchOptimization{
+				On: []TableDropSearchOptimizationOn{
+					{
+						SearchMethodWithTarget: &TableSearchMethodWithTarget{
+							Method: TableSearchMethodFullText,
+							Args: TableSearchMethodArgs{
+								Targets: []string{"col1", "col2"},
+							},
+						},
+					},
+					{
+						SearchMethodWithTarget: &TableSearchMethodWithTarget{
+							Method: TableSearchMethodSubstring,
+							Args: TableSearchMethodArgs{
+								Targets: []string{"*"},
+							},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP SEARCH OPTIMIZATION ON FULL_TEXT (col1, col2), SUBSTRING (*)`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: search optimization - drop mixed forms (search method, column name, expression id)", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+			Drop: &TableDropSearchOptimization{
+				On: []TableDropSearchOptimizationOn{
+					{
+						SearchMethodWithTarget: &TableSearchMethodWithTarget{
+							Method: TableSearchMethodEquality,
+							Args: TableSearchMethodArgs{
+								Targets: []string{"col1"},
+							},
+						},
+					},
+					{ColumnName: String("col2")},
+					{ExpressionId: String("expr_123")},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP SEARCH OPTIMIZATION ON EQUALITY (col1), col2, expr_123`, id.FullyQualifiedName())
 	})
 
 	t.Run("validation: exactly one field from [opts.SearchOptimizationAction.Drop.On.SearchMethodWithTarget opts.SearchOptimizationAction.Drop.On.ColumnName opts.SearchOptimizationAction.Drop.On.ExpressionId] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+			Drop: &TableDropSearchOptimization{
+				On: []TableDropSearchOptimizationOn{
+					{},
+				},
+			},
+		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterIcebergTableOptions.SearchOptimizationAction.Drop.On", "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
@@ -334,26 +2013,34 @@ func TestIcebergTables_Drop(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.Cascade opts.Restrict]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.Cascade = new(true)
+		opts.Restrict = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("DropIcebergTableOptions", "Cascade", "Restrict"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `DROP ICEBERG TABLE %s`, id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
+	t.Run("all options - cascade", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.IfExists = new(true)
+		opts.Cascade = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `DROP ICEBERG TABLE IF EXISTS %s CASCADE`, id.FullyQualifiedName())
+	})
+
+	t.Run("all options - restrict", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Restrict = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `DROP ICEBERG TABLE IF EXISTS %s RESTRICT`, id.FullyQualifiedName())
 	})
 }
 
@@ -370,14 +2057,46 @@ func TestIcebergTables_Show(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES`)
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Like = &Like{Pattern: new("some_pattern")}
+		opts.In = &In{
+			Schema: NewDatabaseObjectIdentifier("db", "schema"),
+		}
+		opts.StartsWith = new("prefix")
+		opts.Limit = &LimitFrom{Rows: new(10), From: new("table_name")}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES LIKE 'some_pattern' IN SCHEMA "db"."schema" STARTS WITH 'prefix' LIMIT 10 FROM 'table_name'`)
+	})
+
+	t.Run("show with in account", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.In = &In{
+			Account: new(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES IN ACCOUNT`)
+	})
+
+	t.Run("show with in database", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.In = &In{
+			Database: NewAccountObjectIdentifier("test_db"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES IN DATABASE "test_db"`)
+	})
+
+	t.Run("show with like", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Like = &Like{Pattern: new("pattern_test")}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES LIKE 'pattern_test'`)
+	})
+
+	t.Run("show with limit only rows", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Limit = &LimitFrom{Rows: new(5)}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW ICEBERG TABLES LIMIT 5`)
 	})
 }
 
@@ -397,19 +2116,24 @@ func TestIcebergTables_Describe(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE ICEBERG TABLE %s`, id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
+	t.Run("all options - columns", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.DescribeType = new(IcebergTableDescribeTypeColumns)
+		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE ICEBERG TABLE %s TYPE = COLUMNS`, id.FullyQualifiedName())
+	})
+
+	t.Run("all options - stage", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DescribeType = new(IcebergTableDescribeTypeStage)
+		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE ICEBERG TABLE %s TYPE = STAGE`, id.FullyQualifiedName())
 	})
 }
