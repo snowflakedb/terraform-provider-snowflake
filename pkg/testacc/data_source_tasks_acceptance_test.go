@@ -167,7 +167,7 @@ func TestAcc_Tasks_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					commonShowOutputAsserts,
-					resourceparametersassert.TaskDatasourceParameters(t, "snowflake_tasks.test").
+					resourceparametersassert.TasksDatasourceParameters(t, datasourceModelWithParameters.DatasourceReference()).
 						HasAllDefaults(),
 				),
 			},

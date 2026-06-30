@@ -16,7 +16,7 @@ func IcebergTableFromDeltaFilesResource(t *testing.T, name string) *IcebergTable
 	t.Helper()
 
 	return &IcebergTableFromDeltaFilesResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedIcebergTableFromDeltaFilesResource(t *testing.T, id string) *Iceber
 	t.Helper()
 
 	return &IcebergTableFromDeltaFilesResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -87,52 +87,52 @@ func (i *IcebergTableFromDeltaFilesResourceAssert) HasReplaceInvalidCharacters(e
 ///////////////////////////////////
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasDatabaseString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("database", expected))
+	i.ValueSet("database", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasSchemaString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("schema", expected))
+	i.ValueSet("schema", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNameString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("name", expected))
+	i.ValueSet("name", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasAutoRefreshString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("auto_refresh", expected))
+	i.ValueSet("auto_refresh", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasBaseLocationString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("base_location", expected))
+	i.ValueSet("base_location", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasCatalogString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("catalog", expected))
+	i.ValueSet("catalog", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasCommentString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("comment", expected))
+	i.ValueSet("comment", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasExternalVolumeString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("external_volume", expected))
+	i.ValueSet("external_volume", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasFullyQualifiedNameString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	i.ValueSet("fully_qualified_name", expected)
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasReplaceInvalidCharactersString(expected string) *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("replace_invalid_characters", expected))
+	i.ValueSet("replace_invalid_characters", expected)
 	return i
 }
 
@@ -141,52 +141,52 @@ func (i *IcebergTableFromDeltaFilesResourceAssert) HasReplaceInvalidCharactersSt
 ///////////////////////////////
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoDatabase() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("database"))
+	i.ValueNotSet("database")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoSchema() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("schema"))
+	i.ValueNotSet("schema")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoName() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("name"))
+	i.ValueNotSet("name")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoAutoRefresh() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("auto_refresh"))
+	i.ValueNotSet("auto_refresh")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoBaseLocation() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("base_location"))
+	i.ValueNotSet("base_location")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoCatalog() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("catalog"))
+	i.ValueNotSet("catalog")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoComment() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("comment"))
+	i.ValueNotSet("comment")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoExternalVolume() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("external_volume"))
+	i.ValueNotSet("external_volume")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoFullyQualifiedName() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	i.ValueNotSet("fully_qualified_name")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoReplaceInvalidCharacters() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("replace_invalid_characters"))
+	i.ValueNotSet("replace_invalid_characters")
 	return i
 }
 
@@ -195,32 +195,32 @@ func (i *IcebergTableFromDeltaFilesResourceAssert) HasNoReplaceInvalidCharacters
 ////////////////////////////
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasAutoRefreshEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("auto_refresh", ""))
+	i.ValueSet("auto_refresh", "")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasCatalogEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("catalog", ""))
+	i.ValueSet("catalog", "")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasCommentEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("comment", ""))
+	i.ValueSet("comment", "")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasExternalVolumeEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("external_volume", ""))
+	i.ValueSet("external_volume", "")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasFullyQualifiedNameEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	i.ValueSet("fully_qualified_name", "")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasReplaceInvalidCharactersEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValueSet("replace_invalid_characters", ""))
+	i.ValueSet("replace_invalid_characters", "")
 	return i
 }
 
@@ -229,51 +229,51 @@ func (i *IcebergTableFromDeltaFilesResourceAssert) HasReplaceInvalidCharactersEm
 ///////////////////////////////
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasDatabaseNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("database"))
+	i.ValuePresent("database")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasSchemaNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("schema"))
+	i.ValuePresent("schema")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasNameNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("name"))
+	i.ValuePresent("name")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasAutoRefreshNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("auto_refresh"))
+	i.ValuePresent("auto_refresh")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasBaseLocationNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("base_location"))
+	i.ValuePresent("base_location")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasCatalogNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("catalog"))
+	i.ValuePresent("catalog")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasCommentNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("comment"))
+	i.ValuePresent("comment")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasExternalVolumeNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("external_volume"))
+	i.ValuePresent("external_volume")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasFullyQualifiedNameNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	i.ValuePresent("fully_qualified_name")
 	return i
 }
 
 func (i *IcebergTableFromDeltaFilesResourceAssert) HasReplaceInvalidCharactersNotEmpty() *IcebergTableFromDeltaFilesResourceAssert {
-	i.AddAssertion(assert.ValuePresent("replace_invalid_characters"))
+	i.ValuePresent("replace_invalid_characters")
 	return i
 }

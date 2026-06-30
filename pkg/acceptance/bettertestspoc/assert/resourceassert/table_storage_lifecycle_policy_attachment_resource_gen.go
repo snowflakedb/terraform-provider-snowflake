@@ -16,7 +16,7 @@ func TableStorageLifecyclePolicyAttachmentResource(t *testing.T, name string) *T
 	t.Helper()
 
 	return &TableStorageLifecyclePolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedTableStorageLifecyclePolicyAttachmentResource(t *testing.T, id stri
 	t.Helper()
 
 	return &TableStorageLifecyclePolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -57,17 +57,17 @@ func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasTableType(expec
 ///////////////////////////////////
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasStorageLifecyclePolicyNameString(expected string) *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValueSet("storage_lifecycle_policy_name", expected))
+	t.ValueSet("storage_lifecycle_policy_name", expected)
 	return t
 }
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasTableNameString(expected string) *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValueSet("table_name", expected))
+	t.ValueSet("table_name", expected)
 	return t
 }
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasTableTypeString(expected string) *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValueSet("table_type", expected))
+	t.ValueSet("table_type", expected)
 	return t
 }
 
@@ -76,17 +76,17 @@ func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasTableTypeString
 ///////////////////////////////
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasNoStorageLifecyclePolicyName() *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("storage_lifecycle_policy_name"))
+	t.ValueNotSet("storage_lifecycle_policy_name")
 	return t
 }
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasNoTableName() *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("table_name"))
+	t.ValueNotSet("table_name")
 	return t
 }
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasNoTableType() *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("table_type"))
+	t.ValueNotSet("table_type")
 	return t
 }
 
@@ -99,16 +99,16 @@ func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasNoTableType() *
 ///////////////////////////////
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasStorageLifecyclePolicyNameNotEmpty() *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValuePresent("storage_lifecycle_policy_name"))
+	t.ValuePresent("storage_lifecycle_policy_name")
 	return t
 }
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasTableNameNotEmpty() *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValuePresent("table_name"))
+	t.ValuePresent("table_name")
 	return t
 }
 
 func (t *TableStorageLifecyclePolicyAttachmentResourceAssert) HasTableTypeNotEmpty() *TableStorageLifecyclePolicyAttachmentResourceAssert {
-	t.AddAssertion(assert.ValuePresent("table_type"))
+	t.ValuePresent("table_type")
 	return t
 }

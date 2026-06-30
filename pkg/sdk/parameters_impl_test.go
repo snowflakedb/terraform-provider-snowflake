@@ -152,8 +152,8 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 		expectedValue any
 		accessor      func(accountParameters *LegacyAccountParameters) any
 	}{
-		{parameter: AccountParameterAllowClientMFACaching, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.AllowClientMFACaching }},
-		{parameter: AccountParameterAllowIDToken, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.AllowIDToken }},
+		{parameter: AccountParameterAllowClientMfaCaching, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.AllowClientMFACaching }},
+		{parameter: AccountParameterAllowIdToken, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.AllowIDToken }},
 		{parameter: AccountParameterClientEncryptionKeySize, value: "1", expectedValue: 1, accessor: func(lap *LegacyAccountParameters) any { return *lap.ClientEncryptionKeySize }},
 		{parameter: AccountParameterCortexEnabledCrossRegion, value: "some", expectedValue: "some", accessor: func(lap *LegacyAccountParameters) any { return *lap.CortexEnabledCrossRegion }},
 		{parameter: AccountParameterDisableUserPrivilegeGrants, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.DisableUserPrivilegeGrants }},
@@ -166,15 +166,15 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 		{parameter: AccountParameterEnableUnredactedQuerySyntaxError, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.EnableUnredactedQuerySyntaxError }},
 		{parameter: AccountParameterEnforceNetworkRulesForInternalStages, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.EnforceNetworkRulesForInternalStages }},
 		{parameter: AccountParameterEventTable, value: "some", expectedValue: "some", accessor: func(lap *LegacyAccountParameters) any { return *lap.EventTable }},
-		{parameter: AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.ExternalOAuthAddPrivilegedRolesToBlockedList }},
-		{parameter: AccountParameterInitialReplicationSizeLimitInTB, value: "some", expectedValue: "some", accessor: func(lap *LegacyAccountParameters) any { return *lap.InitialReplicationSizeLimitInTB }},
+		{parameter: AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.ExternalOAuthAddPrivilegedRolesToBlockedList }},
+		{parameter: AccountParameterInitialReplicationSizeLimitInTb, value: "some", expectedValue: "some", accessor: func(lap *LegacyAccountParameters) any { return *lap.InitialReplicationSizeLimitInTB }},
 		{parameter: AccountParameterMetricLevel, value: string(MetricLevelAll), expectedValue: MetricLevelAll, accessor: func(lap *LegacyAccountParameters) any { return *lap.MetricLevel }},
 		{parameter: AccountParameterMinDataRetentionTimeInDays, value: "1", expectedValue: 1, accessor: func(lap *LegacyAccountParameters) any { return *lap.MinDataRetentionTimeInDays }},
 		{parameter: AccountParameterNetworkPolicy, value: "some", expectedValue: "some", accessor: func(lap *LegacyAccountParameters) any { return *lap.NetworkPolicy }},
-		{parameter: AccountParameterOAuthAddPrivilegedRolesToBlockedList, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.OAuthAddPrivilegedRolesToBlockedList }},
+		{parameter: AccountParameterOauthAddPrivilegedRolesToBlockedList, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.OAuthAddPrivilegedRolesToBlockedList }},
 		{parameter: AccountParameterPeriodicDataRekeying, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.PeriodicDataRekeying }},
 		{parameter: AccountParameterPreventLoadFromInlineURL, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.PreventLoadFromInlineURL }},
-		{parameter: AccountParameterPreventUnloadToInlineURL, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.PreventUnloadToInlineURL }},
+		{parameter: AccountParameterPreventUnloadToInlineUrl, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.PreventUnloadToInlineURL }},
 		{parameter: AccountParameterPreventUnloadToInternalStages, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.PreventUnloadToInternalStages }},
 		{parameter: AccountParameterRequireStorageIntegrationForStageCreation, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.RequireStorageIntegrationForStageCreation }},
 		{parameter: AccountParameterRequireStorageIntegrationForStageOperation, value: "true", expectedValue: true, accessor: func(lap *LegacyAccountParameters) any { return *lap.RequireStorageIntegrationForStageOperation }},
@@ -197,8 +197,8 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 		parameter AccountParameter
 		value     string
 	}{
-		{parameter: AccountParameterAllowClientMFACaching, value: "true123"},
-		{parameter: AccountParameterAllowIDToken, value: "true123"},
+		{parameter: AccountParameterAllowClientMfaCaching, value: "true123"},
+		{parameter: AccountParameterAllowIdToken, value: "true123"},
 		{parameter: AccountParameterClientEncryptionKeySize, value: "aaa"},
 		// {parameter: AccountParameterCortexEnabledCrossRegion, value: "some"}, // add validation
 		{parameter: AccountParameterDisableUserPrivilegeGrants, value: "true123"},
@@ -211,15 +211,15 @@ func Test_LegacyAccountParameters_setParam(t *testing.T) {
 		{parameter: AccountParameterEnableUnredactedQuerySyntaxError, value: "true123"},
 		{parameter: AccountParameterEnforceNetworkRulesForInternalStages, value: "true123"},
 		// {parameter: AccountParameterEventTable, value: "some"}, // add validation
-		{parameter: AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, value: "true123"},
+		{parameter: AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, value: "true123"},
 		// {parameter: AccountParameterInitialReplicationSizeLimitInTB, value: "some"}, // add validation
 		// {parameter: AccountParameterMetricLevel, value: "some"}, // add validation
 		{parameter: AccountParameterMinDataRetentionTimeInDays, value: "aaa"},
 		// {parameter: AccountParameterNetworkPolicy, value: "some"}, // add validation
-		{parameter: AccountParameterOAuthAddPrivilegedRolesToBlockedList, value: "true123"},
+		{parameter: AccountParameterOauthAddPrivilegedRolesToBlockedList, value: "true123"},
 		{parameter: AccountParameterPeriodicDataRekeying, value: "true123"},
 		{parameter: AccountParameterPreventLoadFromInlineURL, value: "true123"},
-		{parameter: AccountParameterPreventUnloadToInlineURL, value: "true123"},
+		{parameter: AccountParameterPreventUnloadToInlineUrl, value: "true123"},
 		{parameter: AccountParameterPreventUnloadToInternalStages, value: "true123"},
 		{parameter: AccountParameterRequireStorageIntegrationForStageCreation, value: "true123"},
 		{parameter: AccountParameterRequireStorageIntegrationForStageOperation, value: "true123"},

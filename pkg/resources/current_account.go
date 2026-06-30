@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -63,10 +62,10 @@ var currentAccountSchema = map[string]*schema.Schema{
 func CurrentAccount() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Resource used to manage the account you are currently connected to. This resource is used to set account parameters and other account-level settings. See [ALTER ACCOUNT](https://docs.snowflake.com/en/sql-reference/sql/alter-account) documentation for more information on resource capabilities.",
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CurrentAccountResource), TrackingCreateWrapper(resources.CurrentAccount, CreateCurrentAccount)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CurrentAccountResource), TrackingReadWrapper(resources.CurrentAccount, ReadCurrentAccount)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CurrentAccountResource), TrackingUpdateWrapper(resources.CurrentAccount, UpdateCurrentAccount)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CurrentAccountResource), TrackingDeleteWrapper(resources.CurrentAccount, DeleteCurrentAccount)),
+		CreateContext: TrackingCreateWrapper(resources.CurrentAccount, CreateCurrentAccount),
+		ReadContext:   TrackingReadWrapper(resources.CurrentAccount, ReadCurrentAccount),
+		UpdateContext: TrackingUpdateWrapper(resources.CurrentAccount, UpdateCurrentAccount),
+		DeleteContext: TrackingDeleteWrapper(resources.CurrentAccount, DeleteCurrentAccount),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.CurrentAccount, accountParametersCustomDiff),
 

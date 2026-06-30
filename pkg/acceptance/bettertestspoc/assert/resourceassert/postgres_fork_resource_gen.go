@@ -16,7 +16,7 @@ func PostgresForkResource(t *testing.T, name string) *PostgresForkResourceAssert
 	t.Helper()
 
 	return &PostgresForkResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPostgresForkResource(t *testing.T, id string) *PostgresForkResource
 	t.Helper()
 
 	return &PostgresForkResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -81,42 +81,42 @@ func (p *PostgresForkResourceAssert) HasStorageSizeGb(expected int) *PostgresFor
 ///////////////////////////////////
 
 func (p *PostgresForkResourceAssert) HasNameString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
+	p.ValueSet("name", expected)
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasCommentString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", expected))
+	p.ValueSet("comment", expected)
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasComputeFamilyString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("compute_family", expected))
+	p.ValueSet("compute_family", expected)
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasForkFromString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("fork_from", expected))
+	p.ValueSet("fork_from", expected)
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasFullyQualifiedNameString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	p.ValueSet("fully_qualified_name", expected)
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasHighAvailabilityString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("high_availability", expected))
+	p.ValueSet("high_availability", expected)
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasPostgresSettingsString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_settings", expected))
+	p.ValueSet("postgres_settings", expected)
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasStorageSizeGbString(expected string) *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("storage_size_gb", expected))
+	p.ValueSet("storage_size_gb", expected)
 	return p
 }
 
@@ -125,42 +125,42 @@ func (p *PostgresForkResourceAssert) HasStorageSizeGbString(expected string) *Po
 ///////////////////////////////
 
 func (p *PostgresForkResourceAssert) HasNoName() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasNoComment() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasNoComputeFamily() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("compute_family"))
+	p.ValueNotSet("compute_family")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasNoForkFrom() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("fork_from"))
+	p.ValueNotSet("fork_from")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasNoFullyQualifiedName() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	p.ValueNotSet("fully_qualified_name")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasNoHighAvailability() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("high_availability"))
+	p.ValueNotSet("high_availability")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasNoPostgresSettings() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("postgres_settings"))
+	p.ValueNotSet("postgres_settings")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasNoStorageSizeGb() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("storage_size_gb"))
+	p.ValueNotSet("storage_size_gb")
 	return p
 }
 
@@ -169,42 +169,42 @@ func (p *PostgresForkResourceAssert) HasNoStorageSizeGb() *PostgresForkResourceA
 ////////////////////////////
 
 func (p *PostgresForkResourceAssert) HasAtEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("at.#", "0"))
+	p.ValueSet("at.#", "0")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasBeforeEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("before.#", "0"))
+	p.ValueSet("before.#", "0")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasCommentEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", ""))
+	p.ValueSet("comment", "")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasComputeFamilyEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("compute_family", ""))
+	p.ValueSet("compute_family", "")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasFullyQualifiedNameEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	p.ValueSet("fully_qualified_name", "")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasHighAvailabilityEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("high_availability", ""))
+	p.ValueSet("high_availability", "")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasPostgresSettingsEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("postgres_settings", ""))
+	p.ValueSet("postgres_settings", "")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasStorageSizeGbEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValueSet("storage_size_gb", ""))
+	p.ValueSet("storage_size_gb", "")
 	return p
 }
 
@@ -213,41 +213,41 @@ func (p *PostgresForkResourceAssert) HasStorageSizeGbEmpty() *PostgresForkResour
 ///////////////////////////////
 
 func (p *PostgresForkResourceAssert) HasNameNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("name"))
+	p.ValuePresent("name")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasCommentNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("comment"))
+	p.ValuePresent("comment")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasComputeFamilyNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("compute_family"))
+	p.ValuePresent("compute_family")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasForkFromNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("fork_from"))
+	p.ValuePresent("fork_from")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasFullyQualifiedNameNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	p.ValuePresent("fully_qualified_name")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasHighAvailabilityNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("high_availability"))
+	p.ValuePresent("high_availability")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasPostgresSettingsNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("postgres_settings"))
+	p.ValuePresent("postgres_settings")
 	return p
 }
 
 func (p *PostgresForkResourceAssert) HasStorageSizeGbNotEmpty() *PostgresForkResourceAssert {
-	p.AddAssertion(assert.ValuePresent("storage_size_gb"))
+	p.ValuePresent("storage_size_gb")
 	return p
 }

@@ -557,3 +557,27 @@ func (s *ShowIndexesHybridTableRequest) WithLimit(limit LimitFrom) *ShowIndexesH
 	s.Limit = &limit
 	return s
 }
+
+func NewShowPrimaryKeysHybridTableRequest(
+	name SchemaObjectIdentifier,
+) *ShowPrimaryKeysHybridTableRequest {
+	s := ShowPrimaryKeysHybridTableRequest{}
+	s.name = name
+	return &s
+}
+
+func NewShowUniqueKeysHybridTableRequest(
+	name SchemaObjectIdentifier,
+) *ShowUniqueKeysHybridTableRequest {
+	s := ShowUniqueKeysHybridTableRequest{}
+	s.name = name
+	return &s
+}
+
+func NewShowImportedKeysHybridTableRequest(
+	name SchemaObjectIdentifier,
+) *ShowImportedKeysHybridTableRequest {
+	s := ShowImportedKeysHybridTableRequest{}
+	s.name = name
+	return &s
+}

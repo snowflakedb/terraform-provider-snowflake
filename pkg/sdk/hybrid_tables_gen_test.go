@@ -837,3 +837,78 @@ func TestHybridTables_Alter_DropMultipleColumns(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP COLUMN IF EXISTS col1`, id.FullyQualifiedName())
 	})
 }
+
+func TestHybridTables_ShowPrimaryKeys(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	defaultOpts := func() *ShowPrimaryKeysHybridTableOptions {
+		return &ShowPrimaryKeysHybridTableOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*ShowPrimaryKeysHybridTableOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `SHOW PRIMARY KEYS IN TABLE %s`, id.FullyQualifiedName())
+	})
+}
+
+func TestHybridTables_ShowUniqueKeys(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	defaultOpts := func() *ShowUniqueKeysHybridTableOptions {
+		return &ShowUniqueKeysHybridTableOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*ShowUniqueKeysHybridTableOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `SHOW UNIQUE KEYS IN TABLE %s`, id.FullyQualifiedName())
+	})
+}
+
+func TestHybridTables_ShowImportedKeys(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	defaultOpts := func() *ShowImportedKeysHybridTableOptions {
+		return &ShowImportedKeysHybridTableOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*ShowImportedKeysHybridTableOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `SHOW IMPORTED KEYS IN TABLE %s`, id.FullyQualifiedName())
+	})
+}

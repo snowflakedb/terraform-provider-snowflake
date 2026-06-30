@@ -326,14 +326,14 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.AllowBindValuesAccess = b
-	case AccountParameterAllowClientMFACaching:
+	case AccountParameterAllowClientMfaCaching:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return
 		}
 		legacyAccountParameters.AllowClientMFACaching = b
-	case AccountParameterAllowIDToken:
+	case AccountParameterAllowIdToken:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
 		if err != nil {
@@ -391,6 +391,13 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.EnableInternalStagesPrivatelink = b
+	case AccountParameterEnablePerAccountAppServicePrivatelinkUrl:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnablePerAccountAppServicePrivatelinkUrl = b
 	case AccountParameterEnablePersonalDatabase:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
@@ -449,14 +456,14 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 		legacyAccountParameters.EnforceNetworkRulesForInternalStages = b
 	case AccountParameterEventTable:
 		legacyAccountParameters.EventTable = &value
-	case AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList:
+	case AccountParameterExternalOauthAddPrivilegedRolesToBlockedList:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
 		if err != nil {
 			return
 		}
 		legacyAccountParameters.ExternalOAuthAddPrivilegedRolesToBlockedList = b
-	case AccountParameterInitialReplicationSizeLimitInTB:
+	case AccountParameterInitialReplicationSizeLimitInTb:
 		legacyAccountParameters.InitialReplicationSizeLimitInTB = &value
 	case AccountParameterMetricLevel:
 		legacyAccountParameters.MetricLevel = Pointer(MetricLevel(value))
@@ -468,7 +475,7 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 		legacyAccountParameters.MinDataRetentionTimeInDays = Pointer(v)
 	case AccountParameterNetworkPolicy:
 		legacyAccountParameters.NetworkPolicy = &value
-	case AccountParameterOAuthAddPrivilegedRolesToBlockedList:
+	case AccountParameterOauthAddPrivilegedRolesToBlockedList:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
 		if err != nil {
@@ -489,7 +496,7 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.PreventLoadFromInlineURL = b
-	case AccountParameterPreventUnloadToInlineURL:
+	case AccountParameterPreventUnloadToInlineUrl:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
 		if err != nil {

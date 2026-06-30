@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -73,36 +74,17 @@ func runColumnCustomDiff(t *testing.T, customDiff schema.CustomizeDiffFunc, oldS
 // shape the SDK expects for InstanceState.Attributes.
 func columnAttrs(cols []map[string]string) map[string]string {
 	attrs := map[string]string{
-		"column.#": itoa(len(cols)),
+		"column.#": strconv.Itoa(len(cols)),
 	}
 	for i, c := range cols {
-		attrs["column."+itoa(i)+".name"] = c["name"]
-		attrs["column."+itoa(i)+".type"] = c["type"]
-		attrs["column."+itoa(i)+".nullable"] = c["nullable"]
-		attrs["column."+itoa(i)+".collate"] = c["collate"]
-		attrs["column."+itoa(i)+".comment"] = c["comment"]
-		attrs["column."+itoa(i)+".default.#"] = "0"
+		attrs["column."+strconv.Itoa(i)+".name"] = c["name"]
+		attrs["column."+strconv.Itoa(i)+".type"] = c["type"]
+		attrs["column."+strconv.Itoa(i)+".nullable"] = c["nullable"]
+		attrs["column."+strconv.Itoa(i)+".collate"] = c["collate"]
+		attrs["column."+strconv.Itoa(i)+".comment"] = c["comment"]
+		attrs["column."+strconv.Itoa(i)+".default.#"] = "0"
 	}
 	return attrs
-}
-
-func itoa(i int) string {
-	switch i {
-	case 0:
-		return "0"
-	case 1:
-		return "1"
-	case 2:
-		return "2"
-	case 3:
-		return "3"
-	default:
-		const digits = "0123456789"
-		if i < 10 {
-			return string(digits[i])
-		}
-		return itoa(i/10) + string(digits[i%10])
-	}
 }
 
 func col(name, ty, nullable, collate, comment string) map[string]any {
@@ -223,7 +205,7 @@ func Test_forceNewIfColumnFieldChanged(t *testing.T) {
 	t.Run("no `column` change at all is a no-op", func(t *testing.T) {
 		// Equal old and new state for `column`; the changed predicate must never fire.
 		called := false
-		predicate := func(_, _ hybridTableColumn) bool {
+		predicate := func(_, _ column) bool {
 			called = true
 			return true
 		}
@@ -245,7 +227,7 @@ func Test_forceNewIfColumnFieldChanged(t *testing.T) {
 		newCfg := map[string]any{
 			"column": []any{col("ID", "NUMBER(38,0)", "false", "", "")},
 		}
-		diff := runColumnCustomDiff(t, forceNewIfColumnFieldChanged("nullable", func(_, _ hybridTableColumn) bool { return false }), old, newCfg)
+		diff := runColumnCustomDiff(t, forceNewIfColumnFieldChanged("nullable", func(_, _ column) bool { return false }), old, newCfg)
 		assert.False(t, diff.RequiresNew())
 	})
 
@@ -257,7 +239,7 @@ func Test_forceNewIfColumnFieldChanged(t *testing.T) {
 		newCfg := map[string]any{
 			"column": []any{col("ID", "NUMBER(38,0)", "true", "", "new")},
 		}
-		diff := runColumnCustomDiff(t, forceNewIfColumnFieldChanged("comment", func(o, n hybridTableColumn) bool {
+		diff := runColumnCustomDiff(t, forceNewIfColumnFieldChanged("comment", func(o, n column) bool {
 			return o.comment != n.comment
 		}), old, newCfg)
 		assert.True(t, diff.RequiresNew())

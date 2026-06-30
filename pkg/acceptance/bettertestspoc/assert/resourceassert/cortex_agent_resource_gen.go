@@ -16,7 +16,7 @@ func CortexAgentResource(t *testing.T, name string) *CortexAgentResourceAssert {
 	t.Helper()
 
 	return &CortexAgentResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCortexAgentResource(t *testing.T, id string) *CortexAgentResourceAs
 	t.Helper()
 
 	return &CortexAgentResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -69,32 +69,32 @@ func (c *CortexAgentResourceAssert) HasSpecification(expected string) *CortexAge
 ///////////////////////////////////
 
 func (c *CortexAgentResourceAssert) HasDatabaseString(expected string) *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("database", expected))
+	c.ValueSet("database", expected)
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasSchemaString(expected string) *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("schema", expected))
+	c.ValueSet("schema", expected)
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasNameString(expected string) *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("name", expected))
+	c.ValueSet("name", expected)
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasCommentString(expected string) *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", expected))
+	c.ValueSet("comment", expected)
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasFullyQualifiedNameString(expected string) *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	c.ValueSet("fully_qualified_name", expected)
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasSpecificationString(expected string) *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("specification", expected))
+	c.ValueSet("specification", expected)
 	return c
 }
 
@@ -103,32 +103,32 @@ func (c *CortexAgentResourceAssert) HasSpecificationString(expected string) *Cor
 ///////////////////////////////
 
 func (c *CortexAgentResourceAssert) HasNoDatabase() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("database"))
+	c.ValueNotSet("database")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasNoSchema() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("schema"))
+	c.ValueNotSet("schema")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasNoName() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasNoComment() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasNoFullyQualifiedName() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	c.ValueNotSet("fully_qualified_name")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasNoSpecification() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("specification"))
+	c.ValueNotSet("specification")
 	return c
 }
 
@@ -137,17 +137,17 @@ func (c *CortexAgentResourceAssert) HasNoSpecification() *CortexAgentResourceAss
 ////////////////////////////
 
 func (c *CortexAgentResourceAssert) HasCommentEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", ""))
+	c.ValueSet("comment", "")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasFullyQualifiedNameEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	c.ValueSet("fully_qualified_name", "")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasProfileEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValueSet("profile.#", "0"))
+	c.ValueSet("profile.#", "0")
 	return c
 }
 
@@ -156,31 +156,31 @@ func (c *CortexAgentResourceAssert) HasProfileEmpty() *CortexAgentResourceAssert
 ///////////////////////////////
 
 func (c *CortexAgentResourceAssert) HasDatabaseNotEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValuePresent("database"))
+	c.ValuePresent("database")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasSchemaNotEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValuePresent("schema"))
+	c.ValuePresent("schema")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasNameNotEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValuePresent("name"))
+	c.ValuePresent("name")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasCommentNotEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValuePresent("comment"))
+	c.ValuePresent("comment")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasFullyQualifiedNameNotEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	c.ValuePresent("fully_qualified_name")
 	return c
 }
 
 func (c *CortexAgentResourceAssert) HasSpecificationNotEmpty() *CortexAgentResourceAssert {
-	c.AddAssertion(assert.ValuePresent("specification"))
+	c.ValuePresent("specification")
 	return c
 }

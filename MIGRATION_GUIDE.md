@@ -26,6 +26,47 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### Multiple resources and data sources promoted to stable
+
+The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be used. Please remove their corresponding entries from the `preview_features_enabled` list in your provider configuration if present.
+
+**Resources:**
+- `snowflake_account_session_policy_attachment` (`snowflake_account_session_policy_attachment_resource`)
+- `snowflake_authentication_policy` (`snowflake_authentication_policy_resource`)
+- `snowflake_catalog_integration_aws_glue` (`snowflake_catalog_integration_aws_glue_resource`)
+- `snowflake_catalog_integration_iceberg_rest` (`snowflake_catalog_integration_iceberg_rest_resource`)
+- `snowflake_catalog_integration_object_storage` (`snowflake_catalog_integration_object_storage_resource`)
+- `snowflake_catalog_integration_open_catalog` (`snowflake_catalog_integration_open_catalog_resource`)
+- `snowflake_current_account` (`snowflake_current_account_resource`)
+- `snowflake_current_organization_account` (`snowflake_current_organization_account_resource`)
+- `snowflake_external_volume` (`snowflake_external_volume_resource`)
+- `snowflake_password_policy` (`snowflake_password_policy_resource`)
+- `snowflake_session_policy` (`snowflake_session_policy_resource`)
+- `snowflake_stage_external_azure` (`snowflake_stage_external_azure_resource`)
+- `snowflake_stage_external_gcs` (`snowflake_stage_external_gcs_resource`)
+- `snowflake_stage_external_s3` (`snowflake_stage_external_s3_resource`)
+- `snowflake_stage_external_s3_compatible` (`snowflake_stage_external_s3_compatible_resource`)
+- `snowflake_stage_internal` (`snowflake_stage_internal_resource`)
+- `snowflake_storage_integration_aws` (`snowflake_storage_integration_aws_resource`)
+- `snowflake_storage_integration_azure` (`snowflake_storage_integration_azure_resource`)
+- `snowflake_storage_integration_gcs` (`snowflake_storage_integration_gcs_resource`)
+- `snowflake_user_session_policy_attachment` (`snowflake_user_session_policy_attachment_resource`)
+
+**Data sources:**
+- `snowflake_authentication_policies` (`snowflake_authentication_policies_datasource`)
+- `snowflake_catalog_integrations` (`snowflake_catalog_integrations_datasource`)
+- `snowflake_external_volumes` (`snowflake_external_volumes_datasource`)
+- `snowflake_password_policies` (`snowflake_password_policies_datasource`)
+- `snowflake_session_policies` (`snowflake_session_policies_datasource`)
+- `snowflake_storage_integrations` (`snowflake_storage_integrations_datasource`)
+
+Provider will issue a warning if a stable feature is still present in the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
+### *(new feature)* New instance families in the compute_pool resource
+Added missing instance families that are available in Snowflake: `GEN_ARM_G1_2`, `GEN_ARM_G1_4`, `GEN_ARM_G1_8`, `GEN_ARM_G1_16`, `GEN_ARM_G1_32`, `GEN_X64_G2_2`, `GEN_X64_G2_4`, `GEN_X64_G2_8`, `GEN_X64_G2_16`, `GEN_X64_G2_32`, `MEM_X64_G2_8`, `MEM_X64_G2_32`, `MEM_X64_G2_64`, `MEM_X64_G2_96`, `MEM_X64_G2_192`, `GPU_L40S_G1_8`, `GPU_L40S_G1_16`, `GPU_L40S_G1_48`, `GPU_L40S_G1_192`, `GPU_R6K_G1_8`, `GPU_R6K_G1_16`, `GPU_R6K_G1_32`, `GPU_R6K_G1_48`, `GPU_R6K_G1_96`, `GPU_R6K_G1_192`, `GPU_A100_G1_12`, and `GPU_A100_G1_48`.
+
 ### *(new feature/deprecation)* API integration resources reworked
 
 #### *(new feature/deprecation)* API integration resources
@@ -88,11 +129,28 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
-### *(new feature)* `snowflake_grant_ownership`: support for `AGENT` object type
+### *(new feature)* New `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` account parameter
 
-The `snowflake_grant_ownership` resource now supports granting ownership on `AGENT` objects. This includes single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`).
+The `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` parameter is now supported in the following resources:
+
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
 
 No changes are required for existing configurations.
+
+References: [#4826](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4826)
+
+### *(new feature)* `snowflake_grant_ownership`: support for new object types
+
+The `snowflake_grant_ownership` resource now supports granting ownership on the following additional object types:
+
+- `AGENT` — single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`)
+- `CORTEX SEARCH SERVICE` — single object grants, bulk grants (`ALL CORTEX SEARCH SERVICES IN ...`), and future grants (`FUTURE CORTEX SEARCH SERVICES IN ...`)
+
+No changes are required for existing configurations.
+
+References: [#4868](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4868)
 
 ### *(new feature)* New storage lifecycle policy resources and data source
 

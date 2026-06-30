@@ -16,7 +16,7 @@ func GrantOwnershipResource(t *testing.T, name string) *GrantOwnershipResourceAs
 	t.Helper()
 
 	return &GrantOwnershipResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantOwnershipResource(t *testing.T, id string) *GrantOwnershipReso
 	t.Helper()
 
 	return &GrantOwnershipResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -54,17 +54,17 @@ func (g *GrantOwnershipResourceAssert) HasOutboundPrivileges(expected string) *G
 ///////////////////////////////////
 
 func (g *GrantOwnershipResourceAssert) HasAccountRoleNameString(expected string) *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueSet("account_role_name", expected))
+	g.ValueSet("account_role_name", expected)
 	return g
 }
 
 func (g *GrantOwnershipResourceAssert) HasDatabaseRoleNameString(expected string) *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueSet("database_role_name", expected))
+	g.ValueSet("database_role_name", expected)
 	return g
 }
 
 func (g *GrantOwnershipResourceAssert) HasOutboundPrivilegesString(expected string) *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueSet("outbound_privileges", expected))
+	g.ValueSet("outbound_privileges", expected)
 	return g
 }
 
@@ -73,17 +73,17 @@ func (g *GrantOwnershipResourceAssert) HasOutboundPrivilegesString(expected stri
 ///////////////////////////////
 
 func (g *GrantOwnershipResourceAssert) HasNoAccountRoleName() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("account_role_name"))
+	g.ValueNotSet("account_role_name")
 	return g
 }
 
 func (g *GrantOwnershipResourceAssert) HasNoDatabaseRoleName() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("database_role_name"))
+	g.ValueNotSet("database_role_name")
 	return g
 }
 
 func (g *GrantOwnershipResourceAssert) HasNoOutboundPrivileges() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("outbound_privileges"))
+	g.ValueNotSet("outbound_privileges")
 	return g
 }
 
@@ -92,17 +92,17 @@ func (g *GrantOwnershipResourceAssert) HasNoOutboundPrivileges() *GrantOwnership
 ////////////////////////////
 
 func (g *GrantOwnershipResourceAssert) HasAccountRoleNameEmpty() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueSet("account_role_name", ""))
+	g.ValueSet("account_role_name", "")
 	return g
 }
 
 func (g *GrantOwnershipResourceAssert) HasDatabaseRoleNameEmpty() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueSet("database_role_name", ""))
+	g.ValueSet("database_role_name", "")
 	return g
 }
 
 func (g *GrantOwnershipResourceAssert) HasOutboundPrivilegesEmpty() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValueSet("outbound_privileges", ""))
+	g.ValueSet("outbound_privileges", "")
 	return g
 }
 
@@ -111,16 +111,16 @@ func (g *GrantOwnershipResourceAssert) HasOutboundPrivilegesEmpty() *GrantOwners
 ///////////////////////////////
 
 func (g *GrantOwnershipResourceAssert) HasAccountRoleNameNotEmpty() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValuePresent("account_role_name"))
+	g.ValuePresent("account_role_name")
 	return g
 }
 
 func (g *GrantOwnershipResourceAssert) HasDatabaseRoleNameNotEmpty() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValuePresent("database_role_name"))
+	g.ValuePresent("database_role_name")
 	return g
 }
 
 func (g *GrantOwnershipResourceAssert) HasOutboundPrivilegesNotEmpty() *GrantOwnershipResourceAssert {
-	g.AddAssertion(assert.ValuePresent("outbound_privileges"))
+	g.ValuePresent("outbound_privileges")
 	return g
 }

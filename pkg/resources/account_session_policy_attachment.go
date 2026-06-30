@@ -6,7 +6,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -26,10 +25,10 @@ func AccountSessionPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description: "Specifies the session policy to use for the current account. To set the session policy of a different account, use a provider alias.",
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.AccountSessionPolicyAttachmentResource), TrackingCreateWrapper(resources.AccountSessionPolicyAttachment, CreateAccountSessionPolicyAttachment)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AccountSessionPolicyAttachmentResource), TrackingReadWrapper(resources.AccountSessionPolicyAttachment, ReadAccountSessionPolicyAttachment)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.AccountSessionPolicyAttachmentResource), TrackingUpdateWrapper(resources.AccountSessionPolicyAttachment, UpdateAccountSessionPolicyAttachment)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AccountSessionPolicyAttachmentResource), TrackingDeleteWrapper(resources.AccountSessionPolicyAttachment, DeleteAccountSessionPolicyAttachment)),
+		CreateContext: TrackingCreateWrapper(resources.AccountSessionPolicyAttachment, CreateAccountSessionPolicyAttachment),
+		ReadContext:   TrackingReadWrapper(resources.AccountSessionPolicyAttachment, ReadAccountSessionPolicyAttachment),
+		UpdateContext: TrackingUpdateWrapper(resources.AccountSessionPolicyAttachment, UpdateAccountSessionPolicyAttachment),
+		DeleteContext: TrackingDeleteWrapper(resources.AccountSessionPolicyAttachment, DeleteAccountSessionPolicyAttachment),
 
 		Schema: accountSessionPolicyAttachmentSchema,
 		Importer: &schema.ResourceImporter{

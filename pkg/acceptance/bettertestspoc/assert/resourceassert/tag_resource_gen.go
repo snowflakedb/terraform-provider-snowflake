@@ -16,7 +16,7 @@ func TagResource(t *testing.T, name string) *TagResourceAssert {
 	t.Helper()
 
 	return &TagResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedTagResource(t *testing.T, id string) *TagResourceAssert {
 	t.Helper()
 
 	return &TagResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -89,37 +89,37 @@ func (t *TagResourceAssert) HasPropagate(expected string) *TagResourceAssert {
 ///////////////////////////////////
 
 func (t *TagResourceAssert) HasDatabaseString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("database", expected))
+	t.ValueSet("database", expected)
 	return t
 }
 
 func (t *TagResourceAssert) HasSchemaString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("schema", expected))
+	t.ValueSet("schema", expected)
 	return t
 }
 
 func (t *TagResourceAssert) HasNameString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("name", expected))
+	t.ValueSet("name", expected)
 	return t
 }
 
 func (t *TagResourceAssert) HasCommentString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("comment", expected))
+	t.ValueSet("comment", expected)
 	return t
 }
 
 func (t *TagResourceAssert) HasFullyQualifiedNameString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	t.ValueSet("fully_qualified_name", expected)
 	return t
 }
 
 func (t *TagResourceAssert) HasNoAllowedValuesString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("no_allowed_values", expected))
+	t.ValueSet("no_allowed_values", expected)
 	return t
 }
 
 func (t *TagResourceAssert) HasPropagateString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("propagate", expected))
+	t.ValueSet("propagate", expected)
 	return t
 }
 
@@ -128,37 +128,37 @@ func (t *TagResourceAssert) HasPropagateString(expected string) *TagResourceAsse
 ///////////////////////////////
 
 func (t *TagResourceAssert) HasNoDatabase() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("database"))
+	t.ValueNotSet("database")
 	return t
 }
 
 func (t *TagResourceAssert) HasNoSchema() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("schema"))
+	t.ValueNotSet("schema")
 	return t
 }
 
 func (t *TagResourceAssert) HasNoName() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("name"))
+	t.ValueNotSet("name")
 	return t
 }
 
 func (t *TagResourceAssert) HasNoComment() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("comment"))
+	t.ValueNotSet("comment")
 	return t
 }
 
 func (t *TagResourceAssert) HasNoFullyQualifiedName() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	t.ValueNotSet("fully_qualified_name")
 	return t
 }
 
 func (t *TagResourceAssert) HasNoNoAllowedValues() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("no_allowed_values"))
+	t.ValueNotSet("no_allowed_values")
 	return t
 }
 
 func (t *TagResourceAssert) HasNoPropagate() *TagResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("propagate"))
+	t.ValueNotSet("propagate")
 	return t
 }
 
@@ -167,42 +167,42 @@ func (t *TagResourceAssert) HasNoPropagate() *TagResourceAssert {
 ////////////////////////////
 
 func (t *TagResourceAssert) HasAllowedValuesEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("allowed_values.#", "0"))
+	t.ValueSet("allowed_values.#", "0")
 	return t
 }
 
 func (t *TagResourceAssert) HasCommentEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("comment", ""))
+	t.ValueSet("comment", "")
 	return t
 }
 
 func (t *TagResourceAssert) HasFullyQualifiedNameEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	t.ValueSet("fully_qualified_name", "")
 	return t
 }
 
 func (t *TagResourceAssert) HasMaskingPoliciesEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("masking_policies.#", "0"))
+	t.ValueSet("masking_policies.#", "0")
 	return t
 }
 
 func (t *TagResourceAssert) HasNoAllowedValuesEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("no_allowed_values", ""))
+	t.ValueSet("no_allowed_values", "")
 	return t
 }
 
 func (t *TagResourceAssert) HasOnConflictEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("on_conflict.#", "0"))
+	t.ValueSet("on_conflict.#", "0")
 	return t
 }
 
 func (t *TagResourceAssert) HasOrderedAllowedValuesEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("ordered_allowed_values.#", "0"))
+	t.ValueSet("ordered_allowed_values.#", "0")
 	return t
 }
 
 func (t *TagResourceAssert) HasPropagateEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("propagate", ""))
+	t.ValueSet("propagate", "")
 	return t
 }
 
@@ -211,36 +211,36 @@ func (t *TagResourceAssert) HasPropagateEmpty() *TagResourceAssert {
 ///////////////////////////////
 
 func (t *TagResourceAssert) HasDatabaseNotEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValuePresent("database"))
+	t.ValuePresent("database")
 	return t
 }
 
 func (t *TagResourceAssert) HasSchemaNotEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValuePresent("schema"))
+	t.ValuePresent("schema")
 	return t
 }
 
 func (t *TagResourceAssert) HasNameNotEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValuePresent("name"))
+	t.ValuePresent("name")
 	return t
 }
 
 func (t *TagResourceAssert) HasCommentNotEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValuePresent("comment"))
+	t.ValuePresent("comment")
 	return t
 }
 
 func (t *TagResourceAssert) HasFullyQualifiedNameNotEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	t.ValuePresent("fully_qualified_name")
 	return t
 }
 
 func (t *TagResourceAssert) HasNoAllowedValuesNotEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValuePresent("no_allowed_values"))
+	t.ValuePresent("no_allowed_values")
 	return t
 }
 
 func (t *TagResourceAssert) HasPropagateNotEmpty() *TagResourceAssert {
-	t.AddAssertion(assert.ValuePresent("propagate"))
+	t.ValuePresent("propagate")
 	return t
 }

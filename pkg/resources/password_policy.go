@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -179,10 +178,10 @@ func PasswordPolicy() *schema.Resource {
 
 	return &schema.Resource{
 		Description:   "A password policy specifies the requirements that must be met to create and reset a password to authenticate to Snowflake.",
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingCreateWrapper(resources.PasswordPolicy, CreatePasswordPolicy)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingReadWrapper(resources.PasswordPolicy, ReadPasswordPolicyFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingUpdateWrapper(resources.PasswordPolicy, UpdatePasswordPolicy)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.PasswordPolicyResource), TrackingDeleteWrapper(resources.PasswordPolicy, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.PasswordPolicy, CreatePasswordPolicy),
+		ReadContext:   TrackingReadWrapper(resources.PasswordPolicy, ReadPasswordPolicyFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.PasswordPolicy, UpdatePasswordPolicy),
+		DeleteContext: TrackingDeleteWrapper(resources.PasswordPolicy, deleteFunc),
 
 		Schema: passwordPolicySchema,
 		Importer: &schema.ResourceImporter{

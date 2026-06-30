@@ -4,13 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -57,7 +54,7 @@ var authenticationPoliciesSchema = map[string]*schema.Schema{
 
 func AuthenticationPolicies() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.AuthenticationPoliciesDatasource), TrackingReadWrapper(datasources.AuthenticationPolicies, ReadAuthenticationPolicies)),
+		ReadContext: TrackingReadWrapper(datasources.AuthenticationPolicies, ReadAuthenticationPolicies),
 		Schema:      authenticationPoliciesSchema,
 		Description: "Data source used to get details of filtered authentication policies. Filtering is aligned with the current possibilities for [SHOW AUTHENTICATION POLICIES](https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies) query." +
 			" The results of SHOW and DESCRIBE are encapsulated in one output collection `authentication_policies`.",

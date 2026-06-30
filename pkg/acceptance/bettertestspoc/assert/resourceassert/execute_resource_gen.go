@@ -16,7 +16,7 @@ func ExecuteResource(t *testing.T, name string) *ExecuteResourceAssert {
 	t.Helper()
 
 	return &ExecuteResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExecuteResource(t *testing.T, id string) *ExecuteResourceAssert {
 	t.Helper()
 
 	return &ExecuteResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -54,17 +54,17 @@ func (e *ExecuteResourceAssert) HasRevert(expected string) *ExecuteResourceAsser
 ///////////////////////////////////
 
 func (e *ExecuteResourceAssert) HasExecuteString(expected string) *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueSet("execute", expected))
+	e.ValueSet("execute", expected)
 	return e
 }
 
 func (e *ExecuteResourceAssert) HasQueryString(expected string) *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueSet("query", expected))
+	e.ValueSet("query", expected)
 	return e
 }
 
 func (e *ExecuteResourceAssert) HasRevertString(expected string) *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueSet("revert", expected))
+	e.ValueSet("revert", expected)
 	return e
 }
 
@@ -73,17 +73,17 @@ func (e *ExecuteResourceAssert) HasRevertString(expected string) *ExecuteResourc
 ///////////////////////////////
 
 func (e *ExecuteResourceAssert) HasNoExecute() *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("execute"))
+	e.ValueNotSet("execute")
 	return e
 }
 
 func (e *ExecuteResourceAssert) HasNoQuery() *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("query"))
+	e.ValueNotSet("query")
 	return e
 }
 
 func (e *ExecuteResourceAssert) HasNoRevert() *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("revert"))
+	e.ValueNotSet("revert")
 	return e
 }
 
@@ -92,12 +92,12 @@ func (e *ExecuteResourceAssert) HasNoRevert() *ExecuteResourceAssert {
 ////////////////////////////
 
 func (e *ExecuteResourceAssert) HasQueryEmpty() *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueSet("query", ""))
+	e.ValueSet("query", "")
 	return e
 }
 
 func (e *ExecuteResourceAssert) HasQueryResultsEmpty() *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueSet("query_results.#", "0"))
+	e.ValueSet("query_results.#", "0")
 	return e
 }
 
@@ -106,16 +106,16 @@ func (e *ExecuteResourceAssert) HasQueryResultsEmpty() *ExecuteResourceAssert {
 ///////////////////////////////
 
 func (e *ExecuteResourceAssert) HasExecuteNotEmpty() *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValuePresent("execute"))
+	e.ValuePresent("execute")
 	return e
 }
 
 func (e *ExecuteResourceAssert) HasQueryNotEmpty() *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValuePresent("query"))
+	e.ValuePresent("query")
 	return e
 }
 
 func (e *ExecuteResourceAssert) HasRevertNotEmpty() *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValuePresent("revert"))
+	e.ValuePresent("revert")
 	return e
 }

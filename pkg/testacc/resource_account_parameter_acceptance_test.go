@@ -23,10 +23,10 @@ func TestAcc_AccountParameter(t *testing.T) {
 		value        string
 		defaultLevel sdk.ParameterType
 	}{
-		{sdk.AccountParameterAllowIDToken, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterAllowIdToken, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterPreventLoadFromInlineURL, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterRequireStorageIntegrationForStageCreation, "true", sdk.ParameterTypeSnowflakeDefault},
-		{sdk.AccountParameterInitialReplicationSizeLimitInTB, "3.0", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterInitialReplicationSizeLimitInTb, "3.0", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCsvTimestampFormat, "YYYY-MM-DD", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterDisableUserPrivilegeGrants, resources.BooleanTrue, sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterAllowBindValuesAccess, "true", sdk.ParameterTypeSnowflakeDefault},
@@ -38,6 +38,7 @@ func TestAcc_AccountParameter(t *testing.T) {
 		{sdk.AccountParameterCortexModelsAllowlist, "All", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableCortexAnalyst, "true", sdk.ParameterTypeSystem},
 		{sdk.AccountParameterEnableDataCompaction, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterEnablePerAccountAppServicePrivatelinkUrl, "true", sdk.ParameterTypeSystem},
 		{sdk.AccountParameterEnableGetDdlUseDataTypeAlias, "false", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableIcebergMergeOnRead, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableNotebookCreationInPersonalDb, "false", sdk.ParameterTypeSystem},
@@ -78,7 +79,7 @@ func TestAcc_AccountParameter(t *testing.T) {
 // Proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2573 is solved.
 // Instead of TIMEZONE, we used INITIAL_REPLICATION_SIZE_LIMIT_IN_TB which is only settable on account so it does not mess with other tests.
 func TestAcc_AccountParameter_Issue2573(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterInitialReplicationSizeLimitInTB), "3.0")
+	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterInitialReplicationSizeLimitInTb), "3.0")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -90,7 +91,7 @@ func TestAcc_AccountParameter_Issue2573(t *testing.T) {
 				Config: config.FromModels(t, accountParameterModel),
 				Check: assertThat(
 					t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-						HasKeyString(string(sdk.AccountParameterInitialReplicationSizeLimitInTB)).
+						HasKeyString(string(sdk.AccountParameterInitialReplicationSizeLimitInTb)).
 						HasValueString("3.0"),
 				),
 			},
@@ -105,19 +106,19 @@ func TestAcc_AccountParameter_Issue2573(t *testing.T) {
 }
 
 func TestAcc_AccountParameter_Issue3025(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList), "true")
+	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList), "true")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckAccountParameterUnset(t, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList),
+		CheckDestroy: CheckAccountParameterUnset(t, sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList),
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, accountParameterModel),
 				Check: assertThat(
 					t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-						HasKeyString(string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList)).
+						HasKeyString(string(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList)).
 						HasValueString("true"),
 				),
 			},

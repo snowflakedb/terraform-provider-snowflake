@@ -16,7 +16,7 @@ func ManagedAccountResource(t *testing.T, name string) *ManagedAccountResourceAs
 	t.Helper()
 
 	return &ManagedAccountResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedManagedAccountResource(t *testing.T, id string) *ManagedAccountReso
 	t.Helper()
 
 	return &ManagedAccountResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -92,57 +92,57 @@ func (m *ManagedAccountResourceAssert) HasUrl(expected string) *ManagedAccountRe
 ///////////////////////////////////
 
 func (m *ManagedAccountResourceAssert) HasNameString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("name", expected))
+	m.ValueSet("name", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasAdminNameString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("admin_name", expected))
+	m.ValueSet("admin_name", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasAdminPasswordString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("admin_password", expected))
+	m.ValueSet("admin_password", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasCloudString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("cloud", expected))
+	m.ValueSet("cloud", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasCommentString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("comment", expected))
+	m.ValueSet("comment", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasCreatedOnString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("created_on", expected))
+	m.ValueSet("created_on", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasFullyQualifiedNameString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	m.ValueSet("fully_qualified_name", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasLocatorString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("locator", expected))
+	m.ValueSet("locator", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasRegionString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("region", expected))
+	m.ValueSet("region", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasTypeString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("type", expected))
+	m.ValueSet("type", expected)
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasUrlString(expected string) *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("url", expected))
+	m.ValueSet("url", expected)
 	return m
 }
 
@@ -151,57 +151,57 @@ func (m *ManagedAccountResourceAssert) HasUrlString(expected string) *ManagedAcc
 ///////////////////////////////
 
 func (m *ManagedAccountResourceAssert) HasNoName() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("name"))
+	m.ValueNotSet("name")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoAdminName() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("admin_name"))
+	m.ValueNotSet("admin_name")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoAdminPassword() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("admin_password"))
+	m.ValueNotSet("admin_password")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoCloud() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("cloud"))
+	m.ValueNotSet("cloud")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoComment() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("comment"))
+	m.ValueNotSet("comment")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoCreatedOn() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("created_on"))
+	m.ValueNotSet("created_on")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoFullyQualifiedName() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	m.ValueNotSet("fully_qualified_name")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoLocator() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("locator"))
+	m.ValueNotSet("locator")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoRegion() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("region"))
+	m.ValueNotSet("region")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoType() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("type"))
+	m.ValueNotSet("type")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasNoUrl() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueNotSet("url"))
+	m.ValueNotSet("url")
 	return m
 }
 
@@ -210,42 +210,42 @@ func (m *ManagedAccountResourceAssert) HasNoUrl() *ManagedAccountResourceAssert 
 ////////////////////////////
 
 func (m *ManagedAccountResourceAssert) HasCloudEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("cloud", ""))
+	m.ValueSet("cloud", "")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasCommentEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("comment", ""))
+	m.ValueSet("comment", "")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasCreatedOnEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("created_on", ""))
+	m.ValueSet("created_on", "")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasFullyQualifiedNameEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	m.ValueSet("fully_qualified_name", "")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasLocatorEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("locator", ""))
+	m.ValueSet("locator", "")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasRegionEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("region", ""))
+	m.ValueSet("region", "")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasTypeEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("type", ""))
+	m.ValueSet("type", "")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasUrlEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValueSet("url", ""))
+	m.ValueSet("url", "")
 	return m
 }
 
@@ -254,56 +254,56 @@ func (m *ManagedAccountResourceAssert) HasUrlEmpty() *ManagedAccountResourceAsse
 ///////////////////////////////
 
 func (m *ManagedAccountResourceAssert) HasNameNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("name"))
+	m.ValuePresent("name")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasAdminNameNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("admin_name"))
+	m.ValuePresent("admin_name")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasAdminPasswordNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("admin_password"))
+	m.ValuePresent("admin_password")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasCloudNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("cloud"))
+	m.ValuePresent("cloud")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasCommentNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("comment"))
+	m.ValuePresent("comment")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasCreatedOnNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("created_on"))
+	m.ValuePresent("created_on")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasFullyQualifiedNameNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	m.ValuePresent("fully_qualified_name")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasLocatorNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("locator"))
+	m.ValuePresent("locator")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasRegionNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("region"))
+	m.ValuePresent("region")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasTypeNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("type"))
+	m.ValuePresent("type")
 	return m
 }
 
 func (m *ManagedAccountResourceAssert) HasUrlNotEmpty() *ManagedAccountResourceAssert {
-	m.AddAssertion(assert.ValuePresent("url"))
+	m.ValuePresent("url")
 	return m
 }

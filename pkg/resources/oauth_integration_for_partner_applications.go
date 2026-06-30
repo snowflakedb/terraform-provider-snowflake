@@ -79,10 +79,10 @@ var oauthIntegrationForPartnerApplicationsSchema = map[string]*schema.Schema{
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		},
 		Optional:    true,
-		Description: relatedResourceDescription(withPrivilegedRolesDescription("A set of Snowflake roles that a user cannot explicitly consent to using after authenticating.", string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList)), resources.AccountRole),
+		Description: relatedResourceDescription(withPrivilegedRolesDescription("A set of Snowflake roles that a user cannot explicitly consent to using after authenticating.", string(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList)), resources.AccountRole),
 		DiffSuppressFunc: SuppressIfAny(
 			IgnoreChangeToCurrentSnowflakeListValueInDescribe("blocked_roles_list"),
-			IgnoreValuesFromSetIfParamSet("blocked_roles_list", string(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList), privilegedRoles),
+			IgnoreValuesFromSetIfParamSet("blocked_roles_list", string(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList), privilegedRoles),
 			// TODO(SNOW-1517937): uncomment
 			// NormalizeAndCompareIdentifiersInSet("blocked_roles_list"),
 		),
@@ -427,7 +427,7 @@ func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarkin
 		if err = d.Set(DescribeOutputAttributeName, []map[string]any{schemas.DescribeOauthIntegrationForPartnerApplicationsToSchema(integrationProperties)}); err != nil {
 			return diag.FromErr(err)
 		}
-		param, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList)
+		param, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList)
 		if err != nil {
 			return diag.FromErr(err)
 		}

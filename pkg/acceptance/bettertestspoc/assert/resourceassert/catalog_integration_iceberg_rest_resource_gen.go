@@ -16,7 +16,7 @@ func CatalogIntegrationIcebergRestResource(t *testing.T, name string) *CatalogIn
 	t.Helper()
 
 	return &CatalogIntegrationIcebergRestResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCatalogIntegrationIcebergRestResource(t *testing.T, id string) *Cat
 	t.Helper()
 
 	return &CatalogIntegrationIcebergRestResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -80,37 +80,37 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasRefreshIntervalSeconds(
 ///////////////////////////////////
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNameString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("name", expected))
+	c.ValueSet("name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespaceString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_namespace", expected))
+	c.ValueSet("catalog_namespace", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSourceString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_source", expected))
+	c.ValueSet("catalog_source", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCommentString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", expected))
+	c.ValueSet("comment", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasEnabledString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("enabled", expected))
+	c.ValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasFullyQualifiedNameString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	c.ValueSet("fully_qualified_name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasRefreshIntervalSecondsString(expected string) *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("refresh_interval_seconds", expected))
+	c.ValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
@@ -119,37 +119,37 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasRefreshIntervalSecondsS
 ///////////////////////////////
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoName() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoCatalogNamespace() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("catalog_namespace"))
+	c.ValueNotSet("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoCatalogSource() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("catalog_source"))
+	c.ValueNotSet("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoComment() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoEnabled() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoFullyQualifiedName() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	c.ValueNotSet("fully_qualified_name")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoRefreshIntervalSeconds() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("refresh_interval_seconds"))
+	c.ValueNotSet("refresh_interval_seconds")
 	return c
 }
 
@@ -158,42 +158,42 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasNoRefreshIntervalSecond
 ////////////////////////////
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasBearerRestAuthenticationEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("bearer_rest_authentication.#", "0"))
+	c.ValueSet("bearer_rest_authentication.#", "0")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespaceEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_namespace", ""))
+	c.ValueSet("catalog_namespace", "")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSourceEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_source", ""))
+	c.ValueSet("catalog_source", "")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCommentEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", ""))
+	c.ValueSet("comment", "")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasFullyQualifiedNameEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	c.ValueSet("fully_qualified_name", "")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasOauthRestAuthenticationEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("oauth_rest_authentication.#", "0"))
+	c.ValueSet("oauth_rest_authentication.#", "0")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasRefreshIntervalSecondsEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("refresh_interval_seconds", ""))
+	c.ValueSet("refresh_interval_seconds", "")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasSigv4RestAuthenticationEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValueSet("sigv4_rest_authentication.#", "0"))
+	c.ValueSet("sigv4_rest_authentication.#", "0")
 	return c
 }
 
@@ -202,36 +202,36 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasSigv4RestAuthentication
 ///////////////////////////////
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasNameNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValuePresent("name"))
+	c.ValuePresent("name")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespaceNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValuePresent("catalog_namespace"))
+	c.ValuePresent("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSourceNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValuePresent("catalog_source"))
+	c.ValuePresent("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCommentNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValuePresent("comment"))
+	c.ValuePresent("comment")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasEnabledNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValuePresent("enabled"))
+	c.ValuePresent("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasFullyQualifiedNameNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	c.ValuePresent("fully_qualified_name")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasRefreshIntervalSecondsNotEmpty() *CatalogIntegrationIcebergRestResourceAssert {
-	c.AddAssertion(assert.ValuePresent("refresh_interval_seconds"))
+	c.ValuePresent("refresh_interval_seconds")
 	return c
 }

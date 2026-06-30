@@ -16,7 +16,7 @@ func FunctionSqlResource(t *testing.T, name string) *FunctionSqlResourceAssert {
 	t.Helper()
 
 	return &FunctionSqlResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedFunctionSqlResource(t *testing.T, id string) *FunctionSqlResourceAs
 	t.Helper()
 
 	return &FunctionSqlResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -114,77 +114,77 @@ func (f *FunctionSqlResourceAssert) HasTraceLevel(expected string) *FunctionSqlR
 ///////////////////////////////////
 
 func (f *FunctionSqlResourceAssert) HasDatabaseString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("database", expected))
+	f.ValueSet("database", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasSchemaString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("schema", expected))
+	f.ValueSet("schema", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNameString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("name", expected))
+	f.ValueSet("name", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasCommentString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("comment", expected))
+	f.ValueSet("comment", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasEnableConsoleOutputString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("enable_console_output", expected))
+	f.ValueSet("enable_console_output", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasFullyQualifiedNameString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	f.ValueSet("fully_qualified_name", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasFunctionDefinitionString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_definition", expected))
+	f.ValueSet("function_definition", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasFunctionLanguageString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_language", expected))
+	f.ValueSet("function_language", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasIsSecureString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("is_secure", expected))
+	f.ValueSet("is_secure", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasLogEventLevelString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_event_level", expected))
+	f.ValueSet("log_event_level", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasLogLevelString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_level", expected))
+	f.ValueSet("log_level", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasMetricLevelString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("metric_level", expected))
+	f.ValueSet("metric_level", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasReturnResultsBehaviorString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_results_behavior", expected))
+	f.ValueSet("return_results_behavior", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasReturnTypeString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_type", expected))
+	f.ValueSet("return_type", expected)
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasTraceLevelString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("trace_level", expected))
+	f.ValueSet("trace_level", expected)
 	return f
 }
 
@@ -193,77 +193,77 @@ func (f *FunctionSqlResourceAssert) HasTraceLevelString(expected string) *Functi
 ///////////////////////////////
 
 func (f *FunctionSqlResourceAssert) HasNoDatabase() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("database"))
+	f.ValueNotSet("database")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoSchema() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("schema"))
+	f.ValueNotSet("schema")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoName() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("name"))
+	f.ValueNotSet("name")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoComment() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("comment"))
+	f.ValueNotSet("comment")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoEnableConsoleOutput() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("enable_console_output"))
+	f.ValueNotSet("enable_console_output")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoFullyQualifiedName() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	f.ValueNotSet("fully_qualified_name")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoFunctionDefinition() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("function_definition"))
+	f.ValueNotSet("function_definition")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoFunctionLanguage() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("function_language"))
+	f.ValueNotSet("function_language")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoIsSecure() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("is_secure"))
+	f.ValueNotSet("is_secure")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoLogEventLevel() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("log_event_level"))
+	f.ValueNotSet("log_event_level")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoLogLevel() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("log_level"))
+	f.ValueNotSet("log_level")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoMetricLevel() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("metric_level"))
+	f.ValueNotSet("metric_level")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoReturnResultsBehavior() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("return_results_behavior"))
+	f.ValueNotSet("return_results_behavior")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoReturnType() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("return_type"))
+	f.ValueNotSet("return_type")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNoTraceLevel() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("trace_level"))
+	f.ValueNotSet("trace_level")
 	return f
 }
 
@@ -272,57 +272,57 @@ func (f *FunctionSqlResourceAssert) HasNoTraceLevel() *FunctionSqlResourceAssert
 ////////////////////////////
 
 func (f *FunctionSqlResourceAssert) HasArgumentsEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	f.ValueSet("arguments.#", "0")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasCommentEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("comment", ""))
+	f.ValueSet("comment", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasEnableConsoleOutputEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	f.ValueSet("enable_console_output", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasFullyQualifiedNameEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	f.ValueSet("fully_qualified_name", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasFunctionLanguageEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_language", ""))
+	f.ValueSet("function_language", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasIsSecureEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("is_secure", ""))
+	f.ValueSet("is_secure", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasLogEventLevelEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_event_level", ""))
+	f.ValueSet("log_event_level", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasLogLevelEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_level", ""))
+	f.ValueSet("log_level", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasMetricLevelEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("metric_level", ""))
+	f.ValueSet("metric_level", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasReturnResultsBehaviorEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_results_behavior", ""))
+	f.ValueSet("return_results_behavior", "")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasTraceLevelEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("trace_level", ""))
+	f.ValueSet("trace_level", "")
 	return f
 }
 
@@ -331,76 +331,76 @@ func (f *FunctionSqlResourceAssert) HasTraceLevelEmpty() *FunctionSqlResourceAss
 ///////////////////////////////
 
 func (f *FunctionSqlResourceAssert) HasDatabaseNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("database"))
+	f.ValuePresent("database")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasSchemaNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("schema"))
+	f.ValuePresent("schema")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasNameNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("name"))
+	f.ValuePresent("name")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasCommentNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("comment"))
+	f.ValuePresent("comment")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasEnableConsoleOutputNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("enable_console_output"))
+	f.ValuePresent("enable_console_output")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasFullyQualifiedNameNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	f.ValuePresent("fully_qualified_name")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasFunctionDefinitionNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("function_definition"))
+	f.ValuePresent("function_definition")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasFunctionLanguageNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("function_language"))
+	f.ValuePresent("function_language")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasIsSecureNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("is_secure"))
+	f.ValuePresent("is_secure")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasLogEventLevelNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("log_event_level"))
+	f.ValuePresent("log_event_level")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasLogLevelNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("log_level"))
+	f.ValuePresent("log_level")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasMetricLevelNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("metric_level"))
+	f.ValuePresent("metric_level")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasReturnResultsBehaviorNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("return_results_behavior"))
+	f.ValuePresent("return_results_behavior")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasReturnTypeNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("return_type"))
+	f.ValuePresent("return_type")
 	return f
 }
 
 func (f *FunctionSqlResourceAssert) HasTraceLevelNotEmpty() *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValuePresent("trace_level"))
+	f.ValuePresent("trace_level")
 	return f
 }

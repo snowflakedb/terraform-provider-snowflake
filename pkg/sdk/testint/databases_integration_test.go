@@ -122,7 +122,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 
 		assertParameterEquals(t, sdk.AccountParameterDataRetentionTimeInDays, "0")
 		assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
-		assertParameterEquals(t, sdk.AccountParameterDefaultDDLCollation, "en_US")
+		assertParameterEquals(t, sdk.AccountParameterDefaultDdlCollation, "en_US")
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
@@ -236,7 +236,7 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 		assert.Equal(t, expected, helpers.FindParameter(t, params, parameterName).Value)
 	}
 
-	assertParameterEquals(t, sdk.AccountParameterDefaultDDLCollation, "en_US")
+	assertParameterEquals(t, sdk.AccountParameterDefaultDdlCollation, "en_US")
 	assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 	assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelDebug))
@@ -259,23 +259,10 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 
 func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	client := testClient(t)
-	secondaryClient := testSecondaryClient(t)
 	ctx := testContext(t)
 
-	sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
-	t.Cleanup(sharedDatabaseCleanup)
-
-	databaseId := sharedDatabase.ID()
-
-	err := secondaryClient.Databases.AlterReplication(
-		ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
-			WithEnableReplication(*sdk.NewEnableReplicationRequest().
-				WithToAccounts([]sdk.AccountIdentifier{
-					testClientHelper().Account.GetAccountIdentifier(t),
-				}).
-				WithIgnoreEditionCheck(true)),
-	)
-	require.NoError(t, err)
+	primaryDatabase, externalDatabaseId := createPrimaryDatabase(t)
+	databaseId := primaryDatabase.ID()
 
 	externalVolume, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
@@ -283,10 +270,8 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	catalog, catalogCleanup := testClientHelper().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
 
-	externalDatabaseId := sdk.NewExternalObjectIdentifier(secondaryTestClientHelper().Account.GetAccountIdentifier(t), sharedDatabase.ID())
-
 	comment := random.Comment()
-	err = client.Databases.CreateSecondary(
+	err := client.Databases.CreateSecondary(
 		ctx, sdk.NewCreateSecondaryDatabaseRequest(databaseId, externalDatabaseId).
 			WithIfNotExists(true).
 			WithDataRetentionTimeInDays(10).
@@ -326,7 +311,7 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 
 	assertParameterEquals(t, sdk.AccountParameterDataRetentionTimeInDays, "10")
 	assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
-	assertParameterEquals(t, sdk.AccountParameterDefaultDDLCollation, "en_US")
+	assertParameterEquals(t, sdk.AccountParameterDefaultDdlCollation, "en_US")
 	assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 	assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelDebug))
@@ -488,7 +473,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterExternalVolume, externalVolumeTest.Name())
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterCatalog, catalogIntegrationTest.Name())
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterReplaceInvalidCharacters, "true")
-			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDefaultDDLCollation, "en_US")
+			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDefaultDdlCollation, "en_US")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterLogEventLevel, string(sdk.LogLevelInfo))
@@ -530,7 +515,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterExternalVolume)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterCatalog)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
-			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDDLCollation)
+			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)
@@ -613,18 +598,7 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 		secondaryClient := testSecondaryClient(t)
 		ctx := testContext(t)
 
-		sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
-		t.Cleanup(sharedDatabaseCleanup)
-
-		err := secondaryClient.Databases.AlterReplication(
-			ctx, sdk.NewAlterReplicationDatabaseRequest(sharedDatabase.ID()).
-				WithEnableReplication(*sdk.NewEnableReplicationRequest().
-					WithToAccounts([]sdk.AccountIdentifier{
-						testClientHelper().Account.GetAccountIdentifier(t),
-					}).
-					WithIgnoreEditionCheck(true)),
-		)
-		require.NoError(t, err)
+		sharedDatabase, externalDatabaseId := createPrimaryDatabase(t)
 
 		externalVolume, externalVolumeCleanup := testClientHelper().ExternalVolume.Create(t)
 		t.Cleanup(externalVolumeCleanup)
@@ -632,9 +606,8 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 		catalog, catalogCleanup := testClientHelper().CatalogIntegration.Create(t)
 		t.Cleanup(catalogCleanup)
 
-		externalDatabaseId := sdk.NewExternalObjectIdentifier(secondaryTestClientHelper().Ids.AccountIdentifierWithLocator(), sharedDatabase.ID())
 		comment := random.Comment()
-		err = client.Databases.CreateSecondary(
+		err := client.Databases.CreateSecondary(
 			ctx, sdk.NewCreateSecondaryDatabaseRequest(sharedDatabase.ID(), externalDatabaseId).
 				WithIfNotExists(true).
 				WithDataRetentionTimeInDays(1).

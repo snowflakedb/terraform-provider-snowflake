@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -122,10 +121,10 @@ func ExternalGcsStage() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalGcsStageResource), TrackingCreateWrapper(resources.ExternalGcsStage, CreateExternalGcsStage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalGcsStageResource), TrackingReadWrapper(resources.ExternalGcsStage, ReadExternalGcsStageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalGcsStageResource), TrackingUpdateWrapper(resources.ExternalGcsStage, UpdateExternalGcsStage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalGcsStageResource, resources.ExternalGcsStage),
+		CreateContext: TrackingCreateWrapper(resources.ExternalGcsStage, CreateExternalGcsStage),
+		ReadContext:   TrackingReadWrapper(resources.ExternalGcsStage, ReadExternalGcsStageFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.ExternalGcsStage, UpdateExternalGcsStage),
+		DeleteContext: DeleteStage(resources.ExternalGcsStage),
 		Description:   "Resource used to manage external GCS stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalGcsStage, customdiff.All(

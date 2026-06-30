@@ -16,7 +16,7 @@ func InternalStageResource(t *testing.T, name string) *InternalStageResourceAsse
 	t.Helper()
 
 	return &InternalStageResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedInternalStageResource(t *testing.T, id string) *InternalStageResour
 	t.Helper()
 
 	return &InternalStageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -73,32 +73,32 @@ func (i *InternalStageResourceAssert) HasStageType(expected string) *InternalSta
 ///////////////////////////////////
 
 func (i *InternalStageResourceAssert) HasDatabaseString(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("database", expected))
+	i.ValueSet("database", expected)
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasSchemaString(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("schema", expected))
+	i.ValueSet("schema", expected)
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasNameString(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("name", expected))
+	i.ValueSet("name", expected)
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasCommentString(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("comment", expected))
+	i.ValueSet("comment", expected)
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFullyQualifiedNameString(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	i.ValueSet("fully_qualified_name", expected)
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasStageTypeString(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("stage_type", expected))
+	i.ValueSet("stage_type", expected)
 	return i
 }
 
@@ -107,32 +107,32 @@ func (i *InternalStageResourceAssert) HasStageTypeString(expected string) *Inter
 ///////////////////////////////
 
 func (i *InternalStageResourceAssert) HasNoDatabase() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("database"))
+	i.ValueNotSet("database")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasNoSchema() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("schema"))
+	i.ValueNotSet("schema")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasNoName() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("name"))
+	i.ValueNotSet("name")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasNoComment() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("comment"))
+	i.ValueNotSet("comment")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasNoFullyQualifiedName() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	i.ValueNotSet("fully_qualified_name")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasNoStageType() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueNotSet("stage_type"))
+	i.ValueNotSet("stage_type")
 	return i
 }
 
@@ -141,32 +141,32 @@ func (i *InternalStageResourceAssert) HasNoStageType() *InternalStageResourceAss
 ////////////////////////////
 
 func (i *InternalStageResourceAssert) HasCommentEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("comment", ""))
+	i.ValueSet("comment", "")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasDirectoryEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("directory.#", "0"))
+	i.ValueSet("directory.#", "0")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasEncryptionEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("encryption.#", "0"))
+	i.ValueSet("encryption.#", "0")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "0"))
+	i.ValueSet("file_format.#", "0")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFullyQualifiedNameEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	i.ValueSet("fully_qualified_name", "")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasStageTypeEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("stage_type", ""))
+	i.ValueSet("stage_type", "")
 	return i
 }
 
@@ -175,31 +175,31 @@ func (i *InternalStageResourceAssert) HasStageTypeEmpty() *InternalStageResource
 ///////////////////////////////
 
 func (i *InternalStageResourceAssert) HasDatabaseNotEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValuePresent("database"))
+	i.ValuePresent("database")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasSchemaNotEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValuePresent("schema"))
+	i.ValuePresent("schema")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasNameNotEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValuePresent("name"))
+	i.ValuePresent("name")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasCommentNotEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValuePresent("comment"))
+	i.ValuePresent("comment")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFullyQualifiedNameNotEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	i.ValuePresent("fully_qualified_name")
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasStageTypeNotEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValuePresent("stage_type"))
+	i.ValuePresent("stage_type")
 	return i
 }

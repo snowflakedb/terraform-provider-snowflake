@@ -16,7 +16,7 @@ func ApiIntegrationGitRepositoryOauth2Resource(t *testing.T, name string) *ApiIn
 	t.Helper()
 
 	return &ApiIntegrationGitRepositoryOauth2ResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationGitRepositoryOauth2Resource(t *testing.T, id string) 
 	t.Helper()
 
 	return &ApiIntegrationGitRepositoryOauth2ResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -107,57 +107,57 @@ func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthUsername(expec
 ///////////////////////////////////
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNameString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
+	a.ValueSet("name", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasCommentString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", expected))
+	a.ValueSet("comment", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasEnabledString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("enabled", expected))
+	a.ValueSet("enabled", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasFullyQualifiedNameString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	a.ValueSet("fully_qualified_name", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthAccessTokenValidityString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_access_token_validity", expected))
+	a.ValueSet("oauth_access_token_validity", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthAuthorizationEndpointString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_authorization_endpoint", expected))
+	a.ValueSet("oauth_authorization_endpoint", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthClientIdString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_id", expected))
+	a.ValueSet("oauth_client_id", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthClientSecretString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_client_secret", expected))
+	a.ValueSet("oauth_client_secret", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthRefreshTokenValidityString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_refresh_token_validity", expected))
+	a.ValueSet("oauth_refresh_token_validity", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthTokenEndpointString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_token_endpoint", expected))
+	a.ValueSet("oauth_token_endpoint", expected)
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthUsernameString(expected string) *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_username", expected))
+	a.ValueSet("oauth_username", expected)
 	return a
 }
 
@@ -166,57 +166,57 @@ func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthUsernameString
 ///////////////////////////////
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoName() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoComment() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoEnabled() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("enabled"))
+	a.ValueNotSet("enabled")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoFullyQualifiedName() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	a.ValueNotSet("fully_qualified_name")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoOauthAccessTokenValidity() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_access_token_validity"))
+	a.ValueNotSet("oauth_access_token_validity")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoOauthAuthorizationEndpoint() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_authorization_endpoint"))
+	a.ValueNotSet("oauth_authorization_endpoint")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoOauthClientId() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_client_id"))
+	a.ValueNotSet("oauth_client_id")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoOauthClientSecret() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_client_secret"))
+	a.ValueNotSet("oauth_client_secret")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoOauthRefreshTokenValidity() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_refresh_token_validity"))
+	a.ValueNotSet("oauth_refresh_token_validity")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoOauthTokenEndpoint() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_token_endpoint"))
+	a.ValueNotSet("oauth_token_endpoint")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoOauthUsername() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("oauth_username"))
+	a.ValueNotSet("oauth_username")
 	return a
 }
 
@@ -225,37 +225,37 @@ func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNoOauthUsername() *
 ////////////////////////////
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasApiBlockedPrefixesEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_blocked_prefixes.#", "0"))
+	a.ValueSet("api_blocked_prefixes.#", "0")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasCommentEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
+	a.ValueSet("comment", "")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasFullyQualifiedNameEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	a.ValueSet("fully_qualified_name", "")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthAccessTokenValidityEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_access_token_validity", ""))
+	a.ValueSet("oauth_access_token_validity", "")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthAllowedScopesEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_allowed_scopes.#", "0"))
+	a.ValueSet("oauth_allowed_scopes.#", "0")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthRefreshTokenValidityEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_refresh_token_validity", ""))
+	a.ValueSet("oauth_refresh_token_validity", "")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthUsernameEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_username", ""))
+	a.ValueSet("oauth_username", "")
 	return a
 }
 
@@ -264,56 +264,56 @@ func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthUsernameEmpty(
 ///////////////////////////////
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasNameNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
+	a.ValuePresent("name")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasCommentNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
+	a.ValuePresent("comment")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasEnabledNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("enabled"))
+	a.ValuePresent("enabled")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	a.ValuePresent("fully_qualified_name")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthAccessTokenValidityNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_access_token_validity"))
+	a.ValuePresent("oauth_access_token_validity")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthAuthorizationEndpointNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_authorization_endpoint"))
+	a.ValuePresent("oauth_authorization_endpoint")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthClientIdNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_id"))
+	a.ValuePresent("oauth_client_id")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthClientSecretNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_client_secret"))
+	a.ValuePresent("oauth_client_secret")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthRefreshTokenValidityNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_refresh_token_validity"))
+	a.ValuePresent("oauth_refresh_token_validity")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthTokenEndpointNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_token_endpoint"))
+	a.ValuePresent("oauth_token_endpoint")
 	return a
 }
 
 func (a *ApiIntegrationGitRepositoryOauth2ResourceAssert) HasOauthUsernameNotEmpty() *ApiIntegrationGitRepositoryOauth2ResourceAssert {
-	a.AddAssertion(assert.ValuePresent("oauth_username"))
+	a.ValuePresent("oauth_username")
 	return a
 }

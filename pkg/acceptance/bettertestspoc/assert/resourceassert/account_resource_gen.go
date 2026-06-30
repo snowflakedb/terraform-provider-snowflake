@@ -16,7 +16,7 @@ func AccountResource(t *testing.T, name string) *AccountResourceAssert {
 	t.Helper()
 
 	return &AccountResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedAccountResource(t *testing.T, id string) *AccountResourceAssert {
 	t.Helper()
 
 	return &AccountResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -122,87 +122,87 @@ func (a *AccountResourceAssert) HasRegionGroup(expected string) *AccountResource
 ///////////////////////////////////
 
 func (a *AccountResourceAssert) HasNameString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
+	a.ValueSet("name", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminNameString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("admin_name", expected))
+	a.ValueSet("admin_name", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminPasswordString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("admin_password", expected))
+	a.ValueSet("admin_password", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminRsaPublicKeyString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("admin_rsa_public_key", expected))
+	a.ValueSet("admin_rsa_public_key", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminUserTypeString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("admin_user_type", expected))
+	a.ValueSet("admin_user_type", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasCommentString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", expected))
+	a.ValueSet("comment", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasConsumptionBillingEntityString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("consumption_billing_entity", expected))
+	a.ValueSet("consumption_billing_entity", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasEditionString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("edition", expected))
+	a.ValueSet("edition", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasEmailString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("email", expected))
+	a.ValueSet("email", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasFirstNameString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("first_name", expected))
+	a.ValueSet("first_name", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasFullyQualifiedNameString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	a.ValueSet("fully_qualified_name", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasGracePeriodInDaysString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("grace_period_in_days", expected))
+	a.ValueSet("grace_period_in_days", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasIsOrgAdminString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("is_org_admin", expected))
+	a.ValueSet("is_org_admin", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasLastNameString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("last_name", expected))
+	a.ValueSet("last_name", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasMustChangePasswordString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("must_change_password", expected))
+	a.ValueSet("must_change_password", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasRegionString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("region", expected))
+	a.ValueSet("region", expected)
 	return a
 }
 
 func (a *AccountResourceAssert) HasRegionGroupString(expected string) *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("region_group", expected))
+	a.ValueSet("region_group", expected)
 	return a
 }
 
@@ -211,87 +211,87 @@ func (a *AccountResourceAssert) HasRegionGroupString(expected string) *AccountRe
 ///////////////////////////////
 
 func (a *AccountResourceAssert) HasNoName() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoAdminName() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("admin_name"))
+	a.ValueNotSet("admin_name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoAdminPassword() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("admin_password"))
+	a.ValueNotSet("admin_password")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoAdminRsaPublicKey() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("admin_rsa_public_key"))
+	a.ValueNotSet("admin_rsa_public_key")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoAdminUserType() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("admin_user_type"))
+	a.ValueNotSet("admin_user_type")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoComment() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoConsumptionBillingEntity() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("consumption_billing_entity"))
+	a.ValueNotSet("consumption_billing_entity")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoEdition() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("edition"))
+	a.ValueNotSet("edition")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoEmail() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("email"))
+	a.ValueNotSet("email")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoFirstName() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("first_name"))
+	a.ValueNotSet("first_name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoFullyQualifiedName() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	a.ValueNotSet("fully_qualified_name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoGracePeriodInDays() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("grace_period_in_days"))
+	a.ValueNotSet("grace_period_in_days")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoIsOrgAdmin() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("is_org_admin"))
+	a.ValueNotSet("is_org_admin")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoLastName() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("last_name"))
+	a.ValueNotSet("last_name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoMustChangePassword() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("must_change_password"))
+	a.ValueNotSet("must_change_password")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoRegion() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("region"))
+	a.ValueNotSet("region")
 	return a
 }
 
 func (a *AccountResourceAssert) HasNoRegionGroup() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("region_group"))
+	a.ValueNotSet("region_group")
 	return a
 }
 
@@ -300,62 +300,62 @@ func (a *AccountResourceAssert) HasNoRegionGroup() *AccountResourceAssert {
 ////////////////////////////
 
 func (a *AccountResourceAssert) HasAdminPasswordEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("admin_password", ""))
+	a.ValueSet("admin_password", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminRsaPublicKeyEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("admin_rsa_public_key", ""))
+	a.ValueSet("admin_rsa_public_key", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminUserTypeEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("admin_user_type", ""))
+	a.ValueSet("admin_user_type", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasCommentEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
+	a.ValueSet("comment", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasConsumptionBillingEntityEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("consumption_billing_entity", ""))
+	a.ValueSet("consumption_billing_entity", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasFirstNameEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("first_name", ""))
+	a.ValueSet("first_name", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasFullyQualifiedNameEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	a.ValueSet("fully_qualified_name", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasIsOrgAdminEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("is_org_admin", ""))
+	a.ValueSet("is_org_admin", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasLastNameEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("last_name", ""))
+	a.ValueSet("last_name", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasMustChangePasswordEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("must_change_password", ""))
+	a.ValueSet("must_change_password", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasRegionEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("region", ""))
+	a.ValueSet("region", "")
 	return a
 }
 
 func (a *AccountResourceAssert) HasRegionGroupEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValueSet("region_group", ""))
+	a.ValueSet("region_group", "")
 	return a
 }
 
@@ -364,86 +364,86 @@ func (a *AccountResourceAssert) HasRegionGroupEmpty() *AccountResourceAssert {
 ///////////////////////////////
 
 func (a *AccountResourceAssert) HasNameNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
+	a.ValuePresent("name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminNameNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("admin_name"))
+	a.ValuePresent("admin_name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminPasswordNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("admin_password"))
+	a.ValuePresent("admin_password")
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminRsaPublicKeyNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("admin_rsa_public_key"))
+	a.ValuePresent("admin_rsa_public_key")
 	return a
 }
 
 func (a *AccountResourceAssert) HasAdminUserTypeNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("admin_user_type"))
+	a.ValuePresent("admin_user_type")
 	return a
 }
 
 func (a *AccountResourceAssert) HasCommentNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
+	a.ValuePresent("comment")
 	return a
 }
 
 func (a *AccountResourceAssert) HasConsumptionBillingEntityNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("consumption_billing_entity"))
+	a.ValuePresent("consumption_billing_entity")
 	return a
 }
 
 func (a *AccountResourceAssert) HasEditionNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("edition"))
+	a.ValuePresent("edition")
 	return a
 }
 
 func (a *AccountResourceAssert) HasEmailNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("email"))
+	a.ValuePresent("email")
 	return a
 }
 
 func (a *AccountResourceAssert) HasFirstNameNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("first_name"))
+	a.ValuePresent("first_name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasFullyQualifiedNameNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	a.ValuePresent("fully_qualified_name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasGracePeriodInDaysNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("grace_period_in_days"))
+	a.ValuePresent("grace_period_in_days")
 	return a
 }
 
 func (a *AccountResourceAssert) HasIsOrgAdminNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("is_org_admin"))
+	a.ValuePresent("is_org_admin")
 	return a
 }
 
 func (a *AccountResourceAssert) HasLastNameNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("last_name"))
+	a.ValuePresent("last_name")
 	return a
 }
 
 func (a *AccountResourceAssert) HasMustChangePasswordNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("must_change_password"))
+	a.ValuePresent("must_change_password")
 	return a
 }
 
 func (a *AccountResourceAssert) HasRegionNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("region"))
+	a.ValuePresent("region")
 	return a
 }
 
 func (a *AccountResourceAssert) HasRegionGroupNotEmpty() *AccountResourceAssert {
-	a.AddAssertion(assert.ValuePresent("region_group"))
+	a.ValuePresent("region_group")
 	return a
 }

@@ -16,7 +16,7 @@ func ExternalS3CompatibleStageResource(t *testing.T, name string) *ExternalS3Com
 	t.Helper()
 
 	return &ExternalS3CompatibleStageResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalS3CompatibleStageResource(t *testing.T, id string) *Externa
 	t.Helper()
 
 	return &ExternalS3CompatibleStageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -88,47 +88,47 @@ func (e *ExternalS3CompatibleStageResourceAssert) HasUrl(expected string) *Exter
 ///////////////////////////////////
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasDatabaseString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("database", expected))
+	e.ValueSet("database", expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasSchemaString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("schema", expected))
+	e.ValueSet("schema", expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNameString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("name", expected))
+	e.ValueSet("name", expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCloudString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("cloud", expected))
+	e.ValueSet("cloud", expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCommentString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("comment", expected))
+	e.ValueSet("comment", expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasEndpointString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("endpoint", expected))
+	e.ValueSet("endpoint", expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	e.ValueSet("fully_qualified_name", expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasStageTypeString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("stage_type", expected))
+	e.ValueSet("stage_type", expected)
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasUrlString(expected string) *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("url", expected))
+	e.ValueSet("url", expected)
 	return e
 }
 
@@ -137,47 +137,47 @@ func (e *ExternalS3CompatibleStageResourceAssert) HasUrlString(expected string) 
 ///////////////////////////////
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoDatabase() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("database"))
+	e.ValueNotSet("database")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoSchema() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("schema"))
+	e.ValueNotSet("schema")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoName() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("name"))
+	e.ValueNotSet("name")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoCloud() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("cloud"))
+	e.ValueNotSet("cloud")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoComment() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("comment"))
+	e.ValueNotSet("comment")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoEndpoint() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("endpoint"))
+	e.ValueNotSet("endpoint")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoFullyQualifiedName() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	e.ValueNotSet("fully_qualified_name")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoStageType() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("stage_type"))
+	e.ValueNotSet("stage_type")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNoUrl() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("url"))
+	e.ValueNotSet("url")
 	return e
 }
 
@@ -186,37 +186,37 @@ func (e *ExternalS3CompatibleStageResourceAssert) HasNoUrl() *ExternalS3Compatib
 ////////////////////////////
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCloudEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("cloud", ""))
+	e.ValueSet("cloud", "")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCommentEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("comment", ""))
+	e.ValueSet("comment", "")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCredentialsEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("credentials.#", "0"))
+	e.ValueSet("credentials.#", "0")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasDirectoryEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory.#", "0"))
+	e.ValueSet("directory.#", "0")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasFileFormatEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
+	e.ValueSet("file_format.#", "0")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasFullyQualifiedNameEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	e.ValueSet("fully_qualified_name", "")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasStageTypeEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("stage_type", ""))
+	e.ValueSet("stage_type", "")
 	return e
 }
 
@@ -225,46 +225,46 @@ func (e *ExternalS3CompatibleStageResourceAssert) HasStageTypeEmpty() *ExternalS
 ///////////////////////////////
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasDatabaseNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("database"))
+	e.ValuePresent("database")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasSchemaNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("schema"))
+	e.ValuePresent("schema")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasNameNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("name"))
+	e.ValuePresent("name")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCloudNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("cloud"))
+	e.ValuePresent("cloud")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasCommentNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("comment"))
+	e.ValuePresent("comment")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasEndpointNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("endpoint"))
+	e.ValuePresent("endpoint")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasFullyQualifiedNameNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	e.ValuePresent("fully_qualified_name")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasStageTypeNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("stage_type"))
+	e.ValuePresent("stage_type")
 	return e
 }
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasUrlNotEmpty() *ExternalS3CompatibleStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("url"))
+	e.ValuePresent("url")
 	return e
 }
