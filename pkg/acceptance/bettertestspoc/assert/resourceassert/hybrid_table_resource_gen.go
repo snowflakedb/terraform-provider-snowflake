@@ -66,6 +66,8 @@ func (h *HybridTableResourceAssert) HasFullyQualifiedName(expected string) *Hybr
 	return h
 }
 
+// typed assert for "index" (type: Set, subtype: Map) is not currently supported
+
 func (h *HybridTableResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *HybridTableResourceAssert {
 	h.IntValueSet("max_data_extension_time_in_days", expected)
 	return h
@@ -174,6 +176,11 @@ func (h *HybridTableResourceAssert) HasForeignKeyEmpty() *HybridTableResourceAss
 
 func (h *HybridTableResourceAssert) HasFullyQualifiedNameEmpty() *HybridTableResourceAssert {
 	h.ValueSet("fully_qualified_name", "")
+	return h
+}
+
+func (h *HybridTableResourceAssert) HasIndexEmpty() *HybridTableResourceAssert {
+	h.ValueSet("index.#", "0")
 	return h
 }
 
