@@ -274,6 +274,26 @@ var icebergTablesDef = g.NewInterface(
 		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).CustomOperation(
+	"CreateFromAwsGlue",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue",
+	g.NewQueryStruct("CreateFromAwsGlue").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+		TextAssignment("CATALOG_TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalTextAssignment("CATALOG_NAMESPACE", g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
+		OptionalComment().
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table",
 	g.NewQueryStruct("AlterIcebergTable").

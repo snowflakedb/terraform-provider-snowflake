@@ -41,6 +41,11 @@ func (v *icebergTables) CreateFromIcebergRest(ctx context.Context, request *Crea
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *icebergTables) CreateFromAwsGlue(ctx context.Context, request *CreateFromAwsGlueIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *icebergTables) Alter(ctx context.Context, request *AlterIcebergTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -366,6 +371,24 @@ func (r *CreateFromIcebergRestIcebergTableRequest) toOpts() *CreateFromIcebergRe
 		EnableIcebergMergeOnRead:   r.EnableIcebergMergeOnRead,
 		Tag:                        r.Tag,
 		Contact:                    r.Contact,
+	}
+	return opts
+}
+
+func (r *CreateFromAwsGlueIcebergTableRequest) toOpts() *CreateFromAwsGlueIcebergTableOptions {
+	opts := &CreateFromAwsGlueIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
+		CatalogTableName:         r.CatalogTableName,
+		CatalogNamespace:         r.CatalogNamespace,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		AutoRefresh:              r.AutoRefresh,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
 	}
 	return opts
 }
