@@ -80,14 +80,12 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 		mapper = genhelpers.ToString
 	}
 
-	// TODO [SNOW-1501905]: currently, assertions for sdk structs are not properly generated. We mark them to skip them.
-	// IsSdkStruct is true for sdk struct types that cannot be directly cast to string.
-	// These are complex types (e.g. sdk.CortexAgentProfile) that require manual handling in _ext.go files.
-	// String enums and primitive aliases are kept because their underlying kind is not "struct".
+	// TODO [SNOW-1501905]: currently, assertions for sdk structs and interface types are not properly generated. We mark them to skip them.
+	// IsSdkStruct is true for sdk struct types or interface types that cannot be directly cast to string.
+	// These are complex types (e.g. sdk.CortexAgentProfile) or interface types (e.g. datatypes.DataType) that require manual handling in _ext.go files.
+	// String enums and primitive aliases are kept because their underlying kind is not "struct" or "interface".
 	// Identifier types are kept because they have dedicated special mappers (Name/FullyQualifiedName).
-	isSdkStruct := strings.HasPrefix(concreteTypeWithoutPtr, "sdk.") &&
-		underlyingTypeWithoutPtr == "struct" &&
-		!isIdentifier
+	isSdkStruct := (strings.HasPrefix(concreteTypeWithoutPtr, "sdk.") && underlyingTypeWithoutPtr == "struct" && !isIdentifier) || underlyingTypeWithoutPtr == "interface"
 
 	return ResourceShowOutputAssertionModel{
 		Name:             field.Name,
