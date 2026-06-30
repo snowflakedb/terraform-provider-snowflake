@@ -1,11 +1,9 @@
 ---
 page_title: "snowflake_external_volume Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage external volume objects. For more information, check external volume documentation https://docs.snowflake.com/en/sql-reference/commands-data-loading#external-volume.
 ---
-
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 !> **Note** According to Snowflake [docs](https://docs.snowflake.com/en/sql-reference/sql/alter-external-volume), the `ALTER EXTERNAL VOLUME` statement fails if you attempt to remove the active storage location used by Iceberg tables in your account. This means that Terraform may produce an error during apply. Ensure the active storage location is not being removed, or manually adjust the external volume in Snowflake before applying.
 
