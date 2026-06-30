@@ -992,7 +992,7 @@ func TestInt_HybridTableConstraints(t *testing.T) {
 	t.Run("primary key", func(t *testing.T) {
 		pks := collections.Filter(constraints, func(c sdk.HybridTableConstraint) bool { return c.Kind == sdk.ColumnConstraintTypePrimaryKey })
 		require.Len(t, pks, 1, "expected exactly one PRIMARY KEY constraint")
-		require.Equal(t, "PK_CHILD", pks[0].Name)
+		require.Equal(t, "pk_child", pks[0].Name)
 		require.Equal(t, []string{"ID"}, pks[0].Columns)
 	})
 
@@ -1001,8 +1001,8 @@ func TestInt_HybridTableConstraints(t *testing.T) {
 		require.Len(t, uqs, 2, "expected exactly two UNIQUE constraints")
 
 		// Named UNIQUE
-		namedUQ, err := collections.FindFirst(uqs, func(c sdk.HybridTableConstraint) bool { return c.Name == "UQ_NAMED" })
-		require.NoError(t, err, "expected UNIQUE constraint UQ_NAMED")
+		namedUQ, err := collections.FindFirst(uqs, func(c sdk.HybridTableConstraint) bool { return c.Name == "uq_named" })
+		require.NoError(t, err, "expected UNIQUE constraint uq_named")
 		require.Equal(t, []string{"COL_A"}, namedUQ.Columns)
 
 		// Anonymous UNIQUE — Snowflake assigns a SYS_CONSTRAINT_* name.
@@ -1020,7 +1020,7 @@ func TestInt_HybridTableConstraints(t *testing.T) {
 	t.Run("foreign keys", func(t *testing.T) {
 		fks := collections.Filter(constraints, func(c sdk.HybridTableConstraint) bool { return c.Kind == sdk.ColumnConstraintTypeForeignKey })
 		require.Len(t, fks, 1, "expected exactly one FOREIGN KEY constraint")
-		require.Equal(t, "FK_NAMED", fks[0].Name)
+		require.Equal(t, "fk_named", fks[0].Name)
 		require.Equal(t, []string{"PARENT_ID"}, fks[0].Columns)
 		require.Equal(t, []string{"ID"}, fks[0].ReferencedColumns)
 		require.Equal(t, parentId.DatabaseName(), fks[0].ReferencedTable.DatabaseName())
