@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput, and rest_config.0. prefix added to field names
-
 type OpenCatalogRestConfigDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func OpenCatalogRestConfigDescribeOutput(t *testing.T, name string) *OpenCatalog
 	t.Helper()
 
 	openCatalogRestConfigAssert := OpenCatalogRestConfigDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output.0.rest_config"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	openCatalogRestConfigAssert.AddAssertion(assert.ValueSet("describe_output.0.rest_config.#", "1"))
 	return &openCatalogRestConfigAssert
 }
 
@@ -29,9 +26,8 @@ func ImportedOpenCatalogRestConfigDescribeOutput(t *testing.T, id string) *OpenC
 	t.Helper()
 
 	openCatalogRestConfigAssert := OpenCatalogRestConfigDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output.0.rest_config"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	openCatalogRestConfigAssert.AddAssertion(assert.ValueSet("describe_output.0.rest_config.#", "1"))
 	return &openCatalogRestConfigAssert
 }
 
@@ -40,22 +36,22 @@ func ImportedOpenCatalogRestConfigDescribeOutput(t *testing.T, id string) *OpenC
 ////////////////////////////
 
 func (o *OpenCatalogRestConfigDescribeOutputAssert) HasCatalogUri(expected string) *OpenCatalogRestConfigDescribeOutputAssert {
-	o.AddAssertion(assert.ResourceDescribeOutputValueSet("rest_config.0.catalog_uri", expected))
+	o.StringValueSet("catalog_uri", expected)
 	return o
 }
 
 func (o *OpenCatalogRestConfigDescribeOutputAssert) HasCatalogApiType(expected sdk.CatalogIntegrationCatalogApiType) *OpenCatalogRestConfigDescribeOutputAssert {
-	o.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("rest_config.0.catalog_api_type", expected))
+	o.StringValueSet("catalog_api_type", string(expected))
 	return o
 }
 
 func (o *OpenCatalogRestConfigDescribeOutputAssert) HasCatalogName(expected string) *OpenCatalogRestConfigDescribeOutputAssert {
-	o.AddAssertion(assert.ResourceDescribeOutputValueSet("rest_config.0.catalog_name", expected))
+	o.StringValueSet("catalog_name", expected)
 	return o
 }
 
 func (o *OpenCatalogRestConfigDescribeOutputAssert) HasAccessDelegationMode(expected sdk.CatalogIntegrationAccessDelegationMode) *OpenCatalogRestConfigDescribeOutputAssert {
-	o.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("rest_config.0.access_delegation_mode", expected))
+	o.StringValueSet("access_delegation_mode", string(expected))
 	return o
 }
 
@@ -64,21 +60,21 @@ func (o *OpenCatalogRestConfigDescribeOutputAssert) HasAccessDelegationMode(expe
 ///////////////////////////////
 
 func (o *OpenCatalogRestConfigDescribeOutputAssert) HasNoCatalogUri() *OpenCatalogRestConfigDescribeOutputAssert {
-	o.AddAssertion(assert.ResourceDescribeOutputValueNotSet("rest_config.0.catalog_uri"))
+	o.ValueNotSet("catalog_uri")
 	return o
 }
 
 func (o *OpenCatalogRestConfigDescribeOutputAssert) HasNoCatalogApiType() *OpenCatalogRestConfigDescribeOutputAssert {
-	o.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("rest_config.0.catalog_api_type"))
+	o.ValueNotSet("catalog_api_type")
 	return o
 }
 
 func (o *OpenCatalogRestConfigDescribeOutputAssert) HasNoCatalogName() *OpenCatalogRestConfigDescribeOutputAssert {
-	o.AddAssertion(assert.ResourceDescribeOutputValueNotSet("rest_config.0.catalog_name"))
+	o.ValueNotSet("catalog_name")
 	return o
 }
 
 func (o *OpenCatalogRestConfigDescribeOutputAssert) HasNoAccessDelegationMode() *OpenCatalogRestConfigDescribeOutputAssert {
-	o.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("rest_config.0.access_delegation_mode"))
+	o.ValueNotSet("access_delegation_mode")
 	return o
 }
