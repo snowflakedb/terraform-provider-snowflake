@@ -35,7 +35,6 @@
 - [snowflake_masking_policy](./docs/resources/masking_policy)
 - [snowflake_network_policy](./docs/resources/network_policy)
 - [snowflake_network_rule](./docs/resources/network_rule)
-- [snowflake_notebook](./docs/resources/notebook)
 - [snowflake_oauth_integration_for_custom_clients](./docs/resources/oauth_integration_for_custom_clients)
 - [snowflake_oauth_integration_for_partner_applications](./docs/resources/oauth_integration_for_partner_applications)
 - [snowflake_password_policy](./docs/resources/password_policy)

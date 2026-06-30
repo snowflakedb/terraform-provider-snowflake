@@ -33,6 +33,7 @@
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
 - [snowflake_network_policy_attachment](./docs/resources/network_policy_attachment)
+- [snowflake_notebook](./docs/resources/notebook)
 - [snowflake_notification_integration](./docs/resources/notification_integration)
 - [snowflake_object_parameter](./docs/resources/object_parameter)
 - [snowflake_pipe](./docs/resources/pipe)
